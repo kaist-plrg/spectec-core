@@ -3,6 +3,7 @@ open Sl.Ast
 module Value = Runtime_dynamic_sl.Value
 module Typ = Runtime_dynamic_sl.Typ
 module TDEnv = Runtime_dynamic_sl.Envs.TDEnv
+module Groups = Config.Groups
 open Util.Source
 
 (* Kinds of mutations *)
@@ -276,7 +277,7 @@ let is_leaf = function
   | BoolV _ | NumV _ | TextV _ | OptV _ | FuncV _ -> true
   | StructV _ | CaseV _ | TupleV _ | ListV _ -> false
 
-let mutate_type_driven_weighted (tdenv : TDEnv.t) (value : value) :
+let mutate_walk (tdenv : TDEnv.t) (_groups : Groups.t) (value : value) :
     (kind * value) option =
   (* Compute the best path to a leaf node in the value subtree *)
   let key_max = ref min_float in
@@ -345,11 +346,13 @@ let mutate_type_driven_weighted (tdenv : TDEnv.t) (value : value) :
 
 (* Entry point for mutation *)
 
-let mutate (tdenv : TDEnv.t) (value : value) : (kind * value) option =
-  let mutations = [ (fun () -> mutate_type_driven_weighted tdenv value) ] in
+let mutate (tdenv : TDEnv.t) (groups : Groups.t) (value : value) :
+    (kind * value) option =
+  let mutations = [ (fun () -> mutate_walk tdenv groups value) ] in
   let* mutation = Rand.random_select mutations in
   mutation ()
 
-let mutates (fuel_mutate : int) (tdenv : TDEnv.t) (value : value) :
-    (kind * value) list =
-  List.init fuel_mutate (fun _ -> mutate tdenv value) |> List.filter_map Fun.id
+let mutates (fuel_mutate : int) (tdenv : TDEnv.t) (groups : Groups.t)
+    (value : value) : (kind * value) list =
+  List.init fuel_mutate (fun _ -> mutate tdenv groups value)
+  |> List.filter_map Fun.id

@@ -25,11 +25,23 @@ let trials_seed = 25
 (* Timeout per seed *)
 let timeout_seed = 30
 
-(* Environment for the spec *)
+module MixopSet = Set.Make (struct
+  type t = mixop
 
+  let compare = compare
+end)
+
+module Groups = Set.Make (struct
+  type t = MixopSet.t
+
+  let compare = MixopSet.compare
+end)
+
+(* Environment for the spec *)
 type specenv = {
   spec : spec;
   tdenv : TDEnv.t;
+  groups : Groups.t;
   includes_p4 : string list;
   ignores : IdSet.t;
 }
@@ -63,8 +75,40 @@ type t = {
   seed : seed;
 }
 
-(* Load type definitions into environment *)
+let load_groups (groups : Groups.t) (def : def) : Groups.t =
+  match def.it with
+  | TypD (_, _, deftyp) -> (
+      match deftyp.it with
+      | VariantT nottyps ->
+          let insert_into_groups (nottyp : nottyp)
+              (typed_groups : (typ list * MixopSet.t) list) :
+              (typ list * MixopSet.t) list =
+            let mixop, typs = nottyp.it in
+            let rec aux typed_group = function
+              | [] -> (typs, MixopSet.singleton mixop) :: typed_group
+              | (typs_found, group) :: rest ->
+                  if List.equal Sl.Eq.eq_typ typs typs_found then
+                    (typs, MixopSet.add mixop group)
+                    :: (List.rev typed_group @ rest)
+                  else aux ((typs, group) :: typed_group) rest
+            in
+            aux [] typed_groups
+          in
+          let new_typed_groups =
+            List.fold_left
+              (fun acc nottyp -> insert_into_groups nottyp acc)
+              [] nottyps
+          in
+          let groups =
+            List.fold_left
+              (fun acc (_, mixop_set) -> Groups.add mixop_set acc)
+              groups new_typed_groups
+          in
+          groups
+      | _ -> groups)
+  | _ -> groups
 
+(* Load type definitions into environment *)
 let load_def (tdenv : TDEnv.t) (def : def) : TDEnv.t =
   match def.it with
   | TypD (id, tparams, deftyp) ->
@@ -72,8 +116,11 @@ let load_def (tdenv : TDEnv.t) (def : def) : TDEnv.t =
       TDEnv.add id typdef tdenv
   | _ -> tdenv
 
-let load_spec (tdenv : TDEnv.t) (spec : spec) : TDEnv.t =
-  List.fold_left load_def tdenv spec
+let load_spec (tdenv : TDEnv.t) (groups : Groups.t) (spec : spec) :
+    TDEnv.t * Groups.t =
+  let tdenv = List.fold_left load_def tdenv spec in
+  let groups = List.fold_left load_groups groups spec in
+  (tdenv, groups)
 
 (* Changing random seed *)
 
@@ -85,9 +132,9 @@ let set_rand (config : t) : unit =
 
 let init_specenv (spec : spec) (includes_p4 : string list)
     (filenames_ignore : string list) : specenv =
-  let tdenv = load_spec TDEnv.empty spec in
+  let tdenv, groups = load_spec TDEnv.empty Groups.empty spec in
   let ignores = Ignore.init filenames_ignore in
-  { spec; tdenv; includes_p4; ignores }
+  { spec; tdenv; groups; includes_p4; ignores }
 
 let init_storage (dirname_gen : string) : storage =
   Filesys.mkdir dirname_gen;
