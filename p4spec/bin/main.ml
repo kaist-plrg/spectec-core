@@ -3,7 +3,6 @@ open Util.Error
 let version = "0.1"
 
 (* File collector *)
-
 let rec collect_files ~(suffix : string) dir =
   let files = Sys_unix.readdir dir in
   Array.sort String.compare files;
@@ -97,43 +96,6 @@ let cover_sl_command =
          in
          Runtime_testgen.Cov.Multiple.log ~filename_cov_opt:(Some filename_cov)
            cover
-       with
-       | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
-
-(* TODO: Merge with cover_sl_command *)
-let cover_sl_filenames_command =
-  Core.Command.basic
-    ~summary:"measure phantom coverage and print pid with filenames"
-    (let open Core.Command.Let_syntax in
-     let open Core.Command.Param in
-     let%map filenames_spec = anon (sequence ("filename" %: string))
-     and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
-     and dirnames_p4 =
-       flag "-d" (listed string) ~doc:"p4 directories to typecheck"
-     in
-     fun () ->
-       try
-         let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
-         let spec_il = Elaborate.Elab.elab_spec spec in
-         let spec_sl = Structure.Struct.struct_spec spec_il in
-         let filenames_p4 =
-           List.concat_map (collect_files ~suffix:".p4") dirnames_p4
-         in
-         let cover_multi =
-           Interp_sl.Typing.cover_typings spec_sl includes_p4 filenames_p4
-         in
-         Runtime_testgen.Cov.Multiple.Cover.iter
-           (fun pid (branch : Runtime_testgen.Cov.Multiple.Branch.t) ->
-             match branch.status with
-             | Hit -> Format.printf "%d Hit\n" pid
-             | Miss [] -> Format.printf "%d Miss\n" pid
-             | Miss filenames ->
-                 Format.printf "%d %s\n" pid
-                   (filenames
-                   |> Testgen.Rand.random_sample 3
-                   |> List.fold_left (fun s file -> s ^ " " ^ file) "CM"))
-           cover_multi
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
        | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
@@ -233,29 +195,11 @@ let interesting_command =
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
          match Interp_sl.Typing.run_typing spec_sl includes_p4 filename_p4 with
-         | IllTyped _ ->
-             Format.printf "ill-typed\n";
-             exit 1
-         | IllFormed _ ->
-             Format.printf "ill-formed\n";
-             exit 1
+         | IllTyped _ -> exit 1
+         | IllFormed _ -> exit 1
          | WellTyped (_, _, cover_single) -> (
-             Interp_sl.Interp.SCov.Cover.iter
-               (fun pid (branch : Interp_sl.Interp.SCov.Branch.t) ->
-                 match branch.status with
-                 | Hit -> Format.printf "%d: Hit\n" pid
-                 | Miss (_ :: _) -> Format.printf "%d: Close-Miss\n" pid
-                 | _ -> ())
-               cover_single;
              let branch = Interp_sl.Interp.SCov.Cover.find pid cover_single in
-             match branch.status with
-             | Hit ->
-                 "hit" |> print_endline;
-                 exit 0
-             | Miss [] ->
-                 "miss" |> print_endline;
-                 exit 2
-             | Miss _ -> exit 0)
+             match branch.status with Miss [] -> exit 2 | _ -> exit 0)
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
        | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
@@ -268,7 +212,6 @@ let command =
       ("struct", struct_command);
       ("run-sl", run_sl_command);
       ("cover-sl", cover_sl_command);
-      ("cover-sl-filenames", cover_sl_filenames_command);
       ("testgen", run_testgen_command);
       ("testgen-dbg", run_testgen_debug_command);
       ("interesting", interesting_command);

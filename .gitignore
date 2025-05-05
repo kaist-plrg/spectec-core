@@ -30,7 +30,6 @@ error
 gen
 seed
 deps
-coverage
 
 # calculus
 !calculus/*.tex
