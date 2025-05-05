@@ -129,7 +129,7 @@ let update_interesting (fuel : int) (pid : pid) (idx_method : int)
   let welltyped, cover =
     match
       Interp_sl.Typing.run_typing_internal config.specenv.spec filename_gen_p4
-        value_program
+        value_program config.specenv.ignores
     with
     | WellTyped (_, _, cover) -> (true, cover)
     | IllTyped (_, _, cover) -> (false, cover)
@@ -388,8 +388,8 @@ let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
   F.asprintf "[F %d] [P %d] Running SL interpreter on %s" fuel pid filename_p4
   |> Logger.log config.modes.logmode log;
   match
-    Interp_sl.Typing.run_typing ~derive:true config.specenv.spec
-      config.specenv.includes_p4 filename_p4
+    Interp_sl.Typing.run_typing' ~derive:true config.specenv.spec
+      config.specenv.includes_p4 filename_p4 config.specenv.ignores
   with
   | WellTyped (graph, vid_program, cover) -> (
       let time_end = Unix.gettimeofday () in
@@ -496,10 +496,10 @@ let rec fuzz_loop (fuel : int) (config : Config.t) : Config.t =
 (* Entry point to main fuzzing loop *)
 
 let fuzz_typing_init (spec : spec) (includes_p4 : string list)
-    (dirname_seed_p4 : string) (dirname_gen : string) (logmode : Modes.logmode)
-    (bootmode : Modes.bootmode) (targetmode : Modes.targetmode)
-    (mutationmode : Modes.mutationmode) (covermode : Modes.covermode) : Config.t
-    =
+    (dirname_seed_p4 : string) (filenames_ignore : string list)
+    (dirname_gen : string) (logmode : Modes.logmode) (bootmode : Modes.bootmode)
+    (targetmode : Modes.targetmode) (mutationmode : Modes.mutationmode)
+    (covermode : Modes.covermode) : Config.t =
   (* Create a timestamp *)
   let timestamp =
     let tm = Unix.gettimeofday () |> Unix.localtime in
@@ -535,14 +535,16 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
   (* Create a spec environment *)
   "Loading type definitions from the spec file"
   |> Logger.log modes.logmode log_init;
-  let specenv = Config.init_specenv spec includes_p4 in
+  let specenv = Config.init_specenv spec includes_p4 filenames_ignore in
   (* Create a seed *)
   "Booting initial coverage" |> Logger.log modes.logmode log_init;
   let filenames_seed_p4 = Filesys.collect_files ~suffix:".p4" dirname_seed_p4 in
   let cover_seed =
     match modes.bootmode with
     | Cold ->
-        let cover_seed = Boot.boot_cold spec includes_p4 filenames_seed_p4 in
+        let cover_seed =
+          Boot.boot_cold spec includes_p4 filenames_seed_p4 filenames_ignore
+        in
         (* Log the initial coverage for later use in warm boot *)
         let filename_cov = dirname_gen ^ "/boot.coverage" in
         MCov.log ~filename_cov_opt:(Some filename_cov) cover_seed;
@@ -579,13 +581,14 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
   config
 
 let fuzz_typing (fuel : int) (spec : spec) (includes_p4 : string list)
-    (dirname_seed_p4 : string) (dirname_gen : string) (logmode : Modes.logmode)
-    (bootmode : Modes.bootmode) (targetmode : Modes.targetmode)
-    (mutationmode : Modes.mutationmode) (covermode : Modes.covermode) : unit =
+    (dirname_seed_p4 : string) (filenames_ignore : string list)
+    (dirname_gen : string) (logmode : Modes.logmode) (bootmode : Modes.bootmode)
+    (targetmode : Modes.targetmode) (mutationmode : Modes.mutationmode)
+    (covermode : Modes.covermode) : unit =
   (* Initialize the fuzzing configuration *)
   let config =
-    fuzz_typing_init spec includes_p4 dirname_seed_p4 dirname_gen logmode
-      bootmode targetmode mutationmode covermode
+    fuzz_typing_init spec includes_p4 dirname_seed_p4 filenames_ignore
+      dirname_gen logmode bootmode targetmode mutationmode covermode
   in
   (* Call the main fuzzing loop *)
   let config = fuzz_loop fuel config in

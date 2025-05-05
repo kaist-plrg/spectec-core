@@ -2,7 +2,7 @@ open Domain.Lib
 open Sl.Ast
 open Util.Source
 
-(* Phantom coverage map *)
+(* Phantom branch *)
 
 module Branch = struct
   (* Enclosing relation or function id *)
@@ -27,6 +27,11 @@ module Branch = struct
     | Hit _ -> "H" ^ branch.origin.it
     | Miss _ -> "M" ^ branch.origin.it
 end
+
+(* Phantom coverage map:
+
+   Note that its domain must be set-up initially,
+   and no new pid is added during the analysis *)
 
 module Cover = struct
   include MakePIdEnv (Branch)
@@ -60,13 +65,14 @@ module Cover = struct
   and init_instrs (cover : t) (id : id) (instrs : instr list) : t =
     List.fold_left (fun cover instr -> init_instr cover id instr) cover instrs
 
-  let init_def (cover : t) (def : def) : t =
+  let init_def (ignores : IdSet.t) (cover : t) (def : def) : t =
     match def.it with
     | TypD _ -> cover
     | RelD (id, _, _, instrs) | DecD (id, _, _, instrs) ->
-        init_instrs cover id instrs
+        if IdSet.mem id ignores then cover else init_instrs cover id instrs
 
-  let init_spec (spec : spec) : t = List.fold_left init_def empty spec
+  let init_spec (ignores : IdSet.t) (spec : spec) : t =
+    List.fold_left (init_def ignores) empty spec
 end
 
 (* Measuring coverage *)
@@ -186,4 +192,5 @@ let log ~(filename_cov_opt : string option) (cover : Cover.t) : unit =
 
 (* Constructor *)
 
-let init (spec : spec) : Cover.t = Cover.init_spec spec
+let init (ignores : IdSet.t) (spec : spec) : Cover.t =
+  Cover.init_spec ignores spec

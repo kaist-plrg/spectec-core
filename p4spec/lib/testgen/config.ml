@@ -1,6 +1,7 @@
 open Domain.Lib
 open Sl.Ast
 module TDEnv = Runtime_dynamic_sl.Envs.TDEnv
+module Ignore = Runtime_testgen.Cov.Ignore
 module SCov = Runtime_testgen.Cov.Single
 module MCov = Runtime_testgen.Cov.Multiple
 
@@ -26,7 +27,12 @@ let timeout_seed = 30
 
 (* Environment for the spec *)
 
-type specenv = { spec : spec; tdenv : TDEnv.t; includes_p4 : string list }
+type specenv = {
+  spec : spec;
+  tdenv : TDEnv.t;
+  includes_p4 : string list;
+  ignores : IdSet.t;
+}
 
 (* Storage for generated files *)
 
@@ -77,9 +83,11 @@ let set_rand (config : t) : unit =
 
 (* Constructor *)
 
-let init_specenv (spec : spec) (includes_p4 : string list) : specenv =
+let init_specenv (spec : spec) (includes_p4 : string list)
+    (filenames_ignore : string list) : specenv =
   let tdenv = load_spec TDEnv.empty spec in
-  { spec; tdenv; includes_p4 }
+  let ignores = Ignore.init filenames_ignore in
+  { spec; tdenv; includes_p4; ignores }
 
 let init_storage (dirname_gen : string) : storage =
   Filesys.mkdir dirname_gen;

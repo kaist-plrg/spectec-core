@@ -27,7 +27,10 @@ module Branch = struct
     | Miss _ -> "M" ^ branch.origin.it
 end
 
-(* Phantom coverage map *)
+(* Phantom coverage map:
+
+   Note that its domain must be set-up initially,
+   and no new pid is added during the analysis *)
 
 module Cover = struct
   include MakeVIdEnv (Branch)
@@ -61,29 +64,34 @@ module Cover = struct
   and init_instrs (cover : t) (id : id) (instrs : instr list) : t =
     List.fold_left (fun cover instr -> init_instr cover id instr) cover instrs
 
-  let init_def (cover : t) (def : def) : t =
+  let init_def (ignores : IdSet.t) (cover : t) (def : def) : t =
     match def.it with
     | TypD _ -> cover
     | RelD (id, _, _, instrs) | DecD (id, _, _, instrs) ->
-        init_instrs cover id instrs
+        if IdSet.mem id ignores then cover else init_instrs cover id instrs
 
-  let init_spec (spec : spec) : t = List.fold_left init_def empty spec
+  let init_spec (ignores : IdSet.t) (spec : spec) : t =
+    List.fold_left (init_def ignores) empty spec
 end
 
 (* Hit and miss *)
 
 let hit (cover : Cover.t) (pid : pid) : Cover.t =
-  let branch = Cover.find pid cover in
-  let branch = { branch with status = Hit } in
-  Cover.add pid branch cover
+  match Cover.find_opt pid cover with
+  | Some branch ->
+      let branch = { branch with status = Hit } in
+      Cover.add pid branch cover
+  | None -> cover
 
 let miss (cover : Cover.t) (pid : pid) (vid : vid) : Cover.t =
-  let branch = Cover.find pid cover in
-  match branch.status with
-  | Hit -> cover
-  | Miss vids ->
-      let branch = { branch with status = Miss (vid :: vids) } in
-      Cover.add pid branch cover
+  match Cover.find_opt pid cover with
+  | Some branch -> (
+      match branch.status with
+      | Hit -> cover
+      | Miss vids ->
+          let branch = { branch with status = Miss (vid :: vids) } in
+          Cover.add pid branch cover)
+  | None -> cover
 
 (* Collector *)
 
@@ -105,4 +113,5 @@ let collect_miss (cover : Cover.t) : (pid * vid list) list =
 
 (* Constructor *)
 
-let init (spec : spec) : Cover.t = Cover.init_spec spec
+let init (ignores : IdSet.t) (spec : spec) : Cover.t =
+  Cover.init_spec ignores spec

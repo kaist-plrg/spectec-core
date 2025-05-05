@@ -1,6 +1,7 @@
 open Domain.Lib
 open Runtime_dynamic_sl
 module Dep = Runtime_testgen.Dep
+module Ignore = Runtime_testgen.Cov.Ignore
 module SCov = Runtime_testgen.Cov.Single
 open Envs
 open Sl.Ast
@@ -208,10 +209,11 @@ let empty_local () : local =
     venv = VEnv.empty;
   }
 
-let empty (spec : spec) (filename : string) (derive : bool) : t =
+let empty ~(derive : bool) (spec : spec) (filename : string) (ignores : IdSet.t)
+    : t =
   let graph = if derive then Some (Dep.Graph.init ()) else None in
   let vid_program = None in
-  let cover = ref (SCov.init spec) in
+  let cover = ref (SCov.init ignores spec) in
   let global = empty_global () in
   let local = empty_local () in
   { filename; graph; vid_program; cover; global; local }

@@ -56,7 +56,11 @@ let run_sl_command =
      let%map filenames_spec = anon (sequence ("filename" %: string))
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and filename_p4 = flag "-p" (required string) ~doc:"p4 file to typecheck"
-     and derive = flag "-derive" no_arg ~doc:"derive value dependency graph" in
+     and derive = flag "-derive" no_arg ~doc:"derive value dependency graph"
+     and filenames_ignore =
+       flag "-ignore" (listed string)
+         ~doc:"relations or functions to ignore when reporting coverage"
+     in
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
@@ -64,6 +68,7 @@ let run_sl_command =
          let spec_sl = Structure.Struct.struct_spec spec_il in
          match
            Interp_sl.Typing.run_typing ~derive spec_sl includes_p4 filename_p4
+             filenames_ignore
          with
          | WellTyped _ -> Format.printf "well-typed\n"
          | IllTyped (_, msg, _) -> Format.printf "ill-typed: %s\n" msg
@@ -80,6 +85,9 @@ let cover_sl_command =
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and dirnames_p4 =
        flag "-d" (listed string) ~doc:"p4 directories to typecheck"
+     and filenames_ignore =
+       flag "-ignore" (listed string)
+         ~doc:"relations or functions to ignore when reporting coverage"
      and filename_cov =
        flag "-cov" (required string) ~doc:"output coverage file"
      in
@@ -93,6 +101,7 @@ let cover_sl_command =
          in
          let cover =
            Interp_sl.Typing.cover_typings spec_sl includes_p4 filenames_p4
+             filenames_ignore
          in
          Runtime_testgen.Cov.Multiple.log ~filename_cov_opt:(Some filename_cov)
            cover
@@ -110,6 +119,9 @@ let run_testgen_command =
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and dirname_seed_p4 =
        flag "-seed" (required string) ~doc:"seed p4 directory"
+     and filenames_ignore =
+       flag "-ignore" (listed string)
+         ~doc:"relations or functions to ignore when reporting coverage"
      and dirname_gen =
        flag "-gen" (required string) ~doc:"directory for generated p4 programs"
      and filename_boot =
@@ -152,7 +164,8 @@ let run_testgen_command =
            if strict then Testgen.Modes.Strict else Testgen.Modes.Relaxed
          in
          Testgen.Gen.fuzz_typing fuel spec_sl includes_p4 dirname_seed_p4
-           dirname_gen logmode bootmode targetmode mutationmode covermode
+           filenames_ignore dirname_gen logmode bootmode targetmode mutationmode
+           covermode
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
        | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
@@ -165,6 +178,9 @@ let run_testgen_debug_command =
      let%map filenames_spec = anon (sequence ("filename" %: string))
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and filename_p4 = flag "-p" (required string) ~doc:"p4 file to typecheck"
+     and filenames_ignore =
+       flag "-ignore" (listed string)
+         ~doc:"relations or functions to ignore when reporting coverage"
      and dirname_debug =
        flag "-debug" (required string) ~doc:"directory for debug files"
      and pid = flag "-pid" (required int) ~doc:"phantom id to close-miss" in
@@ -174,7 +190,7 @@ let run_testgen_debug_command =
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
          Testgen.Derive.debug_phantom spec_sl includes_p4 filename_p4
-           dirname_debug pid
+           filenames_ignore dirname_debug pid
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
        | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
@@ -186,15 +202,20 @@ let interesting_command =
      let%map filenames_spec = anon (sequence ("filename" %: string))
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and pid = flag "-pid" (required int) ~doc:"phantom id to close-miss"
-     and filename_p4 =
-       flag "-p" (required string) ~doc:"p4 file to typecheck"
+     and filename_p4 = flag "-p" (required string) ~doc:"p4 file to typecheck"
+     and filenames_ignore =
+       flag "-ignore" (listed string)
+         ~doc:"relations or functions to ignore when reporting coverage"
      in
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
-         match Interp_sl.Typing.run_typing spec_sl includes_p4 filename_p4 with
+         match
+           Interp_sl.Typing.run_typing spec_sl includes_p4 filename_p4
+             filenames_ignore
+         with
          | IllTyped _ -> exit 1
          | IllFormed _ -> exit 1
          | WellTyped (_, _, cover_single) -> (

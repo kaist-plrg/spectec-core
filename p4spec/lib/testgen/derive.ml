@@ -58,9 +58,11 @@ let derive_phantom (pid : pid) (graph : Dep.Graph.t) (cover : SCov.Cover.t) :
 (* Entry point for debugging close-ASTs *)
 
 let debug_phantom (spec : spec) (includes_p4 : string list)
-    (filename_p4 : string) (dirname_debug : string) (pid : pid) : unit =
+    (filename_p4 : string) (filenames_ignore : string list)
+    (dirname_debug : string) (pid : pid) : unit =
   match
     Interp_sl.Typing.run_typing ~derive:true spec includes_p4 filename_p4
+      filenames_ignore
   with
   | WellTyped (graph, _, cover) ->
       let graph = Option.get graph in

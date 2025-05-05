@@ -7,8 +7,9 @@ open Util.Source
 (* On cold boot, first measure the coverage of the seed *)
 
 let boot_cold (spec : spec) (includes_p4 : string list)
-    (filenames_p4 : string list) : MCov.Cover.t =
-  Interp_sl.Typing.cover_typings spec includes_p4 filenames_p4
+    (filenames_p4 : string list) (filenames_ignore : string list) : MCov.Cover.t
+    =
+  Interp_sl.Typing.cover_typings spec includes_p4 filenames_p4 filenames_ignore
 
 (* On warm boot, load the coverage from a file *)
 

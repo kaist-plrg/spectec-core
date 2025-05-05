@@ -1,9 +1,11 @@
+open Domain.Lib
 open Sl.Ast
 module Hint = Runtime_static.Rel.Hint
 module Typ = Runtime_dynamic_sl.Typ
 module Value = Runtime_dynamic_sl.Value
 module Rel = Runtime_dynamic_sl.Rel
 module Dep = Runtime_testgen.Dep
+module Ignore = Runtime_testgen.Cov.Ignore
 module SCov = Runtime_testgen.Cov.Single
 module MCov = Runtime_testgen.Cov.Multiple
 open Error
@@ -27,10 +29,10 @@ type res =
   | IllFormed of string * SCov.Cover.t
 
 let run_typing_internal (spec : spec) (filename_p4 : string)
-    (value_program : value) : res =
+    (value_program : value) (ignores : IdSet.t) : res =
   Builtin.init ();
   Dep.Graph.refresh ();
-  let ctx = Ctx.empty spec filename_p4 false in
+  let ctx = Ctx.empty ~derive:false spec filename_p4 ignores in
   try
     let ctx, _values = do_typing ctx spec value_program in
     WellTyped (ctx.graph, ctx.vid_program, !(ctx.cover))
@@ -38,11 +40,12 @@ let run_typing_internal (spec : spec) (filename_p4 : string)
   | Util.Error.InterpError (at, msg) -> IllTyped (at, msg, !(ctx.cover))
   | _ -> IllTyped (no_region, "unknown error", !(ctx.cover))
 
-let run_typing ?(derive : bool = false) (spec : spec)
-    (includes_p4 : string list) (filename_p4 : string) : res =
+let run_typing' ?(derive : bool = false) (spec : spec)
+    (includes_p4 : string list) (filename_p4 : string) (ignores : IdSet.t) : res
+    =
   Builtin.init ();
   Dep.Graph.refresh ();
-  let ctx = Ctx.empty spec filename_p4 derive in
+  let ctx = Ctx.empty ~derive spec filename_p4 ignores in
   try
     let value_program = Convert.In.in_program ctx includes_p4 filename_p4 in
     let ctx = Ctx.set_vid_program ctx value_program.note.vid in
@@ -52,15 +55,23 @@ let run_typing ?(derive : bool = false) (spec : spec)
   | Util.Error.ConvertInError msg -> IllFormed (msg, !(ctx.cover))
   | Util.Error.InterpError (at, msg) -> IllTyped (at, msg, !(ctx.cover))
 
+let run_typing ?(derive : bool = false) (spec : spec)
+    (includes_p4 : string list) (filename_p4 : string)
+    (filenames_ignore : string list) : res =
+  let ignores = Ignore.init filenames_ignore in
+  run_typing' ~derive spec includes_p4 filename_p4 ignores
+
 (* Entry point : Measure spec coverage of phantom nodes *)
 
 let cover_typings (spec : spec) (includes_p4 : string list)
-    (filenames_p4 : string list) : MCov.Cover.t =
-  let cover_multi = MCov.init spec in
+    (filenames_p4 : string list) (filenames_ignore : string list) : MCov.Cover.t
+    =
+  let ignores = Ignore.init filenames_ignore in
+  let cover_multi = MCov.init ignores spec in
   List.fold_left
     (fun cover_multi filename_p4 ->
       let cover_single =
-        match run_typing spec includes_p4 filename_p4 with
+        match run_typing' spec includes_p4 filename_p4 ignores with
         | WellTyped (_, _, cover_single) -> cover_single
         | IllTyped (_, _, cover_single) -> cover_single
         | IllFormed (_, cover_single) -> cover_single
