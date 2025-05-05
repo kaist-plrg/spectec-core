@@ -10,9 +10,10 @@ module Branch = struct
   type origin = id
 
   (* Status of a branch:
+     if hit, record the filenames that hit it;
      if missed, record the closest-missing filenames *)
 
-  type status = Hit | Miss of string list
+  type status = Hit of string list | Miss of string list
   type t = { origin : origin; status : status }
 
   (* Constructor *)
@@ -23,7 +24,7 @@ module Branch = struct
 
   let to_string (branch : t) : string =
     match branch.status with
-    | Hit -> "H" ^ branch.origin.it
+    | Hit _ -> "H" ^ branch.origin.it
     | Miss _ -> "M" ^ branch.origin.it
 end
 
@@ -72,16 +73,16 @@ end
 
 let is_hit (cover : Cover.t) (pid : pid) : bool =
   let branch = Cover.find pid cover in
-  match branch.status with Hit -> true | Miss _ -> false
+  match branch.status with Hit _ -> true | Miss _ -> false
 
 let is_miss (cover : Cover.t) (pid : pid) : bool =
   let branch = Cover.find pid cover in
-  match branch.status with Hit -> false | Miss _ -> true
+  match branch.status with Hit _ -> false | Miss _ -> true
 
 let is_close_miss (cover : Cover.t) (pid : pid) : bool =
   let branch = Cover.find pid cover in
   match branch.status with
-  | Hit -> false
+  | Hit _ -> false
   | Miss filenames -> List.length filenames > 0
 
 let coverage (cover : Cover.t) : int * int * float =
@@ -89,7 +90,7 @@ let coverage (cover : Cover.t) : int * int * float =
   let hits =
     Cover.fold
       (fun _ (branch : Branch.t) (hits : int) ->
-        match branch.status with Hit -> hits + 1 | Miss _ -> hits)
+        match branch.status with Hit _ -> hits + 1 | Miss _ -> hits)
       cover 0
   in
   let coverage =
@@ -103,11 +104,12 @@ let target (cover : Cover.t) (targets : string list PIdMap.t) : Cover.t =
   Cover.mapi
     (fun (pid : pid) (branch : Branch.t) ->
       match branch.status with
-      | Hit -> branch
+      | Hit _ -> branch
       | Miss _ ->
           let filenames =
             PIdMap.find_opt pid targets |> Option.value ~default:[]
           in
+          (* (TODO) check if the filenames were originally close-missing *)
           { branch with status = Miss filenames })
     cover
 
@@ -119,10 +121,15 @@ let extend (cover : Cover.t) (filename_p4 : string)
     (fun (pid : pid) (branch : Branch.t) ->
       let branch_single = Single.Cover.find pid cover_single in
       match branch.status with
-      | Hit -> branch
+      | Hit filenames_p4 -> (
+          match branch_single.status with
+          | Hit ->
+              let filenames_p4 = filename_p4 :: filenames_p4 in
+              { branch with status = Hit filenames_p4 }
+          | _ -> branch)
       | Miss filenames_p4 -> (
           match branch_single.status with
-          | Hit -> { branch with status = Hit }
+          | Hit -> { branch with status = Hit [ filename_p4 ] }
           | Miss (_ :: _) ->
               let filenames_p4 = filename_p4 :: filenames_p4 in
               { branch with status = Miss filenames_p4 }
@@ -140,7 +147,10 @@ let log ~(filename_cov_opt : string option) (cover : Cover.t) : unit =
     (fun (pid : pid) (branch : Branch.t) ->
       let origin = branch.origin in
       match branch.status with
-      | Hit -> Format.asprintf "%d Hit %s\n" pid origin.it |> output oc_opt
+      | Hit filenames ->
+          let filenames = String.concat " " filenames in
+          Format.asprintf "%d Hit %s %s\n" pid origin.it filenames
+          |> output oc_opt
       | Miss [] -> Format.asprintf "%d Miss %s\n" pid origin.it |> output oc_opt
       | Miss filenames ->
           let filenames = String.concat " " filenames in

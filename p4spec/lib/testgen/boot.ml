@@ -19,7 +19,7 @@ let parse_line (line : string) : pid * MCov.Branch.t =
       let pid = int_of_string pid in
       let status =
         match status with
-        | "Hit" -> MCov.Branch.Hit
+        | "Hit" -> MCov.Branch.Hit filenames
         | "Miss" -> MCov.Branch.Miss filenames
         | _ -> assert false
       in

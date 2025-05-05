@@ -123,7 +123,7 @@ let find_interesting_cover_seed (config : t) (cover : SCov.Cover.t) :
     (fun pid (branch_multi : MCov.Branch.t) (pids_hit_new, pids_close_miss_new) ->
       let branch_single = SCov.Cover.find pid cover in
       match (branch_single.status, branch_multi.status) with
-      | _, Hit -> (pids_hit_new, pids_close_miss_new)
+      | _, Hit _ -> (pids_hit_new, pids_close_miss_new)
       | Hit, Miss _ ->
           let pids_hit_new = PIdSet.add pid pids_hit_new in
           (pids_hit_new, pids_close_miss_new)
@@ -136,13 +136,22 @@ let find_interesting_cover_seed (config : t) (cover : SCov.Cover.t) :
     config.seed.cover_seed
     (PIdSet.empty, PIdSet.empty)
 
-let update_hit_cover_seed (config : t) (pids_hit : PIdSet.t) : unit =
+let update_hit_cover_seed (config : t) (filename_p4 : string)
+    (pids_hit : PIdSet.t) : unit =
   let cover_seed = config.seed.cover_seed in
   let cover_seed =
     PIdSet.fold
       (fun pid_hit cover_seed ->
-        let branch = MCov.Cover.find pid_hit cover_seed in
-        let branch = MCov.Branch.{ branch with status = Hit } in
+        let branch : MCov.Branch.t = MCov.Cover.find pid_hit cover_seed in
+        let branch =
+          match branch.status with
+          | Hit filenames_p4 ->
+              let filenames_p4 = filename_p4 :: filenames_p4 in
+              MCov.Branch.{ branch with status = Hit filenames_p4 }
+          | _ ->
+              let filenames_p4 = [ filename_p4 ] in
+              MCov.Branch.{ branch with status = Hit filenames_p4 }
+        in
         MCov.Cover.add pid_hit branch cover_seed)
       pids_hit cover_seed
   in

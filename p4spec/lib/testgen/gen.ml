@@ -45,7 +45,7 @@ let update_hit_new' (fuel : int) (pid : pid) (idx_method : int)
   |> output_string oc;
   close_out oc;
   (* Update the set of covered phantoms *)
-  Config.update_hit_cover_seed config pids_hit_new
+  Config.update_hit_cover_seed config filename_hit_p4 pids_hit_new
 
 let update_hit_new (fuel : int) (pid : pid) (idx_method : int)
     (idx_mutation : int) (config : Config.t) (log : Logger.t)
@@ -460,7 +460,7 @@ let fuzz_phantoms (fuel : int) (config : Config.t) (log : Logger.t)
     (fun pid ->
       let branch = MCov.Cover.find pid config.seed.cover_seed in
       match branch.status with
-      | Hit -> ()
+      | Hit _ -> ()
       | Miss filenames_p4 -> fuzz_phantom fuel pid config log query filenames_p4)
     pids
 
