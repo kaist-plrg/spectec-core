@@ -6,7 +6,6 @@ This reuses parts of the [Petr4](https://github.com/verified-network-toolchain/p
 Also a to-be formal specification for P4, using the SpecTec framework.
 
 ## Building
-
 This uses Wasm-SpecTec as its submodule.
 
 ```shell
@@ -174,6 +173,14 @@ Measure the initial coverage of the phantom nodes
                     b. Run the SL interpreter on the mutated program
                     c. See if it has covered any new phantom or any new close-miss
     2. Repeat the loop until the fuel is exhausted
+```
+
+### Debugging the Derivation
+
+To see what values are derived from a given P4 program and a phantom id, run:
+
+```
+$ ./p4spectec testgen-dbg spec/*.watsup -i p4/testdata/arch -p [FILENAME].p4 -pid [PID] -debug [DEBUG DIR]
 ```
 
 ### Contributing
