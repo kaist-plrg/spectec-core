@@ -31,9 +31,11 @@ let parse_line (line : string) : pid * MCov.Branch.t =
 let rec parse_lines (cover : MCov.Cover.t) (ic : in_channel) : MCov.Cover.t =
   try
     let line = input_line ic in
-    let pid, branch = parse_line line in
-    let cover = MCov.Cover.add pid branch cover in
-    parse_lines cover ic
+    if String.starts_with ~prefix:"#" line then parse_lines cover ic
+    else
+      let pid, branch = parse_line line in
+      let cover = MCov.Cover.add pid branch cover in
+      parse_lines cover ic
   with End_of_file -> cover
 
 let boot_warm (filename_cov : string) : MCov.Cover.t =

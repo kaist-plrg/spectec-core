@@ -481,7 +481,7 @@ let rec fuzz_loop (fuel : int) (config : Config.t) : Config.t =
     F.asprintf "[F %d] Start fuzzing loop" fuel
     |> Logger.log config.modes.logmode log;
     fuzz_phantoms fuel config log query;
-    let total, hits, coverage = MCov.coverage config.seed.cover_seed in
+    let total, hits, coverage = MCov.measure_coverage config.seed.cover_seed in
     F.asprintf "[F %d] End fuzzing loop with coverage %d/%d (%.2f%%)" fuel hits
       total coverage
     |> Logger.log config.modes.logmode log;
@@ -560,7 +560,7 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
         MCov.log ~filename_cov_opt:(Some filename_cov_target) cover_seed;
         cover_seed
   in
-  let total, hits, coverage = MCov.coverage cover_seed in
+  let total, hits, coverage = MCov.measure_coverage cover_seed in
   F.asprintf "Finished booting with initial coverage %d/%d (%.2f%%)" hits total
     coverage
   |> Logger.log modes.logmode log_init;

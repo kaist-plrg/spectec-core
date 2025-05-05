@@ -137,6 +137,9 @@ if args.coverage:
         lines = f.readlines()
 
     for line in lines:
+        if line.startswith("#"):
+            continue
+
         data = line.strip().split()
 
         pid, status = data[0], data[1]

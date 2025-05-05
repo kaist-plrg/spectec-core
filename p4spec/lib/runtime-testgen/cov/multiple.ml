@@ -85,7 +85,7 @@ let is_close_miss (cover : Cover.t) (pid : pid) : bool =
   | Hit _ -> false
   | Miss filenames -> List.length filenames > 0
 
-let coverage (cover : Cover.t) : int * int * float =
+let measure_coverage (cover : Cover.t) : int * int * float =
   let total = Cover.cardinal cover in
   let hits =
     Cover.fold
@@ -143,20 +143,45 @@ let log ~(filename_cov_opt : string option) (cover : Cover.t) : unit =
     match oc_opt with Some oc -> output_string oc | None -> print_string
   in
   let oc_opt = Option.map open_out filename_cov_opt in
-  Cover.iter
-    (fun (pid : pid) (branch : Branch.t) ->
-      let origin = branch.origin in
-      match branch.status with
-      | Hit filenames ->
-          let filenames = String.concat " " filenames in
-          Format.asprintf "%d Hit %s %s\n" pid origin.it filenames
-          |> output oc_opt
-      | Miss [] -> Format.asprintf "%d Miss %s\n" pid origin.it |> output oc_opt
-      | Miss filenames ->
-          let filenames = String.concat " " filenames in
-          Format.asprintf "%d Miss %s %s\n" pid origin.it filenames
-          |> output oc_opt)
-    cover;
+  (* Output overall coverage *)
+  let total, hits, coverage = measure_coverage cover in
+  Format.asprintf "# Overall Coverage: %d/%d (%.2f%%)\n" hits total coverage
+  |> output oc_opt;
+  (* Collect covers by origin *)
+  let covers_origin =
+    Cover.fold
+      (fun (pid : pid) (branch : Branch.t) (covers_origin : Cover.t IdMap.t) ->
+        let origin = branch.origin in
+        let cover_origin =
+          match IdMap.find_opt origin covers_origin with
+          | Some cover_origin -> Cover.add pid branch cover_origin
+          | None -> Cover.add pid branch Cover.empty
+        in
+        IdMap.add origin cover_origin covers_origin)
+      cover IdMap.empty
+  in
+  IdMap.iter
+    (fun origin cover_origin ->
+      let total, hits, coverage = measure_coverage cover_origin in
+      Format.asprintf "# Coverage for %s: %d/%d (%.2f%%)\n" origin.it hits total
+        coverage
+      |> output oc_opt;
+      Cover.iter
+        (fun (pid : pid) (branch : Branch.t) ->
+          let origin = branch.origin in
+          match branch.status with
+          | Hit filenames ->
+              let filenames = String.concat " " filenames in
+              Format.asprintf "%d Hit %s %s\n" pid origin.it filenames
+              |> output oc_opt
+          | Miss [] ->
+              Format.asprintf "%d Miss %s\n" pid origin.it |> output oc_opt
+          | Miss filenames ->
+              let filenames = String.concat " " filenames in
+              Format.asprintf "%d Miss %s %s\n" pid origin.it filenames
+              |> output oc_opt)
+        cover_origin)
+    covers_origin;
   Option.iter close_out oc_opt
 
 (* Constructor *)
