@@ -70,7 +70,7 @@ if __name__ == "__main__":
                 print()
             print(pid, end=' ')
             i += 1
-        if i % 10 != 0:
+        if i > 0 and i % 10 != 0:
             print()
 
         print(f"--- Hit in {filename_b} but Miss in {filename_a}: {len(a_miss_b_hit)} PIDs ---")
@@ -80,7 +80,7 @@ if __name__ == "__main__":
                 print()
             print(pid, end=' ')
             i += 1
-        if i % 10 != 0:
+        if i > 0 and i % 10 != 0:
             print()
 
         print(f"--- Miss in both: {len(both_miss)} PIDs ---")
@@ -90,6 +90,6 @@ if __name__ == "__main__":
                 print()
             print(pid, end=' ')
             i += 1
-        if i % 10 != 0:
+        if i > 0 and i % 10 != 0:
             print()
         print()
