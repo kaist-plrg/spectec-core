@@ -558,6 +558,11 @@ and eval_tuple_exp (note : typ') (ctx : Ctx.t) (exps : exp list) : Ctx.t * value
     TupleV values $$$ { vid; typ }
   in
   Ctx.add_node ctx value_res;
+  if List.length values = 0 then
+    List.iter
+      (fun value_input ->
+        Ctx.add_edge ctx value_res value_input Dep.Edges.Control)
+      ctx.local.values_input;
   (ctx, value_res)
 
 (* Case expression evaluation *)
@@ -572,6 +577,11 @@ and eval_case_exp (note : typ') (ctx : Ctx.t) (notexp : notexp) : Ctx.t * value
     CaseV (mixop, values) $$$ { vid; typ }
   in
   Ctx.add_node ctx value_res;
+  if List.length values = 0 then
+    List.iter
+      (fun value_input ->
+        Ctx.add_edge ctx value_res value_input Dep.Edges.Control)
+      ctx.local.values_input;
   (ctx, value_res)
 
 (* Struct expression evaluation *)
@@ -587,6 +597,11 @@ and eval_str_exp (note : typ') (ctx : Ctx.t) (fields : (atom * exp) list) :
     StructV fields $$$ { vid; typ }
   in
   Ctx.add_node ctx value_res;
+  if List.length values = 0 then
+    List.iter
+      (fun value_input ->
+        Ctx.add_edge ctx value_res value_input Dep.Edges.Control)
+      ctx.local.values_input;
   (ctx, value_res)
 
 (* Option expression evaluation *)
@@ -606,6 +621,11 @@ and eval_opt_exp (note : typ') (ctx : Ctx.t) (exp_opt : exp option) :
     OptV value_opt $$$ { vid; typ }
   in
   Ctx.add_node ctx value_res;
+  if Option.is_none value_opt then
+    List.iter
+      (fun value_input ->
+        Ctx.add_edge ctx value_res value_input Dep.Edges.Control)
+      ctx.local.values_input;
   (ctx, value_res)
 
 (* List expression evaluation *)
@@ -619,6 +639,11 @@ and eval_list_exp (note : typ') (ctx : Ctx.t) (exps : exp list) : Ctx.t * value
     ListV values $$$ { vid; typ }
   in
   Ctx.add_node ctx value_res;
+  if List.length values = 0 then
+    List.iter
+      (fun value_input ->
+        Ctx.add_edge ctx value_res value_input Dep.Edges.Control)
+      ctx.local.values_input;
   (ctx, value_res)
 
 (* Cons expression evaluation *)
@@ -1053,6 +1078,13 @@ and eval_let_opt (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
                 OptV None $$$ { vid; typ = typ.it }
               in
               Ctx.add_node ctx value_binding;
+              List.iter
+                (fun (id, _typ, iters) ->
+                  let value_sub =
+                    Ctx.find_value Local ctx (id, iters @ [ Il.Ast.Opt ])
+                  in
+                  Ctx.add_edge ctx value_binding value_sub Dep.Edges.Iter)
+                vars_bound;
               value_binding)
             vars_binding
         in
@@ -1075,6 +1107,13 @@ and eval_let_opt (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
                 OptV (Some value_binding) $$$ { vid; typ = typ.it }
               in
               Ctx.add_node ctx value_binding;
+              List.iter
+                (fun (id, _typ, iters) ->
+                  let value_sub =
+                    Ctx.find_value Local ctx (id, iters @ [ Il.Ast.Opt ])
+                  in
+                  Ctx.add_edge ctx value_binding value_sub Dep.Edges.Iter)
+                vars_bound;
               value_binding)
             vars_binding
         in
@@ -1140,6 +1179,13 @@ and eval_let_list (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
         ListV values_binding $$$ { vid; typ = typ.it }
       in
       Ctx.add_node ctx value_binding;
+      List.iter
+        (fun (id, _typ, iters) ->
+          let value_sub =
+            Ctx.find_value Local ctx (id, iters @ [ Il.Ast.List ])
+          in
+          Ctx.add_edge ctx value_binding value_sub Dep.Edges.Iter)
+        vars_bound;
       Ctx.add_value Local ctx
         (id_binding, iters_binding @ [ Il.Ast.List ])
         value_binding)
@@ -1238,6 +1284,13 @@ and eval_rule_list (ctx : Ctx.t) (id : id) (notexp : notexp) (vars : var list)
         ListV values_binding $$$ { vid; typ = typ.it }
       in
       Ctx.add_node ctx value_binding;
+      List.iter
+        (fun (id, _typ, iters) ->
+          let value_sub =
+            Ctx.find_value Local ctx (id, iters @ [ Il.Ast.List ])
+          in
+          Ctx.add_edge ctx value_binding value_sub Dep.Edges.Iter)
+        vars_bound;
       Ctx.add_value Local ctx
         (id_binding, iters_binding @ [ Il.Ast.List ])
         value_binding)
