@@ -9,9 +9,31 @@ open Runtime_dynamic_sl.Envs
 module Dep = Runtime_testgen.Dep
 module SCov = Runtime_testgen.Cov.Single
 module MCov = Runtime_testgen.Cov.Multiple
+module Cache = Cache.Cache
 open Error
 module F = Format
 open Util.Source
+
+(* Caches *)
+let is_cached_func = function
+  | "subst_typ" | "subst_typdef_poly" | "specialize_typdef" | "canon_typ"
+  | "free_typ" | "is_nominal" | "find_map" | "update_map" | "dom_map"
+  | "bound_tids" | "in_set" | "merge_cstr'" | "merge_cstr"
+  | "find_matching_funcs" | "nestable_structt" | "nestable_structt_in_headert"
+    ->
+      true
+  | _ -> false
+
+let func_cache = ref (Cache.create 1000)
+
+let is_cached_rule = function
+  | "Sub_expl" | "Sub_expl_canon" | "Sub_expl_canon_neq" | "Sub_impl"
+  | "Sub_impl_canon" | "Sub_impl_canon_neq" | "Type_wf" | "Type_alpha" ->
+      true
+  | _ -> false
+
+let rule_cache = ref (Cache.create 50)
+let ( let* ) = Option.bind
 
 (* Assignments *)
 
@@ -1341,23 +1363,34 @@ and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
     (Ctx.t * value list) option =
   let _inputs, exps_input, instrs = Ctx.find_rel Local ctx id in
   check (instrs <> []) id.at "relation has no instructions";
-  let ctx_local = Ctx.localize ctx in
-  let ctx_local = Ctx.localize_inputs ctx_local values_input in
-  let ctx_local = assign_exps ctx_local exps_input values_input in
-  let ctx_local, sign = eval_instrs ctx_local Cont instrs in
-  let ctx = Ctx.commit ctx ctx_local in
-  match sign with
-  | Res values_output ->
-      List.iteri
-        (fun idx_arg value_input ->
-          List.iter
-            (fun value_output ->
-              Ctx.add_edge ctx value_output value_input
-                (Dep.Edges.Rel (id, idx_arg)))
-            values_output)
-        values_input;
-      Some (ctx, values_output)
-  | _ -> None
+  let attempt_rules () =
+    let ctx_local = Ctx.localize ctx in
+    let ctx_local = Ctx.localize_inputs ctx_local values_input in
+    let ctx_local = assign_exps ctx_local exps_input values_input in
+    let ctx_local, sign = eval_instrs ctx_local Cont instrs in
+    let ctx = Ctx.commit ctx ctx_local in
+    match sign with
+    | Res values_output ->
+        List.iteri
+          (fun idx_arg value_input ->
+            List.iter
+              (fun value_output ->
+                Ctx.add_edge ctx value_output value_input
+                  (Dep.Edges.Rel (id, idx_arg)))
+              values_output)
+          values_input;
+        Some (ctx, values_output)
+    | _ -> None
+  in
+  if (not ctx.derive) && is_cached_rule id.it then (
+    let cache_result = Cache.find_opt !rule_cache (id.it, values_input) in
+    match cache_result with
+    | Some values_output -> Some (ctx, values_output)
+    | None ->
+        let* ctx, values_output = attempt_rules () in
+        Cache.add !rule_cache (id.it, values_input) values_output;
+        Some (ctx, values_output))
+  else attempt_rules ()
 
 (* Invoke a function *)
 
@@ -1402,19 +1435,30 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
       ctx_local tparams targs
   in
   let ctx, values_input = eval_args ctx args in
-  let ctx_local = Ctx.localize_inputs ctx_local values_input in
-  let ctx_local = assign_args ctx ctx_local args_input values_input in
-  let ctx_local, sign = eval_instrs ctx_local Cont instrs in
-  let ctx = Ctx.commit ctx ctx_local in
-  match sign with
-  | Ret value_output ->
-      List.iteri
-        (fun idx_arg value_input ->
-          Ctx.add_edge ctx value_output value_input
-            (Dep.Edges.Func (id, idx_arg)))
-        values_input;
-      (ctx, value_output)
-  | _ -> error id.at "function was not matched"
+  let attempt_clauses () =
+    let ctx_local = Ctx.localize_inputs ctx_local values_input in
+    let ctx_local = assign_args ctx ctx_local args_input values_input in
+    let ctx_local, sign = eval_instrs ctx_local Cont instrs in
+    let ctx = Ctx.commit ctx ctx_local in
+    match sign with
+    | Ret value_output ->
+        List.iteri
+          (fun idx_arg value_input ->
+            Ctx.add_edge ctx value_output value_input
+              (Dep.Edges.Func (id, idx_arg)))
+          values_input;
+        (ctx, value_output)
+    | _ -> error id.at "function was not matched"
+  in
+  if (not ctx.derive) && is_cached_func id.it then (
+    let cache_result = Cache.find_opt !func_cache (id.it, values_input) in
+    match cache_result with
+    | Some value_output -> (ctx, value_output)
+    | None ->
+        let ctx, value_output = attempt_clauses () in
+        Cache.add !func_cache (id.it, values_input) value_output;
+        (ctx, value_output))
+  else attempt_clauses ()
 
 (* Load definitions into the context *)
 

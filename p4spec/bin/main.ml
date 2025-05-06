@@ -214,6 +214,7 @@ let interesting_command =
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and pid = flag "-pid" (required int) ~doc:"phantom id to close-miss"
      and filename_p4 = flag "-p" (required string) ~doc:"p4 file to typecheck"
+     and dbg = flag "-dbg" no_arg ~doc:"print single coverage"
      and filenames_ignore =
        flag "-ignore" (listed string)
          ~doc:"relations or functions to ignore when reporting coverage"
@@ -223,10 +224,23 @@ let interesting_command =
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
-         match
+         let typing_result =
            Interp_sl.Typing.run_typing spec_sl includes_p4 filename_p4
              filenames_ignore
-         with
+         in
+         if dbg then
+           match typing_result with
+           | IllTyped (_, _, cover_single) | WellTyped (_, _, cover_single) ->
+               Interp_sl.Interp.SCov.Cover.iter
+                 (fun pid (branch : Interp_sl.Interp.SCov.Branch.t) ->
+                   match branch.status with
+                   | Hit -> Printf.printf "%d Hit\n" pid
+                   | Miss [] -> Printf.printf "%d Miss\n" pid
+                   | Miss _ -> Printf.printf "%d Close\n" pid)
+                 cover_single
+           | _ -> ()
+         else ();
+         match typing_result with
          | IllTyped _ -> exit 1
          | IllFormed _ -> exit 1
          | WellTyped (_, _, cover_single) -> (
