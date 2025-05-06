@@ -3,14 +3,14 @@ import subprocess
 import shutil
 import argparse
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from enum import Enum
+from coverage_utils import read_coverage, write_coverage, write_target, Status
+from reduce import reduce_program
 
 #
 # Parse command-line arguments
 #
 
-parser = argparse.ArgumentParser(description="Reduces all seed programs.")
+parser = argparse.ArgumentParser(description="Fuzzer.")
 
 # Arguments for the campaign
 parser.add_argument("dir", type=str, help="Path to the working directory")
@@ -46,27 +46,28 @@ parser.add_argument(
     type=int,
     help="Number of cores for creduce (default: creduce finds an optimal setting)",
 )
-parser.add_argument("--concurrent", action="store_true", help="Enable concurrency")
-parser.add_argument(
-    "--workers", type=int, default=1, help="Maximum number workers to use (default: 1)"
-)
 parser.add_argument(
     "--timeout",
     type=int,
     default=10,
-    help="Timeout in seconds for creduce (default: 10 seconds)",
+    help="Timeout in seconds for interestingness test (default: 10 seconds)",
+)
+parser.add_argument(
+    "--timeout-creduce",
+    type=int,
+    default=60,
+    help="Timeout in seconds for creduce (default: 60 seconds)",
 )
 
-args = parser.parse_args()
+args, unknown_args = parser.parse_known_args()
 
 #
 # Configuration
 #
-
-P4SPECTEC_DIR = os.getenv("P4CHERRY_PATH")
-
-# Configure the working directory
 WORK_DIR = args.dir
+P4SPECTEC_DIR = os.getenv('P4CHERRY_PATH')
+
+# Configure working directory
 if os.path.exists(WORK_DIR):
     print(f"Error: {WORK_DIR} already exists.")
     exit(1)
@@ -97,159 +98,6 @@ if not os.path.isfile(COVERAGE_FILE):
 
 # Configuring C-Reduce
 CORES = args.cores
-CONCURRENT = args.concurrent
-MAX_WORKERS = args.workers
-if CONCURRENT:
-    print(f"Running concurrently with {MAX_WORKERS} workers")
-else:
-    print("Running on main thread.")
-TIMEOUT = args.timeout
-
-#
-# Coverage management
-#
-
-class Status(Enum):
-    HIT_LIKELY = 1
-    HIT_UNLIKELY = 2
-    CLOSE_MISS = 3
-    COMPLETE_MISS = 4
-
-def read_coverage(coverage_file):
-    try:
-        with open(coverage_file, 'r', newline='') as file:
-            lines = file.readlines()
-
-            coverage = {}
-
-            for line in lines:
-                if line.startswith("#"):
-                    continue
-
-                data = line.strip().split(' ')
-                pid = int(data[0])
-                status = (
-                    Status.HIT_LIKELY
-                    if data[1] == "Hit_likely"
-                    else Status.HIT_UNLIKELY
-                    if data[1] == "Hit_unlikely"
-                    else Status.CLOSE_MISS
-                    if len(data) > 3
-                    else Status.COMPLETE_MISS
-                )
-                origin = data[2]
-                filenames = [] if len(data) < 4 else data[3:]
-
-                if origin in coverage:
-                    coverage_origin = coverage[origin]
-                    coverage_origin[pid] = (status, filenames)
-                else:
-                    coverage[origin] = { pid : (status, filenames) }
-
-            return coverage
-
-    except FileNotFoundError:
-        print(f"Error: File {file_path} not found.")
-        return {}
-
-def write_coverage(coverage_file, coverage):
-    with open(coverage_file, 'w') as file:
-        for origin, data in coverage.items():
-            for pid, (status, filenames) in data.items():
-                status_str = (
-                    "Hit_likely"
-                    if status == Status.HIT_LIKELY
-                    else "Hit_unlikely"
-                    if status == Status.HIT_UNLIKELY
-                    else "Miss"
-                    if status == Status.CLOSE_MISS
-                    else "Miss"
-                )
-                filenames_str = " ".join(filenames)
-                file.write(f"{pid} {status_str} {origin} {filenames_str}\n")
-
-def write_target(target_file, target):
-    with open(target_file, 'w') as file:
-        for pid, filename in target.items():
-            file.write(f"{pid} {filename}\n")
-
-#
-# Reduction task
-#
-
-def reduce_program(reduce_dir, pid, filename):
-    try:
-        # Setup the directory for reduction
-        interesting_dir = os.path.join(reduce_dir, "interesting")
-        os.makedirs(interesting_dir, exist_ok=True)
-
-        # Create paths for the temporary program and interestingness test
-        base_name = os.path.basename(filename)
-        copy_name = f"o_{pid}_{base_name}"
-        temp_program_path = os.path.join(reduce_dir, copy_name)
-        interesting_test_path = os.path.join(interesting_dir, f"i_{pid}_{base_name}.sh")
-        interesting_test_subpath = os.path.join("interesting", f"i_{pid}_{base_name}.sh")
-        reduced_path = os.path.join(reduce_dir, f"__red_{pid}_{base_name}")
-
-        # Preprocess the file instead of copying
-        preprocess_command = [
-                "cc", "-I", "p4/testdata/arch", "-undef", "-nostdinc", "-E", "-x", "c", filename
-                ]
-        with open(temp_program_path, 'w') as out_file:
-            subprocess.run(preprocess_command, stdout=out_file, check=True)
-
-        # Write the interestingness test script
-        with open(interesting_test_path, 'w') as script_file:
-            script_file.write(f"""#!/bin/bash
-DIR=\"{P4SPECTEC_DIR}\"
-$DIR/p4spectec interesting $DIR/spec/*.watsup -pid {pid} -p ./{copy_name}
-                              """)
-
-        # Make the script executable
-        os.chmod(interesting_test_path, 0o755)
-
-        # Run creduce
-        print(f"Running creduce for pid={pid}, file={filename}")
-        creduce_command = [
-            "creduce", "--not-c", "--n", f"{args.cores}", "--timeout", "10", interesting_test_subpath, copy_name
-            ] if args.cores else [
-            "creduce", "--not-c", "--timeout", "10", interesting_test_subpath, copy_name
-            ]
-        
-        start_time = time.time()
-        try:
-            result = subprocess.run(creduce_command, cwd=reduce_dir, timeout=args.timeout)  # timeout
-            elapsed_time = time.time() - start_time
-
-            if result.returncode == 0:
-                os.rename(temp_program_path, reduced_path)
-                os.rename(temp_program_path + ".orig", temp_program_path)
-                print(f"Reduced file has been renamed to {reduced_path}")
-                print(f"Elapsed time for pid={pid}, file={filename}: {elapsed_time:.2f} seconds")
-                return reduced_path
-            else:
-                print(f"creduce failed for {temp_program_path} with return code {result.returncode}")
-                print(f"Elapsed time for pid={pid}, file={filename}: {elapsed_time:.2f} seconds")
-                return None 
-
-        except subprocess.TimeoutExpired:
-            elapsed_time = time.time() - start_time
-            print(f"creduce timed out for {temp_program_path} after {elapsed_time:.2f} seconds. Saving current state as partially reduced file.")
-
-            partial_reduced_path = os.path.join(reduce_dir, f"partial_{pid}_{base_name}")
-            if os.path.exists(temp_program_path):
-                os.rename(temp_program_path, partial_reduced_path)
-                print(f"Partially reduced file saved as {partial_reduced_path}")
-                return partial_reduced_path
-            else:
-                print(f"Warning: no partial file found to save for {temp_program_path}")
-                return None
-
-        return reduced_path
-
-    except Exception as e:
-        print(f"Failed to reduce pid={pid}, file={filename}: {e}")
-        return None
 
 #
 # Main fuzzing loop
@@ -315,12 +163,12 @@ while loop_idx < LOOPS:
             filenames = [ filename for filename in filenames if os.path.isfile(filename) ]
             
             # Find the smallest unreduced file and reduce it
-            filenames_unreduced = [ filename for filename in filenames if not filename.startswith("__red_") ]
+            filenames_unreduced = [ filename for filename in filenames if not filename.startswith("reduced") ]
             if not filenames_unreduced:
                 print(f"No unreduced files found for pid={pid}, skipping reduction.")
                 continue
             smallest_file = min(filenames_unreduced, key=os.path.getsize)
-            reduced_smallest_file = reduce_program(reduce_dir, pid, smallest_file)
+            reduced_smallest_file = reduce_program(reduce_dir, pid, smallest_file, P4SPECTEC_DIR, CORES, args.timeout, args.timeout_creduce )
             if reduced_smallest_file is None:
                 print(f"Failed to reduce {smallest_file}, skipping.")
                 continue

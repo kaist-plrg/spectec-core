@@ -1,175 +1,158 @@
 import os
 import subprocess
-import shutil
-import argparse
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+import argparse
+import shutil
+from datetime import datetime
 
-parser = argparse.ArgumentParser(description="Reduces all seed programs.")
 
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument('--coverage', type=str, help='Path to coverage data (batch mode)')
-group.add_argument('--file', type=str, help='Path to a single p4 program file (single mode)')
+TARGET_SIZE = 70          # in bytes
+RELAX_AFTER = 5             # seconds before we start relaxing
+RELAX_FACTOR = 0.1           # how much we relax per second
 
-parser.add_argument('dir', type=str, help='Path to working directory, where pre-processed p4 programs, interestingness tests and reduced copies are kept.')
+def log(msg, log_file):
+    now = datetime.now().strftime("[%H:%M:%S]")
+    print(f"{now} {msg}", file=log_file)
+    log_file.flush()
 
-parser.add_argument('--pid', type=str, help='Phantom ID for single mode (required if --file is used)')
-parser.add_argument('--workers', type=int, default=1, help='Maximum number workers to use (default: 1)')
-parser.add_argument('--cores', type=int, help='Number of cores for creduce (default: creduce finds an optimal setting)')
-parser.add_argument('--concurrent', action='store_true', help='Enable concurrency')
-parser.add_argument('--timeout', type=int, default=600, help='Timeout in seconds for creduce (default: 600 seconds)')
-
-args = parser.parse_args()
-
-if args.file:
-    if not os.path.isfile(args.file):
-        print(f"Error: File {args.file} does not exist.")
-        exit(1)
-    if not args.pid:
-        print("Error: --pid is required when --file is used for single mode.")
-        exit(1)
-
-if args.coverage and not os.path.isfile(args.coverage):
-    print(f"Error: Coverage file {args.coverage} does not exist.")
-    exit(1)
-
-# --- Configuration ---
-WORK_DIR = args.dir
-P4SPECTEC_DIR = os.getenv('P4CHERRY_PATH')
-MAX_WORKERS = args.workers  # Number of parallel reductions
-
-# --- Print configuration ---
-if args.coverage:
-    COVERAGE = args.coverage
-    print(f"Running in batch mode using coverage file: {COVERAGE}")
-elif args.file:
-    FILE = args.file
-    PID = args.pid
-    print(f"Running in single mode using file: {FILE}, pid: {PID}")
-print(f"Output directory: {WORK_DIR}")
-if args.concurrent:
-    print(f"Running concurrently with {MAX_WORKERS} workers")
-else:
-    print("Running on main thread.")
-
-# --- Ensure working directory ---
-os.makedirs(WORK_DIR, exist_ok=True)
-interesting_dir = os.path.join(WORK_DIR, "interesting")
-os.makedirs(interesting_dir, exist_ok=True)
+def monitor_file_size(process, file_path, orig_size, start_time, log_file):
+    try:
+        while process.poll() is None:
+            if os.path.exists(file_path):
+                new_size = os.path.getsize(file_path)
+                rate = (orig_size - new_size) / orig_size
+                elapsed = time.time() - start_time
+                if rate > 0:
+                    relax_amount = RELAX_FACTOR * max(0, (elapsed-RELAX_AFTER))
+                    adjusted_target_size = TARGET_SIZE * (1 + relax_amount)
+                    if (new_size <= adjusted_target_size):
+                        log(f"Reached target: {new_size} bytes (target: {adjusted_target_size:.0f}), {rate:.2%} reduced", log_file)
+                        process.terminate()
+                        break
+            time.sleep(1)  # check every 1 seconds
+    except Exception as e:
+        log(f"Monitor error: {e}", log_file)
 
 # --- Define reduction task ---
-def reduce_program(pid, filename):
-    try:
-        base_name = os.path.basename(filename)
-        copy_name = f"o_{pid}_{base_name}"
-        temp_program_path = os.path.join(WORK_DIR, copy_name)
-        interesting_test_path = os.path.join(interesting_dir, f"i_{pid}_{base_name}.sh")
-        interesting_test_subpath = os.path.join("interesting", f"i_{pid}_{base_name}.sh")
-        reduced_path = os.path.join(WORK_DIR, f"r2_{pid}_{base_name}")
+def reduce_program(reduce_dir, pid, filename, p4spectec_dir, cores, timeout=10, timeout_creduce=60):
+    interesting_dir = os.path.join(reduce_dir, "interesting")
+    os.makedirs(interesting_dir, exist_ok=True)
+    base_name = os.path.basename(filename)
+    copy_name = f"o_{pid}_{base_name}"
+    temp_path = os.path.join(reduce_dir, copy_name)
+    orig_path = os.path.join(reduce_dir, f"{copy_name}.orig")
+    interesting_test_path = os.path.join(interesting_dir, f"i_{pid}_{base_name}.sh")
+    interesting_test_subpath = os.path.join("interesting", f"i_{pid}_{base_name}.sh")
+    reduced_path = os.path.join(reduce_dir, f"reduced_{pid}_{base_name}")
+    global_log_path = os.path.join(reduce_dir, "reducer.log")
+    creduce_log_path = os.path.join(reduce_dir, f"creduce_{pid}_{base_name}.log")
+
+    with open(global_log_path, 'a') as global_log_file:
 
         # Skip if already reduced
         if os.path.exists(reduced_path):
-            print(f"Skipping {reduced_path}, already reduced.")
+            log(f"Skipping {reduced_path}, file exists.", global_log_file)
             return
-        # Preprocess the file instead of copying
+
         preprocess_command = [
                 "cc", "-I", "p4/testdata/arch", "-undef", "-nostdinc", "-E", "-x", "c", filename
                 ]
-        with open(temp_program_path, 'w') as out_file:
-            subprocess.run(preprocess_command, stdout=out_file, check=True)
-
-        # Write the interestingness test script
-        with open(interesting_test_path, 'w') as script_file:
-            script_file.write(f"""#!/bin/bash
-DIR=\"{P4SPECTEC_DIR}\"
-$DIR/p4spectec interesting $DIR/spec/*.watsup -pid {pid} -p ./{copy_name}
-                              """)
-
-        # Make the script executable
-        os.chmod(interesting_test_path, 0o755)
-
-        # Run creduce
-        print(f"Running creduce for pid={pid}, file={filename}")
-        creduce_command = [
-            "creduce", "--not-c", "--n", f"{args.cores}", "--timeout", "10", interesting_test_subpath, copy_name
-            ] if args.cores else [
-            "creduce", "--not-c", "--timeout", "10", interesting_test_subpath, copy_name
-            ]
-        
-        start_time = time.time()
         try:
-            result = subprocess.run(creduce_command, cwd=WORK_DIR, timeout=args.timeout)  # timeout
-            elapsed_time = time.time() - start_time
+            with open(temp_path, 'w') as out_file:
+                subprocess.run(preprocess_command, stdout=out_file, check=True)
+            orig_size = os.path.getsize(temp_path)
 
-            if result.returncode == 0:
-                os.rename(temp_program_path, reduced_path)
-                os.rename(temp_program_path + ".orig", temp_program_path)
-                print(f"Reduced file has been renamed to {reduced_path}")
-            else:
-                print(f"creduce failed for {temp_program_path} with return code {result.returncode}")
+            # Write the interestingness test script
+            with open(interesting_test_path, 'w') as script_file:
+                script_file.write(f"""#!/bin/bash\nDIR=\"{p4spectec_dir}\"
+    $DIR/p4spectec interesting $DIR/spec/*.watsup -pid {pid} -p ./{copy_name}""")
+            # Make the script executable
+            os.chmod(interesting_test_path, 0o755)
+
+            # Run creduce
+            log(f"Running creduce for pid={pid}, file={filename}", global_log_file)
+            creduce_command = ["creduce", "--not-c"]
+            if cores:
+                creduce_command.extend(["--n", f"{cores}"])
+            creduce_command.extend(["--timeout", f"{timeout}"])
+            #creduce_command.extend(unknown_args)  # ← forward extra args
+            creduce_command.extend([interesting_test_subpath, copy_name]) 
             
-            print(f"Elapsed time for pid={pid}, file={filename}: {elapsed_time:.2f} seconds")
+            start_time = time.time()
+            
+            with open(creduce_log_path, 'w') as creduce_log_file:
+                proc = subprocess.Popen(creduce_command, cwd=reduce_dir, stdout=creduce_log_file, stderr=subprocess.STDOUT)
+                monitor_thread = threading.Thread(
+                    target=monitor_file_size,
+                    args=(proc, temp_path, orig_size, start_time, global_log_file)
+                )
+                monitor_thread.start()
+                try:
+                    proc.wait(timeout=timeout_creduce)
+                except subprocess.TimeoutExpired:
+                    proc.terminate()
+                    log(f"Hard timeout: {copy_name}", global_log_file)
+                monitor_thread.join()
 
-        except subprocess.TimeoutExpired:
-            elapsed_time = time.time() - start_time
-            print(f"creduce timed out for {temp_program_path} after {elapsed_time:.2f} seconds. Saving current state as partially reduced file.")
-
-            partial_reduced_path = os.path.join(WORK_DIR, f"partial_{pid}_{base_name}")
-            if os.path.exists(temp_program_path):
-                os.rename(temp_program_path, partial_reduced_path)
-                print(f"Partially reduced file saved as {partial_reduced_path}")
+            if os.path.exists(temp_path):
+                os.rename(temp_path, reduced_path)
+                log(f"Reduced file saved as {reduced_path}", global_log_file)
             else:
-                print(f"Warning: no partial file found to save for {temp_program_path}")
+                log(f"No reduced file produced for {base_name} against {pid}", global_log_file)
+                reduced_path = None
+            # Cleanup
+            if os.path.exists(interesting_dir):
+                shutil.rmtree(interesting_dir)
+                log(f"Deleted {interesting_dir}", global_log_file)
+            if os.path.exists(orig_path):
+                os.remove(orig_path)
+                log(f"Deleted original file {copy_name}.orig", global_log_file)
 
-        # Optionally remove the interestingness script after use
-        # os.remove(interesting_test_path)
+            return reduced_path
+        except Exception as e:
+            log(f"Failed to reduce {pid}, {filename}: {e}", global_log_file)
+            return None
 
-    except Exception as e:
-        print(f"Failed to reduce pid={pid}, file={filename}: {e}")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Standalone reducer")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--coverage", type=str, help="Path to coverage file (batch mode)")
+    group.add_argument("--file", type=str, help="Single file path (single mode)")
+    parser.add_argument("--reduce-dir", required=True, help="Working directory")
+    parser.add_argument("--p4spectec-dir", required=True, help="Path to p4spectec")
+    parser.add_argument("--pid", type=str, help="Phantom ID (required if --file is used)")
+    parser.add_argument("--cores", type=int, default=None, help="Number of creduce cores")
+    parser.add_argument("--timeout-creduce", type=int, default=600, help="creduce timeout in seconds")
+    args = parser.parse_args()
 
-# --- Read and process the input file ---
-tasks = []
-
-# --- In batch mode ---
-if args.coverage:
-    COVERAGE = args.coverage
-    with open(COVERAGE, 'r') as f:
-        lines = f.readlines()
-
-    for line in lines:
-        if line.startswith("#"):
-            continue
-
-        data = line.strip().split()
-
-        pid, status = data[0], data[1]
-
-        if status == "Miss" and len(data) > 3:
-            filenames = data[3:]
-
-            existing_files = [ fn for fn in filenames if os.path.isfile(fn) ]
-            if not existing_files:
-                print(f"Skipping pid={pid}: no valid file found")
-                continue
-
-            smallest_file = min(existing_files, key=lambda fn: os.path.getsize(fn))
-            tasks.append((pid, smallest_file))
-# --- In single mode ---
-elif args.file:
-    FILE = args.file
-    PID = args.pid
-
-    tasks.append((PID, FILE))
-
-# --- Run reductions in parallel ---
-if args.concurrent:
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = [ executor.submit(reduce_program, pid, filename) for pid, filename in tasks ]
-        for future in as_completed(futures):
-            pass
-# --- Run reductions sequentially on the main thread ---
-else:
-    for pid, filename in tasks:
-        reduce_program(pid, filename)
-
-print("All reductions complete.")
+    if args.file:
+        if not args.pid:
+            parser.error("--pid is required when --file is used")
+        reduce_program(
+            reduce_dir=args.reduce_dir,
+            pid=args.pid,
+            filename=args.file,
+            p4spectec_dir=args.p4spectec_dir,
+            cores=args.cores,
+            timeout=args.timeout_creduce
+        )
+    elif args.coverage:
+        with open(args.coverage) as f:
+            for line in f:
+                if line.startswith("#"):
+                    continue
+                parts = line.strip().split()
+                pid, status = parts[0], parts[1]
+                if status != "Miss" or len(parts) <= 3:
+                    continue
+                filenames = parts[3:]
+                for filename in filenames:
+                    reduce_program(
+                        reduce_dir=args.reduce_dir,
+                        pid=pid,
+                        filename=filename,
+                        p4spectec_dir=args.p4spectec_dir,
+                        cores=args.cores,
+                        timeout_creduce=args.timeout_creduce
+                    )
