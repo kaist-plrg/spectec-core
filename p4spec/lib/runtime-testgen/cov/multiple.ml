@@ -10,10 +10,11 @@ module Branch = struct
   type origin = id
 
   (* Status of a branch:
-     if hit, record the filenames that hit it;
-     if missed, record the closest-missing filenames *)
+     if hit, record the filenames that hit it with its likeliness;
+     if missed, record the closest-missing filenames;
+     note that close-missing files must be well-formed and well-typed *)
 
-  type status = Hit of string list | Miss of string list
+  type status = Hit of bool * string list | Miss of string list
   type t = { origin : origin; status : status }
 
   (* Constructor *)
@@ -119,24 +120,30 @@ let target (cover : Cover.t) (targets : string list PIdMap.t) : Cover.t =
           { branch with status = Miss filenames })
     cover
 
-(* Extension from single coverage *)
+(* Extension from single coverage:
 
-let extend (cover : Cover.t) (filename_p4 : string)
-    (cover_single : Single.Cover.t) : Cover.t =
+   A close-miss is added only if the program is well-typed and well-formed *)
+
+let extend (cover : Cover.t) (filename_p4 : string) (wellformed : bool)
+    (welltyped : bool) (cover_single : Single.Cover.t) : Cover.t =
   Cover.mapi
     (fun (pid : pid) (branch : Branch.t) ->
       let branch_single = Single.Cover.find pid cover_single in
       match branch.status with
-      | Hit filenames_p4 -> (
+      | Hit (likely, filenames_p4) -> (
           match branch_single.status with
           | Hit ->
+              let likely = likely && not (wellformed && welltyped) in
               let filenames_p4 = filename_p4 :: filenames_p4 in
-              { branch with status = Hit filenames_p4 }
+              { branch with status = Hit (likely, filenames_p4) }
           | _ -> branch)
       | Miss filenames_p4 -> (
           match branch_single.status with
-          | Hit -> { branch with status = Hit [ filename_p4 ] }
-          | Miss (_ :: _) ->
+          | Hit ->
+              let likely = not (wellformed && welltyped) in
+              let filenames_p4 = [ filename_p4 ] in
+              { branch with status = Hit (likely, filenames_p4) }
+          | Miss (_ :: _) when wellformed && welltyped ->
               let filenames_p4 = filename_p4 :: filenames_p4 in
               { branch with status = Miss filenames_p4 }
           | Miss _ -> branch))
@@ -176,9 +183,11 @@ let log ~(filename_cov_opt : string option) (cover : Cover.t) : unit =
         (fun (pid : pid) (branch : Branch.t) ->
           let origin = branch.origin in
           match branch.status with
-          | Hit filenames ->
+          | Hit (likely, filenames) ->
               let filenames = String.concat " " filenames in
-              Format.asprintf "%d Hit %s %s\n" pid origin.it filenames
+              Format.asprintf "%d Hit_%s %s %s\n" pid
+                (if likely then "likely" else "unlikely")
+                origin.it filenames
               |> output oc_opt
           | Miss [] ->
               Format.asprintf "%d Miss %s\n" pid origin.it |> output oc_opt

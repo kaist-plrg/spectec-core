@@ -77,11 +77,11 @@ let cover_typings (spec : spec) (includes_p4 : string list)
   let cover_multi = MCov.init ignores spec in
   List.fold_left
     (fun cover_multi filename_p4 ->
-      let cover_single =
+      let wellformed, welltyped, cover_single =
         match run_typing' spec includes_p4 filename_p4 ignores with
-        | WellTyped (_, _, cover_single) -> cover_single
-        | IllTyped (_, _, cover_single) -> cover_single
-        | IllFormed (_, cover_single) -> cover_single
+        | WellTyped (_, _, cover_single) -> (true, true, cover_single)
+        | IllTyped (_, _, cover_single) -> (true, false, cover_single)
+        | IllFormed (_, cover_single) -> (false, false, cover_single)
       in
-      MCov.extend cover_multi filename_p4 cover_single)
+      MCov.extend cover_multi filename_p4 wellformed welltyped cover_single)
     cover_multi filenames_p4

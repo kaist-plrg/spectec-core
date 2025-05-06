@@ -31,9 +31,28 @@ exception Timeout
 (* Check if the mutated file is interesting,
    and if so, copy it to the output directory *)
 
+let find_interesting (config : Config.t) (cover : SCov.Cover.t) :
+    PIdSet.t * PIdSet.t =
+  MCov.Cover.fold
+    (fun pid (branch_multi : MCov.Branch.t) (pids_hit_new, pids_close_miss_new) ->
+      let branch_single = SCov.Cover.find pid cover in
+      match (branch_single.status, branch_multi.status) with
+      (* Hits a new phantom *)
+      | Hit, Miss _ ->
+          let pids_hit_new = PIdSet.add pid pids_hit_new in
+          (pids_hit_new, pids_close_miss_new)
+      (* Adds a new close-miss *)
+      | Miss (_ :: _), Miss [] ->
+          let pids_close_miss_new = PIdSet.add pid pids_close_miss_new in
+          (pids_hit_new, pids_close_miss_new)
+      | _ -> (pids_hit_new, pids_close_miss_new))
+    config.seed.cover_seed
+    (PIdSet.empty, PIdSet.empty)
+
 let update_hit_new' (fuel : int) (pid : pid) (idx_method : int)
     (idx_mutation : int) (config : Config.t) (log : Logger.t)
-    (filename_hit_p4 : string) (pids_hit_new : PIdSet.t) : unit =
+    (filename_hit_p4 : string) (welltyped : bool) (wellformed : bool)
+    (pids_hit_new : PIdSet.t) : unit =
   F.asprintf "[F %d] [P %d] [D/R %d] [M %d] %s covers %s (%s %d)" fuel pid
     idx_method idx_mutation filename_hit_p4
     (PIdSet.to_string pids_hit_new)
@@ -45,7 +64,8 @@ let update_hit_new' (fuel : int) (pid : pid) (idx_method : int)
   |> output_string oc;
   close_out oc;
   (* Update the set of covered phantoms *)
-  Config.update_hit_cover_seed config filename_hit_p4 pids_hit_new
+  Config.update_hit_cover_seed config filename_hit_p4 wellformed welltyped
+    pids_hit_new
 
 let update_hit_new (fuel : int) (pid : pid) (idx_method : int)
     (idx_mutation : int) (config : Config.t) (log : Logger.t)
@@ -66,19 +86,19 @@ let update_hit_new (fuel : int) (pid : pid) (idx_method : int)
       Filesys.cp filename_gen_p4 config.storage.dirname_welltyped_p4
     in
     update_hit_new' fuel pid idx_method idx_mutation config log filename_hit_p4
-      pids_hit_new
+      wellformed welltyped pids_hit_new
   else if wellformed && not welltyped then
     let filename_hit_p4 =
       Filesys.cp filename_gen_p4 config.storage.dirname_illtyped_p4
     in
     update_hit_new' fuel pid idx_method idx_mutation config log filename_hit_p4
-      pids_hit_new
+      wellformed welltyped pids_hit_new
   else if (not wellformed) && not welltyped then
     let filename_hit_p4 =
       Filesys.cp filename_gen_p4 config.storage.dirname_illformed_p4
     in
     update_hit_new' fuel pid idx_method idx_mutation config log filename_hit_p4
-      pids_hit_new
+      wellformed welltyped pids_hit_new
 
 let update_close_miss_new' (fuel : int) (pid : pid) (idx_method : int)
     (idx_mutation : int) (config : Config.t) (log : Logger.t)
@@ -141,9 +161,7 @@ let update_interesting (fuel : int) (pid : pid) (idx_method : int)
     (time_end -. time_start)
   |> Logger.log config.modes.logmode log;
   (* Find newly hit or newly close-missing nodes *)
-  let pids_hit_new, pids_close_miss_new =
-    Config.find_interesting_cover_seed config cover
-  in
+  let pids_hit_new, pids_close_miss_new = find_interesting config cover in
   (* Collect the file if it covers a new phantom, and update the running coverage
      If in strict mode, we only collect the file if it covers the intended phantom *)
   (match config.modes.covermode with
