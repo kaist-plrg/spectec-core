@@ -7,9 +7,9 @@ import shutil
 from datetime import datetime
 
 
-TARGET_SIZE = 70          # in bytes
+TARGET_SIZE = 70            # in bytes
 RELAX_AFTER = 5             # seconds before we start relaxing
-RELAX_FACTOR = 0.1           # how much we relax per second
+RELAX_FACTOR = 0.15         # how much we relax per second
 
 def log(msg, log_file):
     now = datetime.now().strftime("[%H:%M:%S]")
@@ -35,7 +35,7 @@ def monitor_file_size(process, file_path, orig_size, start_time, log_file):
         log(f"Monitor error: {e}", log_file)
 
 # --- Define reduction task ---
-def reduce_program(reduce_dir, pid, filename, p4spectec_dir, cores, timeout=10, timeout_creduce=60):
+def reduce_program(reduce_dir, pid, filename, p4spectec_dir, cores, timeout=10, timeout_creduce=40):
     interesting_dir = os.path.join(reduce_dir, "interesting")
     os.makedirs(interesting_dir, exist_ok=True)
     base_name = os.path.basename(filename)
@@ -115,25 +115,25 @@ def reduce_program(reduce_dir, pid, filename, p4spectec_dir, cores, timeout=10, 
             return None
 
 if __name__ == "__main__":
+    P4SPECTEC_DIR = os.getenv('P4CHERRY_PATH')
     parser = argparse.ArgumentParser(description="Standalone reducer")
     group = parser.add_mutually_exclusive_group(required=True)
+    parser.add_argument("dir", type=str, help="Working directory")
     group.add_argument("--coverage", type=str, help="Path to coverage file (batch mode)")
     group.add_argument("--file", type=str, help="Single file path (single mode)")
-    parser.add_argument("--reduce-dir", required=True, help="Working directory")
-    parser.add_argument("--p4spectec-dir", required=True, help="Path to p4spectec")
     parser.add_argument("--pid", type=str, help="Phantom ID (required if --file is used)")
-    parser.add_argument("--cores", type=int, default=None, help="Number of creduce cores")
-    parser.add_argument("--timeout-creduce", type=int, default=600, help="creduce timeout in seconds")
+    parser.add_argument("--cores", type=int, default=6, help="Number of creduce cores")
+    parser.add_argument("--timeout-creduce", type=int, default=40, help="creduce timeout in seconds")
     args = parser.parse_args()
 
     if args.file:
         if not args.pid:
             parser.error("--pid is required when --file is used")
         reduce_program(
-            reduce_dir=args.reduce_dir,
+            reduce_dir=args.dir,
             pid=args.pid,
             filename=args.file,
-            p4spectec_dir=args.p4spectec_dir,
+            p4spectec_dir=P4SPECTEC_DIR,
             cores=args.cores,
             timeout=args.timeout_creduce
         )

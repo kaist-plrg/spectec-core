@@ -55,8 +55,8 @@ parser.add_argument(
 parser.add_argument(
     "--timeout-creduce",
     type=int,
-    default=60,
-    help="Timeout in seconds for creduce (default: 60 seconds)",
+    default=40,
+    help="Timeout in seconds for creduce (default: 40 seconds)",
 )
 
 args, unknown_args = parser.parse_known_args()
