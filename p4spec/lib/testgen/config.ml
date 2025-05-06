@@ -58,13 +58,6 @@ type storage = {
   dirname_illformed_p4 : string;
 }
 
-(* Seed programs for mutation *)
-
-type seed = {
-  mutable filenames_seed_p4 : string list;
-  mutable cover_seed : MCov.Cover.t;
-}
-
 (* Configuration for the fuzz campaign *)
 
 type t = {
@@ -72,7 +65,7 @@ type t = {
   modes : Modes.t;
   specenv : specenv;
   storage : storage;
-  seed : seed;
+  mutable cover_seed : MCov.Cover.t;
 }
 
 let load_groups (groups : Groups.t) (def : def) : Groups.t =
@@ -160,21 +153,17 @@ let init_storage (dirname_gen : string) : storage =
     dirname_illformed_p4;
   }
 
-let init_seed (filenames_seed_p4 : string list) (cover_seed : MCov.Cover.t) :
-    seed =
-  { filenames_seed_p4; cover_seed }
-
-let init (modes : Modes.t) (specenv : specenv) (storage : storage) (seed : seed)
-    =
+let init (modes : Modes.t) (specenv : specenv) (storage : storage)
+    (cover_seed : MCov.Cover.t) =
   let rand = 2025 in
   Random.init rand;
-  { rand; modes; specenv; storage; seed }
+  { rand; modes; specenv; storage; cover_seed }
 
 (* Seed updater *)
 
 let update_hit_cover_seed (config : t) (filename_p4 : string)
     (wellformed : bool) (welltyped : bool) (pids_hit : PIdSet.t) : unit =
-  let cover_seed = config.seed.cover_seed in
+  let cover_seed = config.cover_seed in
   let cover_seed =
     PIdSet.fold
       (fun pid_hit cover_seed ->
@@ -193,11 +182,11 @@ let update_hit_cover_seed (config : t) (filename_p4 : string)
         MCov.Cover.add pid_hit branch cover_seed)
       pids_hit cover_seed
   in
-  config.seed.cover_seed <- cover_seed
+  config.cover_seed <- cover_seed
 
 let update_close_miss_cover_seed (config : t) (filename_p4 : string)
     (pids_close_miss : PIdSet.t) : unit =
-  let cover_seed = config.seed.cover_seed in
+  let cover_seed = config.cover_seed in
   let cover_seed =
     PIdSet.fold
       (fun pid_close_miss cover_seed ->
@@ -208,4 +197,4 @@ let update_close_miss_cover_seed (config : t) (filename_p4 : string)
         MCov.Cover.add pid_close_miss branch cover_seed)
       pids_close_miss cover_seed
   in
-  config.seed.cover_seed <- cover_seed
+  config.cover_seed <- cover_seed

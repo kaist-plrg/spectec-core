@@ -117,13 +117,16 @@ let run_testgen_command =
      let%map filenames_spec = anon (sequence ("filename" %: string))
      and fuel = flag "-fuel" (required int) ~doc:"fuel for test generation"
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
-     and dirname_seed_p4 =
-       flag "-seed" (required string) ~doc:"seed p4 directory"
      and filenames_ignore =
        flag "-ignore" (listed string)
          ~doc:"relations or functions to ignore when reporting coverage"
      and dirname_gen =
        flag "-gen" (required string) ~doc:"directory for generated p4 programs"
+     and name_campaign =
+       flag "-name" (optional string)
+         ~doc:"name of the test generation campaign"
+     and dirname_cold_boot =
+       flag "-cold" (optional string) ~doc:"seed p4 directory for cold boot"
      and filename_boot =
        flag "-warm" (optional string) ~doc:"coverage file for warm boot"
      and filename_target =
@@ -146,9 +149,17 @@ let run_testgen_command =
            if silent then Testgen.Modes.Silent else Testgen.Modes.Verbose
          in
          let bootmode =
-           match filename_boot with
-           | Some filename_boot -> Testgen.Modes.Warm filename_boot
-           | None -> Testgen.Modes.Cold
+           match (dirname_cold_boot, filename_boot) with
+           | Some dirname_cold_boot, None ->
+               Testgen.Modes.Cold dirname_cold_boot
+           | None, Some filename_boot -> Testgen.Modes.Warm filename_boot
+           | Some _, Some _ ->
+               Format.asprintf
+                 "Error: should specify only one of -cold or -warm\n"
+               |> failwith
+           | None, None ->
+               Format.asprintf "Error: should specify either -cold or -warm\n"
+               |> failwith
          in
          let targetmode =
            match filename_target with
@@ -163,8 +174,8 @@ let run_testgen_command =
          let covermode =
            if strict then Testgen.Modes.Strict else Testgen.Modes.Relaxed
          in
-         Testgen.Gen.fuzz_typing fuel spec_sl includes_p4 dirname_seed_p4
-           filenames_ignore dirname_gen logmode bootmode targetmode mutationmode
+         Testgen.Gen.fuzz_typing fuel spec_sl includes_p4 filenames_ignore
+           dirname_gen name_campaign logmode bootmode targetmode mutationmode
            covermode
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)

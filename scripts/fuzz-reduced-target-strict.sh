@@ -19,4 +19,4 @@ FILE_IGNORE_FUNC=coverage/function.ignore
 DIR_GEN=$1
 FUEL=$2
 
-./p4spectec testgen spec/*.watsup -i $DIR_INCLUDE -seed $DIR_SEED -target $FILE_TARGET -ignore $FILE_IGNORE_REL -ignore $FILE_IGNORE_FUNC -gen $DIR_GEN -silent -strict -fuel $FUEL
+./p4spectec testgen spec/*.watsup -i $DIR_INCLUDE -cold $DIR_SEED -target $FILE_TARGET -ignore $FILE_IGNORE_REL -ignore $FILE_IGNORE_FUNC -gen $DIR_GEN -silent -strict -fuel $FUEL
