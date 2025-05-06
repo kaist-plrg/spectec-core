@@ -980,6 +980,13 @@ and eval_if_cond_iter' (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list)
             ListV values_cond $$$ { vid; typ }
           in
           Ctx.add_node ctx value_cond;
+          List.iter
+            (fun (id, _typ, iters) ->
+              let value_sub =
+                Ctx.find_value Local ctx (id, iters @ [ Il.Ast.List ])
+              in
+              Ctx.add_edge ctx value_cond value_sub Dep.Edges.Iter)
+            vars_h;
           (ctx, cond, value_cond))
 
 and eval_if_cond_iter (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list) :

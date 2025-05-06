@@ -72,10 +72,8 @@ let debug_phantom (spec : spec) (includes_p4 : string list)
         let branch = SCov.Cover.find pid cover in
         match branch.status with Hit -> [] | Miss vids_related -> vids_related
       in
-      (* Randomly sample related vids *)
-      let vids_related =
-        Rand.random_sample Config.samples_related_vid vids_related
-      in
+      F.asprintf "Found %d related values" (List.length vids_related)
+      |> print_endline;
       (* Log if fail to derive a close-AST *)
       List.iter
         (fun vid_related ->
@@ -98,14 +96,17 @@ let debug_phantom (spec : spec) (includes_p4 : string list)
               F.asprintf "Failed to derive close-AST for pid %d" pid
               |> print_endline;
               let filename_dot =
-                F.asprintf "%s/debug_p%d_v%d.dot" dirname_debug pid vid_related
+                F.asprintf "%s/%s_p%d_v%d.dot" dirname_debug
+                  (Filesys.base ~suffix:".p4" filename_p4)
+                  pid vid_related
               in
               let oc_dot = open_out filename_dot in
               Dep.Graph.dot_of_graph graph |> output_string oc_dot;
               close_out oc_dot;
               let filename_dot_sub =
-                F.asprintf "%s/debug_p%d_v%d_sub.dot" dirname_debug pid
-                  vid_related
+                F.asprintf "%s/%s_p%d_v%d_sub.dot" dirname_debug
+                  (Filesys.base ~suffix:".p4" filename_p4)
+                  pid vid_related
               in
               let oc_dot_sub = open_out filename_dot_sub in
               "digraph dependencies {\n" |> output_string oc_dot_sub;
@@ -129,8 +130,9 @@ let debug_phantom (spec : spec) (includes_p4 : string list)
           | _ ->
               F.asprintf "Found close-AST for pid %d" pid |> print_endline;
               let filename_value =
-                F.asprintf "%s/debug_p%d_v%d.value" dirname_debug pid
-                  vid_related
+                F.asprintf "%s/%s_p%d_v%d.value" dirname_debug
+                  (Filesys.base ~suffix:".p4" filename_p4)
+                  pid vid_related
               in
               let oc_value = open_out filename_value in
               let derivations_source =
