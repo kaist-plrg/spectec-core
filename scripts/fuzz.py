@@ -195,7 +195,7 @@ while loop_idx < LOOPS:
 
     spectec_fuzz_command = spectec_command_template.copy() + [
         "-fuel",
-        "1",
+        "5",
         "-warm",
         coverage_file,
         "-target",

@@ -8,6 +8,7 @@ module Dep = Runtime_testgen.Dep
 module Ignore = Runtime_testgen.Cov.Ignore
 module SCov = Runtime_testgen.Cov.Single
 module MCov = Runtime_testgen.Cov.Multiple
+module Cache = Cache.Cache
 open Error
 module F = Format
 open Util.Source
@@ -32,6 +33,8 @@ let run_typing_internal (spec : spec) (filename_p4 : string)
     (value_program : value) (ignores : IdSet.t) : res =
   Builtin.init ();
   Dep.Graph.refresh ();
+  Cache.reset !Interp.func_cache;
+  Cache.reset !Interp.rule_cache;
   let graph = Dep.Graph.empty () in
   let cover = ref (SCov.init ignores spec) in
   try
@@ -49,6 +52,8 @@ let run_typing' ?(derive : bool = false) (spec : spec)
     =
   Builtin.init ();
   Dep.Graph.refresh ();
+  Cache.reset !Interp.func_cache;
+  Cache.reset !Interp.rule_cache;
   let graph = Dep.Graph.init () in
   let cover = ref (SCov.init ignores spec) in
   try

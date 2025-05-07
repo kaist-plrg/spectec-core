@@ -29,12 +29,12 @@ error
 # p4spec testgen artifacts
 gen
 seed
-deps
 
 # calculus
 !calculus/*.tex
 
 # scripts
+scripts/__pycache__
 run.sh
 
 # tools
