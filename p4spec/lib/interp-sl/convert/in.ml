@@ -140,7 +140,7 @@ let in_var (graph : Dep.Graph.t) (var : P4.var) : value =
   in
   let value =
     let vid = Dep.Graph.fresh () in
-    let typ = in_typ_var "var" in
+    let typ = in_typ_var "name" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
   Dep.Graph.add_node ~taint:true graph value;
@@ -1268,14 +1268,14 @@ and in_mthd (graph : Dep.Graph.t) (mthd : P4.mthd) : value =
   in
   let value =
     let vid = Dep.Graph.fresh () in
-    let typ = in_typ_var "mthd" in
+    let typ = in_typ_var "method" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
   Dep.Graph.add_node ~taint:true graph value;
   value
 
 and in_mthds (graph : Dep.Graph.t) (mthds : P4.mthd list) : value =
-  in_list in_mthd (in_typ_var "mthd" $ no_region) graph mthds
+  in_list in_mthd (in_typ_var "method" $ no_region) graph mthds
 
 (* Program *)
 
