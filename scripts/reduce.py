@@ -8,7 +8,7 @@ from datetime import datetime
 
 
 TARGET_SIZE = 70            # in bytes
-RELAX_AFTER = 5             # seconds before we start relaxing
+RELAX_AFTER = 3             # seconds before we start relaxing
 RELAX_FACTOR = 0.15         # how much we relax per second
 
 def log(msg, log_file):
@@ -35,7 +35,7 @@ def monitor_file_size(process, file_path, orig_size, start_time, log_file):
         log(f"Monitor error: {e}", log_file)
 
 # --- Define reduction task ---
-def reduce_program(reduce_dir, pid, filename, p4spectec_dir, cores, timeout=10, timeout_creduce=40):
+def reduce_program(reduce_dir, pid, filename, p4spectec_dir, cores, timeout=10, timeout_creduce=25):
     interesting_dir = os.path.join(reduce_dir, "interesting")
     os.makedirs(interesting_dir, exist_ok=True)
     base_name = os.path.basename(filename)
@@ -117,13 +117,14 @@ def reduce_program(reduce_dir, pid, filename, p4spectec_dir, cores, timeout=10, 
 if __name__ == "__main__":
     P4SPECTEC_DIR = os.getenv('P4CHERRY_PATH')
     parser = argparse.ArgumentParser(description="Standalone reducer")
-    group = parser.add_mutually_exclusive_group(required=True)
     parser.add_argument("dir", type=str, help="Working directory")
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--coverage", type=str, help="Path to coverage file (batch mode)")
     group.add_argument("--file", type=str, help="Single file path (single mode)")
+    group.add_argument("--target", type=str, help="Target file (batch mode)")   
     parser.add_argument("--pid", type=str, help="Phantom ID (required if --file is used)")
     parser.add_argument("--cores", type=int, default=6, help="Number of creduce cores")
-    parser.add_argument("--timeout-creduce", type=int, default=40, help="creduce timeout in seconds")
+    parser.add_argument("--timeout-creduce", type=int, default=25, help="creduce timeout in seconds")
     args = parser.parse_args()
 
     if args.file:
@@ -156,3 +157,19 @@ if __name__ == "__main__":
                         cores=args.cores,
                         timeout_creduce=args.timeout_creduce
                     )
+
+    elif args.target:
+        with open(args.target) as f:
+            for line in f:
+                parts = line.strip().split()
+                if len(parts) != 2:
+                    continue
+                pid, filename = parts
+                reduce_program(
+                    reduce_dir=args.dir,
+                    pid=pid,
+                    filename=filename,
+                    p4spectec_dir=P4SPECTEC_DIR,
+                    cores=args.cores,
+                    timeout_creduce=args.timeout_creduce
+                )
