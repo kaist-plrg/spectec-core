@@ -1,4 +1,5 @@
 from enum import Enum
+from datetime import datetime
 
 #
 # Coverage management
@@ -63,7 +64,28 @@ def write_coverage(coverage_file, coverage):
                 filenames_str = " ".join(filenames)
                 file.write(f"{pid} {status_str} {origin} {filenames_str}\n")
 
-def write_target(target_file, target):
-    with open(target_file, 'w') as file:
-        for pid, filename in target.items():
-            file.write(f"{pid} {filename}\n")
+def write_target(target_file, target_dict):
+    with open(target_file, 'w') as f:
+        for pid, files in target_dict.items():
+            if isinstance(files, list):
+                f.write(f"{pid} {' '.join(files)}\n")
+            else:
+                f.write(f"{pid} {files}\n")
+        f.flush()
+
+def read_target(target_file):
+    pid_to_files = {}
+    with open(target_file, 'r') as f:
+        for line in f:
+            parts = line.strip().split()
+            if len(parts) < 2:
+                continue
+            pid = parts[0]
+            files = parts[1:]
+            pid_to_files[pid] = files
+    return pid_to_files
+
+def log(msg, log_file):
+    now = datetime.now().strftime("[%H:%M:%S]")
+    print(f"{now} {msg}", file=log_file)
+    log_file.flush()

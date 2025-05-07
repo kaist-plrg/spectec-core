@@ -4,17 +4,12 @@ import time
 import threading
 import argparse
 import shutil
-from datetime import datetime
-
+from coverage_utils import log
 
 TARGET_SIZE = 70            # in bytes
 RELAX_AFTER = 3             # seconds before we start relaxing
 RELAX_FACTOR = 0.15         # how much we relax per second
 
-def log(msg, log_file):
-    now = datetime.now().strftime("[%H:%M:%S]")
-    print(f"{now} {msg}", file=log_file)
-    log_file.flush()
 
 def monitor_file_size(process, file_path, orig_size, start_time, log_file):
     try:
@@ -37,16 +32,20 @@ def monitor_file_size(process, file_path, orig_size, start_time, log_file):
 # --- Define reduction task ---
 def reduce_program(reduce_dir, pid, filename, p4spectec_dir, cores, timeout=10, timeout_creduce=25):
     interesting_dir = os.path.join(reduce_dir, "interesting")
+    creduce_log_dir = os.path.join(reduce_dir, "creduce")
+    reduced_files_dir = os.path.join(reduce_dir, "reduced")
     os.makedirs(interesting_dir, exist_ok=True)
+    os.makedirs(creduce_log_dir, exist_ok=True)
+    os.makedirs(reduced_files_dir, exist_ok=True)
+
     base_name = os.path.basename(filename)
     copy_name = f"o_{pid}_{base_name}"
     temp_path = os.path.join(reduce_dir, copy_name)
     orig_path = os.path.join(reduce_dir, f"{copy_name}.orig")
     interesting_test_path = os.path.join(interesting_dir, f"i_{pid}_{base_name}.sh")
-    interesting_test_subpath = os.path.join("interesting", f"i_{pid}_{base_name}.sh")
-    reduced_path = os.path.join(reduce_dir, f"reduced_{pid}_{base_name}")
+    reduced_path = os.path.join(reduced_files_dir, f"reduced_{pid}_{base_name}")
     global_log_path = os.path.join(reduce_dir, "reducer.log")
-    creduce_log_path = os.path.join(reduce_dir, f"creduce_{pid}_{base_name}.log")
+    creduce_log_path = os.path.join(creduce_log_dir, f"creduce_{pid}_{base_name}.log")
 
     with open(global_log_path, 'a') as global_log_file:
 
@@ -77,6 +76,7 @@ def reduce_program(reduce_dir, pid, filename, p4spectec_dir, cores, timeout=10, 
                 creduce_command.extend(["--n", f"{cores}"])
             creduce_command.extend(["--timeout", f"{timeout}"])
             #creduce_command.extend(unknown_args)  # ← forward extra args
+            interesting_test_subpath = os.path.join("interesting", f"i_{pid}_{base_name}.sh")
             creduce_command.extend([interesting_test_subpath, copy_name]) 
             
             start_time = time.time()

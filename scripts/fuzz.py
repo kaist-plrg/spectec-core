@@ -3,7 +3,7 @@ import subprocess
 import shutil
 import argparse
 import time
-from coverage_utils import read_coverage, write_coverage, write_target, Status
+from coverage_utils import read_coverage, write_coverage, write_target, read_target, Status, log
 from reduce import reduce_program
 
 #
@@ -146,65 +146,76 @@ while loop_idx < LOOPS:
     name_fuzz_campaign = f"fuzz{loop_idx}"
     coverage_file = os.path.join(WORK_DIR, name_fuzz_campaign, "final.coverage")
     coverage = read_coverage(coverage_file)
+    if loop_idx == 0:
+        target = {}
+    else:
+        prev_target_file = os.path.join(WORK_DIR, f"reduce{loop_idx-1}", "reduced.target")
+        target = read_target(prev_target_file)
 
     # Setup the directory for reduction
     name_reduce_campaign = f"reduce{loop_idx}"
     reduce_dir = os.path.join(WORK_DIR, name_reduce_campaign)
     os.makedirs(reduce_dir, exist_ok=True)
 
-    # Reduce the smallest file for each close-missed phantom id
-    target = {}
-    for origin in coverage:
-        for pid, (status, filenames) in coverage[origin].items():
-            if status != Status.CLOSE_MISS:
-                continue
+    global_log_path = os.path.join(reduce_dir, "reducer.log")
+    with open(global_log_path, 'a') as global_log_file:
+        # Reduce the smallest file for each close-missed phantom id
+        for origin in coverage:
+            for pid, (status, filenames) in coverage[origin].items():
+                if status != Status.CLOSE_MISS:
+                    continue
+                if pid in target and target[pid].len() >= 3:
+                    log(f"Skipping: Already reduced 3 files for pid={pid}", global_log_file)
 
-            # Check if the filenames are valid
-            filenames = [ filename for filename in filenames if os.path.isfile(filename) ]
-            
-            # Find the smallest unreduced file and reduce it
-            filenames_unreduced = [ filename for filename in filenames if not filename.startswith("reduced") ]
-            if not filenames_unreduced:
-                print(f"No unreduced files found for pid={pid}, skipping reduction.")
-                continue
-            smallest_file = min(filenames_unreduced, key=os.path.getsize)
-            reduced_smallest_file = reduce_program(reduce_dir, pid, smallest_file, P4SPECTEC_DIR, CORES, args.timeout, args.timeout_creduce )
-            if reduced_smallest_file is None:
-                print(f"Failed to reduce {smallest_file}, skipping.")
-                continue
-            filenames.remove(smallest_file)
-            filenames.append(reduced_smallest_file)
+                # Check if the filenames are valid
+                filenames = [ filename for filename in filenames if os.path.isfile(filename) ]
+                
+                # Find the smallest unreduced file and reduce it
+                filenames_unreduced = [ filename for filename in filenames if not os.path.basename(filename).startswith("reduced") ]
+                if not filenames_unreduced:
+                    log(f"Skipping: No unreduced files found for pid={pid}", global_log_file)
+                    continue
+                smallest_file = min(filenames_unreduced, key=os.path.getsize)
+                reduced_file = reduce_program(reduce_dir, pid, smallest_file, P4SPECTEC_DIR, CORES, args.timeout, args.timeout_creduce )
+                if reduced_file is None:
+                    log(f"Failed to reduce {smallest_file} for pid={pid}", global_log_file)
+                    continue
+                filenames.remove(smallest_file)
+                filenames.append(reduced_file)
 
-            # Update the coverage with the reduced file
-            coverage[origin][pid] = (status, filenames)
-            
-            # Update the target
-            target[pid] = reduced_smallest_file
+                # Update the coverage with the reduced file
+                coverage[origin][pid] = (status, filenames)
+                
+                # Update the target
+                if pid in target :
+                    target[pid] += reduced_file
+                else:
+                    target[pid] = [ reduced_file ]
 
-    # Output the reduced files as a coverage file
-    coverage_file = os.path.join(reduce_dir, "reduced.coverage")
-    write_coverage(coverage_file, coverage)
+        # Output the reduced files as a coverage file
+        coverage_file = os.path.join(reduce_dir, "reduced.coverage")
+        write_coverage(coverage_file, coverage)
 
-    # Generate a target file
-    target_file = os.path.join(reduce_dir, "reduced.target")
-    write_target(target_file, target)
+        # Generate a target file
+        target_file = os.path.join(reduce_dir, "reduced.target")
+        write_target(target_file, target)
 
-    # Fuzzing with the reduced files
-    loop_idx += 1
-    name_fuzz_campaign = f"fuzz{loop_idx}"
+        # Fuzzing with the reduced files
+        loop_idx += 1
+        name_fuzz_campaign = f"fuzz{loop_idx}"
 
-    spectec_fuzz_command = spectec_command_template.copy() + [
-        "-fuel",
-        "5",
-        "-warm",
-        coverage_file,
-        "-target",
-        target_file,
-        "-name",
-        name_fuzz_campaign,
-    ]
+        spectec_fuzz_command = spectec_command_template.copy() + [
+            "-fuel",
+            "5",
+            "-warm",
+            coverage_file,
+            "-target",
+            target_file,
+            "-name",
+            name_fuzz_campaign,
+        ]
 
-    result = subprocess.run(spectec_fuzz_command, check=True)
+        result = subprocess.run(spectec_fuzz_command, check=True)
 
 #
 # End of the fuzzing loop
