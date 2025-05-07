@@ -410,12 +410,12 @@ let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
     Interp_sl.Typing.run_typing' ~derive config.specenv.spec
       config.specenv.includes_p4 filename_p4 config.specenv.ignores
   with
-  | WellTyped (graph, vid_program, cover) -> (
+  | WellTyped (graph, vid_program, cover) ->
       let time_end = Unix.gettimeofday () in
       F.asprintf "[F %d] [P %d] SL interpreter succeeded on %s (took %.2f)" fuel
         pid filename_p4 (time_end -. time_start)
       |> Logger.log config.modes.logmode log;
-      match config.modes.mutationmode with
+      (match config.modes.mutationmode with
       | Random ->
           fuzz_seed_random fuel pid config log query dirname_gen_tmp filename_p4
             graph vid_program
@@ -424,7 +424,9 @@ let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
             filename_p4 graph vid_program cover
       | Hybrid ->
           fuzz_seed_hybrid fuel pid config log query dirname_gen_tmp filename_p4
-            graph vid_program cover)
+            graph vid_program cover);
+      Dep.Graph.G.reset graph.nodes;
+      Dep.Graph.G.reset graph.edges
   | IllTyped _ | IllFormed _ ->
       F.asprintf "[F %d] [P %d] SL interpreter failed on %s" fuel pid
         filename_p4
