@@ -3,17 +3,18 @@ open Sl.Ast
 module Value = Runtime_dynamic_sl.Value
 module Typ = Runtime_dynamic_sl.Typ
 module TDEnv = Runtime_dynamic_sl.Envs.TDEnv
-module Groups = Config.Groups
+open Config
 open Util.Source
 
 (* Kinds of mutations *)
 
-type kind = GenFromTyp | ConvertFBitToFInt | MutateList
+type kind = GenFromTyp | ConvertFBitToFInt | MutateList | MixopGroup
 
 let string_of_kind = function
   | GenFromTyp -> "GenFromTyp"
   | ConvertFBitToFInt -> "ConvertFBitToFInt"
   | MutateList -> "MutateList"
+  | MixopGroup -> "MixopGroup"
 
 (* Option monad *)
 
@@ -126,17 +127,40 @@ and gen_from_typs (depth : int) (tdenv : TDEnv.t) (typs : typ list) :
         Some (values @ [ value ]))
       (Some []) typs
 
-(* bit<expr> to int<expr> conversion *)
-
-let mutate_fbit_to_fint (value : value) : kind * value =
+let mutate_mixop (mixopenv : mixopenv) (value : value) : (kind * value) option =
   let typ = value.note.typ in
-  match value.it with
-  | CaseV ([ [ { it = Atom "FBitT"; _ } ]; [] ], [ value_expr ]) ->
-      let value =
-        CaseV ([ [ Atom.Atom "FIntT" $ no_region ]; [] ], [ value_expr ])
-        |> wrap_value typ
-      in
-      (ConvertFBitToFInt, value)
+  match typ with
+  | VarT (id, _) -> (
+      match value.it with
+      | CaseV (mixop, values) ->
+          let* groups =
+            try
+              let groups = MixopEnv.find id.it mixopenv in
+              groups |> Option.some
+            with Not_found ->
+              Printf.printf "No mixop group found in env: %s, %s\n" id.it
+                (Sl.Print.string_of_mixop mixop);
+              None
+          in
+          let mixop_set_set =
+            MixopSetSet.filter
+              (fun mixop_set ->
+                MixopSet.exists
+                  (fun mixop' -> Mixop.compare mixop' mixop = 0)
+                  mixop_set)
+              groups
+          in
+          let* mixop_set =
+            if MixopSetSet.cardinal mixop_set_set = 0 then (
+              Printf.printf "No mixop set found in group: %s, mix %s\n" id.it
+                (Sl.Print.string_of_mixop mixop);
+              None)
+            else mixop_set_set |> MixopSetSet.choose |> Option.some
+          in
+          let* mixop = mixop_set |> MixopSet.elements |> Rand.random_select in
+          let value = CaseV (mixop, values) |> wrap_value typ in
+          (MixopGroup, value) |> Option.some
+      | _ -> assert false)
   | _ -> assert false
 
 (* List mutations *)
@@ -251,7 +275,8 @@ let mutate_type_driven (tdenv : TDEnv.t) (value : value) : (kind * value) option
   let value_opt = gen_from_typ depth tdenv typ in
   Option.map (fun value -> (GenFromTyp, value)) value_opt
 
-let mutate_node (tdenv : TDEnv.t) (value : value) : (kind * value) option =
+let mutate_node (tdenv : TDEnv.t) (groups : mixopenv) (value : value) :
+    (kind * value) option =
   match value.it with
   | ListV _ ->
       let* mutation =
@@ -262,10 +287,10 @@ let mutate_node (tdenv : TDEnv.t) (value : value) : (kind * value) option =
         |> Rand.random_select
       in
       mutation ()
-  | CaseV ([ [ { it = Atom "FBitT"; _ } ]; [] ], _) ->
+  | CaseV (_, _) ->
       let* mutation =
         [
-          (fun () -> mutate_fbit_to_fint value |> Option.some);
+          (fun () -> mutate_mixop groups value);
           (fun () -> mutate_type_driven tdenv value);
         ]
         |> Rand.random_select
@@ -277,7 +302,7 @@ let is_leaf = function
   | BoolV _ | NumV _ | TextV _ | OptV _ | FuncV _ -> true
   | StructV _ | CaseV _ | TupleV _ | ListV _ -> false
 
-let mutate_walk (tdenv : TDEnv.t) (_groups : Groups.t) (value : value) :
+let mutate_walk (tdenv : TDEnv.t) (groups : mixopenv) (value : value) :
     (kind * value) option =
   (* Compute the best path to a leaf node in the value subtree *)
   let key_max = ref min_float in
@@ -308,7 +333,7 @@ let mutate_walk (tdenv : TDEnv.t) (_groups : Groups.t) (value : value) :
     let typ = value.note.typ in
     match (path, value) with
     | [], value ->
-        let* kind, value = mutate_node tdenv value in
+        let* kind, value = mutate_node tdenv groups value in
         kind_found := kind |> Option.some;
         value |> Option.some
     | idx :: path, value -> (
@@ -346,13 +371,13 @@ let mutate_walk (tdenv : TDEnv.t) (_groups : Groups.t) (value : value) :
 
 (* Entry point for mutation *)
 
-let mutate (tdenv : TDEnv.t) (groups : Groups.t) (value : value) :
+let mutate (tdenv : TDEnv.t) (groups : mixopenv) (value : value) :
     (kind * value) option =
   let mutations = [ (fun () -> mutate_walk tdenv groups value) ] in
   let* mutation = Rand.random_select mutations in
   mutation ()
 
-let mutates (fuel_mutate : int) (tdenv : TDEnv.t) (groups : Groups.t)
+let mutates (fuel_mutate : int) (tdenv : TDEnv.t) (groups : mixopenv)
     (value : value) : (kind * value) list =
   List.init fuel_mutate (fun _ -> mutate tdenv groups value)
   |> List.filter_map Fun.id

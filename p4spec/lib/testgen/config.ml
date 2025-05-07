@@ -28,20 +28,28 @@ let timeout_seed = 30
 module MixopSet = Set.Make (struct
   type t = mixop
 
-  let compare = compare
+  let compare = Xl.Mixop.compare
 end)
 
-module Groups = Set.Make (struct
+module MixopSetSet = Set.Make (struct
   type t = MixopSet.t
 
   let compare = MixopSet.compare
 end)
 
+module MixopEnv = Map.Make (struct
+  type t = string
+
+  let compare = compare
+end)
+
+type mixopenv = MixopSetSet.t MixopEnv.t
+
 (* Environment for the spec *)
 type specenv = {
   spec : spec;
   tdenv : TDEnv.t;
-  groups : Groups.t;
+  mixopenv : mixopenv;
   includes_p4 : string list;
   ignores : IdSet.t;
 }
@@ -68,9 +76,9 @@ type t = {
   mutable cover_seed : MCov.Cover.t;
 }
 
-let load_groups (groups : Groups.t) (def : def) : Groups.t =
+let load_groups (mixopenv : mixopenv) (def : def) : mixopenv =
   match def.it with
-  | TypD (_, _, deftyp) -> (
+  | TypD (id, _, deftyp) -> (
       match deftyp.it with
       | VariantT nottyps ->
           let insert_into_groups (nottyp : nottyp)
@@ -92,14 +100,19 @@ let load_groups (groups : Groups.t) (def : def) : Groups.t =
               (fun acc nottyp -> insert_into_groups nottyp acc)
               [] nottyps
           in
+          let orig_groups =
+            try MixopEnv.find id.it mixopenv
+            with Not_found -> MixopSetSet.empty
+          in
           let groups =
             List.fold_left
-              (fun acc (_, mixop_set) -> Groups.add mixop_set acc)
-              groups new_typed_groups
+              (fun acc (_, mixop_set) -> MixopSetSet.add mixop_set acc)
+              orig_groups new_typed_groups
           in
-          groups
-      | _ -> groups)
-  | _ -> groups
+          let mixopenv = mixopenv |> MixopEnv.add id.it groups in
+          mixopenv
+      | _ -> mixopenv)
+  | _ -> mixopenv
 
 (* Load type definitions into environment *)
 let load_def (tdenv : TDEnv.t) (def : def) : TDEnv.t =
@@ -109,11 +122,23 @@ let load_def (tdenv : TDEnv.t) (def : def) : TDEnv.t =
       TDEnv.add id typdef tdenv
   | _ -> tdenv
 
-let load_spec (tdenv : TDEnv.t) (groups : Groups.t) (spec : spec) :
-    TDEnv.t * Groups.t =
+let load_spec (tdenv : TDEnv.t) (mixopenv : mixopenv) (spec : spec) :
+    TDEnv.t * mixopenv =
   let tdenv = List.fold_left load_def tdenv spec in
-  let groups = List.fold_left load_groups groups spec in
-  (tdenv, groups)
+  let mixopenv = List.fold_left load_groups mixopenv spec in
+  MixopEnv.iter
+    (fun id groups ->
+      Printf.printf "syntax %s\n" id;
+      MixopSetSet.iter
+        (fun mixop_set ->
+          Printf.printf "Group: ";
+          MixopSet.iter
+            (fun mixop -> Printf.printf "%s, " (Sl.Print.string_of_mixop mixop))
+            mixop_set;
+          Printf.printf "\n")
+        groups)
+    mixopenv;
+  (tdenv, mixopenv)
 
 (* Changing random seed *)
 
@@ -125,9 +150,9 @@ let set_rand (config : t) : unit =
 
 let init_specenv (spec : spec) (includes_p4 : string list)
     (filenames_ignore : string list) : specenv =
-  let tdenv, groups = load_spec TDEnv.empty Groups.empty spec in
+  let tdenv, mixopenv = load_spec TDEnv.empty MixopEnv.empty spec in
   let ignores = Ignore.init filenames_ignore in
-  { spec; tdenv; groups; includes_p4; ignores }
+  { spec; tdenv; mixopenv; includes_p4; ignores }
 
 let init_storage (dirname_gen : string) : storage =
   Filesys.mkdir dirname_gen;
