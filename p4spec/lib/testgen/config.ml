@@ -108,16 +108,30 @@ let load_groups (mixopenv : mixopenv) (def : def) : mixopenv =
               (fun acc nottyp -> insert_into_groups nottyp acc)
               [] nottyps
           in
-          let orig_groups =
-            try MixopEnv.find id.it mixopenv
+          let new_typed_groups =
+            new_typed_groups
+            |> List.filter (fun (_, mixop_set) ->
+                   MixopSet.cardinal mixop_set > 1)
+          in
+          if List.length new_typed_groups = 0 then mixopenv
+          else
+            let orig_groups =
+              try MixopEnv.find id.it mixopenv
+              with Not_found -> MixopSetSet.empty
+            in
+            let groups =
+              List.fold_left
+                (fun acc (_, mixop_set) -> MixopSetSet.add mixop_set acc)
+                orig_groups new_typed_groups
+            in
+            let mixopenv = mixopenv |> MixopEnv.add id.it groups in
+            mixopenv
+      | PlainT { it = VarT (id', _); _ } ->
+          let mixop_set_set =
+            try MixopEnv.find id'.it mixopenv
             with Not_found -> MixopSetSet.empty
           in
-          let groups =
-            List.fold_left
-              (fun acc (_, mixop_set) -> MixopSetSet.add mixop_set acc)
-              orig_groups new_typed_groups
-          in
-          let mixopenv = mixopenv |> MixopEnv.add id.it groups in
+          let mixopenv = mixopenv |> MixopEnv.add id.it mixop_set_set in
           mixopenv
       | _ -> mixopenv)
   | _ -> mixopenv

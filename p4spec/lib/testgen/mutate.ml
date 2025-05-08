@@ -143,13 +143,14 @@ let mutate_mixop (mixopenv : mixopenv) (value : value) : (kind * value) option =
               groups
           in
           let* mixop_set =
-            if MixopSetSet.cardinal mixop_set_set = 0 then (
-              Printf.printf "No mixop set found in group: %s, mix %s\n" id.it
-                (Sl.Print.string_of_mixop mixop);
-              None)
+            if MixopSetSet.cardinal mixop_set_set = 0 then None
             else mixop_set_set |> MixopSetSet.choose |> Option.some
           in
-          let* mixop = mixop_set |> MixopSet.elements |> Rand.random_select in
+          let* mixop =
+            mixop_set
+            |> MixopSet.filter (fun mixop' -> Mixop.compare mixop' mixop <> 0)
+            |> MixopSet.elements |> Rand.random_select
+          in
           let value = CaseV (mixop, values) |> wrap_value typ in
           (MixopGroup, value) |> Option.some
       | _ -> assert false)
