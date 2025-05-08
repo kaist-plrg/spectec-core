@@ -66,7 +66,7 @@ module Cover = struct
         let status =
           match branch.status with
           | Hit (likely, filenames) -> Branch.Hit (likely, filenames)
-          | Miss filenames -> Branch.Miss ([], filenames)
+          | Miss filenames -> Branch.Miss (filenames, [])
         in
         Branch.{ origin; status })
       cover_multi
