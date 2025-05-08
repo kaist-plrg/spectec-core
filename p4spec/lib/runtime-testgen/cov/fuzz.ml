@@ -14,12 +14,8 @@ module Branch = struct
      if missed, record the closest-missing filenames;
      note that close-missing files must be well-formed and well-typed *)
 
-  type status = Hit of bool * string list | Miss of string list
+  type status = Hit of bool * string list | Miss of string list * string list
   type t = { origin : origin; status : status }
-
-  (* Constructor *)
-
-  let init (id : id) : t = { origin = id; status = Miss [] }
 
   (* Printer *)
 
@@ -39,42 +35,59 @@ module Cover = struct
 
   (* Constructor *)
 
-  let rec init_instr (cover : t) (id : id) (instr : instr) : t =
-    match instr.it with
-    | IfI (_, _, instrs_then, phantom_opt) -> (
-        let cover = init_instrs cover id instrs_then in
-        match phantom_opt with
-        | Some (pid, _) ->
-            let branch = Branch.init id in
-            add pid branch cover
-        | None -> cover)
-    | CaseI (_, cases, phantom_opt) -> (
-        let blocks = cases |> List.split |> snd in
-        let cover =
-          List.fold_left
-            (fun cover instrs -> init_instrs cover id instrs)
-            cover blocks
+  let init_target (target : string list PIdMap.t)
+      (cover_multi : Multiple.Cover.t) : t =
+    Multiple.Cover.mapi
+      (fun (pid : pid) (branch : Multiple.Branch.t) ->
+        let origin = branch.origin in
+        let status =
+          match branch.status with
+          | Hit (likely, filenames) -> Branch.Hit (likely, filenames)
+          | Miss filenames ->
+              let filenames_target =
+                match PIdMap.find_opt pid target with
+                | Some filenames_target -> filenames_target
+                | None -> []
+              in
+              let filenames_target, filenames_untarget =
+                List.partition
+                  (fun filename -> List.mem filename filenames_target)
+                  filenames
+              in
+              Branch.Miss (filenames_target, filenames_untarget)
         in
-        match phantom_opt with
-        | Some (pid, _) ->
-            let branch = Branch.init id in
-            add pid branch cover
-        | None -> cover)
-    | OtherwiseI instr -> init_instr cover id instr
-    | _ -> cover
+        Branch.{ origin; status })
+      cover_multi
 
-  and init_instrs (cover : t) (id : id) (instrs : instr list) : t =
-    List.fold_left (fun cover instr -> init_instr cover id instr) cover instrs
-
-  let init_def (ignores : IdSet.t) (cover : t) (def : def) : t =
-    match def.it with
-    | TypD _ -> cover
-    | RelD (id, _, _, instrs) | DecD (id, _, _, instrs) ->
-        if IdSet.mem id ignores then cover else init_instrs cover id instrs
-
-  let init_spec (ignores : IdSet.t) (spec : spec) : t =
-    List.fold_left (init_def ignores) empty spec
+  let init_roundrobin (cover_multi : Multiple.Cover.t) : t =
+    Multiple.Cover.map
+      (fun (branch : Multiple.Branch.t) ->
+        let origin = branch.origin in
+        let status =
+          match branch.status with
+          | Hit (likely, filenames) -> Branch.Hit (likely, filenames)
+          | Miss filenames -> Branch.Miss ([], filenames)
+        in
+        Branch.{ origin; status })
+      cover_multi
 end
+
+(* Querying coverage *)
+
+let is_hit (cover : Cover.t) (pid : pid) : bool =
+  let branch = Cover.find pid cover in
+  match branch.status with Hit _ -> true | Miss _ -> false
+
+let is_miss (cover : Cover.t) (pid : pid) : bool =
+  let branch = Cover.find pid cover in
+  match branch.status with Hit _ -> false | Miss _ -> true
+
+let is_close_miss (cover : Cover.t) (pid : pid) : bool =
+  let branch = Cover.find pid cover in
+  match branch.status with
+  | Hit _ -> false
+  | Miss (filenames_target, filenames_untarget) ->
+      List.length filenames_target > 0 || List.length filenames_untarget > 0
 
 (* Measuring coverage *)
 
@@ -91,38 +104,10 @@ let measure_coverage (cover : Cover.t) : int * int * float =
   in
   (total, hits, coverage)
 
-(* Extension from single coverage:
-
-   A close-miss is added only if the program is well-typed and well-formed *)
-
-let extend (cover : Cover.t) (filename_p4 : string) (wellformed : bool)
-    (welltyped : bool) (cover_single : Single.Cover.t) : Cover.t =
-  Cover.mapi
-    (fun (pid : pid) (branch : Branch.t) ->
-      let branch_single = Single.Cover.find pid cover_single in
-      match branch.status with
-      | Hit (likely, filenames_p4) -> (
-          match branch_single.status with
-          | Hit ->
-              let likely = likely && not (wellformed && welltyped) in
-              let filenames_p4 = filename_p4 :: filenames_p4 in
-              { branch with status = Hit (likely, filenames_p4) }
-          | _ -> branch)
-      | Miss filenames_p4 -> (
-          match branch_single.status with
-          | Hit ->
-              let likely = not (wellformed && welltyped) in
-              let filenames_p4 = [ filename_p4 ] in
-              { branch with status = Hit (likely, filenames_p4) }
-          | Miss (_ :: _) when wellformed && welltyped ->
-              let filenames_p4 = filename_p4 :: filenames_p4 in
-              { branch with status = Miss filenames_p4 }
-          | Miss _ -> branch))
-    cover
-
 (* Logging *)
 
-let log ~(filename_cov_opt : string option) (cover : Cover.t) : unit =
+let log ~(target : bool) ~(filename_cov_opt : string option) (cover : Cover.t) :
+    unit =
   let output oc_opt =
     match oc_opt with Some oc -> output_string oc | None -> print_string
   in
@@ -160,9 +145,13 @@ let log ~(filename_cov_opt : string option) (cover : Cover.t) : unit =
                 (if likely then "likely" else "unlikely")
                 origin.it filenames
               |> output oc_opt
-          | Miss [] ->
+          | Miss ([], []) ->
               Format.asprintf "%d Miss %s\n" pid origin.it |> output oc_opt
-          | Miss filenames ->
+          | Miss (filenames_target, filenames_untarget) ->
+              let filenames =
+                if target then filenames_target
+                else filenames_target @ filenames_untarget
+              in
               let filenames = String.concat " " filenames in
               Format.asprintf "%d Miss %s %s\n" pid origin.it filenames
               |> output oc_opt)
@@ -172,5 +161,9 @@ let log ~(filename_cov_opt : string option) (cover : Cover.t) : unit =
 
 (* Constructor *)
 
-let init (ignores : IdSet.t) (spec : spec) : Cover.t =
-  Cover.init_spec ignores spec
+let init_roundrobin (cover_multi : Multiple.Cover.t) : Cover.t =
+  Cover.init_roundrobin cover_multi
+
+let init_target (target : string list PIdMap.t) (cover_multi : Multiple.Cover.t)
+    : Cover.t =
+  Cover.init_target target cover_multi

@@ -1,9 +1,11 @@
 open Domain.Lib
+open Xl
 open Sl.Ast
 module TDEnv = Runtime_dynamic_sl.Envs.TDEnv
 module Ignore = Runtime_testgen.Cov.Ignore
 module SCov = Runtime_testgen.Cov.Single
 module MCov = Runtime_testgen.Cov.Multiple
+module FCov = Runtime_testgen.Cov.Fuzz
 
 (* Hyperparameters for the fuzzing loop *)
 
@@ -26,15 +28,15 @@ let trials_seed = 25
 let timeout_seed = 30
 
 module MixopSet = Set.Make (struct
-  type t = mixop
+  type t = Mixop.t
 
-  let compare = Xl.Mixop.compare
+  let compare = compare
 end)
 
 module MixopSetSet = Set.Make (struct
   type t = MixopSet.t
 
-  let compare = MixopSet.compare
+  let compare = compare
 end)
 
 module MixopEnv = Map.Make (struct
@@ -66,6 +68,10 @@ type storage = {
   dirname_illformed_p4 : string;
 }
 
+(* Seed for the fuzz campaign *)
+
+type seed = { mutable cover : FCov.Cover.t }
+
 (* Configuration for the fuzz campaign *)
 
 type t = {
@@ -73,8 +79,10 @@ type t = {
   modes : Modes.t;
   specenv : specenv;
   storage : storage;
-  mutable cover_seed : MCov.Cover.t;
+  seed : seed;
 }
+
+(* Load mixop groups into the environment *)
 
 let load_groups (mixopenv : mixopenv) (def : def) : mixopenv =
   match def.it with
@@ -114,7 +122,8 @@ let load_groups (mixopenv : mixopenv) (def : def) : mixopenv =
       | _ -> mixopenv)
   | _ -> mixopenv
 
-(* Load type definitions into environment *)
+(* Load type definitions into the environment *)
+
 let load_def (tdenv : TDEnv.t) (def : def) : TDEnv.t =
   match def.it with
   | TypD (id, tparams, deftyp) ->
@@ -126,18 +135,6 @@ let load_spec (tdenv : TDEnv.t) (mixopenv : mixopenv) (spec : spec) :
     TDEnv.t * mixopenv =
   let tdenv = List.fold_left load_def tdenv spec in
   let mixopenv = List.fold_left load_groups mixopenv spec in
-  MixopEnv.iter
-    (fun id groups ->
-      Printf.printf "syntax %s\n" id;
-      MixopSetSet.iter
-        (fun mixop_set ->
-          Printf.printf "Group: ";
-          MixopSet.iter
-            (fun mixop -> Printf.printf "%s, " (Sl.Print.string_of_mixop mixop))
-            mixop_set;
-          Printf.printf "\n")
-        groups)
-    mixopenv;
   (tdenv, mixopenv)
 
 (* Changing random seed *)
@@ -178,48 +175,50 @@ let init_storage (dirname_gen : string) : storage =
     dirname_illformed_p4;
   }
 
-let init (modes : Modes.t) (specenv : specenv) (storage : storage)
-    (cover_seed : MCov.Cover.t) =
+let init_seed (cover : FCov.Cover.t) : seed = { cover }
+
+let init (modes : Modes.t) (specenv : specenv) (storage : storage) (seed : seed)
+    =
   let rand = 2025 in
   Random.init rand;
-  { rand; modes; specenv; storage; cover_seed }
+  { rand; modes; specenv; storage; seed }
 
 (* Seed updater *)
 
-let update_hit_cover_seed (config : t) (filename_p4 : string)
-    (wellformed : bool) (welltyped : bool) (pids_hit : PIdSet.t) : unit =
-  let cover_seed = config.cover_seed in
+let update_hit_seed (config : t) (filename_p4 : string) (wellformed : bool)
+    (welltyped : bool) (pids_hit : PIdSet.t) : unit =
+  let cover_seed = config.seed.cover in
   let cover_seed =
     PIdSet.fold
       (fun pid_hit cover_seed ->
-        let branch : MCov.Branch.t = MCov.Cover.find pid_hit cover_seed in
+        let branch : FCov.Branch.t = FCov.Cover.find pid_hit cover_seed in
         let branch =
           match branch.status with
           | Hit (likely, filenames_p4) ->
               let likely = likely && not (wellformed && welltyped) in
               let filenames_p4 = filename_p4 :: filenames_p4 in
-              MCov.Branch.{ branch with status = Hit (likely, filenames_p4) }
+              FCov.Branch.{ branch with status = Hit (likely, filenames_p4) }
           | _ ->
               let likely = not (wellformed && welltyped) in
               let filenames_p4 = [ filename_p4 ] in
-              MCov.Branch.{ branch with status = Hit (likely, filenames_p4) }
+              FCov.Branch.{ branch with status = Hit (likely, filenames_p4) }
         in
-        MCov.Cover.add pid_hit branch cover_seed)
+        FCov.Cover.add pid_hit branch cover_seed)
       pids_hit cover_seed
   in
-  config.cover_seed <- cover_seed
+  config.seed.cover <- cover_seed
 
-let update_close_miss_cover_seed (config : t) (filename_p4 : string)
+let update_close_miss_seed (config : t) (filename_p4 : string)
     (pids_close_miss : PIdSet.t) : unit =
-  let cover_seed = config.cover_seed in
+  let cover_seed = config.seed.cover in
   let cover_seed =
     PIdSet.fold
       (fun pid_close_miss cover_seed ->
-        let branch = MCov.Cover.find pid_close_miss cover_seed in
+        let branch = FCov.Cover.find pid_close_miss cover_seed in
         let branch =
-          MCov.Branch.{ branch with status = Miss [ filename_p4 ] }
+          FCov.Branch.{ branch with status = Miss ([ filename_p4 ], []) }
         in
-        MCov.Cover.add pid_close_miss branch cover_seed)
+        FCov.Cover.add pid_close_miss branch cover_seed)
       pids_close_miss cover_seed
   in
-  config.cover_seed <- cover_seed
+  config.seed.cover <- cover_seed

@@ -25,7 +25,7 @@ let rec parse_lines (targets : string list PIdMap.t) (ic : in_channel) :
     parse_lines targets ic
   with End_of_file -> targets
 
-let target_phantom (filename_target : string) : string list PIdMap.t =
+let init (filename_target : string) : string list PIdMap.t =
   let ic = open_in filename_target in
   let targets = parse_lines PIdMap.empty ic in
   close_in ic;

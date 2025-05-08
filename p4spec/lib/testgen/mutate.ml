@@ -18,7 +18,7 @@ let string_of_kind = function
 
 (* Option monad *)
 
-let ( let* ) x f = Option.bind x f
+let ( let* ) = Option.bind
 
 (* Helpers for wrapping values *)
 
@@ -133,15 +133,7 @@ let mutate_mixop (mixopenv : mixopenv) (value : value) : (kind * value) option =
   | VarT (id, _) -> (
       match value.it with
       | CaseV (mixop, values) ->
-          let* groups =
-            try
-              let groups = MixopEnv.find id.it mixopenv in
-              groups |> Option.some
-            with Not_found ->
-              Printf.printf "No mixop group found in env: %s, %s\n" id.it
-                (Sl.Print.string_of_mixop mixop);
-              None
-          in
+          let* groups = MixopEnv.find_opt id.it mixopenv in
           let mixop_set_set =
             MixopSetSet.filter
               (fun mixop_set ->
