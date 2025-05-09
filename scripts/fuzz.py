@@ -142,6 +142,8 @@ result = subprocess.run(spectec_init_command, check=True)
 #
 
 while loop_idx < LOOPS:
+    print(f"\n[DEBUG] === Starting fuzz loop {loop_idx} ===")
+
     # Get and read the resultant coverage file
     name_fuzz_campaign = f"fuzz{loop_idx}"
     coverage_file = os.path.join(WORK_DIR, name_fuzz_campaign, "final.coverage")
@@ -150,12 +152,21 @@ while loop_idx < LOOPS:
         target = {}
     else:
         prev_target_file = os.path.join(WORK_DIR, f"reduce{loop_idx-1}", "reduced.target")
+        print(f"[DEBUG] Reading previous target file: {prev_target_file}")
         target = read_target(prev_target_file)
+        print(f"[DEBUG] Loaded {len(target)} PIDs from previous target.")
 
     # Setup the directory for reduction
     name_reduce_campaign = f"reduce{loop_idx}"
     reduce_dir = os.path.join(WORK_DIR, name_reduce_campaign)
     os.makedirs(reduce_dir, exist_ok=True)
+    print(f"[DEBUG] Coverage file: {coverage_file}")
+    print(f"[DEBUG] Reduction directory: {reduce_dir}")
+
+    print(f"[DEBUG] Initial target: {target}")
+    print(f"[DEBUG] Loaded {len(target)} PIDs from previous target.")
+    for k in target.keys():
+        print(f"[DEBUG] Target key: {k} (type: {type(k)})")
 
     global_log_path = os.path.join(reduce_dir, "reducer.log")
     with open(global_log_path, 'a') as global_log_file:
@@ -164,8 +175,9 @@ while loop_idx < LOOPS:
             for pid, (status, filenames) in coverage[origin].items():
                 if status != Status.CLOSE_MISS:
                     continue
-                if pid in target and target[pid].len() >= 3:
+                if pid in target and len(target[pid]) >= 3:
                     log(f"Skipping: Already reduced 3 files for pid={pid}", global_log_file)
+                    continue
 
                 # Check if the filenames are valid
                 filenames = [ filename for filename in filenames if os.path.isfile(filename) ]
@@ -186,12 +198,19 @@ while loop_idx < LOOPS:
                 # Update the coverage with the reduced file
                 coverage[origin][pid] = (status, filenames)
                 
-                # Update the target
-                if pid in target :
-                    target[pid] += reduced_file
-                else:
-                    target[pid] = [ reduced_file ]
 
+                print(f"[DEBUG] updating target: {target}")
+                print(f"[DEBUG] Before appending: target[{pid}] = {target.get(pid)}")
+                print(f"[DEBUG] Processing PID={pid} (type: {type(pid)})")
+                print(f"[DEBUG] Target keys: {list(target.keys())}")
+
+
+                if pid in target:
+                    target[pid].append(reduced_file)
+                    print(f"[DEBUG] Appended reduced file to target[{pid}]")
+                else:
+                    target[pid] = [reduced_file]
+                    print(f"[DEBUG] Created new entry for target[{pid}]")
         # Output the reduced files as a coverage file
         coverage_file = os.path.join(reduce_dir, "reduced.coverage")
         write_coverage(coverage_file, coverage)
@@ -199,7 +218,7 @@ while loop_idx < LOOPS:
         # Generate a target file
         target_file = os.path.join(reduce_dir, "reduced.target")
         write_target(target_file, target)
-
+        print(f"Updated target: {target}")
         # Fuzzing with the reduced files
         loop_idx += 1
         name_fuzz_campaign = f"fuzz{loop_idx}"

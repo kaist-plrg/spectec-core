@@ -64,14 +64,15 @@ def write_coverage(coverage_file, coverage):
                 filenames_str = " ".join(filenames)
                 file.write(f"{pid} {status_str} {origin} {filenames_str}\n")
 
-def write_target(target_file, target_dict):
-    with open(target_file, 'w') as f:
-        for pid, files in target_dict.items():
+def write_target(target_file, target):
+    with open(target_file, 'w') as file:
+        for pid, files in target.items():
+            # Ensure files is a list, even if it's a single string
             if isinstance(files, list):
-                f.write(f"{pid} {' '.join(files)}\n")
+                file_list = files
             else:
-                f.write(f"{pid} {files}\n")
-        f.flush()
+                file_list = [files]
+            file.write(f"{pid} {' '.join(file_list)}\n")
 
 def read_target(target_file):
     pid_to_files = {}
@@ -80,7 +81,12 @@ def read_target(target_file):
             parts = line.strip().split()
             if len(parts) < 2:
                 continue
-            pid = parts[0]
+            pid_str = parts[0]
+            try:
+                pid = int(pid_str)
+            except ValueError:
+                print(f"[DEBUG] Skipping line {line_num}: invalid pid '{pid_str}' (not an int)")
+                continue
             files = parts[1:]
             pid_to_files[pid] = files
     return pid_to_files
