@@ -96,7 +96,7 @@ let run_sl negative spec_sl includes_p4 filename_p4 =
   let time_start = start () in
   try
     (* Run test *)
-    (match Interp_sl.Typing.run_typing spec_sl includes_p4 filename_p4 with
+    (match Interp_sl.Typing.run_typing spec_sl includes_p4 filename_p4 [] with
     | WellTyped _ -> if negative then raise (TestCheckNegErr time_start)
     | IllTyped (at, msg, _) -> raise (TestCheckErr (msg, at, time_start))
     | IllFormed (msg, _) -> raise (TestCheckErr (msg, no_region, time_start)));
@@ -174,7 +174,9 @@ let cover_sl_test specdir includes_p4 testdirs_p4 =
   let filenames_p4 =
     List.concat_map (collect_files ~suffix:".p4") testdirs_p4
   in
-  let cover = Interp_sl.Typing.cover_typings spec_sl includes_p4 filenames_p4 in
+  let cover =
+    Interp_sl.Typing.cover_typings spec_sl includes_p4 filenames_p4 []
+  in
   Runtime_testgen.Cov.Multiple.log ~filename_cov_opt:None cover
 
 let cover_sl_command =

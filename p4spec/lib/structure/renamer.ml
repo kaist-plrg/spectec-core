@@ -152,6 +152,9 @@ and rename_guard (rename : t) (guard : guard) : guard =
       let exp = rename_exp rename exp in
       CmpG (cmpop, optyp, exp)
   | SubG _ | MatchG _ -> guard
+  | MemG exp ->
+      let exp = rename_exp rename exp in
+      MemG exp
 
 and rename_instr (rename : t) (instr : instr) : instr =
   let at = instr.at in

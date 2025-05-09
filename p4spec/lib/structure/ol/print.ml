@@ -23,6 +23,7 @@ and string_of_guard guard =
       "(% " ^ string_of_cmpop cmpop ^ " " ^ string_of_exp exp ^ ")"
   | SubG typ -> "(% has type " ^ string_of_typ typ ^ ")"
   | MatchG patten -> "(% matches pattern " ^ string_of_pattern patten ^ ")"
+  | MemG exp -> "(% in " ^ string_of_exp exp ^ ")"
 
 (* Instructions *)
 

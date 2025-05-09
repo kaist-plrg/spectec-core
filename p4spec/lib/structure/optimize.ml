@@ -364,6 +364,7 @@ let exp_as_guard (exp_target : exp) (exp_cond : exp) : guard option =
   | SubE (exp, typ) when Sl.Eq.eq_exp exp_target exp -> Some (SubG typ)
   | MatchE (exp, pattern) when Sl.Eq.eq_exp exp_target exp ->
       Some (MatchG pattern)
+  | MemE (exp_e, exp_s) when Sl.Eq.eq_exp exp_target exp_e -> Some (MemG exp_s)
   | _ -> None
 
 let guard_as_exp (exp_target : exp) (guard : guard) : exp =
@@ -377,6 +378,7 @@ let guard_as_exp (exp_target : exp) (guard : guard) : exp =
   | SubG typ -> Il.Ast.SubE (exp_target, typ) $$ (exp_target.at, Il.Ast.BoolT)
   | MatchG pattern ->
       Il.Ast.MatchE (exp_target, pattern) $$ (exp_target.at, Il.Ast.BoolT)
+  | MemG exp -> Il.Ast.MemE (exp_target, exp) $$ (exp_target.at, Il.Ast.BoolT)
 
 (* Conversion from type to its variants *)
 
@@ -408,6 +410,7 @@ let rec distinct_exp_literal (exp_a : exp) (exp_b : exp) : bool =
   | TupleE exps_a, TupleE exps_b ->
       assert (List.length exps_a = List.length exps_b);
       List.exists2 distinct_exp_literal exps_a exps_b
+  | CaseE (mixop_a, []), CaseE (mixop_b, []) -> not (Mixop.eq mixop_a mixop_b)
   | ListE exps_a, ListE exps_b when List.length exps_a = List.length exps_b ->
       List.exists2 distinct_exp_literal exps_a exps_b
   | ListE _, ListE _ -> true
@@ -481,6 +484,15 @@ let rec overlap_exp (tdenv : TDEnv.t) (exp_a : exp) (exp_b : exp) : overlap =
     | MatchE (exp_a, pattern_a), MatchE (exp_b, pattern_b)
       when Sl.Eq.eq_exp exp_a exp_b ->
         overlap_pattern exp_a pattern_a pattern_b
+    (* Membership on literals *)
+    | ( MemE (exp_e_a, ({ it = ListE exps_s_a; _ } as exp_s_a)),
+        MemE (exp_e_b, ({ it = ListE exps_s_b; _ } as exp_s_b)) )
+      when Sl.Eq.eq_exp exp_e_a exp_e_b
+           && List.for_all
+                (fun exp_s_a ->
+                  List.for_all (distinct_exp_literal exp_s_a) exps_s_b)
+                exps_s_a ->
+        Disjoint (exp_e_a, MemG exp_s_a, MemG exp_s_b)
     | _ -> Fuzzy
   in
   if Sl.Eq.eq_exp exp_a exp_b then Identical else overlap_exp_unequal ()

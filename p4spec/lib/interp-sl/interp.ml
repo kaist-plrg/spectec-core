@@ -1045,6 +1045,7 @@ and eval_cases (ctx : Ctx.t) (exp : exp) (cases : case list) :
                    Il.Ast.CmpE (cmpop, optyp, exp, exp_r)
                | SubG typ -> Il.Ast.SubE (exp, typ)
                | MatchG pattern -> Il.Ast.MatchE (exp, pattern)
+               | MemG exp_s -> Il.Ast.MemE (exp, exp_s)
              in
              let exp_cond = exp_cond $$ (exp.at, Il.Ast.BoolT) in
              let ctx, value_cond = eval_exp ctx exp_cond in

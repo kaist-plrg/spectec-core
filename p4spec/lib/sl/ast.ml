@@ -132,6 +132,7 @@ and guard =
   | CmpG of cmpop * optyp * exp
   | SubG of typ
   | MatchG of pattern
+  | MemG of exp
 
 (* Instructions *)
 
