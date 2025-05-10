@@ -125,13 +125,15 @@ let run_testgen_command =
      and name_campaign =
        flag "-name" (optional string)
          ~doc:"name of the test generation campaign"
+     and silent = flag "-silent" no_arg ~doc:"do not print logs to stdout"
+     and randseed =
+       flag "-seed" (optional int) ~doc:"seed for random number generator"
      and dirname_cold_boot =
        flag "-cold" (optional string) ~doc:"seed p4 directory for cold boot"
      and filename_boot =
        flag "-warm" (optional string) ~doc:"coverage file for warm boot"
      and filename_target =
        flag "-target" (optional string) ~doc:"file for target mode"
-     and silent = flag "-silent" no_arg ~doc:"do not print logs to stdout"
      and random = flag "-random" no_arg ~doc:"randomize AST selection"
      and hybrid =
        flag "-hybrid" no_arg
@@ -175,8 +177,8 @@ let run_testgen_command =
            if strict then Testgen.Modes.Strict else Testgen.Modes.Relaxed
          in
          Testgen.Gen.fuzz_typing fuel spec_sl includes_p4 filenames_ignore
-           dirname_gen name_campaign logmode bootmode targetmode mutationmode
-           covermode
+           dirname_gen name_campaign randseed logmode bootmode targetmode
+           mutationmode covermode
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
        | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))

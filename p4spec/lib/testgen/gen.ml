@@ -530,17 +530,16 @@ let rec fuzz_loop (fuel : int) (config : Config.t) : Config.t =
     (* Close the query *)
     Query.close query;
     (* Proceed to the next fuel level *)
-    Config.set_rand config;
     fuzz_loop (fuel - 1) config
 
 (* Entry point to main fuzzing loop *)
 
 let fuzz_typing_init (spec : spec) (includes_p4 : string list)
     (filenames_ignore : string list) (dirname_gen : string)
-    (name_campaign : string option) (logmode : Modes.logmode)
-    (bootmode : Modes.bootmode) (targetmode : Modes.targetmode)
-    (mutationmode : Modes.mutationmode) (covermode : Modes.covermode) : Config.t
-    =
+    (name_campaign : string option) (randseed : int option)
+    (logmode : Modes.logmode) (bootmode : Modes.bootmode)
+    (targetmode : Modes.targetmode) (mutationmode : Modes.mutationmode)
+    (covermode : Modes.covermode) : Config.t =
   (* Name the campaign *)
   let name_campaign =
     match name_campaign with
@@ -626,18 +625,19 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
   |> Logger.log modes.logmode log_init;
   Logger.close log_init;
   (* Create a configuration *)
-  let config = Config.init modes specenv storage seed in
+  let config = Config.init randseed modes specenv storage seed in
   config
 
 let fuzz_typing (fuel : int) (spec : spec) (includes_p4 : string list)
     (filenames_ignore : string list) (dirname_gen : string)
-    (name_campaign : string option) (logmode : Modes.logmode)
-    (bootmode : Modes.bootmode) (targetmode : Modes.targetmode)
-    (mutationmode : Modes.mutationmode) (covermode : Modes.covermode) : unit =
+    (name_campaign : string option) (randseed : int option)
+    (logmode : Modes.logmode) (bootmode : Modes.bootmode)
+    (targetmode : Modes.targetmode) (mutationmode : Modes.mutationmode)
+    (covermode : Modes.covermode) : unit =
   (* Initialize the fuzzing configuration *)
   let config =
     fuzz_typing_init spec includes_p4 filenames_ignore dirname_gen name_campaign
-      logmode bootmode targetmode mutationmode covermode
+      randseed logmode bootmode targetmode mutationmode covermode
   in
   (* Call the main fuzzing loop *)
   let config = fuzz_loop fuel config in

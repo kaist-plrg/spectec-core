@@ -75,7 +75,7 @@ type seed = { mutable cover : FCov.Cover.t }
 (* Configuration for the fuzz campaign *)
 
 type t = {
-  mutable rand : int;
+  rand : int;
   modes : Modes.t;
   specenv : specenv;
   storage : storage;
@@ -151,12 +151,6 @@ let load_spec (tdenv : TDEnv.t) (mixopenv : mixopenv) (spec : spec) :
   let mixopenv = List.fold_left load_groups mixopenv spec in
   (tdenv, mixopenv)
 
-(* Changing random seed *)
-
-let set_rand (config : t) : unit =
-  config.rand <- config.rand + 1;
-  Random.init config.rand
-
 (* Constructor *)
 
 let init_specenv (spec : spec) (includes_p4 : string list)
@@ -191,9 +185,9 @@ let init_storage (dirname_gen : string) : storage =
 
 let init_seed (cover : FCov.Cover.t) : seed = { cover }
 
-let init (modes : Modes.t) (specenv : specenv) (storage : storage) (seed : seed)
-    =
-  let rand = 2025 in
+let init (randseed : int option) (modes : Modes.t) (specenv : specenv)
+    (storage : storage) (seed : seed) =
+  let rand = Option.value ~default:2025 randseed in
   Random.init rand;
   { rand; modes; specenv; storage; seed }
 

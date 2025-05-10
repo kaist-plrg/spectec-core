@@ -127,6 +127,8 @@ spectec_command_template = [
 name_fuzz_campaign = f"fuzz{loop_idx}"
 
 spectec_init_command = spectec_command_template.copy() + [
+    "-seed",
+    str(loop_idx),
     "-fuel",
     "1",
     "-warm",
@@ -224,6 +226,8 @@ while loop_idx < LOOPS:
         name_fuzz_campaign = f"fuzz{loop_idx}"
 
         spectec_fuzz_command = spectec_command_template.copy() + [
+            "-seed",
+            str(loop_idx),
             "-fuel",
             "10",
             "-warm",
