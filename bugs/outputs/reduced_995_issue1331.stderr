@@ -1,0 +1,4 @@
+hits-likely-05-07-19-26-11/reduced_995_issue1331.p4(6): [--Wwarn=unused] warning: Control MyC is not used; removing
+              control MyC(packet_in pkt, inout ethernet ether)(P p) {
+                      ^^^
+[--Wwarn=missing] warning: Program does not contain a `main' module

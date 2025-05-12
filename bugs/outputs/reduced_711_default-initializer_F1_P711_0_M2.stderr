@@ -1,0 +1,4 @@
+hits-likely-05-07-19-26-11/reduced_711_default-initializer_F1_P711_0_M2.p4(7): [--Wwarn=unused] warning: Control C is not used; removing
+  control C(out bit<32> x)() {
+          ^
+[--Wwarn=missing] warning: Program does not contain a `main' module

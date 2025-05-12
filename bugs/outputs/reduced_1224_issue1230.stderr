@@ -1,0 +1,4 @@
+hits-likely-05-07-19-26-11/reduced_1224_issue1230.p4(9): [--Wwarn=unused] warning: Control c is not used; removing
+ control c() { table t { actions = { NoAction; } size = true; } apply { t.apply(); } }
+         ^
+[--Wwarn=missing] warning: Program does not contain a `main' module

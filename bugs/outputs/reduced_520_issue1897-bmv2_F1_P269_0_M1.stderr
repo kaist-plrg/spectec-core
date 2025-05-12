@@ -1,0 +1,4 @@
+hits-likely-05-07-19-26-11/reduced_520_issue1897-bmv2_F1_P269_0_M1.p4(2): [--Wwarn=unused] warning: 'T' is unused
+extern direct_meter< T > {
+                     ^
+[--Wwarn=missing] warning: Program does not contain a `main' module
