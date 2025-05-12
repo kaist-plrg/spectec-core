@@ -3,16 +3,17 @@ open Sl.Ast
 module Value = Runtime_dynamic_sl.Value
 module Typ = Runtime_dynamic_sl.Typ
 module TDEnv = Runtime_dynamic_sl.Envs.TDEnv
+module Dep = Runtime_testgen.Dep
 open Config
+open Domain.Lib
 open Util.Source
 
 (* Kinds of mutations *)
 
-type kind = GenFromTyp | ConvertFBitToFInt | MutateList | MixopGroup
+type kind = GenFromTyp | MutateList | MixopGroup
 
 let string_of_kind = function
   | GenFromTyp -> "GenFromTyp"
-  | ConvertFBitToFInt -> "ConvertFBitToFInt"
   | MutateList -> "MutateList"
   | MixopGroup -> "MixopGroup"
 
@@ -362,15 +363,95 @@ let mutate_walk (tdenv : TDEnv.t) (groups : mixopenv) (value : value) :
   let* kind = !kind_found in
   Some (kind, value)
 
+(* Find parent node, if any, in the dependency graph *)
+let find_parent (graph : Dep.Graph.t) (vid_source : vid) : vid option =
+  let find_expand (graph : Dep.Graph.t) (v : vid) : vid list =
+    match Dep.Graph.G.find_opt graph.edges v with
+    | None -> []
+    | Some edges ->
+        Dep.Edges.E.fold
+          (fun (label, target_vid) () acc ->
+            match label with Dep.Edges.Expand -> target_vid :: acc | _ -> acc)
+          edges []
+  in
+  let parents = find_expand graph vid_source in
+  assert (List.length parents <= 1);
+  parents |> Rand.random_select
+
+(* Find closest parent declaration in the dependency graph *)
+let find_closest_decl (graph : Dep.Graph.t) (vid_source : vid) : vid option =
+  let rec find_decl_ancestor (graph : Dep.Graph.t) (vid : vid) : vid option =
+    let open Dep in
+    match Graph.G.find_opt graph.edges vid with
+    | None -> None
+    | Some edges -> (
+        let parent_id =
+          Edges.E.fold
+            (fun (label, parent_vid) () acc ->
+              match label with Expand -> parent_vid :: acc | _ -> acc)
+            edges []
+        in
+        match parent_id with
+        | parent :: [] -> (
+            match Graph.G.find_opt graph.nodes parent with
+            | Some (mirror, _) -> (
+                match mirror.it with
+                | CaseN (mixop, _) -> (
+                    match mixop with
+                    | [ [ { it = Atom "ConstD"; _ } ]; []; []; [] ]
+                    | [ [ { it = Atom "VarD"; _ } ]; []; []; [] ]
+                    | [ [ { it = Atom "ErrD"; _ } ]; [] ]
+                    | [ [ { it = Atom "MatchKindD"; _ } ]; [] ]
+                    | [ [ { it = Atom "InstD"; _ } ]; []; []; []; []; [] ]
+                    | [ [ { it = Atom "StructD"; _ } ]; []; []; [] ]
+                    | [ [ { it = Atom "HeaderD"; _ } ]; []; []; [] ]
+                    | [ [ { it = Atom "UnionD"; _ } ]; []; []; [] ]
+                    | [ [ { it = Atom "EnumD"; _ } ]; []; [] ]
+                    | [ [ { it = Atom "SEnumD"; _ } ]; []; []; [] ]
+                    | [ [ { it = Atom "NewTypeD"; _ } ]; []; [] ]
+                    | [ [ { it = Atom "TypeDefD"; _ } ]; []; [] ]
+                    | [ [ { it = Atom "ValueSetD"; _ } ]; []; []; [] ]
+                    | [ [ { it = Atom "ParserTypeD"; _ } ]; []; []; [] ]
+                    | [ [ { it = Atom "ParserD"; _ } ]; []; []; []; []; [] ]
+                    | [ [ { it = Atom "TableD"; _ } ]; []; [] ]
+                    | [ [ { it = Atom "ControlTypeD"; _ } ]; []; []; [] ]
+                    | [ [ { it = Atom "ControlD"; _ } ]; []; []; []; []; [] ]
+                    | [ [ { it = Atom "ActionD"; _ } ]; []; []; [] ]
+                    | [ [ { it = Atom "FuncD"; _ } ]; []; []; []; []; [] ]
+                    | [ [ { it = Atom "ExternFuncD"; _ } ]; []; []; []; [] ]
+                    | [ [ { it = Atom "ExternObjectD"; _ } ]; []; []; [] ]
+                    | [ [ { it = Atom "PackageTypeD"; _ } ]; []; []; [] ] ->
+                        parent |> Option.some
+                    | _ -> find_decl_ancestor graph parent)
+                | _ ->
+                    find_decl_ancestor graph parent
+                    (* recurse upward from this parent *))
+            | None -> None)
+        | _ -> None)
+  in
+  find_decl_ancestor graph vid_source
+
 (* Entry point for mutation *)
 
-let mutate (tdenv : TDEnv.t) (groups : mixopenv) (value : value) :
-    (kind * value) option =
+let mutate (tdenv : TDEnv.t) (groups : mixopenv) (graph : Dep.Graph.t)
+    (vid_source : vid) : (kind * value) option =
+  let expand =
+    [
+      (fun () -> find_parent graph vid_source);
+      (fun () -> find_closest_decl graph vid_source);
+      (fun () -> vid_source |> Option.some);
+    ]
+  in
+  let vid_expanded = Rand.random_select expand |> Option.get in
+  let vid_target =
+    match vid_expanded () with Some vid -> vid | None -> vid_source
+  in
+  let value = Dep.Graph.reassemble_node graph VIdMap.empty vid_target in
   let mutations = [ (fun () -> mutate_walk tdenv groups value) ] in
   let* mutation = Rand.random_select mutations in
   mutation ()
 
 let mutates (fuel_mutate : int) (tdenv : TDEnv.t) (groups : mixopenv)
-    (value : value) : (kind * value) list =
-  List.init fuel_mutate (fun _ -> mutate tdenv groups value)
+    (graph : Dep.Graph.t) (vid_source : vid) : (kind * value) list =
+  List.init fuel_mutate (fun _ -> mutate tdenv groups graph vid_source)
   |> List.filter_map Fun.id

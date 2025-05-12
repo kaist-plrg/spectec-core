@@ -236,7 +236,7 @@ let fuzz_mutation (fuel : int) (pid : pid) (idx_method : int) (trials : int ref)
   (* Mutate the AST *)
   let mutations =
     Mutate.mutates Config.trials_mutation config.specenv.tdenv
-      config.specenv.mixopenv value_source
+      config.specenv.mixopenv graph vid_source
   in
   (* Generate the mutated program *)
   List.iteri
@@ -267,28 +267,9 @@ let fuzz_derivations (fuel : int) (pid : pid) (trials : int ref)
           F.asprintf "// Intended pid %d\n// Source vid %d\n// Depth %d\n" pid
             vid_source depth
         in
-        let find_expand (graph : Dep.Graph.t) (v : vid) : vid list =
-          match Dep.Graph.G.find_opt graph.edges v with
-          | None -> []
-          | Some edges ->
-              Dep.Edges.E.fold
-                (fun (label, target_vid) () acc ->
-                  match label with
-                  | Dep.Edges.Expand -> target_vid :: acc
-                  | _ -> acc)
-                edges []
-        in
-        let vid_parent =
-          match find_expand graph vid_source |> Rand.random_select with
-          | Some vid_parent -> vid_parent
-          | None -> vid_source
-        in
-        let vid_mutate =
-          [ vid_source; vid_parent ] |> Rand.random_select |> Option.get
-        in
         fuzz_mutation fuel pid idx_derivation trials config log query
           dirname_gen_tmp filename_p4 comment_gen_p4 graph vid_program
-          vid_mutate)
+          vid_source)
     derivations_source
 
 let fuzz_derivations_bounded (fuel : int) (pid : pid) (config : Config.t)
