@@ -1,1 +1,0 @@
-match_kind { a }

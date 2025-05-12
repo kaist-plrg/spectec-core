@@ -1,1 +1,0 @@
-typedef bit a;
