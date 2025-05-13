@@ -379,3 +379,30 @@ Similar to other default parameter bugs.
 40. [DUPLICATE] reduced_739_issue1025-bmv2_F1_P6_1_M0.stderr
 
 Same as: `reduced_854_issue1025-bmv2_F1_P6_1_M0.stderr`.
+
+41. [BUG] reduced_662_table-key-serenum-bmv2_F1_P43_2_M0.stderr
+
+```p4
+enum bit<16> EthTypes {
+    b = ((bool) ({ , ... })),
+}
+```
+Raises `Compiler Bug: /usr/src/packages/BUILD/frontends/p4/typeChecking/typeChecker.cpp:214: Null srcType`
+Explicit casting in Serializable Enum fields cause cras
+
+42. [DUPLICATE] reduced_599_v1model-digest-containing-ser-enum_F1_P43_1_M0.stderr
+
+```p4
+enum bit<8> MySerEnum1 {
+  foo = 28,
+  bar = ((string) (true)),
+  gah = 42
+};
+```
+Same as: `reduced_662_table-key-serenum-bmv2_F1_P43_2_M0.stderr`, but here casting to string is not allowed in the first place.
+
+43. [DUPLICATE] reduced_667_v1model-digest-containing-ser-enum_F1_P43_1_M0.stderr
+
+Same as: `reduced_599_v1model-digest-containing-ser-enum_F1_P43_1_M0.stderr`
+
+
