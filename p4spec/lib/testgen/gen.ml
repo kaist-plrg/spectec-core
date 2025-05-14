@@ -240,7 +240,7 @@ let fuzz_mutation (fuel : int) (pid : pid) (idx_method : int) (trials : int ref)
   in
   (* Generate the mutated program *)
   List.iteri
-    (fun idx_mutation (kind, value_mutated) ->
+    (fun idx_mutation (kind, value_source, value_mutated) ->
       if !trials < Config.trials_seed && FCov.is_miss config.seed.cover pid then (
         trials := !trials + 1;
         F.asprintf "[Mutated] %s\n" (Sl.Print.string_of_value value_mutated)

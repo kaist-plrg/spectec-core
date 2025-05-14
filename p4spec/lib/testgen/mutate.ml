@@ -434,24 +434,25 @@ let find_closest_decl (graph : Dep.Graph.t) (vid_source : vid) : vid option =
 (* Entry point for mutation *)
 
 let mutate (tdenv : TDEnv.t) (groups : mixopenv) (graph : Dep.Graph.t)
-    (vid_source : vid) : (kind * value) option =
-  let expand =
+    (vid_source : vid) : (kind * value * value) option =
+  let expansions =
     [
       (fun () -> find_parent graph vid_source);
-      (fun () -> find_closest_decl graph vid_source);
+      (*(fun () -> find_closest_decl graph vid_source);*)
       (fun () -> vid_source |> Option.some);
     ]
   in
-  let vid_expanded = Rand.random_select expand |> Option.get in
-  let vid_target =
-    match vid_expanded () with Some vid -> vid | None -> vid_source
+  let expansion = Rand.random_select expansions |> Option.get in
+  let vid_source =
+    match expansion () with Some vid -> vid | None -> vid_source
   in
-  let value = Dep.Graph.reassemble_node graph VIdMap.empty vid_target in
-  let mutations = [ (fun () -> mutate_walk tdenv groups value) ] in
+  let value_source = Dep.Graph.reassemble_node graph VIdMap.empty vid_source in
+  let mutations = [ (fun () -> mutate_walk tdenv groups value_source) ] in
   let* mutation = Rand.random_select mutations in
-  mutation ()
+  let* kind, value_mutated = mutation () in
+  (kind, value_source, value_mutated) |> Option.some
 
 let mutates (fuel_mutate : int) (tdenv : TDEnv.t) (groups : mixopenv)
-    (graph : Dep.Graph.t) (vid_source : vid) : (kind * value) list =
+    (graph : Dep.Graph.t) (vid_source : vid) : (kind * value * value) list =
   List.init fuel_mutate (fun _ -> mutate tdenv groups graph vid_source)
   |> List.filter_map Fun.id
