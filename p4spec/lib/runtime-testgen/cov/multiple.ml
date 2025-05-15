@@ -76,6 +76,23 @@ module Cover = struct
     List.fold_left (init_def ignores) empty spec
 end
 
+(* Querying coverage *)
+
+let is_hit (cover : Cover.t) (pid : pid) : bool =
+  let branch = Cover.find pid cover in
+  match branch.status with Hit _ -> true | Miss _ -> false
+
+let is_miss (cover : Cover.t) (pid : pid) : bool =
+  let branch = Cover.find pid cover in
+  match branch.status with Hit _ -> false | Miss _ -> true
+
+let is_close_miss (cover : Cover.t) (pid : pid) : bool =
+  let branch = Cover.find pid cover in
+  match branch.status with
+  | Hit _ -> false
+  | Miss (filenames) ->
+      List.length filenames > 0
+
 (* Measuring coverage *)
 
 let measure_coverage (cover : Cover.t) : int * int * float =

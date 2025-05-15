@@ -132,8 +132,6 @@ let run_testgen_command =
        flag "-cold" (optional string) ~doc:"seed p4 directory for cold boot"
      and filename_boot =
        flag "-warm" (optional string) ~doc:"coverage file for warm boot"
-     and filename_target =
-       flag "-target" (optional string) ~doc:"file for target mode"
      and random = flag "-random" no_arg ~doc:"randomize AST selection"
      and hybrid =
        flag "-hybrid" no_arg
@@ -163,11 +161,6 @@ let run_testgen_command =
                Format.asprintf "Error: should specify either -cold or -warm\n"
                |> failwith
          in
-         let targetmode =
-           match filename_target with
-           | Some filename_target -> Testgen.Modes.Target filename_target
-           | None -> Testgen.Modes.Roundrobin
-         in
          let mutationmode =
            if random then Testgen.Modes.Random
            else if hybrid then Testgen.Modes.Hybrid
@@ -177,7 +170,7 @@ let run_testgen_command =
            if strict then Testgen.Modes.Strict else Testgen.Modes.Relaxed
          in
          Testgen.Gen.fuzz_typing fuel spec_sl includes_p4 filenames_ignore
-           dirname_gen name_campaign randseed logmode bootmode targetmode
+           dirname_gen name_campaign randseed logmode bootmode
            mutationmode covermode
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)

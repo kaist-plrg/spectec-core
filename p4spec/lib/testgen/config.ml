@@ -5,7 +5,6 @@ module TDEnv = Runtime_dynamic_sl.Envs.TDEnv
 module Ignore = Runtime_testgen.Cov.Ignore
 module SCov = Runtime_testgen.Cov.Single
 module MCov = Runtime_testgen.Cov.Multiple
-module FCov = Runtime_testgen.Cov.Fuzz
 
 (* Hyperparameters for the fuzzing loop *)
 
@@ -70,7 +69,7 @@ type storage = {
 
 (* Seed for the fuzz campaign *)
 
-type seed = { mutable cover : FCov.Cover.t }
+type seed = { mutable cover : MCov.Cover.t }
 
 (* Configuration for the fuzz campaign *)
 
@@ -183,7 +182,7 @@ let init_storage (dirname_gen : string) : storage =
     dirname_illformed_p4;
   }
 
-let init_seed (cover : FCov.Cover.t) : seed = { cover }
+let init_seed (cover : MCov.Cover.t) : seed = { cover }
 
 let init (randseed : int option) (modes : Modes.t) (specenv : specenv)
     (storage : storage) (seed : seed) =
@@ -199,19 +198,19 @@ let update_hit_seed (config : t) (filename_p4 : string) (wellformed : bool)
   let cover_seed =
     PIdSet.fold
       (fun pid_hit cover_seed ->
-        let branch : FCov.Branch.t = FCov.Cover.find pid_hit cover_seed in
+        let branch : MCov.Branch.t = MCov.Cover.find pid_hit cover_seed in
         let branch =
           match branch.status with
           | Hit (likely, filenames_p4) ->
               let likely = likely && not (wellformed && welltyped) in
               let filenames_p4 = filename_p4 :: filenames_p4 in
-              FCov.Branch.{ branch with status = Hit (likely, filenames_p4) }
+              MCov.Branch.{ branch with status = Hit (likely, filenames_p4) }
           | _ ->
               let likely = not (wellformed && welltyped) in
               let filenames_p4 = [ filename_p4 ] in
-              FCov.Branch.{ branch with status = Hit (likely, filenames_p4) }
+              MCov.Branch.{ branch with status = Hit (likely, filenames_p4) }
         in
-        FCov.Cover.add pid_hit branch cover_seed)
+        MCov.Cover.add pid_hit branch cover_seed)
       pids_hit cover_seed
   in
   config.seed.cover <- cover_seed
@@ -222,11 +221,11 @@ let update_close_miss_seed (config : t) (filename_p4 : string)
   let cover_seed =
     PIdSet.fold
       (fun pid_close_miss cover_seed ->
-        let branch = FCov.Cover.find pid_close_miss cover_seed in
+        let branch = MCov.Cover.find pid_close_miss cover_seed in
         let branch =
-          FCov.Branch.{ branch with status = Miss ([ filename_p4 ], []) }
+          MCov.Branch.{ branch with status = Miss ([ filename_p4 ]) }
         in
-        FCov.Cover.add pid_close_miss branch cover_seed)
+        MCov.Cover.add pid_close_miss branch cover_seed)
       pids_close_miss cover_seed
   in
   config.seed.cover <- cover_seed
