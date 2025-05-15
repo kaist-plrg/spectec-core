@@ -1,57 +1,64 @@
 from enum import Enum
 from datetime import datetime
 from typing import Dict, List, Tuple, TextIO, Union, NewType
+from typedefs import *
 
 #
 # Coverage management
 #
 
-#
-# Type aliases
-#
-PID = int
-Origin = str  # function or relation that the PID belongs to
-Filepath = NewType("Filepath", str)
-Basename = NewType("Basename", str)
-Directory = NewType("Directory", str)
+
+def union_coverage(coverage1: Coverage, coverage2: Coverage) -> Coverage:
+    coverage_union: Coverage = coverage1.copy()
+    for origin in coverage1:
+        for pid, entry in coverage1[origin].items():
+            if origin in coverage2 and pid in coverage2[origin]:
+                coverage_union[origin][pid] = union_entry(entry, coverage2[origin][pid])
+            else:
+                coverage_union[origin][pid] = entry
+    return coverage_union
 
 
-class Status(Enum):
-    HIT_LIKELY = 1
-    HIT_UNLIKELY = 2
-    CLOSE_MISS = 3
-    COMPLETE_MISS = 4
-
-
-CoverageEntry = Tuple[Status, List[Filepath]]
-Coverage = Dict[Origin, Dict[PID, CoverageEntry]]
-Reductions = Dict[PID, List[Filepath]]
-
-def union(coverage_entry1: CoverageEntry, coverage_entry2: CoverageEntry) -> CoverageEntry:
+def union_entry(
+    coverage_entry1: CoverageEntry, coverage_entry2: CoverageEntry
+) -> CoverageEntry:
     status1, files1 = coverage_entry1
     status2, files2 = coverage_entry2
     if status1 == Status.HIT_LIKELY and status2 == Status.HIT_LIKELY:
         return (Status.HIT_LIKELY, list(set(files1 + files2)))
 
-    if status1 == Status.HIT_LIKELY and status2 == Status.HIT_UNLIKELY
-        or status1 == Status.HIT_UNLIKELY and status2 == Status.HIT_LIKELY
-        or status1 == Status.HIT_UNLIKELY and status2 == Status.HIT_UNLIKELY:
+    elif (
+        status1 == Status.HIT_LIKELY
+        and status2 == Status.HIT_UNLIKELY
+        or status1 == Status.HIT_UNLIKELY
+        and status2 == Status.HIT_LIKELY
+        or status1 == Status.HIT_UNLIKELY
+        and status2 == Status.HIT_UNLIKELY
+    ):
         return (Status.HIT_UNLIKELY, list(set(files1 + files2)))
 
-    if (status1 == Status.HIT_LIKELY or status1 == Status.HIT_UNLIKELY)
-        and (status2 == Status.CLOSE_MISS or status2 == Status.COMPLETE_MISS):
+    elif (status1 == Status.HIT_LIKELY or status1 == Status.HIT_UNLIKELY) and (
+        status2 == Status.CLOSE_MISS or status2 == Status.COMPLETE_MISS
+    ):
         return (status1, files1)
 
-    if (status1 == Status.CLOSE_MISS or status1 == Status.COMPLETE_MISS)
-        and (status2 == Status.HIT_LIKELY or status1 == Status.HIT_UNLIKELY):
+    elif (status1 == Status.CLOSE_MISS or status1 == Status.COMPLETE_MISS) and (
+        status2 == Status.HIT_LIKELY or status1 == Status.HIT_UNLIKELY
+    ):
         return (status2, files2)
 
-    if status1 == Status.CLOSE_MISS and status2 == Status.CLOSE_MISS
-        or status1 == Status.COMPLETE_MISS and status2 == Status.CLOSE_MISS
-        or status1 == Status.CLOSE_MISS and status2 == Status.COMPLETE_MISS:
+    elif (
+        status1 == Status.CLOSE_MISS
+        and status2 == Status.CLOSE_MISS
+        or status1 == Status.COMPLETE_MISS
+        and status2 == Status.CLOSE_MISS
+        or status1 == Status.CLOSE_MISS
+        and status2 == Status.COMPLETE_MISS
+    ):
         return (Status.CLOSE_MISS, list(set(files1 + files2)))
 
-    if status1 == Status.COMPLETE_MISS and status2 == Status.COMPLETE_MISS:
+    # status1 == Status.COMPLETE_MISS and status2 == Status.COMPLETE_MISS:
+    else:
         return (Status.COMPLETE_MISS, [])
 
 

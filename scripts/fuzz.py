@@ -3,24 +3,17 @@ import subprocess
 import shutil
 import argparse
 import time
+from typedefs import *
 from typing import Dict, List, Tuple, Union, Optional
 from coverage_utils import (
     read_coverage,
     write_coverage,
-    write_reductions,
+    union_coverage,
     read_reductions,
-    Status,
+    write_reductions,
     log,
-    PID,
-    Origin,
-    Basename,
-    CoverageEntry,
-    Coverage,
-    Directory,
-    Filepath,
-    Reductions,
 )
-from reduce import reduce_program
+from reduce import reduce_program, reduce_from_coverage
 
 
 #
@@ -131,6 +124,13 @@ print(f"[CONFIG] P4CHERRY_PATH: {P4SPECTEC_DIR}")
 
 CORES: Union[int, None] = args.cores
 
+
+C_REDUCE_CONFIGS: CReduceConfigs = {
+    "p4spectec_dir": P4SPECTEC_DIR,
+    "cores": CORES,
+    "timeout_interesting": args.timeout,
+    "timeout_creduce": args.timeout_creduce,
+}
 #
 # Main fuzzing loop
 #
@@ -176,141 +176,127 @@ result = subprocess.run(spectec_init_command, check=True)
 # Fuzzing loop: reduce and generate
 #
 
+
+# Initialize based on fuzz0
+
 total_coverage: Coverage = {}
 fuzzer_coverage: Coverage = {}
 reductions: Reductions = {}
-MAX_REDUCTIONS: int = 0
+MAX_REDUCTIONS_PER_PID: int = 0
 TARGETED = True
 REDUCE = True
 RESUMED: bool = False
 
+#
+# From the initial fuzz cycle, we aim to generate a good seed pool,
+# and take the seed coverage as total coverage.
+#
+
+initial_coverage_file: Filepath = Filepath(
+    os.path.join(WORK_DIR, "fuzz0", "final.coverage")
+)
+total_coverage = read_coverage(initial_coverage_file)
+
+#
+# partition the coverage into Close-misses(to reduce) and others
+#
+fuzzer_coverage = total_coverage.copy()
+for origin in total_coverage:
+    for pid, (status, filenames) in total_coverage[origin].items():
+        if status == Status.CLOSE_MISS:
+            fuzzer_coverage[origin][pid] = (status, [])
+
+#
+# In the following loops,
+#
+# 1) the fuzzer takes {a fuzzer coverage} which holds the programs targeted for mutation (reduced programs only).
+#   and only mutates the programs in this list, returning {a fuzzer coverage} with any new findings through mutation.
+#
+# 2) the reducer takes {a reducer coverage} and reduces the smallest file for each close-missed phantom id,
+#   returning {a reductions file} containing the accumulated list of reductions per pid.
+#
 
 while loop_idx < LOOPS:
     print(f"\n[DEBUG] === Starting loop {loop_idx} ===")
 
     # Get and read the fuzzer output coverage file
     name_fuzz_campaign = f"fuzz{loop_idx}"
-    prev_coverage_file: Filepath = Filepath(
-        os.path.join(WORK_DIR, name_fuzz_campaign, "final.coverage")
-    )
-    fuzzer_coverage = read_coverage(prev_coverage_file)
-    
-    reducer_coverage: Coverage = {}
-    # partition the coverage into Close-misses and others
-    for origin in fuzzer_coverage:
-        for pid, (status, filenames) in fuzzer_coverage[origin].items():
-            if status == Status.CLOSE_MISS:
-                if origin not in reducer_coverage:
-                    reducer_coverage[origin] = {}
-                reducer_coverage[origin][pid] = (status, filenames)
-                fuzzer_coverage[origin][pid] = (status, {})
+    if loop_idx > 0:
+        prev_coverage_file: Filepath = Filepath(
+            os.path.join(WORK_DIR, name_fuzz_campaign, "final.coverage")
+        )
+        fuzzer_coverage = read_coverage(prev_coverage_file)
 
-
-    # Setup the directory for reduction
     name_reduce_campaign: str = f"reduce{loop_idx}"
     reduce_dir: Directory = Directory(os.path.join(WORK_DIR, name_reduce_campaign))
     os.makedirs(reduce_dir, exist_ok=True)
 
     # Source from reduction output if resumed (legacy)
-    if RESUMED and loop_idx > 0:
-        prev_reductions_file: Filepath = Filepath(
-            os.path.join(WORK_DIR, f"reduce{loop_idx-1}", "reduced.reductions")
-        )
-        reductions = read_reductions(prev_reductions_file)
+    # if RESUMED and loop_idx > 0:
+    #     prev_reductions_file: Filepath = Filepath(
+    #         os.path.join(WORK_DIR, f"reduce{loop_idx-1}", "reduced.reductions")
+    #     )
+    #     reductions = read_reductions(prev_reductions_file)
 
-    global_log_path: Filepath = Filepath(os.path.join(reduce_dir, "reducer.log"))
-    with open(global_log_path, "a") as global_log_file:
-        # Reduce the smallest file for each close-missed phantom id
-        for origin in reducer_coverage:
-            for pid, (status, filenames) in reducer_coverage[origin].items():
+    # run reducer
+    reduce_from_coverage(
+        total_coverage,
+        fuzzer_coverage,
+        MAX_REDUCTIONS_PER_PID,
+        reductions,
+        reduce_dir,
+        C_REDUCE_CONFIGS,
+        TARGETED,
+    )
 
-                if MAX_REDUCTIONS > 0 and pid in reductions and len(reductions[pid]) >= MAX_REDUCTIONS:
-                    log(f"Skipping: Already reduced {MAX_REDUCTIONS} files for pid={pid}", global_log_file)
-                    continue
-
-                # Check if the filenames are valid
-                filenames_valid: List[Filepath] = [
-                    Filepath(f) for f in filenames if os.path.isfile(f)
-                ]
-                # Find the smallest unreduced file and reduce it
-                filenames_unreduced: List[Filepath] = [
-                    f
-                    for f in filenames_valid
-                    if not os.path.basename(f).startswith("r_")
-                ]
-
-                if not filenames_unreduced:
-                    log(
-                        f"Skipping: No unreduced files found for pid={pid}",
-                        global_log_file,
-                    )
-                    continue
-                smallest_file: Filepath = min(filenames_unreduced, key=os.path.getsize)
-                reducer_result: Optional[Filepath] = reduce_program(
-                    reduce_dir,
-                    pid,
-                    smallest_file,
-                    P4SPECTEC_DIR,
-                    CORES,
-                    args.timeout,
-                    args.timeout_creduce,
-                )
-                if reduced_file is None:
-                    log(
-                        f"Failed to reduce {smallest_file} for pid={pid}",
-                        global_log_file,
-                    )
-                    continue
-                reduced_file: Filepath = reducer_result[0]
-
-                # update total coverage: substitute original with reduced file
-                total_coverage[origin][pid][1].remove(smallest_file)
-                total_coverage[origin][pid][1].append(reduced_file)
-
-
-                # if TARGETED, append the new file to just the target PID
-                if TARGETED:
-                    fuzzer_coverage[origin][pid][1].append(reduced_file)
-                    #
-                # if not TARGETED, append the new file to all PIDs
-                else:
-                    for origin in fuzzer_coverage:
-                        for pid, (status, filenames) in fuzzer_coverage[origin].items():
-                            if status == Status.CLOSE_MISS:
-                                fuzzer_coverage[origin][pid][1].append(reduced_file)
-
-                # update reductions
-                reductions.setdefault(pid, []).append(reduced_file)
-
+    # for non-target mode, measure coverage of reduced seeds
+    if not TARGETED:
         # Output the reduced files as a coverage file
-        fuzzer_coverage_file: Filepath = Filepath(
-            os.path.join(reduce_dir, "target.coverage")
+        reduced_coverage_file: Filepath = Filepath(
+            os.path.join(reduce_dir, "reduced.coverage")
         )
-        write_coverage(reduced_coverage_file, total_coverage)
-
-        # log reductions
-        reductions_file: Filepath = Filepath(
-            os.path.join(reduce_dir, "reduced.reductions")
-        )
-        write_reductions(reductions_file, reductions)
-
-        # Fuzzing with the reduced files
-        loop_idx += 1
-
-        spectec_fuzz_command = spectec_command_template.copy() + [
-            "-seed",
-            str(loop_idx),
-            "-fuel",
-            "1",
-            "-warm",
-            coverage_file,
-            # "-reductions",
-            # reductions_file,
-            "-name",
-            name_fuzz_campaign,
+        spectec_coverage_command = [
+            "./p4spectec",
+            "cover-sl",
+            *SPEC_FILES,
+            "-i",
+            INCLUDE_DIR,
+            *[cmd for file in IGNORE_FILES for cmd in ("-ignore", file)],
+            "-d",
+            os.path.join(reduce_dir, "reduced"),
+            "-cov",
+            reduced_coverage_file,
         ]
 
-        result = subprocess.run(spectec_fuzz_command, check=True)
+    result = subprocess.run(spectec_coverage_command, check=True)
+    reduced_coverage: Coverage = read_coverage(reduced_coverage_file)
+    fuzzer_coverage = union_coverage(fuzzer_coverage, reduced_coverage)
+
+    # Output the reduced files as a coverage file
+    fuzzer_coverage_file: Filepath = Filepath(os.path.join(reduce_dir, "fuzz.coverage"))
+    write_coverage(fuzzer_coverage_file, total_coverage)
+
+    # log reductions
+    reductions_file: Filepath = Filepath(os.path.join(reduce_dir, "reduced.reductions"))
+    write_reductions(reductions_file, reductions)
+
+    # Fuzzing with the reduced files
+    loop_idx += 1
+
+    spectec_fuzz_command = spectec_command_template.copy() + [
+        "-seed",
+        str(loop_idx),
+        "-fuel",
+        "1",
+        "-warm",
+        fuzzer_coverage_file,
+        # "-target",
+        # target_file,
+        "-name",
+        name_fuzz_campaign,
+    ]
+
+    result = subprocess.run(spectec_fuzz_command, check=True)
 
 #
 # End of the fuzzing loop

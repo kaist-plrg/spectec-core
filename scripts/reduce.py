@@ -4,8 +4,9 @@ import time
 import threading
 import argparse
 import shutil
-from typing import Union, TextIO, Optional, NewType
-from coverage_utils import log, Filepath, Basename, Directory
+from typedefs import *
+from typing import Union, TextIO, Optional, NewType, List
+from coverage_utils import log
 from subprocess import Popen
 
 TARGET_SIZE: int = 70  # in bytes
@@ -157,62 +158,91 @@ def reduce_program(
             return None
 
 
-# if __name__ == "__main__":
-#     P4SPECTEC_DIR = os.getenv('P4CHERRY_PATH')
-#     parser = argparse.ArgumentParser(description="Standalone reducer")
-#     parser.add_argument("dir", type=str, help="Working directory")
-#     group = parser.add_mutually_exclusive_group(required=True)
-#     group.add_argument("--coverage", type=str, help="Path to coverage file (batch mode)")
-#     group.add_argument("--file", type=str, help="Single file path (single mode)")
-#     group.add_argument("--target", type=str, help="Target file (batch mode)")
-#     parser.add_argument("--pid", type=str, help="Phantom ID (required if --file is used)")
-#     parser.add_argument("--cores", type=int, default=6, help="Number of creduce cores")
-#     parser.add_argument("--timeout-creduce", type=int, default=25, help="creduce timeout in seconds")
-#     args = parser.parse_args()
 #
-#     if args.file:
-#         if not args.pid:
-#             parser.error("--pid is required when --file is used")
-#         reduce_program(
-#             reduce_dir=args.dir,
-#             pid=args.pid,
-#             filename=args.file,
-#             p4spectec_dir=P4SPECTEC_DIR,
-#             cores=args.cores,
-#             timeout=args.timeout_creduce
-#         )
-#     elif args.coverage:
-#         with open(args.coverage) as f:
-#             for line in f:
-#                 if line.startswith("#"):
-#                     continue
-#                 parts = line.strip().split()
-#                 pid, status = parts[0], parts[1]
-#                 if status != "Miss" or len(parts) <= 3:
-#                     continue
-#                 filenames = parts[3:]
-#                 for filename in filenames:
-#                     reduce_program(
-#                         reduce_dir=args.reduce_dir,
-#                         pid=pid,
-#                         filename=filename,
-#                         p4spectec_dir=args.p4spectec_dir,
-#                         cores=args.cores,
-#                         timeout_creduce=args.timeout_creduce
-#                     )
-#
-#     elif args.target:
-#         with open(args.target) as f:
-#             for line in f:
-#                 parts = line.strip().split()
-#                 if len(parts) != 2:
-#                     continue
-#                 pid, filename = parts
-#                 reduce_program(
-#                     reduce_dir=args.dir,
-#                     pid=pid,
-#                     filename=filename,
-#                     p4spectec_dir=P4SPECTEC_DIR,
-#                     cores=args.cores,
-#                     timeout_creduce=args.timeout_creduce
-#                 )
+# Takes a coverage file and reduces one close-missed program per pid,
+# up to max_reductions_per_pid
+def reduce_from_coverage(
+    total_coverage: Coverage,
+    fuzzer_coverage: Coverage,
+    max_reductions_per_pid: int,
+    reductions: Reductions,
+    reduce_dir: Directory,
+    creduce_configs: CReduceConfigs,
+    targeted: bool,
+):
+    global_log_path: Filepath = Filepath(os.path.join(reduce_dir, "reducer.log"))
+    with open(global_log_path, "a") as global_log_file:
+        # Reduce the smallest file for each close-missed phantom id
+        for origin in total_coverage:
+            for pid, (status, filenames) in total_coverage[origin].items():
+                if status != Status.CLOSE_MISS:
+                    continue
+                if (
+                    max_reductions_per_pid > 0
+                    and pid in reductions
+                    and len(reductions[pid]) >= max_reductions_per_pid
+                ):
+                    log(
+                        f"Skipping: Already reduced {max_reductions_per_pid} files for pid={pid}",
+                        global_log_file,
+                    )
+                    continue
+
+                # Check if filenames are valid
+                filenames_valid: List[Filepath] = [
+                    Filepath(f) for f in filenames if os.path.isfile(f)
+                ]
+                # Find the smallest unreduced file and reduce it
+                filenames_unreduced: List[Filepath] = [
+                    f
+                    for f in filenames_valid
+                    if not os.path.basename(f).startswith("r_")
+                ]
+
+                if not filenames_unreduced:
+                    log(
+                        f"Skipping: No unreduced files found for pid={pid}",
+                        global_log_file,
+                    )
+                    continue
+
+                # Select the smallest file and reduce it
+                smallest_file: Filepath = min(filenames_unreduced, key=os.path.getsize)
+                reducer_result: Optional[Filepath] = reduce_program(
+                    reduce_dir,
+                    pid,
+                    smallest_file,
+                    creduce_configs["p4spectec_dir"],
+                    creduce_configs["cores"],
+                    creduce_configs["timeout_interesting"],
+                    creduce_configs["timeout_creduce"],
+                )
+                if reducer_result is None:
+                    log(
+                        f"Failed to reduce {smallest_file} for pid={pid}",
+                        global_log_file,
+                    )
+                    continue
+                else:
+                    reduced_file: Filepath = Filepath(reducer_result)
+
+                # update total coverage: substitute original with reduced file
+                # MUTATION to total_coverage
+                total_coverage[origin][pid][1].remove(smallest_file)
+                total_coverage[origin][pid][1].append(reduced_file)
+
+                # if TARGETED, append the new file to just the target PID
+                if targeted:
+                    fuzzer_coverage[origin][pid][1].append(reduced_file)
+                    #
+                # if not TARGETED, append the new file to all PIDs
+                # TODO: should instead compute coverage of all reduced files and merge
+                else:
+                    for origin in fuzzer_coverage:
+                        for pid, (status, filenames) in fuzzer_coverage[origin].items():
+                            if status == Status.CLOSE_MISS:
+                                fuzzer_coverage[origin][pid][1].append(reduced_file)
+
+                # update reductions
+                # MUTATION to reductions
+                reductions.setdefault(pid, []).append(reduced_file)
