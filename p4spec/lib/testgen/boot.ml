@@ -22,7 +22,12 @@ let parse_line (line : string) : pid * MCov.Branch.t =
         match status with
         | "Hit_likely" -> MCov.Branch.Hit (true, filenames)
         | "Hit_unlikely" -> MCov.Branch.Hit (false, filenames)
-        | "Miss" -> MCov.Branch.Miss filenames
+        | "Miss" -> (
+            (* Complete Miss is parsed as a newline character instead of an empty list *)
+            if (List.length filenames) == 1 && String.length (List.hd filenames) < 2 then
+              MCov.Branch.Miss []
+            else MCov.Branch.Miss filenames
+          )
         | _ -> assert false
       in
       let origin = origin $ no_region in
