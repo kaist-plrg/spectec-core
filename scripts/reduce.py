@@ -169,7 +169,7 @@ def reduce_from_coverage(
     reduce_dir: Directory,
     creduce_configs: CReduceConfigs,
     targeted: bool,
-):
+) -> None:
     global_log_path: Filepath = Filepath(os.path.join(reduce_dir, "reducer.log"))
     with open(global_log_path, "a") as global_log_file:
         # Reduce the smallest file for each close-missed phantom id
@@ -198,7 +198,6 @@ def reduce_from_coverage(
                     for f in filenames_valid
                     if not os.path.basename(f).startswith("r_")
                 ]
-
                 if not filenames_unreduced:
                     log(
                         f"Skipping: No unreduced files found for pid={pid}",
@@ -237,5 +236,5 @@ def reduce_from_coverage(
                     #
 
                 # update reductions
-                # !! MUTATION to reductions
                 reductions.setdefault(pid, []).append(reduced_file)
+    return None
