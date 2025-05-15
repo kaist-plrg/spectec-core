@@ -263,7 +263,7 @@ def $compatible'_shift(FBitT _, FBitT _) = true
 def $compatible'_shift(typ_l, typ_r) = false
   -- otherwise
 
-rule Expr_ok/bine-shift:
+rule Expr_ok/bine-shift-fbitt:
   p C |- BinE binop expr_l expr_r : BinE binop exprIL_l' exprIL_r' `(typ_l'; ctk)
   -- if binop <- [ SHL, SHR ]
   ----
@@ -274,7 +274,25 @@ rule Expr_ok/bine-shift:
   -- if `(typ_l'; ctk_l') = $annot(exprIL_l')
   -- if `(typ_r'; ctk_r') = $annot(exprIL_r')
   ----
-  -- if ($is_fintt(typ_r') \/ $is_intt(typ_r')) => (ctk_r' = LCTK)
+  -- if $is_fbitt(typ_r')
+  ----
+  -- if ctk = $join_ctk(ctk_l', ctk_r')
+
+rule Expr_ok/bine-shift-intt:
+  p C |- BinE binop expr_l expr_r : BinE binop exprIL_l' exprIL_r' `(typ_l'; ctk)
+  -- if binop <- [ SHL, SHR ]
+  ----
+  -- Expr_ok: p C |- expr_l : exprIL_l
+  -- Expr_ok: p C |- expr_r : exprIL_r
+  ----
+  -- if (exprIL_l', exprIL_r') = $reduce_senums_binary(exprIL_l, exprIL_r, def $compatible_shift)
+  -- if `(typ_l'; ctk_l') = $annot(exprIL_l')
+  -- if `(typ_r'; ctk_r') = $annot(exprIL_r')
+  ----
+  -- if $is_intt(typ_r') \/ $is_fintt(typ_r')
+  -- if ctk_r' = LCTK
+  -- Eval_static: p C |- exprIL_r' ~> val_r'
+  -- if n_r = $get_num(val_r')
   ----
   -- if ctk = $join_ctk(ctk_l', ctk_r')
 

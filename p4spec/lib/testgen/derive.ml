@@ -91,42 +91,42 @@ let debug_phantom (spec : spec) (includes_p4 : string list)
             |> List.sort (fun (_, depth_a) (_, depth_b) ->
                    Int.compare depth_a depth_b)
           in
+          let filename_dot =
+            F.asprintf "%s/%s_p%d_v%d.dot" dirname_debug
+              (Filesys.base ~suffix:".p4" filename_p4)
+              pid vid_related
+          in
+          let oc_dot = open_out filename_dot in
+          Dep.Graph.dot_of_graph graph |> output_string oc_dot;
+          close_out oc_dot;
+          let filename_dot_sub =
+            F.asprintf "%s/%s_p%d_v%d_sub.dot" dirname_debug
+              (Filesys.base ~suffix:".p4" filename_p4)
+              pid vid_related
+          in
+          let oc_dot_sub = open_out filename_dot_sub in
+          "digraph dependencies {\n" |> output_string oc_dot_sub;
+          VIdSet.iter
+            (fun vid ->
+              let node = Dep.Graph.G.find graph.nodes vid in
+              let dot = Dep.Node.dot_of_node vid node in
+              dot ^ "\n" |> output_string oc_dot_sub)
+            vids_visited;
+          VIdSet.iter
+            (fun vid ->
+              let edges = Dep.Graph.G.find graph.edges vid in
+              Dep.Edges.E.iter
+                (fun (label, vid_to) () ->
+                  let dot = Dep.Edges.dot_of_edge vid label vid_to in
+                  dot ^ "\n" |> output_string oc_dot_sub)
+                edges)
+            vids_visited;
+          "}" |> output_string oc_dot_sub;
+          close_out oc_dot_sub;
           match derivations_source with
           | [] ->
               F.asprintf "Failed to derive close-AST for pid %d" pid
-              |> print_endline;
-              let filename_dot =
-                F.asprintf "%s/%s_p%d_v%d.dot" dirname_debug
-                  (Filesys.base ~suffix:".p4" filename_p4)
-                  pid vid_related
-              in
-              let oc_dot = open_out filename_dot in
-              Dep.Graph.dot_of_graph graph |> output_string oc_dot;
-              close_out oc_dot;
-              let filename_dot_sub =
-                F.asprintf "%s/%s_p%d_v%d_sub.dot" dirname_debug
-                  (Filesys.base ~suffix:".p4" filename_p4)
-                  pid vid_related
-              in
-              let oc_dot_sub = open_out filename_dot_sub in
-              "digraph dependencies {\n" |> output_string oc_dot_sub;
-              VIdSet.iter
-                (fun vid ->
-                  let node = Dep.Graph.G.find graph.nodes vid in
-                  let dot = Dep.Node.dot_of_node vid node in
-                  dot ^ "\n" |> output_string oc_dot_sub)
-                vids_visited;
-              VIdSet.iter
-                (fun vid ->
-                  let edges = Dep.Graph.G.find graph.edges vid in
-                  Dep.Edges.E.iter
-                    (fun (label, vid_to) () ->
-                      let dot = Dep.Edges.dot_of_edge vid label vid_to in
-                      dot ^ "\n" |> output_string oc_dot_sub)
-                    edges)
-                vids_visited;
-              "}" |> output_string oc_dot_sub;
-              close_out oc_dot_sub
+              |> print_endline
           | _ ->
               F.asprintf "Found close-AST for pid %d" pid |> print_endline;
               let filename_value =

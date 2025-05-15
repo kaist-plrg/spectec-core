@@ -8633,7 +8633,9 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- let `UnE%%`_expr(unop, expr) = expr'
       -- if unop matches `BNOT`
       -- Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
-      -- let exprIL_e = $reduce_senum_unary(exprIL, $compatible_bnot)
+      -- let exprIL'?{exprIL' <- exprIL'?} = $reduce_senum_unary(exprIL, $compatible_bnot)
+      -- if exprIL'?{exprIL' <- exprIL'?} matches (_)
+      -- let ?(exprIL_e) = exprIL'?{exprIL' <- exprIL'?}
       -- let `(%;%)`_annotIL(typ_e, ctk_e) = $annot(exprIL_e)
 
    ;; ../../../../spec/4e-typing-expr.watsup:111.1-115.43
@@ -8642,7 +8644,9 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- let `UnE%%`_expr(unop, expr) = expr'
       -- if unop matches `LNOT`
       -- Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
-      -- let exprIL_e = $reduce_senum_unary(exprIL, $compatible_lnot)
+      -- let exprIL'?{exprIL' <- exprIL'?} = $reduce_senum_unary(exprIL, $compatible_lnot)
+      -- if exprIL'?{exprIL' <- exprIL'?} matches (_)
+      -- let ?(exprIL_e) = exprIL'?{exprIL' <- exprIL'?}
       -- let `(%;%)`_annotIL(typ_e, ctk_e) = $annot(exprIL_e)
 
    ;; ../../../../spec/4e-typing-expr.watsup:127.1-131.43
@@ -8651,7 +8655,9 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- let `UnE%%`_expr(unop, expr) = expr'
       -- if unop matches `UPLUS`
       -- Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
-      -- let exprIL_e = $reduce_senum_unary(exprIL, $compatible_uplus)
+      -- let exprIL'?{exprIL' <- exprIL'?} = $reduce_senum_unary(exprIL, $compatible_uplus)
+      -- if exprIL'?{exprIL' <- exprIL'?} matches (_)
+      -- let ?(exprIL_e) = exprIL'?{exprIL' <- exprIL'?}
       -- let `(%;%)`_annotIL(typ_e, ctk_e) = $annot(exprIL_e)
 
    ;; ../../../../spec/4e-typing-expr.watsup:143.1-147.43
@@ -8660,7 +8666,9 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- let `UnE%%`_expr(unop, expr) = expr'
       -- if unop matches `UMINUS`
       -- Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
-      -- let exprIL_e = $reduce_senum_unary(exprIL, $compatible_uminus)
+      -- let exprIL'?{exprIL' <- exprIL'?} = $reduce_senum_unary(exprIL, $compatible_uminus)
+      -- if exprIL'?{exprIL' <- exprIL'?} matches (_)
+      -- let ?(exprIL_e) = exprIL'?{exprIL' <- exprIL'?}
       -- let `(%;%)`_annotIL(typ_e, ctk_e) = $annot(exprIL_e)
 
    ;; ../../../../spec/4e-typing-expr.watsup:164.1-177.42
@@ -8670,8 +8678,12 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if binop <- [`PLUS`_binop(), `MINUS`_binop(), `MUL`_binop()]
       -- Expr_ok: `%%|-%:%`(p, C, expr_l, exprIL_l)
       -- Expr_ok: `%%|-%:%`(p, C, expr_r, exprIL_r)
-      -- let (exprIL_l', exprIL_r') = $coerce_binary(exprIL_l, exprIL_r)
-      -- let (exprIL_l'', exprIL_r'') = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_plusminusmult)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_l, exprIL_r)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_l', exprIL_r')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
+      -- let (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_plusminusmult)
+      -- if (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} matches (_)
+      -- let ?((exprIL_l'', exprIL_r'')) = (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?}
       -- let `(%;%)`_annotIL(typ'', ctk_l'') = $annot(exprIL_l'')
       -- let `(%;%)`_annotIL(_typ, ctk_r'') = $annot(exprIL_r'')
       -- let ctk = $join_ctk(ctk_l'', ctk_r'')
@@ -8683,8 +8695,12 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if binop <- [`SPLUS`_binop(), `SMINUS`_binop()]
       -- Expr_ok: `%%|-%:%`(p, C, expr_l, exprIL_l)
       -- Expr_ok: `%%|-%:%`(p, C, expr_r, exprIL_r)
-      -- let (exprIL_l', exprIL_r') = $coerce_binary(exprIL_l, exprIL_r)
-      -- let (exprIL_l'', exprIL_r'') = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_satplusminus)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_l, exprIL_r)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_l', exprIL_r')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
+      -- let (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_satplusminus)
+      -- if (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} matches (_)
+      -- let ?((exprIL_l'', exprIL_r'')) = (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?}
       -- let `(%;%)`_annotIL(typ'', ctk_l'') = $annot(exprIL_l'')
       -- let `(%;%)`_annotIL(_typ, ctk_r'') = $annot(exprIL_r'')
       -- let ctk = $join_ctk(ctk_l'', ctk_r'')
@@ -8696,8 +8712,12 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if binop <- [`DIV`_binop(), `MOD`_binop()]
       -- Expr_ok: `%%|-%:%`(p, C, expr_l, exprIL_l)
       -- Expr_ok: `%%|-%:%`(p, C, expr_r, exprIL_r)
-      -- let (exprIL_l', exprIL_r') = $coerce_binary(exprIL_l, exprIL_r)
-      -- let (exprIL_l'', exprIL_r'') = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_divmod)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_l, exprIL_r)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_l', exprIL_r')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
+      -- let (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_divmod)
+      -- if (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} matches (_)
+      -- let ?((exprIL_l'', exprIL_r'')) = (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?}
       -- let `(%;%)`_annotIL(typ'', ctk_l'') = $annot(exprIL_l'')
       -- let `(%;%)`_annotIL(_typ, ctk') = $annot(exprIL_r'')
       -- if ctk' matches `LCTK`
@@ -8715,73 +8735,111 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if binop <- [`DIV`_binop(), `MOD`_binop()]
       -- Expr_ok: `%%|-%:%`(p, C, expr_l, exprIL_l)
       -- Expr_ok: `%%|-%:%`(p, C, expr_r, exprIL_r)
-      -- let (exprIL_l', exprIL_r') = $coerce_binary(exprIL_l, exprIL_r)
-      -- let (exprIL_l'', exprIL_r'') = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_divmod)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_l, exprIL_r)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_l', exprIL_r')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
+      -- let (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_divmod)
+      -- if (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} matches (_)
+      -- let ?((exprIL_l'', exprIL_r'')) = (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?}
       -- let `(%;%)`_annotIL(typ'', ctk_l'') = $annot(exprIL_l'')
       -- let `(%;%)`_annotIL(_typ, ctk_r'') = $annot(exprIL_r'')
       -- if (ctk_r'' =/= `LCTK`_ctk())
       -- let ctk = $join_ctk(ctk_l'', ctk_r'')
 
    ;; ../../../../spec/4e-typing-expr.watsup:266.1-279.40
-   rule bine-shift: `%%|-%:%`(p, C, expr, `BinE%%%%`_exprIL(binop, exprIL_l', exprIL_r', `(%;%)`_annotIL(typ_l', ctk)))
+   rule bine-shift-fbitt: `%%|-%:%`(p, C, expr, `BinE%%%%`_exprIL(binop, exprIL_l', exprIL_r', `(%;%)`_annotIL(typ_l', ctk)))
       -- if expr matches `BinE%%%`
       -- let `BinE%%%`_expr(binop, expr_l, expr_r) = expr
       -- if binop <- [`SHL`_binop(), `SHR`_binop()]
       -- Expr_ok: `%%|-%:%`(p, C, expr_l, exprIL_l)
       -- Expr_ok: `%%|-%:%`(p, C, expr_r, exprIL_r)
-      -- let (exprIL_l', exprIL_r') = $reduce_senums_binary(exprIL_l, exprIL_r, $compatible_shift)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $reduce_senums_binary(exprIL_l, exprIL_r, $compatible_shift)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_l', exprIL_r')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
       -- let `(%;%)`_annotIL(typ_l', ctk_l') = $annot(exprIL_l')
       -- let `(%;%)`_annotIL(typ_r', ctk_r') = $annot(exprIL_r')
-      -- if (($is_fintt(typ_r') \/ $is_intt(typ_r')) => (ctk_r' = `LCTK`_ctk()))
+      -- if $is_fbitt(typ_r')
       -- let ctk = $join_ctk(ctk_l', ctk_r')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:281.1-294.40
+   ;; ../../../../spec/4e-typing-expr.watsup:281.1-297.40
+   rule bine-shift-intt: `%%|-%:%`(p, C, expr, `BinE%%%%`_exprIL(binop, exprIL_l', exprIL_r', `(%;%)`_annotIL(typ_l', ctk)))
+      -- if expr matches `BinE%%%`
+      -- let `BinE%%%`_expr(binop, expr_l, expr_r) = expr
+      -- if binop <- [`SHL`_binop(), `SHR`_binop()]
+      -- Expr_ok: `%%|-%:%`(p, C, expr_l, exprIL_l)
+      -- Expr_ok: `%%|-%:%`(p, C, expr_r, exprIL_r)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $reduce_senums_binary(exprIL_l, exprIL_r, $compatible_shift)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_l', exprIL_r')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
+      -- let `(%;%)`_annotIL(typ_l', ctk_l') = $annot(exprIL_l')
+      -- let `(%;%)`_annotIL(typ_r', ctk_r') = $annot(exprIL_r')
+      -- if ($is_intt(typ_r') \/ $is_fintt(typ_r'))
+      -- if (ctk_r' = `LCTK`_ctk())
+      -- Eval_static: `%%|-%~>%`(p, C, exprIL_r', val_r')
+      -- let int = $get_num(val_r')
+      -- if int <: nat
+      -- let n_r = int as nat
+      -- let ctk = $join_ctk(ctk_l', ctk_r')
+
+   ;; ../../../../spec/4e-typing-expr.watsup:299.1-312.40
    rule bine-compare-eq: `%%|-%:%`(p, C, expr, `BinE%%%%`_exprIL(binop, exprIL_l', exprIL_r', `(%;%)`_annotIL(`BoolT`_primtyp() as typ, ctk)))
       -- if expr matches `BinE%%%`
       -- let `BinE%%%`_expr(binop, expr_l, expr_r) = expr
       -- if binop <- [`EQ`_binop(), `NE`_binop()]
       -- Expr_ok: `%%|-%:%`(p, C, expr_l, exprIL_l)
       -- Expr_ok: `%%|-%:%`(p, C, expr_r, exprIL_r)
-      -- let (exprIL_l', exprIL_r') = $coerce_binary(exprIL_l, exprIL_r)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_l, exprIL_r)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_l', exprIL_r')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
       -- let `(%;%)`_annotIL(typ', ctk_l') = $annot(exprIL_l')
       -- let `(%;%)`_annotIL(_typ, ctk_r') = $annot(exprIL_r')
       -- if $is_equalable(typ')
       -- let ctk = $join_ctk(ctk_l', ctk_r')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:307.1-320.42
+   ;; ../../../../spec/4e-typing-expr.watsup:325.1-338.42
    rule bine-compare: `%%|-%:%`(p, C, expr, `BinE%%%%`_exprIL(binop, exprIL_l'', exprIL_r'', `(%;%)`_annotIL(`BoolT`_primtyp() as typ, ctk)))
       -- if expr matches `BinE%%%`
       -- let `BinE%%%`_expr(binop, expr_l, expr_r) = expr
       -- if binop <- [`LE`_binop(), `GE`_binop(), `LT`_binop(), `GT`_binop()]
       -- Expr_ok: `%%|-%:%`(p, C, expr_l, exprIL_l)
       -- Expr_ok: `%%|-%:%`(p, C, expr_r, exprIL_r)
-      -- let (exprIL_l', exprIL_r') = $coerce_binary(exprIL_l, exprIL_r)
-      -- let (exprIL_l'', exprIL_r'') = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_compare)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_l, exprIL_r)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_l', exprIL_r')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
+      -- let (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_compare)
+      -- if (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} matches (_)
+      -- let ?((exprIL_l'', exprIL_r'')) = (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?}
       -- let `(%;%)`_annotIL(_typ, ctk_l'') = $annot(exprIL_l'')
       -- let `(%;%)`_annotIL(_typ', ctk_r'') = $annot(exprIL_r'')
       -- let ctk = $join_ctk(ctk_l'', ctk_r'')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:332.1-345.42
+   ;; ../../../../spec/4e-typing-expr.watsup:350.1-363.42
    rule bine-bitwise: `%%|-%:%`(p, C, expr, `BinE%%%%`_exprIL(binop, exprIL_l'', exprIL_r'', `(%;%)`_annotIL(typ'', ctk)))
       -- if expr matches `BinE%%%`
       -- let `BinE%%%`_expr(binop, expr_l, expr_r) = expr
       -- if binop <- [`BAND`_binop(), `BXOR`_binop(), `BOR`_binop()]
       -- Expr_ok: `%%|-%:%`(p, C, expr_l, exprIL_l)
       -- Expr_ok: `%%|-%:%`(p, C, expr_r, exprIL_r)
-      -- let (exprIL_l', exprIL_r') = $coerce_binary(exprIL_l, exprIL_r)
-      -- let (exprIL_l'', exprIL_r'') = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_bitwise)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_l, exprIL_r)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_l', exprIL_r')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
+      -- let (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_bitwise)
+      -- if (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} matches (_)
+      -- let ?((exprIL_l'', exprIL_r'')) = (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?}
       -- let `(%;%)`_annotIL(typ'', ctk_l'') = $annot(exprIL_l'')
       -- let `(%;%)`_annotIL(_typ, ctk_r'') = $annot(exprIL_r'')
       -- let ctk = $join_ctk(ctk_l'', ctk_r'')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:359.1-373.40
+   ;; ../../../../spec/4e-typing-expr.watsup:377.1-391.40
    rule bine-concat-fint: `%%|-%:%`(p, C, expr, `BinE%%%%`_exprIL(`CONCAT`_binop(), exprIL_l', exprIL_r', `(%;%)`_annotIL(typ'', ctk)))
       -- if expr matches `BinE%%%`
       -- let `BinE%%%`_expr(binop, expr_l, expr_r) = expr
       -- if binop matches `CONCAT`
       -- Expr_ok: `%%|-%:%`(p, C, expr_l, exprIL_l)
       -- Expr_ok: `%%|-%:%`(p, C, expr_r, exprIL_r)
-      -- let (exprIL_l', exprIL_r') = $reduce_senums_binary(exprIL_l, exprIL_r, $compatible_concat)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $reduce_senums_binary(exprIL_l, exprIL_r, $compatible_concat)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_l', exprIL_r')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
       -- let `(%;%)`_annotIL(typ_l', ctk_l') = $annot(exprIL_l')
       -- let `(%;%)`_annotIL(typ_r', ctk_r') = $annot(exprIL_r')
       -- let w = ($get_width(typ_l') + $get_width(typ_r'))
@@ -8789,14 +8847,16 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- let typ'' = `FIntT%`_numtyp(w) as typ
       -- let ctk = $join_ctk(ctk_l', ctk_r')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:375.1-389.40
+   ;; ../../../../spec/4e-typing-expr.watsup:393.1-407.40
    rule bine-concat-fbit: `%%|-%:%`(p, C, expr, `BinE%%%%`_exprIL(`CONCAT`_binop(), exprIL_l', exprIL_r', `(%;%)`_annotIL(typ'', ctk)))
       -- if expr matches `BinE%%%`
       -- let `BinE%%%`_expr(binop, expr_l, expr_r) = expr
       -- if binop matches `CONCAT`
       -- Expr_ok: `%%|-%:%`(p, C, expr_l, exprIL_l)
       -- Expr_ok: `%%|-%:%`(p, C, expr_r, exprIL_r)
-      -- let (exprIL_l', exprIL_r') = $reduce_senums_binary(exprIL_l, exprIL_r, $compatible_concat)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $reduce_senums_binary(exprIL_l, exprIL_r, $compatible_concat)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_l', exprIL_r')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
       -- let `(%;%)`_annotIL(typ_l', ctk_l') = $annot(exprIL_l')
       -- let `(%;%)`_annotIL(typ_r', ctk_r') = $annot(exprIL_r')
       -- let w = ($get_width(typ_l') + $get_width(typ_r'))
@@ -8804,20 +8864,24 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- let typ'' = `FBitT%`_numtyp(w) as typ
       -- let ctk = $join_ctk(ctk_l', ctk_r')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:400.1-413.42
+   ;; ../../../../spec/4e-typing-expr.watsup:418.1-431.42
    rule bine-logical: `%%|-%:%`(p, C, expr, `BinE%%%%`_exprIL(binop, exprIL_l, exprIL_r, `(%;%)`_annotIL(`BoolT`_primtyp() as typ, ctk)))
       -- if expr matches `BinE%%%`
       -- let `BinE%%%`_expr(binop, expr_l, expr_r) = expr
       -- if binop <- [`LAND`_binop(), `LOR`_binop()]
       -- Expr_ok: `%%|-%:%`(p, C, expr_l, exprIL_l)
       -- Expr_ok: `%%|-%:%`(p, C, expr_r, exprIL_r)
-      -- let (exprIL_l', exprIL_r') = $coerce_binary(exprIL_l, exprIL_r)
-      -- let (exprIL_l'', exprIL_r'') = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_logical)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_l, exprIL_r)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_l', exprIL_r')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
+      -- let (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} = $reduce_senums_binary(exprIL_l', exprIL_r', $compatible_logical)
+      -- if (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} matches (_)
+      -- let ?((exprIL_l'', exprIL_r'')) = (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?}
       -- let `(%;%)`_annotIL(_typ, ctk_l'') = $annot(exprIL_l'')
       -- let `(%;%)`_annotIL(_typ', ctk_r'') = $annot(exprIL_r'')
       -- let ctk = $join_ctk(ctk_l'', ctk_r'')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:419.1-433.50
+   ;; ../../../../spec/4e-typing-expr.watsup:437.1-451.50
    rule terne: `%%|-%:%`(p, C, expr, `TernE%%%%`_exprIL(exprIL_c, exprIL_t', exprIL_f', `(%;%)`_annotIL(typ', ctk)))
       -- if expr matches `TernE%%%`
       -- let `TernE%%%`_expr(expr_c, expr_t, expr_f) = expr
@@ -8826,13 +8890,15 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if (typ = `BoolT`_primtyp() as typ)
       -- Expr_ok: `%%|-%:%`(p, C, expr_t, exprIL_t)
       -- Expr_ok: `%%|-%:%`(p, C, expr_f, exprIL_f)
-      -- let (exprIL_t', exprIL_f') = $coerce_binary(exprIL_t, exprIL_f)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_t, exprIL_f)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_t', exprIL_f')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
       -- let `(%;%)`_annotIL(typ', ctk_t) = $annot(exprIL_t')
       -- let `(%;%)`_annotIL(_typ, ctk_f) = $annot(exprIL_f')
       -- if ($is_intt(typ') => ((ctk_c = `CTK`_ctk()) \/ (ctk_c = `LCTK`_ctk())))
       -- let ctk = $joins_ctk([ctk_c, ctk_t, ctk_f])
 
-   ;; ../../../../spec/4e-typing-expr.watsup:439.1-447.28
+   ;; ../../../../spec/4e-typing-expr.watsup:457.1-465.28
    rule caste: `%%|-%:%`(p, C, expr, `CastE%%%`_exprIL(typ, exprIL_b, `(%;%)`_annotIL(typ, ctk_b)))
       -- if expr matches `CastE%%`
       -- let `CastE%%`_expr(type, expr_b) = expr
@@ -8843,27 +8909,35 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
       -- if Sub_expl: `%<:%`(typ_b, typ) holds
 
-   ;; ../../../../spec/4e-typing-expr.watsup:464.1-474.7
+   ;; ../../../../spec/4e-typing-expr.watsup:482.1-492.7
    rule maske: `%%|-%:%`(p, C, expr, `MaskE%%%`_exprIL(exprIL_b'', exprIL_m'', `(%;%)`_annotIL(`SetT%`_synthtyp(typ'') as typ, `DYN`_ctk())))
       -- if expr matches `MaskE%%`
       -- let `MaskE%%`_expr(expr_b, expr_m) = expr
       -- Expr_ok: `%%|-%:%`(p, C, expr_b, exprIL_b)
       -- Expr_ok: `%%|-%:%`(p, C, expr_m, exprIL_m)
-      -- let (exprIL_b', exprIL_m') = $coerce_binary(exprIL_b, exprIL_m)
-      -- let (exprIL_b'', exprIL_m'') = $reduce_senums_binary(exprIL_b', exprIL_m', $compatible_mask)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_b, exprIL_m)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_b', exprIL_m')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
+      -- let (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} = $reduce_senums_binary(exprIL_b', exprIL_m', $compatible_mask)
+      -- if (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} matches (_)
+      -- let ?((exprIL_b'', exprIL_m'')) = (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?}
       -- let `(%;%)`_annotIL(typ'', _ctk) = $annot(exprIL_b'')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:492.1-501.42
+   ;; ../../../../spec/4e-typing-expr.watsup:510.1-519.42
    rule rangee: `%%|-%:%`(p, C, expr, `RangeE%%%`_exprIL(exprIL_lb'', exprIL_ub'', `(%;%)`_annotIL(`SetT%`_synthtyp(typ'') as typ, `DYN`_ctk())))
       -- if expr matches `RangeE%%`
       -- let `RangeE%%`_expr(expr_lb, expr_ub) = expr
       -- Expr_ok: `%%|-%:%`(p, C, expr_lb, exprIL_lb)
       -- Expr_ok: `%%|-%:%`(p, C, expr_ub, exprIL_ub)
-      -- let (exprIL_ub', exprIL_lb') = $coerce_binary(exprIL_lb, exprIL_ub)
-      -- let (exprIL_lb'', exprIL_ub'') = $reduce_senums_binary(exprIL_lb', exprIL_ub', $compatible_range)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_lb, exprIL_ub)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_ub', exprIL_lb')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
+      -- let (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} = $reduce_senums_binary(exprIL_lb', exprIL_ub', $compatible_range)
+      -- if (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?} matches (_)
+      -- let ?((exprIL_lb'', exprIL_ub'')) = (exprIL, exprIL)'?{(exprIL, exprIL)' <- (exprIL, exprIL)'?}
       -- let `(%;%)`_annotIL(typ'', _ctk) = $annot(exprIL_lb'')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:571.1-579.68
+   ;; ../../../../spec/4e-typing-expr.watsup:589.1-597.68
    rule selecte: `%%|-%:%`(cursor, C, expr, `SelectE%%%`_exprIL(exprIL_k*{exprIL_k <- exprIL_k*}, selectcaseIL*{selectcaseIL <- selectcaseIL*}, `(%;%)`_annotIL(`StateT`_synthtyp() as typ, `DYN`_ctk())))
       -- if cursor matches `LOCAL`
       -- if expr matches `SelectE%%`
@@ -8874,7 +8948,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- (if Type_wf: `%|-%`($bound_tids(`LOCAL`_cursor(), C), `SetT%`_synthtyp(typ_k) as typ) holds)*{typ_k <- typ_k*}
       -- (Select_case_ok: `%%%|-%:%`(`LOCAL`_cursor(), C, typ_k*{typ_k <- typ_k*}, selectcase, selectcaseIL))*{selectcase <- selectcase*, selectcaseIL <- selectcaseIL*}
 
-   ;; ../../../../spec/4e-typing-expr.watsup:595.1-608.25
+   ;; ../../../../spec/4e-typing-expr.watsup:613.1-626.25
    rule arracce-tuplet: `%%|-%:%`(p, C, expr, `ArrAccE%%%`_exprIL(exprIL_b, exprIL_i', `(%;%)`_annotIL(typ, `DYN`_ctk())))
       -- if expr matches `ArrAccE%%`
       -- let `ArrAccE%%`_expr(expr_b, expr_i) = expr
@@ -8883,7 +8957,9 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- Expr_ok: `%%|-%:%`(p, C, expr_i, exprIL_i)
       -- let `(%;%)`_annotIL(typ_i, ctk) = $annot(exprIL_i)
       -- if ctk matches `LCTK`
-      -- let exprIL_i' = $reduce_senum_unary(exprIL_i, $compatible_arrayindex)
+      -- let exprIL?{exprIL <- exprIL?} = $reduce_senum_unary(exprIL_i, $compatible_arrayindex)
+      -- if exprIL?{exprIL <- exprIL?} matches (_)
+      -- let ?(exprIL_i') = exprIL?{exprIL <- exprIL?}
       -- let typ' = $canon_typ(typ_b)
       -- if typ' <: datatyp
       -- let datatyp = typ' as datatyp
@@ -8895,7 +8971,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- let n = int as nat
       -- let typ = typ_b'*{typ_b' <- typ_b'*}[n]
 
-   ;; ../../../../spec/4e-typing-expr.watsup:610.1-623.33
+   ;; ../../../../spec/4e-typing-expr.watsup:628.1-641.33
    rule arracce-stackt-lctk: `%%|-%:%`(p, C, expr, `ArrAccE%%%`_exprIL(exprIL_b, exprIL_i', `(%;%)`_annotIL(typ_b', `DYN`_ctk())))
       -- if expr matches `ArrAccE%%`
       -- let `ArrAccE%%`_expr(expr_b, expr_i) = expr
@@ -8904,7 +8980,9 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- Expr_ok: `%%|-%:%`(p, C, expr_i, exprIL_i)
       -- let `(%;%)`_annotIL(typ_i, ctk) = $annot(exprIL_i)
       -- if ctk matches `LCTK`
-      -- let exprIL_i' = $reduce_senum_unary(exprIL_i, $compatible_arrayindex)
+      -- let exprIL?{exprIL <- exprIL?} = $reduce_senum_unary(exprIL_i, $compatible_arrayindex)
+      -- if exprIL?{exprIL <- exprIL?} matches (_)
+      -- let ?(exprIL_i') = exprIL?{exprIL <- exprIL?}
       -- let typ = $canon_typ(typ_b)
       -- if typ <: datatyp
       -- let datatyp = typ as datatyp
@@ -8914,7 +8992,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- let i = $get_num(val_i)
       -- if ((0 as int <= i) /\ (i <= i_s))
 
-   ;; ../../../../spec/4e-typing-expr.watsup:625.1-636.44
+   ;; ../../../../spec/4e-typing-expr.watsup:643.1-654.44
    rule arracce-stackt-ctk-dyn: `%%|-%:%`(p, C, expr, `ArrAccE%%%`_exprIL(exprIL_b, exprIL_i', `(%;%)`_annotIL(typ_b', `DYN`_ctk())))
       -- if expr matches `ArrAccE%%`
       -- let `ArrAccE%%`_expr(expr_b, expr_i) = expr
@@ -8923,24 +9001,30 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- Expr_ok: `%%|-%:%`(p, C, expr_i, exprIL_i)
       -- let `(%;%)`_annotIL(typ_i, ctk_i) = $annot(exprIL_i)
       -- if (ctk_i =/= `LCTK`_ctk())
-      -- let exprIL_i' = $reduce_senum_unary(exprIL_i, $compatible_arrayindex)
+      -- let exprIL?{exprIL <- exprIL?} = $reduce_senum_unary(exprIL_i, $compatible_arrayindex)
+      -- if exprIL?{exprIL <- exprIL?} matches (_)
+      -- let ?(exprIL_i') = exprIL?{exprIL <- exprIL?}
       -- let typ = $canon_typ(typ_b)
       -- if typ <: datatyp
       -- let datatyp = typ as datatyp
       -- if datatyp matches `StackT%%`
       -- let `StackT%%`_datatyp(typ_b', _int) = datatyp
 
-   ;; ../../../../spec/4e-typing-expr.watsup:677.1-704.37
+   ;; ../../../../spec/4e-typing-expr.watsup:695.1-722.37
    rule bitacce: `%%|-%:%`(p, C, expr, `BitAccE%%%%`_exprIL(exprIL_b', exprIL_l'', exprIL_h'', `(%;%)`_annotIL(typ, ctk_b')))
       -- if expr matches `BitAccE%%%`
       -- let `BitAccE%%%`_expr(expr_b, expr_l, expr_h) = expr
       -- Expr_ok: `%%|-%:%`(p, C, expr_b, exprIL_b)
-      -- let exprIL_b' = $reduce_senum_unary(exprIL_b, $compatible_bitstringbase)
+      -- let exprIL?{exprIL <- exprIL?} = $reduce_senum_unary(exprIL_b, $compatible_bitstringbase)
+      -- if exprIL?{exprIL <- exprIL?} matches (_)
+      -- let ?(exprIL_b') = exprIL?{exprIL <- exprIL?}
       -- let `(%;%)`_annotIL(typ_b', ctk_b') = $annot(exprIL_b')
       -- Expr_ok: `%%|-%:%`(p, C, expr_l, exprIL_l)
       -- let `(%;%)`_annotIL(typ_l, ctk) = $annot(exprIL_l)
       -- if ctk matches `LCTK`
-      -- let exprIL_l' = $reduce_senum_unary(exprIL_l, $compatible_bitstringindex)
+      -- let exprIL'?{exprIL' <- exprIL'?} = $reduce_senum_unary(exprIL_l, $compatible_bitstringindex)
+      -- if exprIL'?{exprIL' <- exprIL'?} matches (_)
+      -- let ?(exprIL_l') = exprIL'?{exprIL' <- exprIL'?}
       -- Eval_static: `%%|-%~>%`(p, C, exprIL_l', val_l)
       -- let int = $get_num(val_l)
       -- if int <: nat
@@ -8949,7 +9033,9 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- Expr_ok: `%%|-%:%`(p, C, expr_h, exprIL_h)
       -- let `(%;%)`_annotIL(typ_h, ctk') = $annot(exprIL_h)
       -- if ctk' matches `LCTK`
-      -- let exprIL_h' = $reduce_senum_unary(exprIL_h, $compatible_bitstringindex)
+      -- let exprIL''?{exprIL'' <- exprIL''?} = $reduce_senum_unary(exprIL_h, $compatible_bitstringindex)
+      -- if exprIL''?{exprIL'' <- exprIL''?} matches (_)
+      -- let ?(exprIL_h') = exprIL''?{exprIL'' <- exprIL''?}
       -- Eval_static: `%%|-%~>%`(p, C, exprIL_h', val_h)
       -- let int' = $get_num(val_h)
       -- if int' <: nat
@@ -8958,14 +9044,14 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if $is_valid_bitstring_slice(typ_b', n_l, n_h)
       -- let typ = `FBitT%`_numtyp(((n_h - n_l) + 1)) as typ
 
-   ;; ../../../../spec/4e-typing-expr.watsup:710.1-713.46
+   ;; ../../../../spec/4e-typing-expr.watsup:728.1-731.46
    rule erracce: `%%|-%:%`(p, C, expr, `ValueE%%`_exprIL(`ErrV%`_val(member), `(%;%)`_annotIL(`ErrT`_primtyp() as typ, `LCTK`_ctk())))
       -- if expr matches `ErrAccE%`
       -- let `ErrAccE%`_expr(member) = expr
       -- let id = $concat_text(["error.", member])
       -- if (?(`ErrV%`_val(member)) = $find_val(p, C, `TOP%`_name(id)))
 
-   ;; ../../../../spec/4e-typing-expr.watsup:719.1-723.28
+   ;; ../../../../spec/4e-typing-expr.watsup:737.1-741.28
    rule typeacce-enumt: `%%|-%:%`(p, C, expr, `ValueE%%`_exprIL(`EnumFieldV%%`_val(id_t, member), `(%;%)`_annotIL(typ, `LCTK`_ctk())))
       -- if expr matches `TypeAccE%%`
       -- let `TypeAccE%%`_expr(name, member) = expr
@@ -8981,7 +9067,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- let `EnumT%%`_datatyp(id_t, member_t*{member_t <- member_t*}) = datatyp
       -- if member <- member_t*{member_t <- member_t*}
 
-   ;; ../../../../spec/4e-typing-expr.watsup:725.1-729.63
+   ;; ../../../../spec/4e-typing-expr.watsup:743.1-747.63
    rule typeacce-senumt: `%%|-%:%`(p, C, expr, `ValueE%%`_exprIL(`SEnumFieldV%%%`_val(id_t, member, val), `(%;%)`_annotIL(typ, `LCTK`_ctk())))
       -- if expr matches `TypeAccE%%`
       -- let `TypeAccE%%`_expr(name, member) = expr
@@ -8999,7 +9085,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if val'?{val' <- val'?} matches (_)
       -- let ?(val) = val'?{val' <- val'?}
 
-   ;; ../../../../spec/4e-typing-expr.watsup:735.1-739.47
+   ;; ../../../../spec/4e-typing-expr.watsup:753.1-757.47
    rule expracce-stackt-size: `%%|-%:%`(p, C, expr, `ExprAccE%%%`_exprIL(exprIL_b, "size", `(%;%)`_annotIL(`FBitT%`_numtyp(32) as typ, `LCTK`_ctk())))
       -- if expr matches `ExprAccE%%`
       -- let `ExprAccE%%`_expr(expr_b, text) = expr
@@ -9012,7 +9098,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if datatyp matches `StackT%%`
       -- let `StackT%%`_datatyp(typ_s, int_s) = datatyp
 
-   ;; ../../../../spec/4e-typing-expr.watsup:741.1-747.47
+   ;; ../../../../spec/4e-typing-expr.watsup:759.1-765.47
    rule expracce-stackt-lastindex: `%%|-%:%`(p, C, expr, `ExprAccE%%%`_exprIL(exprIL_b, "lastIndex", `(%;%)`_annotIL(`FBitT%`_numtyp(32) as typ, `DYN`_ctk())))
       -- if expr matches `ExprAccE%%`
       -- let `ExprAccE%%`_expr(expr_b, text) = expr
@@ -9026,7 +9112,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if datatyp matches `StackT%%`
       -- let `StackT%%`_datatyp(typ_s, int_s) = datatyp
 
-   ;; ../../../../spec/4e-typing-expr.watsup:749.1-755.47
+   ;; ../../../../spec/4e-typing-expr.watsup:767.1-773.47
    rule expracce-stackt-last: `%%|-%:%`(p, C, expr, `ExprAccE%%%`_exprIL(exprIL_b, "last", `(%;%)`_annotIL(typ_s, `DYN`_ctk())))
       -- if expr matches `ExprAccE%%`
       -- let `ExprAccE%%`_expr(expr_b, text) = expr
@@ -9040,7 +9126,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if datatyp matches `StackT%%`
       -- let `StackT%%`_datatyp(typ_s, int_s) = datatyp
 
-   ;; ../../../../spec/4e-typing-expr.watsup:757.1-761.47
+   ;; ../../../../spec/4e-typing-expr.watsup:775.1-779.47
    rule expracce-stackt-next: `%%|-%:%`(p, C, expr, `ExprAccE%%%`_exprIL(exprIL_b, "next", `(%;%)`_annotIL(typ_s, `DYN`_ctk())))
       -- if expr matches `ExprAccE%%`
       -- let `ExprAccE%%`_expr(expr_b, text) = expr
@@ -9053,7 +9139,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if datatyp matches `StackT%%`
       -- let `StackT%%`_datatyp(typ_s, int_s) = datatyp
 
-   ;; ../../../../spec/4e-typing-expr.watsup:763.1-769.63
+   ;; ../../../../spec/4e-typing-expr.watsup:781.1-787.63
    rule expracce-structt: `%%|-%:%`(p, C, expr, `ExprAccE%%%`_exprIL(exprIL_b, member, `(%;%)`_annotIL(typ, `DYN`_ctk())))
       -- if expr matches `ExprAccE%%`
       -- let `ExprAccE%%`_expr(expr_b, member) = expr
@@ -9068,7 +9154,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if typ''?{typ'' <- typ''?} matches (_)
       -- let ?(typ) = typ''?{typ'' <- typ''?}
 
-   ;; ../../../../spec/4e-typing-expr.watsup:771.1-777.63
+   ;; ../../../../spec/4e-typing-expr.watsup:789.1-795.63
    rule expracce-headert: `%%|-%:%`(p, C, expr, `ExprAccE%%%`_exprIL(exprIL_b, member, `(%;%)`_annotIL(typ, `DYN`_ctk())))
       -- if expr matches `ExprAccE%%`
       -- let `ExprAccE%%`_expr(expr_b, member) = expr
@@ -9083,7 +9169,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if typ''?{typ'' <- typ''?} matches (_)
       -- let ?(typ) = typ''?{typ'' <- typ''?}
 
-   ;; ../../../../spec/4e-typing-expr.watsup:779.1-785.63
+   ;; ../../../../spec/4e-typing-expr.watsup:797.1-803.63
    rule expracce-uniont: `%%|-%:%`(p, C, expr, `ExprAccE%%%`_exprIL(exprIL_b, member, `(%;%)`_annotIL(typ, `DYN`_ctk())))
       -- if expr matches `ExprAccE%%`
       -- let `ExprAccE%%`_expr(expr_b, member) = expr
@@ -9098,7 +9184,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if typ''?{typ'' <- typ''?} matches (_)
       -- let ?(typ) = typ''?{typ'' <- typ''?}
 
-   ;; ../../../../spec/4e-typing-expr.watsup:787.1-793.63
+   ;; ../../../../spec/4e-typing-expr.watsup:805.1-811.63
    rule expracce-tablestructt: `%%|-%:%`(p, C, expr, `ExprAccE%%%`_exprIL(exprIL_b, member, `(%;%)`_annotIL(typ, `DYN`_ctk())))
       -- if expr matches `ExprAccE%%`
       -- let `ExprAccE%%`_expr(expr_b, member) = expr
@@ -9113,7 +9199,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if typ''?{typ'' <- typ''?} matches (_)
       -- let ?(typ) = typ''?{typ'' <- typ''?}
 
-   ;; ../../../../spec/4e-typing-expr.watsup:799.1-809.22
+   ;; ../../../../spec/4e-typing-expr.watsup:817.1-827.22
    rule callfunce: `%%|-%:%`(p, C, expr, `CallFuncE%%%%`_exprIL(name, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*}, `(%;%)`_annotIL(typ, `DYN`_ctk())))
       -- if expr matches `CallFuncE%%%`
       -- let `CallFuncE%%%`_expr(name, targ*{targ <- targ*}, arg*{arg <- arg*}) = expr
@@ -9124,7 +9210,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- Call_ok: `%%%|-%%%%:%%%`(p, C, tid_fresh'*{tid_fresh' <- tid_fresh'*}, ft, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*})
       -- if (typ =/= `VoidT`_primtyp() as typ)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:815.1-821.55
+   ;; ../../../../spec/4e-typing-expr.watsup:833.1-839.55
    rule callmethode: `%%|-%:%`(p, C, expr, `CallMethodE%%%%%`_exprIL(exprIL_b, member, [], [], `(%;%)`_annotIL(`IntT`_numtyp() as typ, `LCTK`_ctk())))
       -- if expr matches `CallMethodE%%%%`
       -- let `CallMethodE%%%%`_expr(expr_b, member, targ*{targ <- targ*}, arg*{arg <- arg*}) = expr
@@ -9137,7 +9223,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if targIL*{targIL <- targIL*} matches []
       -- if argIL*{argIL <- argIL*} matches []
 
-   ;; ../../../../spec/4e-typing-expr.watsup:823.1-835.22
+   ;; ../../../../spec/4e-typing-expr.watsup:841.1-853.22
    rule callmethode: `%%|-%:%`(p, C, expr, `CallMethodE%%%%%`_exprIL(exprIL_b, member, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*}, `(%;%)`_annotIL(typ, `DYN`_ctk())))
       -- if expr matches `CallMethodE%%%%`
       -- let `CallMethodE%%%%`_expr(expr_b, member, targ*{targ <- targ*}, arg*{arg <- arg*}) = expr
@@ -9149,7 +9235,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- Call_ok: `%%%|-%%%%:%%%`(p, C, tid_fresh'*{tid_fresh' <- tid_fresh'*}, ft, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*})
       -- if (typ =/= `VoidT`_primtyp() as typ)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:841.1-849.55
+   ;; ../../../../spec/4e-typing-expr.watsup:859.1-867.55
    rule calltypee: `%%|-%:%`(p, C, expr, `CallTypeE%%%%%`_exprIL(name, member, [], [], `(%;%)`_annotIL(`IntT`_numtyp() as typ, `LCTK`_ctk())))
       -- if expr matches `CallTypeE%%%%`
       -- let `CallTypeE%%%%`_expr(name, member, targ*{targ <- targ*}, arg*{arg <- arg*}) = expr
@@ -9165,7 +9251,7 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if targIL*{targIL <- targIL*} matches []
       -- if argIL*{argIL <- argIL*} matches []
 
-   ;; ../../../../spec/4e-typing-expr.watsup:875.1-885.41
+   ;; ../../../../spec/4e-typing-expr.watsup:893.1-903.41
    rule inste: `%%|-%:%`(p, C, expr, `InstE%%%%`_exprIL(name, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*}, `(%;%)`_annotIL(typ, `CTK`_ctk())))
       -- if expr matches `InstE%%%`
       -- let `InstE%%%`_expr(name, targ*{targ <- targ*}, arg*{arg <- arg*}) = expr
@@ -9179,14 +9265,14 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
 ;; ../../../../spec/4b-typing-relation.watsup:81.1-83.23
 relation Arg_ok: `%%|-%:%%`(cursor, context, arg, argIL, typ)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:891.1-894.35
+   ;; ../../../../spec/4e-typing-expr.watsup:909.1-912.35
    rule expra: `%%|-%:%%`(p, C, arg, `ExprA%`_argIL(exprIL), typ)
       -- if arg matches `ExprA%`
       -- let `ExprA%`_arg(expr) = arg
       -- Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
       -- let `(%;%)`_annotIL(typ, _ctk) = $annot(exprIL)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:896.1-899.35
+   ;; ../../../../spec/4e-typing-expr.watsup:914.1-917.35
    rule namea-some: `%%|-%:%%`(p, C, arg, `NameA%%`_argIL(id, ?(exprIL)), typ)
       -- if arg matches `NameA%%`
       -- let `NameA%%`_arg(id, expr'?{expr' <- expr'?}) = arg
@@ -9195,13 +9281,13 @@ relation Arg_ok: `%%|-%:%%`(cursor, context, arg, argIL, typ)
       -- Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
       -- let `(%;%)`_annotIL(typ, _ctk) = $annot(exprIL)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:901.1-902.44
+   ;; ../../../../spec/4e-typing-expr.watsup:919.1-920.44
    rule expra-none: `%%|-%:%%`(p, C, arg, `NameA%%`_argIL(id, ?()), `AnyT`_synthtyp() as typ)
       -- if arg matches `NameA%%`
       -- let `NameA%%`_arg(id, expr?{expr <- expr?}) = arg
       -- if expr?{expr <- expr?} matches ()
 
-   ;; ../../../../spec/4e-typing-expr.watsup:904.1-905.26
+   ;; ../../../../spec/4e-typing-expr.watsup:922.1-923.26
    rule anya: `%%|-%:%%`(p, C, arg, `AnyA`_argIL(), `AnyT`_synthtyp() as typ)
       -- if arg matches `AnyA`
 
@@ -9275,7 +9361,9 @@ relation Stmt_ok: `%%%|-%:%%%`(cursor, context, flow, stmt, context, flow, stmtI
       -- if Lval_ok: `%%|-%`(p, C, exprIL_l) holds
       -- Expr_ok: `%%|-%:%`(p, C, expr_r, exprIL_r)
       -- let `(%;%)`_annotIL(typ_r, _ctk) = $annot(exprIL_r)
-      -- let exprIL_r' = $coerce_assign(exprIL_r, typ_l)
+      -- let exprIL?{exprIL <- exprIL?} = $coerce_assign(exprIL_r, typ_l)
+      -- if exprIL?{exprIL <- exprIL?} matches (_)
+      -- let ?(exprIL_r') = exprIL?{exprIL <- exprIL?}
 
    ;; ../../../../spec/4f-typing-stmt.watsup:88.1-95.46
    rule switchs-tbl: `%%%|-%:%%%`(cursor, C, f, stmt, C, f', `SwitchS%%`_stmtIL(exprIL, switchcaseIL*{switchcaseIL <- switchcaseIL*}))
@@ -9343,7 +9431,9 @@ relation Stmt_ok: `%%%|-%:%%%`(cursor, context, flow, stmt, context, flow, stmtI
       -- let ?(expr) = expr'?{expr' <- expr'?}
       -- Expr_ok: `%%|-%:%`(`LOCAL`_cursor(), C, expr, exprIL)
       -- let typ_r = $get_typ_ret_lkind(C.LOCAL.KIND)
-      -- let exprIL' = $coerce_assign(exprIL, typ_r)
+      -- let exprIL''?{exprIL'' <- exprIL''?} = $coerce_assign(exprIL, typ_r)
+      -- if exprIL''?{exprIL'' <- exprIL''?} matches (_)
+      -- let ?(exprIL') = exprIL''?{exprIL'' <- exprIL''?}
 
    ;; ../../../../spec/4f-typing-stmt.watsup:208.1-219.81
    rule callfuncs: `%%%|-%:%%%`(p, C, f, stmt, C, f, `CallFuncS%%%`_stmtIL(name, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*}))
@@ -9477,7 +9567,9 @@ relation Decl_ok: `%%|-%:%%`(cursor, context, decl, context, declIL)
       -- Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
       -- let `(%;%)`_annotIL(_typ, ctk) = $annot(exprIL)
       -- if ctk matches `LCTK`
-      -- let exprIL' = $coerce_assign(exprIL, typ_c)
+      -- let exprIL''?{exprIL'' <- exprIL''?} = $coerce_assign(exprIL, typ_c)
+      -- if exprIL''?{exprIL'' <- exprIL''?} matches (_)
+      -- let ?(exprIL') = exprIL''?{exprIL'' <- exprIL''?}
       -- Eval_static: `%%|-%~>%`(p, C, exprIL', val)
       -- let C' = $add_styp(p, C, id, `%%%%`_styp(typ_c, `NO`_dir(), `LCTK`_ctk(), ?(val)))
 
@@ -9503,7 +9595,9 @@ relation Decl_ok: `%%|-%:%%`(cursor, context, decl, context, declIL)
       -- if Type_wf: `%|-%`($bound_tids(p, C), typ) holds
       -- if $is_assignable(typ)
       -- Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
-      -- let exprIL' = $coerce_assign(exprIL, typ)
+      -- let exprIL''?{exprIL'' <- exprIL''?} = $coerce_assign(exprIL, typ)
+      -- if exprIL''?{exprIL'' <- exprIL''?} matches (_)
+      -- let ?(exprIL') = exprIL''?{exprIL'' <- exprIL''?}
       -- let C' = $add_styp(p, C, id, `%%%%`_styp(typ, `INOUT`_dir(), `DYN`_ctk(), ?()))
 
    ;; ../../../../spec/4g-typing-decl.watsup:152.1-178.51
@@ -9988,7 +10082,9 @@ relation Call_convention_ok: `%%%|-%~~%:%`(cursor, context, actctxt, paramtyp, (
    ;; ../../../../spec/4h-typing-call.watsup:5.1-7.48
    rule in: `%%%|-%~~%:%`(p, C, actctxt, `%%%%`_paramtyp(id, dir, typ_p, val?{val <- val?}), (exprIL, typ_a), exprIL')
       -- if dir matches `IN`
-      -- let exprIL' = $coerce_assign(exprIL, typ_p)
+      -- let exprIL''?{exprIL'' <- exprIL''?} = $coerce_assign(exprIL, typ_p)
+      -- if exprIL''?{exprIL'' <- exprIL''?} matches (_)
+      -- let ?(exprIL') = exprIL''?{exprIL'' <- exprIL''?}
 
    ;; ../../../../spec/4h-typing-call.watsup:9.1-13.28
    rule out-inout: `%%%|-%~~%:%`(p, C, actctxt, `%%%%`_paramtyp(id, dir, typ_p, val?{val <- val?}), (exprIL, typ_a), exprIL)
@@ -10000,7 +10096,9 @@ relation Call_convention_ok: `%%%|-%~~%:%`(cursor, context, actctxt, paramtyp, (
    rule no-action: `%%%|-%~~%:%`(p, C, actctxt, `%%%%`_paramtyp(id, dir, typ_p, val?{val <- val?}), (exprIL, typ_a), exprIL')
       -- if actctxt matches `ACT`
       -- if dir matches `NO`
-      -- let exprIL' = $coerce_assign(exprIL, typ_p)
+      -- let exprIL''?{exprIL'' <- exprIL''?} = $coerce_assign(exprIL, typ_p)
+      -- if exprIL''?{exprIL'' <- exprIL''?} matches (_)
+      -- let ?(exprIL') = exprIL''?{exprIL'' <- exprIL''?}
 
    ;; ../../../../spec/4h-typing-call.watsup:19.1-23.29
    rule no-not-action: `%%%|-%~~%:%`(p, C, actctxt, `%%%%`_paramtyp(id, dir, typ, val?{val <- val?}), (exprIL, typ'), exprIL)
@@ -10655,15 +10753,15 @@ relation Inst_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, constyp, targIL*, arg*,
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt''', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt''' <- pt'''*, typ_a <- typ_a*}
 
 ;; ../../../../spec/4d2-typing-subtyping.watsup:312.1-313.34
-def $reduce_senum_unary(exprIL, $check_unary(typ) : bool) : exprIL =
+def $reduce_senum_unary(exprIL, $check_unary(typ) : bool) : exprIL? =
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:315.1-317.26
-   clause 0(exprIL, $check_unary) = exprIL
+   clause 0(exprIL, $check_unary) = ?(exprIL)
       -- let `(%;%)`_annotIL(typ, _ctk) = $annot(exprIL)
       -- if $check_unary(typ)
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:319.1-324.66
-   clause 1(exprIL, $check_unary) = exprIL''
+   clause 1(exprIL, $check_unary) = ?(exprIL'')
       -- let `(%;%)`_annotIL(typ, ctk) = $annot(exprIL)
       -- if ~$check_unary(typ)
       -- let typ'' = typ
@@ -10672,19 +10770,25 @@ def $reduce_senum_unary(exprIL, $check_unary(typ) : bool) : exprIL =
       -- if datatyp matches `SEnumT%%%`
       -- let `SEnumT%%%`_datatyp(_id, typ', _(member, val)*{_(member, val) <- _(member, val)*}) = datatyp
       -- let exprIL' = `CastE%%%`_exprIL(typ', exprIL, `(%;%)`_annotIL(typ', ctk))
-      -- let exprIL'' = $reduce_senum_unary(exprIL', $check_unary)
+      -- let exprIL'''?{exprIL''' <- exprIL'''?} = $reduce_senum_unary(exprIL', $check_unary)
+      -- if exprIL'''?{exprIL''' <- exprIL'''?} matches (_)
+      -- let ?(exprIL'') = exprIL'''?{exprIL''' <- exprIL'''?}
 
-;; ../../../../spec/4d2-typing-subtyping.watsup:327.1-328.41
-def $reduce_senums_binary(exprIL, exprIL, $check_binary(typ, typ) : bool) : (exprIL, exprIL) =
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:326.1-327.15
+   clause 2(exprIL, $check_unary) = ?()
+      -- otherwise
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:330.1-333.36
-   clause 0(exprIL_a, exprIL_b, $check_binary) = (exprIL_a, exprIL_b)
+;; ../../../../spec/4d2-typing-subtyping.watsup:330.1-331.41
+def $reduce_senums_binary(exprIL, exprIL, $check_binary(typ, typ) : bool) : (exprIL, exprIL)? =
+
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:333.1-336.36
+   clause 0(exprIL_a, exprIL_b, $check_binary) = ?((exprIL_a, exprIL_b))
       -- let `(%;%)`_annotIL(typ_a, _ctk) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, _ctk') = $annot(exprIL_b)
       -- if $check_binary(typ_a, typ_b)
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:335.1-341.97
-   clause 1(exprIL_a, exprIL_b, $check_binary) = (exprIL_a'', exprIL_b'')
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:338.1-344.97
+   clause 1(exprIL_a, exprIL_b, $check_binary) = ?((exprIL_a'', exprIL_b''))
       -- let `(%;%)`_annotIL(typ_a, ctk_a) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, _ctk) = $annot(exprIL_b)
       -- if ~$check_binary(typ_a, typ_b)
@@ -10694,10 +10798,12 @@ def $reduce_senums_binary(exprIL, exprIL, $check_binary(typ, typ) : bool) : (exp
       -- if datatyp matches `SEnumT%%%`
       -- let `SEnumT%%%`_datatyp(_id, typ_a', _(member, val)*{_(member, val) <- _(member, val)*}) = datatyp
       -- let exprIL_a' = `CastE%%%`_exprIL(typ_a', exprIL_a, `(%;%)`_annotIL(typ_a', ctk_a))
-      -- let (exprIL_a'', exprIL_b'') = $reduce_senums_binary(exprIL_a', exprIL_b, $check_binary)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $reduce_senums_binary(exprIL_a', exprIL_b, $check_binary)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_a'', exprIL_b'')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:343.1-349.97
-   clause 2(exprIL_a, exprIL_b, $check_binary) = (exprIL_a'', exprIL_b'')
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:346.1-352.97
+   clause 2(exprIL_a, exprIL_b, $check_binary) = ?((exprIL_a'', exprIL_b''))
       -- let `(%;%)`_annotIL(typ_a, _ctk) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
       -- if ~$check_binary(typ_a, typ_b)
@@ -10707,27 +10813,33 @@ def $reduce_senums_binary(exprIL, exprIL, $check_binary(typ, typ) : bool) : (exp
       -- if datatyp matches `SEnumT%%%`
       -- let `SEnumT%%%`_datatyp(_id, typ_b', _(member, val)*{_(member, val) <- _(member, val)*}) = datatyp
       -- let exprIL_b' = `CastE%%%`_exprIL(typ_b', exprIL_b, `(%;%)`_annotIL(typ_b', ctk_b))
-      -- let (exprIL_a'', exprIL_b'') = $reduce_senums_binary(exprIL_a, exprIL_b', $check_binary)
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $reduce_senums_binary(exprIL_a, exprIL_b', $check_binary)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_a'', exprIL_b'')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
 
-;; ../../../../spec/4d2-typing-subtyping.watsup:353.1-354.32
-def $coerce_binary(exprIL, exprIL) : (exprIL, exprIL) =
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:354.1-355.15
+   clause 3(exprIL_a, exprIL_b, $check_binary) = ?()
+      -- otherwise
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:356.1-359.32
-   clause 0(exprIL_a, exprIL_b) = (exprIL_a, exprIL_b)
+;; ../../../../spec/4d2-typing-subtyping.watsup:358.1-359.32
+def $coerce_binary(exprIL, exprIL) : (exprIL, exprIL)? =
+
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:361.1-364.32
+   clause 0(exprIL_a, exprIL_b) = ?((exprIL_a, exprIL_b))
       -- let `(%;%)`_annotIL(typ_a, _ctk) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, _ctk') = $annot(exprIL_b)
       -- if Type_alpha: `%~~%`(typ_a, typ_b) holds
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:361.1-366.57
-   clause 1(exprIL_a, exprIL_b) = (exprIL_a', exprIL_b)
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:366.1-371.57
+   clause 1(exprIL_a, exprIL_b) = ?((exprIL_a', exprIL_b))
       -- let `(%;%)`_annotIL(typ_a, ctk_a) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, _ctk) = $annot(exprIL_b)
       -- if ~Type_alpha: `%~~%`(typ_a, typ_b) holds
       -- if Sub_impl: `%<<%`(typ_a, typ_b) holds
       -- let exprIL_a' = `CastE%%%`_exprIL(typ_b, exprIL_a, `(%;%)`_annotIL(typ_b, ctk_a))
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:368.1-374.57
-   clause 2(exprIL_a, exprIL_b) = (exprIL_a, exprIL_b')
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:373.1-379.57
+   clause 2(exprIL_a, exprIL_b) = ?((exprIL_a, exprIL_b'))
       -- let `(%;%)`_annotIL(typ_a, _ctk) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
       -- if ~Type_alpha: `%~~%`(typ_a, typ_b) holds
@@ -10735,19 +10847,27 @@ def $coerce_binary(exprIL, exprIL) : (exprIL, exprIL) =
       -- if Sub_impl: `%<<%`(typ_b, typ_a) holds
       -- let exprIL_b' = `CastE%%%`_exprIL(typ_a, exprIL_b, `(%;%)`_annotIL(typ_a, ctk_b))
 
-;; ../../../../spec/4d2-typing-subtyping.watsup:377.1-378.31
-def $coerce_assign(exprIL, typ) : exprIL =
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:381.1-382.15
+   clause 3(exprIL_a, exprIL_b) = ?()
+      -- otherwise
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:380.1-382.32
-   clause 0(exprIL, typ_t) = exprIL
+;; ../../../../spec/4d2-typing-subtyping.watsup:385.1-386.31
+def $coerce_assign(exprIL, typ) : exprIL? =
+
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:388.1-390.32
+   clause 0(exprIL, typ_t) = ?(exprIL)
       -- let `(%;%)`_annotIL(typ_f, _ctk) = $annot(exprIL)
       -- if Type_alpha: `%~~%`(typ_f, typ_t) holds
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:384.1-387.30
-   clause 1(exprIL, typ_t) = `CastE%%%`_exprIL(typ_t, exprIL, `(%;%)`_annotIL(typ_t, ctk_f))
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:392.1-395.30
+   clause 1(exprIL, typ_t) = ?(`CastE%%%`_exprIL(typ_t, exprIL, `(%;%)`_annotIL(typ_t, ctk_f)))
       -- let `(%;%)`_annotIL(typ_f, ctk_f) = $annot(exprIL)
       -- if ~Type_alpha: `%~~%`(typ_f, typ_t) holds
       -- if Sub_impl: `%<<%`(typ_f, typ_t) holds
+
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:397.1-398.15
+   clause 2(exprIL, typ_t) = ?()
+      -- otherwise
 
 ;; ../../../../spec/4e-typing-expr.watsup:88.1-88.33
 def $compatible_bnot(typ) : bool =
@@ -11046,21 +11166,21 @@ def $compatible'_shift(typ, typ) : bool =
    clause 9(typ_l, typ_r) = false
       -- otherwise
 
-;; ../../../../spec/4e-typing-expr.watsup:296.1-296.41
+;; ../../../../spec/4e-typing-expr.watsup:314.1-314.41
 def $compatible_compare(typ, typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:299.1-300.63
+   ;; ../../../../spec/4e-typing-expr.watsup:317.1-318.63
    clause 0(typ_l, typ_r) = $compatible'_compare($canon_typ(typ_l), $canon_typ(typ_r))
 
-;; ../../../../spec/4e-typing-expr.watsup:297.1-297.42
+;; ../../../../spec/4e-typing-expr.watsup:315.1-315.42
 def $compatible'_compare(typ, typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:301.1-301.44
+   ;; ../../../../spec/4e-typing-expr.watsup:319.1-319.44
    clause 0(typ, typ') = true
       -- if (typ = `IntT`_numtyp() as typ)
       -- if (typ' = `IntT`_numtyp() as typ)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:302.1-302.50
+   ;; ../../../../spec/4e-typing-expr.watsup:320.1-320.50
    clause 1(typ, typ') = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11072,7 +11192,7 @@ def $compatible'_compare(typ, typ) : bool =
       -- let `FIntT%`_numtyp(w') = numtyp'
       -- if (w = w')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:303.1-303.50
+   ;; ../../../../spec/4e-typing-expr.watsup:321.1-321.50
    clause 2(typ, typ') = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11084,20 +11204,20 @@ def $compatible'_compare(typ, typ) : bool =
       -- let `FBitT%`_numtyp(w') = numtyp'
       -- if (w = w')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:304.1-305.15
+   ;; ../../../../spec/4e-typing-expr.watsup:322.1-323.15
    clause 3(typ_l, typ_r) = false
       -- otherwise
 
-;; ../../../../spec/4e-typing-expr.watsup:322.1-322.41
+;; ../../../../spec/4e-typing-expr.watsup:340.1-340.41
 def $compatible_bitwise(typ, typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:325.1-326.63
+   ;; ../../../../spec/4e-typing-expr.watsup:343.1-344.63
    clause 0(typ_l, typ_r) = $compatible'_bitwise($canon_typ(typ_l), $canon_typ(typ_r))
 
-;; ../../../../spec/4e-typing-expr.watsup:323.1-323.42
+;; ../../../../spec/4e-typing-expr.watsup:341.1-341.42
 def $compatible'_bitwise(typ, typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:327.1-327.50
+   ;; ../../../../spec/4e-typing-expr.watsup:345.1-345.50
    clause 0(typ, typ') = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11109,7 +11229,7 @@ def $compatible'_bitwise(typ, typ) : bool =
       -- let `FIntT%`_numtyp(w') = numtyp'
       -- if (w = w')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:328.1-328.50
+   ;; ../../../../spec/4e-typing-expr.watsup:346.1-346.50
    clause 1(typ, typ') = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11121,20 +11241,20 @@ def $compatible'_bitwise(typ, typ) : bool =
       -- let `FBitT%`_numtyp(w') = numtyp'
       -- if (w = w')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:329.1-330.15
+   ;; ../../../../spec/4e-typing-expr.watsup:347.1-348.15
    clause 2(typ_l, typ_r) = false
       -- otherwise
 
-;; ../../../../spec/4e-typing-expr.watsup:347.1-347.40
+;; ../../../../spec/4e-typing-expr.watsup:365.1-365.40
 def $compatible_concat(typ, typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:350.1-351.62
+   ;; ../../../../spec/4e-typing-expr.watsup:368.1-369.62
    clause 0(typ_l, typ_r) = $compatible'_concat($canon_typ(typ_l), $canon_typ(typ_r))
 
-;; ../../../../spec/4e-typing-expr.watsup:348.1-348.41
+;; ../../../../spec/4e-typing-expr.watsup:366.1-366.41
 def $compatible'_concat(typ, typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:352.1-352.49
+   ;; ../../../../spec/4e-typing-expr.watsup:370.1-370.49
    clause 0(typ, typ') = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11145,7 +11265,7 @@ def $compatible'_concat(typ, typ) : bool =
       -- if numtyp' matches `FIntT%`
       -- let `FIntT%`_numtyp(_width') = numtyp'
 
-   ;; ../../../../spec/4e-typing-expr.watsup:353.1-353.49
+   ;; ../../../../spec/4e-typing-expr.watsup:371.1-371.49
    clause 1(typ, typ') = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11156,7 +11276,7 @@ def $compatible'_concat(typ, typ) : bool =
       -- if numtyp' matches `FBitT%`
       -- let `FBitT%`_numtyp(_width') = numtyp'
 
-   ;; ../../../../spec/4e-typing-expr.watsup:354.1-354.49
+   ;; ../../../../spec/4e-typing-expr.watsup:372.1-372.49
    clause 2(typ, typ') = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11167,7 +11287,7 @@ def $compatible'_concat(typ, typ) : bool =
       -- if numtyp' matches `FIntT%`
       -- let `FIntT%`_numtyp(_width') = numtyp'
 
-   ;; ../../../../spec/4e-typing-expr.watsup:355.1-355.49
+   ;; ../../../../spec/4e-typing-expr.watsup:373.1-373.49
    clause 3(typ, typ') = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11178,43 +11298,43 @@ def $compatible'_concat(typ, typ) : bool =
       -- if numtyp' matches `FBitT%`
       -- let `FBitT%`_numtyp(_width') = numtyp'
 
-   ;; ../../../../spec/4e-typing-expr.watsup:356.1-357.15
+   ;; ../../../../spec/4e-typing-expr.watsup:374.1-375.15
    clause 4(typ_l, typ_r) = false
       -- otherwise
 
-;; ../../../../spec/4e-typing-expr.watsup:391.1-391.41
+;; ../../../../spec/4e-typing-expr.watsup:409.1-409.41
 def $compatible_logical(typ, typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:394.1-395.63
+   ;; ../../../../spec/4e-typing-expr.watsup:412.1-413.63
    clause 0(typ_l, typ_r) = $compatible'_logical($canon_typ(typ_l), $canon_typ(typ_r))
 
-;; ../../../../spec/4e-typing-expr.watsup:392.1-392.42
+;; ../../../../spec/4e-typing-expr.watsup:410.1-410.42
 def $compatible'_logical(typ, typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:396.1-396.46
+   ;; ../../../../spec/4e-typing-expr.watsup:414.1-414.46
    clause 0(typ, typ') = true
       -- if (typ = `BoolT`_primtyp() as typ)
       -- if (typ' = `BoolT`_primtyp() as typ)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:397.1-398.15
+   ;; ../../../../spec/4e-typing-expr.watsup:415.1-416.15
    clause 1(typ_l, typ_r) = false
       -- otherwise
 
-;; ../../../../spec/4e-typing-expr.watsup:453.1-453.38
+;; ../../../../spec/4e-typing-expr.watsup:471.1-471.38
 def $compatible_mask(typ, typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:456.1-457.60
+   ;; ../../../../spec/4e-typing-expr.watsup:474.1-475.60
    clause 0(typ_l, typ_r) = $compatible'_mask($canon_typ(typ_l), $canon_typ(typ_r))
 
-;; ../../../../spec/4e-typing-expr.watsup:454.1-454.39
+;; ../../../../spec/4e-typing-expr.watsup:472.1-472.39
 def $compatible'_mask(typ, typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:458.1-458.41
+   ;; ../../../../spec/4e-typing-expr.watsup:476.1-476.41
    clause 0(typ, typ') = true
       -- if (typ = `IntT`_numtyp() as typ)
       -- if (typ' = `IntT`_numtyp() as typ)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:459.1-459.47
+   ;; ../../../../spec/4e-typing-expr.watsup:477.1-477.47
    clause 1(typ, typ') = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11226,7 +11346,7 @@ def $compatible'_mask(typ, typ) : bool =
       -- let `FIntT%`_numtyp(w') = numtyp'
       -- if (w = w')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:460.1-460.47
+   ;; ../../../../spec/4e-typing-expr.watsup:478.1-478.47
    clause 2(typ, typ') = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11238,25 +11358,25 @@ def $compatible'_mask(typ, typ) : bool =
       -- let `FBitT%`_numtyp(w') = numtyp'
       -- if (w = w')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:461.1-462.15
+   ;; ../../../../spec/4e-typing-expr.watsup:479.1-480.15
    clause 3(typ_l, typ_r) = false
       -- otherwise
 
-;; ../../../../spec/4e-typing-expr.watsup:481.1-481.39
+;; ../../../../spec/4e-typing-expr.watsup:499.1-499.39
 def $compatible_range(typ, typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:484.1-485.61
+   ;; ../../../../spec/4e-typing-expr.watsup:502.1-503.61
    clause 0(typ_l, typ_r) = $compatible'_range($canon_typ(typ_l), $canon_typ(typ_r))
 
-;; ../../../../spec/4e-typing-expr.watsup:482.1-482.40
+;; ../../../../spec/4e-typing-expr.watsup:500.1-500.40
 def $compatible'_range(typ, typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:486.1-486.42
+   ;; ../../../../spec/4e-typing-expr.watsup:504.1-504.42
    clause 0(typ, typ') = true
       -- if (typ = `IntT`_numtyp() as typ)
       -- if (typ' = `IntT`_numtyp() as typ)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:487.1-487.48
+   ;; ../../../../spec/4e-typing-expr.watsup:505.1-505.48
    clause 1(typ, typ') = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11268,7 +11388,7 @@ def $compatible'_range(typ, typ) : bool =
       -- let `FIntT%`_numtyp(w') = numtyp'
       -- if (w = w')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:488.1-488.48
+   ;; ../../../../spec/4e-typing-expr.watsup:506.1-506.48
    clause 2(typ, typ') = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11280,14 +11400,14 @@ def $compatible'_range(typ, typ) : bool =
       -- let `FBitT%`_numtyp(w') = numtyp'
       -- if (w = w')
 
-   ;; ../../../../spec/4e-typing-expr.watsup:489.1-490.15
+   ;; ../../../../spec/4e-typing-expr.watsup:507.1-508.15
    clause 3(typ_l, typ_r) = false
       -- otherwise
 
-;; ../../../../spec/4e-typing-expr.watsup:508.1-510.26
+;; ../../../../spec/4e-typing-expr.watsup:526.1-528.26
 relation Select_case_keyset_ok: `%%%|-%:%`(cursor, context, typ, keyset, keysetIL)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:512.1-517.30
+   ;; ../../../../spec/4e-typing-expr.watsup:530.1-535.30
    rule exprk-sett: `%%%|-%:%`(cursor, C, typ_k, keyset, `ExprK%`_keysetIL(exprIL))
       -- if cursor matches `LOCAL`
       -- if keyset matches `ExprK%`
@@ -11300,7 +11420,7 @@ relation Select_case_keyset_ok: `%%%|-%:%`(cursor, context, typ, keyset, keysetI
       -- let `SetT%`_synthtyp(typ) = synthtyp
       -- if Type_alpha: `%~~%`(typ, typ_k) holds
 
-   ;; ../../../../spec/4e-typing-expr.watsup:519.1-526.63
+   ;; ../../../../spec/4e-typing-expr.watsup:537.1-544.63
    rule exprk-sett: `%%%|-%:%`(cursor, C, typ_k, keyset, `ExprK%`_keysetIL(exprIL'))
       -- if cursor matches `LOCAL`
       -- if keyset matches `ExprK%`
@@ -11315,7 +11435,7 @@ relation Select_case_keyset_ok: `%%%|-%:%`(cursor, context, typ, keyset, keysetI
       -- if Sub_impl: `%<<%`(typ, typ_k) holds
       -- let exprIL' = `CastE%%%`_exprIL(`SetT%`_synthtyp(typ_k) as typeIL, exprIL, `(%;%)`_annotIL(`SetT%`_synthtyp(typ_k) as typ, `DYN`_ctk()))
 
-   ;; ../../../../spec/4e-typing-expr.watsup:528.1-534.63
+   ;; ../../../../spec/4e-typing-expr.watsup:546.1-552.63
    rule exprk-not-sett: `%%%|-%:%`(cursor, C, typ_k, keyset, `ExprK%`_keysetIL(exprIL'))
       -- if cursor matches `LOCAL`
       -- if keyset matches `ExprK%`
@@ -11325,20 +11445,20 @@ relation Select_case_keyset_ok: `%%%|-%:%`(cursor, context, typ, keyset, keysetI
       -- if Sub_impl: `%<<%`(typ, typ_k) holds
       -- let exprIL' = `CastE%%%`_exprIL(`SetT%`_synthtyp(typ_k) as typeIL, exprIL, `(%;%)`_annotIL(`SetT%`_synthtyp(typ_k) as typ, `DYN`_ctk()))
 
-   ;; ../../../../spec/4e-typing-expr.watsup:536.1-537.39
+   ;; ../../../../spec/4e-typing-expr.watsup:554.1-555.39
    rule defaultk: `%%%|-%:%`(cursor, C, typ_k, keyset, `DefaultK`_keysetIL())
       -- if cursor matches `LOCAL`
       -- if keyset matches `DefaultK`
 
-   ;; ../../../../spec/4e-typing-expr.watsup:539.1-540.31
+   ;; ../../../../spec/4e-typing-expr.watsup:557.1-558.31
    rule anyk: `%%%|-%:%`(cursor, C, typ_k, keyset, `AnyK`_keysetIL())
       -- if cursor matches `LOCAL`
       -- if keyset matches `AnyK`
 
-;; ../../../../spec/4e-typing-expr.watsup:543.1-545.26
+;; ../../../../spec/4e-typing-expr.watsup:561.1-563.26
 relation Select_case_keysets_ok: `%%|-%%:%`(cursor, context, typ*, keyset*, keysetIL*)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:547.1-549.59
+   ;; ../../../../spec/4e-typing-expr.watsup:565.1-567.59
    rule one-to-one: `%%|-%%:%`(p, C, typ*{typ <- typ*}, keyset'*{keyset' <- keyset'*}, [keysetIL])
       -- if typ*{typ <- typ*} matches [ _/1 ]
       -- let [typ_k] = typ*{typ <- typ*}
@@ -11346,21 +11466,21 @@ relation Select_case_keysets_ok: `%%|-%%:%`(cursor, context, typ*, keyset*, keys
       -- let [keyset] = keyset'*{keyset' <- keyset'*}
       -- Select_case_keyset_ok: `%%%|-%:%`(p, C, typ_k, keyset, keysetIL)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:551.1-553.67
+   ;; ../../../../spec/4e-typing-expr.watsup:569.1-571.67
    rule many-to-one: `%%|-%%:%`(p, C, typ_k*{typ_k <- typ_k*}, keyset'*{keyset' <- keyset'*}, [keysetIL])
       -- if keyset'*{keyset' <- keyset'*} matches [ _/1 ]
       -- let [keyset] = keyset'*{keyset' <- keyset'*}
       -- Select_case_keyset_ok: `%%%|-%:%`(p, C, `SeqT%`_synthtyp(typ_k*{typ_k <- typ_k*}) as typ, keyset, keysetIL)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:555.1-558.62
+   ;; ../../../../spec/4e-typing-expr.watsup:573.1-576.62
    rule many-to-many: `%%|-%%:%`(p, C, typ_k*{typ_k <- typ_k*}, keyset*{keyset <- keyset*}, keysetIL*{keysetIL <- keysetIL*})
       -- if (|typ_k*{typ_k <- typ_k*}| = |keyset*{keyset <- keyset*}|)
       -- (Select_case_keyset_ok: `%%%|-%:%`(p, C, typ_k, keyset, keysetIL))*{keyset <- keyset*, keysetIL <- keysetIL*, typ_k <- typ_k*}
 
-;; ../../../../spec/4e-typing-expr.watsup:561.1-563.26
+;; ../../../../spec/4e-typing-expr.watsup:579.1-581.26
 relation Select_case_ok: `%%%|-%:%`(cursor, context, typ*, selectcase, selectcaseIL)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:565.1-568.74
+   ;; ../../../../spec/4e-typing-expr.watsup:583.1-586.74
    rule : `%%%|-%:%`(cursor, C, typ_k*{typ_k <- typ_k*}, `%%`_selectcase(keyset*{keyset <- keyset*}, statelabel), `%%`_selectcaseIL(keysetIL*{keysetIL <- keysetIL*}, statelabel))
       -- if cursor matches `LOCAL`
       -- Select_case_keysets_ok: `%%|-%%:%`(`LOCAL`_cursor(), C, typ_k*{typ_k <- typ_k*}, keyset*{keyset <- keyset*}, keysetIL*{keysetIL <- keysetIL*})
@@ -11370,113 +11490,113 @@ relation Select_case_ok: `%%%|-%:%`(cursor, context, typ*, selectcase, selectcas
       -- if (typ = `StateT`_synthtyp() as typ)
       -- if val?{val <- val?} matches ()
 
-;; ../../../../spec/4e-typing-expr.watsup:585.1-585.39
+;; ../../../../spec/4e-typing-expr.watsup:603.1-603.39
 def $compatible_arrayindex(typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:588.1-588.75
+   ;; ../../../../spec/4e-typing-expr.watsup:606.1-606.75
    clause 0(typ) = $compatible'_arrayindex($canon_typ(typ))
 
-;; ../../../../spec/4e-typing-expr.watsup:586.1-586.40
+;; ../../../../spec/4e-typing-expr.watsup:604.1-604.40
 def $compatible'_arrayindex(typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:589.1-589.41
+   ;; ../../../../spec/4e-typing-expr.watsup:607.1-607.41
    clause 0(typ) = true
       -- if (typ = `IntT`_numtyp() as typ)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:590.1-590.44
+   ;; ../../../../spec/4e-typing-expr.watsup:608.1-608.44
    clause 1(typ) = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
       -- if numtyp matches `FIntT%`
       -- let `FIntT%`_numtyp(_width) = numtyp
 
-   ;; ../../../../spec/4e-typing-expr.watsup:591.1-591.44
+   ;; ../../../../spec/4e-typing-expr.watsup:609.1-609.44
    clause 2(typ) = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
       -- if numtyp matches `FBitT%`
       -- let `FBitT%`_numtyp(_width) = numtyp
 
-   ;; ../../../../spec/4e-typing-expr.watsup:592.1-593.15
+   ;; ../../../../spec/4e-typing-expr.watsup:610.1-611.15
    clause 3(typ) = false
       -- otherwise
 
-;; ../../../../spec/4e-typing-expr.watsup:642.1-642.42
+;; ../../../../spec/4e-typing-expr.watsup:660.1-660.42
 def $compatible_bitstringbase(typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:645.1-645.81
+   ;; ../../../../spec/4e-typing-expr.watsup:663.1-663.81
    clause 0(typ) = $compatible'_bitstringbase($canon_typ(typ))
 
-;; ../../../../spec/4e-typing-expr.watsup:643.1-643.43
+;; ../../../../spec/4e-typing-expr.watsup:661.1-661.43
 def $compatible'_bitstringbase(typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:646.1-646.44
+   ;; ../../../../spec/4e-typing-expr.watsup:664.1-664.44
    clause 0(typ) = true
       -- if (typ = `IntT`_numtyp() as typ)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:647.1-647.48
+   ;; ../../../../spec/4e-typing-expr.watsup:665.1-665.48
    clause 1(typ) = (w > 0)
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
       -- if numtyp matches `FIntT%`
       -- let `FIntT%`_numtyp(w) = numtyp
 
-   ;; ../../../../spec/4e-typing-expr.watsup:648.1-648.47
+   ;; ../../../../spec/4e-typing-expr.watsup:666.1-666.47
    clause 2(typ) = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
       -- if numtyp matches `FBitT%`
       -- let `FBitT%`_numtyp(_width) = numtyp
 
-   ;; ../../../../spec/4e-typing-expr.watsup:649.1-650.15
+   ;; ../../../../spec/4e-typing-expr.watsup:667.1-668.15
    clause 3(typ) = false
       -- otherwise
 
-;; ../../../../spec/4e-typing-expr.watsup:652.1-652.43
+;; ../../../../spec/4e-typing-expr.watsup:670.1-670.43
 def $compatible_bitstringindex(typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:655.1-655.83
+   ;; ../../../../spec/4e-typing-expr.watsup:673.1-673.83
    clause 0(typ) = $compatible'_bitstringindex($canon_typ(typ))
 
-;; ../../../../spec/4e-typing-expr.watsup:653.1-653.44
+;; ../../../../spec/4e-typing-expr.watsup:671.1-671.44
 def $compatible'_bitstringindex(typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:656.1-656.45
+   ;; ../../../../spec/4e-typing-expr.watsup:674.1-674.45
    clause 0(typ) = true
       -- if (typ = `IntT`_numtyp() as typ)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:657.1-657.48
+   ;; ../../../../spec/4e-typing-expr.watsup:675.1-675.48
    clause 1(typ) = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
       -- if numtyp matches `FIntT%`
       -- let `FIntT%`_numtyp(_width) = numtyp
 
-   ;; ../../../../spec/4e-typing-expr.watsup:658.1-658.48
+   ;; ../../../../spec/4e-typing-expr.watsup:676.1-676.48
    clause 2(typ) = true
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
       -- if numtyp matches `FBitT%`
       -- let `FBitT%`_numtyp(_width) = numtyp
 
-   ;; ../../../../spec/4e-typing-expr.watsup:659.1-660.15
+   ;; ../../../../spec/4e-typing-expr.watsup:677.1-678.15
    clause 3(typ) = false
       -- otherwise
 
-;; ../../../../spec/4e-typing-expr.watsup:662.1-662.52
+;; ../../../../spec/4e-typing-expr.watsup:680.1-680.52
 def $is_valid_bitstring_slice(typ, nat, nat) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:665.1-666.75
+   ;; ../../../../spec/4e-typing-expr.watsup:683.1-684.75
    clause 0(typ, n_l, n_h) = ((n_l <= n_h) /\ $is_valid_bitstring_slice'($canon_typ(typ), n_l, n_h))
 
-;; ../../../../spec/4e-typing-expr.watsup:663.1-663.53
+;; ../../../../spec/4e-typing-expr.watsup:681.1-681.53
 def $is_valid_bitstring_slice'(typ, nat, nat) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:667.1-667.50
+   ;; ../../../../spec/4e-typing-expr.watsup:685.1-685.50
    clause 0(typ, _nat, _nat') = true
       -- if (typ = `IntT`_numtyp() as typ)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:668.1-670.35
+   ;; ../../../../spec/4e-typing-expr.watsup:686.1-688.35
    clause 1(typ, n_l, n_h) = ((n_h <= w) /\ (w_slice <= w))
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11484,7 +11604,7 @@ def $is_valid_bitstring_slice'(typ, nat, nat) : bool =
       -- let `FIntT%`_numtyp(w) = numtyp
       -- let w_slice = ((n_h - n_l) + 1)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:671.1-673.35
+   ;; ../../../../spec/4e-typing-expr.watsup:689.1-691.35
    clause 2(typ, n_l, n_h) = ((n_h <= w) /\ (w_slice <= w))
       -- if typ <: numtyp
       -- let numtyp = typ as numtyp
@@ -11492,24 +11612,24 @@ def $is_valid_bitstring_slice'(typ, nat, nat) : bool =
       -- let `FBitT%`_numtyp(w) = numtyp
       -- let w_slice = ((n_h - n_l) + 1)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:674.1-675.15
+   ;; ../../../../spec/4e-typing-expr.watsup:692.1-693.15
    clause 3(_typ, _nat, _nat') = false
       -- otherwise
 
-;; ../../../../spec/4e-typing-expr.watsup:855.1-855.44
+;; ../../../../spec/4e-typing-expr.watsup:873.1-873.44
 def $not_abstract_extern_object(typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:859.1-860.52
+   ;; ../../../../spec/4e-typing-expr.watsup:877.1-878.52
    clause 0(typ) = $not_abstract_extern_object'($canon_typ(typ))
 
-;; ../../../../spec/4e-typing-expr.watsup:856.1-856.45
+;; ../../../../spec/4e-typing-expr.watsup:874.1-874.45
 def $not_abstract_extern_object'(typ) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:862.1-863.26
+   ;; ../../../../spec/4e-typing-expr.watsup:880.1-881.26
    clause 0(typ) = true
       -- if ~$is_externt(typ)
 
-   ;; ../../../../spec/4e-typing-expr.watsup:864.1-867.45
+   ;; ../../../../spec/4e-typing-expr.watsup:882.1-885.45
    clause 1(typ) = true
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
@@ -11521,21 +11641,21 @@ def $not_abstract_extern_object'(typ) : bool =
       -- (let ?(fd) = funcdef?{funcdef <- funcdef?})*{fd <- fd*, funcdef? <- funcdef?*}
       -- (if $not_abstract_extern_object''(fd))*{fd <- fd*}
 
-   ;; ../../../../spec/4e-typing-expr.watsup:868.1-869.15
+   ;; ../../../../spec/4e-typing-expr.watsup:886.1-887.15
    clause 2(typ) = false
       -- otherwise
 
-;; ../../../../spec/4e-typing-expr.watsup:857.1-857.50
+;; ../../../../spec/4e-typing-expr.watsup:875.1-875.50
 def $not_abstract_extern_object''(funcdef) : bool =
 
-   ;; ../../../../spec/4e-typing-expr.watsup:871.1-871.88
+   ;; ../../../../spec/4e-typing-expr.watsup:889.1-889.88
    clause 0(funcdef) = false
       -- if funcdef <: polyfuncdef
       -- let `PolyFD%->%`_polyfuncdef((_tparam*{_tparam <- _tparam*}, _tparam'*{_tparam' <- _tparam'*}), functyp) = funcdef as polyfuncdef
       -- if functyp matches `ExternAbstractMethodT%%`
       -- let `ExternAbstractMethodT%%`_functyp(_paramtyp*{_paramtyp <- _paramtyp*}, _typ) = functyp
 
-   ;; ../../../../spec/4e-typing-expr.watsup:872.1-873.15
+   ;; ../../../../spec/4e-typing-expr.watsup:890.1-891.15
    clause 1(_funcdef) = true
       -- otherwise
 
@@ -11603,7 +11723,9 @@ relation Switch_gen_label_ok: `%%%%|-%:%`(cursor, context, typ, bool, switchlabe
       -- Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
       -- let `(%;%)`_annotIL(_typ, ctk) = $annot(exprIL)
       -- if ctk matches `LCTK`
-      -- let exprIL' = $coerce_assign(exprIL, typ_s)
+      -- let exprIL''?{exprIL'' <- exprIL''?} = $coerce_assign(exprIL, typ_s)
+      -- if exprIL''?{exprIL'' <- exprIL''?} matches (_)
+      -- let ?(exprIL') = exprIL''?{exprIL'' <- exprIL''?}
 
    ;; ../../../../spec/4f-typing-stmt.watsup:108.1-109.40
    rule defaultl: `%%%%|-%:%`(p, C, typ_s, bool, switchlabel, `DefaultL`_switchlabelIL())
@@ -11723,7 +11845,9 @@ relation SEnum_field_ok: `%%%%|-%%:%%`(context, id, typ, (member, val)*, member,
       -- Expr_ok: `%%|-%:%`(`BLOCK`_cursor(), C, expr, exprIL)
       -- let `(%;%)`_annotIL(_typ, ctk) = $annot(exprIL)
       -- if ctk matches `LCTK`
-      -- let exprIL' = $coerce_assign(exprIL, typ_s)
+      -- let exprIL''?{exprIL'' <- exprIL''?} = $coerce_assign(exprIL, typ_s)
+      -- if exprIL''?{exprIL'' <- exprIL''?} matches (_)
+      -- let ?(exprIL') = exprIL''?{exprIL'' <- exprIL''?}
       -- Eval_static: `%%|-%~>%`(`BLOCK`_cursor(), C, exprIL', val_e)
       -- let val = `SEnumFieldV%%%`_val(id_s, member, val_e)
       -- let member_s'*{member_s' <- member_s'*} = member_s*{member_s <- member_s*} ++ [member]
