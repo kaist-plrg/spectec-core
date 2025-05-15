@@ -1,0 +1,36 @@
+;;
+;; Return statement
+;;
+
+rule Stmt_ok/rets-none:
+  C |- RetS eps : C (RetS eps)
+
+rule Stmt_ok/rets-some:
+  C |- RetS expr : C (RetS exprIL)
+  -- Expr_ok: C |- expr : exprIL
+
+;;
+;; Statement sequence
+;;
+
+rule Stmts_ok/nil:
+  C |- eps : C eps
+
+rule Stmts_ok/cons:
+  C |- stmt_h :: stmt_t* : C'' (stmtIL_h :: stmtIL_t*)
+  -- Stmt_ok: C |- stmt_h : C' stmtIL_h
+  -- Stmts_ok: C' |- stmt_t* : C'' stmtIL_t*
+
+;;
+;; Block
+;;
+
+rule Block_ok/init:
+  C INIT |- stmt* : C' stmtIL*
+  -- Stmts_ok: C |- stmt* : C' stmtIL*
+
+rule Block_ok/noinit:
+  C NOINIT |- stmt* : C''' stmtIL*
+  -- if C' = $enter(C)
+  -- Stmts_ok: C' |- stmt* : C'' stmtIL*
+  -- if C''' = $exit(C'')

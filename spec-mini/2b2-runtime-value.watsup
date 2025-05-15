@@ -1,0 +1,9 @@
+;;
+;; Value
+;;
+
+syntax val =
+  | IntV int
+  | FIntV width bitstr              hint(show FINT#_#V %#S#%)
+  | FBitV width bitstr              hint(show FBIT#_#V %#W#%)
+  | HeaderV id (member, val)*       hint(show HEADER#_#V % %latex("\\{")#%#%latex("\\}"))

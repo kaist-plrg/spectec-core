@@ -1,0 +1,3521 @@
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (INT +3)
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] +32
+
+[[20:43:03]] Answer
+[Mutated] +2
+
+[[20:43:03]] Answer
+[Mutated] -2
+
+[[20:43:03]] Answer
+[Mutated] +0
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (INT +0)
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (FBIT 6 +0)
+
+[[20:43:03]] Answer
+[Mutated] (INT +2)
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:03]] Answer
+[Mutated] (NumE (INT +3))
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Answer
+[Mutated] ("a" (OUT) (NameT "b") None)
+
+[[20:43:03]] Answer
+[Mutated] ("hdr" (IN) (NameT "a") None)
+
+[[20:43:03]] Answer
+[Mutated] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))))
+
+[[20:43:03]] Answer
+[Mutated] (RetS None)
+
+[[20:43:03]] Answer
+[Mutated] (RetS None)
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "a" (NameT "a") [] [ (RetS None),
+  (RetS None) ])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "f" (FIntT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 11]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (FINT 6 +2)
+
+[[20:43:03]] Answer
+[Mutated] (FBIT 6 +3)
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 12]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (NameT "b")
+
+[[20:43:03]] Answer
+[Mutated] (IntT)
+
+[[20:43:03]] Answer
+[Mutated] (IntT)
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 13]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (INT +0)
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 14]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:03]] Answer
+[Mutated] (NameE "a")
+
+[[20:43:03]] Answer
+[Mutated] (NumE (INT -2))
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (INT +3)
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (INT +2)
+
+[[20:43:03]] Answer
+[Mutated] (FBIT 4 +3)
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] +32
+
+[[20:43:03]] Answer
+[Mutated] +2
+
+[[20:43:03]] Answer
+[Mutated] +2
+
+[[20:43:03]] Answer
+[Mutated] +3
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (FBIT 4 -2)
+
+[[20:43:03]] Answer
+[Mutated] (INT +0)
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:03]] Answer
+[Mutated] (NumE (INT -2))
+
+[[20:43:03]] Answer
+[Mutated] (NameE "a")
+
+[[20:43:03]] Answer
+[Mutated] (NameE "b")
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] "hdr"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))),
+  (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] "Hdr"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Query
+[F 9] [P 0] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "a" (IntT) [] [])
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("a" (INOUT) (IntT) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("a" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Answer
+[Mutated] (HeaderD "b" [])
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (FINT 4 +2)
+
+[[20:43:03]] Answer
+[Mutated] (INT +0)
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:03]] Answer
+[Mutated] (NumE (INT +3))
+
+[[20:43:03]] Answer
+[Mutated] (NumE (INT -2))
+
+[[20:43:03]] Answer
+[Mutated] (BinE (SHL) (NumE (INT +3)) (NameE "a"))
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Answer
+[Mutated] ("hdr" (NO) (NameT "Hdr") None)
+
+[[20:43:03]] Answer
+[Mutated] ("b" (NO) (IntT) None)
+
+[[20:43:03]] Answer
+[Mutated] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] (NameE "x")
+
+[[20:43:03]] Answer
+[Mutated] (ExprAccE (NumE (INT +0)) "a")
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 11]
+[File] spec-mini/shift-well.p4
+[Source] (BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))
+
+[[20:43:03]] Answer
+[Mutated] (NumE (INT +3))
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 12]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 13]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 14]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FBitT (NumE (FINT 6 -2)))
+
+[[20:43:03]] Answer
+[Mutated] (FBitT (BinE (MINUS) (NumE (INT +3)) (NameE "b")))
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] "x"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (IntT)
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] "Hdr"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Answer
+[Mutated] (HeaderD "Hdr" [ ("src", (FIntT (NumE (INT +32)))) ])
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] (IN)
+
+[[20:43:03]] Answer
+[Mutated] (INOUT)
+
+[[20:43:03]] Answer
+[Mutated] (NO)
+
+[[20:43:03]] Answer
+[Mutated] (NO)
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (INT +3)
+
+[[20:43:03]] Answer
+[Mutated] (INT +3)
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ]
+
+[[20:43:03]] Answer
+[Mutated] [ ("hdr" (IN) (NameT "Hdr") None) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:03]] Answer
+[Mutated] (NumE (INT +3))
+
+[[20:43:03]] Answer
+[Mutated] (NameE "a")
+
+[[20:43:03]] Query
+[F 9] [P 29] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Answer
+[Mutated] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Answer
+[Mutated] ("a" (OUT) (IntT) None)
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] "Hdr"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Answer
+[Mutated] (HeaderD "Hdr" [ ("a", (IntT)) ])
+
+[[20:43:03]] Answer
+[Mutated] (HeaderD "b" [])
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Answer
+[Mutated] ("b" (IN) (IntT) None)
+
+[[20:43:03]] Answer
+[Mutated] ("a" (NO) (IntT) None)
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] (IN)
+
+[[20:43:03]] Answer
+[Mutated] (IN)
+
+[[20:43:03]] Answer
+[Mutated] (NO)
+
+[[20:43:03]] Answer
+[Mutated] (INOUT)
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "a" (NameT "a") [] [])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "f" (IntT) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:03]] Answer
+[Mutated] ("a", (IntT))
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Answer
+[Mutated] (HeaderD "b" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "f" (FBitT (NameE "a")) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "f" (FBitT (NumE (INT +32))) [ ("b" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 11]
+[File] spec-mini/shift-well.p4
+[Source] (NameE "hdr")
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 12]
+[File] spec-mini/shift-well.p4
+[Source] (NameE "hdr")
+
+[[20:43:03]] Answer
+[Mutated] (NameE "b")
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 13]
+[File] spec-mini/shift-well.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 14]
+[File] spec-mini/shift-well.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:03]] Answer
+[Mutated] ("b", (NameT "b"))
+
+[[20:43:03]] Answer
+[Mutated] ("src", (NameT "a"))
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] "Hdr"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Answer
+[Mutated] ("hdr" (OUT) (NameT "Hdr") None)
+
+[[20:43:03]] Answer
+[Mutated] ("a" (IN) (NameT "b") None)
+
+[[20:43:03]] Answer
+[Mutated] ("a" (OUT) (IntT) None)
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FIntT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Answer
+[Mutated] ("a" (INOUT) (NameT "a") None)
+
+[[20:43:03]] Answer
+[Mutated] ("a" (IN) (IntT) None)
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] (IN)
+
+[[20:43:03]] Answer
+[Mutated] (NO)
+
+[[20:43:03]] Answer
+[Mutated] (INOUT)
+
+[[20:43:03]] Answer
+[Mutated] (INOUT)
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ]
+
+[[20:43:03]] Answer
+[Mutated] [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (IntT) None) ]
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "a" []),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 11]
+[File] spec-mini/shift-well.p4
+[Source] (NameE "hdr")
+
+[[20:43:03]] Answer
+[Mutated] (NumE (FBIT 8 +2))
+
+[[20:43:03]] Answer
+[Mutated] (NameE "a")
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 12]
+[File] spec-mini/shift-well.p4
+[Source] (NameE "hdr")
+
+[[20:43:03]] Answer
+[Mutated] (NameE "a")
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 13]
+[File] spec-mini/shift-well.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:03]] Answer
+[Mutated] ("a", (NameT "a"))
+
+[[20:43:03]] Answer
+[Mutated] ("a", (NameT "a"))
+
+[[20:43:03]] Query
+[F 9] [P 33] [D/R 14]
+[File] spec-mini/shift-well.p4
+[Source] [ ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:03]] Answer
+[Mutated] [ ("src", (FIntT (NumE (INT +32)))) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] "f"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "f" (FBitT (BinE (SHR) (NumE (INT +0)) (NumE (INT -2)))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "a" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] [ (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FIntT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "b") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] "f"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS None) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "b" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Answer
+[Mutated] (HeaderD "a" [])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "b" (IntT) [] [])
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "b" []),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "b" (IntT) [] [ (RetS None),
+  (RetS None) ])
+
+[[20:43:03]] Answer
+[Mutated] (HeaderD "b" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] "f"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("b", (IntT)) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] "f"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "b" []),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 34] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (FINT 6 +0)
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (NameT "a")
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] +32
+
+[[20:43:03]] Answer
+[Mutated] +3
+
+[[20:43:03]] Answer
+[Mutated] +2
+
+[[20:43:03]] Answer
+[Mutated] -2
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (IntT)
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (IntT)
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (NameT "a")
+
+[[20:43:03]] Answer
+[Mutated] (IntT)
+
+[[20:43:03]] Answer
+[Mutated] (IntT)
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Answer
+[Mutated] ("b" (OUT) (IntT) None)
+
+[[20:43:03]] Answer
+[Mutated] ("b" (NO) (NameT "b") None)
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Answer
+[Mutated] (FuncD "f" (FIntT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 11]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 12]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 13]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 14]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (INT -2)
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] +32
+
+[[20:43:03]] Answer
+[Mutated] +2
+
+[[20:43:03]] Answer
+[Mutated] +2
+
+[[20:43:03]] Answer
+[Mutated] +2
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (NameT "b")
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (FBIT 4 -2)
+
+[[20:43:03]] Answer
+[Mutated] (INT +0)
+
+[[20:43:03]] Answer
+[Mutated] (INT +2)
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] +32
+
+[[20:43:03]] Answer
+[Mutated] +2
+
+[[20:43:03]] Answer
+[Mutated] +2
+
+[[20:43:03]] Answer
+[Mutated] +0
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:03]] Answer
+[Mutated] (NumE (INT +0))
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:03]] Answer
+[Mutated] (NameE "b")
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NameE "a"))
+
+[[20:43:03]] Answer
+[Mutated] (FBitT (NumE (INT +0)))
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Answer
+[Mutated] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 11]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 12]
+[File] spec-mini/shift-well.p4
+[Source] "Hdr"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 13]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Query
+[F 9] [P 37] [D/R 14]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (FINT 8 +2)
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] "Hdr"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] "hdr"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Answer
+[Mutated] ("a" (NO) (IntT) None)
+
+[[20:43:03]] Answer
+[Mutated] ("hdr" (OUT) (NameT "Hdr") None)
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] "Hdr"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] "x"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (OUT) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 11]
+[File] spec-mini/shift-well.p4
+[Source] +32
+
+[[20:43:03]] Answer
+[Mutated] -2
+
+[[20:43:03]] Answer
+[Mutated] -2
+
+[[20:43:03]] Answer
+[Mutated] -2
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 12]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("a" (OUT) (IntT) None)
+
+[[20:43:03]] Answer
+[Mutated] ("b" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) Some((NameE "b")))
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 13]
+[File] spec-mini/shift-well.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 14]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] "Hdr"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] (NameT "Hdr")
+
+[[20:43:03]] Answer
+[Mutated] (IntT)
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Answer
+[Mutated] ("hdr" (IN) (NameT "b") None)
+
+[[20:43:03]] Answer
+[Mutated] ("b" (OUT) (IntT) None)
+
+[[20:43:03]] Answer
+[Mutated] ("hdr" (IN) (NameT "a") None)
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] (IN)
+
+[[20:43:03]] Answer
+[Mutated] (INOUT)
+
+[[20:43:03]] Answer
+[Mutated] (OUT)
+
+[[20:43:03]] Answer
+[Mutated] (NO)
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ]
+
+[[20:43:03]] Answer
+[Mutated] [ ("hdr" (IN) (NameT "Hdr") None),
+  ("x" (IN) (FBitT (NumE (INT +32))) None) ]
+
+[[20:43:03]] Answer
+[Mutated] [ ("a" (INOUT) (IntT) None) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 41] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] "Hdr"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Query
+[F 9] [P 42] [D/R 0]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P49_0_M0.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (IntT)
+
+[[20:43:03]] Answer
+[Mutated] (IntT)
+
+[[20:43:03]] Answer
+[Mutated] (IntT)
+
+[[20:43:03]] Query
+[F 9] [P 42] [D/R 1]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P49_0_M0.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FIntT (NumE (INT +32))) None)
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FIntT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("a" (IN) (NameT "a") None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:03]] Answer
+[Mutated] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +3)))) ])
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (INT +0)
+
+[[20:43:03]] Answer
+[Mutated] (INT +0)
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] [ ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:03]] Answer
+[Mutated] [ ("src", (FBitT (NumE (INT +32)))),
+  ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS None) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (NameT "a")) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) Some((NameE "a")))
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] (IN)
+
+[[20:43:03]] Answer
+[Mutated] (INOUT)
+
+[[20:43:03]] Answer
+[Mutated] (IN)
+
+[[20:43:03]] Answer
+[Mutated] (NO)
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] +32
+
+[[20:43:03]] Answer
+[Mutated] -2
+
+[[20:43:03]] Answer
+[Mutated] +0
+
+[[20:43:03]] Answer
+[Mutated] +2
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ]
+
+[[20:43:03]] Answer
+[Mutated] [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("a" (NO) (IntT) None) ]
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 11]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:03]] Answer
+[Mutated] (ExprAccE (NumE (INT +2)) "a")
+
+[[20:43:03]] Answer
+[Mutated] (NumE (FBIT 8 -2))
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 12]
+[File] spec-mini/shift-well.p4
+[Source] [ ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] [ ("b", (NameT "b")) ]
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 13]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (INT -2)
+
+[[20:43:03]] Answer
+[Mutated] (FINT 1 +2)
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 14]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:03]] Answer
+[Mutated] (NameT "b")
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:03]] Answer
+[Mutated] ("x" (IN) (FIntT (NumE (INT +32))) None)
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] "Hdr"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Answer
+[Mutated] "b"
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:03]] Answer
+[Mutated] ("b", (NameT "b"))
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Answer
+[Mutated] (INT -2)
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] [ ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] [ ("a", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (HeaderD "Hdr" []),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] [ (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] "x"
+
+[[20:43:03]] Answer
+[Mutated] "a"
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] (IN)
+
+[[20:43:03]] Answer
+[Mutated] (OUT)
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:03]] Query
+[F 9] [P 44] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ]
+
+[[20:43:03]] Answer
+[Mutated] [ ("hdr" (IN) (NameT "Hdr") None),
+  ("x" (IN) (FBitT (NumE (INT +32))) None) ]
+
+[[20:43:03]] Answer
+[Mutated] []
+
+[[20:43:03]] Answer
+[Mutated] [ ("x" (IN) (FIntT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ]
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (SHL)
+
+[[20:43:04]] Answer
+[Mutated] (MINUS)
+
+[[20:43:04]] Answer
+[Mutated] (MINUS)
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] (BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))))
+
+[[20:43:04]] Answer
+[Mutated] (RetS None)
+
+[[20:43:04]] Answer
+[Mutated] (RetS None)
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]) ]
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (HeaderD "b" []),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] "Hdr"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]) ]
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] "x"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] (IN)
+
+[[20:43:04]] Answer
+[Mutated] (INOUT)
+
+[[20:43:04]] Answer
+[Mutated] (IN)
+
+[[20:43:04]] Answer
+[Mutated] (INOUT)
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 11]
+[File] spec-mini/shift-well.p4
+[Source] ("hdr" (IN) (NameT "Hdr") None)
+
+[[20:43:04]] Answer
+[Mutated] ("hdr" (INOUT) (NameT "Hdr") None)
+
+[[20:43:04]] Answer
+[Mutated] ("b" (IN) (NameT "Hdr") None)
+
+[[20:43:04]] Answer
+[Mutated] ("hdr" (IN) (NameT "Hdr") Some((NameE "b")))
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 12]
+[File] spec-mini/shift-well.p4
+[Source] [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ]
+
+[[20:43:04]] Answer
+[Mutated] [ ("a" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ]
+
+[[20:43:04]] Answer
+[Mutated] [ ("b" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ]
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 13]
+[File] spec-mini/shift-well.p4
+[Source] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (RetS None),
+  (RetS None) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (RetS None) ]
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 14]
+[File] spec-mini/shift-well.p4
+[Source] (IN)
+
+[[20:43:04]] Answer
+[Mutated] (INOUT)
+
+[[20:43:04]] Answer
+[Mutated] (INOUT)
+
+[[20:43:04]] Answer
+[Mutated] (NO)
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))
+
+[[20:43:04]] Answer
+[Mutated] Some((NameE "a"))
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] "hdr"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))))
+
+[[20:43:04]] Answer
+[Mutated] (RetS None)
+
+[[20:43:04]] Answer
+[Mutated] (RetS None)
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Answer
+[Mutated] (FuncD "f" (FIntT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Query
+[F 9] [P 45] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Query
+[F 9] [P 47] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Answer
+[Mutated] (HeaderD "a" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Query
+[F 9] [P 47] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] (NameT "Hdr")
+
+[[20:43:04]] Answer
+[Mutated] (FBitT (NumE (INT +2)))
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))
+
+[[20:43:04]] Answer
+[Mutated] (ExprAccE (NameE "a") "b")
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))))
+
+[[20:43:04]] Answer
+[Mutated] (RetS None)
+
+[[20:43:04]] Answer
+[Mutated] (RetS None)
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))))
+
+[[20:43:04]] Answer
+[Mutated] (RetS None)
+
+[[20:43:04]] Answer
+[Mutated] (RetS None)
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] [ (RetS None) ]
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (HeaderD "a" []) ]
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Answer
+[Mutated] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))),
+  ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (RetS None) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))),
+  (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (RetS None),
+  (RetS None) ]
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Answer
+[Mutated] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("b" (IN) (IntT) None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] Some((NumE (INT +3)))
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] Some((NumE (INT +2)))
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Answer
+[Mutated] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Answer
+[Mutated] (FuncD "b" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Answer
+[Mutated] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FIntT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Answer
+[Mutated] (HeaderD "Hdr" [])
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))
+
+[[20:43:04]] Answer
+[Mutated] (BinE (SHL) (NumE (FINT 6 +3)) (ExprAccE (NameE "hdr") "src"))
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))))
+
+[[20:43:04]] Answer
+[Mutated] (RetS None)
+
+[[20:43:04]] Answer
+[Mutated] (RetS None)
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] [ (RetS None),
+  (RetS None) ]
+
+[[20:43:04]] Query
+[F 9] [P 49] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Answer
+[Mutated] (FuncD "f" (IntT) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Answer
+[Mutated] (FuncD "f" (FBitT (NumE (INT +32))) [ ("a" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 0]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 1]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:04]] Answer
+[Mutated] ("src", (FIntT (NumE (INT +32))))
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 2]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (INT +32)
+
+[[20:43:04]] Answer
+[Mutated] (INT +0)
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 3]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] [ ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 4]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (NumE (INT +32))
+
+[[20:43:04]] Answer
+[Mutated] (NameE "a")
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 5]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 6]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] "src"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 7]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (ExprAccE (NameE "hdr") "src")
+
+[[20:43:04]] Answer
+[Mutated] (ExprAccE (NameE "b") "b")
+
+[[20:43:04]] Answer
+[Mutated] (ExprAccE (NumE (FBIT 8 +3)) "src")
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 8]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 9]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FIntT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FIntT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 10]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] "hdr"
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 11]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (NameE "hdr")
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 12]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (ExprAccE (NameE "hdr") "src")
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 13]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 14]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 0]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (IntT)
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 1]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:04]] Answer
+[Mutated] ("a", (FBitT (NumE (INT +32))))
+
+[[20:43:04]] Answer
+[Mutated] ("src", (FIntT (NumE (INT +32))))
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 2]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] +32
+
+[[20:43:04]] Answer
+[Mutated] -2
+
+[[20:43:04]] Answer
+[Mutated] +0
+
+[[20:43:04]] Answer
+[Mutated] +3
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 3]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 4]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (INT +32)
+
+[[20:43:04]] Answer
+[Mutated] (FINT 4 +2)
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 5]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 6]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (ExprAccE (NameE "hdr") "src")
+
+[[20:43:04]] Answer
+[Mutated] (NameE "b")
+
+[[20:43:04]] Answer
+[Mutated] (NumE (INT -2))
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 7]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))
+
+[[20:43:04]] Answer
+[Mutated] (NumE (INT +0))
+
+[[20:43:04]] Answer
+[Mutated] (BinE (PLUS) (NameE "x") (ExprAccE (NameE "hdr") "src"))
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 8]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (NumE (INT +32))
+
+[[20:43:04]] Answer
+[Mutated] (NumE (INT +3))
+
+[[20:43:04]] Answer
+[Mutated] (NameE "b")
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 9]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 10]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] "hdr"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 11]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (NameE "hdr")
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 12]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (ExprAccE (NameE "hdr") "src")
+
+[[20:43:04]] Answer
+[Mutated] (NameE "a")
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 13]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Answer
+[Mutated] None
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 14]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (RetS None),
+  (RetS None) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))),
+  (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (RetS None) ]
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 0]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (IntT)
+
+[[20:43:04]] Answer
+[Mutated] (IntT)
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 1]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:04]] Answer
+[Mutated] ("src", (IntT))
+
+[[20:43:04]] Answer
+[Mutated] ("a", (IntT))
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 2]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (INT +32)
+
+[[20:43:04]] Answer
+[Mutated] (INT +0)
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 3]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] [ ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:04]] Answer
+[Mutated] [ ("src", (FBitT (NumE (INT +32)))),
+  ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Query
+[F 9] [P 51] [D/R 4]
+[File] spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+[Source] (NumE (INT +32))
+
+[[20:43:04]] Answer
+[Mutated] (NameE "b")
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:04]] Answer
+[Mutated] ("src", (IntT))
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] +32
+
+[[20:43:04]] Answer
+[Mutated] -2
+
+[[20:43:04]] Answer
+[Mutated] +3
+
+[[20:43:04]] Answer
+[Mutated] -2
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] [ ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:04]] Answer
+[Mutated] (NameE "a")
+
+[[20:43:04]] Answer
+[Mutated] (ExprAccE (NumE (INT +0)) "a")
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] [ ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] [ ("src", (FBitT (NumE (INT +32)))),
+  ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] "src"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] (ExprAccE (NameE "hdr") "src")
+
+[[20:43:04]] Answer
+[Mutated] (NameE "b")
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:04]] Answer
+[Mutated] (NameE "a")
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]),
+  (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (FuncD "a" (IntT) [] []) ]
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] "hdr"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 11]
+[File] spec-mini/shift-well.p4
+[Source] "hdr"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 12]
+[File] spec-mini/shift-well.p4
+[Source] (ExprAccE (NameE "hdr") "src")
+
+[[20:43:04]] Answer
+[Mutated] (ExprAccE (NameE "hdr") "b")
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 13]
+[File] spec-mini/shift-well.p4
+[Source] (BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 14]
+[File] spec-mini/shift-well.p4
+[Source] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))),
+  (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (FBitT (BinE (PLUS) (NumE (INT +3)) (NameE "b")))
+
+[[20:43:04]] Answer
+[Mutated] (IntT)
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] ("src", (FBitT (NumE (INT +32))))
+
+[[20:43:04]] Answer
+[Mutated] ("src", (FBitT (NumE (INT +0))))
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:04]] Answer
+[Mutated] (INT +0)
+
+[[20:43:04]] Answer
+[Mutated] (INT +0)
+
+[[20:43:04]] Answer
+[Mutated] (INT +3)
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] [ ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:04]] Answer
+[Mutated] (INT +2)
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] [ ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:04]] Answer
+[Mutated] [ ("src", (FBitT (NumE (INT +32)))),
+  ("src", (FBitT (NumE (INT +32)))) ]
+
+[[20:43:04]] Answer
+[Mutated] [ ("src", (FBitT (NameE "a"))) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] (ExprAccE (NameE "hdr") "src")
+
+[[20:43:04]] Answer
+[Mutated] (ExprAccE (NameE "b") "src")
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] (ExprAccE (NameE "hdr") "src")
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (IntT)
+
+[[20:43:04]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (IntT)
+
+[[20:43:04]] Query
+[F 9] [P 52] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Answer
+[Mutated] (HeaderD "Hdr" [])
+
+[[20:43:04]] Answer
+[Mutated] (HeaderD "Hdr" [])
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (IntT)
+
+[[20:43:04]] Answer
+[Mutated] (IntT)
+
+[[20:43:04]] Answer
+[Mutated] (FIntT (NumE (INT +32)))
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] "Hdr"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] "x"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] (IN)
+
+[[20:43:04]] Answer
+[Mutated] (OUT)
+
+[[20:43:04]] Answer
+[Mutated] (NO)
+
+[[20:43:04]] Answer
+[Mutated] (NO)
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:04]] Answer
+[Mutated] (INT +3)
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:04]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:04]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:04]] Answer
+[Mutated] (NameE "b")
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] (NameT "Hdr")
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Answer
+[Mutated] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [])
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] "x"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 11]
+[File] spec-mini/shift-well.p4
+[Source] (BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))
+
+[[20:43:04]] Answer
+[Mutated] (BinE (SHR) (NameE "b") (NumE (INT +0)))
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 12]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] []
+
+[[20:43:04]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FIntT (NameE "a")) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 13]
+[File] spec-mini/shift-well.p4
+[Source] (FBitT (NumE (INT +32)))
+
+[[20:43:04]] Answer
+[Mutated] (NameT "a")
+
+[[20:43:04]] Answer
+[Mutated] (FBitT (NumE (INT +2)))
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 14]
+[File] spec-mini/shift-well.p4
+[Source] "hdr"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:04]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) Some((NameE "b")))
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 1]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Answer
+[Mutated] (HeaderD "a" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 2]
+[File] spec-mini/shift-well.p4
+[Source] (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Answer
+[Mutated] (HeaderD "a" [ ("src", (FBitT (NumE (INT +32)))) ])
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 3]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 4]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:04]] Answer
+[Mutated] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:04]] Answer
+[Mutated] ("a" (IN) (NameT "a") None)
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 5]
+[File] spec-mini/shift-well.p4
+[Source] (INT +32)
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 6]
+[File] spec-mini/shift-well.p4
+[Source] [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ]
+
+[[20:43:04]] Answer
+[Mutated] [ ("a" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ]
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 7]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:04]] Answer
+[Mutated] (NumE (FINT 4 +3))
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 8]
+[File] spec-mini/shift-well.p4
+[Source] (NameT "Hdr")
+
+[[20:43:04]] Answer
+[Mutated] (FIntT (NameE "b"))
+
+[[20:43:04]] Answer
+[Mutated] (NameT "a")
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 9]
+[File] spec-mini/shift-well.p4
+[Source] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+
+[[20:43:04]] Answer
+[Mutated] (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [])
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 10]
+[File] spec-mini/shift-well.p4
+[Source] "x"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 11]
+[File] spec-mini/shift-well.p4
+[Source] (NameE "x")
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 12]
+[File] spec-mini/shift-well.p4
+[Source] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "a" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Answer
+[Mutated] [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (NameT "b") None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 13]
+[File] spec-mini/shift-well.p4
+[Source] (NumE (INT +32))
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 14]
+[File] spec-mini/shift-well.p4
+[Source] "hdr"
+
+[[20:43:04]] Answer
+[Mutated] "b"
+
+[[20:43:04]] Answer
+[Mutated] "a"
+
+[[20:43:04]] Query
+[F 9] [P 53] [D/R 0]
+[File] spec-mini/shift-well.p4
+[Source] ("x" (IN) (FBitT (NumE (INT +32))) None)
+
+[[20:43:04]] Answer
+[Mutated] ("b" (NO) (IntT) None)
+
+[[20:43:04]] Answer
+[Mutated] ("a" (OUT) (IntT) None)
+

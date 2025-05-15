@@ -1,0 +1,7 @@
+;; Underlying raw integer of a numeric value
+
+dec $get_int(val) : int
+
+def $get_int(IntV i) = i
+def $get_int(FIntV w bs) = $to_int(w, bs)
+def $get_int(FBitV _ bs) = bs

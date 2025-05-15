@@ -1,0 +1,78 @@
+;;
+;; Numbers
+;;
+
+syntax numIL = num
+
+;;
+;; Texts
+;;
+
+;;
+;; Identifiers
+;;
+
+syntax idIL = id
+
+;;
+;; Members
+;;
+
+syntax memberIL = idIL
+
+;;
+;; Binary operators
+;;
+
+syntax binopIL = binop
+
+;;
+;; Directions
+;;
+
+syntax dirIL = dir
+
+;;
+;; Types
+;;
+
+syntax typeIL = typ
+
+;;
+;; Parameters
+;;
+
+syntax paramIL = idIL dirIL typeIL val?
+
+;;
+;; Expressions
+;;
+
+syntax annotIL = `(typ)
+syntax exprIL =
+  | IntE int annotIL
+  | FIntE width bits annotIL
+  | FBitE width bits annotIL
+  | NameE idIL annotIL
+  | BinE binopIL exprIL exprIL annotIL
+  | ExprAccE exprIL memberIL annotIL
+
+;;
+;; Statements
+;;
+
+syntax stmtIL = | RetS exprIL?
+
+;;
+;; Declarations
+;;
+
+syntax declIL =
+  | HeaderD idIL (memberIL, typeIL)*
+  | FuncD idIL typeIL paramIL* stmtIL*
+
+;;
+;; Program
+;;
+
+syntax programIL = declIL*

@@ -1,0 +1,73 @@
+# Overall Coverage: 2/54 (3.70%)
+# Coverage for Eval_static: 0/1 (0.00%)
+37 Miss Eval_static seed-mini/shift-well.p4
+# Coverage for Expr_ok: 0/7 (0.00%)
+41 Miss Expr_ok seed-mini/shift-well.p4
+42 Miss Expr_ok
+43 Miss Expr_ok seed-mini/shift-well.p4
+44 Miss Expr_ok seed-mini/shift-well.p4
+45 Miss Expr_ok seed-mini/shift-well.p4
+46 Miss Expr_ok seed-mini/shift-well.p4
+47 Miss Expr_ok seed-mini/shift-well.p4
+# Coverage for Stmt_ok: 1/2 (50.00%)
+48 Hit_unlikely Stmt_ok seed-mini/shift-well.p4
+49 Miss Stmt_ok seed-mini/shift-well.p4
+# Coverage for Type_ok: 0/3 (0.00%)
+38 Miss Type_ok
+39 Miss Type_ok seed-mini/shift-well.p4
+40 Miss Type_ok seed-mini/shift-well.p4
+# Coverage for add_frame: 0/2 (0.00%)
+28 Miss add_frame seed-mini/shift-well.p4
+29 Miss add_frame seed-mini/shift-well.p4
+# Coverage for add_frames: 0/2 (0.00%)
+30 Miss add_frames
+31 Miss add_frames
+# Coverage for add_func: 0/1 (0.00%)
+34 Miss add_func seed-mini/shift-well.p4
+# Coverage for add_param: 1/1 (100.00%)
+32 Hit_unlikely add_param seed-mini/shift-well.p4
+# Coverage for add_typ: 0/1 (0.00%)
+33 Miss add_typ seed-mini/shift-well.p4
+# Coverage for bin_minus: 0/6 (0.00%)
+7 Miss bin_minus
+8 Miss bin_minus
+9 Miss bin_minus
+10 Miss bin_minus
+11 Miss bin_minus
+12 Miss bin_minus
+# Coverage for bin_plus: 0/6 (0.00%)
+1 Miss bin_plus
+2 Miss bin_plus
+3 Miss bin_plus
+4 Miss bin_plus
+5 Miss bin_plus
+6 Miss bin_plus
+# Coverage for bin_shl: 0/4 (0.00%)
+13 Miss bin_shl
+14 Miss bin_shl
+15 Miss bin_shl
+16 Miss bin_shl
+# Coverage for bin_shr: 0/10 (0.00%)
+17 Miss bin_shr
+18 Miss bin_shr
+19 Miss bin_shr
+20 Miss bin_shr
+21 Miss bin_shr
+22 Miss bin_shr
+23 Miss bin_shr
+24 Miss bin_shr
+25 Miss bin_shr
+26 Miss bin_shr
+# Coverage for compatible_shift: 0/4 (0.00%)
+50 Miss compatible_shift
+51 Miss compatible_shift
+52 Miss compatible_shift seed-mini/shift-well.p4
+53 Miss compatible_shift seed-mini/shift-well.p4
+# Coverage for exit: 0/1 (0.00%)
+27 Miss exit
+# Coverage for find_frames: 0/1 (0.00%)
+35 Miss find_frames seed-mini/shift-well.p4
+# Coverage for get_int: 0/1 (0.00%)
+0 Miss get_int seed-mini/shift-well.p4
+# Coverage for typeof: 0/1 (0.00%)
+36 Miss typeof seed-mini/shift-well.p4

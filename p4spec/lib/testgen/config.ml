@@ -16,13 +16,13 @@ let samples_close_miss = 3
 let samples_related_vid = 3
 
 (* Max number of close-ASTs per seed *)
-let samples_derivation_source = 3
+let samples_derivation_source = 15
 
 (* Max number of mutation trials per close-AST *)
 let trials_mutation = 3
 
 (* Trials per seed *)
-let trials_seed = 10
+let trials_seed = 45
 
 (* Timeout per seed *)
 let timeout_seed = 30
@@ -75,6 +75,7 @@ type seed = { mutable cover : FCov.Cover.t }
 (* Configuration for the fuzz campaign *)
 
 type t = {
+  mini : bool;
   mutable rand : int;
   modes : Modes.t;
   specenv : specenv;
@@ -191,11 +192,11 @@ let init_storage (dirname_gen : string) : storage =
 
 let init_seed (cover : FCov.Cover.t) : seed = { cover }
 
-let init (modes : Modes.t) (specenv : specenv) (storage : storage) (seed : seed)
-    =
+let init ?(mini : bool = false) (modes : Modes.t) (specenv : specenv)
+    (storage : storage) (seed : seed) =
   let rand = 2025 in
   Random.init rand;
-  { rand; modes; specenv; storage; seed }
+  { mini; rand; modes; specenv; storage; seed }
 
 (* Seed updater *)
 

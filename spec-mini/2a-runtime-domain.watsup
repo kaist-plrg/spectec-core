@@ -1,0 +1,16 @@
+;;
+;; Identifiers
+;; Already defined in the EL syntax
+;;
+
+;;
+;; Type identifiers
+;;
+
+syntax tid = id
+
+;;
+;; Function identifiers
+;;
+
+syntax fid = id

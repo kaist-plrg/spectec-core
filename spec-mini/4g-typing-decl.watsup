@@ -1,0 +1,67 @@
+;;
+;; Parameter typing
+;;
+
+rule Param_ok/param-default:
+  C |- id dir type expr : id dir typ_p val
+  -- Type_ok: C |- type : typ_p
+  ----
+  -- Expr_ok: C |- expr : exprIL_e
+  -- if `(typ_e) = $typeof(exprIL_e)
+  ----
+  -- Eval_static: C |- exprIL_e ~> val
+
+rule Param_ok/param-nodefault:
+  C |- id dir type eps : id dir typ_p eps
+  -- Type_ok: C |- type : typ_p
+
+;;
+;; Header declaration
+;;
+
+rule Decl_ok/headerd:
+  C |- HeaderD id (member_f, type_f)* : C'' (HeaderD id (member_f, typ_f)*)
+  -- (Type_ok: C |- type_f : typ_f)*
+  ----
+  -- if typ_h = HeaderT id (member_f, typ_f)*
+  ----
+  -- if C'' = $add_typ(C, id, typ_h)
+
+;;
+;; Function declaration
+;;
+
+rule Decl_ok/funcd:
+  C |- FuncD id type_r param* stmt* : C'' (FuncD id typ_r paramIL* stmtIL*)
+  -- (Param_ok: C |- param : paramIL)*
+  ----
+  -- if C' = $add_params(C, paramIL*)
+  ----
+  -- Type_ok: C' |- type_r : typ_r
+  ----
+  -- Block_ok: C' INIT |- stmt* : C'' stmtIL*
+  ----
+  -- if ft = FuncT paramIL* typ_r
+  ----
+  -- if C''' = $add_func(C'', id, ft)
+
+;;
+;; Declaration sequence
+;;
+
+rule Decls_ok/nil:
+  C |- eps : C eps
+
+rule Decls_ok/cons:
+  C |- decl_h :: decl_t* : C'' (declIL_h :: declIL_t*)
+  -- Decl_ok: C |- decl_h : C' declIL_h
+  -- Decls_ok: C' |- decl_t* : C'' declIL_t*
+
+;;
+;; Program
+;;
+
+rule Prog_ok:
+  |- decl* : C' declIL*
+  -- if C = $empty_context()
+  -- Decls_ok: C |- decl* : C' declIL*
