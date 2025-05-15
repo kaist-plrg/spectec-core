@@ -44,6 +44,7 @@ def monitor_file_size(
 
 def reduce_program(
     reduce_dir: Directory,
+    reduced_files_dir: Directory,
     pid: Union[int, str],
     filename: Filepath,
     p4spectec_dir: Directory,
@@ -54,7 +55,6 @@ def reduce_program(
 
     interesting_dir: Directory = Directory(os.path.join(reduce_dir, "interesting"))
     creduce_log_dir: Directory = Directory(os.path.join(reduce_dir, "creduce"))
-    reduced_files_dir: Directory = Directory(os.path.join(reduce_dir, "reduced"))
     os.makedirs(interesting_dir, exist_ok=True)
     os.makedirs(creduce_log_dir, exist_ok=True)
     os.makedirs(reduced_files_dir, exist_ok=True)
@@ -167,6 +167,7 @@ def reduce_from_coverage(
     max_reductions_per_pid: int,
     reductions: Reductions,
     reduce_dir: Directory,
+    reduced_files_dir: Directory,
     creduce_configs: CReduceConfigs,
     targeted: bool,
 ) -> None:
@@ -209,6 +210,7 @@ def reduce_from_coverage(
                 smallest_file: Filepath = min(filenames_unreduced, key=os.path.getsize)
                 reducer_result: Optional[Filepath] = reduce_program(
                     reduce_dir,
+                    reduced_files_dir,
                     pid,
                     smallest_file,
                     creduce_configs["p4spectec_dir"],

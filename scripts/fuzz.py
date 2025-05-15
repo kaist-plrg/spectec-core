@@ -183,7 +183,6 @@ fuzzer_coverage: Coverage = {}
 reductions: Reductions = {}
 MAX_REDUCTIONS_PER_PID: int = 0
 TARGETED = False
-REDUCE = True
 
 #
 # From the initial fuzz cycle, we generate a good seed pool,
@@ -198,20 +197,12 @@ total_coverage = read_coverage(initial_coverage_file)
 #
 # partition the coverage into Close-misses(to reduce) and others
 #
-fuzzer_coverage: Coverage = copy.deepcopy(total_coverage)
+fuzzer_coverage = copy.deepcopy(total_coverage)
 for origin in total_coverage:
     for pid, (status, filenames) in total_coverage[origin].items():
         if status == Status.CLOSE_MISS:
             fuzzer_coverage[origin][pid] = (status, [])
 
-fuzzer_coverage_file: Filepath = Filepath(
-    os.path.join(WORK_DIR, "fuzz0", "fuzz.coverage")
-)
-write_coverage(fuzzer_coverage_file, fuzzer_coverage)
-total_coverage_file: Filepath = Filepath(
-    os.path.join(WORK_DIR, "fuzz0", "total.coverage")
-)
-write_coverage(total_coverage_file, total_coverage)
 #
 # In the following loops,
 #
@@ -228,6 +219,7 @@ write_coverage(total_coverage_file, total_coverage)
 #       This is then merged with the fuzzer coverage.
 #
 
+reduced_files_dir: Directory = Directory(os.path.join(WORK_DIR, "reduced"))
 while loop_idx < LOOPS:
     print(f"\n[DEBUG] === Starting loop{loop_idx} ===")
 
@@ -243,6 +235,7 @@ while loop_idx < LOOPS:
         MAX_REDUCTIONS_PER_PID,
         reductions,
         reduce_dir,
+        reduced_files_dir,
         C_REDUCE_CONFIGS,
         TARGETED,
     )
@@ -268,7 +261,7 @@ while loop_idx < LOOPS:
             INCLUDE_DIR,
             *[cmd for file in IGNORE_FILES for cmd in ("-ignore", file)],
             "-d",
-            os.path.join(reduce_dir, "reduced"),
+            reduced_files_dir,
             "-cov",
             reduced_coverage_file,
         ]
@@ -281,12 +274,14 @@ while loop_idx < LOOPS:
 
     # Output the reduced files as a coverage file
     fuzzer_coverage_file: Filepath = Filepath(os.path.join(reduce_dir, "fuzz.coverage"))
+    print(f"\n[DEBUG] === Writing fuzzer coverage into {fuzzer_coverage_file} ===")
     write_coverage(fuzzer_coverage_file, fuzzer_coverage)
 
     # Fuzzing with the reduced files
     loop_idx += 1
     name_fuzz_campaign = f"fuzz{loop_idx}"
     fuzz_dir: Directory = Directory(os.path.join(WORK_DIR, name_fuzz_campaign))
+    print(f"\n[DEBUG] === Fuzzing in {fuzz_dir} ===")
 
     spectec_fuzz_command = spectec_command_template.copy() + [
         "-seed",
@@ -301,15 +296,18 @@ while loop_idx < LOOPS:
 
     print(f"\n[DEBUG] === Starting fuzz{loop_idx} ===")
     result = subprocess.run(spectec_fuzz_command, check=True)
+    os.makedirs(fuzz_dir, exist_ok=True)
 
-    # Get and read the fuzzer output coverage file
-    fuzzer_coverage_file: Filepath = Filepath(os.path.join(fuzz_dir, "final.coverage"))
-    fuzzer_coverage = read_coverage(fuzzer_coverage_file)
+    # 1-1) fuzzer takes a coverage and returns a coverage
+    final_coverage_file: Filepath = Filepath(os.path.join(fuzz_dir, "final.coverage"))
+    print(f"\n[DEBUG] === Reading fuzzer coverage from {final_coverage_file} ===")
+    final_coverage = read_coverage(final_coverage_file)
 
     # 1-2) total coverage is updated with the new findings
     total_coverage = union_coverage(total_coverage, fuzzer_coverage)
     total_coverage_file: Filepath = Filepath(os.path.join(fuzz_dir, "total.coverage"))
-    write_coverage(fuzzer_coverage_file, total_coverage)
+    print(f"\n[DEBUG] === Writing merged coverage into {total_coverage_file} ===")
+    write_coverage(total_coverage_file, total_coverage)
 
 #
 # End of the fuzzing loop
