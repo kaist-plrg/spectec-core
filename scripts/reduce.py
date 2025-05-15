@@ -227,7 +227,7 @@ def reduce_from_coverage(
                     reduced_file: Filepath = Filepath(reducer_result)
 
                 # update total coverage: substitute original with reduced file
-                # MUTATION to total_coverage
+                # !! MUTATION to total_coverage
                 total_coverage[origin][pid][1].remove(smallest_file)
                 total_coverage[origin][pid][1].append(reduced_file)
 
@@ -235,14 +235,7 @@ def reduce_from_coverage(
                 if targeted:
                     fuzzer_coverage[origin][pid][1].append(reduced_file)
                     #
-                # if not TARGETED, append the new file to all PIDs
-                # TODO: should instead compute coverage of all reduced files and merge
-                else:
-                    for origin in fuzzer_coverage:
-                        for pid, (status, filenames) in fuzzer_coverage[origin].items():
-                            if status == Status.CLOSE_MISS:
-                                fuzzer_coverage[origin][pid][1].append(reduced_file)
 
                 # update reductions
-                # MUTATION to reductions
+                # !! MUTATION to reductions
                 reductions.setdefault(pid, []).append(reduced_file)

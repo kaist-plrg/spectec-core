@@ -185,11 +185,10 @@ reductions: Reductions = {}
 MAX_REDUCTIONS_PER_PID: int = 0
 TARGETED = True
 REDUCE = True
-RESUMED: bool = False
 
 #
-# From the initial fuzz cycle, we aim to generate a good seed pool,
-# and take the seed coverage as total coverage.
+# From the initial fuzz cycle, we generate a good seed pool,
+# and take the resulting coverage as the initial total coverage.
 #
 
 initial_coverage_file: Filepath = Filepath(
@@ -211,9 +210,15 @@ for origin in total_coverage:
 #
 # 1) the fuzzer takes {a fuzzer coverage} which holds the programs targeted for mutation (reduced programs only).
 #   and only mutates the programs in this list, returning {a fuzzer coverage} with any new findings through mutation.
+#   1-1) the total coverage is updated with the new findings with `union`.
 #
-# 2) the reducer takes {a reducer coverage} and reduces the smallest file for each close-missed phantom id,
+# 2) the reducer takes {a total coverage} and reduces the smallest file for each close-missed phantom id,
 #   returning {a reductions file} containing the accumulated list of reductions per pid.
+#   2-1) the reducer substitutes the original file for a target pid to the file newly reduced w.r.p the pid
+#   2-2) TARGETED: Close-miss programs in fuzzer coverage is cleared, and reduced files are added to their pids.
+#   2-3) NON-TARGETED: Close-miss programs in fuzzer coverage is cleared. 
+#       All reduced programs are treated as a new seed, and seed coverage is computed.
+#       This is then merged with the fuzzer coverage.
 #
 
 while loop_idx < LOOPS:
@@ -227,16 +232,12 @@ while loop_idx < LOOPS:
         )
         fuzzer_coverage = read_coverage(prev_coverage_file)
 
+    # 1-2) total coverage is updated with the new findings
+    total_coverage = union_coverage(total_coverage, fuzzer_coverage)
+
     name_reduce_campaign: str = f"reduce{loop_idx}"
     reduce_dir: Directory = Directory(os.path.join(WORK_DIR, name_reduce_campaign))
     os.makedirs(reduce_dir, exist_ok=True)
-
-    # Source from reduction output if resumed (legacy)
-    # if RESUMED and loop_idx > 0:
-    #     prev_reductions_file: Filepath = Filepath(
-    #         os.path.join(WORK_DIR, f"reduce{loop_idx-1}", "reduced.reductions")
-    #     )
-    #     reductions = read_reductions(prev_reductions_file)
 
     # run reducer
     reduce_from_coverage(
@@ -270,7 +271,9 @@ while loop_idx < LOOPS:
 
     result = subprocess.run(spectec_coverage_command, check=True)
     reduced_coverage: Coverage = read_coverage(reduced_coverage_file)
+    # update coverage
     fuzzer_coverage = union_coverage(fuzzer_coverage, reduced_coverage)
+    # total coverage 
 
     # Output the reduced files as a coverage file
     fuzzer_coverage_file: Filepath = Filepath(os.path.join(reduce_dir, "fuzz.coverage"))
@@ -290,8 +293,6 @@ while loop_idx < LOOPS:
         "1",
         "-warm",
         fuzzer_coverage_file,
-        # "-target",
-        # target_file,
         "-name",
         name_fuzz_campaign,
     ]
