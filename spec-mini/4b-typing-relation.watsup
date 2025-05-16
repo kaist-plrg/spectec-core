@@ -1,0 +1,76 @@
+;;
+;; Annotation
+;;
+
+dec $typeof(exprIL) : annotIL
+
+def $typeof(FIntE _ _ annotIL) = annotIL
+def $typeof(FBitE _ _ annotIL) = annotIL
+def $typeof(NameE _ annotIL) = annotIL
+def $typeof(BinE _ _ _ annotIL) = annotIL
+def $typeof(ExprAccE _ _ annotIL) = annotIL
+
+;;
+;; Static evaluation
+;;
+
+;; Static evaluation of expressions that are local compile-time known
+relation Eval_static:
+  context |- exprIL ~> val
+  hint(input %0 %1)
+
+;;
+;; Type evaluation and subtyping
+;;
+
+;; Type evaluation
+relation Type_ok:
+  context |- type : typ
+  hint(input %0 %1)
+
+;;
+;; Expression, Statement, and Declaration typing
+;;
+
+;; Expression typing,
+;; produces an IL expression (exprIL),
+;; gets the type of the expression (typ),
+;; and its compile-time known-ness (ctk)
+relation Expr_ok:
+  context |- expr : exprIL
+  hint(input %0 %1)
+
+;; Statement typing,
+;; produces an IL statement (stmtIL / blockIL),
+;; note that block typing depends on whether it is the initial block or not
+syntax blkctxt = INIT | NOINIT
+relation Block_ok:
+  context blkctxt |- stmt* : context stmtIL*
+  hint(input %0 %1 %2)
+relation Stmt_ok:
+  context |- stmt : context stmtIL
+  hint(input %0 %1)
+relation Stmts_ok:
+  context |- stmt* : context stmtIL*
+  hint(input %0 %1)
+
+;; Parameter typing,
+;; produces an IL parameter (paramIL)
+relation Param_ok:
+  context |- param : paramIL
+  hint(input %0 %1)
+
+;; Declaration typing,
+;; produces an IL declaration (declIL)
+relation Decl_ok:
+  context |- decl : context declIL
+  hint(input %0 %1)
+relation Decls_ok:
+  context |- decl* : context declIL*
+  hint(input %0 %1)
+
+;; Program typing,
+;; produces an IL program (progIL)
+relation Prog_ok:
+  |- program : context programIL
+  hint(input %0)

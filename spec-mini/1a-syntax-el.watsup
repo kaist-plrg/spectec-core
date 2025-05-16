@@ -1,0 +1,91 @@
+;;
+;; Numbers
+;;
+
+syntax bits = int
+syntax width = nat
+
+syntax num =
+  | INT int
+  | FINT width bits
+  | FBIT width bits
+
+;;
+;; Texts
+;;
+
+;;
+;; Identifiers
+;;
+
+syntax id = text
+
+;;
+;; Members
+;;
+
+syntax member = id
+
+;;
+;; Binary operators
+;;
+
+syntax binop =
+  | PLUS
+  | MINUS
+  | SHL
+  | SHR
+
+;;
+;; Directions
+;;
+
+syntax dir = | NO | IN | OUT | INOUT
+
+;;
+;; Types
+;;
+
+syntax expr
+
+syntax type =
+  | IntT
+  | FIntT expr
+  | FBitT expr
+  | NameT id
+
+;;
+;; Parameters
+;;
+
+syntax param = id dir type expr?
+
+;;
+;; Expressions
+;;
+
+syntax expr =
+  | NumE num
+  | NameE id
+  | BinE binop expr expr
+  | ExprAccE expr member
+
+;;
+;; Statements
+;;
+
+syntax stmt = | RetS expr?
+
+;;
+;; Declarations
+;;
+
+syntax decl =
+  | HeaderD id (member, type)*
+  | FuncD id type param* stmt*
+
+;;
+;; Program
+;;
+
+syntax program = decl*

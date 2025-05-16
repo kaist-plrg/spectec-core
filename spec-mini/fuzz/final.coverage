@@ -1,0 +1,73 @@
+# Overall Coverage: 13/54 (24.07%)
+# Coverage for Eval_static: 0/1 (0.00%)
+37 Miss Eval_static spec-mini/shift-well.p4
+# Coverage for Expr_ok: 4/7 (57.14%)
+41 Miss Expr_ok spec-mini/shift-well.p4
+42 Hit_likely Expr_ok spec-mini/fuzz-2025-05-15-20-43-02/illtyped/shift-well_F10_P49_0_M0_F9_P42_1_M2.p4
+43 Hit_likely Expr_ok spec-mini/fuzz-2025-05-15-20-43-02/illtyped/shift-well_F10_P43_7_M0.p4
+44 Miss Expr_ok spec-mini/shift-well.p4
+45 Miss Expr_ok spec-mini/shift-well.p4
+46 Hit_likely Expr_ok spec-mini/fuzz-2025-05-15-20-43-02/illtyped/shift-well_F10_P46_3_M0.p4
+47 Hit_likely Expr_ok spec-mini/fuzz-2025-05-15-20-43-02/illtyped/shift-well_F9_P47_1_M0.p4
+# Coverage for Stmt_ok: 1/2 (50.00%)
+48 Hit_unlikely Stmt_ok spec-mini/shift-well.p4
+49 Miss Stmt_ok spec-mini/shift-well.p4
+# Coverage for Type_ok: 3/3 (100.00%)
+38 Hit_likely Type_ok spec-mini/fuzz-2025-05-15-20-43-02/illformed/shift-well_F10_P0_12_M0_F10_P38_0_M0.p4
+39 Hit_likely Type_ok spec-mini/fuzz-2025-05-15-20-43-02/illformed/shift-well_F10_P39_2_M0.p4
+40 Hit_likely Type_ok spec-mini/fuzz-2025-05-15-20-43-02/illformed/shift-well_F10_P40_2_M0.p4
+# Coverage for add_frame: 1/2 (50.00%)
+28 Hit_likely add_frame spec-mini/fuzz-2025-05-15-20-43-02/illtyped/shift-well_F10_P28_9_M0.p4
+29 Miss add_frame spec-mini/shift-well.p4
+# Coverage for add_frames: 0/2 (0.00%)
+30 Miss add_frames
+31 Miss add_frames
+# Coverage for add_func: 0/1 (0.00%)
+34 Miss add_func spec-mini/shift-well.p4
+# Coverage for add_param: 1/1 (100.00%)
+32 Hit_unlikely add_param spec-mini/shift-well.p4
+# Coverage for add_typ: 1/1 (100.00%)
+33 Hit_likely add_typ spec-mini/fuzz-2025-05-15-20-43-02/illtyped/shift-well_F8_P33_3_M1.p4
+# Coverage for bin_minus: 0/6 (0.00%)
+7 Miss bin_minus
+8 Miss bin_minus
+9 Miss bin_minus
+10 Miss bin_minus
+11 Miss bin_minus
+12 Miss bin_minus
+# Coverage for bin_plus: 0/6 (0.00%)
+1 Miss bin_plus
+2 Miss bin_plus
+3 Miss bin_plus
+4 Miss bin_plus
+5 Miss bin_plus
+6 Miss bin_plus
+# Coverage for bin_shl: 0/4 (0.00%)
+13 Miss bin_shl
+14 Miss bin_shl
+15 Miss bin_shl
+16 Miss bin_shl
+# Coverage for bin_shr: 0/10 (0.00%)
+17 Miss bin_shr
+18 Miss bin_shr
+19 Miss bin_shr
+20 Miss bin_shr
+21 Miss bin_shr
+22 Miss bin_shr
+23 Miss bin_shr
+24 Miss bin_shr
+25 Miss bin_shr
+26 Miss bin_shr
+# Coverage for compatible_shift: 0/4 (0.00%)
+50 Miss compatible_shift
+51 Miss compatible_shift spec-mini/fuzz-2025-05-15-20-43-02/closemiss/shift-well_F10_P0_12_M0.p4
+52 Miss compatible_shift spec-mini/shift-well.p4
+53 Miss compatible_shift spec-mini/shift-well.p4
+# Coverage for exit: 0/1 (0.00%)
+27 Miss exit
+# Coverage for find_frames: 1/1 (100.00%)
+35 Hit_likely find_frames spec-mini/fuzz-2025-05-15-20-43-02/illtyped/shift-well_F10_P35_2_M0.p4
+# Coverage for get_int: 0/1 (0.00%)
+0 Miss get_int spec-mini/shift-well.p4
+# Coverage for typeof: 1/1 (100.00%)
+36 Hit_likely typeof spec-mini/fuzz-2025-05-15-20-43-02/illtyped/shift-well_F10_P36_4_M0.p4

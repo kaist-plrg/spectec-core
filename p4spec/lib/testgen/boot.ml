@@ -6,10 +6,11 @@ open Util.Source
 
 (* On cold boot, first measure the coverage of the seed *)
 
-let boot_cold (spec : spec) (includes_p4 : string list)
+let boot_cold ?(mini : bool = false) (spec : spec) (includes_p4 : string list)
     (filenames_p4 : string list) (filenames_ignore : string list) : MCov.Cover.t
     =
-  Interp_sl.Typing.cover_typings spec includes_p4 filenames_p4 filenames_ignore
+  Interp_sl.Typing.cover_typings ~mini spec includes_p4 filenames_p4
+    filenames_ignore
 
 (* On warm boot, load the coverage from a file *)
 
@@ -22,12 +23,13 @@ let parse_line (line : string) : pid * MCov.Branch.t =
         match status with
         | "Hit_likely" -> MCov.Branch.Hit (true, filenames)
         | "Hit_unlikely" -> MCov.Branch.Hit (false, filenames)
-        | "Miss" -> (
-            (* Complete Miss is parsed as a newline character instead of an empty list *)
-            if (List.length filenames) == 1 && String.length (List.hd filenames) < 2 then
-              MCov.Branch.Miss []
+        | "Miss" ->
+            if
+              (* Complete Miss is parsed as a newline character instead of an empty list *)
+              List.length filenames == 1
+              && String.length (List.hd filenames) < 2
+            then MCov.Branch.Miss []
             else MCov.Branch.Miss filenames
-          )
         | _ -> assert false
       in
       let origin = origin $ no_region in

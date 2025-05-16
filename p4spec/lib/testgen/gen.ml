@@ -42,7 +42,7 @@ let find_interesting (config : Config.t) (cover : SCov.Cover.t) :
           let pids_hit_new = PIdSet.add pid pids_hit_new in
           (pids_hit_new, pids_close_miss_new)
       (* Adds a new close-miss *)
-      | Miss (_ :: _), Miss ([]) ->
+      | Miss (_ :: _), Miss [] ->
           let pids_close_miss_new = PIdSet.add pid pids_close_miss_new in
           (pids_hit_new, pids_close_miss_new)
       | _ -> (pids_hit_new, pids_close_miss_new))
@@ -215,7 +215,10 @@ let classify_mutation (fuel : int) (pid : pid) (idx_method : int)
   let value_program = Dep.Graph.reassemble_node graph renamer vid_program in
   (* Mutation may yield a syntactically ill-formed AST, so have a try block *)
   try
-    let program = Interp_sl.Convert.Out.out_program value_program in
+    let program =
+      if config.mini then Interp_sl.Convert.Out_mini.out_program value_program
+      else Interp_sl.Convert.Out.out_program value_program
+    in
     classify_mutation' fuel pid idx_method idx_mutation trials config log
       dirname_gen_tmp filename_p4 comment_gen_p4 value_source value_mutated
       value_program program
@@ -407,7 +410,7 @@ let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
   (* Run SL interpreter on the program,
      and if it is well-typed, start generating tests from it *)
   match
-    Interp_sl.Typing.run_typing' ~derive config.specenv.spec
+    Interp_sl.Typing.run_typing' ~mini:config.mini ~derive config.specenv.spec
       config.specenv.includes_p4 filename_p4 config.specenv.ignores
   with
   | WellTyped (graph, vid_program, cover) ->
@@ -480,9 +483,8 @@ let fuzz_phantoms (fuel : int) (config : Config.t) (log : Logger.t)
       let branch = MCov.Cover.find pid config.seed.cover in
       match branch.status with
       | Hit _ -> ()
-      | Miss ([]) -> ()
-      | Miss (filenames_p4) ->
-          fuzz_phantom fuel pid config log query filenames_p4)
+      | Miss [] -> ()
+      | Miss filenames_p4 -> fuzz_phantom fuel pid config log query filenames_p4)
     pids
 
 (* Fuzzing in a loop with fuel *)
@@ -515,11 +517,11 @@ let rec fuzz_loop (fuel : int) (config : Config.t) : Config.t =
 
 (* Entry point to main fuzzing loop *)
 
-let fuzz_typing_init (spec : spec) (includes_p4 : string list)
-    (filenames_ignore : string list) (dirname_gen : string)
-    (name_campaign : string option) (randseed : int option)
-    (logmode : Modes.logmode) (bootmode : Modes.bootmode)
-    (mutationmode : Modes.mutationmode)
+let fuzz_typing_init ?(mini : bool = false) (spec : spec)
+    (includes_p4 : string list) (filenames_ignore : string list)
+    (dirname_gen : string) (name_campaign : string option)
+    (randseed : int option) (logmode : Modes.logmode)
+    (bootmode : Modes.bootmode) (mutationmode : Modes.mutationmode)
     (covermode : Modes.covermode) : Config.t =
   (* Name the campaign *)
   let name_campaign =
@@ -538,9 +540,7 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
   let dirname_gen = dirname_gen ^ "/" ^ name_campaign in
   let storage = Config.init_storage dirname_gen in
   (* Create a mode *)
-  let modes =
-    Modes.{ bootmode; logmode; mutationmode; covermode }
-  in
+  let modes = Modes.{ bootmode; logmode; mutationmode; covermode } in
   (* Create a initializer log *)
   let logname_init = storage.dirname_log ^ "/init.log" in
   let log_init = Logger.init logname_init in
@@ -568,7 +568,8 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
           Filesys.collect_files ~suffix:".p4" dirname_seed_p4
         in
         let cover_seed =
-          Boot.boot_cold spec includes_p4 filenames_seed_p4 filenames_ignore
+          Boot.boot_cold ~mini spec includes_p4 filenames_seed_p4
+            filenames_ignore
         in
         (* Log the initial coverage for later use in warm boot *)
         let filename_cov = dirname_gen ^ "/boot.coverage" in
@@ -591,19 +592,19 @@ let fuzz_typing_init (spec : spec) (includes_p4 : string list)
   |> Logger.log modes.logmode log_init;
   Logger.close log_init;
   (* Create a configuration *)
-  let config = Config.init randseed modes specenv storage seed in
+  let config = Config.init ~mini randseed modes specenv storage seed in
   config
 
-let fuzz_typing (fuel : int) (spec : spec) (includes_p4 : string list)
-    (filenames_ignore : string list) (dirname_gen : string)
-    (name_campaign : string option) (randseed : int option)
-    (logmode : Modes.logmode) (bootmode : Modes.bootmode)
-    (mutationmode : Modes.mutationmode)
+let fuzz_typing ?(mini : bool = false) (fuel : int) (spec : spec)
+    (includes_p4 : string list) (filenames_ignore : string list)
+    (dirname_gen : string) (name_campaign : string option)
+    (randseed : int option) (logmode : Modes.logmode)
+    (bootmode : Modes.bootmode) (mutationmode : Modes.mutationmode)
     (covermode : Modes.covermode) : unit =
   (* Initialize the fuzzing configuration *)
   let config =
-    fuzz_typing_init spec includes_p4 filenames_ignore dirname_gen name_campaign
-      randseed logmode bootmode mutationmode covermode
+    fuzz_typing_init ~mini spec includes_p4 filenames_ignore dirname_gen
+      name_campaign randseed logmode bootmode mutationmode covermode
   in
   (* Call the main fuzzing loop *)
   let config = fuzz_loop fuel config in

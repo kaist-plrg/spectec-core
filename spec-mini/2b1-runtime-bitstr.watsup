@@ -1,0 +1,14 @@
+;;
+;; Bitstring
+;;
+
+syntax bitstr = int
+
+var bs : bitstr
+
+;; Interpret a bitstring with width as a raw integer
+dec $to_int(int, bitstr) : int
+
+;; Convert a raw integer to a bitstring with width
+;; Ensures that the bitstring lies within the range of the width
+dec $to_bitstr(int, int) : bitstr

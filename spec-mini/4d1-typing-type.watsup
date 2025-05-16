@@ -1,0 +1,22 @@
+;;
+;; Type evaluation
+;;
+
+rule Type_ok/intt:
+  C |- IntT : IntT
+
+rule Type_ok/fintt:
+  C |- FIntT expr : (FIntT w)
+  -- Expr_ok: C |- expr : exprIL
+  -- Eval_static: C |- exprIL ~> val
+  -- if w = $get_int(val)
+
+rule Type_ok/fbitt:
+  C |- FBitT expr : (FBitT w)
+  -- Expr_ok: C |- expr : exprIL
+  -- Eval_static: C |- exprIL ~> val
+  -- if w = $get_int(val)
+
+rule Type_ok/namet:
+  C |- NameT id : typ
+  -- if typ = $find_typ(C, id)

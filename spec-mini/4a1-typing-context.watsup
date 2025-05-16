@@ -1,0 +1,104 @@
+;;
+;; Typing context
+;;
+
+syntax context =
+  { TENV tenv,
+    FENV fenv,
+    FRAMES frame* }
+
+var C : context
+
+;;
+;; Constructor
+;;
+
+dec $empty_context : context
+
+def $empty_context = { TENV $empty_tenv,
+                       FENV $empty_fenv,
+                       FRAMES ([ $empty_frame ]) }
+
+;;
+;; Frame management
+;;
+
+dec $enter(context) : context
+    hint(show ENTER %)
+
+def $enter(C) = C[ .FRAMES = $empty_frame :: C.FRAMES ]
+
+dec $exit(context) : context
+    hint(show EXIT %)
+
+def $exit(C) = C[ .FRAMES = frame_t* ]
+  -- if frame_h :: frame_t* = C.FRAMES
+
+;;
+;; Adders
+;;
+
+dec $add_frame(context, id, typ) : context
+
+def $add_frame(C, id, typ) = C[ .FRAMES = frame* ]
+  -- if frame_h :: frame_t* = C.FRAMES
+  -- if ~$in_set<id>(id, $dom_map<id, typ>(frame_h))
+  -- if frame_h' = $add_map<id, typ>(frame_h, id, typ)
+  -- if frame* = frame_h' :: frame_t*
+
+dec $add_frames(context, id*, typ*) : context
+
+def $add_frames(C, eps, eps) = C
+def $add_frames(C, id_h :: id_t*, typ_h :: typ_t*) = C''
+    -- if C' = $add_frame(C, id_h, typ_h)
+    -- if C'' = $add_frames(C', id_t*, typ_t*)
+
+
+dec $add_param(context, paramtyp) : context
+
+def $add_param(C, pt) = C'
+    -- if id NO typ val? = pt
+    -- if C' = $add_frame(C, id, typ)
+def $add_param(C, pt) = C'
+    -- if id dir typ val? = pt
+    -- if C' = $add_frame(C, id, typ)
+
+dec $add_params(context, paramtyp*) : context
+
+def $add_params(C, eps) = C
+def $add_params(C, pt_h :: pt_t*) = C''
+    -- if C' = $add_param(C, pt_h)
+    -- if C'' = $add_params(C', pt_t*)
+
+
+dec $add_typ(context, tid, typ) : context
+
+def $add_typ(C, tid, typ) = C[ .TENV = tenv ]
+  -- if ~$in_set<tid>(tid, $dom_map<tid, typ>(C.TENV))
+  -- if tenv = $add_map<tid, typ>(C.TENV, tid, typ)
+
+
+dec $add_func(context, fid, functyp) : context
+
+def $add_func(C, fid, ft) = C[ .FENV = fenv ]
+  -- if ~$in_set<fid>(fid, $dom_map<fid, functyp>(C.FENV))
+  -- if fenv = $add_map<fid, functyp>(C.FENV, fid, ft)
+
+;;
+;; Finders
+;;
+
+dec $find_frames(context, id) : typ?
+
+def $find_frames(C, id) = typ
+  -- if typ = $find_maps<id, typ>(C.FRAMES, id)
+
+
+dec $find_typ(context, id) : typ?
+
+def $find_typ(C, id) = $find_map<tid, typ>(C.TENV, id)
+
+
+dec $find_func(context, fid) : functyp?
+
+def $find_func(C, fid) = $find_map<fid, functyp>(C.FENV, fid)

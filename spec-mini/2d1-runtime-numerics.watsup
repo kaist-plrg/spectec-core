@@ -1,0 +1,141 @@
+;;
+;; Operations
+;;
+
+dec $pow2(nat) : int
+
+dec $shl(int, int) : int
+dec $shr(int, int) : int
+dec $shr_arith(int, int, int) : int
+
+dec $bneg(int) : int
+dec $band(int, int) : int
+dec $bxor(int, int) : int
+dec $bor(int, int) : int
+
+dec $bitacc(int, int, int) : int
+
+;;
+;; Binary operation
+;;
+
+dec $bin_op(binop, val, val) : val
+    hint(show %#(%, %))
+
+;; Binary plus
+
+dec $bin_plus(val, val) : val
+
+def $bin_plus(IntV i_l, IntV i_r) = IntV $(i_l + i_r)
+def $bin_plus(FIntV w bs_l, FIntV w bs_r) = FIntV w bs
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+  -- if bs = $to_bitstr(w, $(i_l + i_r))
+def $bin_plus(FBitV w bs_l, FBitV w bs_r) = FBitV w bs
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+  -- if bs = $to_bitstr(w, $(i_l + i_r))
+
+def $bin_op(PLUS, val_l, val_r) = $bin_plus(val_l, val_r)
+
+;; Binary minus
+
+dec $bin_minus(val, val) : val
+
+def $bin_minus(IntV i_l, IntV i_r) = IntV $(i_l - i_r)
+def $bin_minus(FIntV w bs_l, FIntV w bs_r) = FIntV w bs
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+  -- if bs = $to_bitstr(w, $(i_l - i_r))
+def $bin_minus(FBitV w bs_l, FBitV w bs_r) = FBitV w bs
+  -- if i_l = $to_int(w, bs_l)
+  -- if i_r = $to_int(w, bs_r)
+  -- if bs = $to_bitstr(w, $(i_l - i_r))
+
+def $bin_op(MINUS, val_l, val_r) = $bin_minus(val_l, val_r)
+
+;; Binary shift left
+
+dec $bin_shl(val, val) : val
+
+def $bin_shl(IntV i_l, IntV i_r) = IntV $shl(i_l, i_r)
+def $bin_shl(IntV i_l, FIntV w_r bs_r) = IntV $shl(i_l, i_r)
+  -- if i_r = $to_int(w_r, bs_r)
+def $bin_shl(IntV i_l, FBitV w_r bs_r) = IntV $shl(i_l, bs_r)
+def $bin_shl(FIntV w_l bs_l, IntV i_r)
+  = $bin_shl(FIntV w_l bs_l, val_r)
+  -- if val_r = FIntV w_l ($to_int(w_l, i_r))
+def $bin_shl(FIntV w_l bs_l, FIntV w_r bs_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if i_r = $to_int(w_r, bs_r)
+  -- if i = $shl(i_l, i_r)
+def $bin_shl(FIntV w_l bs_l, FBitV w_r bs_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if i = $shl(i_l, bs_r)
+def $bin_shl(FBitV w_l bs_l, IntV i_r)
+  = $bin_shl(FBitV w_l bs_l, val_r)
+  -- if val_r = FBitV w_l ($to_int(w_l, i_r))
+def $bin_shl(FBitV w_l bs_l, FIntV w_r bs_r)
+  = FBitV w_l $to_bitstr(w_l, i)
+  -- if i_r = $to_int(w_r, bs_r)
+  -- if i = $shl(bs_l, i_r)
+def $bin_shl(FBitV w_l bs_l, FBitV w_r bs_r)
+  = FBitV w_l $to_bitstr(w_l, i)
+  -- if i = $shl(bs_l, bs_r)
+
+def $bin_op(SHL, val_l, val_r) = $bin_shl(val_l, val_r)
+
+;; Binary shift right
+
+dec $bin_shr(val, val) : val
+
+def $bin_shr(IntV i_l, IntV i_r) = IntV $shr(i_l, i_r)
+def $bin_shr(IntV i_l, FIntV w_r bs_r) = IntV $shr(i_l, i_r)
+  -- if i_r = $to_int(w_r, bs_r)
+def $bin_shr(IntV i_l, FBitV w_r bs_r) = IntV $shr(i_l, bs_r)
+def $bin_shr(FIntV w_l bs_l, IntV i_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if $(i_l < 0)
+  -- if i = $shr_arith(bs_l, i_r, $($pow2(w_l) - 1))
+def $bin_shr(FIntV w_l bs_l, IntV i_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if $(i_l >= 0)
+  -- if i = $shr(bs_l, i_r)
+def $bin_shr(FIntV w_l bs_l, FIntV w_r bs_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if i_r = $to_int(w_r, bs_r)
+  -- if $(i_l < 0)
+  -- if i = $shr_arith(bs_l, i_r, $($pow2(w_l) - 1))
+def $bin_shr(FIntV w_l bs_l, FIntV w_r bs_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if i_r = $to_int(w_r, bs_r)
+  -- if $(i_l >= 0)
+  -- if i = $shr(bs_l, i_r)
+def $bin_shr(FIntV w_l bs_l, FBitV w_r bs_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if $(i_l < 0)
+  -- if i = $shr_arith(bs_l, bs_r, $($pow2(w_l) - 1))
+def $bin_shr(FIntV w_l bs_l, FBitV w_r bs_r)
+  = FIntV w_l $to_bitstr(w_l, i)
+  -- if i_l = $to_int(w_l, bs_l)
+  -- if $(i_l >= 0)
+  -- if i = $shr(bs_l, bs_r)
+def $bin_shr(FBitV w_l bs_l, IntV i_r)
+  = $bin_shr(FBitV w_l bs_l, val_r)
+  -- if val_r = FBitV w_l ($to_int(w_l, i_r))
+def $bin_shr(FBitV w_l bs_l, FIntV w_r bs_r)
+  = FBitV w_l $to_bitstr(w_l, i)
+  -- if i_r = $to_int(w_r, bs_r)
+  -- if i = $shr(bs_l, i_r)
+def $bin_shr(FBitV w_l bs_l, FBitV w_r bs_r)
+  = FBitV w_l $to_bitstr(w_l, i)
+  -- if i = $shr(bs_l, bs_r)
+
+def $bin_op(SHR, val_l, val_r) = $bin_shr(val_l, val_r)

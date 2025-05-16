@@ -1,6 +1,6 @@
-# Overall Coverage: 317/1055 (30.05%)
+# Overall Coverage: 322/1078 (29.87%)
 # Coverage for Block_ok: 0/1 (0.00%)
-827 Miss Block_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/dup-param2.p4 p4/testdata/p4c/program/ill-typed/dup-param1.p4
+852 Miss Block_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/dup-param2.p4 p4/testdata/p4c/program/ill-typed/dup-param1.p4
 # Coverage for CParamType_wf: 1/2 (50.00%)
 260 Miss CParamType_wf p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/dup-param2.p4
 261 Hit_likely CParamType_wf p4/testdata/p4c/program/ill-typed/package.p4
@@ -8,108 +8,110 @@
 262 Hit_likely CParamTypes_wf p4/testdata/p4c/program/ill-typed/package.p4
 263 Miss CParamTypes_wf p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/dup-param2.p4 p4/testdata/p4c/program/ill-typed/dup-param1.p4
 # Coverage for CParam_ok: 1/4 (25.00%)
-858 Miss CParam_ok
-859 Miss CParam_ok
-860 Miss CParam_ok
-861 Hit_likely CParam_ok p4/testdata/p4c/program/ill-typed/issue3378.p4
+885 Miss CParam_ok
+886 Miss CParam_ok
+887 Miss CParam_ok
+888 Hit_likely CParam_ok p4/testdata/p4c/program/ill-typed/issue3378.p4
 # Coverage for Call_action_partial_ok: 1/1 (100.00%)
-1151 Hit_likely Call_action_partial_ok p4/testdata/p4c/program/ill-typed/action-bind3.p4 p4/testdata/p4c/program/ill-typed/action-bind2.p4
+1175 Hit_likely Call_action_partial_ok p4/testdata/p4c/program/ill-typed/action-bind3.p4 p4/testdata/p4c/program/ill-typed/action-bind2.p4
 # Coverage for Call_convention_arg_ok: 2/5 (40.00%)
-950 Miss Call_convention_arg_ok
-951 Hit_likely Call_convention_arg_ok p4/testdata/p4c/program/ill-typed/issue774-1.p4
-952 Miss Call_convention_arg_ok
-953 Miss Call_convention_arg_ok
-954 Hit_likely Call_convention_arg_ok p4/testdata/p4c/program/ill-typed/issue774-1.p4
-# Coverage for Call_convention_ok: 7/9 (77.78%)
-941 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/function1_e.p4
-942 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/issue2036-2.p4
-943 Miss Call_convention_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-944 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4
-945 Hit_unlikely Call_convention_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/serEnumImplCast.p4 p4/testdata/p4c/program/ill-typed/push_nonconstant.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4
-946 Miss Call_convention_ok
-947 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4
-948 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/push_nonconstant.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4
-949 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036-2.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4
+981 Miss Call_convention_arg_ok
+982 Hit_likely Call_convention_arg_ok p4/testdata/p4c/program/ill-typed/issue774-1.p4
+983 Miss Call_convention_arg_ok
+984 Miss Call_convention_arg_ok
+985 Hit_likely Call_convention_arg_ok p4/testdata/p4c/program/ill-typed/issue774-1.p4
+# Coverage for Call_convention_ok: 9/11 (81.82%)
+970 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue2036-1.p4
+971 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/function1_e.p4
+972 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/issue2036-2.p4
+973 Miss Call_convention_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+974 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4
+975 Hit_unlikely Call_convention_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/serEnumImplCast.p4 p4/testdata/p4c/program/ill-typed/push_nonconstant.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4
+976 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/serEnumImplCast.p4
+977 Miss Call_convention_ok
+978 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4
+979 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/push_nonconstant.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4
+980 Hit_likely Call_convention_ok p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue2036-2.p4 p4/testdata/p4c/program/ill-typed/issue2036-1.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4
 # Coverage for Call_default_action_ok: 2/2 (100.00%)
-1196 Hit_likely Call_default_action_ok p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue1542.p4 p4/testdata/p4c/program/ill-typed/action-bind.p4
-1197 Hit_likely Call_default_action_ok p4/testdata/p4c/program/ill-typed/action-bind1.p4
+1219 Hit_likely Call_default_action_ok p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue1542.p4 p4/testdata/p4c/program/ill-typed/action-bind.p4
+1220 Hit_likely Call_default_action_ok p4/testdata/p4c/program/ill-typed/action-bind1.p4
 # Coverage for Call_ok: 12/55 (21.82%)
-975 Miss Call_ok
-976 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/function_e2.p4
-977 Miss Call_ok
-978 Miss Call_ok
-979 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue3188.p4
-980 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-981 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-982 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-983 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-984 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-985 Miss Call_ok
-986 Miss Call_ok
-987 Miss Call_ok
-988 Miss Call_ok
-989 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4
-990 Miss Call_ok
-991 Miss Call_ok
-992 Miss Call_ok
-993 Miss Call_ok
-994 Miss Call_ok
-995 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue1331.p4
-996 Miss Call_ok
-997 Miss Call_ok
-998 Miss Call_ok
-999 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4
-1000 Miss Call_ok
-1001 Miss Call_ok
-1002 Miss Call_ok
-1003 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/call-table.p4
-1004 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1005 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1006 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1007 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1008 Hit_unlikely Call_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/string-e2.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue764.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4
-1009 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue3188.p4
-1010 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/string-e2.p4 p4/testdata/p4c/program/ill-typed/issue764.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4
-1011 Miss Call_ok
-1012 Miss Call_ok
-1013 Miss Call_ok
-1014 Miss Call_ok
-1015 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue2454.p4
+1006 Miss Call_ok
+1007 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/function_e2.p4
+1008 Miss Call_ok
+1009 Miss Call_ok
+1010 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue3188.p4
+1011 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1012 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1013 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1014 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1015 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 1016 Miss Call_ok
 1017 Miss Call_ok
 1018 Miss Call_ok
-1019 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4
-1020 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1021 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1022 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1023 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1019 Miss Call_ok
+1020 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4
+1021 Miss Call_ok
+1022 Miss Call_ok
+1023 Miss Call_ok
 1024 Miss Call_ok
 1025 Miss Call_ok
-1026 Miss Call_ok
+1026 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue1331.p4
 1027 Miss Call_ok
 1028 Miss Call_ok
-1029 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/function_e2.p4 p4/testdata/p4c/program/ill-typed/call-table.p4
+1029 Miss Call_ok
+1030 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4
+1031 Miss Call_ok
+1032 Miss Call_ok
+1033 Miss Call_ok
+1034 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/call-table.p4
+1035 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1036 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1037 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1038 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1039 Hit_unlikely Call_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/string-e2.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue764.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4
+1040 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue3188.p4
+1041 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/string-e2.p4 p4/testdata/p4c/program/ill-typed/issue764.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4
+1042 Miss Call_ok
+1043 Miss Call_ok
+1044 Miss Call_ok
+1045 Miss Call_ok
+1046 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue2454.p4
+1047 Miss Call_ok
+1048 Miss Call_ok
+1049 Miss Call_ok
+1050 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4
+1051 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1052 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1053 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1054 Miss Call_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1055 Miss Call_ok
+1056 Miss Call_ok
+1057 Miss Call_ok
+1058 Miss Call_ok
+1059 Miss Call_ok
+1060 Hit_likely Call_ok p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/function_e2.p4 p4/testdata/p4c/program/ill-typed/call-table.p4
 # Coverage for Call_site_ok: 10/20 (50.00%)
-955 Miss Call_site_ok
-956 Miss Call_site_ok
-957 Miss Call_site_ok
-958 Miss Call_site_ok
-959 Miss Call_site_ok
-960 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/function_e2.p4
-961 Hit_unlikely Call_site_ok p4/testdata/p4c/program/ill-typed/issue3814.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-962 Miss Call_site_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-963 Hit_unlikely Call_site_ok p4/testdata/p4c/program/ill-typed/issue774-1.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036-2.p4 p4/testdata/p4c/program/ill-typed/issue2036-1.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4
-964 Miss Call_site_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-965 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/push_nonconstant.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4
-966 Miss Call_site_ok
-967 Hit_unlikely Call_site_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4
-968 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4
-969 Miss Call_site_ok
-970 Miss Call_site_ok
-971 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/issue1331.p4
-972 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4
-973 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/call-table.p4
-974 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/issue3188.p4
+986 Miss Call_site_ok
+987 Miss Call_site_ok
+988 Miss Call_site_ok
+989 Miss Call_site_ok
+990 Miss Call_site_ok
+991 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/function_e2.p4
+992 Hit_unlikely Call_site_ok p4/testdata/p4c/program/ill-typed/issue3814.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+993 Miss Call_site_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+994 Hit_unlikely Call_site_ok p4/testdata/p4c/program/ill-typed/issue774-1.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036-2.p4 p4/testdata/p4c/program/ill-typed/issue2036-1.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4
+995 Miss Call_site_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+996 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/push_nonconstant.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4
+997 Miss Call_site_ok
+998 Hit_unlikely Call_site_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4
+999 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4
+1000 Miss Call_site_ok
+1001 Miss Call_site_ok
+1002 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/issue1331.p4
+1003 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4
+1004 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/call-table.p4
+1005 Hit_likely Call_site_ok p4/testdata/p4c/program/ill-typed/issue3188.p4
 # Coverage for ConsDef_wf: 7/12 (58.33%)
 272 Hit_likely ConsDef_wf p4/testdata/p4c/program/ill-typed/issue818.p4
 273 Miss ConsDef_wf p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
@@ -124,7 +126,7 @@
 282 Miss ConsDef_wf p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 283 Hit_likely ConsDef_wf p4/testdata/p4c/program/ill-typed/issue818.p4 p4/testdata/p4c/program/ill-typed/issue816-1.p4
 # Coverage for ConsType_ok: 1/1 (100.00%)
-1060 Hit_likely ConsType_ok p4/testdata/p4c/program/ill-typed/self-call.p4 p4/testdata/p4c/program/ill-typed/issue803-1.p4 p4/testdata/p4c/program/ill-typed/issue3814.p4 p4/testdata/p4c/program/ill-typed/interface_e.p4 p4/testdata/p4c/program/ill-typed/functors3_e.p4 p4/testdata/p4c/program/ill-typed/functors2_e.p4 p4/testdata/p4c/program/ill-typed/call1_e.p4
+1090 Hit_likely ConsType_ok p4/testdata/p4c/program/ill-typed/self-call.p4 p4/testdata/p4c/program/ill-typed/issue803-1.p4 p4/testdata/p4c/program/ill-typed/issue3814.p4 p4/testdata/p4c/program/ill-typed/interface_e.p4 p4/testdata/p4c/program/ill-typed/functors3_e.p4 p4/testdata/p4c/program/ill-typed/functors2_e.p4 p4/testdata/p4c/program/ill-typed/call1_e.p4
 # Coverage for ConsType_wf: 4/8 (50.00%)
 264 Hit_likely ConsType_wf p4/testdata/p4c/program/ill-typed/issue818.p4
 265 Miss ConsType_wf p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
@@ -134,166 +136,193 @@
 269 Miss ConsType_wf p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/dup-param2.p4 p4/testdata/p4c/program/ill-typed/dup-param1.p4
 270 Hit_likely ConsType_wf p4/testdata/p4c/program/ill-typed/issue1296.p4
 271 Hit_likely ConsType_wf p4/testdata/p4c/program/ill-typed/package.p4
-# Coverage for Decl_ok: 29/79 (36.71%)
-862 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/const_e.p4
-863 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-864 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-865 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue394.p4
-866 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/stack_e.p4
-867 Miss Decl_ok
-868 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue3359.p4 p4/testdata/p4c/program/ill-typed/issue2335.p4
-869 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue3304.p4
-870 Miss Decl_ok
-871 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/virtual6.p4
-872 Miss Decl_ok
-873 Miss Decl_ok
-874 Miss Decl_ok
-875 Miss Decl_ok
-876 Miss Decl_ok
-877 Hit_unlikely Decl_ok p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/self-call.p4 p4/testdata/p4c/program/ill-typed/scope.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue803-1.p4 p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue388.p4 p4/testdata/p4c/program/ill-typed/issue3814.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue3282.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1296.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/interface_e.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/functors3_e.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4 p4/testdata/p4c/program/ill-typed/call1_e.p4 p4/testdata/p4c/program/ill-typed/assign.p4
-878 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/virtual6.p4
-879 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2354-1.p4 p4/testdata/p4c/program/ill-typed/directionless.p4
-880 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-881 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-882 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue3751.p4
-883 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue3346.p4
-884 Miss Decl_ok
-885 Miss Decl_ok
-886 Hit_unlikely Decl_ok p4/testdata/p4c/program/ill-typed/virtual6.p4 p4/testdata/p4c/program/ill-typed/virtual5.p4 p4/testdata/p4c/program/ill-typed/virtual4.p4 p4/testdata/p4c/program/ill-typed/virtual3.p4 p4/testdata/p4c/program/ill-typed/virtual2.p4 p4/testdata/p4c/program/ill-typed/virtual1.p4 p4/testdata/p4c/program/ill-typed/typedef-and-type-definitions.p4 p4/testdata/p4c/program/ill-typed/typecheck_e.p4 p4/testdata/p4c/program/ill-typed/typecheck1_e.p4 p4/testdata/p4c/program/ill-typed/type-params_e.p4 p4/testdata/p4c/program/ill-typed/type-in-expr.p4 p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/tuple-to-header.p4 p4/testdata/p4c/program/ill-typed/tuple-newtype.p4 p4/testdata/p4c/program/ill-typed/template_e.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/struct_e.p4 p4/testdata/p4c/program/ill-typed/string-e2.p4 p4/testdata/p4c/program/ill-typed/string-e1.p4 p4/testdata/p4c/program/ill-typed/string-e.p4 p4/testdata/p4c/program/ill-typed/stack_e.p4 p4/testdata/p4c/program/ill-typed/stack3.p4 p4/testdata/p4c/program/ill-typed/stack2.p4 p4/testdata/p4c/program/ill-typed/stack1_e.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/spec-issue563.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4 p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/signed.p4 p4/testdata/p4c/program/ill-typed/serenum-typedef.p4 p4/testdata/p4c/program/ill-typed/serenum-type.p4 p4/testdata/p4c/program/ill-typed/serEnumImplCast.p4 p4/testdata/p4c/program/ill-typed/self-call.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/select-struct.p4 p4/testdata/p4c/program/ill-typed/scope.p4 p4/testdata/p4c/program/ill-typed/range_e.p4 p4/testdata/p4c/program/ill-typed/push_nonconstant.p4 p4/testdata/p4c/program/ill-typed/psa-type-hdr.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4 p4/testdata/p4c/program/ill-typed/parser-arg.p4 p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/package.p4 p4/testdata/p4c/program/ill-typed/not_bound.p4 p4/testdata/p4c/program/ill-typed/nostart.p4 p4/testdata/p4c/program/ill-typed/next.p4 p4/testdata/p4c/program/ill-typed/newtype-err.p4 p4/testdata/p4c/program/ill-typed/named-fail1.p4 p4/testdata/p4c/program/ill-typed/named-fail.p4 p4/testdata/p4c/program/ill-typed/mux_e.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/missing_match.p4 p4/testdata/p4c/program/ill-typed/missing_actions.p4 p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue819.p4 p4/testdata/p4c/program/ill-typed/issue819-1.p4 p4/testdata/p4c/program/ill-typed/issue818.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue816-1.p4 p4/testdata/p4c/program/ill-typed/issue807.p4 p4/testdata/p4c/program/ill-typed/issue803-1.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue774-1.p4 p4/testdata/p4c/program/ill-typed/issue764.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue561-1.p4 p4/testdata/p4c/program/ill-typed/issue435.p4 p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue4136.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue407-1.p4 p4/testdata/p4c/program/ill-typed/issue401.p4 p4/testdata/p4c/program/ill-typed/issue394.p4 p4/testdata/p4c/program/ill-typed/issue388.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3814.p4 p4/testdata/p4c/program/ill-typed/issue3813.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4 p4/testdata/p4c/program/ill-typed/issue3808-1.p4 p4/testdata/p4c/program/ill-typed/issue3787.p4 p4/testdata/p4c/program/ill-typed/issue3751.p4 p4/testdata/p4c/program/ill-typed/issue3750.p4 p4/testdata/p4c/program/ill-typed/issue3750-1.p4 p4/testdata/p4c/program/ill-typed/issue3727.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue3656.p4 p4/testdata/p4c/program/ill-typed/issue3623-3.p4 p4/testdata/p4c/program/ill-typed/issue3623-2.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/issue3534.p4 p4/testdata/p4c/program/ill-typed/issue3522.p4 p4/testdata/p4c/program/ill-typed/issue345.p4 p4/testdata/p4c/program/ill-typed/issue3442.p4 p4/testdata/p4c/program/ill-typed/issue3378.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue3359.p4 p4/testdata/p4c/program/ill-typed/issue3346.p4 p4/testdata/p4c/program/ill-typed/issue3345.p4 p4/testdata/p4c/program/ill-typed/issue3338.p4 p4/testdata/p4c/program/ill-typed/issue3335.p4 p4/testdata/p4c/program/ill-typed/issue3316.p4 p4/testdata/p4c/program/ill-typed/issue3305.p4 p4/testdata/p4c/program/ill-typed/issue3304.p4 p4/testdata/p4c/program/ill-typed/issue3299.p4 p4/testdata/p4c/program/ill-typed/issue3293.p4 p4/testdata/p4c/program/ill-typed/issue3282.p4 p4/testdata/p4c/program/ill-typed/issue3264.p4 p4/testdata/p4c/program/ill-typed/issue3246.p4 p4/testdata/p4c/program/ill-typed/issue3221.p4 p4/testdata/p4c/program/ill-typed/issue3197-e.p4 p4/testdata/p4c/program/ill-typed/issue3188.p4 p4/testdata/p4c/program/ill-typed/issue3170.p4 p4/testdata/p4c/program/ill-typed/issue3170-1.p4 p4/testdata/p4c/program/ill-typed/issue306.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2544_self_ref.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2441.p4 p4/testdata/p4c/program/ill-typed/issue2413.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2354-1.p4 p4/testdata/p4c/program/ill-typed/issue2335.p4 p4/testdata/p4c/program/ill-typed/issue2317.p4 p4/testdata/p4c/program/ill-typed/issue2290.p4 p4/testdata/p4c/program/ill-typed/issue2267.p4 p4/testdata/p4c/program/ill-typed/issue2230.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2220.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue2036-2.p4 p4/testdata/p4c/program/ill-typed/issue2036-1.p4 p4/testdata/p4c/program/ill-typed/issue2033.p4 p4/testdata/p4c/program/ill-typed/issue2021.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1932-2.p4 p4/testdata/p4c/program/ill-typed/issue1932-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1557-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1542.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/issue1296.p4 p4/testdata/p4c/program/ill-typed/issue1230.p4 p4/testdata/p4c/program/ill-typed/issue1059.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/interface_e.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/inro.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/header3.p4 p4/testdata/p4c/program/ill-typed/header2_e.p4 p4/testdata/p4c/program/ill-typed/generic1_e.p4 p4/testdata/p4c/program/ill-typed/functors3_e.p4 p4/testdata/p4c/program/ill-typed/functors2_e.p4 p4/testdata/p4c/program/ill-typed/function_e2.p4 p4/testdata/p4c/program/ill-typed/function_e1.p4 p4/testdata/p4c/program/ill-typed/function_e.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4 p4/testdata/p4c/program/ill-typed/factory-err2.p4 p4/testdata/p4c/program/ill-typed/extern.p4 p4/testdata/p4c/program/ill-typed/equality-fail.p4 p4/testdata/p4c/program/ill-typed/enumCast.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/dup-param3.p4 p4/testdata/p4c/program/ill-typed/dup-param2.p4 p4/testdata/p4c/program/ill-typed/dup-param1.p4 p4/testdata/p4c/program/ill-typed/dup-param.p4 p4/testdata/p4c/program/ill-typed/div3.p4 p4/testdata/p4c/program/ill-typed/directionless.p4 p4/testdata/p4c/program/ill-typed/default_action1.p4 p4/testdata/p4c/program/ill-typed/default_action.p4 p4/testdata/p4c/program/ill-typed/default-param.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/control-verify.p4 p4/testdata/p4c/program/ill-typed/constructor_e.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4 p4/testdata/p4c/program/ill-typed/const_e.p4 p4/testdata/p4c/program/ill-typed/conditional_e.p4 p4/testdata/p4c/program/ill-typed/call1_e.p4 p4/testdata/p4c/program/ill-typed/call-table.p4 p4/testdata/p4c/program/ill-typed/bitExtract_e.p4 p4/testdata/p4c/program/ill-typed/binary_e.p4 p4/testdata/p4c/program/ill-typed/assign.p4 p4/testdata/p4c/program/ill-typed/action-bind3.p4 p4/testdata/p4c/program/ill-typed/action-bind2.p4 p4/testdata/p4c/program/ill-typed/action-bind1.p4 p4/testdata/p4c/program/ill-typed/action-bind.p4 p4/testdata/p4c/program/ill-typed/accept_e.p4
-887 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-888 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-889 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/string-e1.p4 p4/testdata/p4c/program/ill-typed/header2_e.p4
-890 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue407-1.p4 p4/testdata/p4c/program/ill-typed/issue2290.p4 p4/testdata/p4c/program/ill-typed/header3.p4
-891 Miss Decl_ok
+# Coverage for Decl_ok: 31/81 (38.27%)
+889 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue67.p4 p4/testdata/p4c/program/ill-typed/issue2444-1.p4 p4/testdata/p4c/program/ill-typed/issue2332.p4 p4/testdata/p4c/program/ill-typed/const.p4
+890 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/const_e.p4
+891 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 892 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-893 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-894 Miss Decl_ok
+893 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue394.p4
+894 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/stack_e.p4
 895 Miss Decl_ok
-896 Miss Decl_ok
-897 Miss Decl_ok
-898 Miss Decl_ok
-899 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/typedef-and-type-definitions.p4 p4/testdata/p4c/program/ill-typed/tuple-newtype.p4 p4/testdata/p4c/program/ill-typed/psa-type-hdr.p4
-900 Miss Decl_ok
+896 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/signs.p4 p4/testdata/p4c/program/ill-typed/issue561-1.p4 p4/testdata/p4c/program/ill-typed/issue2220.p4 p4/testdata/p4c/program/ill-typed/implicit.p4
+897 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue3359.p4 p4/testdata/p4c/program/ill-typed/issue2335.p4
+898 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue3304.p4
+899 Miss Decl_ok
+900 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/virtual6.p4
 901 Miss Decl_ok
 902 Miss Decl_ok
 903 Miss Decl_ok
 904 Miss Decl_ok
 905 Miss Decl_ok
-906 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-907 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue3170-1.p4
-908 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-909 Miss Decl_ok
-910 Miss Decl_ok
-911 Miss Decl_ok
-912 Miss Decl_ok
-913 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-914 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/function_e1.p4
-915 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-916 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/string-e.p4 p4/testdata/p4c/program/ill-typed/default-param.p4
+906 Hit_unlikely Decl_ok p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/self-call.p4 p4/testdata/p4c/program/ill-typed/scope.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue803-1.p4 p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue388.p4 p4/testdata/p4c/program/ill-typed/issue3814.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue3282.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1296.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/interface_e.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/functors3_e.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4 p4/testdata/p4c/program/ill-typed/call1_e.p4 p4/testdata/p4c/program/ill-typed/assign.p4
+907 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/virtual6.p4
+908 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2354-1.p4 p4/testdata/p4c/program/ill-typed/directionless.p4
+909 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+910 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+911 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue3751.p4
+912 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue3346.p4
+913 Miss Decl_ok
+914 Miss Decl_ok
+915 Hit_unlikely Decl_ok p4/testdata/p4c/program/ill-typed/virtual6.p4 p4/testdata/p4c/program/ill-typed/virtual5.p4 p4/testdata/p4c/program/ill-typed/virtual4.p4 p4/testdata/p4c/program/ill-typed/virtual3.p4 p4/testdata/p4c/program/ill-typed/virtual2.p4 p4/testdata/p4c/program/ill-typed/virtual1.p4 p4/testdata/p4c/program/ill-typed/typedef-and-type-definitions.p4 p4/testdata/p4c/program/ill-typed/typecheck_e.p4 p4/testdata/p4c/program/ill-typed/typecheck1_e.p4 p4/testdata/p4c/program/ill-typed/type-params_e.p4 p4/testdata/p4c/program/ill-typed/type-in-expr.p4 p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/tuple-to-header.p4 p4/testdata/p4c/program/ill-typed/tuple-newtype.p4 p4/testdata/p4c/program/ill-typed/template_e.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/struct_e.p4 p4/testdata/p4c/program/ill-typed/string-e2.p4 p4/testdata/p4c/program/ill-typed/string-e1.p4 p4/testdata/p4c/program/ill-typed/string-e.p4 p4/testdata/p4c/program/ill-typed/stack_e.p4 p4/testdata/p4c/program/ill-typed/stack3.p4 p4/testdata/p4c/program/ill-typed/stack2.p4 p4/testdata/p4c/program/ill-typed/stack1_e.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/spec-issue563.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4 p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/signed.p4 p4/testdata/p4c/program/ill-typed/serenum-typedef.p4 p4/testdata/p4c/program/ill-typed/serenum-type.p4 p4/testdata/p4c/program/ill-typed/serEnumImplCast.p4 p4/testdata/p4c/program/ill-typed/self-call.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/select-struct.p4 p4/testdata/p4c/program/ill-typed/scope.p4 p4/testdata/p4c/program/ill-typed/range_e.p4 p4/testdata/p4c/program/ill-typed/push_nonconstant.p4 p4/testdata/p4c/program/ill-typed/psa-type-hdr.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4 p4/testdata/p4c/program/ill-typed/parser-arg.p4 p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/package.p4 p4/testdata/p4c/program/ill-typed/not_bound.p4 p4/testdata/p4c/program/ill-typed/nostart.p4 p4/testdata/p4c/program/ill-typed/next.p4 p4/testdata/p4c/program/ill-typed/newtype-err.p4 p4/testdata/p4c/program/ill-typed/named-fail1.p4 p4/testdata/p4c/program/ill-typed/named-fail.p4 p4/testdata/p4c/program/ill-typed/mux_e.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/missing_match.p4 p4/testdata/p4c/program/ill-typed/missing_actions.p4 p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue819.p4 p4/testdata/p4c/program/ill-typed/issue819-1.p4 p4/testdata/p4c/program/ill-typed/issue818.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue816-1.p4 p4/testdata/p4c/program/ill-typed/issue807.p4 p4/testdata/p4c/program/ill-typed/issue803-1.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue774-1.p4 p4/testdata/p4c/program/ill-typed/issue764.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue561-1.p4 p4/testdata/p4c/program/ill-typed/issue435.p4 p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue4136.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue407-1.p4 p4/testdata/p4c/program/ill-typed/issue401.p4 p4/testdata/p4c/program/ill-typed/issue394.p4 p4/testdata/p4c/program/ill-typed/issue388.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3814.p4 p4/testdata/p4c/program/ill-typed/issue3813.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4 p4/testdata/p4c/program/ill-typed/issue3808-1.p4 p4/testdata/p4c/program/ill-typed/issue3787.p4 p4/testdata/p4c/program/ill-typed/issue3751.p4 p4/testdata/p4c/program/ill-typed/issue3750.p4 p4/testdata/p4c/program/ill-typed/issue3750-1.p4 p4/testdata/p4c/program/ill-typed/issue3727.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue3656.p4 p4/testdata/p4c/program/ill-typed/issue3623-3.p4 p4/testdata/p4c/program/ill-typed/issue3623-2.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/issue3534.p4 p4/testdata/p4c/program/ill-typed/issue3522.p4 p4/testdata/p4c/program/ill-typed/issue345.p4 p4/testdata/p4c/program/ill-typed/issue3442.p4 p4/testdata/p4c/program/ill-typed/issue3378.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue3359.p4 p4/testdata/p4c/program/ill-typed/issue3346.p4 p4/testdata/p4c/program/ill-typed/issue3345.p4 p4/testdata/p4c/program/ill-typed/issue3338.p4 p4/testdata/p4c/program/ill-typed/issue3335.p4 p4/testdata/p4c/program/ill-typed/issue3316.p4 p4/testdata/p4c/program/ill-typed/issue3305.p4 p4/testdata/p4c/program/ill-typed/issue3304.p4 p4/testdata/p4c/program/ill-typed/issue3299.p4 p4/testdata/p4c/program/ill-typed/issue3293.p4 p4/testdata/p4c/program/ill-typed/issue3282.p4 p4/testdata/p4c/program/ill-typed/issue3264.p4 p4/testdata/p4c/program/ill-typed/issue3246.p4 p4/testdata/p4c/program/ill-typed/issue3221.p4 p4/testdata/p4c/program/ill-typed/issue3197-e.p4 p4/testdata/p4c/program/ill-typed/issue3188.p4 p4/testdata/p4c/program/ill-typed/issue3170.p4 p4/testdata/p4c/program/ill-typed/issue3170-1.p4 p4/testdata/p4c/program/ill-typed/issue306.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2544_self_ref.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2441.p4 p4/testdata/p4c/program/ill-typed/issue2413.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2354-1.p4 p4/testdata/p4c/program/ill-typed/issue2335.p4 p4/testdata/p4c/program/ill-typed/issue2317.p4 p4/testdata/p4c/program/ill-typed/issue2290.p4 p4/testdata/p4c/program/ill-typed/issue2267.p4 p4/testdata/p4c/program/ill-typed/issue2230.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2220.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue2036-2.p4 p4/testdata/p4c/program/ill-typed/issue2036-1.p4 p4/testdata/p4c/program/ill-typed/issue2033.p4 p4/testdata/p4c/program/ill-typed/issue2021.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1932-2.p4 p4/testdata/p4c/program/ill-typed/issue1932-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1557-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1542.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/issue1296.p4 p4/testdata/p4c/program/ill-typed/issue1230.p4 p4/testdata/p4c/program/ill-typed/issue1059.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/interface_e.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/inro.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/header3.p4 p4/testdata/p4c/program/ill-typed/header2_e.p4 p4/testdata/p4c/program/ill-typed/generic1_e.p4 p4/testdata/p4c/program/ill-typed/functors3_e.p4 p4/testdata/p4c/program/ill-typed/functors2_e.p4 p4/testdata/p4c/program/ill-typed/function_e2.p4 p4/testdata/p4c/program/ill-typed/function_e1.p4 p4/testdata/p4c/program/ill-typed/function_e.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4 p4/testdata/p4c/program/ill-typed/factory-err2.p4 p4/testdata/p4c/program/ill-typed/extern.p4 p4/testdata/p4c/program/ill-typed/equality-fail.p4 p4/testdata/p4c/program/ill-typed/enumCast.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/dup-param3.p4 p4/testdata/p4c/program/ill-typed/dup-param2.p4 p4/testdata/p4c/program/ill-typed/dup-param1.p4 p4/testdata/p4c/program/ill-typed/dup-param.p4 p4/testdata/p4c/program/ill-typed/div3.p4 p4/testdata/p4c/program/ill-typed/directionless.p4 p4/testdata/p4c/program/ill-typed/default_action1.p4 p4/testdata/p4c/program/ill-typed/default_action.p4 p4/testdata/p4c/program/ill-typed/default-param.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/control-verify.p4 p4/testdata/p4c/program/ill-typed/constructor_e.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4 p4/testdata/p4c/program/ill-typed/const_e.p4 p4/testdata/p4c/program/ill-typed/conditional_e.p4 p4/testdata/p4c/program/ill-typed/call1_e.p4 p4/testdata/p4c/program/ill-typed/call-table.p4 p4/testdata/p4c/program/ill-typed/bitExtract_e.p4 p4/testdata/p4c/program/ill-typed/binary_e.p4 p4/testdata/p4c/program/ill-typed/assign.p4 p4/testdata/p4c/program/ill-typed/action-bind3.p4 p4/testdata/p4c/program/ill-typed/action-bind2.p4 p4/testdata/p4c/program/ill-typed/action-bind1.p4 p4/testdata/p4c/program/ill-typed/action-bind.p4 p4/testdata/p4c/program/ill-typed/accept_e.p4
+916 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 917 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-918 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-919 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-920 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+918 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/string-e1.p4 p4/testdata/p4c/program/ill-typed/header2_e.p4
+919 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue407-1.p4 p4/testdata/p4c/program/ill-typed/issue2290.p4 p4/testdata/p4c/program/ill-typed/header3.p4
+920 Miss Decl_ok
 921 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-922 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/nostart.p4 p4/testdata/p4c/program/ill-typed/issue3338.p4 p4/testdata/p4c/program/ill-typed/accept_e.p4
-923 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-924 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/parser-arg.p4
-925 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-926 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-927 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue3787.p4
-928 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue816-1.p4
-929 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/extern.p4
-930 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue819.p4 p4/testdata/p4c/program/ill-typed/issue3808-1.p4
-931 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/dup-param2.p4 p4/testdata/p4c/program/ill-typed/dup-param1.p4
-932 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/package.p4
-933 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-934 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/const_e.p4
-935 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-936 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/missing_actions.p4
-937 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-938 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-939 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/virtual6.p4 p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/issue394.p4 p4/testdata/p4c/program/ill-typed/issue3751.p4 p4/testdata/p4c/program/ill-typed/issue3359.p4 p4/testdata/p4c/program/ill-typed/issue3346.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2354-1.p4 p4/testdata/p4c/program/ill-typed/directionless.p4
-940 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/stack_e.p4 p4/testdata/p4c/program/ill-typed/issue3304.p4 p4/testdata/p4c/program/ill-typed/issue2335.p4
-# Coverage for Expr_ok: 35/79 (44.30%)
+922 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+923 Miss Decl_ok
+924 Miss Decl_ok
+925 Miss Decl_ok
+926 Miss Decl_ok
+927 Miss Decl_ok
+928 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/typedef-and-type-definitions.p4 p4/testdata/p4c/program/ill-typed/tuple-newtype.p4 p4/testdata/p4c/program/ill-typed/psa-type-hdr.p4
+929 Miss Decl_ok
+930 Miss Decl_ok
+931 Miss Decl_ok
+932 Miss Decl_ok
+933 Miss Decl_ok
+934 Miss Decl_ok
+935 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+936 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue3170-1.p4
+937 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+938 Miss Decl_ok
+939 Miss Decl_ok
+940 Miss Decl_ok
+941 Miss Decl_ok
+942 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+943 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/function_e1.p4
+944 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+945 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/string-e.p4 p4/testdata/p4c/program/ill-typed/default-param.p4
+946 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+947 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+948 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+949 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+950 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+951 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/nostart.p4 p4/testdata/p4c/program/ill-typed/issue3338.p4 p4/testdata/p4c/program/ill-typed/accept_e.p4
+952 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+953 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/parser-arg.p4
+954 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+955 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+956 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue3787.p4
+957 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue816-1.p4
+958 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/extern.p4
+959 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue819.p4 p4/testdata/p4c/program/ill-typed/issue3808-1.p4
+960 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/dup-param2.p4 p4/testdata/p4c/program/ill-typed/dup-param1.p4
+961 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/package.p4
+962 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+963 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/issue67.p4 p4/testdata/p4c/program/ill-typed/issue2444-1.p4 p4/testdata/p4c/program/ill-typed/issue2332.p4 p4/testdata/p4c/program/ill-typed/const_e.p4 p4/testdata/p4c/program/ill-typed/const.p4
+964 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+965 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/missing_actions.p4
+966 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+967 Miss Decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+968 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/virtual6.p4 p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/issue394.p4 p4/testdata/p4c/program/ill-typed/issue3751.p4 p4/testdata/p4c/program/ill-typed/issue3359.p4 p4/testdata/p4c/program/ill-typed/issue3346.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2354-1.p4 p4/testdata/p4c/program/ill-typed/directionless.p4
+969 Hit_likely Decl_ok p4/testdata/p4c/program/ill-typed/stack_e.p4 p4/testdata/p4c/program/ill-typed/signs.p4 p4/testdata/p4c/program/ill-typed/issue561-1.p4 p4/testdata/p4c/program/ill-typed/issue3304.p4 p4/testdata/p4c/program/ill-typed/issue2335.p4 p4/testdata/p4c/program/ill-typed/issue2220.p4 p4/testdata/p4c/program/ill-typed/implicit.p4
+# Coverage for Expr_ok: 38/104 (36.54%)
 741 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3264.p4
-742 Hit_unlikely Expr_ok p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/neg.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/issue3188.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2317.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1932-2.p4 p4/testdata/p4c/program/ill-typed/issue1932-1.p4 p4/testdata/p4c/program/ill-typed/function_e1.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4 p4/testdata/p4c/program/ill-typed/equality-fail.p4 p4/testdata/p4c/program/ill-typed/div3.p4 p4/testdata/p4c/program/ill-typed/div1.p4 p4/testdata/p4c/program/ill-typed/div0.p4 p4/testdata/p4c/program/ill-typed/div.p4 p4/testdata/p4c/program/ill-typed/directionless.p4
-743 Hit_unlikely Expr_ok p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/neg.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/issue3188.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2317.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1932-2.p4 p4/testdata/p4c/program/ill-typed/issue1932-1.p4 p4/testdata/p4c/program/ill-typed/function_e1.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4 p4/testdata/p4c/program/ill-typed/equality-fail.p4 p4/testdata/p4c/program/ill-typed/div3.p4 p4/testdata/p4c/program/ill-typed/div1.p4 p4/testdata/p4c/program/ill-typed/div0.p4 p4/testdata/p4c/program/ill-typed/div.p4 p4/testdata/p4c/program/ill-typed/directionless.p4
-744 Miss Expr_ok
-745 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/div.p4
-746 Hit_unlikely Expr_ok p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/issue3188.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2317.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1932-2.p4 p4/testdata/p4c/program/ill-typed/issue1932-1.p4 p4/testdata/p4c/program/ill-typed/function_e1.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4 p4/testdata/p4c/program/ill-typed/equality-fail.p4 p4/testdata/p4c/program/ill-typed/directionless.p4
-747 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-748 Hit_unlikely Expr_ok p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/issue3188.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2317.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/function_e1.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4 p4/testdata/p4c/program/ill-typed/equality-fail.p4 p4/testdata/p4c/program/ill-typed/div.p4 p4/testdata/p4c/program/ill-typed/directionless.p4
-749 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4
-750 Hit_unlikely Expr_ok p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue3188.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/function_e1.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4 p4/testdata/p4c/program/ill-typed/div.p4 p4/testdata/p4c/program/ill-typed/directionless.p4
-751 Hit_unlikely Expr_ok p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4 p4/testdata/p4c/program/ill-typed/div.p4 p4/testdata/p4c/program/ill-typed/directionless.p4
-752 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/div.p4
-753 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3671-2.p4
-754 Miss Expr_ok
-755 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/div.p4
-756 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/div.p4
+742 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/typecheck1_e.p4
+743 Miss Expr_ok
+744 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3153.p4
+745 Miss Expr_ok
+746 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4
+747 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/const1_e.p4
+748 Miss Expr_ok
+749 Miss Expr_ok
+750 Miss Expr_ok
+751 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/div.p4
+752 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/neg.p4 p4/testdata/p4c/program/ill-typed/div3.p4 p4/testdata/p4c/program/ill-typed/div1.p4 p4/testdata/p4c/program/ill-typed/div0.p4
+753 Miss Expr_ok
+754 Hit_unlikely Expr_ok p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1932-2.p4 p4/testdata/p4c/program/ill-typed/issue1932-1.p4
+755 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+756 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 757 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-758 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/mux_e.p4
-759 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/wrong-cast.p4 p4/testdata/p4c/program/ill-typed/issue401.p4 p4/testdata/p4c/program/ill-typed/issue3221.p4
-760 Miss Expr_ok
+758 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+759 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4
+760 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/equality-fail.p4
 761 Miss Expr_ok
 762 Miss Expr_ok
-763 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4
-764 Miss Expr_ok
-765 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/binary_e.p4
+763 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+764 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+765 Miss Expr_ok
 766 Miss Expr_ok
-767 Miss Expr_ok
-768 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4
-769 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-770 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-771 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue4136.p4
+767 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4
+768 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3671-2.p4
+769 Miss Expr_ok
+770 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4
+771 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4 p4/testdata/p4c/program/ill-typed/neg.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/equality-fail.p4 p4/testdata/p4c/program/ill-typed/div3.p4 p4/testdata/p4c/program/ill-typed/div1.p4 p4/testdata/p4c/program/ill-typed/div0.p4 p4/testdata/p4c/program/ill-typed/div.p4 p4/testdata/p4c/program/ill-typed/const1_e.p4
 772 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-773 Miss Expr_ok
-774 Miss Expr_ok
-775 Miss Expr_ok
+773 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+774 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/mux_e.p4
+775 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/wrong-cast.p4 p4/testdata/p4c/program/ill-typed/issue401.p4 p4/testdata/p4c/program/ill-typed/issue3221.p4
 776 Miss Expr_ok
 777 Miss Expr_ok
-778 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/type-field.p4
-779 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/scope.p4
+778 Miss Expr_ok
+779 Miss Expr_ok
 780 Miss Expr_ok
-781 Miss Expr_ok
+781 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/range_e.p4
 782 Miss Expr_ok
-783 Miss Expr_ok
-784 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3522.p4
-785 Miss Expr_ok
+783 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4
+784 Miss Expr_ok
+785 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/binary_e.p4
 786 Miss Expr_ok
-787 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/next.p4
+787 Miss Expr_ok
 788 Miss Expr_ok
 789 Miss Expr_ok
-790 Hit_unlikely Expr_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/struct_e.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/serEnumImplCast.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/not_bound.p4 p4/testdata/p4c/program/ill-typed/issue4136.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue3522.p4 p4/testdata/p4c/program/ill-typed/issue3299.p4 p4/testdata/p4c/program/ill-typed/issue306.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2413.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1557-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1059.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4
-791 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/struct_e.p4 p4/testdata/p4c/program/ill-typed/issue306.p4 p4/testdata/p4c/program/ill-typed/issue1557-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1059.p4
+790 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4
+791 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 792 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-793 Miss Expr_ok
-794 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/next.p4 p4/testdata/p4c/program/ill-typed/issue3522.p4
+793 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+794 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue4136.p4
 795 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 796 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-797 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-798 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue2317.p4
+797 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/bitExtract_e.p4
+798 Miss Expr_ok
 799 Miss Expr_ok
 800 Miss Expr_ok
 801 Miss Expr_ok
-802 Hit_unlikely Expr_ok p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/scope.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4
-803 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-804 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3246.p4
-805 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-806 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3246.p4
+802 Miss Expr_ok
+803 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/type-field.p4
+804 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/scope.p4
+805 Miss Expr_ok
+806 Miss Expr_ok
 807 Miss Expr_ok
 808 Miss Expr_ok
-809 Miss Expr_ok
+809 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3522.p4
 810 Miss Expr_ok
 811 Miss Expr_ok
-812 Miss Expr_ok
+812 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/next.p4
 813 Miss Expr_ok
-814 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3282.p4
-815 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/select-struct.p4 p4/testdata/p4c/program/ill-typed/range_e.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/issue3359.p4 p4/testdata/p4c/program/ill-typed/issue3345.p4 p4/testdata/p4c/program/ill-typed/issue3335.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4
-816 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/select-struct.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/issue3335.p4
-817 Miss Expr_ok
-818 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/struct_e.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/scope.p4 p4/testdata/p4c/program/ill-typed/next.p4 p4/testdata/p4c/program/ill-typed/mux_e.p4 p4/testdata/p4c/program/ill-typed/issue4136.p4 p4/testdata/p4c/program/ill-typed/issue401.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/issue3522.p4 p4/testdata/p4c/program/ill-typed/issue3264.p4 p4/testdata/p4c/program/ill-typed/issue3246.p4 p4/testdata/p4c/program/ill-typed/issue3221.p4 p4/testdata/p4c/program/ill-typed/issue306.p4 p4/testdata/p4c/program/ill-typed/issue2317.p4 p4/testdata/p4c/program/ill-typed/issue1557-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1059.p4 p4/testdata/p4c/program/ill-typed/div.p4 p4/testdata/p4c/program/ill-typed/binary_e.p4
-819 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/wrong-cast.p4 p4/testdata/p4c/program/ill-typed/issue3282.p4
+814 Miss Expr_ok
+815 Hit_unlikely Expr_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/struct_e.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/serEnumImplCast.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/not_bound.p4 p4/testdata/p4c/program/ill-typed/issue4136.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue3522.p4 p4/testdata/p4c/program/ill-typed/issue3299.p4 p4/testdata/p4c/program/ill-typed/issue306.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2413.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1557-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1059.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4
+816 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/struct_e.p4 p4/testdata/p4c/program/ill-typed/issue306.p4 p4/testdata/p4c/program/ill-typed/issue1557-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1059.p4
+817 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+818 Miss Expr_ok
+819 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/next.p4 p4/testdata/p4c/program/ill-typed/issue3522.p4
+820 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+821 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+822 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+823 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue2317.p4
+824 Miss Expr_ok
+825 Miss Expr_ok
+826 Miss Expr_ok
+827 Hit_unlikely Expr_ok p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/scope.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4
+828 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+829 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3246.p4
+830 Miss Expr_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+831 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3246.p4
+832 Miss Expr_ok
+833 Miss Expr_ok
+834 Miss Expr_ok
+835 Miss Expr_ok
+836 Miss Expr_ok
+837 Miss Expr_ok
+838 Miss Expr_ok
+839 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/issue3282.p4
+840 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/select-struct.p4 p4/testdata/p4c/program/ill-typed/range_e.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/issue3359.p4 p4/testdata/p4c/program/ill-typed/issue3345.p4 p4/testdata/p4c/program/ill-typed/issue3335.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4
+841 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/select-struct.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/issue3335.p4
+842 Miss Expr_ok
+843 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/typecheck1_e.p4 p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/struct_e.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4 p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/scope.p4 p4/testdata/p4c/program/ill-typed/range_e.p4 p4/testdata/p4c/program/ill-typed/next.p4 p4/testdata/p4c/program/ill-typed/neg.p4 p4/testdata/p4c/program/ill-typed/mux_e.p4 p4/testdata/p4c/program/ill-typed/issue4136.p4 p4/testdata/p4c/program/ill-typed/issue401.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/issue3522.p4 p4/testdata/p4c/program/ill-typed/issue3264.p4 p4/testdata/p4c/program/ill-typed/issue3246.p4 p4/testdata/p4c/program/ill-typed/issue3221.p4 p4/testdata/p4c/program/ill-typed/issue306.p4 p4/testdata/p4c/program/ill-typed/issue2317.p4 p4/testdata/p4c/program/ill-typed/issue1557-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1059.p4 p4/testdata/p4c/program/ill-typed/equality-fail.p4 p4/testdata/p4c/program/ill-typed/div3.p4 p4/testdata/p4c/program/ill-typed/div1.p4 p4/testdata/p4c/program/ill-typed/div0.p4 p4/testdata/p4c/program/ill-typed/div.p4 p4/testdata/p4c/program/ill-typed/const1_e.p4 p4/testdata/p4c/program/ill-typed/bitExtract_e.p4 p4/testdata/p4c/program/ill-typed/binary_e.p4
+844 Hit_likely Expr_ok p4/testdata/p4c/program/ill-typed/wrong-cast.p4 p4/testdata/p4c/program/ill-typed/issue3282.p4 p4/testdata/p4c/program/ill-typed/issue3153.p4
 # Coverage for FuncDef_alpha: 0/6 (0.00%)
 162 Miss FuncDef_alpha
 163 Miss FuncDef_alpha
@@ -340,7 +369,7 @@
 160 Miss FuncType_alpha
 161 Miss FuncType_alpha
 # Coverage for FuncType_ok: 1/1 (100.00%)
-1030 Hit_likely FuncType_ok p4/testdata/p4c/program/ill-typed/not_bound.p4 p4/testdata/p4c/program/ill-typed/named-fail1.p4 p4/testdata/p4c/program/ill-typed/issue3813.p4 p4/testdata/p4c/program/ill-typed/issue3197-e.p4 p4/testdata/p4c/program/ill-typed/issue2413.p4 p4/testdata/p4c/program/ill-typed/function_e.p4
+1061 Hit_likely FuncType_ok p4/testdata/p4c/program/ill-typed/not_bound.p4 p4/testdata/p4c/program/ill-typed/named-fail1.p4 p4/testdata/p4c/program/ill-typed/issue3813.p4 p4/testdata/p4c/program/ill-typed/issue3197-e.p4 p4/testdata/p4c/program/ill-typed/issue2413.p4 p4/testdata/p4c/program/ill-typed/function_e.p4
 # Coverage for FuncType_wf: 9/22 (40.91%)
 233 Miss FuncType_wf
 234 Miss FuncType_wf
@@ -365,93 +394,92 @@
 253 Miss FuncType_wf
 254 Miss FuncType_wf
 # Coverage for Inst_init_decl_ok: 0/5 (0.00%)
-1123 Miss Inst_init_decl_ok
-1124 Miss Inst_init_decl_ok
-1125 Miss Inst_init_decl_ok
-1126 Miss Inst_init_decl_ok
-1127 Miss Inst_init_decl_ok
+1146 Miss Inst_init_decl_ok
+1147 Miss Inst_init_decl_ok
+1148 Miss Inst_init_decl_ok
+1149 Miss Inst_init_decl_ok
+1150 Miss Inst_init_decl_ok
 # Coverage for Inst_ok: 9/22 (40.91%)
-1069 Miss Inst_ok
-1070 Miss Inst_ok
-1071 Miss Inst_ok
-1072 Hit_unlikely Inst_ok p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue388.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue1296.p4 p4/testdata/p4c/program/ill-typed/const_e.p4
-1073 Hit_unlikely Inst_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1074 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1075 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1076 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1077 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1078 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1079 Hit_unlikely Inst_ok p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue388.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue1296.p4 p4/testdata/p4c/program/ill-typed/const_e.p4
-1080 Hit_unlikely Inst_ok p4/testdata/p4c/program/ill-typed/virtual6.p4 p4/testdata/p4c/program/ill-typed/virtual5.p4 p4/testdata/p4c/program/ill-typed/virtual4.p4 p4/testdata/p4c/program/ill-typed/virtual3.p4 p4/testdata/p4c/program/ill-typed/virtual2.p4 p4/testdata/p4c/program/ill-typed/virtual1.p4 p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/scope.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue3282.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4 p4/testdata/p4c/program/ill-typed/assign.p4
-1081 Hit_likely Inst_ok p4/testdata/p4c/program/ill-typed/issue388.p4
-1082 Hit_likely Inst_ok p4/testdata/p4c/program/ill-typed/issue1296.p4
-1083 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1084 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1085 Hit_likely Inst_ok p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4
-1086 Hit_likely Inst_ok p4/testdata/p4c/program/ill-typed/issue388.p4
-1087 Hit_likely Inst_ok p4/testdata/p4c/program/ill-typed/issue1296.p4
-1088 Miss Inst_ok
-1089 Miss Inst_ok
-1090 Miss Inst_ok
+1099 Miss Inst_ok
+1100 Miss Inst_ok
+1101 Miss Inst_ok
+1102 Hit_unlikely Inst_ok p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue388.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue1296.p4 p4/testdata/p4c/program/ill-typed/const_e.p4
+1103 Hit_unlikely Inst_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1104 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1105 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1106 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1107 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1108 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1109 Hit_unlikely Inst_ok p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue388.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue1296.p4 p4/testdata/p4c/program/ill-typed/const_e.p4
+1110 Hit_unlikely Inst_ok p4/testdata/p4c/program/ill-typed/virtual6.p4 p4/testdata/p4c/program/ill-typed/virtual5.p4 p4/testdata/p4c/program/ill-typed/virtual4.p4 p4/testdata/p4c/program/ill-typed/virtual3.p4 p4/testdata/p4c/program/ill-typed/virtual2.p4 p4/testdata/p4c/program/ill-typed/virtual1.p4 p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/scope.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue3282.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4 p4/testdata/p4c/program/ill-typed/assign.p4
+1111 Hit_likely Inst_ok p4/testdata/p4c/program/ill-typed/issue388.p4
+1112 Hit_likely Inst_ok p4/testdata/p4c/program/ill-typed/issue1296.p4
+1113 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1114 Miss Inst_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1115 Hit_likely Inst_ok p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4
+1116 Hit_likely Inst_ok p4/testdata/p4c/program/ill-typed/issue388.p4
+1117 Hit_likely Inst_ok p4/testdata/p4c/program/ill-typed/issue1296.p4
+1118 Miss Inst_ok
+1119 Miss Inst_ok
+1120 Miss Inst_ok
 # Coverage for Inst_site_ok: 1/8 (12.50%)
-1061 Hit_likely Inst_site_ok p4/testdata/p4c/program/ill-typed/issue388.p4
-1062 Miss Inst_site_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1063 Miss Inst_site_ok
-1064 Miss Inst_site_ok
-1065 Miss Inst_site_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1066 Miss Inst_site_ok
-1067 Miss Inst_site_ok
-1068 Miss Inst_site_ok
+1091 Hit_likely Inst_site_ok p4/testdata/p4c/program/ill-typed/issue388.p4
+1092 Miss Inst_site_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1093 Miss Inst_site_ok
+1094 Miss Inst_site_ok
+1095 Miss Inst_site_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1096 Miss Inst_site_ok
+1097 Miss Inst_site_ok
+1098 Miss Inst_site_ok
 # Coverage for Lval_ok: 2/7 (28.57%)
-820 Miss Lval_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-821 Hit_likely Lval_ok p4/testdata/p4c/program/ill-typed/inro.p4
-822 Miss Lval_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-823 Miss Lval_ok
-824 Miss Lval_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-825 Miss Lval_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-826 Hit_likely Lval_ok p4/testdata/p4c/program/ill-typed/function1_e.p4
-# Coverage for MethodType_ok: 9/29 (31.03%)
-1031 Hit_unlikely MethodType_ok p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/call-table.p4
-1032 Hit_unlikely MethodType_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/push_nonconstant.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4
-1033 Miss MethodType_ok
-1034 Miss MethodType_ok
-1035 Hit_unlikely MethodType_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/call-table.p4
-1036 Miss MethodType_ok
-1037 Miss MethodType_ok
-1038 Hit_unlikely MethodType_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/call-table.p4
-1039 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1040 Miss MethodType_ok
-1041 Miss MethodType_ok
-1042 Miss MethodType_ok
-1043 Hit_unlikely MethodType_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/call-table.p4
-1044 Hit_likely MethodType_ok p4/testdata/p4c/program/ill-typed/interface1_e.p4
-1045 Hit_unlikely MethodType_ok p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/call-table.p4
-1046 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1047 Miss MethodType_ok
-1048 Miss MethodType_ok
-1049 Miss MethodType_ok
-1050 Miss MethodType_ok
-1051 Miss MethodType_ok
-1052 Miss MethodType_ok
-1053 Hit_unlikely MethodType_ok p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/call-table.p4
-1054 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1055 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1056 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1057 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1058 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1059 Hit_likely MethodType_ok p4/testdata/p4c/program/ill-typed/interface1_e.p4
+845 Miss Lval_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+846 Hit_likely Lval_ok p4/testdata/p4c/program/ill-typed/inro.p4
+847 Miss Lval_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+848 Miss Lval_ok
+849 Miss Lval_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+850 Miss Lval_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+851 Hit_likely Lval_ok p4/testdata/p4c/program/ill-typed/function1_e.p4
+# Coverage for MethodType_ok: 8/28 (28.57%)
+1062 Hit_unlikely MethodType_ok p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/call-table.p4
+1063 Hit_unlikely MethodType_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/push_nonconstant.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4
+1064 Miss MethodType_ok
+1065 Miss MethodType_ok
+1066 Miss MethodType_ok
+1067 Miss MethodType_ok
+1068 Hit_unlikely MethodType_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/call-table.p4
+1069 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1070 Miss MethodType_ok
+1071 Miss MethodType_ok
+1072 Miss MethodType_ok
+1073 Hit_unlikely MethodType_ok p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/param.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/call-table.p4
+1074 Hit_likely MethodType_ok p4/testdata/p4c/program/ill-typed/interface1_e.p4
+1075 Hit_unlikely MethodType_ok p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/call-table.p4
+1076 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1077 Miss MethodType_ok
+1078 Miss MethodType_ok
+1079 Miss MethodType_ok
+1080 Miss MethodType_ok
+1081 Miss MethodType_ok
+1082 Miss MethodType_ok
+1083 Hit_unlikely MethodType_ok p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/call-table.p4
+1084 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1085 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1086 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1087 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1088 Miss MethodType_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1089 Hit_likely MethodType_ok p4/testdata/p4c/program/ill-typed/interface1_e.p4
 # Coverage for Method_ok: 4/11 (36.36%)
-1136 Hit_likely Method_ok p4/testdata/p4c/program/ill-typed/issue818.p4
-1137 Miss Method_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1138 Miss Method_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1139 Miss Method_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1140 Hit_likely Method_ok p4/testdata/p4c/program/ill-typed/issue435.p4
-1141 Miss Method_ok
-1142 Miss Method_ok
-1143 Miss Method_ok
-1144 Hit_likely Method_ok p4/testdata/p4c/program/ill-typed/issue807.p4
-1145 Miss Method_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1146 Hit_likely Method_ok p4/testdata/p4c/program/ill-typed/constructor_e.p4
+1160 Hit_likely Method_ok p4/testdata/p4c/program/ill-typed/issue818.p4
+1161 Miss Method_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1162 Miss Method_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1163 Miss Method_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1164 Hit_likely Method_ok p4/testdata/p4c/program/ill-typed/issue435.p4
+1165 Miss Method_ok
+1166 Miss Method_ok
+1167 Miss Method_ok
+1168 Hit_likely Method_ok p4/testdata/p4c/program/ill-typed/issue807.p4
+1169 Miss Method_ok p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1170 Hit_likely Method_ok p4/testdata/p4c/program/ill-typed/constructor_e.p4
 # Coverage for ParamType_wf: 2/5 (40.00%)
 226 Hit_likely ParamType_wf p4/testdata/p4c/program/ill-typed/issue3787.p4 p4/testdata/p4c/program/ill-typed/issue1296.p4 p4/testdata/p4c/program/ill-typed/extern.p4
 227 Miss ParamType_wf p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/dup-param2.p4 p4/testdata/p4c/program/ill-typed/dup-param1.p4
@@ -462,57 +490,60 @@
 231 Hit_likely ParamTypes_wf p4/testdata/p4c/program/ill-typed/issue3787.p4 p4/testdata/p4c/program/ill-typed/issue1296.p4 p4/testdata/p4c/program/ill-typed/extern.p4 p4/testdata/p4c/program/ill-typed/default-param.p4
 232 Miss ParamTypes_wf p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/dup-param2.p4 p4/testdata/p4c/program/ill-typed/dup-param1.p4
 # Coverage for Param_ok: 2/4 (50.00%)
-854 Miss Param_ok
-855 Hit_likely Param_ok p4/testdata/p4c/program/ill-typed/issue3316.p4
-856 Miss Param_ok
-857 Hit_likely Param_ok p4/testdata/p4c/program/ill-typed/issue3750.p4 p4/testdata/p4c/program/ill-typed/issue3750-1.p4
+881 Miss Param_ok
+882 Hit_likely Param_ok p4/testdata/p4c/program/ill-typed/issue3316.p4
+883 Miss Param_ok
+884 Hit_likely Param_ok p4/testdata/p4c/program/ill-typed/issue3750.p4 p4/testdata/p4c/program/ill-typed/issue3750-1.p4
 # Coverage for ParserState_ok: 0/1 (0.00%)
-1147 Miss ParserState_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-# Coverage for SEnum_field_ok: 0/1 (0.00%)
-1134 Miss SEnum_field_ok
+1171 Miss ParserState_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+# Coverage for SEnum_field_ok: 1/2 (50.00%)
+1157 Hit_likely SEnum_field_ok p4/testdata/p4c/program/ill-typed/serenum-typedef.p4 p4/testdata/p4c/program/ill-typed/serenum-type.p4
+1158 Miss SEnum_field_ok
 # Coverage for Select_case_keyset_ok: 3/5 (60.00%)
-1099 Miss Select_case_keyset_ok
-1100 Hit_likely Select_case_keyset_ok p4/testdata/p4c/program/ill-typed/issue1986.p4
-1101 Hit_likely Select_case_keyset_ok p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue3359.p4 p4/testdata/p4c/program/ill-typed/issue3345.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4
-1102 Hit_likely Select_case_keyset_ok p4/testdata/p4c/program/ill-typed/issue3345.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4
-1103 Miss Select_case_keyset_ok
+1121 Miss Select_case_keyset_ok
+1122 Hit_likely Select_case_keyset_ok p4/testdata/p4c/program/ill-typed/issue1986.p4
+1123 Hit_likely Select_case_keyset_ok p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue3359.p4 p4/testdata/p4c/program/ill-typed/issue3345.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4
+1124 Hit_likely Select_case_keyset_ok p4/testdata/p4c/program/ill-typed/issue3345.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4
+1125 Miss Select_case_keyset_ok
 # Coverage for Select_case_keysets_ok: 0/4 (0.00%)
-1104 Miss Select_case_keysets_ok
-1105 Miss Select_case_keysets_ok
-1106 Miss Select_case_keysets_ok
-1107 Miss Select_case_keysets_ok
+1126 Miss Select_case_keysets_ok
+1127 Miss Select_case_keysets_ok
+1128 Miss Select_case_keysets_ok
+1129 Miss Select_case_keysets_ok
 # Coverage for Select_case_ok: 0/4 (0.00%)
-1108 Miss Select_case_ok
-1109 Miss Select_case_ok
-1110 Miss Select_case_ok
-1111 Miss Select_case_ok
-# Coverage for Stmt_ok: 13/26 (50.00%)
-828 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/inro.p4
-829 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/issue2021.p4 p4/testdata/p4c/program/ill-typed/assign.p4
-830 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/conditional_e.p4
-831 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/control-verify.p4
-832 Miss Stmt_ok
-833 Miss Stmt_ok
-834 Miss Stmt_ok
-835 Miss Stmt_ok
-836 Miss Stmt_ok
-837 Miss Stmt_ok
-838 Miss Stmt_ok
-839 Miss Stmt_ok
-840 Miss Stmt_ok
-841 Miss Stmt_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-842 Hit_unlikely Stmt_ok p4/testdata/p4c/program/ill-typed/virtual6.p4 p4/testdata/p4c/program/ill-typed/virtual5.p4 p4/testdata/p4c/program/ill-typed/virtual4.p4 p4/testdata/p4c/program/ill-typed/virtual3.p4 p4/testdata/p4c/program/ill-typed/virtual2.p4 p4/testdata/p4c/program/ill-typed/virtual1.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue3813.p4 p4/testdata/p4c/program/ill-typed/issue3623-3.p4 p4/testdata/p4c/program/ill-typed/issue3623-2.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue3534.p4 p4/testdata/p4c/program/ill-typed/issue3316.p4 p4/testdata/p4c/program/ill-typed/issue3299.p4 p4/testdata/p4c/program/ill-typed/issue3246.p4 p4/testdata/p4c/program/ill-typed/issue3221.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/function_e1.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4
-843 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/duplicate-label.p4
-844 Miss Stmt_ok
-845 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/issue3623-3.p4 p4/testdata/p4c/program/ill-typed/issue3623-2.p4
-846 Miss Stmt_ok
-847 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/duplicate-label.p4
-848 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/issue3299.p4
-849 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/virtual3.p4
-850 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/issue2021.p4 p4/testdata/p4c/program/ill-typed/inro.p4 p4/testdata/p4c/program/ill-typed/control-verify.p4 p4/testdata/p4c/program/ill-typed/conditional_e.p4 p4/testdata/p4c/program/ill-typed/assign.p4
-851 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/virtual3.p4
-852 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/issue3299.p4 p4/testdata/p4c/program/ill-typed/issue2021.p4 p4/testdata/p4c/program/ill-typed/inro.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/control-verify.p4 p4/testdata/p4c/program/ill-typed/conditional_e.p4 p4/testdata/p4c/program/ill-typed/assign.p4
-853 Miss Stmt_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1130 Miss Select_case_ok
+1131 Miss Select_case_ok
+1132 Miss Select_case_ok
+1133 Miss Select_case_ok
+# Coverage for Stmt_ok: 15/28 (53.57%)
+853 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/tuple-to-header.p4 p4/testdata/p4c/program/ill-typed/stack2.p4 p4/testdata/p4c/program/ill-typed/signed.p4 p4/testdata/p4c/program/ill-typed/newtype-err.p4 p4/testdata/p4c/program/ill-typed/issue2230.p4
+854 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/inro.p4
+855 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/issue2021.p4 p4/testdata/p4c/program/ill-typed/assign.p4
+856 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/conditional_e.p4
+857 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/control-verify.p4
+858 Miss Stmt_ok
+859 Miss Stmt_ok
+860 Miss Stmt_ok
+861 Miss Stmt_ok
+862 Miss Stmt_ok
+863 Miss Stmt_ok
+864 Miss Stmt_ok
+865 Miss Stmt_ok
+866 Miss Stmt_ok
+867 Miss Stmt_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+868 Hit_unlikely Stmt_ok p4/testdata/p4c/program/ill-typed/virtual6.p4 p4/testdata/p4c/program/ill-typed/virtual5.p4 p4/testdata/p4c/program/ill-typed/virtual4.p4 p4/testdata/p4c/program/ill-typed/virtual3.p4 p4/testdata/p4c/program/ill-typed/virtual2.p4 p4/testdata/p4c/program/ill-typed/virtual1.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue3813.p4 p4/testdata/p4c/program/ill-typed/issue3623-3.p4 p4/testdata/p4c/program/ill-typed/issue3623-2.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue3534.p4 p4/testdata/p4c/program/ill-typed/issue3316.p4 p4/testdata/p4c/program/ill-typed/issue3299.p4 p4/testdata/p4c/program/ill-typed/issue3246.p4 p4/testdata/p4c/program/ill-typed/issue3221.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/function_e1.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4
+869 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/duplicate-label.p4
+870 Miss Stmt_ok
+871 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/issue3623-3.p4 p4/testdata/p4c/program/ill-typed/issue3623-2.p4
+872 Miss Stmt_ok
+873 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/duplicate-label.p4
+874 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/issue3299.p4
+875 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/virtual2.p4 p4/testdata/p4c/program/ill-typed/virtual1.p4 p4/testdata/p4c/program/ill-typed/issue3534.p4
+876 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/virtual3.p4
+877 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/tuple-to-header.p4 p4/testdata/p4c/program/ill-typed/stack2.p4 p4/testdata/p4c/program/ill-typed/signed.p4 p4/testdata/p4c/program/ill-typed/newtype-err.p4 p4/testdata/p4c/program/ill-typed/issue2230.p4 p4/testdata/p4c/program/ill-typed/issue2021.p4 p4/testdata/p4c/program/ill-typed/inro.p4 p4/testdata/p4c/program/ill-typed/control-verify.p4 p4/testdata/p4c/program/ill-typed/conditional_e.p4 p4/testdata/p4c/program/ill-typed/assign.p4
+878 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/virtual3.p4
+879 Hit_likely Stmt_ok p4/testdata/p4c/program/ill-typed/virtual2.p4 p4/testdata/p4c/program/ill-typed/virtual1.p4 p4/testdata/p4c/program/ill-typed/tuple-to-header.p4 p4/testdata/p4c/program/ill-typed/stack2.p4 p4/testdata/p4c/program/ill-typed/signed.p4 p4/testdata/p4c/program/ill-typed/newtype-err.p4 p4/testdata/p4c/program/ill-typed/issue3534.p4 p4/testdata/p4c/program/ill-typed/issue3299.p4 p4/testdata/p4c/program/ill-typed/issue2230.p4 p4/testdata/p4c/program/ill-typed/issue2021.p4 p4/testdata/p4c/program/ill-typed/inro.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/control-verify.p4 p4/testdata/p4c/program/ill-typed/conditional_e.p4 p4/testdata/p4c/program/ill-typed/assign.p4
+880 Miss Stmt_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 # Coverage for Sub_expl: 1/1 (100.00%)
 595 Hit_likely Sub_expl p4/testdata/p4c/program/ill-typed/wrong-cast.p4 p4/testdata/p4c/program/ill-typed/issue401.p4 p4/testdata/p4c/program/ill-typed/issue3221.p4
 # Coverage for Sub_expl_canon: 1/1 (100.00%)
@@ -665,103 +696,103 @@
 738 Miss Sub_impl_canon_neq
 739 Miss Sub_impl_canon_neq
 740 Hit_unlikely Sub_impl_canon_neq p4/testdata/p4c/program/ill-typed/virtual2.p4 p4/testdata/p4c/program/ill-typed/virtual1.p4 p4/testdata/p4c/program/ill-typed/tuple-to-header.p4 p4/testdata/p4c/program/ill-typed/stack3.p4 p4/testdata/p4c/program/ill-typed/stack2.p4 p4/testdata/p4c/program/ill-typed/signs.p4 p4/testdata/p4c/program/ill-typed/signed.p4 p4/testdata/p4c/program/ill-typed/serenum-typedef.p4 p4/testdata/p4c/program/ill-typed/serenum-type.p4 p4/testdata/p4c/program/ill-typed/serEnumImplCast.p4 p4/testdata/p4c/program/ill-typed/range_e.p4 p4/testdata/p4c/program/ill-typed/newtype-err.p4 p4/testdata/p4c/program/ill-typed/issue67.p4 p4/testdata/p4c/program/ill-typed/issue561-1.p4 p4/testdata/p4c/program/ill-typed/issue3623-3.p4 p4/testdata/p4c/program/ill-typed/issue3623-2.p4 p4/testdata/p4c/program/ill-typed/issue3534.p4 p4/testdata/p4c/program/ill-typed/issue3345.p4 p4/testdata/p4c/program/ill-typed/issue3221.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2444-1.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2332.p4 p4/testdata/p4c/program/ill-typed/issue2317.p4 p4/testdata/p4c/program/ill-typed/issue2230.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2220.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue2036-1.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/implicit.p4 p4/testdata/p4c/program/ill-typed/equality-fail.p4 p4/testdata/p4c/program/ill-typed/div1.p4 p4/testdata/p4c/program/ill-typed/div0.p4 p4/testdata/p4c/program/ill-typed/const1_e.p4 p4/testdata/p4c/program/ill-typed/const.p4
-# Coverage for Switch_gen_label_ok: 0/4 (0.00%)
-1119 Miss Switch_gen_label_ok
-1120 Miss Switch_gen_label_ok
-1121 Miss Switch_gen_label_ok
-1122 Miss Switch_gen_label_ok
+# Coverage for Switch_gen_label_ok: 2/5 (40.00%)
+1141 Hit_likely Switch_gen_label_ok p4/testdata/p4c/program/ill-typed/issue3623-3.p4 p4/testdata/p4c/program/ill-typed/issue3623-2.p4
+1142 Miss Switch_gen_label_ok
+1143 Miss Switch_gen_label_ok
+1144 Miss Switch_gen_label_ok
+1145 Hit_likely Switch_gen_label_ok p4/testdata/p4c/program/ill-typed/issue3623-3.p4 p4/testdata/p4c/program/ill-typed/issue3623-2.p4
 # Coverage for Switch_tbl_label_ok: 4/7 (57.14%)
-1112 Miss Switch_tbl_label_ok
-1113 Miss Switch_tbl_label_ok
-1114 Miss Switch_tbl_label_ok
-1115 Hit_likely Switch_tbl_label_ok p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4
-1116 Hit_likely Switch_tbl_label_ok p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4
-1117 Hit_likely Switch_tbl_label_ok p4/testdata/p4c/program/ill-typed/issue3622.p4
-1118 Hit_likely Switch_tbl_label_ok p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4
+1134 Miss Switch_tbl_label_ok
+1135 Miss Switch_tbl_label_ok
+1136 Miss Switch_tbl_label_ok
+1137 Hit_likely Switch_tbl_label_ok p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4
+1138 Hit_likely Switch_tbl_label_ok p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4
+1139 Hit_likely Switch_tbl_label_ok p4/testdata/p4c/program/ill-typed/issue3622.p4
+1140 Hit_likely Switch_tbl_label_ok p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4
 # Coverage for Table_action_ok: 1/3 (33.33%)
-1152 Miss Table_action_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1153 Hit_likely Table_action_ok p4/testdata/p4c/program/ill-typed/issue3727.p4
-1154 Miss Table_action_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1176 Miss Table_action_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1177 Hit_likely Table_action_ok p4/testdata/p4c/program/ill-typed/issue3727.p4
+1178 Miss Table_action_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 # Coverage for Table_actions_ok: 0/1 (0.00%)
-1155 Miss Table_actions_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1179 Miss Table_actions_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 # Coverage for Table_custom_ok: 2/7 (28.57%)
-1218 Hit_likely Table_custom_ok p4/testdata/p4c/program/ill-typed/issue1230.p4
-1219 Miss Table_custom_ok
-1220 Miss Table_custom_ok
-1221 Miss Table_custom_ok
-1222 Miss Table_custom_ok
-1223 Miss Table_custom_ok
-1224 Hit_likely Table_custom_ok p4/testdata/p4c/program/ill-typed/issue1230.p4
+1241 Hit_likely Table_custom_ok p4/testdata/p4c/program/ill-typed/issue1230.p4
+1242 Miss Table_custom_ok
+1243 Miss Table_custom_ok
+1244 Miss Table_custom_ok
+1245 Miss Table_custom_ok
+1246 Miss Table_custom_ok
+1247 Hit_likely Table_custom_ok p4/testdata/p4c/program/ill-typed/issue1230.p4
 # Coverage for Table_default_ok: 1/1 (100.00%)
-1217 Hit_likely Table_default_ok p4/testdata/p4c/program/ill-typed/issue2033.p4 p4/testdata/p4c/program/ill-typed/default_action1.p4 p4/testdata/p4c/program/ill-typed/default_action.p4
+1240 Hit_likely Table_default_ok p4/testdata/p4c/program/ill-typed/issue2033.p4 p4/testdata/p4c/program/ill-typed/default_action1.p4 p4/testdata/p4c/program/ill-typed/default_action.p4
 # Coverage for Table_entries_ok: 1/1 (100.00%)
-1216 Hit_likely Table_entries_ok p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/issue3442.p4
+1239 Hit_likely Table_entries_ok p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/issue3442.p4
 # Coverage for Table_entry_action_ok: 0/1 (0.00%)
-1201 Miss Table_entry_action_ok
+1224 Miss Table_entry_action_ok
 # Coverage for Table_entry_keyset_ok: 7/31 (22.58%)
-1156 Miss Table_entry_keyset_ok
-1157 Miss Table_entry_keyset_ok
-1158 Miss Table_entry_keyset_ok
-1159 Miss Table_entry_keyset_ok
-1160 Miss Table_entry_keyset_ok
-1161 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4
-1162 Miss Table_entry_keyset_ok
-1163 Miss Table_entry_keyset_ok
-1164 Miss Table_entry_keyset_ok
-1165 Miss Table_entry_keyset_ok
-1166 Miss Table_entry_keyset_ok
-1167 Miss Table_entry_keyset_ok
-1168 Miss Table_entry_keyset_ok
-1169 Miss Table_entry_keyset_ok
-1170 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4
-1171 Miss Table_entry_keyset_ok
-1172 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4
-1173 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4
-1174 Miss Table_entry_keyset_ok
-1175 Miss Table_entry_keyset_ok
-1176 Miss Table_entry_keyset_ok
-1177 Miss Table_entry_keyset_ok
-1178 Miss Table_entry_keyset_ok
-1179 Miss Table_entry_keyset_ok
 1180 Miss Table_entry_keyset_ok
-1181 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/issue1542.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4
+1181 Miss Table_entry_keyset_ok
 1182 Miss Table_entry_keyset_ok
-1183 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4
-1184 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4
-1185 Miss Table_entry_keyset_ok
+1183 Miss Table_entry_keyset_ok
+1184 Miss Table_entry_keyset_ok
+1185 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4
 1186 Miss Table_entry_keyset_ok
-# Coverage for Table_entry_keysets_ok: 4/7 (57.14%)
-1189 Miss Table_entry_keysets_ok
-1190 Miss Table_entry_keysets_ok
-1191 Hit_likely Table_entry_keysets_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/issue1542.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4
-1192 Hit_likely Table_entry_keysets_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4
-1193 Miss Table_entry_keysets_ok
-1194 Hit_likely Table_entry_keysets_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/issue1542.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4
-1195 Hit_likely Table_entry_keysets_ok p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4
+1187 Miss Table_entry_keyset_ok
+1188 Miss Table_entry_keyset_ok
+1189 Miss Table_entry_keyset_ok
+1190 Miss Table_entry_keyset_ok
+1191 Miss Table_entry_keyset_ok
+1192 Miss Table_entry_keyset_ok
+1193 Miss Table_entry_keyset_ok
+1194 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4
+1195 Miss Table_entry_keyset_ok
+1196 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4
+1197 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4
+1198 Miss Table_entry_keyset_ok
+1199 Miss Table_entry_keyset_ok
+1200 Miss Table_entry_keyset_ok
+1201 Miss Table_entry_keyset_ok
+1202 Miss Table_entry_keyset_ok
+1203 Miss Table_entry_keyset_ok
+1204 Miss Table_entry_keyset_ok
+1205 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/issue1542.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4
+1206 Miss Table_entry_keyset_ok
+1207 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4
+1208 Hit_likely Table_entry_keyset_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4
+1209 Miss Table_entry_keyset_ok
+1210 Miss Table_entry_keyset_ok
+# Coverage for Table_entry_keysets_ok: 3/6 (50.00%)
+1213 Miss Table_entry_keysets_ok
+1214 Miss Table_entry_keysets_ok
+1215 Hit_likely Table_entry_keysets_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4
+1216 Miss Table_entry_keysets_ok
+1217 Hit_likely Table_entry_keysets_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/issue1542.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4
+1218 Hit_likely Table_entry_keysets_ok p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4
 # Coverage for Table_entry_keysets_state_ok: 0/2 (0.00%)
-1187 Miss Table_entry_keysets_state_ok
-1188 Miss Table_entry_keysets_state_ok
+1211 Miss Table_entry_keysets_state_ok
+1212 Miss Table_entry_keysets_state_ok
 # Coverage for Table_entry_priority_ok: 6/14 (42.86%)
-1202 Hit_likely Table_entry_priority_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4
-1203 Miss Table_entry_priority_ok
-1204 Hit_likely Table_entry_priority_ok p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4
-1205 Miss Table_entry_priority_ok
-1206 Hit_likely Table_entry_priority_ok p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4
-1207 Miss Table_entry_priority_ok
-1208 Miss Table_entry_priority_ok
-1209 Hit_likely Table_entry_priority_ok p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4
-1210 Miss Table_entry_priority_ok
-1211 Hit_likely Table_entry_priority_ok p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4
-1212 Miss Table_entry_priority_ok
-1213 Miss Table_entry_priority_ok
-1214 Hit_likely Table_entry_priority_ok p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4
-1215 Miss Table_entry_priority_ok
+1225 Hit_likely Table_entry_priority_ok p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4
+1226 Miss Table_entry_priority_ok
+1227 Hit_likely Table_entry_priority_ok p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4
+1228 Miss Table_entry_priority_ok
+1229 Hit_likely Table_entry_priority_ok p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4
+1230 Miss Table_entry_priority_ok
+1231 Miss Table_entry_priority_ok
+1232 Hit_likely Table_entry_priority_ok p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4
+1233 Miss Table_entry_priority_ok
+1234 Hit_likely Table_entry_priority_ok p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4
+1235 Miss Table_entry_priority_ok
+1236 Miss Table_entry_priority_ok
+1237 Hit_likely Table_entry_priority_ok p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4
+1238 Miss Table_entry_priority_ok
 # Coverage for Table_key_ok: 0/3 (0.00%)
-1148 Miss Table_key_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1149 Miss Table_key_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1150 Miss Table_key_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1172 Miss Table_key_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1173 Miss Table_key_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1174 Miss Table_key_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 # Coverage for Table_type_decl_ok: 0/1 (0.00%)
-1225 Miss Table_type_decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1248 Miss Table_type_decl_ok p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 # Coverage for TypeDef_wf: 2/5 (40.00%)
 221 Hit_likely TypeDef_wf p4/testdata/p4c/program/ill-typed/typedef-and-type-definitions.p4 p4/testdata/p4c/program/ill-typed/tuple-newtype.p4 p4/testdata/p4c/program/ill-typed/psa-type-hdr.p4
 222 Miss TypeDef_wf p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
@@ -980,19 +1011,15 @@
 509 Miss add_typdefs p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 510 Miss add_typdefs p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 # Coverage for align_params_with_args': 0/1 (0.00%)
-1227 Miss align_params_with_args'
-# Coverage for coerce_assign: 1/1 (100.00%)
-1098 Hit_likely coerce_assign p4/testdata/p4c/program/ill-typed/virtual2.p4 p4/testdata/p4c/program/ill-typed/virtual1.p4 p4/testdata/p4c/program/ill-typed/tuple-to-header.p4 p4/testdata/p4c/program/ill-typed/stack2.p4 p4/testdata/p4c/program/ill-typed/signs.p4 p4/testdata/p4c/program/ill-typed/signed.p4 p4/testdata/p4c/program/ill-typed/serenum-typedef.p4 p4/testdata/p4c/program/ill-typed/serenum-type.p4 p4/testdata/p4c/program/ill-typed/serEnumImplCast.p4 p4/testdata/p4c/program/ill-typed/newtype-err.p4 p4/testdata/p4c/program/ill-typed/issue67.p4 p4/testdata/p4c/program/ill-typed/issue561-1.p4 p4/testdata/p4c/program/ill-typed/issue3623-3.p4 p4/testdata/p4c/program/ill-typed/issue3623-2.p4 p4/testdata/p4c/program/ill-typed/issue3534.p4 p4/testdata/p4c/program/ill-typed/issue2444-1.p4 p4/testdata/p4c/program/ill-typed/issue2332.p4 p4/testdata/p4c/program/ill-typed/issue2230.p4 p4/testdata/p4c/program/ill-typed/issue2220.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue2036-1.p4 p4/testdata/p4c/program/ill-typed/implicit.p4 p4/testdata/p4c/program/ill-typed/const.p4
-# Coverage for coerce_binary: 1/1 (100.00%)
-1097 Hit_likely coerce_binary p4/testdata/p4c/program/ill-typed/range_e.p4 p4/testdata/p4c/program/ill-typed/equality-fail.p4 p4/testdata/p4c/program/ill-typed/const1_e.p4
+1250 Miss align_params_with_args'
 # Coverage for exit: 0/1 (0.00%)
 498 Miss exit
 # Coverage for filter_default_args: 1/1 (100.00%)
-1226 Hit_unlikely filter_default_args p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/string-e2.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4 p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/push_nonconstant.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue774-1.p4 p4/testdata/p4c/program/ill-typed/issue764.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3814.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4 p4/testdata/p4c/program/ill-typed/issue3316.p4 p4/testdata/p4c/program/ill-typed/issue3188.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2317.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue2036-2.p4 p4/testdata/p4c/program/ill-typed/issue2036-1.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/issue1059.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4
+1249 Hit_unlikely filter_default_args p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/string-e2.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4 p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/push_nonconstant.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue774-1.p4 p4/testdata/p4c/program/ill-typed/issue764.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3814.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4 p4/testdata/p4c/program/ill-typed/issue3316.p4 p4/testdata/p4c/program/ill-typed/issue3188.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2317.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue2036-2.p4 p4/testdata/p4c/program/ill-typed/issue2036-1.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/issue1059.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4
 # Coverage for filter_directionless_args: 1/3 (33.33%)
-1198 Miss filter_directionless_args p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1199 Hit_likely filter_directionless_args p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue1542.p4 p4/testdata/p4c/program/ill-typed/action-bind.p4
-1200 Miss filter_directionless_args
+1221 Miss filter_directionless_args p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1222 Hit_likely filter_directionless_args p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue1542.p4 p4/testdata/p4c/program/ill-typed/action-bind.p4
+1223 Miss filter_directionless_args
 # Coverage for find_consdef: 1/4 (25.00%)
 553 Hit_unlikely find_consdef p4/testdata/p4c/program/ill-typed/virtual6.p4 p4/testdata/p4c/program/ill-typed/virtual5.p4 p4/testdata/p4c/program/ill-typed/virtual4.p4 p4/testdata/p4c/program/ill-typed/virtual3.p4 p4/testdata/p4c/program/ill-typed/virtual2.p4 p4/testdata/p4c/program/ill-typed/virtual1.p4 p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/self-call.p4 p4/testdata/p4c/program/ill-typed/scope.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue816.p4 p4/testdata/p4c/program/ill-typed/issue803-1.p4 p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue388.p4 p4/testdata/p4c/program/ill-typed/issue3814.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue3282.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1296.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/interface_e.p4 p4/testdata/p4c/program/ill-typed/interface1_e.p4 p4/testdata/p4c/program/ill-typed/functors3_e.p4 p4/testdata/p4c/program/ill-typed/functors2_e.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4 p4/testdata/p4c/program/ill-typed/const_e.p4 p4/testdata/p4c/program/ill-typed/call1_e.p4 p4/testdata/p4c/program/ill-typed/assign.p4
 554 Miss find_consdef p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
@@ -1071,10 +1098,10 @@
 4 Miss free_typ
 5 Miss free_typ
 # Coverage for gen_cstr_fd': 0/2 (0.00%)
-1229 Miss gen_cstr_fd' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1230 Miss gen_cstr_fd' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1252 Miss gen_cstr_fd' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1253 Miss gen_cstr_fd' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 # Coverage for gen_cstrs: 0/1 (0.00%)
-1228 Miss gen_cstrs p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1251 Miss gen_cstrs p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 # Coverage for get_lpm_prefix': 3/8 (37.50%)
 557 Hit_likely get_lpm_prefix' p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4
 558 Hit_likely get_lpm_prefix' p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4
@@ -1110,31 +1137,23 @@
 # Coverage for keys_of_table: 1/1 (100.00%)
 566 Hit_unlikely keys_of_table p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/serEnumImplCast.p4 p4/testdata/p4c/program/ill-typed/missing_match.p4 p4/testdata/p4c/program/ill-typed/issue3847.p4 p4/testdata/p4c/program/ill-typed/issue3846.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4 p4/testdata/p4c/program/ill-typed/issue3727.p4 p4/testdata/p4c/program/ill-typed/issue3671-2.p4 p4/testdata/p4c/program/ill-typed/issue3622.p4 p4/testdata/p4c/program/ill-typed/issue3611.p4 p4/testdata/p4c/program/ill-typed/issue3589.p4 p4/testdata/p4c/program/ill-typed/issue3442.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2267.p4 p4/testdata/p4c/program/ill-typed/issue2033.p4 p4/testdata/p4c/program/ill-typed/issue1542.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/issue1230.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/duplicate-label.p4 p4/testdata/p4c/program/ill-typed/default_action1.p4 p4/testdata/p4c/program/ill-typed/default_action.p4 p4/testdata/p4c/program/ill-typed/default-last-switch.p4 p4/testdata/p4c/program/ill-typed/call-table.p4 p4/testdata/p4c/program/ill-typed/action-bind3.p4 p4/testdata/p4c/program/ill-typed/action-bind2.p4 p4/testdata/p4c/program/ill-typed/action-bind1.p4 p4/testdata/p4c/program/ill-typed/action-bind.p4
 # Coverage for merge_cstr: 0/1 (0.00%)
-1231 Miss merge_cstr p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1254 Miss merge_cstr p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 # Coverage for merge_cstr': 3/10 (30.00%)
-1232 Hit_unlikely merge_cstr' p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/string-e2.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue764.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4
-1233 Miss merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1234 Miss merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1235 Hit_unlikely merge_cstr' p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1236 Hit_unlikely merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1237 Miss merge_cstr'
-1238 Miss merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1239 Miss merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1240 Miss merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-1241 Miss merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
-# Coverage for reduce_senum_unary: 1/2 (50.00%)
-1091 Miss reduce_senum_unary
-1092 Hit_likely reduce_senum_unary p4/testdata/p4c/program/ill-typed/typecheck1_e.p4 p4/testdata/p4c/program/ill-typed/issue3153.p4 p4/testdata/p4c/program/ill-typed/bitExtract_e.p4
-# Coverage for reduce_senums_binary: 2/4 (50.00%)
-1093 Miss reduce_senums_binary
-1094 Hit_likely reduce_senums_binary p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4 p4/testdata/p4c/program/ill-typed/neg.p4 p4/testdata/p4c/program/ill-typed/div3.p4 p4/testdata/p4c/program/ill-typed/div1.p4 p4/testdata/p4c/program/ill-typed/div0.p4
-1095 Miss reduce_senums_binary
-1096 Hit_likely reduce_senums_binary p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4 p4/testdata/p4c/program/ill-typed/neg.p4 p4/testdata/p4c/program/ill-typed/div3.p4 p4/testdata/p4c/program/ill-typed/div1.p4 p4/testdata/p4c/program/ill-typed/div0.p4
+1255 Hit_unlikely merge_cstr' p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/string-e2.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue764.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4
+1256 Miss merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1257 Miss merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1258 Hit_unlikely merge_cstr' p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1259 Hit_unlikely merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1260 Miss merge_cstr'
+1261 Miss merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1262 Miss merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1263 Miss merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1264 Miss merge_cstr' p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 # Coverage for resolve_cstrs: 3/4 (75.00%)
-1242 Hit_unlikely resolve_cstrs p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/string-e2.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue764.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4
-1243 Hit_likely resolve_cstrs p4/testdata/p4c/program/ill-typed/issue774-2.p4
-1244 Hit_likely resolve_cstrs p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4
-1245 Miss resolve_cstrs p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1265 Hit_unlikely resolve_cstrs p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/string-e2.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue764.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4
+1266 Hit_likely resolve_cstrs p4/testdata/p4c/program/ill-typed/issue774-2.p4
+1267 Hit_likely resolve_cstrs p4/testdata/p4c/program/ill-typed/methodArgDontcare.p4
+1268 Miss resolve_cstrs p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 # Coverage for specialize_consdef: 1/3 (33.33%)
 15 Hit_unlikely specialize_consdef p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 16 Miss specialize_consdef p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
@@ -1147,7 +1166,7 @@
 # Coverage for specialize_typdef: 0/1 (0.00%)
 10 Miss specialize_typdef
 # Coverage for split_methods: 0/1 (0.00%)
-1135 Miss split_methods p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
+1159 Miss split_methods p4/testdata/p4c/program/ill-typed/issue4140.p4 p4/testdata/p4c/program/ill-typed/issue3363.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 # Coverage for subst_funcdef: 0/2 (0.00%)
 8 Miss subst_funcdef p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
 9 Miss subst_funcdef p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4
@@ -1157,11 +1176,11 @@
 # Coverage for to_fkey: 1/1 (100.00%)
 540 Hit_unlikely to_fkey p4/testdata/p4c/program/ill-typed/type-field.p4 p4/testdata/p4c/program/ill-typed/table-entries-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-range.p4 p4/testdata/p4c/program/ill-typed/table-entries-optional-2-bmv2.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm.p4 p4/testdata/p4c/program/ill-typed/table-entries-lpm-2.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact.p4 p4/testdata/p4c/program/ill-typed/table-entries-exact-ternary.p4 p4/testdata/p4c/program/ill-typed/table-entries-decl-order.p4 p4/testdata/p4c/program/ill-typed/structure-valued-expr-errs-1.p4 p4/testdata/p4c/program/ill-typed/string-e2.p4 p4/testdata/p4c/program/ill-typed/stack-const-index-out-of-bounds-bmv2.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-1.p4 p4/testdata/p4c/program/ill-typed/spec-issue1297-string-cat-err-0.p4 p4/testdata/p4c/program/ill-typed/slice_out_of_bound.p4 p4/testdata/p4c/program/ill-typed/select-varbits.p4 p4/testdata/p4c/program/ill-typed/psa-meter2.p4 p4/testdata/p4c/program/ill-typed/pr2918.p4 p4/testdata/p4c/program/ill-typed/persistent_e.p4 p4/testdata/p4c/program/ill-typed/named-fail.p4 p4/testdata/p4c/program/ill-typed/module_e.p4 p4/testdata/p4c/program/ill-typed/list-error.p4 p4/testdata/p4c/program/ill-typed/issue803-1.p4 p4/testdata/p4c/program/ill-typed/issue774-2.p4 p4/testdata/p4c/program/ill-typed/issue774-1.p4 p4/testdata/p4c/program/ill-typed/issue764.p4 p4/testdata/p4c/program/ill-typed/issue584.p4 p4/testdata/p4c/program/ill-typed/issue413.p4 p4/testdata/p4c/program/ill-typed/issue3814.p4 p4/testdata/p4c/program/ill-typed/issue3808.p4 p4/testdata/p4c/program/ill-typed/issue3316.p4 p4/testdata/p4c/program/ill-typed/issue3282.p4 p4/testdata/p4c/program/ill-typed/issue3188.p4 p4/testdata/p4c/program/ill-typed/issue3045.p4 p4/testdata/p4c/program/ill-typed/issue3045-2.p4 p4/testdata/p4c/program/ill-typed/issue3045-1.p4 p4/testdata/p4c/program/ill-typed/issue2835-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2597.p4 p4/testdata/p4c/program/ill-typed/issue2525.p4 p4/testdata/p4c/program/ill-typed/issue2454.p4 p4/testdata/p4c/program/ill-typed/issue2413.p4 p4/testdata/p4c/program/ill-typed/issue2354.p4 p4/testdata/p4c/program/ill-typed/issue2317.p4 p4/testdata/p4c/program/ill-typed/issue2230-1-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue2036.p4 p4/testdata/p4c/program/ill-typed/issue2036-2.p4 p4/testdata/p4c/program/ill-typed/issue2036-1.p4 p4/testdata/p4c/program/ill-typed/issue1986.p4 p4/testdata/p4c/program/ill-typed/issue1986-1.p4 p4/testdata/p4c/program/ill-typed/issue1777-bmv2.p4 p4/testdata/p4c/program/ill-typed/issue1331.p4 p4/testdata/p4c/program/ill-typed/issue1059.p4 p4/testdata/p4c/program/ill-typed/issue1006-1.p4 p4/testdata/p4c/program/ill-typed/init-entries-error3-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error2-bmv2.p4 p4/testdata/p4c/program/ill-typed/init-entries-error1-bmv2.p4 p4/testdata/p4c/program/ill-typed/incorrect-label.p4 p4/testdata/p4c/program/ill-typed/function1_e.p4 p4/testdata/p4c/program/ill-typed/constructor3_e.p4
 # Coverage for update_fdenv_extern: 1/6 (16.67%)
-1128 Miss update_fdenv_extern
-1129 Miss update_fdenv_extern
-1130 Miss update_fdenv_extern
-1131 Miss update_fdenv_extern
-1132 Hit_likely update_fdenv_extern p4/testdata/p4c/program/ill-typed/virtual5.p4 p4/testdata/p4c/program/ill-typed/virtual4.p4
-1133 Miss update_fdenv_extern
+1151 Miss update_fdenv_extern
+1152 Miss update_fdenv_extern
+1153 Miss update_fdenv_extern
+1154 Miss update_fdenv_extern
+1155 Hit_likely update_fdenv_extern p4/testdata/p4c/program/ill-typed/virtual5.p4 p4/testdata/p4c/program/ill-typed/virtual4.p4
+1156 Miss update_fdenv_extern
 # Coverage for update_state: 0/1 (0.00%)
 565 Miss update_state

@@ -1,0 +1,27 @@
+;;
+;; Parameter Type
+;;
+
+syntax typ
+
+syntax paramtyp = id dir typ val?
+
+var pt : paramtyp
+
+;;
+;; Type
+;;
+
+syntax typ =
+  | IntT
+  | FIntT width
+  | FBitT width
+  | HeaderT id (member, typ)*
+
+;;
+;; Function Type
+;;
+
+syntax functyp = | FuncT paramtyp* typ
+
+var ft : functyp

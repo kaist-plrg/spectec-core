@@ -1537,7 +1537,7 @@ Typecheck success: ../../../../p4/testdata/p4c/program/well-typed/issue3329-bmv2
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/issue3333.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/well-typed/issue3333.p4
-../../../../spec/4e-typing-expr.watsup:549.6-549.27: relation was not matched
+../../../../spec/4e-typing-expr.watsup:567.6-567.27: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/issue3343.p4
 Typecheck success: ../../../../p4/testdata/p4c/program/well-typed/issue3343.p4
@@ -2357,7 +2357,7 @@ Typecheck success: ../../../../p4/testdata/p4c/program/well-typed/pragmas.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/precedence-lt.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/well-typed/precedence-lt.p4
-../../../../spec/4e-typing-expr.watsup:171.35-171.49: function was not matched
+../../../../spec/4f-typing-stmt.watsup:158.6-158.13: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/well-typed/pred.p4
 Typecheck success: ../../../../p4/testdata/p4c/program/well-typed/pred.p4

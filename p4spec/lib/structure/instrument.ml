@@ -103,7 +103,8 @@ and insert_phantom' (tdenv : TDEnv.t) (pathconds : pathcond list)
               | BoolG b -> Sl.Ast.BoolG b
               | CmpG (cmpop, optyp, exp) -> Sl.Ast.CmpG (cmpop, optyp, exp)
               | SubG typ -> Sl.Ast.SubG typ
-              | MatchG pattern -> Sl.Ast.MatchG pattern)
+              | MatchG pattern -> Sl.Ast.MatchG pattern
+              | MemG exp -> Sl.Ast.MemG exp)
             guards
         in
         let blocks =
@@ -151,7 +152,8 @@ and insert_nothing' (instr : instr) : Sl.Ast.instr =
               | BoolG b -> Sl.Ast.BoolG b
               | CmpG (cmpop, optyp, exp) -> Sl.Ast.CmpG (cmpop, optyp, exp)
               | SubG typ -> Sl.Ast.SubG typ
-              | MatchG pattern -> Sl.Ast.MatchG pattern)
+              | MatchG pattern -> Sl.Ast.MatchG pattern
+              | MemG exp -> Sl.Ast.MemG exp)
             guards
         in
         let blocks = List.map insert_nothing blocks in

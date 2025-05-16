@@ -1,0 +1,1601 @@
+;; spec-mini/0-aux.watsup:18.1-18.21
+def $sum
+
+
+
+;; spec-mini/0-aux.watsup:19.1-19.21
+def $max
+
+
+
+;; spec-mini/0-aux.watsup:20.1-20.21
+def $min
+
+
+
+;; spec-mini/0-aux.watsup:26.1-27.17
+def $int_to_text
+
+
+
+;; spec-mini/0-aux.watsup:29.1-30.17
+def $concat_text(text*)
+
+1. Case analysis on text*
+
+  1. Case (% matches pattern [])
+
+    1. Return ""
+
+  2. Case (% matches pattern _ :: _)
+
+    1. (Let t :: t'* be text*)
+
+    2. Return t ++ $concat_text(t'*)
+
+;; spec-mini/0-aux.watsup:35.1-35.37
+def $strip_prefix
+
+
+
+;; spec-mini/0-aux.watsup:36.1-36.37
+def $strip_suffix
+
+
+
+;; spec-mini/0-aux.watsup:42.1-42.23
+def $init_(nat')
+
+1. If ((nat' = 0)), then
+
+  1. Return []
+
+2. Otherwise
+
+  1. Return (nat' - 1) :: $init_((nat' - 1))
+
+;; spec-mini/0-aux.watsup:47.1-47.29
+def $repeat_<X>(X, nat')
+
+1. If ((nat' = 0)), then
+
+  1. Return []
+
+2. Otherwise
+
+  1. Return [X] ++ $repeat_<X>(X, (nat' - 1))
+
+;; spec-mini/0-aux.watsup:53.1-54.26
+def $rev_<X>
+
+
+
+;; spec-mini/0-aux.watsup:56.1-57.23
+def $concat_<X>
+
+
+
+;; spec-mini/0-aux.watsup:59.1-59.39
+def $partition_<X>
+
+
+
+;; spec-mini/0-aux.watsup:61.1-62.23
+def $assoc_<X, Y>
+
+
+
+;; spec-mini/0-aux.watsup:64.1-65.28
+def $distinct_<K>
+
+
+
+;; spec-mini/0-aux.watsup:71.17-71.24
+syntax set<K> = 
+   | `{%}`(K*)
+
+;; spec-mini/0-aux.watsup:73.1-74.43
+def $empty_set<K>
+
+1. Return ({ [] })
+
+;; spec-mini/0-aux.watsup:77.1-78.36
+def $in_set<K>(K, ({ K'* }))
+
+1. Return K is in K'*
+
+;; spec-mini/0-aux.watsup:81.1-82.37
+def $intersect_set<K>
+
+
+
+;; spec-mini/0-aux.watsup:84.1-85.37
+def $union_set<K>
+
+
+
+;; spec-mini/0-aux.watsup:87.1-88.37
+def $unions_set<K>
+
+
+
+;; spec-mini/0-aux.watsup:90.1-91.42
+def $diff_set<K>
+
+
+
+;; spec-mini/0-aux.watsup:93.1-94.40
+def $sub_set<K>
+
+
+
+;; spec-mini/0-aux.watsup:96.1-97.33
+def $eq_set<K>
+
+
+
+;; spec-mini/0-aux.watsup:103.21-103.27
+syntax pair<K, V> = 
+   | `%->%`(K, V)
+
+;; spec-mini/0-aux.watsup:106.20-106.37
+syntax map<K, V> = set<pair<K, V>>
+
+;; spec-mini/0-aux.watsup:108.1-109.43
+def $empty_map<K, V>
+
+1. Return ({ [] })
+
+;; spec-mini/0-aux.watsup:113.1-114.55
+def $dom_map<K, V>(({ (K -> V)* }))
+
+1. Return ({ K* })
+
+;; spec-mini/0-aux.watsup:118.1-119.25
+def $find_map<K, V>
+
+
+
+;; spec-mini/0-aux.watsup:121.1-122.25
+def $find_maps<K, V>
+
+
+
+;; spec-mini/0-aux.watsup:124.1-125.71
+def $add_map<K, V>
+
+
+
+;; spec-mini/0-aux.watsup:127.1-128.71
+def $adds_map<K, V>
+
+
+
+;; spec-mini/0-aux.watsup:130.1-131.71
+def $update_map<K, V>
+
+
+
+;; spec-mini/1a-syntax-el.watsup:5.15-5.18
+syntax bits = int
+
+;; spec-mini/1a-syntax-el.watsup:6.16-6.19
+syntax width = nat
+
+;; spec-mini/1a-syntax-el.watsup:9.1-11.20
+syntax num = 
+   | `INT%`(int)
+   | `FINT%%`(width, bits)
+   | `FBIT%%`(width, bits)
+
+;; spec-mini/1a-syntax-el.watsup:21.13-21.17
+syntax id = text
+
+;; spec-mini/1a-syntax-el.watsup:27.17-27.19
+syntax member = id
+
+;; spec-mini/1a-syntax-el.watsup:34.1-37.8
+syntax binop = 
+   | `PLUS`()
+   | `MINUS`()
+   | `SHL`()
+   | `SHR`()
+
+;; spec-mini/1a-syntax-el.watsup:43.14-43.37
+syntax dir = 
+   | `NO`()
+   | `IN`()
+   | `OUT`()
+   | `INOUT`()
+
+;; spec-mini/1a-syntax-el.watsup:52.1-55.13
+syntax type = 
+   | `IntT`()
+   | `FIntT%`(expr)
+   | `FBitT%`(expr)
+   | `NameT%`(id)
+
+;; spec-mini/1a-syntax-el.watsup:61.16-61.33
+syntax param = 
+   | `%%%%`(id, dir, type, expr?)
+
+;; spec-mini/1a-syntax-el.watsup:68.1-71.25
+syntax expr = 
+   | `NumE%`(num)
+   | `NameE%`(id)
+   | `BinE%%%`(binop, expr, expr)
+   | `ExprAccE%%`(expr, member)
+
+;; spec-mini/1a-syntax-el.watsup:77.15-77.27
+syntax stmt = 
+   | `RetS%`(expr?)
+
+;; spec-mini/1a-syntax-el.watsup:84.1-85.31
+syntax decl = 
+   | `HeaderD%%`(id, (member, type)*)
+   | `FuncD%%%%`(id, type, param*, stmt*)
+
+;; spec-mini/1a-syntax-el.watsup:91.18-91.23
+syntax program = decl*
+
+;; spec-mini/1b-syntax-el-aux.watsup:5.1-6.26
+def $is_nume(expr')
+
+1. If ((expr' matches pattern `NumE%`)), then
+
+  1. (Let (NumE _num) be expr')
+
+  2. Return true
+
+2. Otherwise
+
+  1. Return false
+
+;; spec-mini/1b-syntax-el-aux.watsup:11.1-12.27
+def $is_namee(expr')
+
+1. If ((expr' matches pattern `NameE%`)), then
+
+  1. (Let (NameE _id) be expr')
+
+  2. Return true
+
+2. Otherwise
+
+  1. Return false
+
+;; spec-mini/1b-syntax-el-aux.watsup:17.1-18.26
+def $is_bine(expr')
+
+1. If ((expr' matches pattern `BinE%%%`)), then
+
+  1. (Let (BinE _binop _expr _expr') be expr')
+
+  2. Return true
+
+2. Otherwise
+
+  1. Return false
+
+;; spec-mini/1b-syntax-el-aux.watsup:23.1-24.30
+def $is_expracce(expr')
+
+1. If ((expr' matches pattern `ExprAccE%%`)), then
+
+  1. (Let (ExprAccE _expr _member) be expr')
+
+  2. Return true
+
+2. Otherwise
+
+  1. Return false
+
+;; spec-mini/2a-runtime-domain.watsup:10.14-10.16
+syntax tid = id
+
+;; spec-mini/2a-runtime-domain.watsup:16.14-16.16
+syntax fid = id
+
+;; spec-mini/2b1-runtime-bitstr.watsup:5.17-5.20
+syntax bitstr = int
+
+;; spec-mini/2b1-runtime-bitstr.watsup:10.1-10.31
+def $to_int
+
+
+
+;; spec-mini/2b1-runtime-bitstr.watsup:14.1-14.34
+def $to_bitstr
+
+
+
+;; spec-mini/2b2-runtime-value.watsup:6.1-9.90
+syntax val = 
+   | `IntV%`(int)
+   | `FIntV%%`(width, bitstr)
+   | `FBitV%%`(width, bitstr)
+   | `HeaderV%%`(id, (member, val)*)
+
+;; spec-mini/2b3-runtime-value-aux.watsup:3.1-3.24
+def $get_int(val)
+
+1. Case analysis on val
+
+  1. Case (% matches pattern `IntV%`)
+
+    1. (Let (IntV i) be val)
+
+    2. Return i
+
+  2. Case (% matches pattern `FIntV%%`)
+
+    1. (Let (FIntV w bs) be val)
+
+    2. Return $to_int((w as int), bs)
+
+  3. Case (% matches pattern `FBitV%%`)
+
+    1. (Let (FBitV _width bs) be val)
+
+    2. Return bs
+
+1. Else Phantom#0
+
+;; spec-mini/2c1-runtime-type.watsup:7.19-7.34
+syntax paramtyp = 
+   | `%%%%`(id, dir, typ, val?)
+
+;; spec-mini/2c1-runtime-type.watsup:16.1-19.30
+syntax typ = 
+   | `IntT`()
+   | `FIntT%`(width)
+   | `FBitT%`(width)
+   | `HeaderT%%`(id, (member, typ)*)
+
+;; spec-mini/2c1-runtime-type.watsup:25.18-25.39
+syntax functyp = 
+   | `FuncT%%`(paramtyp*, typ)
+
+;; spec-mini/2c2-runtime-type-aux.watsup:7.1-7.25
+def $is_intt(typ)
+
+1. If ((typ matches pattern `IntT`)), then
+
+  1. Return true
+
+2. Otherwise
+
+  1. Return false
+
+;; spec-mini/2c2-runtime-type-aux.watsup:12.1-12.26
+def $is_fintt(typ)
+
+1. If ((typ matches pattern `FIntT%`)), then
+
+  1. (Let (FIntT _width) be typ)
+
+  2. Return true
+
+2. Otherwise
+
+  1. Return false
+
+;; spec-mini/2c2-runtime-type-aux.watsup:17.1-17.26
+def $is_fbitt(typ)
+
+1. If ((typ matches pattern `FBitT%`)), then
+
+  1. (Let (FBitT _width) be typ)
+
+  2. Return true
+
+2. Otherwise
+
+  1. Return false
+
+;; spec-mini/2c2-runtime-type-aux.watsup:22.1-22.28
+def $is_headert(typ)
+
+1. If ((typ matches pattern `HeaderT%%`)), then
+
+  1. (Let (HeaderT _id _(member, typ)*) be typ)
+
+  2. Return true
+
+2. Otherwise
+
+  1. Return false
+
+;; spec-mini/2c2-runtime-type-aux.watsup:33.1-33.30
+def $is_funct(functyp')
+
+1. (Let (FuncT _paramtyp* _typ) be functyp')
+
+2. Return true
+
+3. Otherwise
+
+  1. Return false
+
+;; spec-mini/2d1-runtime-numerics.watsup:5.1-5.21
+def $pow2
+
+
+
+;; spec-mini/2d1-runtime-numerics.watsup:7.1-7.25
+def $shl
+
+
+
+;; spec-mini/2d1-runtime-numerics.watsup:8.1-8.25
+def $shr
+
+
+
+;; spec-mini/2d1-runtime-numerics.watsup:9.1-9.36
+def $shr_arith
+
+
+
+;; spec-mini/2d1-runtime-numerics.watsup:11.1-11.21
+def $bneg
+
+
+
+;; spec-mini/2d1-runtime-numerics.watsup:12.1-12.26
+def $band
+
+
+
+;; spec-mini/2d1-runtime-numerics.watsup:13.1-13.26
+def $bxor
+
+
+
+;; spec-mini/2d1-runtime-numerics.watsup:14.1-14.25
+def $bor
+
+
+
+;; spec-mini/2d1-runtime-numerics.watsup:16.1-16.33
+def $bitacc
+
+
+
+;; spec-mini/2d1-runtime-numerics.watsup:22.1-23.24
+def $bin_op(binop, val_l, val_r)
+
+1. Case analysis on binop
+
+  1. Case (% matches pattern `PLUS`)
+
+    1. Return $bin_plus(val_l, val_r)
+
+  2. Case (% matches pattern `MINUS`)
+
+    1. Return $bin_minus(val_l, val_r)
+
+  3. Case (% matches pattern `SHL`)
+
+    1. Return $bin_shl(val_l, val_r)
+
+  4. Case (% matches pattern `SHR`)
+
+    1. Return $bin_shr(val_l, val_r)
+
+;; spec-mini/2d1-runtime-numerics.watsup:27.1-27.30
+def $bin_plus(val, val')
+
+1. Case analysis on val
+
+  1. Case (% matches pattern `IntV%`)
+
+    1. (Let (IntV i_l) be val)
+
+    2. If ((val' matches pattern `IntV%`)), then
+
+      1. (Let (IntV i_r) be val')
+
+      2. Return (IntV (i_l + i_r))
+
+    2. Else Phantom#1
+
+  2. Case (% matches pattern `FIntV%%`)
+
+    1. (Let (FIntV w bs_l) be val)
+
+    2. If ((val' matches pattern `FIntV%%`)), then
+
+      1. (Let (FIntV w' bs_r) be val')
+
+      2. If ((w = w')), then
+
+        1. (Let i_l be $to_int((w as int), bs_l))
+
+        2. (Let i_r be $to_int((w as int), bs_r))
+
+        3. (Let bs be $to_bitstr((w as int), (i_l + i_r)))
+
+        4. Return (FIntV w bs)
+
+      2. Else Phantom#2
+
+    2. Else Phantom#3
+
+  3. Case (% matches pattern `FBitV%%`)
+
+    1. (Let (FBitV w bs_l) be val)
+
+    2. If ((val' matches pattern `FBitV%%`)), then
+
+      1. (Let (FBitV w' bs_r) be val')
+
+      2. If ((w = w')), then
+
+        1. (Let i_l be $to_int((w as int), bs_l))
+
+        2. (Let i_r be $to_int((w as int), bs_r))
+
+        3. (Let bs be $to_bitstr((w as int), (i_l + i_r)))
+
+        4. Return (FBitV w bs)
+
+      2. Else Phantom#4
+
+    2. Else Phantom#5
+
+1. Else Phantom#6
+
+;; spec-mini/2d1-runtime-numerics.watsup:43.1-43.31
+def $bin_minus(val, val')
+
+1. Case analysis on val
+
+  1. Case (% matches pattern `IntV%`)
+
+    1. (Let (IntV i_l) be val)
+
+    2. If ((val' matches pattern `IntV%`)), then
+
+      1. (Let (IntV i_r) be val')
+
+      2. Return (IntV (i_l - i_r))
+
+    2. Else Phantom#7
+
+  2. Case (% matches pattern `FIntV%%`)
+
+    1. (Let (FIntV w bs_l) be val)
+
+    2. If ((val' matches pattern `FIntV%%`)), then
+
+      1. (Let (FIntV w' bs_r) be val')
+
+      2. If ((w = w')), then
+
+        1. (Let i_l be $to_int((w as int), bs_l))
+
+        2. (Let i_r be $to_int((w as int), bs_r))
+
+        3. (Let bs be $to_bitstr((w as int), (i_l - i_r)))
+
+        4. Return (FIntV w bs)
+
+      2. Else Phantom#8
+
+    2. Else Phantom#9
+
+  3. Case (% matches pattern `FBitV%%`)
+
+    1. (Let (FBitV w bs_l) be val)
+
+    2. If ((val' matches pattern `FBitV%%`)), then
+
+      1. (Let (FBitV w' bs_r) be val')
+
+      2. If ((w = w')), then
+
+        1. (Let i_l be $to_int((w as int), bs_l))
+
+        2. (Let i_r be $to_int((w as int), bs_r))
+
+        3. (Let bs be $to_bitstr((w as int), (i_l - i_r)))
+
+        4. Return (FBitV w bs)
+
+      2. Else Phantom#10
+
+    2. Else Phantom#11
+
+1. Else Phantom#12
+
+;; spec-mini/2d1-runtime-numerics.watsup:59.1-59.29
+def $bin_shl(val, val')
+
+1. Case analysis on val
+
+  1. Case (% matches pattern `IntV%`)
+
+    1. (Let (IntV i_l) be val)
+
+    2. Case analysis on val'
+
+      1. Case (% matches pattern `IntV%`)
+
+        1. (Let (IntV i_r) be val')
+
+        2. Return (IntV $shl(i_l, i_r))
+
+      2. Case (% matches pattern `FIntV%%`)
+
+        1. (Let (FIntV w_r bs_r) be val')
+
+        2. (Let i_r be $to_int((w_r as int), bs_r))
+
+        3. Return (IntV $shl(i_l, i_r))
+
+      3. Case (% matches pattern `FBitV%%`)
+
+        1. (Let (FBitV w_r bs_r) be val')
+
+        2. Return (IntV $shl(i_l, bs_r))
+
+    2. Else Phantom#13
+
+  2. Case (% matches pattern `FIntV%%`)
+
+    1. (Let (FIntV w_l bs_l) be val)
+
+    2. Case analysis on val'
+
+      1. Case (% matches pattern `IntV%`)
+
+        1. (Let (IntV i_r) be val')
+
+        2. (Let val_r be (FIntV w_l $to_int((w_l as int), i_r)))
+
+        3. Return $bin_shl((FIntV w_l bs_l), val_r)
+
+      2. Case (% matches pattern `FIntV%%`)
+
+        1. (Let (FIntV w_r bs_r) be val')
+
+        2. (Let i_l be $to_int((w_l as int), bs_l))
+
+        3. (Let i_r be $to_int((w_r as int), bs_r))
+
+        4. (Let i be $shl(i_l, i_r))
+
+        5. Return (FIntV w_l $to_bitstr((w_l as int), i))
+
+      3. Case (% matches pattern `FBitV%%`)
+
+        1. (Let (FBitV w_r bs_r) be val')
+
+        2. (Let i_l be $to_int((w_l as int), bs_l))
+
+        3. (Let i be $shl(i_l, bs_r))
+
+        4. Return (FIntV w_l $to_bitstr((w_l as int), i))
+
+    2. Else Phantom#14
+
+  3. Case (% matches pattern `FBitV%%`)
+
+    1. (Let (FBitV w_l bs_l) be val)
+
+    2. Case analysis on val'
+
+      1. Case (% matches pattern `IntV%`)
+
+        1. (Let (IntV i_r) be val')
+
+        2. (Let val_r be (FBitV w_l $to_int((w_l as int), i_r)))
+
+        3. Return $bin_shl((FBitV w_l bs_l), val_r)
+
+      2. Case (% matches pattern `FIntV%%`)
+
+        1. (Let (FIntV w_r bs_r) be val')
+
+        2. (Let i_r be $to_int((w_r as int), bs_r))
+
+        3. (Let i be $shl(bs_l, i_r))
+
+        4. Return (FBitV w_l $to_bitstr((w_l as int), i))
+
+      3. Case (% matches pattern `FBitV%%`)
+
+        1. (Let (FBitV w_r bs_r) be val')
+
+        2. (Let i be $shl(bs_l, bs_r))
+
+        3. Return (FBitV w_l $to_bitstr((w_l as int), i))
+
+    2. Else Phantom#15
+
+1. Else Phantom#16
+
+;; spec-mini/2d1-runtime-numerics.watsup:92.1-92.29
+def $bin_shr(val, val')
+
+1. Case analysis on val
+
+  1. Case (% matches pattern `IntV%`)
+
+    1. (Let (IntV i_l) be val)
+
+    2. Case analysis on val'
+
+      1. Case (% matches pattern `IntV%`)
+
+        1. (Let (IntV i_r) be val')
+
+        2. Return (IntV $shr(i_l, i_r))
+
+      2. Case (% matches pattern `FIntV%%`)
+
+        1. (Let (FIntV w_r bs_r) be val')
+
+        2. (Let i_r be $to_int((w_r as int), bs_r))
+
+        3. Return (IntV $shr(i_l, i_r))
+
+      3. Case (% matches pattern `FBitV%%`)
+
+        1. (Let (FBitV w_r bs_r) be val')
+
+        2. Return (IntV $shr(i_l, bs_r))
+
+    2. Else Phantom#17
+
+  2. Case (% matches pattern `FIntV%%`)
+
+    1. (Let (FIntV w_l bs_l) be val)
+
+    2. Case analysis on val'
+
+      1. Case (% matches pattern `IntV%`)
+
+        1. (Let (IntV i_r) be val')
+
+        2. (Let i_l be $to_int((w_l as int), bs_l))
+
+        3. If ((i_l < (0 as int))), then
+
+          1. (Let i be $shr_arith(bs_l, i_r, ($pow2(w_l) - (1 as int))))
+
+          2. Return (FIntV w_l $to_bitstr((w_l as int), i))
+
+        3. Else Phantom#18
+
+        4. If ((i_l >= (0 as int))), then
+
+          1. (Let i be $shr(bs_l, i_r))
+
+          2. Return (FIntV w_l $to_bitstr((w_l as int), i))
+
+        4. Else Phantom#19
+
+      2. Case (% matches pattern `FIntV%%`)
+
+        1. (Let (FIntV w_r bs_r) be val')
+
+        2. (Let i_l be $to_int((w_l as int), bs_l))
+
+        3. (Let i_r be $to_int((w_r as int), bs_r))
+
+        4. If ((i_l < (0 as int))), then
+
+          1. (Let i be $shr_arith(bs_l, i_r, ($pow2(w_l) - (1 as int))))
+
+          2. Return (FIntV w_l $to_bitstr((w_l as int), i))
+
+        4. Else Phantom#20
+
+        5. If ((i_l >= (0 as int))), then
+
+          1. (Let i be $shr(bs_l, i_r))
+
+          2. Return (FIntV w_l $to_bitstr((w_l as int), i))
+
+        5. Else Phantom#21
+
+      3. Case (% matches pattern `FBitV%%`)
+
+        1. (Let (FBitV w_r bs_r) be val')
+
+        2. (Let i_l be $to_int((w_l as int), bs_l))
+
+        3. If ((i_l < (0 as int))), then
+
+          1. (Let i be $shr_arith(bs_l, bs_r, ($pow2(w_l) - (1 as int))))
+
+          2. Return (FIntV w_l $to_bitstr((w_l as int), i))
+
+        3. Else Phantom#22
+
+        4. If ((i_l >= (0 as int))), then
+
+          1. (Let i be $shr(bs_l, bs_r))
+
+          2. Return (FIntV w_l $to_bitstr((w_l as int), i))
+
+        4. Else Phantom#23
+
+    2. Else Phantom#24
+
+  3. Case (% matches pattern `FBitV%%`)
+
+    1. (Let (FBitV w_l bs_l) be val)
+
+    2. Case analysis on val'
+
+      1. Case (% matches pattern `IntV%`)
+
+        1. (Let (IntV i_r) be val')
+
+        2. (Let val_r be (FBitV w_l $to_int((w_l as int), i_r)))
+
+        3. Return $bin_shr((FBitV w_l bs_l), val_r)
+
+      2. Case (% matches pattern `FIntV%%`)
+
+        1. (Let (FIntV w_r bs_r) be val')
+
+        2. (Let i_r be $to_int((w_r as int), bs_r))
+
+        3. (Let i be $shr(bs_l, i_r))
+
+        4. Return (FBitV w_l $to_bitstr((w_l as int), i))
+
+      3. Case (% matches pattern `FBitV%%`)
+
+        1. (Let (FBitV w_r bs_r) be val')
+
+        2. (Let i be $shr(bs_l, bs_r))
+
+        3. Return (FBitV w_l $to_bitstr((w_l as int), i))
+
+    2. Else Phantom#25
+
+1. Else Phantom#26
+
+;; spec-mini/2e-runtime-env.watsup:5.16-5.28
+syntax frame = map<id, typ>
+
+;; spec-mini/2e-runtime-env.watsup:7.1-7.25
+def $empty_frame
+
+1. Return $empty_map<id, typ>
+
+;; spec-mini/2e-runtime-env.watsup:10.15-10.28
+syntax tenv = map<tid, typ>
+
+;; spec-mini/2e-runtime-env.watsup:12.1-12.23
+def $empty_tenv
+
+1. Return $empty_map<tid, typ>
+
+;; spec-mini/2e-runtime-env.watsup:15.15-15.32
+syntax fenv = map<fid, functyp>
+
+;; spec-mini/2e-runtime-env.watsup:17.1-17.23
+def $empty_fenv
+
+1. Return $empty_map<fid, functyp>
+
+;; spec-mini/3-syntax-il.watsup:5.16-5.19
+syntax numIL = num
+
+;; spec-mini/3-syntax-il.watsup:15.15-15.17
+syntax idIL = id
+
+;; spec-mini/3-syntax-il.watsup:21.19-21.23
+syntax memberIL = idIL
+
+;; spec-mini/3-syntax-il.watsup:27.18-27.23
+syntax binopIL = binop
+
+;; spec-mini/3-syntax-il.watsup:33.16-33.19
+syntax dirIL = dir
+
+;; spec-mini/3-syntax-il.watsup:39.17-39.20
+syntax typeIL = typ
+
+;; spec-mini/3-syntax-il.watsup:45.18-45.40
+syntax paramIL = 
+   | `%%%%`(idIL, dirIL, typeIL, val?)
+
+;; spec-mini/3-syntax-il.watsup:51.18-51.24
+syntax annotIL = 
+   | `(%)`(typ)
+
+;; spec-mini/3-syntax-il.watsup:53.1-58.37
+syntax exprIL = 
+   | `IntE%%`(int, annotIL)
+   | `FIntE%%%`(width, bits, annotIL)
+   | `FBitE%%%`(width, bits, annotIL)
+   | `NameE%%`(idIL, annotIL)
+   | `BinE%%%%`(binopIL, exprIL, exprIL, annotIL)
+   | `ExprAccE%%%`(exprIL, memberIL, annotIL)
+
+;; spec-mini/3-syntax-il.watsup:64.17-64.31
+syntax stmtIL = 
+   | `RetS%`(exprIL?)
+
+;; spec-mini/3-syntax-il.watsup:71.1-72.39
+syntax declIL = 
+   | `HeaderD%%`(idIL, (memberIL, typeIL)*)
+   | `FuncD%%%%`(idIL, typeIL, paramIL*, stmtIL*)
+
+;; spec-mini/3-syntax-il.watsup:78.20-78.27
+syntax programIL = declIL*
+
+;; spec-mini/4a1-typing-context.watsup:6.3-8.20
+syntax context = {`TENV%`(tenv), `FENV%`(fenv), `FRAMES%`(frame*)}
+
+;; spec-mini/4a1-typing-context.watsup:16.1-16.29
+def $empty_context
+
+1. Return {TENV $empty_tenv, FENV $empty_fenv, FRAMES [$empty_frame]}
+
+;; spec-mini/4a1-typing-context.watsup:26.1-27.23
+def $enter(C)
+
+1. Return C[FRAMES = $empty_frame :: C.FRAMES]
+
+;; spec-mini/4a1-typing-context.watsup:31.1-32.22
+def $exit(C)
+
+1. (Let frame* be C.FRAMES)
+
+2. If ((frame* matches pattern _ :: _)), then
+
+  1. (Let frame_h :: frame_t* be frame*)
+
+  2. Return C[FRAMES = frame_t*]
+
+2. Else Phantom#27
+
+;; spec-mini/4a1-typing-context.watsup:41.1-41.43
+def $add_frame(C, id, typ)
+
+1. (Let frame'* be C.FRAMES)
+
+2. If ((frame'* matches pattern _ :: _)), then
+
+  1. (Let frame_h :: frame_t* be frame'*)
+
+  2. If (~$in_set<id>(id, $dom_map<id, typ>(frame_h))), then
+
+    1. (Let frame_h' be $add_map<id, typ>(frame_h, id, typ))
+
+    2. (Let frame* be frame_h' :: frame_t*)
+
+    3. Return C[FRAMES = frame*]
+
+  2. Else Phantom#28
+
+2. Else Phantom#29
+
+;; spec-mini/4a1-typing-context.watsup:49.1-49.46
+def $add_frames(C, id*, typ*)
+
+1. Case analysis on id*
+
+  1. Case (% matches pattern [])
+
+    1. If ((typ* matches pattern [])), then
+
+      1. Return C
+
+    1. Else Phantom#30
+
+  2. Case (% matches pattern _ :: _)
+
+    1. (Let id_h :: id_t* be id*)
+
+    2. If ((typ* matches pattern _ :: _)), then
+
+      1. (Let typ_h :: typ_t* be typ*)
+
+      2. (Let C' be $add_frame(C, id_h, typ_h))
+
+      3. (Let C'' be $add_frames(C', id_t*, typ_t*))
+
+      4. Return C''
+
+    2. Else Phantom#31
+
+;; spec-mini/4a1-typing-context.watsup:57.1-57.44
+def $add_param(C, pt)
+
+1. (Let (id dir typ val?) be pt)
+
+2. If ((dir matches pattern `NO`)), then
+
+  1. (Let C' be $add_frame(C, id, typ))
+
+  2. Return C'
+
+2. Else Phantom#32
+
+3. (Let C' be $add_frame(C, id, typ))
+
+4. Return C'
+
+;; spec-mini/4a1-typing-context.watsup:66.1-66.46
+def $add_params(C, paramtyp*)
+
+1. Case analysis on paramtyp*
+
+  1. Case (% matches pattern [])
+
+    1. Return C
+
+  2. Case (% matches pattern _ :: _)
+
+    1. (Let pt_h :: pt_t* be paramtyp*)
+
+    2. (Let C' be $add_param(C, pt_h))
+
+    3. (Let C'' be $add_params(C', pt_t*))
+
+    4. Return C''
+
+;; spec-mini/4a1-typing-context.watsup:74.1-74.42
+def $add_typ(C, tid, typ)
+
+1. If (~$in_set<tid>(tid, $dom_map<tid, typ>(C.TENV))), then
+
+  1. (Let tenv be $add_map<tid, typ>(C.TENV, tid, typ))
+
+  2. Return C[TENV = tenv]
+
+1. Else Phantom#33
+
+;; spec-mini/4a1-typing-context.watsup:81.1-81.47
+def $add_func(C, fid, ft)
+
+1. If (~$in_set<fid>(fid, $dom_map<fid, functyp>(C.FENV))), then
+
+  1. (Let fenv be $add_map<fid, functyp>(C.FENV, fid, ft))
+
+  2. Return C[FENV = fenv]
+
+1. Else Phantom#34
+
+;; spec-mini/4a1-typing-context.watsup:91.1-91.37
+def $find_frames(C, id)
+
+1. (Let typ'? be $find_maps<id, typ>(C.FRAMES, id))
+
+2. If ((typ'? matches pattern (_))), then
+
+  1. (Let ?(typ) be typ'?)
+
+  2. Return ?(typ)
+
+2. Else Phantom#35
+
+;; spec-mini/4a1-typing-context.watsup:97.1-97.34
+def $find_typ(C, id)
+
+1. Return $find_map<tid, typ>(C.TENV, id)
+
+;; spec-mini/4a1-typing-context.watsup:102.1-102.40
+def $find_func(C, fid)
+
+1. Return $find_map<fid, functyp>(C.FENV, fid)
+
+;; spec-mini/4b-typing-relation.watsup:5.1-5.30
+def $typeof(exprIL)
+
+1. Case analysis on exprIL
+
+  1. Case (% matches pattern `FIntE%%%`)
+
+    1. (Let (FIntE _width _bits annotIL) be exprIL)
+
+    2. Return annotIL
+
+  2. Case (% matches pattern `FBitE%%%`)
+
+    1. (Let (FBitE _width _bits annotIL) be exprIL)
+
+    2. Return annotIL
+
+  3. Case (% matches pattern `NameE%%`)
+
+    1. (Let (NameE _idIL annotIL) be exprIL)
+
+    2. Return annotIL
+
+  4. Case (% matches pattern `BinE%%%%`)
+
+    1. (Let (BinE _binopIL _exprIL _exprIL' annotIL) be exprIL)
+
+    2. Return annotIL
+
+  5. Case (% matches pattern `ExprAccE%%%`)
+
+    1. (Let (ExprAccE _exprIL _memberIL annotIL) be exprIL)
+
+    2. Return annotIL
+
+1. Else Phantom#36
+
+;; spec-mini/4b-typing-relation.watsup:18.1-20.20
+relation Eval_static: C, exprIL
+
+1. Case analysis on exprIL
+
+  1. Case (% matches pattern `IntE%%`)
+
+    1. (Let (IntE i _annotIL) be exprIL)
+
+    2. Result in (IntV i)
+
+  2. Case (% matches pattern `FIntE%%%`)
+
+    1. (Let (FIntE width bits _annotIL) be exprIL)
+
+    2. Result in (FIntV width bits)
+
+  3. Case (% matches pattern `FBitE%%%`)
+
+    1. (Let (FBitE width bits _annotIL) be exprIL)
+
+    2. Result in (FBitV width bits)
+
+1. Else Phantom#37
+
+;; spec-mini/4b-typing-relation.watsup:27.1-29.20
+relation Type_ok: C, type
+
+1. Case analysis on type
+
+  1. Case (% matches pattern `IntT`)
+
+    1. Result in (IntT)
+
+  2. Case (% matches pattern `FIntT%`)
+
+    1. (Let (FIntT expr) be type)
+
+    2. (Expr_ok: C |- expr : exprIL)
+
+    3. (Eval_static: C |- exprIL ~> val)
+
+    4. (Let int be $get_int(val))
+
+    5. If ((int has type nat)), then
+
+      1. (Let w be (int as nat))
+
+      2. Result in (FIntT w)
+
+    5. Else Phantom#38
+
+  3. Case (% matches pattern `FBitT%`)
+
+    1. (Let (FBitT expr) be type)
+
+    2. (Expr_ok: C |- expr : exprIL)
+
+    3. (Eval_static: C |- exprIL ~> val)
+
+    4. (Let int be $get_int(val))
+
+    5. If ((int has type nat)), then
+
+      1. (Let w be (int as nat))
+
+      2. Result in (FBitT w)
+
+    5. Else Phantom#39
+
+  4. Case (% matches pattern `NameT%`)
+
+    1. (Let (NameT id) be type)
+
+    2. (Let typ'? be $find_typ(C, id))
+
+    3. If ((typ'? matches pattern (_))), then
+
+      1. (Let ?(typ) be typ'?)
+
+      2. Result in typ
+
+    3. Else Phantom#40
+
+;; spec-mini/4b-typing-relation.watsup:39.1-41.20
+relation Expr_ok: C, expr
+
+1. Case analysis on expr
+
+  1. Case (% matches pattern `NumE%`)
+
+    1. (Let (NumE num) be expr)
+
+    2. Case analysis on num
+
+      1. Case (% matches pattern `INT%`)
+
+        1. (Let (INT i) be num)
+
+        2. Result in (IntE i (( (IntT) )))
+
+      2. Case (% matches pattern `FINT%%`)
+
+        1. (Let (FINT w i) be num)
+
+        2. (Let bs be $to_bitstr((w as int), i))
+
+        3. Result in (FIntE w bs (( (FIntT w) )))
+
+      3. Case (% matches pattern `FBIT%%`)
+
+        1. (Let (FBIT w i) be num)
+
+        2. (Let bs be $to_bitstr((w as int), i))
+
+        3. Result in (FBitE w bs (( (FBitT w) )))
+
+  2. Case (% matches pattern `NameE%`)
+
+    1. (Let (NameE id) be expr)
+
+    2. (Let typ'? be $find_frames(C, id))
+
+    3. If ((typ'? matches pattern (_))), then
+
+      1. (Let ?(typ) be typ'?)
+
+      2. Result in (NameE id (( typ )))
+
+    3. Else Phantom#41
+
+  3. Case (% matches pattern `BinE%%%`)
+
+    1. (Let (BinE binop expr_l expr_r) be expr)
+
+    2. Case analysis on binop
+
+      1. Case (% is in [(PLUS), (MINUS)])
+
+        1. (Expr_ok: C |- expr_l : exprIL_l)
+
+        2. (Expr_ok: C |- expr_r : exprIL_r)
+
+        3. (Let (( typ_l )) be $typeof(exprIL_l))
+
+        4. (Let (( typ_r )) be $typeof(exprIL_r))
+
+        5. If ($compatible_plusminusmult(typ_l, typ_r)), then
+
+          1. Result in (BinE binop exprIL_l exprIL_r (( typ_l )))
+
+        5. Else Phantom#42
+
+      2. Case (% is in [(SHL), (SHR)])
+
+        1. (Expr_ok: C |- expr_l : exprIL_l)
+
+        2. (Expr_ok: C |- expr_r : exprIL_r)
+
+        3. (Let (( typ_l )) be $typeof(exprIL_l))
+
+        4. (Let (( typ_r )) be $typeof(exprIL_r))
+
+        5. If ($compatible_shift(typ_l, typ_r)), then
+
+          1. If ((($is_intt(typ_r) \/ $is_fintt(typ_r)) => $is_ctk_non_neg(C, exprIL_r))), then
+
+            1. Result in (BinE binop exprIL_l exprIL_r (( typ_l )))
+
+          1. Else Phantom#43
+
+        5. Else Phantom#44
+
+    2. Else Phantom#45
+
+  4. Case (% matches pattern `ExprAccE%%`)
+
+    1. (Let (ExprAccE expr_b member) be expr)
+
+    2. (Expr_ok: C |- expr_b : exprIL_b)
+
+    3. (Let (( typ_b )) be $typeof(exprIL_b))
+
+    4. (Let typ' be typ_b)
+
+    5. If ((typ' matches pattern `HeaderT%%`)), then
+
+      1. (Let (HeaderT id_h (member_h, typ_h)*) be typ')
+
+      2. (Let typ''? be $assoc_<member, typ>(member, (member_h, typ_h)*))
+
+      3. If ((typ''? matches pattern (_))), then
+
+        1. (Let ?(typ) be typ''?)
+
+        2. Result in (ExprAccE exprIL_b member (( typ )))
+
+      3. Else Phantom#46
+
+    5. Else Phantom#47
+
+;; spec-mini/4b-typing-relation.watsup:46.18-46.31
+syntax blkctxt = 
+   | `INIT`()
+   | `NOINIT`()
+
+;; spec-mini/4b-typing-relation.watsup:47.1-49.23
+relation Block_ok: C, blkctxt, stmt*
+
+1. Case analysis on blkctxt
+
+  1. Case (% matches pattern `INIT`)
+
+    1. (Stmts_ok: C |- stmt* : C' stmtIL*)
+
+    2. Result in C', stmtIL*
+
+  2. Case (% matches pattern `NOINIT`)
+
+    1. (Let C' be $enter(C))
+
+    2. (Stmts_ok: C' |- stmt* : C'' stmtIL*)
+
+    3. (Let C''' be $exit(C''))
+
+    4. Result in C''', stmtIL*
+
+;; spec-mini/4b-typing-relation.watsup:50.1-52.20
+relation Stmt_ok: C, stmt'
+
+1. If ((stmt' = (RetS ?()))), then
+
+  1. Result in C, (RetS ?())
+
+1. Else Phantom#48
+
+2. (Let (RetS expr'?) be stmt')
+
+3. If ((expr'? matches pattern (_))), then
+
+  1. (Let ?(expr) be expr'?)
+
+  2. (Expr_ok: C |- expr : exprIL)
+
+  3. Result in C, (RetS ?(exprIL))
+
+3. Else Phantom#49
+
+;; spec-mini/4b-typing-relation.watsup:53.1-55.20
+relation Stmts_ok: C, stmt*
+
+1. Case analysis on stmt*
+
+  1. Case (% matches pattern [])
+
+    1. Result in C, []
+
+  2. Case (% matches pattern _ :: _)
+
+    1. (Let stmt_h :: stmt_t* be stmt*)
+
+    2. (Stmt_ok: C |- stmt_h : C' stmtIL_h)
+
+    3. (Stmts_ok: C' |- stmt_t* : C'' stmtIL_t*)
+
+    4. Result in C'', stmtIL_h :: stmtIL_t*
+
+;; spec-mini/4b-typing-relation.watsup:59.1-61.20
+relation Param_ok: C, (id dir type expr''?)
+
+1. Case analysis on expr''?
+
+  1. Case (% matches pattern (_))
+
+    1. (Let ?(expr) be expr''?)
+
+    2. (Type_ok: C |- type : typ_p)
+
+    3. (Expr_ok: C |- expr : exprIL_e)
+
+    4. (Let (( typ_e )) be $typeof(exprIL_e))
+
+    5. (Eval_static: C |- exprIL_e ~> val)
+
+    6. Result in (id dir typ_p ?(val))
+
+  2. Case (% matches pattern ())
+
+    1. (Type_ok: C |- type : typ_p)
+
+    2. Result in (id dir typ_p ?())
+
+;; spec-mini/4b-typing-relation.watsup:65.1-67.20
+relation Decl_ok: C, decl
+
+1. Case analysis on decl
+
+  1. Case (% matches pattern `HeaderD%%`)
+
+    1. (Let (HeaderD id (member_f, type_f)*) be decl)
+
+    2. (Type_ok: C |- type_f : typ_f)*
+
+    3. (Let typ_h be (HeaderT id (member_f, typ_f)*))
+
+    4. (Let C'' be $add_typ(C, id, typ_h))
+
+    5. Result in C'', (HeaderD id (member_f, typ_f)*)
+
+  2. Case (% matches pattern `FuncD%%%%`)
+
+    1. (Let (FuncD id type_r param* stmt*) be decl)
+
+    2. (Param_ok: C |- param : paramIL)*
+
+    3. (Let C' be $add_params(C, (paramIL* as paramtyp*)))
+
+    4. (Type_ok: C' |- type_r : typ_r)
+
+    5. (Block_ok: C' (INIT) |- stmt* : C'' stmtIL*)
+
+    6. (Let ft be (FuncT (paramIL* as paramtyp*) typ_r))
+
+    7. (Let C''' be $add_func(C'', id, ft))
+
+    8. Result in C'', (FuncD id typ_r paramIL* stmtIL*)
+
+;; spec-mini/4b-typing-relation.watsup:68.1-70.20
+relation Decls_ok: C, decl*
+
+1. Case analysis on decl*
+
+  1. Case (% matches pattern [])
+
+    1. Result in C, []
+
+  2. Case (% matches pattern _ :: _)
+
+    1. (Let decl_h :: decl_t* be decl*)
+
+    2. (Decl_ok: C |- decl_h : C' declIL_h)
+
+    3. (Decls_ok: C' |- decl_t* : C'' declIL_t*)
+
+    4. Result in C'', declIL_h :: declIL_t*
+
+;; spec-mini/4b-typing-relation.watsup:74.1-76.17
+relation Prog_ok: decl*
+
+1. (Let C be $empty_context)
+
+2. (Decls_ok: C |- decl* : C' declIL*)
+
+3. Result in C', declIL*
+
+;; spec-mini/4c-typing-static-eval.watsup:14.1-14.44
+def $is_ctk_non_neg(C, exprIL)
+
+1. (Eval_static: C |- exprIL ~> val)
+
+2. Return ($get_int(val) >= (0 as int))
+
+;; spec-mini/4e-typing-expr.watsup:28.1-28.47
+def $compatible_plusminusmult(typ'', typ''')
+
+1. Case analysis on typ''
+
+  1. Case (% matches pattern `FIntT%`)
+
+    1. (Let (FIntT w) be typ'')
+
+    2. If ((typ''' matches pattern `FIntT%`)), then
+
+      1. (Let (FIntT w') be typ''')
+
+      2. If ((w = w')), then
+
+        1. Return true
+
+  2. Case (% matches pattern `FBitT%`)
+
+    1. (Let (FBitT w) be typ'')
+
+    2. If ((typ''' matches pattern `FBitT%`)), then
+
+      1. (Let (FBitT w') be typ''')
+
+      2. If ((w = w')), then
+
+        1. Return true
+
+2. Otherwise
+
+  1. Return false
+
+;; spec-mini/4e-typing-expr.watsup:47.1-47.39
+def $compatible_shift(typ'', typ''')
+
+1. Case analysis on typ''
+
+  1. Case (% matches pattern `IntT`)
+
+    1. Case analysis on typ'''
+
+      1. Case (% matches pattern `IntT`)
+
+        1. Return true
+
+      2. Case (% matches pattern `FIntT%`)
+
+        1. (Let (FIntT _width) be typ''')
+
+        2. Return true
+
+      3. Case (% matches pattern `FBitT%`)
+
+        1. (Let (FBitT _width) be typ''')
+
+        2. Return true
+
+    1. Else Phantom#50
+
+  2. Case (% matches pattern `FIntT%`)
+
+    1. (Let (FIntT _width) be typ'')
+
+    2. Case analysis on typ'''
+
+      1. Case (% matches pattern `IntT`)
+
+        1. Return true
+
+      2. Case (% matches pattern `FIntT%`)
+
+        1. (Let (FIntT _width') be typ''')
+
+        2. Return true
+
+      3. Case (% matches pattern `FBitT%`)
+
+        1. (Let (FBitT _width') be typ''')
+
+        2. Return true
+
+    2. Else Phantom#51
+
+  3. Case (% matches pattern `FBitT%`)
+
+    1. (Let (FBitT _width) be typ'')
+
+    2. Case analysis on typ'''
+
+      1. Case (% matches pattern `IntT`)
+
+        1. Return true
+
+      2. Case (% matches pattern `FIntT%`)
+
+        1. (Let (FIntT _width') be typ''')
+
+        2. Return true
+
+      3. Case (% matches pattern `FBitT%`)
+
+        1. (Let (FBitT _width') be typ''')
+
+        2. Return true
+
+    2. Else Phantom#52
+
+1. Else Phantom#53
+
+2. Return false

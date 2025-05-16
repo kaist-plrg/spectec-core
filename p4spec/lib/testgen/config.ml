@@ -15,13 +15,13 @@ let samples_close_miss = 3
 let samples_related_vid = 3
 
 (* Max number of close-ASTs per seed *)
-let samples_derivation_source = 3
+let samples_derivation_source = 15
 
 (* Max number of mutation trials per close-AST *)
 let trials_mutation = 3
 
 (* Trials per seed *)
-let trials_seed = 10
+let trials_seed = 45
 
 (* Timeout per seed *)
 let timeout_seed = 30
@@ -74,6 +74,7 @@ type seed = { mutable cover : MCov.Cover.t }
 (* Configuration for the fuzz campaign *)
 
 type t = {
+  mini : bool;
   rand : int;
   modes : Modes.t;
   specenv : specenv;
@@ -184,11 +185,11 @@ let init_storage (dirname_gen : string) : storage =
 
 let init_seed (cover : MCov.Cover.t) : seed = { cover }
 
-let init (randseed : int option) (modes : Modes.t) (specenv : specenv)
-    (storage : storage) (seed : seed) =
+let init ?(mini : bool = false) (randseed : int option) (modes : Modes.t)
+    (specenv : specenv) (storage : storage) (seed : seed) =
   let rand = Option.value ~default:2025 randseed in
   Random.init rand;
-  { rand; modes; specenv; storage; seed }
+  { mini; rand; modes; specenv; storage; seed }
 
 (* Seed updater *)
 
@@ -223,7 +224,7 @@ let update_close_miss_seed (config : t) (filename_p4 : string)
       (fun pid_close_miss cover_seed ->
         let branch = MCov.Cover.find pid_close_miss cover_seed in
         let branch =
-          MCov.Branch.{ branch with status = Miss ([ filename_p4 ]) }
+          MCov.Branch.{ branch with status = Miss [ filename_p4 ] }
         in
         MCov.Cover.add pid_close_miss branch cover_seed)
       pids_close_miss cover_seed

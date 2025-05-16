@@ -1,0 +1,19 @@
+;;
+;; Static evaluation of expressions that are local compile-time known
+;;
+
+rule Eval_static/inte:
+  C |- IntE i _ ~> IntV i
+
+rule Eval_static/finte:
+  C |- FIntE w bs _ ~> FIntV w bs
+
+rule Eval_static/fbite:
+  C |- FBitE w bs _ ~> FBitV w bs
+
+dec $is_ctk_non_neg(context, exprIL) : bool
+def $is_ctk_non_neg(C, IntE i _) = $(i >= 0)
+def $is_ctk_non_neg(C, FIntE w bs _) = $($to_int(w, bs) >= 0)
+def $is_ctk_non_neg(C, FBitE w bs _) = $(bs >= 0)
+def $is_ctk_non_neg(C, _) = false
+  -- otherwise

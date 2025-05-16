@@ -1,0 +1,37 @@
+/* depth: 3, vid: 22 */ "hdr"
+/* depth: 3, vid: 34 */ "src"
+/* depth: 3, vid: 35 */ (ExprAccE (NameE "hdr") "src")
+/* depth: 3, vid: 38 */ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))))
+/* depth: 3, vid: 40 */ (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ])
+/* depth: 3, vid: 41 */ [ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ]),
+  (FuncD "f" (FBitT (NumE (INT +32))) [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ] [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]) ]
+/* depth: 4, vid: 0 */ "Hdr"
+/* depth: 4, vid: 5 */ (FBitT (NumE (INT +32)))
+/* depth: 4, vid: 8 */ (HeaderD "Hdr" [ ("src", (FBitT (NumE (INT +32)))) ])
+/* depth: 4, vid: 14 */ "x"
+/* depth: 4, vid: 23 */ (IN)
+/* depth: 4, vid: 25 */ (NameT "Hdr")
+/* depth: 4, vid: 27 */ ("hdr" (IN) (NameT "Hdr") None)
+/* depth: 4, vid: 32 */ "hdr"
+/* depth: 4, vid: 33 */ (NameE "hdr")
+/* depth: 4, vid: 36 */ (BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src"))
+/* depth: 4, vid: 39 */ [ (RetS Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))) ]
+/* depth: 5, vid: 1 */ "src"
+/* depth: 5, vid: 2 */ +32
+/* depth: 5, vid: 6 */ ("src", (FBitT (NumE (INT +32))))
+/* depth: 5, vid: 15 */ (IN)
+/* depth: 5, vid: 19 */ (FBitT (NumE (INT +32)))
+/* depth: 5, vid: 21 */ ("x" (IN) (FBitT (NumE (INT +32))) None)
+/* depth: 5, vid: 28 */ [ ("x" (IN) (FBitT (NumE (INT +32))) None),
+  ("hdr" (IN) (NameT "Hdr") None) ]
+/* depth: 5, vid: 37 */ Some((BinE (SHL) (NameE "x") (ExprAccE (NameE "hdr") "src")))
+/* depth: 6, vid: 3 */ (INT +32)
+/* depth: 6, vid: 7 */ [ ("src", (FBitT (NumE (INT +32)))) ]
+/* depth: 6, vid: 16 */ +32
+/* depth: 7, vid: 4 */ (NumE (INT +32))
+/* depth: 7, vid: 17 */ (INT +32)
+/* depth: 7, vid: 30 */ "x"
+/* depth: 7, vid: 31 */ (NameE "x")
+/* depth: 8, vid: 18 */ (NumE (INT +32))

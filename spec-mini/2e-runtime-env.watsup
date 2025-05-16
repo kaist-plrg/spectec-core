@@ -1,0 +1,18 @@
+;;
+;; Environments
+;;
+
+syntax frame = map<id, typ>
+
+dec $empty_frame : frame
+def $empty_frame = $empty_map<id, typ>
+
+syntax tenv = map<tid, typ>
+
+dec $empty_tenv : tenv
+def $empty_tenv = $empty_map<tid, typ>
+
+syntax fenv = map<fid, functyp>
+
+dec $empty_fenv : fenv
+def $empty_fenv = $empty_map<fid, functyp>

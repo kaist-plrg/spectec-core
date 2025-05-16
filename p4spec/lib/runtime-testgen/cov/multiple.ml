@@ -90,8 +90,7 @@ let is_close_miss (cover : Cover.t) (pid : pid) : bool =
   let branch = Cover.find pid cover in
   match branch.status with
   | Hit _ -> false
-  | Miss (filenames) ->
-      List.length filenames > 0
+  | Miss filenames -> List.length filenames > 0
 
 (* Measuring coverage *)
 

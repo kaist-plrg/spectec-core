@@ -18,6 +18,7 @@ and eq_guard (guard_a : guard) (guard_b : guard) : bool =
       cmpop_a = cmpop_b && optyp_a = optyp_b && Sl.Eq.eq_exp exp_a exp_b
   | SubG typ_a, SubG typ_b -> Sl.Eq.eq_typ typ_a typ_b
   | MatchG pattern_a, MatchG pattern_b -> Sl.Eq.eq_pattern pattern_a pattern_b
+  | MemG exp_a, MemG exp_b -> Sl.Eq.eq_exp exp_a exp_b
   | _ -> false
 
 (* Instructions *)

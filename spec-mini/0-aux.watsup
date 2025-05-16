@@ -1,0 +1,131 @@
+;;
+;; Metavariables for int, nat, bool, and text
+;;
+
+var b : bool
+
+var i : int
+
+var n : nat
+var w : nat
+
+var t : text
+
+;;
+;; General nat functions
+;;
+
+dec $sum(nat*) : nat
+dec $max(nat*) : nat
+dec $min(nat*) : nat
+
+;;
+;; General text functions
+;;
+
+dec $int_to_text(int) : text
+    hint(show %)
+
+dec $concat_text(text*) : text
+    hint(show %)
+
+def $concat_text(eps) = ""
+def $concat_text(t :: t'*) = t ++ $concat_text(t'*)
+
+dec $strip_prefix(text, text) : text
+dec $strip_suffix(text, text) : text
+
+;;
+;; General sequence functions
+;;
+
+dec $init_(nat) : nat*
+def $init_(0) = eps
+def $init_(n) = $(n - 1) :: $init_($(n - 1))
+  -- otherwise
+
+dec $repeat_<X>(X, nat) : X*
+    ;;hint(show %2^%3)
+def $repeat_<X>(X, 0) = eps
+def $repeat_<X>(X, n) = X ++ $repeat_<X>(X, $(n - 1))
+  -- otherwise
+
+dec $rev_<X>(X*) : X*
+    hint(show REVERSE %2)
+
+dec $concat_<X>((X*)*) : X*
+    hint(show (++) %2)
+
+dec $partition_<X>(X*, nat) : (X*, X*)
+
+dec $assoc_<X, Y>(X, (X, Y)*) : Y?
+    hint(show %2`[%1])
+
+dec $distinct_<K>(K*) : bool
+    hint(show %2 $distinct)
+
+;;
+;; General set functions
+;;
+
+syntax set<K> = `{ K* }
+
+dec $empty_set<K> : set<K>
+    hint(show %latex("\\{") %latex("\\}"))
+def $empty_set<K> = `{ eps }
+
+dec $in_set<K>(K, set<K>) : bool
+    hint(show %2 %latex("\\in") %3)
+def $in_set<K>(K, `{ K'* }) = K <- K'*
+
+dec $intersect_set<K>(set<K>, set<K>) : set<K>
+    hint(show %2 %latex("\\cap") %3)
+
+dec $union_set<K>(set<K>, set<K>) : set<K>
+    hint(show %2 %latex("\\cup") %3)
+
+dec $unions_set<K>(set<K>*) : set<K>
+    hint(show %latex("\\bigcup") %2)
+
+dec $diff_set<K>(set<K>, set<K>) : set<K>
+    hint(show %2 %latex("\\setminus") %3)
+
+dec $sub_set<K>(set<K>, set<K>) : bool
+    hint(show %2 %latex("\\subset") %3)
+
+dec $eq_set<K>(set<K>, set<K>) : bool
+    hint(show %2 %latex("=") %3)
+
+;;
+;; General map functions
+;;
+
+syntax pair<K, V> = K -> V
+
+;; (TODO) parser fails to recognize set<pair<K, V>>
+syntax map<K, V> = set< pair<K, V> >
+
+dec $empty_map<K, V> : map<K, V>
+    hint(show %latex("\\{") %latex("\\}"))
+
+def $empty_map<K, V> = `{ eps }
+
+dec $dom_map<K, V>(map<K, V>) : set<K>
+    hint(show %latex("\\texttt{Dom}(")#%3#%latex(")"))
+
+def $dom_map<K, V>(`{ (K -> V)* }) = `{ K* }
+
+dec $find_map<K, V>(map<K, V>, K) : V?
+    hint(show %3#`[%4]?)
+
+dec $find_maps<K, V>(map<K, V>*, K) : V?
+    hint(show %3#`[%4]?)
+
+dec $add_map<K, V>(map<K, V>, K, V) : map<K, V>
+    hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
+
+dec $adds_map<K, V>(map<K, V>, K*, V*) : map<K, V>
+    hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
+
+dec $update_map<K, V>(map<K, V>, K, V) : map<K, V>
+    hint(show %3#%latex("\\{") %4 %latex("\\mapsto") %5 %latex("\\}"))
