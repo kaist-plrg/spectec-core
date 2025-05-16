@@ -14,9 +14,6 @@ def union_coverage(coverage1: Coverage, coverage2: Coverage) -> Coverage:
     for origin in coverage1:
         for pid, entry in coverage1[origin].items():
             coverage_union[origin][pid] = union_entry(entry, coverage2[origin][pid])
-            print(
-                f"[UNION]:[#{pid}] merge {entry} and {coverage2[origin][pid]} -> {coverage_union[origin][pid]}"
-            )
     return coverage_union
 
 
