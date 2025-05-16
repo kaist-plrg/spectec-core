@@ -14,7 +14,7 @@ from coverage_utils import (
     write_reductions,
     log,
 )
-from reduce import reduce_program, reduce_from_coverage
+from reduce import reduce_program, reduce_from_coverage, reduce_likely_hits
 
 
 #
@@ -125,16 +125,12 @@ print(f"[CONFIG] P4CHERRY_PATH: {P4SPECTEC_DIR}")
 
 CORES: Union[int, None] = args.cores
 
-
 C_REDUCE_CONFIGS: CReduceConfigs = {
     "p4spectec_dir": P4SPECTEC_DIR,
     "cores": CORES,
     "timeout_interesting": args.timeout,
     "timeout_creduce": args.timeout_creduce,
 }
-#
-# Main fuzzing loop
-#
 
 loop_idx: int = 0
 
@@ -174,7 +170,7 @@ for origin in total_coverage:
 #
 #
 # 1) REDUCE: reducer takes the {total coverage} and reduces the smallest file for each close-missed phantom id,
-#   mutates: a {reductions file} containing the accumulated list of reductions per pid.
+#   writes: a {reductions file} containing the list of reductions done in this reduction.
 #   mutates: the {total coverage} with the filenames updated to their reduced versions.
 #   1-1) the reducer substitutes the original file for a target pid to the file newly reduced w.r.p the pid
 #   1-2) TARGETED: Close-miss programs in fuzzer coverage is cleared, and reduced files are added to their pids.
@@ -190,11 +186,12 @@ reduced_files_dir: Directory = Directory(os.path.join(WORK_DIR, "reduced"))
 while loop_idx < LOOPS:
     print(f"\n[DEBUG] === Starting loop{loop_idx} ===")
 
-    # === 1) REDUCE === 
+    # === 1) REDUCE ===
     name_reduce_campaign: str = f"reduce{loop_idx}"
     reduce_dir: Directory = Directory(os.path.join(WORK_DIR, name_reduce_campaign))
     os.makedirs(reduce_dir, exist_ok=True)
 
+    reductions = {}
     print(f"\n[DEBUG] === Starting reduce{loop_idx} ===")
     reduce_from_coverage(
         total_coverage,
@@ -270,7 +267,7 @@ while loop_idx < LOOPS:
     final_coverage = read_coverage(final_coverage_file)
 
     # 1-2) total coverage is updated with the new findings
-    total_coverage = union_coverage(total_coverage, fuzzer_coverage)
+    total_coverage = union_coverage(total_coverage, final_coverage)
     total_coverage_file: Filepath = Filepath(os.path.join(fuzz_dir, "total.coverage"))
     print(f"\n[DEBUG] === Writing merged coverage into {total_coverage_file} ===")
     write_coverage(total_coverage_file, total_coverage)
@@ -281,4 +278,19 @@ while loop_idx < LOOPS:
 # End of the fuzzing loop
 #
 
-# TODO: From the final coverage, reduce likely hits
+print(f"\n[DEBUG] === Starting reduce_final ===")
+reduce_dir = Directory(os.path.join(WORK_DIR, "reduce_final"))
+os.makedirs(reduce_dir, exist_ok=True)
+
+reduced_likely_hits_dir: Directory = Directory(os.path.join(WORK_DIR, "likely_hits"))
+os.makedirs(reduced_likely_hits_dir, exist_ok=True)
+
+reductions = {}
+reduce_likely_hits(
+    total_coverage, reductions, reduce_dir, reduced_likely_hits_dir, C_REDUCE_CONFIGS
+)
+
+print(f"\n[DEBUG] === Finished reduce_final with {len(reductions)} reductions ===")
+# log reductions
+reductions_file = Filepath(os.path.join(reduce_dir, "reduced.reductions"))
+write_reductions(reductions_file, reductions)

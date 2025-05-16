@@ -51,6 +51,7 @@ def reduce_program(
     cores: Optional[int],
     timeout: int = 10,
     timeout_creduce: int = 25,
+    fuzz_end: bool = False,
 ) -> Optional[Filepath]:
 
     interesting_dir: Directory = Directory(os.path.join(reduce_dir, "interesting"))
@@ -97,13 +98,18 @@ def reduce_program(
 
             orig_size: int = os.path.getsize(temp_path)
 
+            # final reduction reduces "ill-typed" "hits"
+            # all other reductions reduce "well-typed" "close-misses"
             with open(interesting_test_path, "w") as script_file:
                 script_file.write(
-                    f"""#!/bin/bash\nDIR=\"{p4spectec_dir}\"\n$DIR/p4spectec interesting $DIR/spec/*.watsup -pid {pid} -p ./{copy_name}"""
+                    f"""#!/bin/bash\nDIR=\"{p4spectec_dir}\"\n$DIR/p4spectec interesting {"" if fuzz_end else "-well -close"} $DIR/spec/*.watsup -pid {pid} -p ./{copy_name}"""
                 )
             os.chmod(interesting_test_path, 0o755)
 
-            log(f"Running creduce for pid={pid}, file={filename}", global_log_file)
+            log(
+                f"[START] Running creduce for pid={pid}, file={filename}",
+                global_log_file,
+            )
 
             creduce_command = ["creduce", "--not-c"]
             if cores:
@@ -137,7 +143,7 @@ def reduce_program(
 
             if os.path.exists(temp_path):
                 os.rename(temp_path, reduced_path)
-                log(f"Reduced file saved as {reduced_path}", global_log_file)
+                log(f"[DONE] file saved as {reduced_path}", global_log_file)
             else:
                 log(
                     f"No reduced file produced for {base_name} against {pid}",
@@ -147,10 +153,8 @@ def reduce_program(
 
             if os.path.exists(interesting_dir):
                 shutil.rmtree(interesting_dir)
-                log(f"Deleted {interesting_dir}", global_log_file)
             if os.path.exists(orig_path):
                 os.remove(orig_path)
-                log(f"Deleted original file {copy_name}.orig", global_log_file)
 
             return reduced_path
         except Exception as e:
@@ -217,6 +221,7 @@ def reduce_from_coverage(
                     creduce_configs["cores"],
                     creduce_configs["timeout_interesting"],
                     creduce_configs["timeout_creduce"],
+                    False,
                 )
                 if reducer_result is None:
                     log(
@@ -240,3 +245,49 @@ def reduce_from_coverage(
                 # update reductions
                 reductions.setdefault(pid, []).append(reduced_file)
     return None
+
+
+def reduce_likely_hits(
+    total_coverage: Coverage,
+    reductions: Reductions,
+    reduce_dir: Directory,
+    reduced_files_dir: Directory,
+    creduce_configs: CReduceConfigs,
+) -> None:
+    global_log_path: Filepath = Filepath(os.path.join(reduce_dir, "reducer.log"))
+    with open(global_log_path, "a") as global_log_file:
+        for origin in total_coverage:
+            for pid, (status, filenames) in total_coverage[origin].items():
+                if status != Status.HIT_LIKELY:
+                    continue
+
+                # Check if filenames are valid
+                filenames_valid: List[Filepath] = [
+                    Filepath(f) for f in filenames if os.path.isfile(f)
+                ]
+
+                # ALSO reduces already reduced files, as a clean up
+                for filename in filenames_valid:
+                    # reduce all unreduced files
+                    reducer_result: Optional[Filepath] = reduce_program(
+                        reduce_dir,
+                        reduced_files_dir,
+                        pid,
+                        filename,
+                        creduce_configs["p4spectec_dir"],
+                        creduce_configs["cores"],
+                        creduce_configs["timeout_interesting"],
+                        creduce_configs["timeout_creduce"],
+                        True,  # fuzz_end
+                    )
+                    if reducer_result is None:
+                        log(
+                            f"Failed to reduce {filename} for pid={pid}",
+                            global_log_file,
+                        )
+                        continue
+                    else:
+                        reduced_file: Filepath = Filepath(reducer_result)
+                    # update reductions
+                    reductions.setdefault(pid, []).append(reduced_file)
+        return None

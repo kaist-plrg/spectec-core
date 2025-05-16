@@ -2,6 +2,7 @@ from enum import Enum
 from datetime import datetime
 from typing import Dict, List, Tuple, TextIO, Union, NewType
 from typedefs import *
+import copy
 
 #
 # Coverage management
@@ -9,13 +10,13 @@ from typedefs import *
 
 
 def union_coverage(coverage1: Coverage, coverage2: Coverage) -> Coverage:
-    coverage_union: Coverage = coverage1.copy()
+    coverage_union: Coverage = copy.deepcopy(coverage1)
     for origin in coverage1:
         for pid, entry in coverage1[origin].items():
-            if origin in coverage2 and pid in coverage2[origin]:
-                coverage_union[origin][pid] = union_entry(entry, coverage2[origin][pid])
-            else:
-                coverage_union[origin][pid] = entry
+            coverage_union[origin][pid] = union_entry(entry, coverage2[origin][pid])
+            print(
+                f"[UNION]:[#{pid}] merge {entry} and {coverage2[origin][pid]} -> {coverage_union[origin][pid]}"
+            )
     return coverage_union
 
 
@@ -43,7 +44,7 @@ def union_entry(
         return (status1, files1)
 
     elif (status1 == Status.CLOSE_MISS or status1 == Status.COMPLETE_MISS) and (
-        status2 == Status.HIT_LIKELY or status1 == Status.HIT_UNLIKELY
+        status2 == Status.HIT_LIKELY or status2 == Status.HIT_UNLIKELY
     ):
         return (status2, files2)
 
