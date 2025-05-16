@@ -20,10 +20,6 @@ FILE_P4C_POS=$1
 FILE_P4C_NEG=$2
 FILE_P4C_ALL=$3
 
-# ./p4spectec cover-sl spec/*.watsup -i $DIR_INCLUDE -d $DIR_P4C_WELL -ignore $FILE_IGNORE_REL -ignore $FILE_IGNORE_FUNC -cov $FILE_P4C_POS
-# ./p4spectec cover-sl spec/*.watsup -i $DIR_INCLUDE -d $DIR_P4C_ILL -ignore $FILE_IGNORE_REL -ignore $FILE_IGNORE_FUNC -cov $FILE_P4C_NEG
-# ./p4spectec cover-sl spec/*.watsup -i $DIR_INCLUDE -d $DIR_P4C_WELL -d $DIR_P4C_ILL -ignore $FILE_IGNORE_REL -ignore $FILE_IGNORE_FUNC -cov $FILE_P4C_ALL
-
-./p4spectec cover-sl spec/*.watsup -i $DIR_INCLUDE -d $DIR_P4C_WELL -cov $FILE_P4C_POS
-./p4spectec cover-sl spec/*.watsup -i $DIR_INCLUDE -d $DIR_P4C_ILL -cov $FILE_P4C_NEG
-./p4spectec cover-sl spec/*.watsup -i $DIR_INCLUDE -d $DIR_P4C_WELL -d $DIR_P4C_ILL -cov $FILE_P4C_ALL
+./p4spectec cover-sl spec/*.watsup -i $DIR_INCLUDE -d $DIR_P4C_WELL -ignore $FILE_IGNORE_REL -ignore $FILE_IGNORE_FUNC -cov $FILE_P4C_POS
+./p4spectec cover-sl spec/*.watsup -i $DIR_INCLUDE -d $DIR_P4C_ILL -ignore $FILE_IGNORE_REL -ignore $FILE_IGNORE_FUNC -cov $FILE_P4C_NEG
+./p4spectec cover-sl spec/*.watsup -i $DIR_INCLUDE -d $DIR_P4C_WELL -d $DIR_P4C_ILL -ignore $FILE_IGNORE_REL -ignore $FILE_IGNORE_FUNC -cov $FILE_P4C_ALL
