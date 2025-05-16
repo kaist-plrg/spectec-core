@@ -216,9 +216,12 @@ let interesting_command =
      let open Core.Command.Param in
      let%map filenames_spec = anon (sequence ("filename" %: string))
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
-     and pid = flag "-pid" (required int) ~doc:"phantom id to close-miss"
+     and check_well_typed = flag "-well" no_arg ~doc:"'interesting' if well-typed (default: ill-typed)"
+     and check_close_miss = flag "-close" no_arg ~doc:"'interesting' if close-miss (default: hit)"
+     and pid = flag "-pid" (required int) ~doc:"phantom id to test"
      and filename_p4 = flag "-p" (required string) ~doc:"p4 file to typecheck"
      and dbg = flag "-dbg" no_arg ~doc:"print single coverage"
+
      and filenames_ignore =
        flag "-ignore" (listed string)
          ~doc:"relations or functions to ignore when reporting coverage"
@@ -247,11 +250,57 @@ let interesting_command =
            | _ -> ()
          else ();
          match typing_result with
-         | IllTyped _ -> exit 1
-         | IllFormed _ -> exit 1
          | WellTyped (_, _, cover_single) -> (
+           if check_well_typed then (
              let branch = Interp_sl.Interp.SCov.Cover.find pid cover_single in
-             match branch.status with Miss [] -> exit 2 | _ -> exit 0)
+             match branch.status
+             with 
+             | Hit ->
+               Printf.printf "WellTyped: Hit\n";
+               if check_close_miss then (
+                 exit 3)
+               else (
+                 exit 0)
+             | Miss (_::_) ->
+               Printf.printf "WellTyped: Close\n";
+               if check_close_miss then (
+                 exit 0)
+               else (
+                 exit 2)
+             | Miss [] ->
+               Printf.printf "WellTyped: Miss\n";
+                 exit 1
+           )
+           else (
+             Printf.printf "WellTyped\n";
+             exit 11))
+         | IllTyped (_, _, cover_single) -> (
+             if check_well_typed then (
+               Printf.printf "IllTyped\n";
+               exit 10)
+             else (
+               let branch = Interp_sl.Interp.SCov.Cover.find pid cover_single in
+               match branch.status 
+               with 
+               | Hit ->
+                 Printf.printf "IllTyped: Hit\n";
+                 if check_close_miss then (
+                   exit 3)
+                 else (
+                   exit 0)
+               | Miss (_::_) ->
+                 Printf.printf "IllTyped: Close\n";
+                 if check_close_miss then (
+                   exit 0)
+                 else (
+                   exit 2)
+               | Miss [] ->
+                 Printf.printf "IllTyped: Miss\n";
+                 exit 1))
+         | IllFormed _ -> 
+           (
+             Printf.printf "IllFormed";
+             exit 12)
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
        | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
