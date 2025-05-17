@@ -31,6 +31,20 @@ let parse_command =
          if Util.Source.is_no_info info then Format.printf "Error: %s\n" msg
          else Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
 
+let parse_debug_command =
+  Command.basic ~summary:"parse a p4_16 program into OCaml ASt"
+    (let open Command.Let_syntax in
+     let open Command.Param in
+     let%map includes = flag "-i" (listed string) ~doc:"include paths"
+     and filename = anon ("file.p4" %: string) in
+     fun () ->
+       try
+         let program = parse includes filename in
+         Format.printf "%s\n" (El.Mp.mp_program program)
+       with ParseErr (msg, info) ->
+         if Util.Source.is_no_info info then Format.printf "Error: %s\n" msg
+         else Format.printf "Error: %a\n%s\n" Util.Source.pp info msg)
+
 let typecheck_command =
   Command.basic ~summary:"typecheck a p4_16 program"
     (let open Command.Let_syntax in
@@ -91,6 +105,7 @@ let command =
   Command.group ~summary:"p4cherry: an interpreter of the p4_16 language"
     [
       ("parse", parse_command);
+      ("parse-debug", parse_debug_command);
       ("typecheck", typecheck_command);
       ("instantiate", instantiate_command);
       ("run", run_command);
