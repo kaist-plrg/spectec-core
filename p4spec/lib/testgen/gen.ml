@@ -450,7 +450,7 @@ let fuzz_seeds (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
         (try fuzz_seed fuel pid config log query dirname_gen_tmp filename_p4
          with Timeout ->
            F.asprintf "[F %d] [P %d] Timeout on %s" fuel pid filename_p4
-           |> Logger.log config.modes.logmode log);
+           |> Logger.warn config.modes.logmode log);
         Unix.alarm 0 |> ignore))
     filenames_p4
 
@@ -471,7 +471,10 @@ let fuzz_phantom (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
     Rand.random_sample Config.samples_close_miss filenames_p4
   in
   (* Generate tests from the files *)
-  fuzz_seeds fuel pid config log query dirname_gen_tmp filenames_p4;
+  (try fuzz_seeds fuel pid config log query dirname_gen_tmp filenames_p4
+   with _ ->
+     F.asprintf "[F %d] [P %d] Unexpected error occurred" fuel pid
+     |> Logger.warn config.modes.logmode log);
   (* Remove the directory for the generated programs *)
   Filesys.rmdir dirname_gen_tmp
 

@@ -43,9 +43,7 @@ let run_typing_internal (spec : spec) (filename_p4 : string)
     in
     let ctx, _values = do_typing ctx spec value_program in
     WellTyped (ctx.graph, ctx.vid_program, !(ctx.cover))
-  with
-  | Util.Error.InterpError (at, msg) -> IllTyped (at, msg, !cover)
-  | _ -> IllTyped (no_region, "unknown error", !cover)
+  with Util.Error.InterpError (at, msg) -> IllTyped (at, msg, !cover)
 
 let run_typing' ?(mini : bool = false) ?(derive : bool = false) (spec : spec)
     (includes_p4 : string list) (filename_p4 : string) (ignores : IdSet.t) : res

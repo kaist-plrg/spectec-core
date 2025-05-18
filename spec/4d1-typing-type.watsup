@@ -26,6 +26,7 @@ rule Type_ok/fintt:
   -- if `(_; LCTK) = $annot(exprIL)
   -- Eval_static: p C |- exprIL ~> val
   -- if w = $get_num(val)
+  -- if $(w > 0)
 
 rule Type_ok/fbitt:
   p C |- FBitT expr : (FBitT w) eps

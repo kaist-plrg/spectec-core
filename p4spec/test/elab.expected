@@ -7749,7 +7749,7 @@ relation Type_ok: `%%|-%:%%`(cursor, context, type, typ, tid*)
    rule intt: `%%|-%:%%`(p, C, type, `IntT`_numtyp() as typ, [])
       -- if type matches `IntT`
 
-   ;; ../../../../spec/4d1-typing-type.watsup:23.1-28.26
+   ;; ../../../../spec/4d1-typing-type.watsup:23.1-29.17
    rule fintt: `%%|-%:%%`(p, C, type, `FIntT%`_numtyp(w) as typ, [])
       -- if type matches `FIntT%`
       -- let `FIntT%`_type(expr) = type
@@ -7760,8 +7760,9 @@ relation Type_ok: `%%|-%:%%`(cursor, context, type, typ, tid*)
       -- let int = $get_num(val)
       -- if int <: nat
       -- let w = int as nat
+      -- if (w > 0)
 
-   ;; ../../../../spec/4d1-typing-type.watsup:30.1-35.26
+   ;; ../../../../spec/4d1-typing-type.watsup:31.1-36.26
    rule fbitt: `%%|-%:%%`(p, C, type, `FBitT%`_numtyp(w) as typ, [])
       -- if type matches `FBitT%`
       -- let `FBitT%`_type(expr) = type
@@ -7773,7 +7774,7 @@ relation Type_ok: `%%|-%:%%`(cursor, context, type, typ, tid*)
       -- if int <: nat
       -- let w = int as nat
 
-   ;; ../../../../spec/4d1-typing-type.watsup:37.1-42.26
+   ;; ../../../../spec/4d1-typing-type.watsup:38.1-43.26
    rule vbitt: `%%|-%:%%`(p, C, type, `VBitT%`_numtyp(w) as typ, [])
       -- if type matches `VBitT%`
       -- let `VBitT%`_type(expr) = type
@@ -7785,7 +7786,7 @@ relation Type_ok: `%%|-%:%%`(cursor, context, type, typ, tid*)
       -- if int <: nat
       -- let w = int as nat
 
-   ;; ../../../../spec/4d1-typing-type.watsup:44.1-53.61
+   ;; ../../../../spec/4d1-typing-type.watsup:45.1-54.61
    rule stackt: `%%|-%:%%`(p, C, type', `SpecT%%`_abstyp(ptd, [typ]) as typ, tid_fresh*{tid_fresh <- tid_fresh*})
       -- if type' matches `StackT%%`
       -- let `StackT%%`_type(type, expr) = type'
@@ -7797,14 +7798,14 @@ relation Type_ok: `%%|-%:%%`(cursor, context, type, typ, tid*)
       -- let i_size = $get_num(val)
       -- let ptd = `PolyD%->%`_polytypdef((["T"], []), `StackT%%`_datatyp(`VarT%`_abstyp("T") as typ, i_size) as typ)
 
-   ;; ../../../../spec/4d1-typing-type.watsup:55.1-59.53
+   ;; ../../../../spec/4d1-typing-type.watsup:56.1-60.53
    rule listt: `%%|-%:%%`(p, C, type', `SpecT%%`_abstyp(ptd, [typ]) as typ, tid_fresh*{tid_fresh <- tid_fresh*})
       -- if type' matches `ListT%`
       -- let `ListT%`_type(type) = type'
       -- Type_ok: `%%|-%:%%`(p, C, type, typ, tid_fresh*{tid_fresh <- tid_fresh*})
       -- let ptd = `PolyD%->%`_polytypdef((["T"], []), `ListT%`_datatyp(`VarT%`_abstyp("T") as typ) as typ)
 
-   ;; ../../../../spec/4d1-typing-type.watsup:61.1-69.56
+   ;; ../../../../spec/4d1-typing-type.watsup:62.1-70.56
    rule tuplet: `%%|-%:%%`(p, C, type', `SpecT%%`_abstyp(ptd, typ*{typ <- typ*}) as typ, tid_fresh*{tid_fresh <- tid_fresh*})
       -- if type' matches `TupleT%`
       -- let `TupleT%`_type(type*{type <- type*}) = type'
@@ -7814,7 +7815,7 @@ relation Type_ok: `%%|-%:%%`(cursor, context, type, typ, tid*)
       -- (let tid = $concat_text(["T", $int_to_text(i_idx)]))*{i_idx <- i_idx*, tid <- tid*}
       -- let ptd = `PolyD%->%`_polytypdef((tid*{tid <- tid*}, []), `TupleT%`_datatyp(`VarT%`_abstyp(tid) as typ*{tid <- tid*}) as typ)
 
-   ;; ../../../../spec/4d1-typing-type.watsup:71.1-73.45
+   ;; ../../../../spec/4d1-typing-type.watsup:72.1-74.45
    rule namet-mono: `%%|-%:%%`(p, C, type, typ, [])
       -- if type matches `NameT%`
       -- let `NameT%`_type(name) = type
@@ -7824,7 +7825,7 @@ relation Type_ok: `%%|-%:%%`(cursor, context, type, typ, tid*)
       -- if typdef <: monotypdef
       -- let `MonoD%`_monotypdef(typ) = typdef as monotypdef
 
-   ;; ../../../../spec/4d1-typing-type.watsup:75.1-78.53
+   ;; ../../../../spec/4d1-typing-type.watsup:76.1-79.53
    rule namet-poly: `%%|-%:%%`(p, C, type, `SpecT%%`_abstyp(ptd, []) as typ, [])
       -- if type matches `NameT%`
       -- let `NameT%`_type(name) = type
@@ -7835,7 +7836,7 @@ relation Type_ok: `%%|-%:%%`(cursor, context, type, typ, tid*)
       -- let `PolyD%->%`_polytypdef((tparam*{tparam <- tparam*}, tparam_hidden*{tparam_hidden <- tparam_hidden*}), typ) = typdef as polytypdef
       -- let ptd = `PolyD%->%`_polytypdef((tparam*{tparam <- tparam*}, tparam_hidden*{tparam_hidden <- tparam_hidden*}), typ)
 
-   ;; ../../../../spec/4d1-typing-type.watsup:80.1-82.45
+   ;; ../../../../spec/4d1-typing-type.watsup:81.1-83.45
    rule spect-mono: `%%|-%:%%`(p, C, type', typ, [])
       -- if type' matches `SpecT%%`
       -- let `SpecT%%`_type(name, type*{type <- type*}) = type'
@@ -7846,7 +7847,7 @@ relation Type_ok: `%%|-%:%%`(cursor, context, type, typ, tid*)
       -- if typdef <: monotypdef
       -- let `MonoD%`_monotypdef(typ) = typdef as monotypdef
 
-   ;; ../../../../spec/4d1-typing-type.watsup:84.1-90.50
+   ;; ../../../../spec/4d1-typing-type.watsup:85.1-91.50
    rule spect-poly: `%%|-%:%%`(p, C, type', `SpecT%%`_abstyp(ptd, typ_a*{typ_a <- typ_a*}) as typ, tid_fresh*{tid_fresh <- tid_fresh*})
       -- if type' matches `SpecT%%`
       -- let `SpecT%%`_type(name, type*{type <- type*}) = type'
@@ -7859,7 +7860,7 @@ relation Type_ok: `%%|-%:%%`(cursor, context, type, typ, tid*)
       -- (Type_ok: `%%|-%:%%`(p, C, type, typ_a, tid_fresh_a*{tid_fresh_a <- tid_fresh_a*}))*{tid_fresh_a* <- tid_fresh_a**, typ_a <- typ_a*, type <- type*}
       -- let tid_fresh*{tid_fresh <- tid_fresh*} = $concat_<tid>(tid_fresh_a*{tid_fresh_a <- tid_fresh_a*}*{tid_fresh_a* <- tid_fresh_a**})
 
-   ;; ../../../../spec/4d1-typing-type.watsup:92.1-94.27
+   ;; ../../../../spec/4d1-typing-type.watsup:93.1-95.27
    rule anyt: `%%|-%:%%`(p, C, type, `VarT%`_abstyp(tid) as typ, [tid])
       -- if type matches `AnyT`
       -- let tid = $fresh_tid

@@ -165,7 +165,7 @@ Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/extern.p4
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/factory-err2.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/factory-err2.p4
-../../../../spec/4d1-typing-type.watsup:89.7-89.14: relation was not matched
+../../../../spec/4d1-typing-type.watsup:90.7-90.14: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/function1_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/function1_e.p4
@@ -970,7 +970,7 @@ Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/type-in-expr.p
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/type-params_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/type-params_e.p4
-../../../../spec/4d1-typing-type.watsup:89.7-89.14: relation was not matched
+../../../../spec/4d1-typing-type.watsup:90.7-90.14: relation was not matched
 
 >>> Running typing test on ../../../../p4/testdata/p4c/program/ill-typed/typecheck1_e.p4
 Error on typecheck: ../../../../p4/testdata/p4c/program/ill-typed/typecheck1_e.p4
