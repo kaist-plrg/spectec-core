@@ -1,3 +1,5 @@
+(include_subdirs qualified)
+
 (menhir
  (modules parser)
  (flags --no-stdlib --explain))
@@ -7,5 +9,4 @@
 
 (library
  (name p4frontend)
- (libraries core core_kernel core_unix p4surface p4lang p4el)
- (modules lexer parser preprocessor context parse transform))
+ (libraries core core_kernel core_unix p4surface p4lang p4el))
