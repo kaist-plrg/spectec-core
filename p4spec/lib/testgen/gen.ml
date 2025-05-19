@@ -591,8 +591,9 @@ let fuzz_typing_init ?(mini : bool = false) (spec : spec)
     coverage
   |> Logger.log modes.logmode log_init;
   F.asprintf
-    "[SAMPLE CLOSE MISS] %d [SAMPLE RELATED VID] %d [SAMPLE DERIVATION] %d \
-     [TRIALS MUTATION] %d [TRIALS SEED] %d [TIMEOUT SEED] %d"
+    "[SAMPLES_CLOSE_MISS] %d [SAMPLES_RELATED_VID] %d \
+     [SAMPLES_DERIVATION_SOURCE] %d [TRIALS_MUTATION] %d [TRIALS_SEED] %d \
+     [TIMEOUT_SEED] %d"
     Config.samples_close_miss Config.samples_related_vid
     Config.samples_derivation_source Config.trials_mutation Config.trials_seed
     Config.timeout_seed
