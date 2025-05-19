@@ -24,6 +24,7 @@ def fuzzing_campaign() -> None:
 
     os.setsid()  # only in main process, before any subprocesses are started
     pgid = os.getpid()
+
     #
     # Parse command-line arguments
     #
@@ -263,7 +264,7 @@ def fuzzing_campaign() -> None:
             "-seed",
             str(loop_idx),
             "-fuel",
-            "1",
+            "10",
             "-warm",
             fuzzer_coverage_file,
             "-name",
