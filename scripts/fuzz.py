@@ -24,16 +24,16 @@ def fuzzing_campaign() -> None:
 
     os.setsid()  # only in main process, before any subprocesses are started
     pgid = os.getpid()
-#
-# Parse command-line arguments
-#
+    #
+    # Parse command-line arguments
+    #
     parser = argparse.ArgumentParser(description="Fuzzer.")
 
-# Arguments for the campaign
+    # Arguments for the campaign
     parser.add_argument("dir", type=str, help="Path to the working directory")
     parser.add_argument("--loops", type=int, default=2, help="Fuzz loop count")
 
-# Arguments for SpecTec
+    # Arguments for SpecTec
     parser.add_argument(
         "--spec", type=str, default="spec", help="Spec directory for SpecTec"
     )
@@ -57,7 +57,7 @@ def fuzzing_campaign() -> None:
         help="Path to initial coverage data",
     )
 
-# Arguments for C-Reduce
+    # Arguments for C-Reduce
     parser.add_argument(
         "--cores",
         type=int,
@@ -77,21 +77,20 @@ def fuzzing_campaign() -> None:
     )
 
     parser.add_argument(
-        '--mode',
-        choices=['random', 'derive', 'hybrid'],
+        "--mode",
+        choices=["random", "derive", "hybrid"],
         required=True,
-        help="Mode for choosing close-AST"
+        help="Mode for choosing close-AST",
     )
 
-    parser.add_argument('--reduce', action='store_true', help="Reduce mode")
-
+    parser.add_argument("--reduce", action="store_true", help="Reduce mode")
 
     args, unknown_args = parser.parse_known_args()
 
-#
-# Configuration check
-#
-# Configure working directory
+    #
+    # Configuration check
+    #
+    # Configure working directory
     WORK_DIR: Directory = Directory(args.dir)
     if os.path.exists(WORK_DIR):
         print(f"Error: {WORK_DIR} already exists.")
@@ -105,7 +104,7 @@ def fuzzing_campaign() -> None:
         exit(1)
     print(f"[CONFIG] Loop count: {LOOPS}")
 
-# Configure SpecTec
+    # Configure SpecTec
     SPEC_DIR: str = args.spec
     if not os.path.isdir(SPEC_DIR):
         print(f"Error: Spec directory {SPEC_DIR} does not exist.")
@@ -131,9 +130,9 @@ def fuzzing_campaign() -> None:
         exit(1)
     print(f"[CONFIG] Coverage file: {COVERAGE_FILE}")
 
-# Configuring C-Reduce
+    # Configuring C-Reduce
 
-# P4CHERRY_PATH must be set
+    # P4CHERRY_PATH must be set
     if os.getenv("P4CHERRY_PATH") is None:
         print("Error: P4CHERRY_PATH environment variable is not set.")
         exit(1)
@@ -151,8 +150,8 @@ def fuzzing_campaign() -> None:
 
     loop_idx: int = 0
 
-# Template command for SpecTec,
-# goes without fuel, coverage file, and campaign name
+    # Template command for SpecTec,
+    # goes without fuel, coverage file, and campaign name
     spectec_command_template = [
         "./p4spectec",
         "testgen",
@@ -164,23 +163,22 @@ def fuzzing_campaign() -> None:
         "-gen",
         WORK_DIR,
     ]
-    if args.mode == 'random':
+    if args.mode == "random":
         spectec_command_template += ["-random"]
-    elif args.mode == 'hybrid':
+    elif args.mode == "hybrid":
         spectec_command_template += ["-hybrid"]
 
-# fuzzing campaign data structures
+    # fuzzing campaign data structures
     total_coverage: Coverage = read_coverage(COVERAGE_FILE)
     fuzzer_coverage: Coverage = {}
     reductions: Reductions = {}
-# fuzzing campaign hyperparameters
+    # fuzzing campaign hyperparameters
     MAX_REDUCTIONS_PER_PID: int = 0
-    TARGETED = False
     REDUCE = args.reduce
 
-#
-# partition the coverage into Close-misses(to reduce) and others
-#
+    #
+    # partition the coverage into Close-misses(to reduce) and others
+    #
 
     fuzzer_coverage = copy.deepcopy(total_coverage)
     for origin in total_coverage:
@@ -188,22 +186,22 @@ def fuzzing_campaign() -> None:
             if status == Status.CLOSE_MISS:
                 fuzzer_coverage[origin][pid] = (status, [])
 
-#
-# In the following loops,
-#
-#
-# 1) REDUCE: reducer takes the {total coverage} and reduces the smallest file for each close-missed phantom id,
-#   writes: a {reductions file} containing the list of reductions done in this reduction.
-#   mutates: the {total coverage} with the filenames updated to their reduced versions.
-#   1-1) the reducer substitutes the original file for a target pid to the file newly reduced w.r.p the pid
-#   1-2) TARGETED: Close-miss programs in fuzzer coverage is cleared, and reduced files are added to their pids.
-#   1-3) NON-TARGETED: Close-miss programs in fuzzer coverage is cleared.
-#       All reduced programs are treated as a new seed, and seed coverage is computed.
-#       This is then merged with the fuzzer coverage.
-#
-# 2) FUZZ: fuzzer takes {a fuzzer coverage} which holds the programs targeted for mutation (reduced programs only).
-#   and only mutates the programs in this list, writing {a fuzzer coverage} with any new findings through mutation.
-#   2-1) the {total coverage} is updated with the new findings with `union`.
+    #
+    # In the following loops,
+    #
+    #
+    # 1) REDUCE: reducer takes the {total coverage} and reduces the smallest file for each close-missed phantom id,
+    #   writes: a {reductions file} containing the list of reductions done in this reduction.
+    #   mutates: the {total coverage} with the filenames updated to their reduced versions.
+    #   1-1) the reducer substitutes the original file for a target pid to the file newly reduced w.r.p the pid
+    #   1-2) TARGETED: Close-miss programs in fuzzer coverage is cleared, and reduced files are added to their pids.
+    #   1-3) NON-TARGETED: Close-miss programs in fuzzer coverage is cleared.
+    #       All reduced programs are treated as a new seed, and seed coverage is computed.
+    #       This is then merged with the fuzzer coverage.
+    #
+    # 2) FUZZ: fuzzer takes {a fuzzer coverage} which holds the programs targeted for mutation (reduced programs only).
+    #   and only mutates the programs in this list, writing {a fuzzer coverage} with any new findings through mutation.
+    #   2-1) the {total coverage} is updated with the new findings with `union`.
 
     reduced_files_dir: Directory = Directory(os.path.join(WORK_DIR, "reduced"))
     while loop_idx < LOOPS:
@@ -212,7 +210,9 @@ def fuzzing_campaign() -> None:
         if REDUCE:
             # === 1) REDUCE ===
             name_reduce_campaign: str = f"reduce{loop_idx}"
-            reduce_dir: Directory = Directory(os.path.join(WORK_DIR, name_reduce_campaign))
+            reduce_dir: Directory = Directory(
+                os.path.join(WORK_DIR, name_reduce_campaign)
+            )
             os.makedirs(reduce_dir, exist_ok=True)
 
             reductions = {}
@@ -232,20 +232,27 @@ def fuzzing_campaign() -> None:
                 f"\n[DEBUG] === Finished reduce{loop_idx} with {len(reductions)} reductions ==="
             )
             # log reductions
-            reductions_file: Filepath = Filepath(os.path.join(reduce_dir, "reduced.reductions"))
+            reductions_file: Filepath = Filepath(
+                os.path.join(reduce_dir, "reduced.reductions")
+            )
             write_reductions(reductions_file, reductions)
 
-
             # Write the resulting fuzzer coverage file
-            fuzzer_coverage_file: Filepath = Filepath(os.path.join(reduce_dir, "fuzz.coverage"))
-            print(f"\n[DEBUG] === Writing fuzzer coverage into {fuzzer_coverage_file} ===")
+            fuzzer_coverage_file: Filepath = Filepath(
+                os.path.join(reduce_dir, "fuzz.coverage")
+            )
+            print(
+                f"\n[DEBUG] === Writing fuzzer coverage into {fuzzer_coverage_file} ==="
+            )
             write_coverage(fuzzer_coverage_file, fuzzer_coverage)
 
         elif loop_idx == 0:
             fuzzer_coverage_file = COVERAGE_FILE
 
         else:
-            fuzzer_coverage_file = Filepath(os.path.join(f"fuzz{loop_idx-1}", "final.coverage"))
+            fuzzer_coverage_file = Filepath(
+                os.path.join(f"fuzz{loop_idx-1}", "final.coverage")
+            )
 
         # === 2) FUZZ ===
         name_fuzz_campaign = f"fuzz{loop_idx}"
@@ -264,34 +271,41 @@ def fuzzing_campaign() -> None:
         ]
 
         print(f"\n[DEBUG] === Starting fuzz{loop_idx} ===")
-        result = subprocess.Popen(
+        process = subprocess.Popen(
             spectec_fuzz_command,
             preexec_fn=set_pgid(pgid),
         )
+        result = process.wait()
         os.makedirs(fuzz_dir, exist_ok=True)
 
         # 1-1) fuzzer takes a coverage and returns a coverage
-        final_coverage_file: Filepath = Filepath(os.path.join(fuzz_dir, "final.coverage"))
+        final_coverage_file: Filepath = Filepath(
+            os.path.join(fuzz_dir, "final.coverage")
+        )
         print(f"\n[DEBUG] === Reading fuzzer coverage from {final_coverage_file} ===")
         final_coverage = read_coverage(final_coverage_file)
 
         # 1-2) total coverage is updated with the new findings
         total_coverage = union_coverage(total_coverage, final_coverage)
-        total_coverage_file: Filepath = Filepath(os.path.join(fuzz_dir, "total.coverage"))
+        total_coverage_file: Filepath = Filepath(
+            os.path.join(fuzz_dir, "total.coverage")
+        )
         print(f"\n[DEBUG] === Writing merged coverage into {total_coverage_file} ===")
         write_coverage(total_coverage_file, total_coverage)
 
         loop_idx += 1
 
-#
-# End of the fuzzing loop
-#
+    #
+    # End of the fuzzing loop
+    #
 
     print(f"\n[DEBUG] === Starting reduce_final ===")
     reduce_dir = Directory(os.path.join(WORK_DIR, "reduce_final"))
     os.makedirs(reduce_dir, exist_ok=True)
 
-    reduced_likely_hits_dir: Directory = Directory(os.path.join(WORK_DIR, "likely_hits"))
+    reduced_likely_hits_dir: Directory = Directory(
+        os.path.join(WORK_DIR, "likely_hits")
+    )
     os.makedirs(reduced_likely_hits_dir, exist_ok=True)
 
     reductions = {}
@@ -305,7 +319,7 @@ def fuzzing_campaign() -> None:
     )
 
     print(f"\n[DEBUG] === Finished reduce_final with {len(reductions)} reductions ===")
-# log reductions
+    # log reductions
     reductions_file = Filepath(os.path.join(reduce_dir, "reduced.reductions"))
     write_reductions(reductions_file, reductions)
 
@@ -315,7 +329,7 @@ if __name__ == "__main__":
 
     p = multiprocessing.Process(target=fuzzing_campaign)
     p.start()
-    p.join(TIMEOUT)
+    p.join(15)
 
     if p.is_alive():
         print(f"\n[ERROR] Timeout after {TIMEOUT} seconds. Killing process tree.")
@@ -332,4 +346,3 @@ if __name__ == "__main__":
         sys.exit(1)
 
     print("\n[INFO] Script finished within timeout.")
-

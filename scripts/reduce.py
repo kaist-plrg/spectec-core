@@ -13,10 +13,13 @@ TARGET_SIZE: int = 70  # in bytes
 RELAX_AFTER: int = 3  # seconds before we start relaxing
 RELAX_FACTOR: float = 0.15  # how much we relax per second
 
+
 def set_pgid(pgid: int) -> Callable[[], None]:
     def preexec() -> None:
         os.setpgid(0, pgid)
+
     return preexec
+
 
 def monitor_file_size(
     process: Popen,
@@ -179,7 +182,7 @@ def reduce_from_coverage(
     reduce_dir: Directory,
     reduced_files_dir: Directory,
     creduce_configs: CReduceConfigs,
-    pgid: int
+    pgid: int,
 ) -> None:
     global_log_path: Filepath = Filepath(os.path.join(reduce_dir, "reducer.log"))
     with open(global_log_path, "a") as global_log_file:
@@ -243,7 +246,6 @@ def reduce_from_coverage(
                 # !! MUTATION to total_coverage
                 total_coverage[origin][pid][1].remove(smallest_file)
                 total_coverage[origin][pid][1].append(reduced_file)
-
 
                 # update reductions
                 reductions.setdefault(pid, []).append(reduced_file)
