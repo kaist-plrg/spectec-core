@@ -5,7 +5,7 @@ import threading
 import argparse
 import shutil
 from typedefs import *
-from typing import Union, TextIO, Optional, NewType, List
+from typing import Union, TextIO, Optional, NewType, List, Callable
 from coverage_utils import log
 from subprocess import Popen
 
@@ -13,6 +13,10 @@ TARGET_SIZE: int = 70  # in bytes
 RELAX_AFTER: int = 3  # seconds before we start relaxing
 RELAX_FACTOR: float = 0.15  # how much we relax per second
 
+def set_pgid(pgid: int) -> Callable[[], None]:
+    def preexec() -> None:
+        os.setpgid(0, pgid)
+    return preexec
 
 def monitor_file_size(
     process: Popen,
@@ -47,6 +51,7 @@ def reduce_program(
     reduced_files_dir: Directory,
     pid: Union[int, str],
     filename: Filepath,
+    pgid: int,
     p4spectec_dir: Directory,
     cores: Optional[int],
     timeout: int = 10,
@@ -125,6 +130,7 @@ def reduce_program(
             with open(creduce_log_path, "w") as creduce_log_file:
                 proc: Popen = subprocess.Popen(
                     creduce_command,
+                    preexec_fn=set_pgid(pgid),
                     cwd=reduce_dir,
                     stdout=creduce_log_file,
                     stderr=subprocess.STDOUT,
@@ -173,7 +179,7 @@ def reduce_from_coverage(
     reduce_dir: Directory,
     reduced_files_dir: Directory,
     creduce_configs: CReduceConfigs,
-    targeted: bool,
+    pgid: int
 ) -> None:
     global_log_path: Filepath = Filepath(os.path.join(reduce_dir, "reducer.log"))
     with open(global_log_path, "a") as global_log_file:
@@ -217,6 +223,7 @@ def reduce_from_coverage(
                     reduced_files_dir,
                     pid,
                     smallest_file,
+                    pgid,
                     creduce_configs["p4spectec_dir"],
                     creduce_configs["cores"],
                     creduce_configs["timeout_interesting"],
@@ -237,10 +244,6 @@ def reduce_from_coverage(
                 total_coverage[origin][pid][1].remove(smallest_file)
                 total_coverage[origin][pid][1].append(reduced_file)
 
-                # if TARGETED, append the new file to just the target PID
-                if targeted:
-                    fuzzer_coverage[origin][pid][1].append(reduced_file)
-                    #
 
                 # update reductions
                 reductions.setdefault(pid, []).append(reduced_file)
@@ -253,6 +256,7 @@ def reduce_likely_hits(
     reduce_dir: Directory,
     reduced_files_dir: Directory,
     creduce_configs: CReduceConfigs,
+    pgid: int,
 ) -> None:
     global_log_path: Filepath = Filepath(os.path.join(reduce_dir, "reducer.log"))
     with open(global_log_path, "a") as global_log_file:
@@ -274,6 +278,7 @@ def reduce_likely_hits(
                         reduced_files_dir,
                         pid,
                         filename,
+                        pgid,
                         creduce_configs["p4spectec_dir"],
                         creduce_configs["cores"],
                         creduce_configs["timeout_interesting"],
