@@ -329,7 +329,7 @@ if __name__ == "__main__":
 
     p = multiprocessing.Process(target=fuzzing_campaign)
     p.start()
-    p.join(15)
+    p.join(TIMEOUT)
 
     if p.is_alive():
         print(f"\n[ERROR] Timeout after {TIMEOUT} seconds. Killing process tree.")
