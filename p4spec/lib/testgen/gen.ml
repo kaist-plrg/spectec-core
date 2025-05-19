@@ -409,10 +409,10 @@ let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
   in
   (* Run SL interpreter on the program,
      and if it is well-typed, start generating tests from it *)
-  match
-    Interp_sl.Typing.run_typing' ~mini:config.mini ~derive config.specenv.spec
-      config.specenv.includes_p4 filename_p4 config.specenv.ignores
-  with
+  (match
+     Interp_sl.Typing.run_typing' ~mini:config.mini ~derive config.specenv.spec
+       config.specenv.includes_p4 filename_p4 config.specenv.ignores
+   with
   | WellTyped (graph, vid_program, cover) ->
       let time_end = Unix.gettimeofday () in
       F.asprintf "[F %d] [P %d] SL interpreter succeeded on %s (took %.2f)" fuel
@@ -433,7 +433,11 @@ let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
   | IllTyped _ | IllFormed _ ->
       F.asprintf "[F %d] [P %d] SL interpreter failed on %s" fuel pid
         filename_p4
-      |> Logger.log config.modes.logmode log
+      |> Logger.log config.modes.logmode log);
+  let total, hits, coverage = MCov.measure_coverage config.seed.cover in
+  F.asprintf "[F %d] [P %d] Coverage %d/%d (%.2f%%)" fuel pid hits total
+    coverage
+  |> Logger.log config.modes.logmode log
 
 let fuzz_seeds (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
     (query : Query.t) (dirname_gen_tmp : string) (filenames_p4 : string list) :
