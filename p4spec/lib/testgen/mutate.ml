@@ -29,11 +29,14 @@ let wrap_value (typ : typ') (value : value') : value =
 let wrap_value_opt (typ : typ') (value_opt : value' option) : value option =
   Option.map (wrap_value typ) value_opt
 
-let rec gen_from_typ (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option
-    =
-  if depth <= 0 then None else gen_from_typ' depth tdenv typ
+(* Type-driven mutation *)
 
-and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option =
+let rec gen_from_typ (depth : int) (tdenv : TDEnv.t) (texts : value' list)
+    (typ : typ) : value option =
+  if depth <= 0 then None else gen_from_typ' depth tdenv texts typ
+
+and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (texts : value' list)
+    (typ : typ) : value option =
   let depth = depth - 1 in
   match typ.it with
   | BoolT ->
@@ -54,19 +57,19 @@ and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option =
         NumV (`Int (Bigint.of_int 3));
       ]
       |> Rand.random_select |> wrap_value_opt typ.it
-  | TextT ->
-      [ TextV "a"; TextV "b" ] |> Rand.random_select |> wrap_value_opt typ.it
+  | TextT -> texts |> Rand.random_select |> wrap_value_opt typ.it
   | VarT (tid, targs) -> (
       let td = TDEnv.find_opt tid tdenv in
       match td with
       | Some (tparams, typdef) -> (
           let theta = List.combine tparams targs |> TDEnv.of_list in
           match typdef.it with
-          | PlainT typ -> typ |> Typ.subst_typ theta |> gen_from_typ depth tdenv
+          | PlainT typ ->
+              typ |> Typ.subst_typ theta |> gen_from_typ depth tdenv texts
           | StructT typfields ->
               let atoms, typs = List.split typfields in
               let* values =
-                typs |> Typ.subst_typs theta |> gen_from_typs depth tdenv
+                typs |> Typ.subst_typs theta |> gen_from_typs depth tdenv texts
               in
               let valuefields = List.combine atoms values in
               StructV valuefields |> Option.some |> wrap_value_opt typ.it
@@ -81,7 +84,7 @@ and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option =
               in
               let expand_nottyp' nottyp' =
                 let mixop, typs = nottyp' in
-                let* values = gen_from_typs depth tdenv typs in
+                let* values = gen_from_typs depth tdenv texts typs in
                 CaseV (mixop, values) |> Option.some
               in
               (* filters out failures *)
@@ -90,7 +93,7 @@ and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option =
               |> Rand.random_select |> wrap_value_opt typ.it)
       | None -> None)
   | TupleT typs_inner ->
-      let* values_inner = gen_from_typs depth tdenv typs_inner in
+      let* values_inner = gen_from_typs depth tdenv texts typs_inner in
       TupleV values_inner |> Option.some |> wrap_value_opt typ.it
   | IterT (_, Opt) when depth = 0 ->
       OptV None |> Option.some |> wrap_value_opt typ.it
@@ -98,11 +101,10 @@ and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option =
       let choices : value' option list =
         [
           OptV None |> Option.some;
-          (let* value_inner = gen_from_typ depth tdenv typ_inner in
+          (let* value_inner = gen_from_typ depth tdenv texts typ_inner in
            OptV (Some value_inner) |> Option.some);
         ]
       in
-      (* filters out failures *)
       let* choice =
         choices |> List.filter Option.is_some |> Rand.random_select
       in
@@ -112,21 +114,30 @@ and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (typ : typ) : value option =
   | IterT (typ_inner, List) ->
       let len = Random.int 3 in
       let* values_inner =
-        List.init len (fun _ -> typ_inner) |> gen_from_typs depth tdenv
+        List.init len (fun _ -> typ_inner) |> gen_from_typs depth tdenv texts
       in
       ListV values_inner |> Option.some |> wrap_value_opt typ.it
   | FuncT -> None
 
-and gen_from_typs (depth : int) (tdenv : TDEnv.t) (typs : typ list) :
-    value list option =
+and gen_from_typs (depth : int) (tdenv : TDEnv.t) (texts : value' list)
+    (typs : typ list) : value list option =
   if depth <= 0 then None
   else
     List.fold_left
       (fun values_opt typ ->
         let* values = values_opt in
-        let* value = gen_from_typ depth tdenv typ in
+        let* value = gen_from_typ depth tdenv texts typ in
         Some (values @ [ value ]))
       (Some []) typs
+
+let mutate_type_driven (tdenv : TDEnv.t) (texts : value' list) (value : value) :
+    (kind * value) option =
+  let typ = value.note.typ $ no_region in
+  let depth = Random.int 4 + 1 in
+  let value_opt = gen_from_typ depth tdenv texts typ in
+  Option.map (fun value -> (GenFromTyp, value)) value_opt
+
+(* Constructor mutation *)
 
 let mutate_mixop (mixopenv : mixopenv) (value : value) : (kind * value) option =
   let typ = value.note.typ in
@@ -262,21 +273,14 @@ let mutate_list (value : value) : (kind * value) option =
   let* mutation = Rand.random_select mutations_list in
   mutation ()
 
-let mutate_type_driven (tdenv : TDEnv.t) (value : value) : (kind * value) option
-    =
-  let typ = value.note.typ $ no_region in
-  let depth = Random.int 4 + 1 in
-  let value_opt = gen_from_typ depth tdenv typ in
-  Option.map (fun value -> (GenFromTyp, value)) value_opt
-
-let mutate_node (tdenv : TDEnv.t) (groups : mixopenv) (value : value) :
-    (kind * value) option =
+let mutate_node (tdenv : TDEnv.t) (groups : mixopenv) (texts : value' list)
+    (value : value) : (kind * value) option =
   match value.it with
   | ListV _ ->
       let* mutation =
         [
           (fun () -> mutate_list value);
-          (fun () -> mutate_type_driven tdenv value);
+          (fun () -> mutate_type_driven tdenv texts value);
         ]
         |> Rand.random_select
       in
@@ -285,19 +289,15 @@ let mutate_node (tdenv : TDEnv.t) (groups : mixopenv) (value : value) :
       let* mutation =
         [
           (fun () -> mutate_mixop groups value);
-          (fun () -> mutate_type_driven tdenv value);
+          (fun () -> mutate_type_driven tdenv texts value);
         ]
         |> Rand.random_select
       in
       mutation ()
-  | _ -> mutate_type_driven tdenv value
+  | _ -> mutate_type_driven tdenv texts value
 
-let is_leaf = function
-  | BoolV _ | NumV _ | TextV _ | OptV _ | FuncV _ -> true
-  | StructV _ | CaseV _ | TupleV _ | ListV _ -> false
-
-let mutate_walk (tdenv : TDEnv.t) (groups : mixopenv) (value : value) :
-    (kind * value) option =
+let mutate_walk (tdenv : TDEnv.t) (groups : mixopenv) (texts : value' list)
+    (value : value) : (kind * value) option =
   (* Compute the best path to a leaf node in the value subtree *)
   let key_max = ref min_float in
   let path_best = ref [] in
@@ -327,7 +327,7 @@ let mutate_walk (tdenv : TDEnv.t) (groups : mixopenv) (value : value) :
     let typ = value.note.typ in
     match (path, value) with
     | [], value ->
-        let* kind, value = mutate_node tdenv groups value in
+        let* kind, value = mutate_node tdenv groups texts value in
         kind_found := kind |> Option.some;
         value |> Option.some
     | idx :: path, value -> (
@@ -364,6 +364,7 @@ let mutate_walk (tdenv : TDEnv.t) (groups : mixopenv) (value : value) :
   Some (kind, value)
 
 (* Find parent node, if any, in the dependency graph *)
+
 let find_parent (graph : Dep.Graph.t) (vid_source : vid) : vid option =
   let find_expand (graph : Dep.Graph.t) (v : vid) : vid list =
     match Dep.Graph.G.find_opt graph.edges v with
@@ -378,67 +379,14 @@ let find_parent (graph : Dep.Graph.t) (vid_source : vid) : vid option =
   assert (List.length parents <= 1);
   parents |> Rand.random_select
 
-(* Find closest parent declaration in the dependency graph *)
-let find_closest_decl (graph : Dep.Graph.t) (vid_source : vid) : vid option =
-  let rec find_decl_ancestor (graph : Dep.Graph.t) (vid : vid) : vid option =
-    let open Dep in
-    match Graph.G.find_opt graph.edges vid with
-    | None -> None
-    | Some edges -> (
-        let parent_id =
-          Edges.E.fold
-            (fun (label, parent_vid) () acc ->
-              match label with Expand -> parent_vid :: acc | _ -> acc)
-            edges []
-        in
-        match parent_id with
-        | parent :: [] -> (
-            match Graph.G.find_opt graph.nodes parent with
-            | Some (mirror, _) -> (
-                match mirror.it with
-                | CaseN (mixop, _) -> (
-                    match mixop with
-                    | [ [ { it = Atom "ConstD"; _ } ]; []; []; [] ]
-                    | [ [ { it = Atom "VarD"; _ } ]; []; []; [] ]
-                    | [ [ { it = Atom "ErrD"; _ } ]; [] ]
-                    | [ [ { it = Atom "MatchKindD"; _ } ]; [] ]
-                    | [ [ { it = Atom "InstD"; _ } ]; []; []; []; []; [] ]
-                    | [ [ { it = Atom "StructD"; _ } ]; []; []; [] ]
-                    | [ [ { it = Atom "HeaderD"; _ } ]; []; []; [] ]
-                    | [ [ { it = Atom "UnionD"; _ } ]; []; []; [] ]
-                    | [ [ { it = Atom "EnumD"; _ } ]; []; [] ]
-                    | [ [ { it = Atom "SEnumD"; _ } ]; []; []; [] ]
-                    | [ [ { it = Atom "NewTypeD"; _ } ]; []; [] ]
-                    | [ [ { it = Atom "TypeDefD"; _ } ]; []; [] ]
-                    | [ [ { it = Atom "ValueSetD"; _ } ]; []; []; [] ]
-                    | [ [ { it = Atom "ParserTypeD"; _ } ]; []; []; [] ]
-                    | [ [ { it = Atom "ParserD"; _ } ]; []; []; []; []; [] ]
-                    | [ [ { it = Atom "TableD"; _ } ]; []; [] ]
-                    | [ [ { it = Atom "ControlTypeD"; _ } ]; []; []; [] ]
-                    | [ [ { it = Atom "ControlD"; _ } ]; []; []; []; []; [] ]
-                    | [ [ { it = Atom "ActionD"; _ } ]; []; []; [] ]
-                    | [ [ { it = Atom "FuncD"; _ } ]; []; []; []; []; [] ]
-                    | [ [ { it = Atom "ExternFuncD"; _ } ]; []; []; []; [] ]
-                    | [ [ { it = Atom "ExternObjectD"; _ } ]; []; []; [] ]
-                    | [ [ { it = Atom "PackageTypeD"; _ } ]; []; []; [] ] ->
-                        parent |> Option.some
-                    | _ -> find_decl_ancestor graph parent)
-                | _ ->
-                    find_decl_ancestor graph parent
-                    (* recurse upward from this parent *))
-            | None -> None)
-        | _ -> None)
-  in
-  find_decl_ancestor graph vid_source
-
 (* Entry point for mutation *)
 
-let mutate (tdenv : TDEnv.t) (groups : mixopenv) (graph : Dep.Graph.t)
-    (vid_source : vid) : (kind * value * value) option =
+let mutate (tdenv : TDEnv.t) (groups : mixopenv) (texts : value' list)
+    (graph : Dep.Graph.t) (vid_source : vid) : (kind * value * value) option =
+  (* Expand the node randomly *)
   let expansions =
     [
       (fun () -> find_parent graph vid_source);
-      (*(fun () -> find_closest_decl graph vid_source);*)
       (fun () -> vid_source |> Option.some);
     ]
   in
@@ -446,13 +394,23 @@ let mutate (tdenv : TDEnv.t) (groups : mixopenv) (graph : Dep.Graph.t)
   let vid_source =
     match expansion () with Some vid -> vid | None -> vid_source
   in
+  (* Reassemble the node *)
   let value_source = Dep.Graph.reassemble_node graph VIdMap.empty vid_source in
-  let mutations = [ (fun () -> mutate_walk tdenv groups value_source) ] in
-  let* mutation = Rand.random_select mutations in
-  let* kind, value_mutated = mutation () in
+  (* Mutate the node *)
+  let* kind, value_mutated = mutate_walk tdenv groups texts value_source in
   (kind, value_source, value_mutated) |> Option.some
 
 let mutates (fuel_mutate : int) (tdenv : TDEnv.t) (groups : mixopenv)
-    (graph : Dep.Graph.t) (vid_source : vid) : (kind * value * value) list =
-  List.init fuel_mutate (fun _ -> mutate tdenv groups graph vid_source)
+    (graph : Dep.Graph.t) (vid_program : vid) (vid_source : vid) :
+    (kind * value * value) list =
+  (* Collect the text pool *)
+  let texts =
+    List.init (vid_program + 1) Fun.id
+    |> List.filter_map (fun vid ->
+           let* mirror, _ = Dep.Graph.find_node graph vid in
+           match mirror.it with TextN text -> Some (TextV text) | _ -> None)
+  in
+  let texts = texts @ [ TextV "lazy"; TextV "fox" ] in
+  (* Do mutations *)
+  List.init fuel_mutate (fun _ -> mutate tdenv groups texts graph vid_source)
   |> List.filter_map Fun.id

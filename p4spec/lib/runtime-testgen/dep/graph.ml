@@ -94,6 +94,11 @@ let add_node ~(taint : bool) (graph : t) (value : value) : unit =
       (fun value_from -> add_edge graph value value_from Edges.Narrow)
       values_from)
 
+(* Finders *)
+
+let find_node (graph : t) (vid : vid) : Node.t option =
+  G.find_opt graph.nodes vid
+
 (* Reassemblers *)
 
 let rec reassemble_node (graph : t) (renamer : value VIdMap.t) (vid : vid) :

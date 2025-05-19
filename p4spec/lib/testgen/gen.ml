@@ -238,7 +238,7 @@ let fuzz_mutation (fuel : int) (pid : pid) (idx_method : int) (trials : int ref)
   (* Mutate the AST *)
   let mutations =
     Mutate.mutates Config.trials_mutation config.specenv.tdenv
-      config.specenv.mixopenv graph vid_source
+      config.specenv.mixopenv graph vid_program vid_source
   in
   (* Generate the mutated program *)
   List.iteri
