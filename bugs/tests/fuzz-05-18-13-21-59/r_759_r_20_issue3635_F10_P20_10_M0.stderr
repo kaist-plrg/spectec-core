@@ -1,0 +1,6 @@
+likely_hits/r_759_r_20_issue3635_F10_P20_10_M0.p4(2): [--Werror=type-error] error: {} << "b" left operand of shift must be a numeric type, not tuple<>
+ a = 1, b = (({ }
+             ^
+In file: /p4c/frontends/p4/typeChecking/typeChecker.cpp:172
+Compiler Bug: /p4c/frontends/p4/typeChecking/typeChecker.cpp:172: Null srcType
+

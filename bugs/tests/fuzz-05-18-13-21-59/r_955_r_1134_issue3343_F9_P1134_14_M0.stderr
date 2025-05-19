@@ -1,0 +1,7 @@
+likely_hits/r_955_r_1134_issue3343_F9_P1134_14_M0.p4(2): [--Wwarn=parser-transition] warning: start: implicit transition to `reject'
+    state start {
+          ^^^^^
+likely_hits/r_955_r_1134_issue3343_F9_P1134_14_M0.p4(1): [--Wwarn=unused] warning: Parser MyParser1 is not used; removing
+parser MyParser1(in list<_> ttt)() {
+       ^^^^^^^^^
+[--Wwarn=missing] warning: Program does not contain a `main' module

@@ -1,0 +1,4 @@
+likely_hits/r_278_issue816-1.p4(3): [--Wwarn=unused] warning: Control MyC1 is not used; removing
+   control MyC1()(P p) {
+           ^^^^
+[--Wwarn=missing] warning: Program does not contain a `main' module

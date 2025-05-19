@@ -1,0 +1,2 @@
+extern list<_> b();
+

@@ -1,0 +1,4 @@
+likely_hits/r_515_r_9_list9_F10_P9_6_M0.p4(1): [--Wwarn=unused] warning: 'T' is unused
+struct S<T> {
+         ^
+[--Wwarn=missing] warning: Program does not contain a `main' module

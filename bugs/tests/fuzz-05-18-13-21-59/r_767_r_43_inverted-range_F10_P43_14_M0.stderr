@@ -1,0 +1,4 @@
+likely_hits/r_767_r_43_inverted-range_F10_P43_14_M0.p4(1): [--Wwarn=unused] warning: Parser p is not used; removing
+ parser p(in bit<16> x)() {
+        ^
+[--Wwarn=missing] warning: Program does not contain a `main' module

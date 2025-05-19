@@ -1,0 +1,7 @@
+likely_hits/r_871_r_6_issue2265-1_F10_P6_4_M1.p4(1): [--Wwarn=mismatch] warning: {}: constant expression in switch
+ control c()() { apply { switch ({ }) { } } }
+                                 ^^^
+likely_hits/r_871_r_6_issue2265-1_F10_P6_4_M1.p4(1): [--Wwarn=unused] warning: Control c is not used; removing
+ control c()() { apply { switch ({ }) { } } }
+         ^
+[--Wwarn=missing] warning: Program does not contain a `main' module

@@ -1,0 +1,2 @@
+typedef tuple<_> emptyTuple;
+

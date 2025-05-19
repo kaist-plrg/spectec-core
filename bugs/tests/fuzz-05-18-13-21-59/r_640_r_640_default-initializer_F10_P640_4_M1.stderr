@@ -1,0 +1,4 @@
+likely_hits/r_640_r_640_default-initializer_F10_P640_4_M1.p4(3): [--Wwarn=unused] warning: Control C is not used; removing
+     control C(out bit<32> x)() {
+             ^
+[--Wwarn=missing] warning: Program does not contain a `main' module

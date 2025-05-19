@@ -1,0 +1,7 @@
+likely_hits/r_979_issue1777-bmv2.p4(3): [--Wwarn=unused] warning: 'T' is unused
+   extern register<T> {
+                   ^
+likely_hits/r_979_issue1777-bmv2.p4(14): [--Wwarn=unused] warning: Control ingress is not used; removing
+   control ingress(inout headers_t hdr, inout metadata_t meta, inout standard_metadata_t stdmeta) {
+           ^^^^^^^
+[--Wwarn=missing] warning: Program does not contain a `main' module

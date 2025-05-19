@@ -1,0 +1,7 @@
+likely_hits/r_873_r_773_issue4656_const_fold_generic_switch_label_expr_F10_P773_8_M1.p4(6): [--Wwarn=missing] warning: SwitchCase: fallthrough with no statement
+       ((((((1) + (2))) == (3))) ? (1) : (2)):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+likely_hits/r_873_r_773_issue4656_const_fold_generic_switch_label_expr_F10_P773_8_M1.p4(2): [--Wwarn=unused] warning: Control c is not used; removing
+        control c()() {
+                ^
+[--Wwarn=missing] warning: Program does not contain a `main' module

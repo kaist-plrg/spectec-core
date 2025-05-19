@@ -1,0 +1,10 @@
+likely_hits/r_960_issue819.p4(1): [--Wwarn=unused] warning: 'T1' is unused
+ extern WrapControls<T1,T2> {
+                     ^^
+likely_hits/r_960_issue819.p4(1): [--Wwarn=unused] warning: 'T2' is unused
+ extern WrapControls<T1,T2> {
+                        ^^
+likely_hits/r_960_issue819.p4(3): [--Wwarn=unused] warning: Control MyC1 is not used; removing
+   control MyC1(WrapControls<_,_> wc) {
+           ^^^^
+[--Wwarn=missing] warning: Program does not contain a `main' module

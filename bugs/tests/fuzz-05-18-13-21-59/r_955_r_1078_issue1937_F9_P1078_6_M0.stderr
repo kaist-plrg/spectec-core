@@ -1,0 +1,7 @@
+likely_hits/r_955_r_1078_issue1937_F9_P1078_6_M0.p4(2): [--Wwarn=parser-transition] warning: start: implicit transition to `reject'
+    state start {
+          ^^^^^
+likely_hits/r_955_r_1078_issue1937_F9_P1078_6_M0.p4(1): [--Wwarn=unused] warning: Parser foo is not used; removing
+ parser foo(out list<_> x, in bit<8> y = 5)() {
+        ^^^
+[--Wwarn=missing] warning: Program does not contain a `main' module
