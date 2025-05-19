@@ -54,7 +54,7 @@ def fuzzing_campaign() -> None:
     parser.add_argument(
         "--coverage",
         type=str,
-        default="coverage/p4c-all.coverage",
+        default="coverage/p4c-pos.coverage",
         help="Path to initial coverage data",
     )
 
