@@ -247,6 +247,8 @@ def reduce_from_coverage(
                 total_coverage[origin][pid][1].remove(smallest_file)
                 total_coverage[origin][pid][1].append(reduced_file)
 
+                fuzzer_coverage[origin][pid][1].append(reduced_file)
+
                 # update reductions
                 reductions.setdefault(pid, []).append(reduced_file)
     return None
