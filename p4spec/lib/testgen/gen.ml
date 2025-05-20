@@ -559,7 +559,8 @@ let fuzz_typing_init ?(mini : bool = false) (spec : spec)
   (* Log the command line arguments *)
   F.asprintf "[COMMAND] testgen -gen %s%s%s%s" dirname_gen
     (match modes.bootmode with
-    | Cold dirname_seed_p4 -> "-cold " ^ dirname_seed_p4
+    | Cold (excludes_p4, dirname_seed_p4) ->
+        "-e" ^ String.concat " " excludes_p4 ^ "-cold " ^ dirname_seed_p4
     | Warm filename_boot -> " -warm " ^ filename_boot)
     (match modes.mutationmode with
     | Random -> " -random"
@@ -575,12 +576,9 @@ let fuzz_typing_init ?(mini : bool = false) (spec : spec)
   "Booting initial coverage" |> Logger.log modes.logmode log_init;
   let cover_seed =
     match modes.bootmode with
-    | Cold dirname_seed_p4 ->
-        let filenames_seed_p4 =
-          Filesys.collect_files ~suffix:".p4" dirname_seed_p4
-        in
+    | Cold (excludes_p4, dirname_seed_p4) ->
         let cover_seed =
-          Boot.boot_cold ~mini spec includes_p4 filenames_seed_p4
+          Boot.boot_cold ~mini spec includes_p4 excludes_p4 dirname_seed_p4
             filenames_ignore
         in
         (* Log the initial coverage for later use in warm boot *)

@@ -7,8 +7,16 @@ open Util.Source
 (* On cold boot, first measure the coverage of the seed *)
 
 let boot_cold ?(mini : bool = false) (spec : spec) (includes_p4 : string list)
-    (filenames_p4 : string list) (filenames_ignore : string list) : MCov.Cover.t
-    =
+    (excludes_p4 : string list) (dirname_p4 : string)
+    (filenames_ignore : string list) : MCov.Cover.t =
+  let excludes_p4 = Filesys.collect_excludes excludes_p4 in
+  let filenames_p4 = Filesys.collect_files ~suffix:".p4" dirname_p4 in
+  let filenames_p4 =
+    List.filter
+      (fun filename_p4 ->
+        not (List.exists (String.equal filename_p4) excludes_p4))
+      filenames_p4
+  in
   Interp_sl.Typing.cover_typings ~mini spec includes_p4 filenames_p4
     filenames_ignore
 

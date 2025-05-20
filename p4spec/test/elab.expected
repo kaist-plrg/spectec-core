@@ -6865,21 +6865,33 @@ def $bound_tids(cursor, context) : tidset =
 ;; ../../../../spec/4a1-typing-context.watsup:147.1-148.84
 def $add_styp(cursor, context, id, styp) : context =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:150.1-152.61
+   ;; ../../../../spec/4a1-typing-context.watsup:150.1-155.61
    clause 0(cursor, C, id, styp) = C[GLOBAL.FRAME = frame]
       -- if cursor matches `GLOBAL`
+      -- if (id = "main")
+      -- if ~$in_set<id>(id, $dom_map<id, styp>(C.GLOBAL.FRAME))
+      -- let `%%%%`_styp(typ, _dir, _ctk, _val?{_val <- _val?}) = styp
+      -- if $is_packaget($canon_typ(typ))
+      -- let frame = $add_map<id, styp>(C.GLOBAL.FRAME, id, styp)
+
+   ;; ../../../../spec/4a1-typing-context.watsup:156.1-159.61
+   clause 1(cursor, C, id, styp) = C[GLOBAL.FRAME = frame]
+      -- if cursor matches `GLOBAL`
+      -- if (id =/= "main")
       -- if ~$in_set<id>(id, $dom_map<id, styp>(C.GLOBAL.FRAME))
       -- let frame = $add_map<id, styp>(C.GLOBAL.FRAME, id, styp)
 
-   ;; ../../../../spec/4a1-typing-context.watsup:153.1-155.60
-   clause 1(cursor, C, id, styp) = C[BLOCK.FRAME = frame]
+   ;; ../../../../spec/4a1-typing-context.watsup:160.1-163.60
+   clause 2(cursor, C, id, styp) = C[BLOCK.FRAME = frame]
       -- if cursor matches `BLOCK`
+      -- if (id =/= "main")
       -- if ~$in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME))
       -- let frame = $add_map<id, styp>(C.BLOCK.FRAME, id, styp)
 
-   ;; ../../../../spec/4a1-typing-context.watsup:156.1-160.38
-   clause 2(cursor, C, id, styp) = C[LOCAL.FRAMES = frame*{frame <- frame*}]
+   ;; ../../../../spec/4a1-typing-context.watsup:164.1-169.38
+   clause 3(cursor, C, id, styp) = C[LOCAL.FRAMES = frame*{frame <- frame*}]
       -- if cursor matches `LOCAL`
+      -- if (id =/= "main")
       -- let frame'*{frame' <- frame'*} = C.LOCAL.FRAMES
       -- if frame'*{frame' <- frame'*} matches _ :: _
       -- let frame_h :: frame_t*{frame_t <- frame_t*} = frame'*{frame' <- frame'*}
@@ -6887,15 +6899,15 @@ def $add_styp(cursor, context, id, styp) : context =
       -- let frame_h' = $add_map<id, styp>(frame_h, id, styp)
       -- let frame*{frame <- frame*} = frame_h' :: frame_t*{frame_t <- frame_t*}
 
-;; ../../../../spec/4a1-typing-context.watsup:162.1-163.88
+;; ../../../../spec/4a1-typing-context.watsup:171.1-172.88
 def $add_styps(cursor, context, id*, styp*) : context =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:165.1-165.40
+   ;; ../../../../spec/4a1-typing-context.watsup:174.1-174.40
    clause 0(cursor, C, id*{id <- id*}, styp*{styp <- styp*}) = C
       -- if id*{id <- id*} matches []
       -- if styp*{styp <- styp*} matches []
 
-   ;; ../../../../spec/4a1-typing-context.watsup:166.1-168.55
+   ;; ../../../../spec/4a1-typing-context.watsup:175.1-177.55
    clause 1(cursor, C, id*{id <- id*}, styp*{styp <- styp*}) = C''
       -- if id*{id <- id*} matches _ :: _
       -- let id_h :: id_t*{id_t <- id_t*} = id*{id <- id*}
@@ -6904,65 +6916,65 @@ def $add_styps(cursor, context, id*, styp*) : context =
       -- let C' = $add_styp(cursor, C, id_h, styp_h)
       -- let C'' = $add_styps(cursor, C', id_t*{id_t <- id_t*}, styp_t*{styp_t <- styp_t*})
 
-;; ../../../../spec/4a1-typing-context.watsup:172.1-172.52
+;; ../../../../spec/4a1-typing-context.watsup:181.1-181.52
 def $add_param(cursor, context, paramtyp) : context =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:174.1-176.51
+   ;; ../../../../spec/4a1-typing-context.watsup:183.1-185.51
    clause 0(p, C, pt) = C'
       -- let `%%%%`_paramtyp(id, dir, typ, val?{val <- val?}) = pt
       -- if dir matches `NO`
       -- let C' = $add_styp(p, C, id, `%%%%`_styp(typ, `NO`_dir(), `CTK`_ctk(), ?()))
 
-   ;; ../../../../spec/4a1-typing-context.watsup:177.1-180.52
+   ;; ../../../../spec/4a1-typing-context.watsup:186.1-189.52
    clause 1(p, C, pt) = C'
       -- let `%%%%`_paramtyp(id, dir, typ, val?{val <- val?}) = pt
       -- if (((dir = `IN`_dir()) \/ (dir = `OUT`_dir())) \/ (dir = `INOUT`_dir()))
       -- let C' = $add_styp(p, C, id, `%%%%`_styp(typ, dir, `DYN`_ctk(), ?()))
 
-;; ../../../../spec/4a1-typing-context.watsup:182.1-182.54
+;; ../../../../spec/4a1-typing-context.watsup:191.1-191.54
 def $add_params(cursor, context, paramtyp*) : context =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:184.1-184.31
+   ;; ../../../../spec/4a1-typing-context.watsup:193.1-193.31
    clause 0(p, C, paramtyp*{paramtyp <- paramtyp*}) = C
       -- if paramtyp*{paramtyp <- paramtyp*} matches []
 
-   ;; ../../../../spec/4a1-typing-context.watsup:185.1-187.42
+   ;; ../../../../spec/4a1-typing-context.watsup:194.1-196.42
    clause 1(p, C, paramtyp*{paramtyp <- paramtyp*}) = C''
       -- if paramtyp*{paramtyp <- paramtyp*} matches _ :: _
       -- let pt_h :: pt_t*{pt_t <- pt_t*} = paramtyp*{paramtyp <- paramtyp*}
       -- let C' = $add_param(p, C, pt_h)
       -- let C'' = $add_params(p, C', pt_t*{pt_t <- pt_t*})
 
-;; ../../../../spec/4a1-typing-context.watsup:191.1-192.80
+;; ../../../../spec/4a1-typing-context.watsup:200.1-201.80
 def $add_typdef(cursor, context, tid, typdef) : context =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:194.1-196.63
+   ;; ../../../../spec/4a1-typing-context.watsup:203.1-205.63
    clause 0(cursor, C, tid, td) = C[GLOBAL.TDENV = tdenv]
       -- if cursor matches `GLOBAL`
       -- if ~$in_set<tid>(tid, $dom_map<tid, typdef>(C.GLOBAL.TDENV))
       -- let tdenv = $add_map<tid, typdef>(C.GLOBAL.TDENV, tid, td)
 
-   ;; ../../../../spec/4a1-typing-context.watsup:197.1-199.62
+   ;; ../../../../spec/4a1-typing-context.watsup:206.1-208.62
    clause 1(cursor, C, tid, td) = C[BLOCK.TDENV = tdenv]
       -- if cursor matches `BLOCK`
       -- if ~$in_set<tid>(tid, $dom_map<tid, typdef>(C.BLOCK.TDENV))
       -- let tdenv = $add_map<tid, typdef>(C.BLOCK.TDENV, tid, td)
 
-   ;; ../../../../spec/4a1-typing-context.watsup:200.1-202.62
+   ;; ../../../../spec/4a1-typing-context.watsup:209.1-211.62
    clause 2(cursor, C, tid, td) = C[LOCAL.TDENV = tdenv]
       -- if cursor matches `LOCAL`
       -- if ~$in_set<tid>(tid, $dom_map<tid, typdef>(C.LOCAL.TDENV))
       -- let tdenv = $add_map<tid, typdef>(C.LOCAL.TDENV, tid, td)
 
-;; ../../../../spec/4a1-typing-context.watsup:204.1-205.84
+;; ../../../../spec/4a1-typing-context.watsup:213.1-214.84
 def $add_typdefs(cursor, context, tid*, typdef*) : context =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:207.1-207.37
+   ;; ../../../../spec/4a1-typing-context.watsup:216.1-216.37
    clause 0(p, C, tid*{tid <- tid*}, typdef*{typdef <- typdef*}) = C
       -- if tid*{tid <- tid*} matches []
       -- if typdef*{typdef <- typdef*} matches []
 
-   ;; ../../../../spec/4a1-typing-context.watsup:208.1-210.51
+   ;; ../../../../spec/4a1-typing-context.watsup:217.1-219.51
    clause 1(p, C, tid*{tid <- tid*}, typdef*{typdef <- typdef*}) = C''
       -- if tid*{tid <- tid*} matches _ :: _
       -- let tid_h :: tid_t*{tid_t <- tid_t*} = tid*{tid <- tid*}
@@ -6971,56 +6983,56 @@ def $add_typdefs(cursor, context, tid*, typdef*) : context =
       -- let C' = $add_typdef(p, C, tid_h, td_h)
       -- let C'' = $add_typdefs(p, C', tid_t*{tid_t <- tid_t*}, td_t*{td_t <- td_t*})
 
-;; ../../../../spec/4a1-typing-context.watsup:214.1-214.51
+;; ../../../../spec/4a1-typing-context.watsup:223.1-223.51
 def $add_tparam(cursor, context, tparam) : context =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:216.1-219.65
+   ;; ../../../../spec/4a1-typing-context.watsup:225.1-228.65
    clause 0(cursor, C, tparam) = C[BLOCK.TDENV = tdenv]
       -- if cursor matches `BLOCK`
       -- let td = `MonoD%`_monotypdef(`VarT%`_abstyp(tparam) as typ) as typdef
       -- if ~$in_set<tid>(tparam, $dom_map<tid, typdef>(C.BLOCK.TDENV))
       -- let tdenv = $add_map<tid, typdef>(C.BLOCK.TDENV, tparam, td)
 
-   ;; ../../../../spec/4a1-typing-context.watsup:220.1-223.65
+   ;; ../../../../spec/4a1-typing-context.watsup:229.1-232.65
    clause 1(cursor, C, tparam) = C[LOCAL.TDENV = tdenv]
       -- if cursor matches `LOCAL`
       -- let td = `MonoD%`_monotypdef(`VarT%`_abstyp(tparam) as typ) as typdef
       -- if ~$in_set<tid>(tparam, $dom_map<tid, typdef>(C.LOCAL.TDENV))
       -- let tdenv = $add_map<tid, typdef>(C.LOCAL.TDENV, tparam, td)
 
-;; ../../../../spec/4a1-typing-context.watsup:225.1-225.53
+;; ../../../../spec/4a1-typing-context.watsup:234.1-234.53
 def $add_tparams(cursor, context, tparam*) : context =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:227.1-227.32
+   ;; ../../../../spec/4a1-typing-context.watsup:236.1-236.32
    clause 0(p, C, tparam*{tparam <- tparam*}) = C
       -- if tparam*{tparam <- tparam*} matches []
 
-   ;; ../../../../spec/4a1-typing-context.watsup:228.1-230.47
+   ;; ../../../../spec/4a1-typing-context.watsup:237.1-239.47
    clause 1(p, C, tparam*{tparam <- tparam*}) = C''
       -- if tparam*{tparam <- tparam*} matches _ :: _
       -- let tparam_h :: tparam_t*{tparam_t <- tparam_t*} = tparam*{tparam <- tparam*}
       -- let C' = $add_tparam(p, C, tparam_h)
       -- let C'' = $add_tparams(p, C', tparam_t*{tparam_t <- tparam_t*})
 
-;; ../../../../spec/4a1-typing-context.watsup:234.1-235.80
+;; ../../../../spec/4a1-typing-context.watsup:243.1-244.80
 def $add_funcdef(cursor, context, fid, funcdef) : context =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:237.1-239.64
+   ;; ../../../../spec/4a1-typing-context.watsup:246.1-248.64
    clause 0(cursor, C, fid, fd) = C[GLOBAL.FDENV = fdenv]
       -- if cursor matches `GLOBAL`
       -- if ~$in_set<fid>(fid, $dom_map<fid, funcdef>(C.GLOBAL.FDENV))
       -- let fdenv = $add_map<fid, funcdef>(C.GLOBAL.FDENV, fid, fd)
 
-   ;; ../../../../spec/4a1-typing-context.watsup:240.1-242.63
+   ;; ../../../../spec/4a1-typing-context.watsup:249.1-251.63
    clause 1(cursor, C, fid, fd) = C[BLOCK.FDENV = fdenv]
       -- if cursor matches `BLOCK`
       -- if ~$in_set<fid>(fid, $dom_map<fid, funcdef>(C.BLOCK.FDENV))
       -- let fdenv = $add_map<fid, funcdef>(C.BLOCK.FDENV, fid, fd)
 
-;; ../../../../spec/4a1-typing-context.watsup:244.1-245.80
+;; ../../../../spec/4a1-typing-context.watsup:253.1-254.80
 def $add_funcdef_non_overload(cursor, context, fid, funcdef) : context =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:247.1-251.64
+   ;; ../../../../spec/4a1-typing-context.watsup:256.1-260.64
    clause 0(cursor, C, fid, fd) = C[GLOBAL.FDENV = fdenv]
       -- if cursor matches `GLOBAL`
       -- let `{%}`_set<fid>(`%%`_fid(id_k, _(id, bool)*{_(id, bool) <- _(id, bool)*})*{_(id, bool)* <- _(id, bool)**, id_k <- id_k*}) = $dom_map<fid, funcdef>(C.GLOBAL.FDENV)
@@ -7028,7 +7040,7 @@ def $add_funcdef_non_overload(cursor, context, fid, funcdef) : context =
       -- if ~id <- id_k*{id_k <- id_k*}
       -- let fdenv = $add_map<fid, funcdef>(C.GLOBAL.FDENV, fid, fd)
 
-   ;; ../../../../spec/4a1-typing-context.watsup:252.1-256.63
+   ;; ../../../../spec/4a1-typing-context.watsup:261.1-265.63
    clause 1(cursor, C, fid, fd) = C[BLOCK.FDENV = fdenv]
       -- if cursor matches `BLOCK`
       -- let `{%}`_set<fid>(`%%`_fid(id_k, _(id, bool)*{_(id, bool) <- _(id, bool)*})*{_(id, bool)* <- _(id, bool)**, id_k <- id_k*}) = $dom_map<fid, funcdef>(C.BLOCK.FDENV)
@@ -7036,30 +7048,30 @@ def $add_funcdef_non_overload(cursor, context, fid, funcdef) : context =
       -- if ~id <- id_k*{id_k <- id_k*}
       -- let fdenv = $add_map<fid, funcdef>(C.BLOCK.FDENV, fid, fd)
 
-;; ../../../../spec/4a1-typing-context.watsup:260.1-261.80
+;; ../../../../spec/4a1-typing-context.watsup:269.1-270.80
 def $add_consdef(cursor, context, fid, consdef) : context =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:263.1-265.64
+   ;; ../../../../spec/4a1-typing-context.watsup:272.1-274.64
    clause 0(cursor, C, cid, cd) = C[GLOBAL.CDENV = cdenv]
       -- if cursor matches `GLOBAL`
       -- if ~$in_set<cid>(cid, $dom_map<cid, consdef>(C.GLOBAL.CDENV))
       -- let cdenv = $add_map<cid, consdef>(C.GLOBAL.CDENV, cid, cd)
 
-;; ../../../../spec/4a1-typing-context.watsup:273.1-274.57
+;; ../../../../spec/4a1-typing-context.watsup:282.1-283.57
 def $find_styp(cursor, context, name) : styp? =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:276.1-276.71
+   ;; ../../../../spec/4a1-typing-context.watsup:285.1-285.71
    clause 0(p, C, name) = $find_map<id, styp>(C.GLOBAL.FRAME, id)
       -- if name matches `TOP%`
       -- let `TOP%`_name(id) = name
 
-   ;; ../../../../spec/4a1-typing-context.watsup:277.1-277.80
+   ;; ../../../../spec/4a1-typing-context.watsup:286.1-286.80
    clause 1(cursor, C, name) = $find_map<id, styp>(C.GLOBAL.FRAME, id)
       -- if cursor matches `GLOBAL`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
 
-   ;; ../../../../spec/4a1-typing-context.watsup:278.1-279.54
+   ;; ../../../../spec/4a1-typing-context.watsup:287.1-288.54
    clause 2(cursor, C, name) = ?(styp)
       -- if cursor matches `BLOCK`
       -- if name matches `CURRENT%`
@@ -7068,14 +7080,14 @@ def $find_styp(cursor, context, name) : styp? =
       -- if styp'?{styp' <- styp'?} matches (_)
       -- let ?(styp) = styp'?{styp' <- styp'?}
 
-   ;; ../../../../spec/4a1-typing-context.watsup:280.1-281.53
+   ;; ../../../../spec/4a1-typing-context.watsup:289.1-290.53
    clause 3(cursor, C, name) = $find_styp(`GLOBAL`_cursor(), C, `CURRENT%`_name(id))
       -- if cursor matches `BLOCK`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
       -- if (?() = $find_map<id, styp>(C.BLOCK.FRAME, id))
 
-   ;; ../../../../spec/4a1-typing-context.watsup:282.1-283.56
+   ;; ../../../../spec/4a1-typing-context.watsup:291.1-292.56
    clause 4(cursor, C, name) = ?(styp)
       -- if cursor matches `LOCAL`
       -- if name matches `CURRENT%`
@@ -7084,17 +7096,17 @@ def $find_styp(cursor, context, name) : styp? =
       -- if styp'?{styp' <- styp'?} matches (_)
       -- let ?(styp) = styp'?{styp' <- styp'?}
 
-   ;; ../../../../spec/4a1-typing-context.watsup:284.1-285.55
+   ;; ../../../../spec/4a1-typing-context.watsup:293.1-294.55
    clause 5(cursor, C, name) = $find_styp(`BLOCK`_cursor(), C, `CURRENT%`_name(id))
       -- if cursor matches `LOCAL`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
       -- if (?() = $find_maps<id, styp>(C.LOCAL.FRAMES, id))
 
-;; ../../../../spec/4a1-typing-context.watsup:289.1-290.44
+;; ../../../../spec/4a1-typing-context.watsup:298.1-299.44
 def $find_val(cursor, context, name) : val? =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:292.1-293.49
+   ;; ../../../../spec/4a1-typing-context.watsup:301.1-302.49
    clause 0(p, C, name) = ?(val)
       -- let styp?{styp <- styp?} = $find_styp(p, C, name)
       -- if styp?{styp <- styp?} matches (_)
@@ -7102,21 +7114,21 @@ def $find_val(cursor, context, name) : val? =
       -- if val'?{val' <- val'?} matches (_)
       -- let ?(val) = val'?{val' <- val'?}
 
-;; ../../../../spec/4a1-typing-context.watsup:297.1-298.44
+;; ../../../../spec/4a1-typing-context.watsup:306.1-307.44
 def $find_typdef(cursor, context, name) : typdef? =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:300.1-300.76
+   ;; ../../../../spec/4a1-typing-context.watsup:309.1-309.76
    clause 0(p, C, name) = $find_map<tid, typdef>(C.GLOBAL.TDENV, id)
       -- if name matches `TOP%`
       -- let `TOP%`_name(id) = name
 
-   ;; ../../../../spec/4a1-typing-context.watsup:301.1-301.85
+   ;; ../../../../spec/4a1-typing-context.watsup:310.1-310.85
    clause 1(cursor, C, name) = $find_map<tid, typdef>(C.GLOBAL.TDENV, id)
       -- if cursor matches `GLOBAL`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
 
-   ;; ../../../../spec/4a1-typing-context.watsup:302.1-303.55
+   ;; ../../../../spec/4a1-typing-context.watsup:311.1-312.55
    clause 2(cursor, C, name) = ?(td)
       -- if cursor matches `BLOCK`
       -- if name matches `CURRENT%`
@@ -7125,14 +7137,14 @@ def $find_typdef(cursor, context, name) : typdef? =
       -- if typdef?{typdef <- typdef?} matches (_)
       -- let ?(td) = typdef?{typdef <- typdef?}
 
-   ;; ../../../../spec/4a1-typing-context.watsup:304.1-305.56
+   ;; ../../../../spec/4a1-typing-context.watsup:313.1-314.56
    clause 3(cursor, C, name) = $find_typdef(`GLOBAL`_cursor(), C, `CURRENT%`_name(id))
       -- if cursor matches `BLOCK`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
       -- if (?() = $find_map<tid, typdef>(C.BLOCK.TDENV, id))
 
-   ;; ../../../../spec/4a1-typing-context.watsup:306.1-307.55
+   ;; ../../../../spec/4a1-typing-context.watsup:315.1-316.55
    clause 4(cursor, C, name) = ?(td)
       -- if cursor matches `LOCAL`
       -- if name matches `CURRENT%`
@@ -7141,21 +7153,21 @@ def $find_typdef(cursor, context, name) : typdef? =
       -- if typdef?{typdef <- typdef?} matches (_)
       -- let ?(td) = typdef?{typdef <- typdef?}
 
-   ;; ../../../../spec/4a1-typing-context.watsup:308.1-309.56
+   ;; ../../../../spec/4a1-typing-context.watsup:317.1-318.56
    clause 5(cursor, C, name) = $find_typdef(`BLOCK`_cursor(), C, `CURRENT%`_name(id))
       -- if cursor matches `LOCAL`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
       -- if (?() = $find_map<tid, typdef>(C.LOCAL.TDENV, id))
 
-;; ../../../../spec/4a1-typing-context.watsup:313.1-313.28
+;; ../../../../spec/4a1-typing-context.watsup:322.1-322.28
 def $to_fkey(arg*) : id?* =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:315.1-315.24
+   ;; ../../../../spec/4a1-typing-context.watsup:324.1-324.24
    clause 0(arg*{arg <- arg*}) = []
       -- if arg*{arg <- arg*} matches []
 
-   ;; ../../../../spec/4a1-typing-context.watsup:316.1-317.27
+   ;; ../../../../spec/4a1-typing-context.watsup:325.1-326.27
    clause 1(arg*{arg <- arg*}) = ?(id) :: $to_fkey(arg_t*{arg_t <- arg_t*})
       -- if arg*{arg <- arg*} matches _ :: _
       -- let arg_h :: arg_t*{arg_t <- arg_t*} = arg*{arg <- arg*}
@@ -7163,27 +7175,27 @@ def $to_fkey(arg*) : id?* =
       -- if arg' matches `NameA%%`
       -- let `NameA%%`_arg(id, _expr?{_expr <- _expr?}) = arg'
 
-   ;; ../../../../spec/4a1-typing-context.watsup:318.1-319.15
+   ;; ../../../../spec/4a1-typing-context.watsup:327.1-328.15
    clause 2(arg*{arg <- arg*}) = ?() :: $to_fkey(arg_t*{arg_t <- arg_t*})
       -- if arg*{arg <- arg*} matches _ :: _
       -- let arg_h :: arg_t*{arg_t <- arg_t*} = arg*{arg <- arg*}
       -- otherwise
 
-;; ../../../../spec/4a1-typing-context.watsup:321.1-322.58
+;; ../../../../spec/4a1-typing-context.watsup:330.1-331.58
 def $find_funcdef(cursor, context, name, arg*) : (fid, funcdef, id*)? =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:324.1-324.96
+   ;; ../../../../spec/4a1-typing-context.watsup:333.1-333.96
    clause 0(p, C, name, arg*{arg <- arg*}) = $find_func<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.FDENV)
       -- if name matches `TOP%`
       -- let `TOP%`_name(id) = name
 
-   ;; ../../../../spec/4a1-typing-context.watsup:325.1-325.105
+   ;; ../../../../spec/4a1-typing-context.watsup:334.1-334.105
    clause 1(cursor, C, name, arg*{arg <- arg*}) = $find_func<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.FDENV)
       -- if cursor matches `GLOBAL`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
 
-   ;; ../../../../spec/4a1-typing-context.watsup:326.1-327.85
+   ;; ../../../../spec/4a1-typing-context.watsup:335.1-336.85
    clause 2(cursor, C, name, arg*{arg <- arg*}) = ?((fid, fd, id_deft*{id_deft <- id_deft*}))
       -- if cursor matches `BLOCK`
       -- if name matches `CURRENT%`
@@ -7192,34 +7204,34 @@ def $find_funcdef(cursor, context, name, arg*) : (fid, funcdef, id*)? =
       -- if (fid, funcdef, id*)?{(fid, funcdef, id*) <- (fid, funcdef, id*)?} matches (_)
       -- let ?((fid, fd, id_deft*{id_deft <- id_deft*})) = (fid, funcdef, id*)?{(fid, funcdef, id*) <- (fid, funcdef, id*)?}
 
-   ;; ../../../../spec/4a1-typing-context.watsup:328.1-329.69
+   ;; ../../../../spec/4a1-typing-context.watsup:337.1-338.69
    clause 3(cursor, C, name, arg*{arg <- arg*}) = $find_funcdef(`GLOBAL`_cursor(), C, `CURRENT%`_name(id), arg*{arg <- arg*})
       -- if cursor matches `BLOCK`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
       -- if (?() = $find_func<funcdef>(id, $to_fkey(arg*{arg <- arg*}), C.BLOCK.FDENV))
 
-   ;; ../../../../spec/4a1-typing-context.watsup:330.1-330.90
+   ;; ../../../../spec/4a1-typing-context.watsup:339.1-339.90
    clause 4(cursor, C, name, arg*{arg <- arg*}) = $find_funcdef(`BLOCK`_cursor(), C, `CURRENT%`_name(id), arg*{arg <- arg*})
       -- if cursor matches `LOCAL`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
 
-;; ../../../../spec/4a1-typing-context.watsup:332.1-333.44
+;; ../../../../spec/4a1-typing-context.watsup:341.1-342.44
 def $find_funcdef_by_name(cursor, context, name) : funcdef? =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:335.1-335.81
+   ;; ../../../../spec/4a1-typing-context.watsup:344.1-344.81
    clause 0(p, C, name) = $find_func_by_name(id, C.GLOBAL.FDENV)
       -- if name matches `TOP%`
       -- let `TOP%`_name(id) = name
 
-   ;; ../../../../spec/4a1-typing-context.watsup:336.1-336.90
+   ;; ../../../../spec/4a1-typing-context.watsup:345.1-345.90
    clause 1(cursor, C, name) = $find_func_by_name(id, C.GLOBAL.FDENV)
       -- if cursor matches `GLOBAL`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
 
-   ;; ../../../../spec/4a1-typing-context.watsup:337.1-338.51
+   ;; ../../../../spec/4a1-typing-context.watsup:346.1-347.51
    clause 2(cursor, C, name) = ?(fd)
       -- if cursor matches `BLOCK`
       -- if name matches `CURRENT%`
@@ -7228,40 +7240,40 @@ def $find_funcdef_by_name(cursor, context, name) : funcdef? =
       -- if funcdef?{funcdef <- funcdef?} matches (_)
       -- let ?(fd) = funcdef?{funcdef <- funcdef?}
 
-   ;; ../../../../spec/4a1-typing-context.watsup:339.1-340.52
+   ;; ../../../../spec/4a1-typing-context.watsup:348.1-349.52
    clause 3(cursor, C, name) = $find_funcdef_by_name(`GLOBAL`_cursor(), C, `CURRENT%`_name(id))
       -- if cursor matches `BLOCK`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
       -- if (?() = $find_func_by_name(id, C.BLOCK.FDENV))
 
-   ;; ../../../../spec/4a1-typing-context.watsup:341.1-341.94
+   ;; ../../../../spec/4a1-typing-context.watsup:350.1-350.94
    clause 4(cursor, C, name) = $find_funcdef_by_name(`BLOCK`_cursor(), C, `CURRENT%`_name(id))
       -- if cursor matches `LOCAL`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
 
-;; ../../../../spec/4a1-typing-context.watsup:345.1-346.58
+;; ../../../../spec/4a1-typing-context.watsup:354.1-355.58
 def $find_consdef(cursor, context, name, arg*) : (cid, consdef, id*)? =
 
-   ;; ../../../../spec/4a1-typing-context.watsup:348.1-348.96
+   ;; ../../../../spec/4a1-typing-context.watsup:357.1-357.96
    clause 0(p, C, name, arg*{arg <- arg*}) = $find_func<consdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.CDENV)
       -- if name matches `TOP%`
       -- let `TOP%`_name(id) = name
 
-   ;; ../../../../spec/4a1-typing-context.watsup:349.1-349.105
+   ;; ../../../../spec/4a1-typing-context.watsup:358.1-358.105
    clause 1(cursor, C, name, arg*{arg <- arg*}) = $find_func<consdef>(id, $to_fkey(arg*{arg <- arg*}), C.GLOBAL.CDENV)
       -- if cursor matches `GLOBAL`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
 
-   ;; ../../../../spec/4a1-typing-context.watsup:350.1-350.91
+   ;; ../../../../spec/4a1-typing-context.watsup:359.1-359.91
    clause 2(cursor, C, name, arg*{arg <- arg*}) = $find_consdef(`GLOBAL`_cursor(), C, `CURRENT%`_name(id), arg*{arg <- arg*})
       -- if cursor matches `BLOCK`
       -- if name matches `CURRENT%`
       -- let `CURRENT%`_name(id) = name
 
-   ;; ../../../../spec/4a1-typing-context.watsup:351.1-351.90
+   ;; ../../../../spec/4a1-typing-context.watsup:360.1-360.90
    clause 3(cursor, C, name, arg*{arg <- arg*}) = $find_consdef(`BLOCK`_cursor(), C, `CURRENT%`_name(id), arg*{arg <- arg*})
       -- if cursor matches `LOCAL`
       -- if name matches `CURRENT%`

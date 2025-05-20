@@ -3,6 +3,7 @@ open Util.Error
 let version = "0.1"
 
 (* File collector *)
+
 let rec collect_files ~(suffix : string) dir =
   let files = Sys_unix.readdir dir in
   Array.sort String.compare files;
@@ -14,6 +15,27 @@ let rec collect_files ~(suffix : string) dir =
       else if String.ends_with ~suffix filename then files @ [ filename ]
       else files)
     [] files
+
+(* Exclude collector *)
+
+let collect_exclude filename_exclude =
+  let ic = open_in filename_exclude in
+  let rec parse_lines excludes =
+    try
+      let exclude = input_line ic in
+      if String.starts_with ~prefix:"#" exclude then parse_lines excludes
+      else parse_lines (exclude :: excludes)
+    with End_of_file -> excludes
+  in
+  let excludes = parse_lines [] in
+  close_in ic;
+  excludes
+
+let collect_excludes (paths_exclude : string list) =
+  let filenames_exclude =
+    List.concat_map (collect_files ~suffix:".exclude") paths_exclude
+  in
+  List.concat_map collect_exclude filenames_exclude
 
 (* Commands *)
 
@@ -125,6 +147,7 @@ let cover_sl_command =
      let open Core.Command.Param in
      let%map filenames_spec = anon (sequence ("filename" %: string))
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
+     and excludes_p4 = flag "-e" (listed string) ~doc:"p4 test exclude paths"
      and dirnames_p4 =
        flag "-d" (listed string) ~doc:"p4 directories to typecheck"
      and filenames_ignore =
@@ -140,8 +163,15 @@ let cover_sl_command =
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
+         let excludes_p4 = collect_excludes excludes_p4 in
          let filenames_p4 =
            List.concat_map (collect_files ~suffix:".p4") dirnames_p4
+         in
+         let filenames_p4 =
+           List.filter
+             (fun filename_p4 ->
+               not (List.exists (String.equal filename_p4) excludes_p4))
+             filenames_p4
          in
          let cover =
            Interp_sl.Typing.cover_typings ~mini spec_sl includes_p4 filenames_p4
@@ -161,6 +191,7 @@ let run_testgen_command =
      let%map filenames_spec = anon (sequence ("filename" %: string))
      and fuel = flag "-fuel" (required int) ~doc:"fuel for test generation"
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
+     and excludes_p4 = flag "-e" (listed string) ~doc:"p4 test exclude paths"
      and filenames_ignore =
        flag "-ignore" (listed string)
          ~doc:"relations or functions to ignore when reporting coverage"
@@ -197,7 +228,7 @@ let run_testgen_command =
          let bootmode =
            match (dirname_cold_boot, filename_boot) with
            | Some dirname_cold_boot, None ->
-               Testgen.Modes.Cold dirname_cold_boot
+               Testgen.Modes.Cold (excludes_p4, dirname_cold_boot)
            | None, Some filename_boot -> Testgen.Modes.Warm filename_boot
            | Some _, Some _ ->
                Format.asprintf

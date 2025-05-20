@@ -1,0 +1,16 @@
+p4c/testdata/p4_16_errors/actions-with-duplicate-control-plane-names1.p4
+p4c/testdata/p4_16_errors/annotation.p4
+p4c/testdata/p4_16_errors/issue1580.p4
+p4c/testdata/p4_16_errors/issue1732.p4
+p4c/testdata/p4_16_errors/issue1803_same_table_name.p4
+p4c/testdata/p4_16_errors/issue1949-bmv2.p4
+p4c/testdata/p4_16_errors/issue2283_2-bmv2.p4
+p4c/testdata/p4_16_errors/key-name.p4
+p4c/testdata/p4_16_errors/multicast-bmv2.p4
+p4c/testdata/p4_16_errors/spec-ex32_e.p4
+p4c/testdata/p4_16_errors/spec-issue1297-string-cat-err-2-anno.p4
+p4c/testdata/p4_16_errors/spec-issue1297-string-cat-err-3-anno.p4
+p4c/testdata/p4_16_errors/structured-annotation-e1.p4
+p4c/testdata/p4_16_errors/structured-annotation-e2.p4
+p4c/testdata/p4_16_errors/structured-annotation-e3.p4
+p4c/testdata/p4_16_errors/issue3363.p4

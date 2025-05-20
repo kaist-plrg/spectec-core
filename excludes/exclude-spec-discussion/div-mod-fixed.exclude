@@ -1,0 +1,8 @@
+p4c/testdata/p4_16_samples/constant_folding.p4
+p4c/testdata/p4_16_samples/gauntlet_various_ops-bmv2.p4
+p4c/testdata/p4_16_samples/issue1879-bmv2.p4
+p4c/testdata/p4_16_samples/issue2190.p4
+p4c/testdata/p4_16_samples/issue2279_4.p4
+p4c/testdata/p4_16_samples/issue2287-bmv2.p4
+p4c/testdata/p4_16_samples/precedence.p4
+p4c/testdata/p4_16_samples/strength.p4

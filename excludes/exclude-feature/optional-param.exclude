@@ -1,0 +1,9 @@
+p4c/testdata/p4_16_samples/gauntlet_optional-bmv2.p4
+p4c/testdata/p4_16_samples/issue1304.p4
+p4c/testdata/p4_16_samples/issue2492.p4
+p4c/testdata/p4_16_samples/issue2630.p4
+p4c/testdata/p4_16_samples/issue2664-bmv2.p4
+p4c/testdata/p4_16_samples/issue2810.p4
+p4c/testdata/p4_16_samples/issue3051.p4
+p4c/testdata/p4_16_samples/issue3417.p4
+p4c/testdata/p4_16_samples/pna-dpdk-direct-counter.p4

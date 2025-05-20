@@ -48,9 +48,11 @@
      -s
      ../../../../spec
      -i
-     ../../../../p4/testdata/arch
+     ../../../../p4c/p4include
+     -e
+     ../../../../excludes
      -d
-     ../../../../p4/testdata/p4c/program/well-typed)))))
+     ../../../../p4c/testdata/p4_16_samples)))))
 
 (rule
  (target run_sl_neg_p4c.actual)
@@ -65,9 +67,11 @@
      -s
      ../../../../spec
      -i
-     ../../../../p4/testdata/arch
+     ../../../../p4c/p4include
+     -e
+     ../../../../excludes
      -d
-     ../../../../p4/testdata/p4c/program/ill-typed
+     ../../../../p4c/testdata/p4_16_errors
      -neg)))))
 
 (rule
@@ -83,8 +87,10 @@
      -s
      ../../../../spec
      -i
-     ../../../../p4/testdata/arch
+     ../../../../p4c/p4include
+     -e
+     ../../../../excludes
      -d
-     ../../../../p4/testdata/p4c/program/well-typed
+     ../../../../p4c/testdata/p4_16_samples
      -d
-     ../../../../p4/testdata/p4c/program/ill-typed)))))
+     ../../../../p4c/testdata/p4_16_errors)))))

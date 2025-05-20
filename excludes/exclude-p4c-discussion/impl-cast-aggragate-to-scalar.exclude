@@ -1,0 +1,3 @@
+p4c/testdata/p4_16_samples/action-two-params.p4
+p4c/testdata/p4_16_samples/op_bin.p4
+p4c/testdata/p4_16_samples/table-entries-no-arg-actions.p4

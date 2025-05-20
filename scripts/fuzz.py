@@ -45,8 +45,14 @@ def fuzzing_campaign() -> None:
     parser.add_argument(
         "--include",
         type=str,
-        default="p4/testdata/arch",
+        default="p4c/p4include",
         help="Include directory for SpecTec",
+    )
+    parser.add_argument(
+        "--exclude",
+        type=str,
+        default="excludes",
+        help="Exclude directory for P4 tests",
     )
     parser.add_argument(
         "--ignores",
@@ -132,6 +138,12 @@ def fuzzing_campaign() -> None:
         exit(1)
     print(f"[CONFIG] Include directory: {INCLUDE_DIR}")
 
+    EXCLUDE_DIR: str = args.exclude
+    if not os.path.isdir(EXCLUDE_DIR):
+        print(f"Error: Exclude directory {EXCLUDE_DIR} does not exist.")
+        exit(1)
+    print(f"[CONFIG] Exclude directory: {EXCLUDE_DIR}")
+
     IGNORE_FILES: List[str] = args.ignores
     COVERAGE_FILE: Filepath = Filepath(args.coverage)
     if not os.path.isfile(COVERAGE_FILE):
@@ -169,6 +181,8 @@ def fuzzing_campaign() -> None:
         "-silent",
         "-i",
         INCLUDE_DIR,
+        "-e",
+        EXCLUDE_DIR,
         *[cmd for file in IGNORE_FILES for cmd in ("-ignore", file)],
         "-gen",
         WORK_DIR,

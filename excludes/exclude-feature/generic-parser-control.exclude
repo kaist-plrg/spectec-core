@@ -1,0 +1,15 @@
+p4c/testdata/p4_16_samples/functors6.p4
+p4c/testdata/p4_16_samples/functors7.p4
+p4c/testdata/p4_16_samples/functors8.p4
+p4c/testdata/p4_16_samples/functors9.p4
+p4c/testdata/p4_16_samples/generic.p4
+p4c/testdata/p4_16_samples/generic1.p4
+p4c/testdata/p4_16_samples/issue1914-1.p4
+p4c/testdata/p4_16_samples/issue1914.p4
+p4c/testdata/p4_16_samples/issue2019-1.p4
+p4c/testdata/p4_16_samples/issue2019.p4
+p4c/testdata/p4_16_samples/issue2265.p4
+p4c/testdata/p4_16_samples/issue344.p4
+p4c/testdata/p4_16_samples/spec-issue1068.p4
+p4c/testdata/p4_16_errors/dup-param1.p4
+p4c/testdata/p4_16_errors/dup-param2.p4

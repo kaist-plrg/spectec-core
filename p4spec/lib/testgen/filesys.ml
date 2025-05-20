@@ -1,5 +1,7 @@
 (* Filesystem helpers *)
 
+(* Collectors *)
+
 let rec collect_files ~(suffix : string) (dir : string) =
   let files = Sys_unix.readdir dir in
   Array.sort String.compare files;
@@ -11,6 +13,27 @@ let rec collect_files ~(suffix : string) (dir : string) =
       else if String.ends_with ~suffix filename then files @ [ filename ]
       else files)
     [] files
+
+let collect_exclude filename_exclude =
+  let ic = open_in filename_exclude in
+  let rec parse_lines excludes =
+    try
+      let exclude = input_line ic in
+      if String.starts_with ~prefix:"#" exclude then parse_lines excludes
+      else parse_lines (exclude :: excludes)
+    with End_of_file -> excludes
+  in
+  let excludes = parse_lines [] in
+  close_in ic;
+  excludes
+
+let collect_excludes (paths_exclude : string list) =
+  let filenames_exclude =
+    List.concat_map (collect_files ~suffix:".exclude") paths_exclude
+  in
+  List.concat_map collect_exclude filenames_exclude
+
+(* File and directory operations *)
 
 let base ~(suffix : string) (filename : string) : string =
   let filename_base =

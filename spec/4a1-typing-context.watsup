@@ -148,12 +148,21 @@ dec $add_styp(cursor, context, id, styp) : context
     hint(show %2.%1.FRAME#(S)#%latex("\\{")#%3#%latex("\\mapsto")#%4#%latex("\\}"))
 
 def $add_styp(GLOBAL, C, id, styp) = C[ .GLOBAL.FRAME = frame ]
+  -- if id = "main"
+  -- if ~$in_set<id>(id, $dom_map<id, styp>(C.GLOBAL.FRAME))
+  -- if typ _ _ _ = styp
+  -- if $is_packaget($canon_typ(typ))
+  -- if frame = $add_map<id, styp>(C.GLOBAL.FRAME, id, styp)
+def $add_styp(GLOBAL, C, id, styp) = C[ .GLOBAL.FRAME = frame ]
+  -- if id =/= "main"
   -- if ~$in_set<id>(id, $dom_map<id, styp>(C.GLOBAL.FRAME))
   -- if frame = $add_map<id, styp>(C.GLOBAL.FRAME, id, styp)
 def $add_styp(BLOCK, C, id, styp) = C[ .BLOCK.FRAME = frame ]
+  -- if id =/= "main"
   -- if ~$in_set<id>(id, $dom_map<id, styp>(C.BLOCK.FRAME))
   -- if frame = $add_map<id, styp>(C.BLOCK.FRAME, id, styp)
 def $add_styp(LOCAL, C, id, styp) = C[ .LOCAL.FRAMES = frame* ]
+  -- if id =/= "main"
   -- if frame_h :: frame_t* = C.LOCAL.FRAMES
   -- if ~$in_set<id>(id, $dom_map<id, styp>(frame_h))
   -- if frame_h' = $add_map<id, styp>(frame_h, id, styp)

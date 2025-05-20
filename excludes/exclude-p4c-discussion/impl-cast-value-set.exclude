@@ -1,0 +1,7 @@
+p4c/testdata/p4_16_samples/pvs-nested-struct.p4
+p4c/testdata/p4_16_samples/pvs-struct-1-bmv2.p4
+p4c/testdata/p4_16_samples/pvs-struct-2-bmv2.p4
+p4c/testdata/p4_16_samples/pvs-struct-3-bmv2.p4
+p4c/testdata/p4_16_samples/pvs.p4
+p4c/testdata/p4_16_samples/v1model-p4runtime-enumint-types1.p4
+p4c/testdata/p4_16_samples/v1model-p4runtime-most-types1.p4

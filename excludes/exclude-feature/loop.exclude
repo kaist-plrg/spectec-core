@@ -1,0 +1,13 @@
+p4c/testdata/p4_16_samples/forloop1.p4
+p4c/testdata/p4_16_samples/forloop2.p4
+p4c/testdata/p4_16_samples/forloop3.p4
+p4c/testdata/p4_16_samples/forloop4.p4
+p4c/testdata/p4_16_samples/forloop5.p4
+p4c/testdata/p4_16_samples/forloop5a.p4
+p4c/testdata/p4_16_samples/forloop6.p4
+p4c/testdata/p4_16_samples/forloop7.p4
+p4c/testdata/p4_16_samples/issue4739.p4
+p4c/testdata/p4_16_samples/loop-3-clause-tricky2.p4
+p4c/testdata/p4_16_errors/loop1-err.p4
+p4c/testdata/p4_16_errors/loop2-err.p4
+p4c/testdata/p4_16_errors/loop3-err.p4

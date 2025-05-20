@@ -1,0 +1,6 @@
+p4c/testdata/p4_16_samples/psa-dpdk-binary-operations-1.p4
+p4c/testdata/p4_16_samples/psa-dpdk-binary-operations.p4
+p4c/testdata/p4_16_samples/psa-dpdk-header-union-typedef.p4
+p4c/testdata/p4_16_samples/pins/pins_fabric.p4
+p4c/testdata/p4_16_samples/pins/pins_middleblock.p4
+p4c/testdata/p4_16_samples/pins/pins_wbb.p4
