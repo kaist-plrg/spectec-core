@@ -26,12 +26,12 @@ def union_entry(
         return (Status.HIT_LIKELY, list(set(files1 + files2)))
 
     elif (
-        status1 == Status.HIT_LIKELY
-        and status2 == Status.HIT_UNLIKELY
-        or status1 == Status.HIT_UNLIKELY
-        and status2 == Status.HIT_LIKELY
-        or status1 == Status.HIT_UNLIKELY
-        and status2 == Status.HIT_UNLIKELY
+        (status1 == Status.HIT_LIKELY
+        and status2 == Status.HIT_UNLIKELY)
+        or (status1 == Status.HIT_UNLIKELY
+        and status2 == Status.HIT_LIKELY)
+        or (status1 == Status.HIT_UNLIKELY
+        and status2 == Status.HIT_UNLIKELY)
     ):
         return (Status.HIT_UNLIKELY, list(set(files1 + files2)))
 
@@ -46,12 +46,12 @@ def union_entry(
         return (status2, files2)
 
     elif (
-        status1 == Status.CLOSE_MISS
-        and status2 == Status.CLOSE_MISS
-        or status1 == Status.COMPLETE_MISS
-        and status2 == Status.CLOSE_MISS
-        or status1 == Status.CLOSE_MISS
-        and status2 == Status.COMPLETE_MISS
+        (status1 == Status.CLOSE_MISS
+        and status2 == Status.CLOSE_MISS)
+        or (status1 == Status.COMPLETE_MISS
+        and status2 == Status.CLOSE_MISS)
+        or (status1 == Status.CLOSE_MISS
+        and status2 == Status.COMPLETE_MISS)
     ):
         return (Status.CLOSE_MISS, list(set(files1 + files2)))
 

@@ -29,6 +29,16 @@ let log (logmode : Modes.logmode) (oc : t) (msg : string) : unit =
   msg ^ "\n" |> output_string oc;
   flush oc
 
+let mark (logmode : Modes.logmode) (oc : t) (msg : string) : unit =
+  let timestamp =
+    let tm = Unix.localtime (Unix.time ()) in
+    Printf.sprintf "[%02d:%02d:%02d]" tm.tm_hour tm.tm_min tm.tm_sec
+  in
+  let msg = Format.asprintf "[%s] ### %s" timestamp msg in
+  if logmode = Verbose then print_endline msg;
+  msg ^ "\n" |> output_string oc;
+  flush oc
+
 let warn (logmode : Modes.logmode) (oc : t) (msg : string) : unit =
   let timestamp =
     let tm = Unix.localtime (Unix.time ()) in
