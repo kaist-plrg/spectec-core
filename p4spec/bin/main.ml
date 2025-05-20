@@ -32,6 +32,46 @@ let elab_command =
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
        | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
+let stat_def (count_rels : int) (count_rules : int) (count_decs : int)
+    (count_defs : int) (def : Il.Ast.def) : int * int * int * int =
+  match def.it with
+  | RelD (id, _, _, rules) ->
+      Format.printf "[Rel %s] Rules: %d\n" id.it (List.length rules);
+      let count_rels = count_rels + 1 in
+      let count_rules = count_rules + List.length rules in
+      (count_rels, count_rules, count_decs, count_defs)
+  | DecD (id, _, _, _, clauses) ->
+      Format.printf "[Func %s] Defs: %d\n" id.it (List.length clauses);
+      let count_decs = count_decs + 1 in
+      let count_defs = count_defs + List.length clauses in
+      (count_rels, count_rules, count_decs, count_defs)
+  | _ -> (count_rels, count_rules, count_decs, count_defs)
+
+let stat_spec (spec : Il.Ast.spec) : unit =
+  let count_rels, count_rules, count_decs, count_defs =
+    List.fold_left
+      (fun (count_rels, count_rules, count_decs, count_defs) def ->
+        stat_def count_rels count_rules count_decs count_defs def)
+      (0, 0, 0, 0) spec
+  in
+  Format.printf "[Total] Rels: %d, Rules: %d, Decs: %d, Defs: %d\n" count_rels
+    count_rules count_decs count_defs
+
+let stat_command =
+  Core.Command.basic ~summary:"insert structured control flow to a p4_16 spec"
+    (let open Core.Command.Let_syntax in
+     let open Core.Command.Param in
+     let%map filenames = anon (sequence ("filename" %: string)) in
+     fun () ->
+       try
+         let spec = List.concat_map Frontend.Parse.parse_file filenames in
+         let spec_il = Elaborate.Elab.elab_spec spec in
+         stat_spec spec_il;
+         ()
+       with
+       | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
+       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+
 let struct_command =
   Core.Command.basic ~summary:"insert structured control flow to a p4_16 spec"
     (let open Core.Command.Let_syntax in
@@ -296,6 +336,7 @@ let command =
     ~summary:"p4spec: a language design framework for the p4_16 language"
     [
       ("elab", elab_command);
+      ("stat", stat_command);
       ("struct", struct_command);
       ("run-sl", run_sl_command);
       ("cover-sl", cover_sl_command);
