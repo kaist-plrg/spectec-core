@@ -19,7 +19,8 @@ FROM base AS source
 
 RUN git clone https://github.com/kaist-plrg/p4cherry.git && \
     cd p4cherry && \
-    git checkout p4spec-sl-mod-il
+    git checkout p4spec-sl-mod-il && \
+    git submodule update --init
 
 WORKDIR /home/p4cherry
 
