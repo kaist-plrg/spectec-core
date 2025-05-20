@@ -1,4 +1,1 @@
-[submodule "spectec"]
-	path = spectec
-	url = https://github.com/Wasm-DSL/spectec.git
-  branch = main
+

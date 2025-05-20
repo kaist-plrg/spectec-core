@@ -7,7 +7,6 @@ SPEC = p4spectec
 .PHONY: build build-p4 build-spectec
 
 EXEMAIN = p4/_build/default/bin/main.exe
-EXEWATSUP = spectec/spectec/_build/default/src/exe-watsup/main.exe
 EXESPEC = p4spec/_build/default/bin/main.exe
 
 build: build-p4 build-watsup
@@ -24,25 +23,11 @@ build-p4-release:
 	cd p4 && opam exec -- dune build --profile release bin/main.exe && echo
 	ln -f $(EXEMAIN) ./$(MAIN)
 
-build-watsup:
-	rm -f ./$(WATSUP)
-	opam switch 5.0.0
-	cd spectec/spectec && opam exec make
-	ln -f $(EXEWATSUP) ./$(WATSUP)
-
 build-spec:
 	rm -f ./$(SPEC)
 	opam switch 4.14.0
 	cd p4spec && opam exec -- dune build bin/main.exe && echo
 	ln -f $(EXESPEC) ./$(SPEC)
-
-# Spec
-
-spec: build-watsup
-	echo "This will be broken until p4spec catches up with watsup ..."
-	./$(SPEC) --latex spec/*.watsup	> spec/spec-gen.include
-	cd spec && pdflatex spec.tex
-	echo "Spec generation completed: spec/spec.pdf"
 
 # Format
 
@@ -86,7 +71,6 @@ promote-spec:
 .PHONY: clean
 
 clean:
-	rm -f ./$(MAIN) ./$(WATSUP) ./$(SPEC)
+	rm -f ./$(MAIN) ./$(SPEC)
 	cd p4 && dune clean
-	cd spectec/spectec && dune clean
 	cd p4spec && dune clean
