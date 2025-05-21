@@ -357,23 +357,24 @@ def fuzzing_campaign() -> None:
 
 def terminate_process_tree(process):
     try:
-        parent = psutil.Process(process.pid)
-        children = parent.children(recursive=True)
-        for child in children:
-            print(f"Killing subprocess {child.pid}")
-            child.terminate()  # Try SIGTERM first
-            try:
-                child.wait(timeout=3)  # Wait for graceful termination
-            except psutil.TimeoutExpired:
-                print(f"Force killing subprocess {child.pid}")
-                child.kill()  # Force kill if it doesn't terminate
-        print(f"Killing parent process {parent.pid}")
-        parent.terminate()
         try:
-            parent.wait(timeout=3)
-        except psutil.TimeoutExpired:
-            print(f"Force killing parent process {parent.pid}")
+            parent = psutil.Process(process.pid)
+            children = parent.children(recursive=True)
+        except psutil.NoSuchProcess:
+            print(f"Process {process.pid} already exited.")
+            return
+
+        for child in children:
+            try:
+                print(f"Killing subprocess {child.pid}")
+                child.kill()
+            except psutil.NoSuchProcess:
+                print(f"Subprocess {child.pid} already exited.")
+        try:
+            print(f"Killing parent process {parent.pid}")
             parent.kill()
+        except psutil.NoSuchProcess:
+            print(f"Parent process {parent.pid} already exited.")
     except Exception as e:
         print(f"Error while terminating process tree: {e}")
 
