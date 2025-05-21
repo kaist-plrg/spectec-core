@@ -13,12 +13,17 @@ def find_coverage_dirs(base_dir: Directory, seed_dir: Directory) -> List[Directo
     base_path: Path = Path(base_dir)
     coverage_dirs: Set[Directory] = set()
 
-    # 1. All fuzz*/ill-typed dirs
+    # 1. All fuzz*/illtyped dirs
     for subdir in base_path.glob("fuzz*/illtyped"):
         if subdir.is_dir():
             coverage_dirs.add(Directory(str(subdir.resolve())))
 
-    # 2. reduced/ directory
+    # 2. All fuzz*/welltyped dirs
+    for subdir in base_path.glob("fuzz*/welltyped"):
+        if subdir.is_dir():
+            coverage_dirs.add(Directory(str(subdir.resolve())))
+
+    # 3. reduced/ directory
     reduced_dir = base_path / "reduced"
     if reduced_dir.is_dir():
         coverage_dirs.add(Directory(str(reduced_dir.resolve())))
