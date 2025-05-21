@@ -357,7 +357,7 @@ if __name__ == "__main__":
 
     else:
         print("\n[INFO] Script finished within timeout.")
-    TESTDATA_DIR: Directory = Directory("seed")
+    TESTDATA_DIR: Directory = Directory("p4c/testdata/p4_16_samples")
     OUTPUT_PATH: Filepath = Filepath(os.path.join(config.work_dir, "total.coverage"))
     run_coverage(
         config.work_dir,
