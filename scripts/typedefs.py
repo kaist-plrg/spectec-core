@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Dict, List, Tuple, NewType, Optional, TypedDict
+from dataclasses import dataclass
 
 #
 # Type aliases
@@ -23,7 +24,8 @@ Coverage = Dict[Origin, Dict[PID, CoverageEntry]]
 Reductions = Dict[PID, List[Filepath]]
 
 
-class CReduceConfigs(TypedDict):
+@dataclass
+class CReduceConfigs:
     p4spectec_dir: Directory
     cores: Optional[int]
     timeout_interesting: int

@@ -54,12 +54,12 @@ def reduce_program(
     reduced_files_dir: Directory,
     pid: Union[int, str],
     filename: Filepath,
-    pgid: int,
     p4spectec_dir: Directory,
     cores: Optional[int],
     timeout: int = 10,
     timeout_creduce: int = 25,
     fuzz_end: bool = False,
+    pgid: Optional[int] = None,
 ) -> Optional[Filepath]:
 
     interesting_dir: Directory = Directory(os.path.join(reduce_dir, "interesting"))
@@ -131,12 +131,21 @@ def reduce_program(
             start_time = time.time()
 
             with open(creduce_log_path, "w") as creduce_log_file:
-                proc: Popen = subprocess.Popen(
-                    creduce_command,
-                    preexec_fn=set_pgid(pgid),
-                    cwd=reduce_dir,
-                    stdout=creduce_log_file,
-                    stderr=subprocess.STDOUT,
+                proc: Popen = (
+                    subprocess.Popen(
+                        creduce_command,
+                        preexec_fn=set_pgid(pgid),
+                        cwd=reduce_dir,
+                        stdout=creduce_log_file,
+                        stderr=subprocess.STDOUT,
+                    )
+                    if pgid is not None
+                    else subprocess.Popen(
+                        creduce_command,
+                        cwd=reduce_dir,
+                        stdout=creduce_log_file,
+                        stderr=subprocess.STDOUT,
+                    )
                 )
                 monitor_thread = threading.Thread(
                     target=monitor_file_size,
@@ -226,12 +235,12 @@ def reduce_from_coverage(
                     reduced_files_dir,
                     pid,
                     smallest_file,
-                    pgid,
-                    creduce_configs["p4spectec_dir"],
-                    creduce_configs["cores"],
-                    creduce_configs["timeout_interesting"],
-                    creduce_configs["timeout_creduce"],
+                    creduce_configs.p4spectec_dir,
+                    creduce_configs.cores,
+                    creduce_configs.timeout_interesting,
+                    creduce_configs.timeout_creduce,
                     False,
+                    pgid,
                 )
                 if reducer_result is None:
                     log(
@@ -260,7 +269,6 @@ def reduce_likely_hits(
     reduce_dir: Directory,
     reduced_files_dir: Directory,
     creduce_configs: CReduceConfigs,
-    pgid: int,
 ) -> None:
     global_log_path: Filepath = Filepath(os.path.join(reduce_dir, "reducer.log"))
     with open(global_log_path, "a") as global_log_file:
@@ -282,11 +290,10 @@ def reduce_likely_hits(
                         reduced_files_dir,
                         pid,
                         filename,
-                        pgid,
-                        creduce_configs["p4spectec_dir"],
-                        creduce_configs["cores"],
-                        creduce_configs["timeout_interesting"],
-                        creduce_configs["timeout_creduce"],
+                        creduce_configs.p4spectec_dir,
+                        creduce_configs.cores,
+                        creduce_configs.timeout_interesting,
+                        creduce_configs.timeout_creduce,
                         True,  # fuzz_end
                     )
                     if reducer_result is None:

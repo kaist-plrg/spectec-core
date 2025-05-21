@@ -19,139 +19,47 @@ from coverage_utils import (
     log,
 )
 from reduce import reduce_program, reduce_from_coverage, reduce_likely_hits, set_pgid
+from cleanup import run_coverage, reduce_final
+
+from dataclasses import dataclass
 
 
-def fuzzing_campaign() -> None:
+@dataclass
+class FuzzConfig:
+    work_dir: Directory
+    loops: int
+    spec: Directory
+    include: Directory
+    exclude: Directory
+    ignores: List[Filepath]
+    coverage: Filepath
+    mode: str
+    reduce: bool
+    creduce_configs: CReduceConfigs
 
-    os.setsid() # only in main process, before any subprocesses are started
-    pgid = os.getpid()
 
-    #
-    # Parse command-line arguments
-    #
-
+def parse_args() -> FuzzConfig:
     parser = argparse.ArgumentParser(description="Fuzzer.")
-
-    # Arguments for the campaign
 
     parser.add_argument("dir", type=str, help="Path to the working directory")
     parser.add_argument("--loops", type=int, default=2, help="Fuzz loop count")
-
-    # Arguments for SpecTec
-
-    parser.add_argument(
-        "--spec", type=str, default="spec", help="Spec directory for SpecTec"
-    )
-    parser.add_argument(
-        "--include",
-        type=str,
-        default="p4c/p4include",
-        help="Include directory for SpecTec",
-    )
-    parser.add_argument(
-        "--exclude",
-        type=str,
-        default="excludes",
-        help="Exclude directory for P4 tests",
-    )
+    parser.add_argument("--spec", type=str, default="spec")
+    parser.add_argument("--include", type=str, default="p4c/p4include")
+    parser.add_argument("--exclude", type=str, default="excludes")
     parser.add_argument(
         "--ignores",
         nargs="*",
         type=str,
         default=["coverage/relation.ignore", "coverage/function.ignore"],
-        help="List of ignore files for skipping phantom ids",
     )
-    parser.add_argument(
-        "--coverage",
-        type=str,
-        default="coverage/p4c-pos.coverage",
-        help="Path to initial coverage data",
-    )
+    parser.add_argument("--coverage", type=str, default="coverage/p4c-pos.coverage")
+    parser.add_argument("--cores", type=int)
+    parser.add_argument("--timeout", type=int, default=10)
+    parser.add_argument("--timeout-creduce", type=int, default=25)
+    parser.add_argument("--mode", choices=["random", "derive", "hybrid"], required=True)
+    parser.add_argument("--reduce", action="store_true")
 
-    # Arguments for C-Reduce
-
-    parser.add_argument(
-        "--cores",
-        type=int,
-        help="Number of cores for creduce (default: creduce finds an optimal setting)",
-    )
-    parser.add_argument(
-        "--timeout",
-        type=int,
-        default=10,
-        help="Timeout in seconds for interestingness test (default: 10 seconds)",
-    )
-    parser.add_argument(
-        "--timeout-creduce",
-        type=int,
-        default=25,
-        help="Timeout in seconds for creduce (default: 25 seconds)",
-    )
-
-    parser.add_argument(
-        "--mode",
-        choices=["random", "derive", "hybrid"],
-        required=True,
-        help="Mode for choosing close-AST",
-    )
-
-    parser.add_argument("--reduce", action="store_true", help="Reduce mode")
-
-    args, unknown_args = parser.parse_known_args()
-
-    #
-    # Configuration check
-    #
-
-    # Configure working directory
-
-    WORK_DIR: Directory = Directory(args.dir)
-    if os.path.exists(WORK_DIR):
-        print(f"Error: {WORK_DIR} already exists.")
-        exit(1)
-    os.makedirs(WORK_DIR)
-    print(f"[CONFIG] Working directory: {WORK_DIR}")
-
-    LOOPS: int = args.loops
-    if LOOPS < 1:
-        print("Error: Loops must be greater than 0.")
-        exit(1)
-    print(f"[CONFIG] Loop count: {LOOPS}")
-
-    # Configure SpecTec
-
-    SPEC_DIR: str = args.spec
-    if not os.path.isdir(SPEC_DIR):
-        print(f"Error: Spec directory {SPEC_DIR} does not exist.")
-        exit(1)
-    SPEC_FILES: List[str] = [
-        os.path.join(SPEC_DIR, file)
-        for file in os.listdir(SPEC_DIR)
-        if file.endswith(".watsup")
-    ]
-    SPEC_FILES = sorted(SPEC_FILES)
-    print(f"[CONFIG] Spec files: {SPEC_FILES}")
-
-    INCLUDE_DIR: str = args.include
-    if not os.path.isdir(INCLUDE_DIR):
-        print(f"Error: Include directory {INCLUDE_DIR} does not exist.")
-        exit(1)
-    print(f"[CONFIG] Include directory: {INCLUDE_DIR}")
-
-    EXCLUDE_DIR: str = args.exclude
-    if not os.path.isdir(EXCLUDE_DIR):
-        print(f"Error: Exclude directory {EXCLUDE_DIR} does not exist.")
-        exit(1)
-    print(f"[CONFIG] Exclude directory: {EXCLUDE_DIR}")
-
-    IGNORE_FILES: List[str] = args.ignores
-    COVERAGE_FILE: Filepath = Filepath(args.coverage)
-    if not os.path.isfile(COVERAGE_FILE):
-        print(f"Error: Coverage file {COVERAGE_FILE} does not exist.")
-        exit(1)
-    print(f"[CONFIG] Coverage file: {COVERAGE_FILE}")
-
-    # Configuring C-Reduce
+    args = parser.parse_args()
 
     # P4CHERRY_PATH must be set
     if os.getenv("P4CHERRY_PATH") is None:
@@ -160,15 +68,85 @@ def fuzzing_campaign() -> None:
     P4SPECTEC_DIR: Directory = Directory(str(os.getenv("P4CHERRY_PATH")))
     print(f"[CONFIG] P4CHERRY_PATH: {P4SPECTEC_DIR}")
 
-    CORES: Union[int, None] = args.cores
+    return FuzzConfig(
+        work_dir=args.dir,
+        loops=args.loops,
+        spec=args.spec,
+        include=args.include,
+        exclude=args.exclude,
+        ignores=args.ignores,
+        coverage=args.coverage,
+        mode=args.mode,
+        reduce=args.reduce,
+        creduce_configs=CReduceConfigs(
+            p4spectec_dir=P4SPECTEC_DIR,
+            cores=args.cores,
+            timeout_interesting=args.timeout,
+            timeout_creduce=args.timeout_creduce,
+        ),
+    )
 
-    C_REDUCE_CONFIGS: CReduceConfigs = {
-        "p4spectec_dir": P4SPECTEC_DIR,
-        "cores": CORES,
-        "timeout_interesting": args.timeout,
-        "timeout_creduce": args.timeout_creduce,
-    }
 
+def fuzzing_campaign(config: FuzzConfig) -> None:
+
+    os.setsid()  # only in main process, before any subprocesses are started
+    pgid = os.getpid()
+
+    #
+    # Configuration check
+    #
+
+    # Configure working directory
+
+    WORK_DIR: Directory = Directory(config.work_dir)
+    if os.path.exists(WORK_DIR):
+        print(f"Error: {WORK_DIR} already exists.")
+        exit(1)
+    os.makedirs(WORK_DIR)
+    print(f"[CONFIG] Working directory: {WORK_DIR}")
+
+    LOOPS: int = config.loops
+    if LOOPS < 1:
+        print("Error: Loops must be greater than 0.")
+        exit(1)
+    print(f"[CONFIG] Loop count: {LOOPS}")
+
+    # Configure SpecTec
+
+    SPEC_DIR: Directory = Directory(config.spec)
+    if not os.path.isdir(SPEC_DIR):
+        print(f"Error: Spec directory {SPEC_DIR} does not exist.")
+        exit(1)
+    SPEC_FILES: List[Filepath] = [
+        Filepath(os.path.join(SPEC_DIR, file))
+        for file in os.listdir(SPEC_DIR)
+        if file.endswith(".watsup")
+    ]
+    SPEC_FILES = sorted(SPEC_FILES)
+    print(f"[CONFIG] Spec files: {SPEC_FILES}")
+
+    INCLUDE_DIR: Directory = Directory(config.include)
+    if not os.path.isdir(INCLUDE_DIR):
+        print(f"Error: Include directory {INCLUDE_DIR} does not exist.")
+        exit(1)
+    print(f"[CONFIG] Include directory: {INCLUDE_DIR}")
+
+    EXCLUDE_DIR: Directory = Directory(config.exclude)
+    if not os.path.isdir(EXCLUDE_DIR):
+        print(f"Error: Exclude directory {EXCLUDE_DIR} does not exist.")
+        exit(1)
+    print(f"[CONFIG] Exclude directory: {EXCLUDE_DIR}")
+
+    IGNORE_FILES: List[Filepath] = config.ignores
+    COVERAGE_FILE: Filepath = Filepath(config.coverage)
+    if not os.path.isfile(COVERAGE_FILE):
+        print(f"Error: Coverage file {COVERAGE_FILE} does not exist.")
+        exit(1)
+    print(f"[CONFIG] Coverage file: {COVERAGE_FILE}")
+
+    # Configuring C-Reduce
+
+    C_REDUCE_CONFIGS: CReduceConfigs = config.creduce_configs
     loop_idx: int = 0
 
     # Template command for SpecTec,
@@ -187,9 +165,9 @@ def fuzzing_campaign() -> None:
         "-gen",
         WORK_DIR,
     ]
-    if args.mode == "random":
+    if config.mode == "random":
         spectec_command_template += ["-random"]
-    elif args.mode == "hybrid":
+    elif config.mode == "hybrid":
         spectec_command_template += ["-hybrid"]
 
     # Fuzzing campaign data structures
@@ -201,7 +179,7 @@ def fuzzing_campaign() -> None:
     # Fuzzing campaign hyperparameters
 
     MAX_REDUCTIONS_PER_PID: int = 0
-    REDUCE = args.reduce
+    REDUCE = config.reduce
 
     #
     # Partition the coverage into Close-misses(to reduce) and others
@@ -229,7 +207,7 @@ def fuzzing_campaign() -> None:
 
     reduced_files_dir: Directory = Directory(os.path.join(WORK_DIR, "reduced"))
     while loop_idx < LOOPS:
-        print(f"\n[DEBUG] === Starting loop{loop_idx} ===")
+        print(f"\n[INFO] === Starting loop{loop_idx} ===")
 
         if REDUCE:
             # === 1) REDUCE ===
@@ -241,7 +219,7 @@ def fuzzing_campaign() -> None:
             os.makedirs(reduce_dir, exist_ok=True)
 
             reductions = {}
-            print(f"\n[DEBUG] === Starting reduce{loop_idx} ===")
+            print(f"\n[INFO] === Starting reduce{loop_idx} ===")
             reduce_from_coverage(
                 total_coverage,
                 fuzzer_coverage,
@@ -254,7 +232,7 @@ def fuzzing_campaign() -> None:
             )
 
             print(
-                f"\n[DEBUG] === Finished reduce{loop_idx} with {len(reductions)} reductions ==="
+                f"\n[INFO] === Finished reduce{loop_idx} with {len(reductions)} reductions ==="
             )
             # Log reductions
             reductions_file: Filepath = Filepath(
@@ -267,7 +245,7 @@ def fuzzing_campaign() -> None:
                 os.path.join(reduce_dir, "fuzz.coverage")
             )
             print(
-                f"\n[DEBUG] === Writing fuzzer coverage into {fuzzer_coverage_file} ==="
+                f"\n[INFO] === Writing fuzzer coverage into {fuzzer_coverage_file} ==="
             )
             write_coverage(fuzzer_coverage_file, fuzzer_coverage)
 
@@ -283,7 +261,7 @@ def fuzzing_campaign() -> None:
 
         name_fuzz_campaign = f"fuzz{loop_idx}"
         fuzz_dir: Directory = Directory(os.path.join(WORK_DIR, name_fuzz_campaign))
-        print(f"\n[DEBUG] === Fuzzing in {fuzz_dir} ===")
+        print(f"\n[INFO] === Fuzzing in {fuzz_dir} ===")
 
         spectec_fuzz_command = spectec_command_template.copy() + [
             "-seed",
@@ -296,7 +274,7 @@ def fuzzing_campaign() -> None:
             name_fuzz_campaign,
         ]
 
-        print(f"\n[DEBUG] === Starting fuzz{loop_idx} ===")
+        print(f"\n[INFO] === Starting fuzz{loop_idx} ===")
         process = subprocess.Popen(
             spectec_fuzz_command,
             preexec_fn=set_pgid(pgid),
@@ -308,7 +286,7 @@ def fuzzing_campaign() -> None:
         final_coverage_file: Filepath = Filepath(
             os.path.join(fuzz_dir, "final.coverage")
         )
-        print(f"\n[DEBUG] === Reading fuzzer coverage from {final_coverage_file} ===")
+        print(f"\n[INFO] === Reading fuzzer coverage from {final_coverage_file} ===")
         final_coverage = read_coverage(final_coverage_file)
 
         # 2-2) Total coverage is updated with the findings from final coverage
@@ -316,7 +294,7 @@ def fuzzing_campaign() -> None:
         total_coverage_file: Filepath = Filepath(
             os.path.join(fuzz_dir, "total.coverage")
         )
-        print(f"\n[DEBUG] === Writing merged coverage into {total_coverage_file} ===")
+        print(f"\n[INFO] === Writing merged coverage into {total_coverage_file} ===")
         write_coverage(total_coverage_file, total_coverage)
 
         # 2-3) Hits in total coverage are promoted to fuzzer coverage
@@ -327,33 +305,6 @@ def fuzzing_campaign() -> None:
 
         loop_idx += 1
 
-    #
-    # End of the fuzzing loop
-    #
-
-    print(f"\n[DEBUG] === Starting reduce_final ===")
-    reduce_dir = Directory(os.path.join(WORK_DIR, "reduce_final"))
-    os.makedirs(reduce_dir, exist_ok=True)
-
-    reduced_likely_hits_dir: Directory = Directory(
-        os.path.join(WORK_DIR, "likely_hits")
-    )
-    os.makedirs(reduced_likely_hits_dir, exist_ok=True)
-
-    reductions = {}
-    reduce_likely_hits(
-        total_coverage,
-        reductions,
-        reduce_dir,
-        reduced_likely_hits_dir,
-        C_REDUCE_CONFIGS,
-        pgid,
-    )
-
-    print(f"\n[DEBUG] === Finished reduce_final with {len(reductions)} reductions ===")
-    # Log reductions
-    reductions_file = Filepath(os.path.join(reduce_dir, "reduced.reductions"))
-    write_reductions(reductions_file, reductions)
 
 def terminate_process_tree(process):
     try:
@@ -378,6 +329,7 @@ def terminate_process_tree(process):
     except Exception as e:
         print(f"Error while terminating process tree: {e}")
 
+
 def signal_handler(sig, frame):
     print("\n[INFO] Caught Ctrl+C or termination signal, cleaning up...")
     if p.is_alive():
@@ -386,13 +338,15 @@ def signal_handler(sig, frame):
     print("[INFO] All processes terminated.")
     sys.exit(1)
 
+
 if __name__ == "__main__":
-    signal.signal(signal.SIGINT, signal_handler)   # Handles Ctrl+C
+    signal.signal(signal.SIGINT, signal_handler)  # Handles Ctrl+C
     signal.signal(signal.SIGTERM, signal_handler)  # Handles kill command
 
     TIMEOUT = 12 * 60 * 60  # 12 hours in seconds
 
-    p = multiprocessing.Process(target=fuzzing_campaign)
+    config = parse_args()
+    p = multiprocessing.Process(target=fuzzing_campaign, args=(config,))
     p.start()
     p.join(TIMEOUT)
 
@@ -400,6 +354,19 @@ if __name__ == "__main__":
         print(f"\n[ERROR] Timeout after {TIMEOUT} seconds. Killing process tree.")
         terminate_process_tree(p)
         p.join()
-        sys.exit(1)
 
-    print("\n[INFO] Script finished within timeout.")
+    else:
+        print("\n[INFO] Script finished within timeout.")
+    TESTDATA_DIR: Directory = Directory("seed")
+    OUTPUT_PATH: Filepath = Filepath(os.path.join(config.work_dir, "total.coverage"))
+    run_coverage(
+        config.work_dir,
+        config.spec,
+        config.include,
+        config.exclude,
+        config.ignores,
+        TESTDATA_DIR,
+        OUTPUT_PATH,
+    )
+    total_coverage: Coverage = read_coverage(OUTPUT_PATH)
+    reduce_final(config.work_dir, total_coverage, config.creduce_configs)
