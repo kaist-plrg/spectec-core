@@ -49,12 +49,13 @@ let find_interesting (config : Config.t) (cover : SCov.Cover.t) :
     config.seed.cover
     (PIdSet.empty, PIdSet.empty)
 
-let update_hit_new' (fuel : int) (pid : pid) (strategy : string)
-    (idx_method : int) (idx_mutation : int) (config : Config.t) (log : Logger.t)
-    (filename_hit_p4 : string) (kind : Mutate.kind) (welltyped : bool)
-    (wellformed : bool) (pids_hit_new : PIdSet.t) : unit =
-  F.asprintf "[F %d] [P %d] [%s %d] [M %d] %s hits %s (COUNT %d) (%s) (%s)" fuel
-    pid strategy idx_method idx_mutation filename_hit_p4
+let update_hit_new' (fuel : int) (pid : pid) (idx_seed : int)
+    (strategy : string) (idx_method : int) (idx_mutation : int)
+    (config : Config.t) (log : Logger.t) (filename_hit_p4 : string)
+    (kind : Mutate.kind) (welltyped : bool) (pids_hit_new : PIdSet.t) : unit =
+  F.asprintf
+    "[F %d] [P %d] [S %d] [%s %d] [M %d] %s hits %s (COUNT %d) (%s) (%s)" fuel
+    pid idx_seed strategy idx_method idx_mutation filename_hit_p4
     (PIdSet.to_string pids_hit_new)
     (PIdSet.cardinal pids_hit_new)
     (Mutate.string_of_kind kind)
@@ -65,41 +66,42 @@ let update_hit_new' (fuel : int) (pid : pid) (strategy : string)
   |> output_string oc;
   close_out oc;
   (* Update the set of covered phantoms *)
-  Config.update_hit_seed config filename_hit_p4 wellformed welltyped
-    pids_hit_new
+  Config.update_hit_seed config filename_hit_p4 welltyped pids_hit_new
 
-let update_hit_new (fuel : int) (pid : pid) (strategy : string)
+let update_hit_new (fuel : int) (pid : pid) (idx_seed : int) (strategy : string)
     (idx_method : int) (idx_mutation : int) (config : Config.t) (log : Logger.t)
-    (filename_gen_p4 : string) (kind : Mutate.kind) (welltyped : bool)
-    (pids_hit_new : PIdSet.t) : unit =
-  (* Determine whether the generated program is syntactically valid *)
-  let wellformed =
-    try
-      P4frontend.Parse.parse_file config.specenv.includes_p4 filename_gen_p4
-      |> ignore;
-      true
-    with _ -> false
-  in
-  (* Copy the interesting test program to the output directory
+    (filename_gen_p4 : string) (kind : Mutate.kind) (pids_hit_new : PIdSet.t) :
+    unit =
+  (* Re-run the SL interpreter to make sure of the new hits *)
+  (* Then copy the interesting test program to the output directory
      and update the running coverage *)
-  if wellformed && welltyped then
-    let filename_hit_p4 =
-      Filesys.cp filename_gen_p4 config.storage.dirname_welltyped_p4
-    in
-    update_hit_new' fuel pid strategy idx_method idx_mutation config log
-      filename_hit_p4 kind wellformed welltyped pids_hit_new
-  else if wellformed && not welltyped then
-    let filename_hit_p4 =
-      Filesys.cp filename_gen_p4 config.storage.dirname_illtyped_p4
-    in
-    update_hit_new' fuel pid strategy idx_method idx_mutation config log
-      filename_hit_p4 kind wellformed welltyped pids_hit_new
+  match
+    Interp_sl.Typing.run_typing' ~mini:config.mini ~derive:false
+      config.specenv.spec config.specenv.includes_p4 filename_gen_p4
+      config.specenv.ignores
+  with
+  | WellTyped (_, _, cover) when PIdSet.for_all (SCov.is_hit cover) pids_hit_new
+    ->
+      let filename_hit_p4 =
+        Filesys.cp filename_gen_p4 config.storage.dirname_welltyped_p4
+      in
+      update_hit_new' fuel pid idx_seed strategy idx_method idx_mutation config
+        log filename_hit_p4 kind true pids_hit_new
+  | IllTyped (_, _, cover) when PIdSet.for_all (SCov.is_hit cover) pids_hit_new
+    ->
+      let filename_hit_p4 =
+        Filesys.cp filename_gen_p4 config.storage.dirname_illtyped_p4
+      in
+      update_hit_new' fuel pid idx_seed strategy idx_method idx_mutation config
+        log filename_hit_p4 kind false pids_hit_new
+  | _ -> ()
 
-let update_close_miss_new' (fuel : int) (pid : pid) (strategy : string)
-    (idx_method : int) (idx_mutation : int) (config : Config.t) (log : Logger.t)
-    (filename_close_miss_p4 : string) (pids_close_miss_new : PIdSet.t) : unit =
-  F.asprintf "[F %d] [P %d] [%s %d] [M %d] %s close-misses %s" fuel pid strategy
-    idx_method idx_mutation filename_close_miss_p4
+let update_close_miss_new' (fuel : int) (pid : pid) (idx_seed : int)
+    (strategy : string) (idx_method : int) (idx_mutation : int)
+    (config : Config.t) (log : Logger.t) (filename_close_miss_p4 : string)
+    (pids_close_miss_new : PIdSet.t) : unit =
+  F.asprintf "[F %d] [P %d] [S %d] [%s %d] [M %d] %s close-misses %s" fuel pid
+    idx_seed strategy idx_method idx_mutation filename_close_miss_p4
     (PIdSet.to_string pids_close_miss_new)
   |> Logger.log config.modes.logmode log;
   let oc =
@@ -113,34 +115,39 @@ let update_close_miss_new' (fuel : int) (pid : pid) (strategy : string)
   Config.update_close_miss_seed config filename_close_miss_p4
     pids_close_miss_new
 
-let update_close_miss_new (fuel : int) (pid : pid) (strategy : string)
-    (idx_method : int) (idx_mutation : int) (config : Config.t) (log : Logger.t)
-    (filename_gen_p4 : string) (pids_close_miss_new : PIdSet.t) : unit =
-  (* Determine whether the generated program is syntactically valid *)
-  let wellformed =
-    try
-      P4frontend.Parse.parse_file config.specenv.includes_p4 filename_gen_p4
-      |> ignore;
-      true
-    with _ -> false
-  in
-  (* Copy the interesting test program to the output directory,
-     and update the running coverage *)
-  if wellformed then
-    let filename_close_miss_p4 =
-      Filesys.cp filename_gen_p4 config.storage.dirname_close_miss_p4
-    in
-    update_close_miss_new' fuel pid strategy idx_method idx_mutation config log
-      filename_close_miss_p4 pids_close_miss_new
-
-let update_interesting (fuel : int) (pid : pid) (strategy : string)
-    (idx_method : int) (idx_mutation : int) (trials : int ref)
+let update_close_miss_new (fuel : int) (pid : pid) (idx_seed : int)
+    (strategy : string) (idx_method : int) (idx_mutation : int)
     (config : Config.t) (log : Logger.t) (filename_gen_p4 : string)
-    (kind : Mutate.kind) (value_program : value) : unit =
+    (pids_close_miss_new : PIdSet.t) : unit =
+  (* Re-run the SL interpreter to make sure of the new close-misses *)
+  (* Then copy the interesting test program to the output directory,
+     and update the running coverage *)
+  (* Then copy the interesting test program to the output directory
+     and update the running coverage *)
+  match
+    Interp_sl.Typing.run_typing' ~mini:config.mini ~derive:false
+      config.specenv.spec config.specenv.includes_p4 filename_gen_p4
+      config.specenv.ignores
+  with
+  | WellTyped (_, _, cover)
+    when PIdSet.for_all (SCov.is_close_miss cover) pids_close_miss_new ->
+      let filename_close_miss_p4 =
+        Filesys.cp filename_gen_p4 config.storage.dirname_close_miss_p4
+      in
+      update_close_miss_new' fuel pid idx_seed strategy idx_method idx_mutation
+        config log filename_close_miss_p4 pids_close_miss_new
+  | _ -> ()
+
+let update_interesting (fuel : int) (pid : pid) (idx_seed : int)
+    (strategy : string) (idx_method : int) (idx_mutation : int)
+    (trials : int ref) (config : Config.t) (log : Logger.t)
+    (filename_gen_p4 : string) (kind : Mutate.kind) (value_program : value) :
+    unit =
   (* Evaluate the generated program to see if it is interesting *)
   let time_start = Unix.gettimeofday () in
-  F.asprintf "[F %d] [P %d] [%s %d] [M %d] [%d/%d] Evaluating %s" fuel pid
-    strategy idx_method idx_mutation !trials Config.trials_seed filename_gen_p4
+  F.asprintf "[F %d] [P %d] [S %d] [%s %d] [M %d] [%d/%d] Evaluating %s" fuel
+    pid idx_seed strategy idx_method idx_mutation !trials Config.trials_seed
+    filename_gen_p4
   |> Logger.log config.modes.logmode log;
   let welltyped, cover =
     match
@@ -152,8 +159,9 @@ let update_interesting (fuel : int) (pid : pid) (strategy : string)
     | IllFormed (_, cover) -> (false, cover)
   in
   let time_end = Unix.gettimeofday () in
-  F.asprintf "[F %d] [P %d] [%s %d] [M %d] [%d/%d] Evaluated %s (took %.2f)"
-    fuel pid strategy idx_method idx_mutation !trials Config.trials_seed
+  F.asprintf
+    "[F %d] [P %d] [S %d] [%s %d] [M %d] [%d/%d] Evaluated %s (took %.2f)" fuel
+    pid idx_seed strategy idx_method idx_mutation !trials Config.trials_seed
     filename_gen_p4 (time_end -. time_start)
   |> Logger.log config.modes.logmode log;
   (* Find newly hit or newly close-missing nodes *)
@@ -163,34 +171,34 @@ let update_interesting (fuel : int) (pid : pid) (strategy : string)
   (match config.modes.covermode with
   | Relaxed ->
       if not (PIdSet.is_empty pids_hit_new) then
-        update_hit_new fuel pid strategy idx_method idx_mutation config log
-          filename_gen_p4 kind welltyped pids_hit_new
+        update_hit_new fuel pid idx_seed strategy idx_method idx_mutation config
+          log filename_gen_p4 kind pids_hit_new
   | Strict ->
       if PIdSet.mem pid pids_hit_new then
-        update_hit_new fuel pid strategy idx_method idx_mutation config log
-          filename_gen_p4 kind welltyped (PIdSet.singleton pid));
+        update_hit_new fuel pid idx_seed strategy idx_method idx_mutation config
+          log filename_gen_p4 kind (PIdSet.singleton pid));
   (* Collect the file if it is well-typed and covers a new close-miss phantom,
      then update the running coverage *)
   if welltyped && not (PIdSet.is_empty pids_close_miss_new) then
-    update_close_miss_new fuel pid strategy idx_method idx_mutation config log
-      filename_gen_p4 pids_close_miss_new
+    update_close_miss_new fuel pid idx_seed strategy idx_method idx_mutation
+      config log filename_gen_p4 pids_close_miss_new
 
 (* Mutate an AST and generate a new program *)
 
-let classify_mutation' (fuel : int) (pid : pid) (strategy : string)
-    (idx_method : int) (idx_mutation : int) (trials : int ref)
-    (config : Config.t) (log : Logger.t) (dirname_gen_tmp : string)
-    (filename_p4 : string) (comment_gen_p4 : string) (kind : Mutate.kind)
-    (value_source : value) (value_mutated : value) (value_program : value)
-    (program : P4el.Ast.program) : unit =
+let classify_mutation' (fuel : int) (pid : pid) (idx_seed : int)
+    (strategy : string) (idx_method : int) (idx_mutation : int)
+    (trials : int ref) (config : Config.t) (log : Logger.t)
+    (dirname_gen_tmp : string) (filename_p4 : string) (comment_gen_p4 : string)
+    (kind : Mutate.kind) (value_source : value) (value_mutated : value)
+    (value_program : value) (program : P4el.Ast.program) : unit =
   let filename_gen_p4 =
-    F.asprintf "%s/%s_F%d_P%d_%s%d_M%d.p4" dirname_gen_tmp
+    F.asprintf "%s/%s_F%dP%dS%d%s%dM%dT%d.p4" dirname_gen_tmp
       (Filesys.base ~suffix:".p4" filename_p4)
-      fuel pid
+      fuel pid idx_seed
       (if strategy = "Derive" then "D"
        else if strategy = "Random" then "R"
        else "")
-      idx_method idx_mutation
+      idx_method idx_mutation !trials
   in
   let comment_gen_p4 =
     F.asprintf "%s\n/*\nFrom %s\nTo %s\n*/\n" comment_gen_p4
@@ -203,15 +211,15 @@ let classify_mutation' (fuel : int) (pid : pid) (strategy : string)
   |> output_string oc;
   close_out oc;
   (* Check if the mutated program is interesting, and if so, update *)
-  update_interesting fuel pid strategy idx_method idx_mutation trials config log
-    filename_gen_p4 kind value_program
+  update_interesting fuel pid idx_seed strategy idx_method idx_mutation trials
+    config log filename_gen_p4 kind value_program
 
-let classify_mutation (fuel : int) (pid : pid) (strategy : string)
-    (idx_method : int) (idx_mutation : int) (trials : int ref)
-    (config : Config.t) (log : Logger.t) (dirname_gen_tmp : string)
-    (filename_p4 : string) (comment_gen_p4 : string) (graph : Dep.Graph.t)
-    (vid_program : vid) (kind : Mutate.kind) (value_source : value)
-    (value_mutated : value) : unit =
+let classify_mutation (fuel : int) (pid : pid) (idx_seed : int)
+    (strategy : string) (idx_method : int) (idx_mutation : int)
+    (trials : int ref) (config : Config.t) (log : Logger.t)
+    (dirname_gen_tmp : string) (filename_p4 : string) (comment_gen_p4 : string)
+    (graph : Dep.Graph.t) (vid_program : vid) (kind : Mutate.kind)
+    (value_source : value) (value_mutated : value) : unit =
   (* Reassemble the program with the mutated AST *)
   let renamer = VIdMap.singleton value_source.note.vid value_mutated in
   let value_program = Dep.Graph.reassemble_node graph renamer vid_program in
@@ -221,21 +229,21 @@ let classify_mutation (fuel : int) (pid : pid) (strategy : string)
       if config.mini then Interp_sl.Convert.Out_mini.out_program value_program
       else Interp_sl.Convert.Out.out_program value_program
     in
-    classify_mutation' fuel pid strategy idx_method idx_mutation trials config
-      log dirname_gen_tmp filename_p4 comment_gen_p4 kind value_source
+    classify_mutation' fuel pid idx_seed strategy idx_method idx_mutation trials
+      config log dirname_gen_tmp filename_p4 comment_gen_p4 kind value_source
       value_mutated value_program program
   with Util.Error.ConvertOutError msg ->
     Logger.warn config.modes.logmode log msg
 
-let fuzz_mutation (fuel : int) (pid : pid) (strategy : string)
+let fuzz_mutation (fuel : int) (pid : pid) (idx_seed : int) (strategy : string)
     (idx_method : int) (trials : int ref) (config : Config.t) (log : Logger.t)
     (query : Query.t) (dirname_gen_tmp : string) (filename_p4 : string)
     (comment_gen_p4 : string) (graph : Dep.Graph.t) (vid_program : vid)
     (vid_source : vid) : unit =
   (* Reassemble the AST *)
   let value_source = Dep.Graph.reassemble_node graph VIdMap.empty vid_source in
-  F.asprintf "[F %d] [P %d] [%s %d]\n[File] %s\n[Source] %s\n" fuel pid strategy
-    idx_method filename_p4
+  F.asprintf "[F %d] [P %d] [S %d] [%s %d]\n[File] %s\n[Source] %s\n" fuel pid
+    idx_seed strategy idx_method filename_p4
     (Sl.Print.string_of_value value_source)
   |> Query.query query;
   (* Mutate the AST *)
@@ -254,15 +262,15 @@ let fuzz_mutation (fuel : int) (pid : pid) (strategy : string)
           F.asprintf "%s\n// Mutation %s\n" comment_gen_p4
             (Mutate.string_of_kind kind)
         in
-        classify_mutation fuel pid strategy idx_method idx_mutation trials
-          config log dirname_gen_tmp filename_p4 comment_gen_p4 graph
+        classify_mutation fuel pid idx_seed strategy idx_method idx_mutation
+          trials config log dirname_gen_tmp filename_p4 comment_gen_p4 graph
           vid_program kind value_source value_mutated))
     mutations
 
 (* Fuzzing from derivations *)
 
-let fuzz_derivations (fuel : int) (pid : pid) (trials : int ref)
-    (config : Config.t) (log : Logger.t) (query : Query.t)
+let fuzz_derivations (fuel : int) (pid : pid) (idx_seed : int)
+    (trials : int ref) (config : Config.t) (log : Logger.t) (query : Query.t)
     (dirname_gen_tmp : string) (filename_p4 : string) (graph : Dep.Graph.t)
     (vid_program : vid) (derivations_source : (vid * int) list) : unit =
   List.iteri
@@ -273,35 +281,37 @@ let fuzz_derivations (fuel : int) (pid : pid) (trials : int ref)
             vid_source depth
         in
         let strategy = "Derive" in
-        fuzz_mutation fuel pid strategy idx_derivation trials config log query
-          dirname_gen_tmp filename_p4 comment_gen_p4 graph vid_program
+        fuzz_mutation fuel pid idx_seed strategy idx_derivation trials config
+          log query dirname_gen_tmp filename_p4 comment_gen_p4 graph vid_program
           vid_source)
     derivations_source
 
-let fuzz_derivations_bounded (fuel : int) (pid : pid) (config : Config.t)
-    (log : Logger.t) (query : Query.t) (dirname_gen_tmp : string)
-    (filename_p4 : string) (graph : Dep.Graph.t) (vid_program : vid)
-    (derivations_source : (vid * int) list) : unit =
+let fuzz_derivations_bounded (fuel : int) (pid : pid) (idx_seed : int)
+    (config : Config.t) (log : Logger.t) (query : Query.t)
+    (dirname_gen_tmp : string) (filename_p4 : string) (graph : Dep.Graph.t)
+    (vid_program : vid) (derivations_source : (vid * int) list) : unit =
   if derivations_source = [] then
-    F.asprintf "[F %d] [P %d] Skipping, no derivation found" fuel pid
+    F.asprintf "[F %d] [P %d] [S %d] Skipping, no derivation found" fuel pid
+      idx_seed
     |> Logger.log config.modes.logmode log
   else
     let derivations_total = List.length derivations_source in
-    F.asprintf "[F %d] [P %d] Fuzzing from %d derivations, until %d trials" fuel
-      pid derivations_total Config.trials_seed
+    F.asprintf
+      "[F %d] [P %d] [S %d] Fuzzing from %d derivations, until %d trials" fuel
+      pid idx_seed derivations_total Config.trials_seed
     |> Logger.log config.modes.logmode log;
     let trials = ref 0 in
     while !trials < Config.trials_seed && MCov.is_miss config.seed.cover pid do
-      fuzz_derivations fuel pid trials config log query dirname_gen_tmp
+      fuzz_derivations fuel pid idx_seed trials config log query dirname_gen_tmp
         filename_p4 graph vid_program derivations_source
     done
 
 (* Fuzzing from a random value id *)
 
-let fuzz_randoms (fuel : int) (pid : pid) (trials : int ref) (config : Config.t)
-    (log : Logger.t) (query : Query.t) (dirname_gen_tmp : string)
-    (filename_p4 : string) (graph : Dep.Graph.t) (vid_program : vid)
-    (vids_source : vid list) : unit =
+let fuzz_randoms (fuel : int) (pid : pid) (idx_seed : int) (trials : int ref)
+    (config : Config.t) (log : Logger.t) (query : Query.t)
+    (dirname_gen_tmp : string) (filename_p4 : string) (graph : Dep.Graph.t)
+    (vid_program : vid) (vids_source : vid list) : unit =
   List.iteri
     (fun idx_random vid_source ->
       if !trials < Config.trials_seed && MCov.is_miss config.seed.cover pid then
@@ -309,52 +319,56 @@ let fuzz_randoms (fuel : int) (pid : pid) (trials : int ref) (config : Config.t)
           F.asprintf "// Intended pid %d\n// Source vid %d\n" pid vid_source
         in
         let strategy = "Random" in
-        fuzz_mutation fuel pid strategy idx_random trials config log query
-          dirname_gen_tmp filename_p4 comment_gen_p4 graph vid_program
+        fuzz_mutation fuel pid idx_seed strategy idx_random trials config log
+          query dirname_gen_tmp filename_p4 comment_gen_p4 graph vid_program
           vid_source)
     vids_source
 
-let fuzz_randoms_bounded (fuel : int) (pid : pid) (config : Config.t)
-    (log : Logger.t) (query : Query.t) (dirname_gen_tmp : string)
-    (filename_p4 : string) (graph : Dep.Graph.t) (vid_program : vid)
-    (vids_source : vid list) : unit =
-  F.asprintf "[F %d] [P %d] Fuzzing from %d random values, until %d trials" fuel
-    pid (List.length vids_source) Config.trials_seed
+let fuzz_randoms_bounded (fuel : int) (pid : pid) (idx_seed : int)
+    (config : Config.t) (log : Logger.t) (query : Query.t)
+    (dirname_gen_tmp : string) (filename_p4 : string) (graph : Dep.Graph.t)
+    (vid_program : vid) (vids_source : vid list) : unit =
+  F.asprintf
+    "[F %d] [P %d] [S %d] Fuzzing from %d random values, until %d trials" fuel
+    pid idx_seed (List.length vids_source) Config.trials_seed
   |> Logger.log config.modes.logmode log;
   let trials = ref 0 in
   while !trials < Config.trials_seed && MCov.is_miss config.seed.cover pid do
-    fuzz_randoms fuel pid trials config log query dirname_gen_tmp filename_p4
-      graph vid_program vids_source
+    fuzz_randoms fuel pid idx_seed trials config log query dirname_gen_tmp
+      filename_p4 graph vid_program vids_source
   done
 
 (* Fuzzing from a seed program *)
 
-let fuzz_seed_random (fuel : int) (pid : pid) (config : Config.t)
-    (log : Logger.t) (query : Query.t) (dirname_gen_tmp : string)
-    (filename_p4 : string) (graph : Dep.Graph.t) (vid_program : vid) : unit =
+let fuzz_seed_random (fuel : int) (pid : pid) (idx_seed : int)
+    (config : Config.t) (log : Logger.t) (query : Query.t)
+    (dirname_gen_tmp : string) (filename_p4 : string) (graph : Dep.Graph.t)
+    (vid_program : vid) : unit =
   (* Randomly sample N vids from the program *)
   let vids_source =
     List.init vid_program Fun.id
     |> Rand.random_sample Config.samples_related_vid
   in
   (* Mutate the ASTs and dump to file *)
-  fuzz_randoms_bounded fuel pid config log query dirname_gen_tmp filename_p4
-    graph vid_program vids_source
+  fuzz_randoms_bounded fuel pid idx_seed config log query dirname_gen_tmp
+    filename_p4 graph vid_program vids_source
 
-let fuzz_seed_deriving (fuel : int) (pid : pid) (config : Config.t)
-    (log : Logger.t) (query : Query.t) (dirname_gen_tmp : string)
-    (filename_p4 : string) (graph : Dep.Graph.t) (vid_program : vid)
-    (cover : SCov.Cover.t) : unit =
+let fuzz_seed_deriving (fuel : int) (pid : pid) (idx_seed : int)
+    (config : Config.t) (log : Logger.t) (query : Query.t)
+    (dirname_gen_tmp : string) (filename_p4 : string) (graph : Dep.Graph.t)
+    (vid_program : vid) (cover : SCov.Cover.t) : unit =
   (* Derive closes-ASTs from the phantom *)
-  F.asprintf "[F %d] [P %d] Finding derivations from %s" fuel pid filename_p4
+  F.asprintf "[F %d] [P %d] [S %d] Finding derivations from %s" fuel pid
+    idx_seed filename_p4
   |> Logger.log config.modes.logmode log;
   let time_start = Unix.gettimeofday () in
   let derivations_source = Derive.derive_phantom pid graph cover in
   let time_end = Unix.gettimeofday () in
   (* Take top ranked derivations, i.e., the ones with the smallest depth *)
   F.asprintf
-    "[F %d] [P %d] Found total %d derivations, sampling top %d (took %.2f)" fuel
-    pid
+    "[F %d] [P %d] [S %d] Found total %d derivations, sampling top %d (took \
+     %.2f)"
+    fuel pid idx_seed
     (List.length derivations_source)
     Config.samples_derivation_source (time_end -. time_start)
   |> Logger.log config.modes.logmode log;
@@ -365,23 +379,25 @@ let fuzz_seed_deriving (fuel : int) (pid : pid) (config : Config.t)
       List.init Config.samples_derivation_source (List.nth derivations_source)
   in
   (* Mutate the close-ASTs and dump to file *)
-  fuzz_derivations_bounded fuel pid config log query dirname_gen_tmp filename_p4
-    graph vid_program derivations_source
+  fuzz_derivations_bounded fuel pid idx_seed config log query dirname_gen_tmp
+    filename_p4 graph vid_program derivations_source
 
-let fuzz_seed_hybrid (fuel : int) (pid : pid) (config : Config.t)
-    (log : Logger.t) (query : Query.t) (dirname_gen_tmp : string)
-    (filename_p4 : string) (graph : Dep.Graph.t) (vid_program : vid)
-    (cover : SCov.Cover.t) : unit =
+let fuzz_seed_hybrid (fuel : int) (pid : pid) (idx_seed : int)
+    (config : Config.t) (log : Logger.t) (query : Query.t)
+    (dirname_gen_tmp : string) (filename_p4 : string) (graph : Dep.Graph.t)
+    (vid_program : vid) (cover : SCov.Cover.t) : unit =
   (* Derive closes-ASTs from the phantom *)
-  F.asprintf "[F %d] [P %d] Finding derivations from %s" fuel pid filename_p4
+  F.asprintf "[F %d] [P %d] [S %d] Finding derivations from %s" fuel pid
+    idx_seed filename_p4
   |> Logger.log config.modes.logmode log;
   let time_start = Unix.gettimeofday () in
   let derivations_source = Derive.derive_phantom pid graph cover in
   let time_end = Unix.gettimeofday () in
   (* Take top ranked derivations, i.e., the ones with the smallest depth *)
   F.asprintf
-    "[F %d] [P %d] Found total %d derivations, sampling top %d (took %.2f)" fuel
-    pid
+    "[F %d] [P %d] [S %d] Found total %d derivations, sampling top %d (took \
+     %.2f)"
+    fuel pid idx_seed
     (List.length derivations_source)
     Config.samples_derivation_source (time_end -. time_start)
   |> Logger.log config.modes.logmode log;
@@ -394,16 +410,18 @@ let fuzz_seed_hybrid (fuel : int) (pid : pid) (config : Config.t)
   (* If there are no derivations, fallback to random *)
   match derivations_source with
   | [] ->
-      fuzz_seed_random fuel pid config log query dirname_gen_tmp filename_p4
-        graph vid_program
+      fuzz_seed_random fuel pid idx_seed config log query dirname_gen_tmp
+        filename_p4 graph vid_program
   | _ ->
-      fuzz_derivations_bounded fuel pid config log query dirname_gen_tmp
-        filename_p4 graph vid_program derivations_source
+      fuzz_derivations_bounded fuel pid idx_seed config log query
+        dirname_gen_tmp filename_p4 graph vid_program derivations_source
 
-let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
-    (query : Query.t) (dirname_gen_tmp : string) (filename_p4 : string) : unit =
+let fuzz_seed (fuel : int) (pid : pid) (idx_seed : int) (config : Config.t)
+    (log : Logger.t) (query : Query.t) (dirname_gen_tmp : string)
+    (filename_p4 : string) : unit =
   let time_start = Unix.gettimeofday () in
-  F.asprintf "[F %d] [P %d] Running SL interpreter on %s" fuel pid filename_p4
+  F.asprintf "[F %d] [P %d] [S %d] Running SL interpreter on %s" fuel pid
+    idx_seed filename_p4
   |> Logger.log config.modes.logmode log;
   (* Construct the value dependency graph for deriving and hybrid modes *)
   let derive =
@@ -420,45 +438,49 @@ let fuzz_seed (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
    with
   | WellTyped (graph, vid_program, cover) ->
       let time_end = Unix.gettimeofday () in
-      F.asprintf "[F %d] [P %d] SL interpreter succeeded on %s (took %.2f)" fuel
-        pid filename_p4 (time_end -. time_start)
+      F.asprintf
+        "[F %d] [P %d] [S %d] SL interpreter succeeded on %s (took %.2f)" fuel
+        pid idx_seed filename_p4 (time_end -. time_start)
       |> Logger.log config.modes.logmode log;
       (match config.modes.mutationmode with
       | Random ->
-          fuzz_seed_random fuel pid config log query dirname_gen_tmp filename_p4
-            graph vid_program
+          fuzz_seed_random fuel pid idx_seed config log query dirname_gen_tmp
+            filename_p4 graph vid_program
       | Derive ->
-          fuzz_seed_deriving fuel pid config log query dirname_gen_tmp
+          fuzz_seed_deriving fuel pid idx_seed config log query dirname_gen_tmp
             filename_p4 graph vid_program cover
       | Hybrid ->
-          fuzz_seed_hybrid fuel pid config log query dirname_gen_tmp filename_p4
-            graph vid_program cover);
+          fuzz_seed_hybrid fuel pid idx_seed config log query dirname_gen_tmp
+            filename_p4 graph vid_program cover);
       Dep.Graph.G.reset graph.nodes;
       Dep.Graph.G.reset graph.edges
   | IllTyped _ | IllFormed _ ->
-      F.asprintf "[F %d] [P %d] SL interpreter failed on %s" fuel pid
-        filename_p4
+      F.asprintf "[F %d] [P %d] [S %d] SL interpreter failed on %s" fuel pid
+        idx_seed filename_p4
       |> Logger.log config.modes.logmode log);
   let total, hits, coverage = MCov.measure_coverage config.seed.cover in
-  F.asprintf "[F %d] [P %d] Coverage %d/%d (%.2f%%)" fuel pid hits total
-    coverage
+  F.asprintf "[F %d] [P %d] [S %d] Coverage %d/%d (%.2f%%)" fuel pid idx_seed
+    hits total coverage
   |> Logger.log config.modes.logmode log
 
 let fuzz_seeds (fuel : int) (pid : pid) (config : Config.t) (log : Logger.t)
     (query : Query.t) (dirname_gen_tmp : string) (filenames_p4 : string list) :
     unit =
   (* Fuzz from seed programs until the target phantom node is covered *)
-  List.iter
-    (fun filename_p4 ->
+  List.iteri
+    (fun idx_seed filename_p4 ->
       if MCov.is_miss config.seed.cover pid then (
         let _ =
           Sys.set_signal Sys.sigalrm
             (Sys.Signal_handle (fun _ -> raise Timeout))
         in
         Unix.alarm Config.timeout_seed |> ignore;
-        (try fuzz_seed fuel pid config log query dirname_gen_tmp filename_p4
+        (try
+           fuzz_seed fuel pid idx_seed config log query dirname_gen_tmp
+             filename_p4
          with Timeout ->
-           F.asprintf "[F %d] [P %d] Timeout on %s" fuel pid filename_p4
+           F.asprintf "[F %d] [S %d] [P %d] Timeout on %s" fuel pid idx_seed
+             filename_p4
            |> Logger.warn config.modes.logmode log);
         Unix.alarm 0 |> ignore))
     filenames_p4

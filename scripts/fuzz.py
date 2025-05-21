@@ -276,7 +276,7 @@ def fuzzing_campaign() -> None:
 
         else:
             fuzzer_coverage_file = Filepath(
-                os.path.join(f"fuzz{loop_idx-1}", "final.coverage")
+                os.path.join(WORK_DIR, f"fuzz{loop_idx-1}", "final.coverage")
             )
 
         # === 2) FUZZ ===

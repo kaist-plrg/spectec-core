@@ -74,6 +74,20 @@ module Cover = struct
     List.fold_left (init_def ignores) empty spec
 end
 
+(* Querying coverage *)
+
+let is_hit (cover : Cover.t) (pid : pid) : bool =
+  let branch = Cover.find pid cover in
+  match branch.status with Hit -> true | Miss _ -> false
+
+let is_miss (cover : Cover.t) (pid : pid) : bool =
+  let branch = Cover.find pid cover in
+  match branch.status with Hit -> false | Miss _ -> true
+
+let is_close_miss (cover : Cover.t) (pid : pid) : bool =
+  let branch = Cover.find pid cover in
+  match branch.status with Hit -> false | Miss vids -> List.length vids > 0
+
 (* Hit and miss *)
 
 let hit (cover : Cover.t) (pid : pid) : Cover.t =

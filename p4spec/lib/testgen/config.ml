@@ -64,7 +64,6 @@ type storage = {
   dirname_close_miss_p4 : string;
   dirname_welltyped_p4 : string;
   dirname_illtyped_p4 : string;
-  dirname_illformed_p4 : string;
 }
 
 (* Seed for the fuzz campaign *)
@@ -171,8 +170,6 @@ let init_storage (dirname_gen : string) : storage =
   Filesys.mkdir dirname_welltyped_p4;
   let dirname_illtyped_p4 = dirname_gen ^ "/illtyped" in
   Filesys.mkdir dirname_illtyped_p4;
-  let dirname_illformed_p4 = dirname_gen ^ "/illformed" in
-  Filesys.mkdir dirname_illformed_p4;
   {
     dirname_gen;
     dirname_log;
@@ -180,7 +177,6 @@ let init_storage (dirname_gen : string) : storage =
     dirname_close_miss_p4;
     dirname_welltyped_p4;
     dirname_illtyped_p4;
-    dirname_illformed_p4;
   }
 
 let init_seed (cover : MCov.Cover.t) : seed = { cover }
@@ -193,8 +189,8 @@ let init ?(mini : bool = false) (randseed : int option) (modes : Modes.t)
 
 (* Seed updater *)
 
-let update_hit_seed (config : t) (filename_p4 : string) (wellformed : bool)
-    (welltyped : bool) (pids_hit : PIdSet.t) : unit =
+let update_hit_seed (config : t) (filename_p4 : string) (welltyped : bool)
+    (pids_hit : PIdSet.t) : unit =
   let cover_seed = config.seed.cover in
   let cover_seed =
     PIdSet.fold
@@ -203,11 +199,11 @@ let update_hit_seed (config : t) (filename_p4 : string) (wellformed : bool)
         let branch =
           match branch.status with
           | Hit (likely, filenames_p4) ->
-              let likely = likely && not (wellformed && welltyped) in
+              let likely = likely && not welltyped in
               let filenames_p4 = filename_p4 :: filenames_p4 in
               MCov.Branch.{ branch with status = Hit (likely, filenames_p4) }
           | _ ->
-              let likely = not (wellformed && welltyped) in
+              let likely = not welltyped in
               let filenames_p4 = [ filename_p4 ] in
               MCov.Branch.{ branch with status = Hit (likely, filenames_p4) }
         in
