@@ -1,0 +1,3 @@
+p4c/testdata/p4_16_samples/enumCast.p4
+p4c/testdata/p4_16_samples/issue3333.p4
+p4c/testdata/p4_16_samples/table-entries-ser-enum-bmv2.p4
