@@ -6,8 +6,10 @@ from datetime import datetime, timedelta
 
 LogEntry = Tuple[datetime, str]
 
+
 def parse_timestamp(ts: str) -> datetime:
     return datetime.strptime(ts, "%H:%M:%S")
+
 
 def assign_synthetic_times(times: List[str], base_time: datetime) -> List[datetime]:
     """Assign synthetic datetime values with monotonic offsets, accounting for rollover."""
@@ -23,6 +25,7 @@ def assign_synthetic_times(times: List[str], base_time: datetime) -> List[dateti
         last = t
 
     return result
+
 
 def fuzz_log_sort_key(file: Path) -> Tuple[int, str]:
     name = file.name
@@ -68,6 +71,7 @@ def parse_reducer_log(log_file: Path, phase_start: datetime) -> List[LogEntry]:
     synthetic_times = assign_synthetic_times(times, phase_start)
     return [(t, "Reducer phase") for t in synthetic_times]
 
+
 def get_start_time(base_dir: Path) -> Optional[datetime]:
     reducer_log = base_dir / "reduce0" / "reducer.log"
     if reducer_log.exists():
@@ -88,23 +92,37 @@ def get_start_time(base_dir: Path) -> Optional[datetime]:
 
 def summarize_every_10min(entries: List[LogEntry]) -> None:
     end_time = max(ts for ts, _ in entries)
-    current_time = min(ts for ts, _ in entries)
+    start_time = min(ts for ts, _ in entries)
     idx = 0
+    current_time = start_time
+
+    reduce = False
+    if entries[0][1].startswith("Reducer"):
+        reduce = True
 
     while current_time <= end_time:
         window_entries = []
 
         while idx < len(entries) and entries[idx][0] <= current_time:
+            if entries[idx][1].startswith("Fuzzer") and entries[idx - 1][1].startswith(
+                "Reducer"
+            ):
+                coverage = int(entries[idx][1].split(":")[1].strip())
+                print(f"{entries[idx][0] - start_time}, {coverage}")
+            elif entries[idx][1].startswith("Reducer") and entries[idx - 1][
+                1
+            ].startswith("Fuzzer"):
+                coverage = int(entries[idx - 1][1].split(":")[1].strip())
+                print(f"{entries[idx-1][0] - start_time}, {coverage}")
             window_entries.append(entries[idx])
             idx += 1
-        
+
         last_time, last_msg = window_entries[-1]
-        
-        timestamp = last_time.strftime("%H:%M:%S")
+
+        timestamp = current_time - start_time
         if last_msg.startswith("Fuzzer"):
-            print(f"[{current_time.strftime("%H:%M:%S")}] {last_msg}")
-        else:
-            print(f"[{current_time.strftime("%H:%M:%S")}] Reducer phase")
+            coverage = int(last_msg.split(":")[1].strip())
+            print(f"{timestamp}, {coverage}")
 
         current_time += timedelta(minutes=10)
 
@@ -137,7 +155,6 @@ def load_phase_logs(base_dir: Path, start_time: datetime) -> List[LogEntry]:
                     current_time = entries[-1][0] + timedelta(seconds=1)
                     phase_had_data = True
 
-
         if not phase_had_data:
             break
 
@@ -145,10 +162,16 @@ def load_phase_logs(base_dir: Path, start_time: datetime) -> List[LogEntry]:
 
     return all_entries
 
+
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="Summarize fuzz/reduce logs in 10-minute windows.")
-    parser.add_argument("dir", type=Path, help="Top-level directory (contains fuzz*/ and reduce*/)")
+
+    parser = argparse.ArgumentParser(
+        description="Summarize fuzz/reduce logs in 10-minute windows."
+    )
+    parser.add_argument(
+        "dir", type=Path, help="Top-level directory (contains fuzz*/ and reduce*/)"
+    )
     args = parser.parse_args()
 
     base_dir = args.dir
@@ -159,6 +182,7 @@ def main():
     #     print(f"[{entry[0].strftime('%Y-%m-%d %H:%M:%S')}] {entry[1]}")
     # print(f"\n[INFO] Collected {len(entries)} log entries.")
     summarize_every_10min(entries)
+
 
 if __name__ == "__main__":
     main()
