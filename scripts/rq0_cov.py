@@ -167,7 +167,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Summarize fuzz/reduce logs in 10-minute windows."
+        description="Summarize fuzzer coverage by interval."
     )
     parser.add_argument(
         "dir", type=Path, help="Top-level directory (contains fuzz*/ and reduce*/)"
