@@ -90,7 +90,7 @@ def get_start_time(base_dir: Path) -> Optional[datetime]:
     return None
 
 
-def summarize_every_10min(entries: List[LogEntry]) -> None:
+def summarize_interval(entries: List[LogEntry], interval_minutes: int) -> None:
     end_time = max(ts for ts, _ in entries)
     start_time = min(ts for ts, _ in entries)
     idx = 0
@@ -124,7 +124,7 @@ def summarize_every_10min(entries: List[LogEntry]) -> None:
             coverage = int(last_msg.split(":")[1].strip())
             print(f"{timestamp}, {coverage}")
 
-        current_time += timedelta(minutes=10)
+        current_time += timedelta(minutes=interval_minutes)
 
 
 def load_phase_logs(base_dir: Path, start_time: datetime) -> List[LogEntry]:
@@ -163,7 +163,7 @@ def load_phase_logs(base_dir: Path, start_time: datetime) -> List[LogEntry]:
     return all_entries
 
 
-def main():
+if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -181,8 +181,6 @@ def main():
     # for entry in entries:
     #     print(f"[{entry[0].strftime('%Y-%m-%d %H:%M:%S')}] {entry[1]}")
     # print(f"\n[INFO] Collected {len(entries)} log entries.")
-    summarize_every_10min(entries)
+    summarize_interval(entries, interval_minutes=5)
 
 
-if __name__ == "__main__":
-    main()
