@@ -461,7 +461,7 @@ Error on typecheck: ../../../../p4c/testdata/p4_16_errors/issue2597.p4
 ../../../../spec/4f-typing-stmt.watsup:236.6-236.13: relation was not matched
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/issue2835-bmv2.p4
-Error on typecheck: should fail
+Excluding file: ../../../../p4c/testdata/p4_16_errors/issue2835-bmv2.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/issue3045-1.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/issue3045-1.p4
@@ -1187,4 +1187,4 @@ Excluding file: ../../../../p4c/testdata/p4_16_errors/width_e.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
 ../../../../spec/4g-typing-decl.watsup:54.6-54.13: relation was not matched
 
-Running typing: [EXCLUDE] 53/310 (17.10%) [PASS] 1/310 (0.32%) [FAIL] 256/310 (82.58%)
+Running typing: [EXCLUDE] 54/310 (17.42%) [PASS] 0/310 (0.00%) [FAIL] 256/310 (82.58%)
