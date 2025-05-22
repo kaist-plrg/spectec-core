@@ -286,8 +286,11 @@ def reduce_likely_hits(
                 smallest_file: Filepath = min(filenames_valid, key=os.path.getsize)
 
                 if os.path.basename(smallest_file).startswith("r_"):
-                    continue  # already reduced
-
+                    copy_file = os.path.join(
+                        reduced_files_dir, os.path.basename(smallest_file)
+                    )
+                    shutil.copy(smallest_file, copy_file)
+                    continue
                 #
                 reducer_result: Optional[Filepath] = reduce_program(
                     reduce_dir,
