@@ -270,6 +270,7 @@ def reduce_likely_hits(
     reduced_files_dir: Directory,
     creduce_configs: CReduceConfigs,
 ) -> None:
+    """Chooses the smallest file for each likely hit and reduces it if not already reduced."""
     global_log_path: Filepath = Filepath(os.path.join(reduce_dir, "reducer.log"))
     with open(global_log_path, "a") as global_log_file:
         for origin in total_coverage:
@@ -282,28 +283,31 @@ def reduce_likely_hits(
                     Filepath(f) for f in filenames if os.path.isfile(f)
                 ]
 
-                # ALSO reduces already reduced files, as a clean up
-                for filename in filenames_valid:
-                    # reduce all unreduced files
-                    reducer_result: Optional[Filepath] = reduce_program(
-                        reduce_dir,
-                        reduced_files_dir,
-                        pid,
-                        filename,
-                        creduce_configs.p4spectec_dir,
-                        creduce_configs.cores,
-                        creduce_configs.timeout_interesting,
-                        creduce_configs.timeout_creduce,
-                        True,  # fuzz_end
+                smallest_file: Filepath = min(filenames_valid, key=os.path.getsize)
+
+                if os.path.basename(smallest_file).startswith("r_"):
+                    continue  # already reduced
+
+                #
+                reducer_result: Optional[Filepath] = reduce_program(
+                    reduce_dir,
+                    reduced_files_dir,
+                    pid,
+                    smallest_file,
+                    creduce_configs.p4spectec_dir,
+                    creduce_configs.cores,
+                    creduce_configs.timeout_interesting,
+                    creduce_configs.timeout_creduce,
+                    True,  # fuzz_end
+                )
+                if reducer_result is None:
+                    log(
+                        f"Failed to reduce {smallest_file} for pid={pid}",
+                        global_log_file,
                     )
-                    if reducer_result is None:
-                        log(
-                            f"Failed to reduce {filename} for pid={pid}",
-                            global_log_file,
-                        )
-                        continue
-                    else:
-                        reduced_file: Filepath = Filepath(reducer_result)
-                    # update reductions
-                    reductions.setdefault(pid, []).append(reduced_file)
+                    continue
+                else:
+                    reduced_file: Filepath = Filepath(reducer_result)
+                # update reductions
+                reductions.setdefault(pid, []).append(reduced_file)
         return None
