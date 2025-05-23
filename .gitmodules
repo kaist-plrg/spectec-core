@@ -1,3 +1,4 @@
 [submodule "p4c"]
 	path = p4c
-	url = https://github.com/p4lang/p4c
+	url = https://github.com/kaist-plrg/p4c
+	branch = pinned-v1.2.5.6
