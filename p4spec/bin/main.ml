@@ -54,7 +54,21 @@ let elab_command =
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
        | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
-let stat_def (count_rels : int) (count_rules : int) (count_decs : int)
+let stat_def_el (count_prems : int) (def : El.Ast.def) : int =
+  match def.it with
+  | RuleD (_, _, _, prems) ->
+      Format.printf "[Rule] Prems: %d\n" (List.length prems);
+      count_prems + List.length prems
+  | DefD (_, _, _, _, prems) ->
+      Format.printf "[Def] Prems: %d\n" (List.length prems);
+      count_prems + List.length prems
+  | _ -> count_prems
+
+let stat_spec_el (spec : El.Ast.spec) : unit =
+  let count_prems = List.fold_left stat_def_el 0 spec in
+  Format.printf "[Total] Prems: %d\n" count_prems
+
+let stat_def_il (count_rels : int) (count_rules : int) (count_decs : int)
     (count_defs : int) (def : Il.Ast.def) : int * int * int * int =
   match def.it with
   | RelD (id, _, _, rules) ->
@@ -69,11 +83,11 @@ let stat_def (count_rels : int) (count_rules : int) (count_decs : int)
       (count_rels, count_rules, count_decs, count_defs)
   | _ -> (count_rels, count_rules, count_decs, count_defs)
 
-let stat_spec (spec : Il.Ast.spec) : unit =
+let stat_spec_il (spec : Il.Ast.spec) : unit =
   let count_rels, count_rules, count_decs, count_defs =
     List.fold_left
       (fun (count_rels, count_rules, count_decs, count_defs) def ->
-        stat_def count_rels count_rules count_decs count_defs def)
+        stat_def_il count_rels count_rules count_decs count_defs def)
       (0, 0, 0, 0) spec
   in
   Format.printf "[Total] Rels: %d, Rules: %d, Decs: %d, Defs: %d\n" count_rels
@@ -87,8 +101,9 @@ let stat_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames in
+         stat_spec_el spec;
          let spec_il = Elaborate.Elab.elab_spec spec in
-         stat_spec spec_il;
+         stat_spec_il spec_il;
          ()
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
