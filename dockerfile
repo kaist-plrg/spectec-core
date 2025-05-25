@@ -56,12 +56,15 @@ RUN make build-spec && \
     chmod a+x ./p4spectec
 
 # --------------------------------------
-# Stage 5: Reduce dependencies
+# Stage 5: Reducer dependencies
 # --------------------------------------
 FROM p4specbase AS reducebase
 
 RUN apt-get update && \
     apt-get install -y clang creduce python3 && \
     apt-get clean
+
+COPY patches/creduce /usr/bin/creduce
+RUN chmod +x /usr/bin/creduce
 
 ENV P4CHERRY_PATH=/home/p4cherry
