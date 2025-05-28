@@ -35,6 +35,7 @@ class FuzzConfig:
     coverage: Filepath
     mode: str
     reduce: bool
+    timeout: int
     creduce_configs: CReduceConfigs
 
 
@@ -53,11 +54,12 @@ def parse_args() -> FuzzConfig:
         default=["coverage/relation.ignore", "coverage/function.ignore"],
     )
     parser.add_argument("--coverage", type=str, default="coverage/p4c-pos.coverage")
+    parser.add_argument("--reduce", action="store_true")
+    parser.add_argument("--timeout", type=int, default=12*60*60, help="Fuzzer timeout in seconds.")
     parser.add_argument("--cores", type=int)
-    parser.add_argument("--timeout", type=int, default=10)
+    parser.add_argument("--timeout-interesting", type=int, default=10)
     parser.add_argument("--timeout-creduce", type=int, default=25)
     parser.add_argument("--mode", choices=["random", "derive", "hybrid"], required=True)
-    parser.add_argument("--reduce", action="store_true")
 
     args = parser.parse_args()
 
@@ -78,10 +80,11 @@ def parse_args() -> FuzzConfig:
         coverage=args.coverage,
         mode=args.mode,
         reduce=args.reduce,
+        timeout=args.timeout,
         creduce_configs=CReduceConfigs(
             p4spectec_dir=P4SPECTEC_DIR,
             cores=args.cores,
-            timeout_interesting=args.timeout,
+            timeout_interesting=args.timeout_interesting,
             timeout_creduce=args.timeout_creduce,
         ),
     )
@@ -343,15 +346,14 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)  # Handles Ctrl+C
     signal.signal(signal.SIGTERM, signal_handler)  # Handles kill command
 
-    TIMEOUT = 12 * 60 * 60  # 12 hours in seconds
 
     config = parse_args()
     p = multiprocessing.Process(target=fuzzing_campaign, args=(config,))
     p.start()
-    p.join(TIMEOUT)
+    p.join(config.timeout)
 
     if p.is_alive():
-        print(f"\n[ERROR] Timeout after {TIMEOUT} seconds. Killing process tree.")
+        print(f"\n[ERROR] Timeout after {config.timeout} seconds. Killing process tree.")
         terminate_process_tree(p)
         p.join()
 
