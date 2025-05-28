@@ -8,7 +8,7 @@ ENV TZ=Asia/Seoul
 
 RUN apt-get update && \
     apt-get install -y git make curl && \
-    apt-get clean
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /home
 
@@ -20,7 +20,7 @@ FROM base AS source
 RUN git clone https://github.com/kaist-plrg/p4cherry.git && \
     cd p4cherry && \
     git checkout p4spec-sl-mod-il && \
-    git submodule update --init
+    git submodule update --init --recursive
 
 WORKDIR /home/p4cherry
 
@@ -34,7 +34,7 @@ ENV TZ=Asia/Seoul
 
 RUN apt-get update && \
     apt-get install -y opam libgmp-dev pkg-config && \
-    apt-get clean
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Initialize opam
 RUN opam init --disable-sandboxing --auto-setup && \
@@ -62,7 +62,7 @@ FROM p4specbase AS reducebase
 
 RUN apt-get update && \
     apt-get install -y clang creduce python3 && \
-    apt-get clean
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY patches/creduce /usr/bin/creduce
 RUN chmod +x /usr/bin/creduce
@@ -113,7 +113,6 @@ ENV ASAN_OPTIONS=print_stacktrace=1:detect_leaks=0
 
 # Delegate the build to tools/ci-build.
 COPY --from=reducebase /home/p4cherry /home/p4cherry
-COPY . /home/p4c/
-RUN /home/p4c/tools/ci-build.sh
+RUN /home/p4cherry/p4c/tools/ci-build.sh
 # Set the workdir after building p4c.
 WORKDIR /home/p4cherry
