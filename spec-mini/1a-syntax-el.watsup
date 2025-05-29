@@ -1,16 +1,4 @@
 ;;
-;; Numbers
-;;
-
-syntax bits = int
-syntax width = nat
-
-syntax num =
-  | INT int
-  | FINT width bits
-  | FBIT width bits
-
-;;
 ;; Texts
 ;;
 
@@ -24,23 +12,21 @@ syntax id = text
 ;; Members
 ;;
 
-syntax member = id
+syntax member = text
 
 ;;
 ;; Binary operators
 ;;
 
 syntax binop =
-  | PLUS
-  | MINUS
-  | SHL
-  | SHR
+  | PLUS | MINUS
+  | SHL | SHR
 
 ;;
 ;; Directions
 ;;
 
-syntax dir = | NO | IN | OUT | INOUT
+syntax dir = | IN | OUT | INOUT
 
 ;;
 ;; Types
@@ -58,14 +44,16 @@ syntax type =
 ;; Parameters
 ;;
 
-syntax param = id dir type expr?
+syntax param = id dir type
 
 ;;
 ;; Expressions
 ;;
 
 syntax expr =
-  | NumE num
+  | IntE int
+  | FIntE nat int
+  | FBitE nat int
   | NameE id
   | BinE binop expr expr
   | ExprAccE expr member

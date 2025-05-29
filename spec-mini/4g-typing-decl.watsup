@@ -2,17 +2,8 @@
 ;; Parameter typing
 ;;
 
-rule Param_ok/param-default:
-  C |- id dir type expr : id dir typ_p val
-  -- Type_ok: C |- type : typ_p
-  ----
-  -- Expr_ok: C |- expr : exprIL_e
-  -- if `(typ_e) = $typeof(exprIL_e)
-  ----
-  -- Eval_static: C |- exprIL_e ~> val
-
-rule Param_ok/param-nodefault:
-  C |- id dir type eps : id dir typ_p eps
+rule Param_ok/param:
+  C |- id dir type : id dir typ_p
   -- Type_ok: C |- type : typ_p
 
 ;;

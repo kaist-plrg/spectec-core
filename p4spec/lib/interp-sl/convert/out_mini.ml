@@ -36,45 +36,6 @@ let out_pair (do_out_a : value -> 'a) (do_out_b : value -> 'b)
   | TupleV [ value_a; value_b ] -> (do_out_a value_a, do_out_b value_b)
   | _ -> error "tuple" value_pair
 
-(* Numbers *)
-
-let out_num (value_num : value) : P4El.num =
-  match value_num.it with
-  | CaseV ([ [ { it = Atom "FINT"; _ } ]; []; [] ], [ value_width; value_int ])
-    ->
-      let width =
-        match value_width.it with
-        | NumV (`Nat width) -> width
-        | _ -> error "nat" value_width
-      in
-      let i =
-        match value_int.it with
-        | NumV (`Int i) -> i
-        | _ -> error "int" value_int
-      in
-      (i, Some (width, true)) $ no_info
-  | CaseV ([ [ { it = Atom "FBIT"; _ } ]; []; [] ], [ value_width; value_int ])
-    ->
-      let width =
-        match value_width.it with
-        | NumV (`Nat width) -> width
-        | _ -> error "nat" value_width
-      in
-      let i =
-        match value_int.it with
-        | NumV (`Int i) -> i
-        | _ -> error "int" value_int
-      in
-      (i, Some (width, false)) $ no_info
-  | CaseV ([ [ { it = Atom "INT"; _ } ]; [] ], [ value_int ]) ->
-      let i =
-        match value_int.it with
-        | NumV (`Int i) -> i
-        | _ -> error "int" value_int
-      in
-      (i, None) $ no_info
-  | _ -> error "num" value_num
-
 (* Texts *)
 
 let out_text (value_text : value) : P4El.text =
@@ -139,14 +100,11 @@ and out_typs (value_typs : value) : P4El.typ list = out_list out_typ value_typs
 
 and out_param (value_param : value) : P4El.param =
   match value_param.it with
-  | CaseV
-      ( [ []; []; []; []; [] ],
-        [ value_id; value_dir; value_typ; value_expr_opt ] ) ->
+  | CaseV ([ []; []; []; [] ], [ value_id; value_dir; value_typ ]) ->
       let id = out_id value_id in
       let dir = out_dir value_dir in
       let typ = out_typ value_typ in
-      let expr_opt = out_opt out_expr value_expr_opt in
-      (id, dir, typ, expr_opt, []) $ no_info
+      (id, dir, typ, None, []) $ no_info
   | _ -> error "param" value_param
 
 and out_params (value_params : value) : P4El.param list =
@@ -156,8 +114,41 @@ and out_params (value_params : value) : P4El.param list =
 
 and out_expr (value_expr : value) : P4El.expr =
   match value_expr.it with
-  | CaseV ([ [ { it = Atom "NumE"; _ } ]; [] ], [ value_num ]) ->
-      let num = out_num value_num in
+  | CaseV ([ [ { it = Atom "IntE"; _ } ]; [] ], [ value_int ]) ->
+      let i =
+        match value_int.it with
+        | NumV (`Int i) -> i
+        | _ -> error "int" value_int
+      in
+      let num = (i, None) $ no_info in
+      P4El.NumE { num } $ no_info
+  | CaseV ([ [ { it = Atom "FIntE"; _ } ]; []; [] ], [ value_width; value_int ])
+    ->
+      let width =
+        match value_width.it with
+        | NumV (`Nat width) -> width
+        | _ -> error "nat" value_width
+      in
+      let i =
+        match value_int.it with
+        | NumV (`Int i) -> i
+        | _ -> error "int" value_int
+      in
+      let num = (i, Some (width, true)) $ no_info in
+      P4El.NumE { num } $ no_info
+  | CaseV ([ [ { it = Atom "FBitE"; _ } ]; []; [] ], [ value_width; value_int ])
+    ->
+      let width =
+        match value_width.it with
+        | NumV (`Nat width) -> width
+        | _ -> error "nat" value_width
+      in
+      let i =
+        match value_int.it with
+        | NumV (`Int i) -> i
+        | _ -> error "int" value_int
+      in
+      let num = (i, Some (width, true)) $ no_info in
       P4El.NumE { num } $ no_info
   | CaseV ([ [ { it = Atom "NameE"; _ } ]; [] ], [ value_id ]) ->
       let id = out_id value_id in

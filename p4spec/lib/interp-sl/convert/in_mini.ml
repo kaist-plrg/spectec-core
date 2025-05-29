@@ -50,47 +50,6 @@ let in_pair (do_in_a : Dep.Graph.t -> 'a -> value)
 
 let in_atom (s : string) : atom = Atom s $ no_region
 
-(* Numbers *)
-
-let in_num (graph : Dep.Graph.t) (num : P4.num) : value =
-  let mixop, values =
-    match num.it with
-    | i, Some (width, signed) ->
-        let mixop =
-          if signed then [ [ in_atom "FINT" ]; []; [] ]
-          else [ [ in_atom "FBIT" ]; []; [] ]
-        in
-        let value_width =
-          let vid = Dep.Graph.fresh () in
-          let typ = Il.Ast.NumT `NatT in
-          NumV (`Nat width) $$$ { vid; typ }
-        in
-        Dep.Graph.add_node ~taint:true graph value_width;
-        let value_int =
-          let vid = Dep.Graph.fresh () in
-          let typ = Il.Ast.NumT `IntT in
-          NumV (`Int i) $$$ { vid; typ }
-        in
-        Dep.Graph.add_node ~taint:true graph value_int;
-        (mixop, [ value_width; value_int ])
-    | i, None ->
-        let mixop = [ [ in_atom "INT" ]; [] ] in
-        let value_int =
-          let vid = Dep.Graph.fresh () in
-          let typ = Il.Ast.NumT `IntT in
-          NumV (`Int i) $$$ { vid; typ }
-        in
-        Dep.Graph.add_node ~taint:true graph value_int;
-        (mixop, [ value_int ])
-  in
-  let value =
-    let vid = Dep.Graph.fresh () in
-    let typ = in_typ_var "num" in
-    CaseV (mixop, values) $$$ { vid; typ }
-  in
-  Dep.Graph.add_node ~taint:true graph value;
-  value
-
 (* Texts *)
 
 let in_text (graph : Dep.Graph.t) (text : P4.text) : value =
@@ -151,10 +110,10 @@ let in_binop (graph : Dep.Graph.t) (binop : P4.binop) : value =
 let in_dir (graph : Dep.Graph.t) (dir : P4.dir) : value =
   let mixop =
     match dir.it with
-    | No -> [ [ in_atom "NO" ] ]
     | In -> [ [ in_atom "IN" ] ]
     | Out -> [ [ in_atom "OUT" ] ]
     | InOut -> [ [ in_atom "INOUT" ] ]
+    | _ -> error_convert_in "minified dir"
   in
   let value =
     let vid = Dep.Graph.fresh () in
@@ -197,19 +156,15 @@ and in_typs (graph : Dep.Graph.t) (typs : P4.typ list) : value =
 (* Parameters *)
 
 and in_param (graph : Dep.Graph.t) (param : P4.param) : value =
-  let id, dir, typ, expr_opt, _ = param.it in
-  let mixop = [ []; []; []; []; [] ] in
+  let id, dir, typ, _, _ = param.it in
+  let mixop = [ []; []; []; [] ] in
   let value_id = in_id graph id in
   let value_dir = in_dir graph dir in
   let value_typ = in_typ graph typ in
-  let value_expr_opt =
-    in_opt in_expr (in_typ_var "expr" $ no_region) graph expr_opt
-  in
   let value =
     let vid = Dep.Graph.fresh () in
     let typ = in_typ_var "param" in
-    CaseV (mixop, [ value_id; value_dir; value_typ; value_expr_opt ])
-    $$$ { vid; typ }
+    CaseV (mixop, [ value_id; value_dir; value_typ ]) $$$ { vid; typ }
   in
   Dep.Graph.add_node ~taint:true graph value;
   value
@@ -222,10 +177,35 @@ and in_params (graph : Dep.Graph.t) (params : P4.param list) : value =
 and in_expr (graph : Dep.Graph.t) (expr : P4.expr) : value =
   let mixop, values =
     match expr.it with
-    | NumE { num } ->
-        let mixop = [ [ in_atom "NumE" ]; [] ] in
-        let value_num = in_num graph num in
-        (mixop, [ value_num ])
+    | NumE { num } -> (
+        match num.it with
+        | i, Some (width, signed) ->
+            let mixop =
+              if signed then [ [ in_atom "FIntE" ]; []; [] ]
+              else [ [ in_atom "FBitE" ]; []; [] ]
+            in
+            let value_width =
+              let vid = Dep.Graph.fresh () in
+              let typ = Il.Ast.NumT `NatT in
+              NumV (`Nat width) $$$ { vid; typ }
+            in
+            Dep.Graph.add_node ~taint:true graph value_width;
+            let value_int =
+              let vid = Dep.Graph.fresh () in
+              let typ = Il.Ast.NumT `IntT in
+              NumV (`Int i) $$$ { vid; typ }
+            in
+            Dep.Graph.add_node ~taint:true graph value_int;
+            (mixop, [ value_width; value_int ])
+        | i, None ->
+            let mixop = [ [ in_atom "IntE" ]; [] ] in
+            let value_int =
+              let vid = Dep.Graph.fresh () in
+              let typ = Il.Ast.NumT `IntT in
+              NumV (`Int i) $$$ { vid; typ }
+            in
+            Dep.Graph.add_node ~taint:true graph value_int;
+            (mixop, [ value_int ]))
     | VarE { var = { it = Current id; _ } } ->
         let mixop = [ [ in_atom "NameE" ]; [] ] in
         let value_id = in_id graph id in

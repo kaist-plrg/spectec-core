@@ -57,10 +57,7 @@ def $add_frames(C, id_h :: id_t*, typ_h :: typ_t*) = C''
 dec $add_param(context, paramtyp) : context
 
 def $add_param(C, pt) = C'
-    -- if id NO typ val? = pt
-    -- if C' = $add_frame(C, id, typ)
-def $add_param(C, pt) = C'
-    -- if id dir typ val? = pt
+    -- if id dir typ = pt
     -- if C' = $add_frame(C, id, typ)
 
 dec $add_params(context, paramtyp*) : context

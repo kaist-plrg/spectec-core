@@ -2,15 +2,15 @@
 ;; Number expression
 ;;
 
-rule Expr_ok/nume-intt:
-  C |- NumE (INT i) : IntE i `(IntT)
+rule Expr_ok/inte:
+  C |- IntE i : IntE i `(IntT)
 
-rule Expr_ok/nume-fintt:
-  C |- NumE (FINT w i) : FIntE w bs `(FIntT w)
+rule Expr_ok/finte:
+  C |- FIntE w i : FIntE w bs `(FIntT w)
   -- if bs = $to_bitstr(w, i)
 
-rule Expr_ok/nume-fbitt:
-  C |- NumE (FBIT w i) : FBitE w bs `(FBitT w)
+rule Expr_ok/fbite:
+  C |- FBitE w i : FBitE w bs `(FBitT w)
   -- if bs = $to_bitstr(w, i)
 
 ;;

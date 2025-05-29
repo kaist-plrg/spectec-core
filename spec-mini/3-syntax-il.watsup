@@ -1,10 +1,4 @@
 ;;
-;; Numbers
-;;
-
-syntax numIL = num
-
-;;
 ;; Texts
 ;;
 
@@ -42,7 +36,7 @@ syntax typeIL = typ
 ;; Parameters
 ;;
 
-syntax paramIL = idIL dirIL typeIL val?
+syntax paramIL = idIL dirIL typeIL
 
 ;;
 ;; Expressions
@@ -51,8 +45,8 @@ syntax paramIL = idIL dirIL typeIL val?
 syntax annotIL = `(typ)
 syntax exprIL =
   | IntE int annotIL
-  | FIntE width bits annotIL
-  | FBitE width bits annotIL
+  | FIntE nat int annotIL
+  | FBitE nat int annotIL
   | NameE idIL annotIL
   | BinE binopIL exprIL exprIL annotIL
   | ExprAccE exprIL memberIL annotIL
