@@ -1,39 +1,65 @@
 # --------------------------------------
-# Stage 1: System dependencies
+# Stage 1: P4C dependencies
 # --------------------------------------
-FROM ubuntu:20.04 AS base
+FROM p4lang/behavioral-model:latest AS base 
 
 ARG DEBIAN_FRONTEND=noninteractive
-ENV TZ=Asia/Seoul
+# ENV TZ=Asia/Seoul
+ARG ENABLE_BMV2=OFF
+ARG ENABLE_GTESTS=ON
+ARG ENABLE_WERROR=ON
 
 RUN apt-get update && \
-    apt-get install -y git make curl && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get install -y \
+    sudo bison build-essential ccache cmake curl flex g++ git lld libboost-dev libboost-graph-dev \
+    libboost-iostreams-dev libfl-dev ninja-build pkg-config python3 python3-pip python3-setuptools tcpdump \
+    wget ca-certificates \
+    && apt-get clean
 
+COPY p4c /home/p4c
+WORKDIR /home/p4c
+RUN pip3 install --upgrade pip && \
+    pip3 install -r requirements.txt
+
+# Build
+WORKDIR /home/p4c/build
+RUN ccache --set-config=max_size=1G
+ENV CMAKE_FLAGS="-DCMAKE_UNITY_BUILD=OFF \
+    -DENABLE_GTESTS=${ENABLE_GTESTS} \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DENABLE_WERROR=${ENABLE_WERROR} \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+RUN cmake $CMAKE_FLAGS -G "Unix Makefiles" .. \
+    -DCMAKE_CXX_FLAGS="--coverage -O0" \
+    -DCMAKE_C_FLAGS="--coverage -O0"
+RUN cmake --build . -- -j$(nproc) VERBOSE=1 && \
+    cmake --install . && \
+    ccache -p -s;
+
+RUN pip3 install gcovr
+
+COPY run_coverage.sh /home/run_coverage.sh
+RUN chmod a+x /home/run_coverage.sh
 WORKDIR /home
 
 # --------------------------------------
-# Stage 2: Clone repo
+# Stage 2: Copy p4spectec
 # --------------------------------------
-FROM base AS source
+FROM base AS p4base
 
-RUN git clone https://github.com/kaist-plrg/p4cherry.git && \
-    cd p4cherry && \
-    git checkout p4spec-sl-mod-il && \
-    git submodule update --init --recursive
+COPY . /home/p4spectec
+# RUN rm -rf /home/p4spectec/p4c && \
+#     mv /home/p4c /home/p4spectec
 
-WORKDIR /home/p4cherry
+WORKDIR /home/p4spectec
 
 # ---------------------------------------
 # Stage 3: Installations - p4cherry/p4spec
 # ---------------------------------------
-FROM source AS opambase
-
-ARG DEBIAN_FRONTEND=noninteractive
-ENV TZ=Asia/Seoul
+FROM p4base AS opambase
 
 RUN apt-get update && \
-    apt-get install -y opam libgmp-dev pkg-config && \
+    apt-get install -y opam make libgmp-dev pkg-config && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Initialize opam
@@ -68,4 +94,4 @@ RUN python3 -m pip install psutil
 COPY patches/creduce /usr/bin/creduce
 RUN chmod +x /usr/bin/creduce
 
-ENV P4CHERRY_PATH=/home/p4cherry
+ENV P4CHERRY_PATH=/home/p4spectec
