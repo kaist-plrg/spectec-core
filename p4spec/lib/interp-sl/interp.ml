@@ -15,6 +15,7 @@ module F = Format
 open Util.Source
 
 (* Caches *)
+
 let is_cached_func = function
   | "subst_typ" | "subst_typdef_poly" | "specialize_typdef" | "canon_typ"
   | "free_typ" | "is_nominal" | "find_map" | "update_map" | "dom_map"

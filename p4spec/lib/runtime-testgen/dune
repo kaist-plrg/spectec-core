@@ -2,4 +2,4 @@
 
 (library
  (name runtime_testgen)
- (libraries util domain xl el il sl runtime_static))
+ (libraries util domain xl el il sl))
