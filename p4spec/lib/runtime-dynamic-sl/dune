@@ -1,4 +1,4 @@
 (library
  (name runtime_dynamic_sl)
- (libraries util domain xl el il sl runtime_static)
- (modules var typ typdef value rel func envs))
+ (libraries util domain xl el il sl runtime_static runtime_dynamic)
+ (modules value rel func envs))

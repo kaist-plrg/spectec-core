@@ -1,9 +1,10 @@
 open Domain.Lib
+open Runtime_dynamic
 open Runtime_dynamic_sl
+open Envs
 module Dep = Runtime_testgen.Dep
 module Ignore = Runtime_testgen.Cov.Ignore
 module SCov = Runtime_testgen.Cov.Single
-open Envs
 open Sl.Ast
 open Error
 open Util.Source

@@ -2,7 +2,7 @@ open Domain.Lib
 open Xl
 open Il.Ast
 module Hint = Runtime_static.Rel.Hint
-module Typ = Runtime_dynamic_il.Typ
+module Typ = Runtime_dynamic.Typ
 module Value = Runtime_dynamic_il.Value
 module Rel = Runtime_dynamic_il.Rel
 open Runtime_dynamic_il.Envs

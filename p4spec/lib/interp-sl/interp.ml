@@ -2,7 +2,7 @@ open Domain.Lib
 open Xl
 open Sl.Ast
 module Hint = Runtime_static.Rel.Hint
-module Typ = Runtime_dynamic_sl.Typ
+module Typ = Runtime_dynamic.Typ
 module Value = Runtime_dynamic_sl.Value
 module Rel = Runtime_dynamic_sl.Rel
 open Runtime_dynamic_sl.Envs

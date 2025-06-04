@@ -1,4 +1,5 @@
 open Domain.Lib
+open Runtime_dynamic
 open Runtime_dynamic_il
 open Envs
 open Il.Ast
