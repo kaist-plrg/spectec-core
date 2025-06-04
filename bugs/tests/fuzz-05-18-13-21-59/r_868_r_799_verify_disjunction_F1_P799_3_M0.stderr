@@ -1,4 +1,0 @@
-likely_hits/r_868_r_799_verify_disjunction_F1_P799_3_M0.p4(9): [--Wwarn=unused] warning: Parser EmptyParser is not used; removing
-        parser EmptyParser(packet_in b, out headers_t headers, inout metadata_t meta, inout stand...
-               ^^^^^^^^^^^
-[--Wwarn=missing] warning: Program does not contain a `main' module

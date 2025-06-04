@@ -1,4 +1,0 @@
-likely_hits/r_896_r_711_default-initializer_F5_P711_4_M0.p4(1): [--Wwarn=unused] warning: Control C is not used; removing
-   control C(out bit<32> x)() {
-           ^
-[--Wwarn=missing] warning: Program does not contain a `main' module

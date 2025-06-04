@@ -1,4 +1,0 @@
-likely_hits/r_590_issue2441.p4(5): [--Wwarn=unused] warning: Control nothing is not used; removing
-         control nothing<H>(inout H hdr, inout empty_t meta, in intrinsic_metadata_t imeta) {
-                 ^^^^^^^
-[--Wwarn=missing] warning: Program does not contain a `main' module

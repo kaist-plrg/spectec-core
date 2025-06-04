@@ -76,9 +76,8 @@ let update_hit_new (fuel : int) (pid : pid) (idx_seed : int) (strategy : string)
   (* Then copy the interesting test program to the output directory
      and update the running coverage *)
   match
-    Interp_sl.Typing.run_typing' ~mini:config.mini ~derive:false
-      config.specenv.spec config.specenv.includes_p4 filename_gen_p4
-      config.specenv.ignores
+    Interp_sl.Typing.run_typing' ~derive:false config.specenv.spec
+      config.specenv.includes_p4 filename_gen_p4 config.specenv.ignores
   with
   | WellTyped (_, _, cover) when PIdSet.for_all (SCov.is_hit cover) pids_hit_new
     ->
@@ -125,9 +124,8 @@ let update_close_miss_new (fuel : int) (pid : pid) (idx_seed : int)
   (* Then copy the interesting test program to the output directory
      and update the running coverage *)
   match
-    Interp_sl.Typing.run_typing' ~mini:config.mini ~derive:false
-      config.specenv.spec config.specenv.includes_p4 filename_gen_p4
-      config.specenv.ignores
+    Interp_sl.Typing.run_typing' ~derive:false config.specenv.spec
+      config.specenv.includes_p4 filename_gen_p4 config.specenv.ignores
   with
   | WellTyped (_, _, cover)
     when PIdSet.for_all (SCov.is_close_miss cover) pids_close_miss_new ->
@@ -225,10 +223,7 @@ let classify_mutation (fuel : int) (pid : pid) (idx_seed : int)
   let value_program = Dep.Graph.reassemble_node graph renamer vid_program in
   (* Mutation may yield a syntactically ill-formed AST, so have a try block *)
   try
-    let program =
-      if config.mini then Interp_sl.Convert.Out_mini.out_program value_program
-      else Interp_sl.Convert.Out.out_program value_program
-    in
+    let program = Interp_sl.Convert.Out.out_program value_program in
     classify_mutation' fuel pid idx_seed strategy idx_method idx_mutation trials
       config log dirname_gen_tmp filename_p4 comment_gen_p4 kind value_source
       value_mutated value_program program
@@ -433,7 +428,7 @@ let fuzz_seed (fuel : int) (pid : pid) (idx_seed : int) (config : Config.t)
   (* Run SL interpreter on the program,
      and if it is well-typed, start generating tests from it *)
   (match
-     Interp_sl.Typing.run_typing' ~mini:config.mini ~derive config.specenv.spec
+     Interp_sl.Typing.run_typing' ~derive config.specenv.spec
        config.specenv.includes_p4 filename_p4 config.specenv.ignores
    with
   | WellTyped (graph, vid_program, cover) ->
@@ -551,12 +546,12 @@ let rec fuzz_loop (fuel : int) (config : Config.t) : Config.t =
 
 (* Entry point to main fuzzing loop *)
 
-let fuzz_typing_init ?(mini : bool = false) (spec : spec)
-    (includes_p4 : string list) (filenames_ignore : string list)
-    (dirname_gen : string) (name_campaign : string option)
-    (randseed : int option) (logmode : Modes.logmode)
-    (bootmode : Modes.bootmode) (mutationmode : Modes.mutationmode)
-    (covermode : Modes.covermode) : Config.t =
+let fuzz_typing_init (spec : spec) (includes_p4 : string list)
+    (filenames_ignore : string list) (dirname_gen : string)
+    (name_campaign : string option) (randseed : int option)
+    (logmode : Modes.logmode) (bootmode : Modes.bootmode)
+    (mutationmode : Modes.mutationmode) (covermode : Modes.covermode) : Config.t
+    =
   (* Name the campaign *)
   let name_campaign =
     match name_campaign with
@@ -600,7 +595,7 @@ let fuzz_typing_init ?(mini : bool = false) (spec : spec)
     match modes.bootmode with
     | Cold (excludes_p4, dirname_seed_p4) ->
         let cover_seed =
-          Boot.boot_cold ~mini spec includes_p4 excludes_p4 dirname_seed_p4
+          Boot.boot_cold spec includes_p4 excludes_p4 dirname_seed_p4
             filenames_ignore
         in
         (* Log the initial coverage for later use in warm boot *)
@@ -625,19 +620,18 @@ let fuzz_typing_init ?(mini : bool = false) (spec : spec)
   |> Logger.log modes.logmode log_init;
   Logger.close log_init;
   (* Create a configuration *)
-  let config = Config.init ~mini randseed modes specenv storage seed in
+  let config = Config.init randseed modes specenv storage seed in
   config
 
-let fuzz_typing ?(mini : bool = false) (fuel : int) (spec : spec)
-    (includes_p4 : string list) (filenames_ignore : string list)
-    (dirname_gen : string) (name_campaign : string option)
-    (randseed : int option) (logmode : Modes.logmode)
-    (bootmode : Modes.bootmode) (mutationmode : Modes.mutationmode)
-    (covermode : Modes.covermode) : unit =
+let fuzz_typing (fuel : int) (spec : spec) (includes_p4 : string list)
+    (filenames_ignore : string list) (dirname_gen : string)
+    (name_campaign : string option) (randseed : int option)
+    (logmode : Modes.logmode) (bootmode : Modes.bootmode)
+    (mutationmode : Modes.mutationmode) (covermode : Modes.covermode) : unit =
   (* Initialize the fuzzing configuration *)
   let config =
-    fuzz_typing_init ~mini spec includes_p4 filenames_ignore dirname_gen
-      name_campaign randseed logmode bootmode mutationmode covermode
+    fuzz_typing_init spec includes_p4 filenames_ignore dirname_gen name_campaign
+      randseed logmode bootmode mutationmode covermode
   in
   (* Call the main fuzzing loop *)
   let config = fuzz_loop fuel config in

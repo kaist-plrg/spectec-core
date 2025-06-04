@@ -1,7 +1,0 @@
-likely_hits/r_896_r_56_stack-init_F10_P56_8_M0.p4(1): [--Wwarn=unused] warning: 'T' is unused
-header H<T> {
-         ^
-likely_hits/r_896_r_56_stack-init_F10_P56_8_M0.p4(3): [--Wwarn=unused] warning: Control c is not used; removing
- control c(out bit<32> r)() {
-         ^
-[--Wwarn=missing] warning: Program does not contain a `main' module

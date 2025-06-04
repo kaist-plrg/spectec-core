@@ -54,61 +54,6 @@ let elab_command =
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
        | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
-let stat_def_el (count_prems : int) (def : El.Ast.def) : int =
-  match def.it with
-  | RuleD (_, _, _, prems) ->
-      Format.printf "[Rule] Prems: %d\n" (List.length prems);
-      count_prems + List.length prems
-  | DefD (_, _, _, _, prems) ->
-      Format.printf "[Def] Prems: %d\n" (List.length prems);
-      count_prems + List.length prems
-  | _ -> count_prems
-
-let stat_spec_el (spec : El.Ast.spec) : unit =
-  let count_prems = List.fold_left stat_def_el 0 spec in
-  Format.printf "[Total] Prems: %d\n" count_prems
-
-let stat_def_il (count_rels : int) (count_rules : int) (count_decs : int)
-    (count_defs : int) (def : Il.Ast.def) : int * int * int * int =
-  match def.it with
-  | RelD (id, _, _, rules) ->
-      Format.printf "[Rel %s] Rules: %d\n" id.it (List.length rules);
-      let count_rels = count_rels + 1 in
-      let count_rules = count_rules + List.length rules in
-      (count_rels, count_rules, count_decs, count_defs)
-  | DecD (id, _, _, _, clauses) ->
-      Format.printf "[Func %s] Defs: %d\n" id.it (List.length clauses);
-      let count_decs = count_decs + 1 in
-      let count_defs = count_defs + List.length clauses in
-      (count_rels, count_rules, count_decs, count_defs)
-  | _ -> (count_rels, count_rules, count_decs, count_defs)
-
-let stat_spec_il (spec : Il.Ast.spec) : unit =
-  let count_rels, count_rules, count_decs, count_defs =
-    List.fold_left
-      (fun (count_rels, count_rules, count_decs, count_defs) def ->
-        stat_def_il count_rels count_rules count_decs count_defs def)
-      (0, 0, 0, 0) spec
-  in
-  Format.printf "[Total] Rels: %d, Rules: %d, Decs: %d, Defs: %d\n" count_rels
-    count_rules count_decs count_defs
-
-let stat_command =
-  Core.Command.basic ~summary:"insert structured control flow to a p4_16 spec"
-    (let open Core.Command.Let_syntax in
-     let open Core.Command.Param in
-     let%map filenames = anon (sequence ("filename" %: string)) in
-     fun () ->
-       try
-         let spec = List.concat_map Frontend.Parse.parse_file filenames in
-         stat_spec_el spec;
-         let spec_il = Elaborate.Elab.elab_spec spec in
-         stat_spec_il spec_il;
-         ()
-       with
-       | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
-
 let struct_command =
   Core.Command.basic ~summary:"insert structured control flow to a p4_16 spec"
     (let open Core.Command.Let_syntax in
@@ -137,8 +82,6 @@ let run_sl_command =
      and filenames_ignore =
        flag "-ignore" (listed string)
          ~doc:"relations or functions to ignore when reporting coverage"
-     and mini =
-       flag "-mini" no_arg ~doc:"run mini-typing instead of full typing"
      in
      fun () ->
        try
@@ -146,8 +89,8 @@ let run_sl_command =
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
          match
-           Interp_sl.Typing.run_typing ~mini ~derive spec_sl includes_p4
-             filename_p4 filenames_ignore
+           Interp_sl.Typing.run_typing ~derive spec_sl includes_p4 filename_p4
+             filenames_ignore
          with
          | WellTyped _ -> Format.printf "well-typed\n"
          | IllTyped (_, msg, _) -> Format.printf "ill-typed: %s\n" msg
@@ -170,8 +113,6 @@ let cover_sl_command =
          ~doc:"relations or functions to ignore when reporting coverage"
      and filename_cov =
        flag "-cov" (required string) ~doc:"output coverage file"
-     and mini =
-       flag "-mini" no_arg ~doc:"run mini-typing instead of full typing"
      in
      fun () ->
        try
@@ -189,7 +130,7 @@ let cover_sl_command =
              filenames_p4
          in
          let cover =
-           Interp_sl.Typing.cover_typings ~mini spec_sl includes_p4 filenames_p4
+           Interp_sl.Typing.cover_typings spec_sl includes_p4 filenames_p4
              filenames_ignore
          in
          Runtime_testgen.Cov.Multiple.log ~filename_cov_opt:(Some filename_cov)
@@ -229,8 +170,6 @@ let run_testgen_command =
      and strict =
        flag "-strict" no_arg
          ~doc:"cover a new phantom only if it was intended by a mutation"
-     and mini =
-       flag "-mini" no_arg ~doc:"run mini-typing instead of full typing"
      in
      fun () ->
        try
@@ -261,7 +200,7 @@ let run_testgen_command =
          let covermode =
            if strict then Testgen.Modes.Strict else Testgen.Modes.Relaxed
          in
-         Testgen.Gen.fuzz_typing ~mini fuel spec_sl includes_p4 filenames_ignore
+         Testgen.Gen.fuzz_typing fuel spec_sl includes_p4 filenames_ignore
            dirname_gen name_campaign randseed logmode bootmode mutationmode
            covermode
        with
@@ -281,16 +220,13 @@ let run_testgen_debug_command =
          ~doc:"relations or functions to ignore when reporting coverage"
      and dirname_debug =
        flag "-debug" (required string) ~doc:"directory for debug files"
-     and pid = flag "-pid" (required int) ~doc:"phantom id to close-miss"
-     and mini =
-       flag "-mini" no_arg ~doc:"run mini-typing instead of full typing"
-     in
+     and pid = flag "-pid" (required int) ~doc:"phantom id to close-miss" in
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
-         Testgen.Derive.debug_phantom ~mini spec_sl includes_p4 filename_p4
+         Testgen.Derive.debug_phantom spec_sl includes_p4 filename_p4
            filenames_ignore dirname_debug pid
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
@@ -313,8 +249,6 @@ let interesting_command =
      and filenames_ignore =
        flag "-ignore" (listed string)
          ~doc:"relations or functions to ignore when reporting coverage"
-     and mini =
-       flag "-mini" no_arg ~doc:"run mini-typing instead of full typing"
      in
      fun () ->
        try
@@ -322,7 +256,7 @@ let interesting_command =
          let spec_il = Elaborate.Elab.elab_spec spec in
          let spec_sl = Structure.Struct.struct_spec spec_il in
          let typing_result =
-           Interp_sl.Typing.run_typing ~mini spec_sl includes_p4 filename_p4
+           Interp_sl.Typing.run_typing spec_sl includes_p4 filename_p4
              filenames_ignore
          in
          if dbg then
@@ -382,7 +316,6 @@ let command =
     ~summary:"p4spec: a language design framework for the p4_16 language"
     [
       ("elab", elab_command);
-      ("stat", stat_command);
       ("struct", struct_command);
       ("run-sl", run_sl_command);
       ("cover-sl", cover_sl_command);

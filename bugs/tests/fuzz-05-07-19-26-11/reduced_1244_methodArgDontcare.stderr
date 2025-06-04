@@ -1,7 +1,0 @@
-hits-likely-05-07-19-26-11/reduced_1244_methodArgDontcare.p4(1): [--Wwarn=unused] warning: 'T' is unused
-extern E<T> {
-         ^
-hits-likely-05-07-19-26-11/reduced_1244_methodArgDontcare.p4(4): [--Wwarn=unused] warning: Control c is not used; removing
-     control c() {
-             ^
-[--Wwarn=missing] warning: Program does not contain a `main' module

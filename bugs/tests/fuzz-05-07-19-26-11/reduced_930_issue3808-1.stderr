@@ -1,7 +1,0 @@
-hits-likely-05-07-19-26-11/reduced_930_issue3808-1.p4(1): [--Wwarn=unused] warning: 'T' is unused
- extern f<T> {
-          ^
-hits-likely-05-07-19-26-11/reduced_930_issue3808-1.p4(3): [--Wwarn=unused] warning: Control eq0 is not used; removing
-    control eq0(f<_> tt) {
-            ^^^
-[--Wwarn=missing] warning: Program does not contain a `main' module

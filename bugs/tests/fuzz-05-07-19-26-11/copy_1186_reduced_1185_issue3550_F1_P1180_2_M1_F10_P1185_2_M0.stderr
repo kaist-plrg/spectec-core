@@ -1,4 +1,0 @@
-hits-likely-05-07-19-26-11/copy_1186_reduced_1185_issue3550_F1_P1180_2_M1_F10_P1185_2_M0.p4(242): [--Wwarn=unused] warning: Control ingress is not used; removing
-control ingress(inout headers hdr, inout metadata user_meta, in psa_ingress_input_metadata_t istd...
-        ^^^^^^^
-[--Wwarn=missing] warning: Program does not contain a `main' module

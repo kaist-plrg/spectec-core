@@ -1,4 +1,0 @@
-hits-likely-05-07-19-26-11/copy_714_reduced_718_default-initializer_F8_P718_1_M1.p4(38): [--Wwarn=unused] warning: Control C is not used; removing
-control C(out bit<32> x)() {
-        ^
-[--Wwarn=missing] warning: Program does not contain a `main' module

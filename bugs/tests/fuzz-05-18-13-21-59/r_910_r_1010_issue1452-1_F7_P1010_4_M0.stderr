@@ -1,4 +1,0 @@
-likely_hits/r_910_r_1010_issue1452-1_F7_P1010_4_M0.p4(1): [--Wwarn=unused] warning: Control c is not used; removing
-control c()() {
-        ^
-[--Wwarn=missing] warning: Program does not contain a `main' module

@@ -1,6 +1,0 @@
-likely_hits/r_668_r_42_issue3623-1_F10_P42_6_M0.p4(2): [--Werror=type-error] error: string: cast not supported
- a = ((string) (true)) };
-       ^^^^^^
-In file: /p4c/frontends/p4/typeChecking/typeChecker.cpp:172
-Compiler Bug: /p4c/frontends/p4/typeChecking/typeChecker.cpp:172: Null srcType
-

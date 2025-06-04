@@ -1,7 +1,0 @@
-likely_hits/r_955_r_70_invalid-union_F10_P70_7_M0.p4(2): [--Wwarn=parser-transition] warning: start: implicit transition to `reject'
-  state start {
-        ^^^^^
-likely_hits/r_955_r_70_invalid-union_F10_P70_7_M0.p4(1): [--Wwarn=unused] warning: Parser p is not used; removing
-parser p(out list<_> a)() {
-       ^
-[--Wwarn=missing] warning: Program does not contain a `main' module

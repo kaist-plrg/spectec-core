@@ -1,1 +1,0 @@
- extern list<_> b();

@@ -1,6 +1,0 @@
-likely_hits/r_764_r_175_issue3364_F10_P175_8_M0.p4(2): [--Werror=type-error] error: |: cannot be applied to expression 'true' with type 'bool'
- enum i8 e { b = ((true) | (...)) };
-                   ^^^^
-In file: /p4c/frontends/p4/typeChecking/typeChecker.cpp:172
-Compiler Bug: /p4c/frontends/p4/typeChecking/typeChecker.cpp:172: Null srcType
-

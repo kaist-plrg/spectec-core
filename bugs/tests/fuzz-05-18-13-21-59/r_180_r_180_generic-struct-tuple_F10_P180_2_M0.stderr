@@ -1,7 +1,0 @@
-likely_hits/r_180_r_180_generic-struct-tuple_F10_P180_2_M0.p4(2): [--Werror=type-error] error: Field 'f1' of 'struct tuple_0' cannot have type 'int'
-  tuple<T, tuple<match_kind, int>> t;
-                             ^^^
-[--Werror=type-error] error: Error while analyzing struct tuple_0
-In file: /p4c/lib/crash.cpp:299
-Compiler Bug: Exiting with SIGSEGV
-

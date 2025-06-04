@@ -1,1 +1,0 @@
- control c()() {   apply {     switch ({ }) { }   } }

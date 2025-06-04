@@ -73,7 +73,6 @@ type seed = { mutable cover : MCov.Cover.t }
 (* Configuration for the fuzz campaign *)
 
 type t = {
-  mini : bool;
   rand : int;
   modes : Modes.t;
   specenv : specenv;
@@ -181,11 +180,11 @@ let init_storage (dirname_gen : string) : storage =
 
 let init_seed (cover : MCov.Cover.t) : seed = { cover }
 
-let init ?(mini : bool = false) (randseed : int option) (modes : Modes.t)
-    (specenv : specenv) (storage : storage) (seed : seed) =
+let init (randseed : int option) (modes : Modes.t) (specenv : specenv)
+    (storage : storage) (seed : seed) =
   let rand = Option.value ~default:2025 randseed in
   Random.init rand;
-  { mini; rand; modes; specenv; storage; seed }
+  { rand; modes; specenv; storage; seed }
 
 (* Seed updater *)
 

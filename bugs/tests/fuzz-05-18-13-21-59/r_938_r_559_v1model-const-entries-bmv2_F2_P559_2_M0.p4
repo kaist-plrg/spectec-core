@@ -1,1 +1,0 @@
- typedef list<_> EthernetAddress;

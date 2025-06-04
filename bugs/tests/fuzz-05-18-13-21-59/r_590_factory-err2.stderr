@@ -1,7 +1,0 @@
-likely_hits/r_590_factory-err2.p4(1): [--Wwarn=unused] warning: 'T' is unused
- extern widget<T> {
-               ^
-likely_hits/r_590_factory-err2.p4(5): [--Wwarn=unused] warning: Control c1 is not used; removing
-   control c1<T>(inout hdr_t hdr)(widget<T> w) {
-           ^^
-[--Wwarn=missing] warning: Program does not contain a `main' module

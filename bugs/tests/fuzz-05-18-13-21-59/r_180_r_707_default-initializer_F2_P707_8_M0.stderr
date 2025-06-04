@@ -1,4 +1,0 @@
-likely_hits/r_180_r_707_default-initializer_F2_P707_8_M0.p4(7): [--Wwarn=unused] warning: Control C0 is not used; removing
-        control C0() {
-                ^^
-[--Wwarn=missing] warning: Program does not contain a `main' module

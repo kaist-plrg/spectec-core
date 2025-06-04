@@ -1,9 +1,0 @@
-likely_hits/r_822_r_20_issue3635_F10_P20_10_M0.p4(3): [--Werror=type-error] error: Cannot extract field a from {} which has type tuple<>
-.a, c = 3 };
- ^
-likely_hits/r_822_r_20_issue3635_F10_P20_10_M0.p4(2)
- a = 1, b = { }
-            ^^^
-In file: /p4c/frontends/p4/typeChecking/typeChecker.cpp:172
-Compiler Bug: /p4c/frontends/p4/typeChecking/typeChecker.cpp:172: Null srcType
-

@@ -1,7 +1,0 @@
-likely_hits/r_871_r_200_crash-typechecker_F10_P200_3_M1.p4(5): [--Wwarn=mismatch] warning: Invalid: constant expression in switch
-    switch ({#}) {
-            ^^^
-likely_hits/r_871_r_200_crash-typechecker_F10_P200_3_M1.p4(3): [--Wwarn=unused] warning: Control x is not used; removing
-control x()() {
-        ^
-[--Wwarn=missing] warning: Program does not contain a `main' module

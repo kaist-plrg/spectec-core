@@ -1,4 +1,0 @@
-likely_hits/r_896_r_849_stack-bmv2_F9_P849_0_M0.p4(3): [--Wwarn=unused] warning: Control compute is not used; removing
-    control compute(inout hdr h)() {
-            ^^^^^^^
-[--Wwarn=missing] warning: Program does not contain a `main' module
