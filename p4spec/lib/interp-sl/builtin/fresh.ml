@@ -1,4 +1,5 @@
-open Sl.Ast
+open Il.Ast
+module Value = Runtime_dynamic.Value
 module Dep = Runtime_testgen.Dep
 open Util.Source
 
@@ -13,7 +14,7 @@ let fresh_tid (ctx : Ctx.t) (at : region) (targs : targ list)
   let tid = "FRESH__" ^ string_of_int !ctr in
   ctr := !ctr + 1;
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.VarT ("tid" $ no_region, []) in
     TextV tid $$$ { vid; typ }
   in

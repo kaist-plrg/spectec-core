@@ -13,80 +13,45 @@ module Funcs = Map.Make (String)
 let funcs =
   Funcs.empty
   (* Nats *)
-  |> Funcs.add "sum" (fun at targs values_input ->
-         Nats.sum at targs values_input)
-  |> Funcs.add "max" (fun at targs values_input ->
-         Nats.max at targs values_input)
-  |> Funcs.add "min" (fun at targs values_input ->
-         Nats.min at targs values_input)
+  |> Funcs.add "sum" Nats.sum
+  |> Funcs.add "max" Nats.max |> Funcs.add "min" Nats.min
   (* Texts *)
-  |> Funcs.add "int_to_text" (fun at targs values_input ->
-         Texts.int_to_text at targs values_input)
-  |> Funcs.add "strip_prefix" (fun at targs values_input ->
-         Texts.strip_prefix at targs values_input)
-  |> Funcs.add "strip_suffix" (fun at targs values_input ->
-         Texts.strip_suffix at targs values_input)
+  |> Funcs.add "int_to_text" Texts.int_to_text
+  |> Funcs.add "strip_prefix" Texts.strip_prefix
+  |> Funcs.add "strip_suffix" Texts.strip_suffix
   (* Lists *)
-  |> Funcs.add "rev_" (fun at targs values_input ->
-         Lists.rev_ at targs values_input)
-  |> Funcs.add "concat_" (fun at targs values_input ->
-         Lists.concat_ at targs values_input)
-  |> Funcs.add "distinct_" (fun at targs values_input ->
-         Lists.distinct_ at targs values_input)
-  |> Funcs.add "partition_" (fun at targs values_input ->
-         Lists.partition_ at targs values_input)
-  |> Funcs.add "assoc_" (fun at targs values_input ->
-         Lists.assoc_ at targs values_input)
+  |> Funcs.add "rev_" Lists.rev_
+  |> Funcs.add "concat_" Lists.concat_
+  |> Funcs.add "distinct_" Lists.distinct_
+  |> Funcs.add "partition_" Lists.partition_
+  |> Funcs.add "assoc_" Lists.assoc_
   (* Sets *)
-  |> Funcs.add "intersect_set" (fun at targs values_input ->
-         Sets.intersect_set at targs values_input)
-  |> Funcs.add "union_set" (fun at targs values_input ->
-         Sets.union_set at targs values_input)
-  |> Funcs.add "unions_set" (fun at targs values_input ->
-         Sets.unions_set at targs values_input)
-  |> Funcs.add "diff_set" (fun at targs values_input ->
-         Sets.diff_set at targs values_input)
-  |> Funcs.add "sub_set" (fun at targs values_input ->
-         Sets.sub_set at targs values_input)
-  |> Funcs.add "eq_set" (fun at targs values_input ->
-         Sets.eq_set at targs values_input)
+  |> Funcs.add "intersect_set" Sets.intersect_set
+  |> Funcs.add "union_set" Sets.union_set
+  |> Funcs.add "unions_set" Sets.unions_set
+  |> Funcs.add "diff_set" Sets.diff_set
+  |> Funcs.add "sub_set" Sets.sub_set
+  |> Funcs.add "eq_set" Sets.eq_set
   (* Maps *)
-  |> Funcs.add "find_map" (fun at targs values_input ->
-         Maps.find_map at targs values_input)
-  |> Funcs.add "find_maps" (fun at targs values_input ->
-         Maps.find_maps at targs values_input)
-  |> Funcs.add "add_map" (fun at targs values_input ->
-         Maps.add_map at targs values_input)
-  |> Funcs.add "adds_map" (fun at targs values_input ->
-         Maps.adds_map at targs values_input)
-  |> Funcs.add "update_map" (fun at targs values_input ->
-         Maps.update_map at targs values_input)
+  |> Funcs.add "find_map" Maps.find_map
+  |> Funcs.add "find_maps" Maps.find_maps
+  |> Funcs.add "add_map" Maps.add_map
+  |> Funcs.add "adds_map" Maps.adds_map
+  |> Funcs.add "update_map" Maps.update_map
   (* Fresh type id *)
-  |> Funcs.add "fresh_tid" (fun at targs values_input ->
-         Fresh.fresh_tid at targs values_input)
+  |> Funcs.add "fresh_tid" Fresh.fresh_tid
   (* Numerics *)
-  |> Funcs.add "shl" (fun at targs values_input ->
-         Numerics.shl at targs values_input)
-  |> Funcs.add "shr" (fun at targs values_input ->
-         Numerics.shr at targs values_input)
-  |> Funcs.add "shr_arith" (fun at targs values_input ->
-         Numerics.shr_arith at targs values_input)
-  |> Funcs.add "pow2" (fun at targs values_input ->
-         Numerics.pow2 at targs values_input)
-  |> Funcs.add "to_int" (fun at targs values_input ->
-         Numerics.to_int at targs values_input)
-  |> Funcs.add "to_bitstr" (fun at targs values_input ->
-         Numerics.to_bitstr at targs values_input)
-  |> Funcs.add "bneg" (fun at targs values_input ->
-         Numerics.bneg at targs values_input)
-  |> Funcs.add "band" (fun at targs values_input ->
-         Numerics.band at targs values_input)
-  |> Funcs.add "bxor" (fun at targs values_input ->
-         Numerics.bxor at targs values_input)
-  |> Funcs.add "bor" (fun at targs values_input ->
-         Numerics.bor at targs values_input)
-  |> Funcs.add "bitacc" (fun at targs values_input ->
-         Numerics.bitacc at targs values_input)
+  |> Funcs.add "shl" Numerics.shl
+  |> Funcs.add "shr" Numerics.shr
+  |> Funcs.add "shr_arith" Numerics.shr_arith
+  |> Funcs.add "pow2" Numerics.pow2
+  |> Funcs.add "to_int" Numerics.to_int
+  |> Funcs.add "to_bitstr" Numerics.to_bitstr
+  |> Funcs.add "bneg" Numerics.bneg
+  |> Funcs.add "band" Numerics.band
+  |> Funcs.add "bxor" Numerics.bxor
+  |> Funcs.add "bor" Numerics.bor
+  |> Funcs.add "bitacc" Numerics.bitacc
 
 let is_builtin (id : id) : bool = Funcs.mem id.it funcs
 

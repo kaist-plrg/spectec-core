@@ -1,6 +1,6 @@
 open Xl
-open Sl.Ast
-module Value = Runtime_dynamic_sl.Value
+open Il.Ast
+module Value = Runtime_dynamic.Value
 module Dep = Runtime_testgen.Dep
 open Util.Source
 
@@ -11,7 +11,7 @@ let rev_ (ctx : Ctx.t) (at : region) (targs : targ list)
   let typ = Extract.one at targs in
   let values = Extract.one at values_input |> Value.get_list in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.IterT (typ, Il.Ast.List) in
     ListV (List.rev values) $$$ { vid; typ }
   in
@@ -29,7 +29,7 @@ let concat_ (ctx : Ctx.t) (at : region) (targs : targ list)
     |> List.concat_map Value.get_list
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.IterT (typ, Il.Ast.List) in
     ListV values $$$ { vid; typ }
   in
@@ -44,7 +44,7 @@ let distinct_ (ctx : Ctx.t) (at : region) (targs : targ list)
   let values = Extract.one at values_input |> Value.get_list in
   let set = Sets.VSet.of_list values in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.BoolT in
     BoolV (Sets.VSet.cardinal set = List.length values) $$$ { vid; typ }
   in
@@ -65,19 +65,19 @@ let partition_ (ctx : Ctx.t) (at : region) (targs : targ list)
     |> List.partition (fun (idx, _) -> idx < len)
   in
   let value_left =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.IterT (typ, Il.Ast.List) in
     ListV (List.map snd values_left) $$$ { vid; typ }
   in
   Ctx.add_node ctx value_left;
   let value_right =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.IterT (typ, Il.Ast.List) in
     ListV (List.map snd values_right) $$$ { vid; typ }
   in
   Ctx.add_node ctx value_right;
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ =
       Il.Ast.TupleT
         [ value_left.note.typ $ no_region; value_right.note.typ $ no_region ]
@@ -110,7 +110,7 @@ let assoc_ (ctx : Ctx.t) (at : region) (targs : targ list)
       None values
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.IterT (typ_value, Il.Ast.Opt) in
     OptV value_opt $$$ { vid; typ }
   in

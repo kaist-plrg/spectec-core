@@ -1,5 +1,6 @@
 open Il.Ast
-module Cache = Cache.Cache
+module Value = Runtime_dynamic.Value
+module Cache = Runtime_dynamic.Cache.Cache
 module F = Format
 open Attempt
 open Util.Source
@@ -19,6 +20,7 @@ type res = WellTyped | IllTyped of region * string | IllFormed of string
 let run_typing' ?(debug : bool = false) (spec : spec)
     (includes_p4 : string list) (filename_p4 : string) : res =
   Builtin.init ();
+  Value.refresh ();
   Cache.reset !Interp.func_cache;
   Cache.reset !Interp.rule_cache;
   try

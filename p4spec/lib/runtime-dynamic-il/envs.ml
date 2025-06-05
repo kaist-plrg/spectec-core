@@ -4,7 +4,7 @@ open Domain.Lib
 
 (* Value environment *)
 
-module VEnv = Runtime_dynamic.Envs.MakeVarEnv (Value)
+module VEnv = Runtime_dynamic.Envs.VEnv
 
 (* Type definition environment *)
 

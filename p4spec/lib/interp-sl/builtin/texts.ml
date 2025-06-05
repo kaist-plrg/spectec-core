@@ -1,6 +1,6 @@
 open Xl
-open Sl.Ast
-module Value = Runtime_dynamic_sl.Value
+open Il.Ast
+module Value = Runtime_dynamic.Value
 module Dep = Runtime_testgen.Dep
 open Util.Source
 
@@ -11,7 +11,7 @@ let int_to_text (ctx : Ctx.t) (at : region) (targs : targ list)
   Extract.zero at targs;
   let num = Extract.one at values_input |> Value.get_num in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.TextT in
     TextV (Num.string_of_num num) $$$ { vid; typ }
   in
@@ -32,7 +32,7 @@ let strip_prefix (ctx : Ctx.t) (at : region) (targs : targ list)
       (String.length text - String.length prefix)
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.TextT in
     TextV text $$$ { vid; typ }
   in
@@ -50,7 +50,7 @@ let strip_suffix (ctx : Ctx.t) (at : region) (targs : targ list)
   assert (String.ends_with ~suffix text);
   let text = String.sub text 0 (String.length text - String.length suffix) in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.TextT in
     TextV text $$$ { vid; typ }
   in

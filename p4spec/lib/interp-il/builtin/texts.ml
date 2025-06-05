@@ -1,6 +1,6 @@
 open Xl
 open Il.Ast
-module Value = Runtime_dynamic_il.Value
+module Value = Runtime_dynamic.Value
 open Util.Source
 
 (* dec $int_to_text(int) : text *)
@@ -10,7 +10,7 @@ let int_to_text (at : region) (targs : targ list) (values_input : value list) :
   Extract.zero at targs;
   let num = Extract.one at values_input |> Value.get_num in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.TextT in
     TextV (Num.string_of_num num) $$$ { vid; typ }
   in
@@ -30,7 +30,7 @@ let strip_prefix (at : region) (targs : targ list) (values_input : value list) :
       (String.length text - String.length prefix)
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.TextT in
     TextV text $$$ { vid; typ }
   in
@@ -47,7 +47,7 @@ let strip_suffix (at : region) (targs : targ list) (values_input : value list) :
   assert (String.ends_with ~suffix text);
   let text = String.sub text 0 (String.length text - String.length suffix) in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.TextT in
     TextV text $$$ { vid; typ }
   in

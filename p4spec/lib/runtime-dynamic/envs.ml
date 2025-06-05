@@ -24,6 +24,8 @@ struct
     String.concat ", " (List.map to_string_binding bindings)
 end
 
+module VEnv = MakeVarEnv (Value)
+
 (* Type definition environment *)
 
 module TDEnv = MakeTIdEnv (Typdef)

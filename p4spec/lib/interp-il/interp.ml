@@ -3,36 +3,20 @@ open Xl
 open Il.Ast
 module Hint = Runtime_static.Rel.Hint
 module Typ = Runtime_dynamic.Typ
-module Value = Runtime_dynamic_il.Value
+module Value = Runtime_dynamic.Value
+module Cache = Runtime_dynamic.Cache
 module Rel = Runtime_dynamic_il.Rel
 open Runtime_dynamic_il.Envs
 open Error
 open Attempt
 module F = Format
 open Util.Source
-module Cache = Cache.Cache
 module Pp = Il.Print
 
-(* Caches *)
+(* Cache *)
 
-let is_cached_func = function
-  | "subst_typ" | "subst_typdef_poly" | "specialize_typdef" | "canon_typ"
-  | "free_typ" | "is_nominal" | "find_map" | "update_map" | "dom_map"
-  | "bound_tids" | "in_set" | "merge_cstr'" | "merge_cstr"
-  | "find_matching_funcs" | "nestable_structt" | "nestable_structt_in_headert"
-    ->
-      true
-  | _ -> false
-
-let func_cache = ref (Cache.create 1000)
-
-let is_cached_rule = function
-  | "Sub_expl" | "Sub_expl_canon" | "Sub_expl_canon_neq" | "Sub_impl"
-  | "Sub_impl_canon" | "Sub_impl_canon_neq" | "Type_wf" | "Type_alpha" ->
-      true
-  | _ -> false
-
-let rule_cache = ref (Cache.create 50)
+let func_cache = ref (Cache.Cache.create 1000)
+let rule_cache = ref (Cache.Cache.create 50)
 
 (* Assignments *)
 
@@ -57,7 +41,7 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
   | ConsE (exp_h, exp_t), ListV values_inner ->
       let value_h = List.hd values_inner in
       let value_t =
-        let vid = Runtime_dynamic.Vid.fresh () in
+        let vid = Value.fresh () in
         let typ = note in
         ListV (List.tl values_inner) $$$ { vid; typ }
       in
@@ -68,7 +52,7 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
       List.fold_left
         (fun ctx (id, typ, iters) ->
           let value_sub =
-            let vid = Runtime_dynamic.Vid.fresh () in
+            let vid = Value.fresh () in
             let typ = Typ.iterate typ (iters @ [ Opt ]) in
             OptV None $$$ { vid; typ = typ.it }
           in
@@ -82,7 +66,7 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
         (fun ctx (id, typ, iters) ->
           let value_sub =
             let value = Ctx.find_value Local ctx (id, iters) in
-            let vid = Runtime_dynamic.Vid.fresh () in
+            let vid = Value.fresh () in
             let typ = Typ.iterate typ (iters @ [ Opt ]) in
             OptV (Some value) $$$ { vid; typ = typ.it }
           in
@@ -109,7 +93,7 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
             List.map (fun ctx -> Ctx.find_value Local ctx (id, iters)) ctxs
           in
           let value_sub =
-            let vid = Runtime_dynamic.Vid.fresh () in
+            let vid = Value.fresh () in
             let typ = Typ.iterate typ (iters @ [ List ]) in
             ListV values $$$ { vid; typ = typ.it }
           in
@@ -224,7 +208,7 @@ and eval_exps (ctx : Ctx.t) (exps : exp list) : Ctx.t * value list =
 
 and eval_bool_exp (note : typ') (b : bool) : value =
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     BoolV b $$$ { vid; typ }
   in
@@ -234,7 +218,7 @@ and eval_bool_exp (note : typ') (b : bool) : value =
 
 and eval_num_exp (note : typ') (n : Num.t) : value =
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     NumV n $$$ { vid; typ }
   in
@@ -244,7 +228,7 @@ and eval_num_exp (note : typ') (n : Num.t) : value =
 
 and eval_text_exp (note : typ') (s : string) : value =
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     TextV s $$$ { vid; typ }
   in
@@ -274,7 +258,7 @@ and eval_un_exp (note : typ') (ctx : Ctx.t) (unop : unop) (_optyp : optyp)
     | #Num.unop as unop -> eval_un_num unop value
   in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     value_res $$$ { vid; typ }
   in
@@ -308,7 +292,7 @@ and eval_bin_exp (note : typ') (ctx : Ctx.t) (binop : binop) (_optyp : optyp)
     | #Num.binop as binop -> eval_bin_num binop value_l value_r
   in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     value_res $$$ { vid; typ }
   in
@@ -337,7 +321,7 @@ and eval_cmp_exp (note : typ') (ctx : Ctx.t) (cmpop : cmpop) (_optyp : optyp)
     | #Num.cmpop as cmpop -> eval_cmp_num cmpop value_l value_r
   in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     value_res $$$ { vid; typ }
   in
@@ -351,7 +335,7 @@ and upcast (ctx : Ctx.t) (typ : typ) (value : value) : value =
       match value.it with
       | NumV (`Nat n) ->
           let value_res =
-            let vid = Runtime_dynamic.Vid.fresh () in
+            let vid = Value.fresh () in
             let typ = typ.it in
             NumV (`Int n) $$$ { vid; typ }
           in
@@ -377,7 +361,7 @@ and upcast (ctx : Ctx.t) (typ : typ) (value : value) : value =
               [] typs values
           in
           let value_res =
-            let vid = Runtime_dynamic.Vid.fresh () in
+            let vid = Value.fresh () in
             let typ = typ.it in
             TupleV values $$$ { vid; typ }
           in
@@ -400,7 +384,7 @@ and downcast (ctx : Ctx.t) (typ : typ) (value : value) : value =
       | NumV (`Nat _) -> value
       | NumV (`Int i) when Bigint.(i >= zero) ->
           let value_res =
-            let vid = Runtime_dynamic.Vid.fresh () in
+            let vid = Value.fresh () in
             let typ = typ.it in
             NumV (`Nat i) $$$ { vid; typ }
           in
@@ -425,7 +409,7 @@ and downcast (ctx : Ctx.t) (typ : typ) (value : value) : value =
               [] typs values
           in
           let value_res =
-            let vid = Runtime_dynamic.Vid.fresh () in
+            let vid = Value.fresh () in
             let typ = typ.it in
             TupleV values $$$ { vid; typ }
           in
@@ -475,7 +459,7 @@ and eval_sub_exp (note : typ') (ctx : Ctx.t) (exp : exp) (typ : typ) :
   let ctx, value = eval_exp ctx exp in
   let sub = subtyp ctx typ value in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     BoolV sub $$$ { vid; typ }
   in
@@ -500,7 +484,7 @@ and eval_match_exp (note : typ') (ctx : Ctx.t) (exp : exp) (pattern : pattern) :
     | _ -> false
   in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     BoolV matches $$$ { vid; typ }
   in
@@ -512,7 +496,7 @@ and eval_tuple_exp (note : typ') (ctx : Ctx.t) (exps : exp list) : Ctx.t * value
     =
   let ctx, values = eval_exps ctx exps in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     TupleV values $$$ { vid; typ }
   in
@@ -525,7 +509,7 @@ and eval_case_exp (note : typ') (ctx : Ctx.t) (notexp : notexp) : Ctx.t * value
   let mixop, exps = notexp in
   let ctx, values = eval_exps ctx exps in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -539,7 +523,7 @@ and eval_str_exp (note : typ') (ctx : Ctx.t) (fields : (atom * exp) list) :
   let ctx, values = eval_exps ctx exps in
   let fields = List.combine atoms values in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     StructV fields $$$ { vid; typ }
   in
@@ -557,7 +541,7 @@ and eval_opt_exp (note : typ') (ctx : Ctx.t) (exp_opt : exp option) :
     | None -> (ctx, None)
   in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     OptV value_opt $$$ { vid; typ }
   in
@@ -569,7 +553,7 @@ and eval_list_exp (note : typ') (ctx : Ctx.t) (exps : exp list) : Ctx.t * value
     =
   let ctx, values = eval_exps ctx exps in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     ListV values $$$ { vid; typ }
   in
@@ -583,7 +567,7 @@ and eval_cons_exp (note : typ') (ctx : Ctx.t) (exp_h : exp) (exp_t : exp) :
   let ctx, value_t = eval_exp ctx exp_t in
   let values_t = Value.get_list value_t in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     ListV (value_h :: values_t) $$$ { vid; typ }
   in
@@ -602,7 +586,7 @@ and eval_cat_exp (note : typ') (ctx : Ctx.t) (at : region) (exp_l : exp)
     | _ -> error at "concatenation expects either two texts or two lists"
   in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     value_res $$$ { vid; typ }
   in
@@ -616,7 +600,7 @@ and eval_mem_exp (note : typ') (ctx : Ctx.t) (exp_e : exp) (exp_s : exp) :
   let ctx, value_s = eval_exp ctx exp_s in
   let values_s = Value.get_list value_s in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     BoolV (List.exists (Value.eq value_e) values_s) $$$ { vid; typ }
   in
@@ -628,7 +612,7 @@ and eval_len_exp (note : typ') (ctx : Ctx.t) (exp : exp) : Ctx.t * value =
   let ctx, value = eval_exp ctx exp in
   let len = value |> Value.get_list |> List.length |> Bigint.of_int in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     NumV (`Nat len) $$$ { vid; typ }
   in
@@ -677,7 +661,7 @@ and eval_slice_exp (note : typ') (ctx : Ctx.t) (exp_b : exp) (exp_i : exp)
     |> List.filter_map Fun.id
   in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     ListV values_slice $$$ { vid; typ }
   in
@@ -709,7 +693,7 @@ and eval_update_path (value_b : value) (path : path) (value_n : value) : value =
           fields
       in
       let value =
-        let vid = Runtime_dynamic.Vid.fresh () in
+        let vid = Value.fresh () in
         let typ = path.note in
         StructV fields $$$ { vid; typ }
       in
@@ -727,8 +711,8 @@ and eval_upd_exp (_note : typ') (ctx : Ctx.t) (exp_b : exp) (path : path)
 
 and eval_call_exp (_note : typ') (ctx : Ctx.t) (id : id) (targs : targ list)
     (args : arg list) : Ctx.t * value =
-  let+ ctx, value = invoke_func ctx id targs args in
-  (ctx, value)
+  let+ ctx, value_res = invoke_func ctx id targs args in
+  (ctx, value_res)
 
 (* Conditional relation holds expression evaluation *)
 
@@ -742,7 +726,7 @@ and eval_hold_exp (note : typ') (ctx : Ctx.t) (id : id) (notexp : notexp) :
     | Fail _ -> (ctx, false)
   in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     BoolV hold $$$ { vid; typ }
   in
@@ -760,14 +744,14 @@ and eval_iter_exp_opt (note : typ') (ctx : Ctx.t) (exp : exp) (vars : var list)
       let ctx_sub = Ctx.trace_close ctx_sub in
       let ctx = Ctx.trace_commit ctx ctx_sub.trace in
       let value_res =
-        let vid = Runtime_dynamic.Vid.fresh () in
+        let vid = Value.fresh () in
         let typ = note in
         OptV (Some value) $$$ { vid; typ }
       in
       (ctx, value_res)
   | None ->
       let value_res =
-        let vid = Runtime_dynamic.Vid.fresh () in
+        let vid = Value.fresh () in
         let typ = note in
         OptV None $$$ { vid; typ }
       in
@@ -789,7 +773,7 @@ and eval_iter_exp_list (note : typ') (ctx : Ctx.t) (exp : exp) (vars : var list)
       (ctx, []) ctxs_sub
   in
   let value_res =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
     ListV values $$$ { vid; typ }
   in
@@ -809,7 +793,7 @@ and eval_arg (ctx : Ctx.t) (arg : arg) : Ctx.t * value =
   | ExpA exp -> eval_exp ctx exp
   | DefA id ->
       let value_res =
-        let vid = Runtime_dynamic.Vid.fresh () in
+        let vid = Value.fresh () in
         let typ = FuncT in
         FuncV id $$$ { vid; typ }
       in
@@ -930,7 +914,7 @@ and eval_iter_prem_list (ctx : Ctx.t) (prem : prem) (vars : var list) :
     List.fold_left2
       (fun ctx (id_binding, typ_binding, iters_binding) values_binding ->
         let value_binding =
-          let vid = Runtime_dynamic.Vid.fresh () in
+          let vid = Value.fresh () in
           let typ = Typ.iterate typ_binding (iters_binding @ [ List ]) in
           ListV values_binding $$$ { vid; typ = typ.it }
         in
@@ -1007,8 +991,8 @@ and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
     in
     choice attempt_rules'
   in
-  if is_cached_rule id.it then (
-    let cache_result = Cache.find_opt !rule_cache (id.it, values_input) in
+  if Cache.is_cached_rule id.it then (
+    let cache_result = Cache.Cache.find_opt !rule_cache (id.it, values_input) in
     match cache_result with
     | Some (subtraces, values_output) ->
         let ctx = Ctx.trace_replace ctx subtraces in
@@ -1016,7 +1000,8 @@ and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
     | None ->
         let* ctx, values_output = attempt_rules () in
         let subtraces = Trace.wipe_subtraces ctx.trace in
-        Cache.add !rule_cache (id.it, values_input) (subtraces, values_output);
+        Cache.Cache.add !rule_cache (id.it, values_input)
+          (subtraces, values_output);
         Ok (ctx, values_output))
   else
     let* ctx, values_output = attempt_rules () in
@@ -1119,8 +1104,8 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
     in
     choice attempt_clauses'
   in
-  if is_cached_func id.it then (
-    let cache_result = Cache.find_opt !func_cache (id.it, values_input) in
+  if Cache.is_cached_func id.it then (
+    let cache_result = Cache.Cache.find_opt !func_cache (id.it, values_input) in
     match cache_result with
     | Some (subtraces, value_output) ->
         let ctx = Ctx.trace_replace ctx subtraces in
@@ -1128,7 +1113,8 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
     | None ->
         let* ctx, value_output = attempt_clauses () in
         let subtraces = Trace.wipe_subtraces ctx.trace in
-        Cache.add !func_cache (id.it, values_input) (subtraces, value_output);
+        Cache.Cache.add !func_cache (id.it, values_input)
+          (subtraces, value_output);
         Ok (ctx, value_output))
   else
     let* ctx, value_output = attempt_clauses () in

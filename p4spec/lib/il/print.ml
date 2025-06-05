@@ -99,15 +99,7 @@ and string_of_value ?(short = false) ?(level = 0) value =
                   (string_of_value ~short ~level:(level + 2) value))
               valuefields))
   | CaseV (mixop, _) when short -> string_of_mixop mixop
-  | CaseV (mixop, values) ->
-      let atoms_h, mixop_t = (List.hd mixop, List.tl mixop) in
-      Format.asprintf "(%s%s)" (string_of_atoms atoms_h)
-        (String.concat ""
-           (List.map2
-              (fun value atoms ->
-                string_of_value ~short ~level:(level + 1) value
-                ^ string_of_atoms atoms)
-              values mixop_t))
+  | CaseV (mixop, values) -> "(" ^ string_of_notval (mixop, values) ^ ")"
   | TupleV values ->
       Format.asprintf "(%s)"
         (String.concat ", "
@@ -127,6 +119,15 @@ and string_of_value ?(short = false) ?(level = 0) value =
                 indent ^ string_of_value ~short ~level:(level + 2) value)
               values))
   | FuncV id -> string_of_defid id
+
+and string_of_notval notval =
+  let mixop, values = notval in
+  let len = List.length mixop + List.length values in
+  List.init len (fun idx ->
+      if idx mod 2 = 0 then idx / 2 |> List.nth mixop |> string_of_atoms
+      else idx / 2 |> List.nth values |> string_of_value)
+  |> List.filter_map (fun str -> if str = "" then None else Some str)
+  |> String.concat " "
 
 (* Operators *)
 

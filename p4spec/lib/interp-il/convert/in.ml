@@ -1,6 +1,7 @@
 open Xl.Atom
 module P4 = P4el.Ast
 open Il.Ast
+module Value = Runtime_dynamic.Value
 open Util.Error
 open Util.Source
 
@@ -13,7 +14,7 @@ let in_typ_var (s : string) : typ' = VarT (s $ no_region, [])
 let in_opt (do_in : 'a -> value) (typ : typ) (opt : 'a option) : value =
   let value_opt = Option.map do_in opt in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = IterT (typ, Opt) in
     OptV value_opt $$$ { vid; typ }
   in
@@ -22,7 +23,7 @@ let in_opt (do_in : 'a -> value) (typ : typ) (opt : 'a option) : value =
 let in_list (do_in : 'a -> value) (typ : typ) (lst : 'a list) : value =
   let vlst = List.map do_in lst in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = IterT (typ, List) in
     ListV vlst $$$ { vid; typ }
   in
@@ -33,7 +34,7 @@ let in_pair (do_in_a : 'a -> value) (do_in_b : 'b -> value) (typ_a : typ)
   let value_a = do_in_a a in
   let value_b = do_in_b b in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = TupleT [ typ_a; typ_b ] in
     TupleV [ value_a; value_b ] $$$ { vid; typ }
   in
@@ -47,7 +48,7 @@ let in_atom (s : string) : atom = Atom s $ no_region
 
 let in_bool (boolean : bool) : value =
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = BoolT in
     BoolV boolean $$$ { vid; typ }
   in
@@ -64,12 +65,12 @@ let in_num (num : P4.num) : value =
           else [ [ in_atom "FBIT" ]; []; [] ]
         in
         let value_width =
-          let vid = Runtime_dynamic.Vid.fresh () in
+          let vid = Value.fresh () in
           let typ = NumT `NatT in
           NumV (`Nat width) $$$ { vid; typ }
         in
         let value_int =
-          let vid = Runtime_dynamic.Vid.fresh () in
+          let vid = Value.fresh () in
           let typ = NumT `IntT in
           NumV (`Int i) $$$ { vid; typ }
         in
@@ -77,14 +78,14 @@ let in_num (num : P4.num) : value =
     | i, None ->
         let mixop = [ [ in_atom "INT" ]; [] ] in
         let value_int =
-          let vid = Runtime_dynamic.Vid.fresh () in
+          let vid = Value.fresh () in
           let typ = NumT `IntT in
           NumV (`Int i) $$$ { vid; typ }
         in
         (mixop, [ value_int ])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "num" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -94,7 +95,7 @@ let in_num (num : P4.num) : value =
 
 let in_text (text : P4.text) : value =
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = TextT in
     TextV text.it $$$ { vid; typ }
   in
@@ -104,7 +105,7 @@ let in_text (text : P4.text) : value =
 
 let in_id (id : P4.id) : value =
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "id" in
     TextV id.it $$$ { vid; typ }
   in
@@ -125,7 +126,7 @@ let in_var (var : P4.var) : value =
         (mixop, [ value_id ])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "name" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -135,7 +136,7 @@ let in_var (var : P4.var) : value =
 
 let rec in_member (member : P4.member) : value =
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "member" in
     TextV member.it $$$ { vid; typ }
   in
@@ -148,7 +149,7 @@ and in_members (members : P4.member list) : value =
 
 let in_match_kind (match_kind : P4.match_kind) : value =
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "matchkind" in
     TextV match_kind.it $$$ { vid; typ }
   in
@@ -158,7 +159,7 @@ let in_match_kind (match_kind : P4.match_kind) : value =
 
 let in_state_label (state_label : P4.state_label) : value =
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "statelabel" in
     TextV state_label.it $$$ { vid; typ }
   in
@@ -175,7 +176,7 @@ let in_unop (unop : P4.unop) : value =
     | UMinusOp -> [ [ in_atom "UMINUS" ] ]
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "unop" in
     CaseV (mixop, []) $$$ { vid; typ }
   in
@@ -209,7 +210,7 @@ let in_binop (binop : P4.binop) : value =
     | LOrOp -> [ [ in_atom "LOR" ] ]
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "binop" in
     CaseV (mixop, []) $$$ { vid; typ }
   in
@@ -226,7 +227,7 @@ let in_dir (dir : P4.dir) : value =
     | InOut -> [ [ in_atom "INOUT" ] ]
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "dir" in
     CaseV (mixop, []) $$$ { vid; typ }
   in
@@ -294,7 +295,7 @@ let rec in_typ (typ : P4.typ) : value =
         (mixop, [])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "type" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -307,7 +308,7 @@ and in_typs (typs : P4.typ list) : value =
 
 and in_tparam (tparam : P4.tparam) : value =
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tparam" in
     TextV tparam.it $$$ { vid; typ }
   in
@@ -328,7 +329,7 @@ and in_param (param : P4.param) : value =
     in_opt in_expr (in_typ_var "expr" $ no_region) expr_opt
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "param" in
     CaseV (mixop, [ value_id; value_dir; value_typ; value_expr_opt ])
     $$$ { vid; typ }
@@ -350,7 +351,7 @@ and in_cparam (cparam : P4.cparam) : value =
     in_opt in_expr (in_typ_var "expr" $ no_region) expr_opt
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "cparam" in
     CaseV (mixop, [ value_id; value_dir; value_typ; value_expr_opt ])
     $$$ { vid; typ }
@@ -422,7 +423,7 @@ and in_targ (targ : P4.targ) : value =
         (mixop, [])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "targ" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -452,7 +453,7 @@ and in_arg (arg : P4.arg) : value =
         (mixop, [])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "arg" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -608,7 +609,7 @@ and in_expr (expr : P4.expr) : value =
         (mixop, [ value_var_inst; value_targs; value_args ])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "expr" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -634,7 +635,7 @@ and in_keyset (keyset : P4.keyset) : value =
         (mixop, [])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "keyset" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -651,7 +652,7 @@ and in_select_case (select_case : P4.select_case) : value =
   let value_keysets = in_keysets keysets in
   let value_state_label = in_state_label state_label in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "selectcase" in
     CaseV (mixop, [ value_keysets; value_state_label ]) $$$ { vid; typ }
   in
@@ -726,7 +727,7 @@ and in_stmt (stmt : P4.stmt) : value =
         (mixop, [ value_decl ])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "stmt" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -742,7 +743,7 @@ and in_block (block : P4.block) : value =
   let mixop = [ [ in_atom "BlockB" ]; [] ] in
   let value_stmts = in_stmts stmts in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "block" in
     CaseV (mixop, [ value_stmts ]) $$$ { vid; typ }
   in
@@ -762,7 +763,7 @@ and in_switch_label (switch_label : P4.switch_label) : value =
         (mixop, [])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "switchlabel" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -782,7 +783,7 @@ and in_switch_case (switch_case : P4.switch_case) : value =
         (mixop, [ value_switch_label ])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "switchcase" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -806,7 +807,7 @@ and in_typdef (typdef : (P4.typ, P4.decl) P4.alt) : value =
         (mixop, [ value_decl ])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "typedef" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -993,7 +994,7 @@ and in_decl (decl : P4.decl) : value =
         (mixop, [ value_id; value_tparams; value_cparams ])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "decl" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -1010,7 +1011,7 @@ and in_parser_state (parser_state : P4.parser_state) : value =
   let value_state_label = in_state_label state_label in
   let value_block = in_block block in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "parserstate" in
     CaseV (mixop, [ value_state_label; value_block ]) $$$ { vid; typ }
   in
@@ -1051,7 +1052,7 @@ and in_table_property (table_property : P4.table_property) : value =
         (mixop, [ value_table_custom ])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tblprop" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -1065,7 +1066,7 @@ and in_table_key (table_key : P4.table_key) : value =
   let value_expr = in_expr expr in
   let value_match_kind = in_match_kind match_kind in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tblkey" in
     CaseV (mixop, [ value_expr; value_match_kind ]) $$$ { vid; typ }
   in
@@ -1082,7 +1083,7 @@ and in_table_action (table_action : P4.table_action) : value =
   let value_var = in_var var in
   let value_args = in_args args in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tblaction" in
     CaseV (mixop, [ value_var; value_args ]) $$$ { vid; typ }
   in
@@ -1103,7 +1104,7 @@ and in_table_entry (table_entry : P4.table_entry) : value =
     in_opt in_expr (in_typ_var "expr" $ no_region) expr_opt
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tblentry" in
     CaseV
       ( mixop,
@@ -1125,7 +1126,7 @@ and in_table_entries (table_entries : P4.table_entries) : value =
     in_list in_table_entry (in_typ_var "tblentry" $ no_region) table_entries
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tblentryprop" in
     CaseV (mixop, [ value_table_entries_const; value_table_entries ])
     $$$ { vid; typ }
@@ -1140,7 +1141,7 @@ and in_table_default (table_default : P4.table_default) : value =
   let value_table_default_const = in_bool table_default_const in
   let value_table_action = in_table_action table_action in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tbldefaultprop" in
     CaseV (mixop, [ value_table_default_const; value_table_action ])
     $$$ { vid; typ }
@@ -1156,7 +1157,7 @@ and in_table_custom (table_custom : P4.table_custom) : value =
   let value_member = in_member member in
   let value_expr = in_expr expr in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tblcustomprop" in
     CaseV (mixop, [ value_table_custom_const; value_member; value_expr ])
     $$$ { vid; typ }
@@ -1189,7 +1190,7 @@ and in_mthd (mthd : P4.mthd) : value =
         (mixop, [ value_id; value_typ_ret; value_tparams; value_params ])
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "method" in
     CaseV (mixop, values) $$$ { vid; typ }
   in

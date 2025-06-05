@@ -1,6 +1,7 @@
 open Xl.Atom
 module P4 = P4el.Ast
-open Sl.Ast
+open Il.Ast
+module Value = Runtime_dynamic.Value
 module Dep = Runtime_testgen.Dep
 open Util.Error
 open Util.Source
@@ -15,7 +16,7 @@ let in_opt (do_in : Dep.Graph.t -> 'a -> value) (typ : typ)
     (graph : Dep.Graph.t) (opt : 'a option) : value =
   let value_opt = Option.map (do_in graph) opt in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.IterT (typ, Il.Ast.Opt) in
     OptV value_opt $$$ { vid; typ }
   in
@@ -26,7 +27,7 @@ let in_list (do_in : Dep.Graph.t -> 'a -> value) (typ : typ)
     (graph : Dep.Graph.t) (lst : 'a list) : value =
   let vlst = List.map (do_in graph) lst in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.IterT (typ, Il.Ast.List) in
     ListV vlst $$$ { vid; typ }
   in
@@ -39,7 +40,7 @@ let in_pair (do_in_a : Dep.Graph.t -> 'a -> value)
   let value_a = do_in_a graph a in
   let value_b = do_in_b graph b in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.TupleT [ typ_a; typ_b ] in
     TupleV [ value_a; value_b ] $$$ { vid; typ }
   in
@@ -54,7 +55,7 @@ let in_atom (s : string) : atom = Atom s $ no_region
 
 let in_bool (graph : Dep.Graph.t) (boolean : bool) : value =
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.BoolT in
     BoolV boolean $$$ { vid; typ }
   in
@@ -72,13 +73,13 @@ let in_num (graph : Dep.Graph.t) (num : P4.num) : value =
           else [ [ in_atom "FBIT" ]; []; [] ]
         in
         let value_width =
-          let vid = Dep.Graph.fresh () in
+          let vid = Value.fresh () in
           let typ = Il.Ast.NumT `NatT in
           NumV (`Nat width) $$$ { vid; typ }
         in
         Dep.Graph.add_node ~taint:true graph value_width;
         let value_int =
-          let vid = Dep.Graph.fresh () in
+          let vid = Value.fresh () in
           let typ = Il.Ast.NumT `IntT in
           NumV (`Int i) $$$ { vid; typ }
         in
@@ -87,7 +88,7 @@ let in_num (graph : Dep.Graph.t) (num : P4.num) : value =
     | i, None ->
         let mixop = [ [ in_atom "INT" ]; [] ] in
         let value_int =
-          let vid = Dep.Graph.fresh () in
+          let vid = Value.fresh () in
           let typ = Il.Ast.NumT `IntT in
           NumV (`Int i) $$$ { vid; typ }
         in
@@ -95,7 +96,7 @@ let in_num (graph : Dep.Graph.t) (num : P4.num) : value =
         (mixop, [ value_int ])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "num" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -106,7 +107,7 @@ let in_num (graph : Dep.Graph.t) (num : P4.num) : value =
 
 let in_text (graph : Dep.Graph.t) (text : P4.text) : value =
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.TextT in
     TextV text.it $$$ { vid; typ }
   in
@@ -117,7 +118,7 @@ let in_text (graph : Dep.Graph.t) (text : P4.text) : value =
 
 let in_id (graph : Dep.Graph.t) (id : P4.id) : value =
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "id" in
     TextV id.it $$$ { vid; typ }
   in
@@ -139,7 +140,7 @@ let in_var (graph : Dep.Graph.t) (var : P4.var) : value =
         (mixop, [ value_id ])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "name" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -150,7 +151,7 @@ let in_var (graph : Dep.Graph.t) (var : P4.var) : value =
 
 let rec in_member (graph : Dep.Graph.t) (member : P4.member) : value =
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "member" in
     TextV member.it $$$ { vid; typ }
   in
@@ -164,7 +165,7 @@ and in_members (graph : Dep.Graph.t) (members : P4.member list) : value =
 
 let in_match_kind (graph : Dep.Graph.t) (match_kind : P4.match_kind) : value =
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "matchkind" in
     TextV match_kind.it $$$ { vid; typ }
   in
@@ -176,7 +177,7 @@ let in_match_kind (graph : Dep.Graph.t) (match_kind : P4.match_kind) : value =
 let in_state_label (graph : Dep.Graph.t) (state_label : P4.state_label) : value
     =
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "statelabel" in
     TextV state_label.it $$$ { vid; typ }
   in
@@ -194,7 +195,7 @@ let in_unop (graph : Dep.Graph.t) (unop : P4.unop) : value =
     | UMinusOp -> [ [ in_atom "UMINUS" ] ]
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "unop" in
     CaseV (mixop, []) $$$ { vid; typ }
   in
@@ -229,7 +230,7 @@ let in_binop (graph : Dep.Graph.t) (binop : P4.binop) : value =
     | LOrOp -> [ [ in_atom "LOR" ] ]
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "binop" in
     CaseV (mixop, []) $$$ { vid; typ }
   in
@@ -247,7 +248,7 @@ let in_dir (graph : Dep.Graph.t) (dir : P4.dir) : value =
     | InOut -> [ [ in_atom "INOUT" ] ]
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "dir" in
     CaseV (mixop, []) $$$ { vid; typ }
   in
@@ -316,7 +317,7 @@ let rec in_typ (graph : Dep.Graph.t) (typ : P4.typ) : value =
         (mixop, [])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "type" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -330,7 +331,7 @@ and in_typs (graph : Dep.Graph.t) (typs : P4.typ list) : value =
 
 and in_tparam (graph : Dep.Graph.t) (tparam : P4.tparam) : value =
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tparam" in
     TextV tparam.it $$$ { vid; typ }
   in
@@ -352,7 +353,7 @@ and in_param (graph : Dep.Graph.t) (param : P4.param) : value =
     in_opt in_expr (in_typ_var "expr" $ no_region) graph expr_opt
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "param" in
     CaseV (mixop, [ value_id; value_dir; value_typ; value_expr_opt ])
     $$$ { vid; typ }
@@ -375,7 +376,7 @@ and in_cparam (graph : Dep.Graph.t) (cparam : P4.cparam) : value =
     in_opt in_expr (in_typ_var "expr" $ no_region) graph expr_opt
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "cparam" in
     CaseV (mixop, [ value_id; value_dir; value_typ; value_expr_opt ])
     $$$ { vid; typ }
@@ -448,7 +449,7 @@ and in_targ (graph : Dep.Graph.t) (targ : P4.targ) : value =
         (mixop, [])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "targ" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -479,7 +480,7 @@ and in_arg (graph : Dep.Graph.t) (arg : P4.arg) : value =
         (mixop, [])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "arg" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -636,7 +637,7 @@ and in_expr (graph : Dep.Graph.t) (expr : P4.expr) : value =
         (mixop, [ value_var_inst; value_targs; value_args ])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "expr" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -663,7 +664,7 @@ and in_keyset (graph : Dep.Graph.t) (keyset : P4.keyset) : value =
         (mixop, [])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "keyset" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -682,7 +683,7 @@ and in_select_case (graph : Dep.Graph.t) (select_case : P4.select_case) : value
   let value_keysets = in_keysets graph keysets in
   let value_state_label = in_state_label graph state_label in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "selectcase" in
     CaseV (mixop, [ value_keysets; value_state_label ]) $$$ { vid; typ }
   in
@@ -761,7 +762,7 @@ and in_stmt (graph : Dep.Graph.t) (stmt : P4.stmt) : value =
         (mixop, [ value_decl ])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "stmt" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -778,7 +779,7 @@ and in_block (graph : Dep.Graph.t) (block : P4.block) : value =
   let mixop = [ [ in_atom "BlockB" ]; [] ] in
   let value_stmts = in_stmts graph stmts in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "block" in
     CaseV (mixop, [ value_stmts ]) $$$ { vid; typ }
   in
@@ -800,7 +801,7 @@ and in_switch_label (graph : Dep.Graph.t) (switch_label : P4.switch_label) :
         (mixop, [])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "switchlabel" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -822,7 +823,7 @@ and in_switch_case (graph : Dep.Graph.t) (switch_case : P4.switch_case) : value
         (mixop, [ value_switch_label ])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "switchcase" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -851,7 +852,7 @@ and in_typdef (graph : Dep.Graph.t) (typdef : (P4.typ, P4.decl) P4.alt) : value
         (mixop, [ value_decl ])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "typedef" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -1047,7 +1048,7 @@ and in_decl (graph : Dep.Graph.t) (decl : P4.decl) : value =
         (mixop, [ value_id; value_tparams; value_cparams ])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "decl" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -1066,7 +1067,7 @@ and in_parser_state (graph : Dep.Graph.t) (parser_state : P4.parser_state) :
   let value_state_label = in_state_label graph state_label in
   let value_block = in_block graph block in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "parserstate" in
     CaseV (mixop, [ value_state_label; value_block ]) $$$ { vid; typ }
   in
@@ -1112,7 +1113,7 @@ and in_table_property (graph : Dep.Graph.t) (table_property : P4.table_property)
         (mixop, [ value_table_custom ])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tblprop" in
     CaseV (mixop, values) $$$ { vid; typ }
   in
@@ -1127,7 +1128,7 @@ and in_table_key (graph : Dep.Graph.t) (table_key : P4.table_key) : value =
   let value_expr = in_expr graph expr in
   let value_match_kind = in_match_kind graph match_kind in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tblkey" in
     CaseV (mixop, [ value_expr; value_match_kind ]) $$$ { vid; typ }
   in
@@ -1146,7 +1147,7 @@ and in_table_action (graph : Dep.Graph.t) (table_action : P4.table_action) :
   let value_var = in_var graph var in
   let value_args = in_args graph args in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tblaction" in
     CaseV (mixop, [ value_var; value_args ]) $$$ { vid; typ }
   in
@@ -1172,7 +1173,7 @@ and in_table_entry (graph : Dep.Graph.t) (table_entry : P4.table_entry) : value
     in_opt in_expr (in_typ_var "expr" $ no_region) graph expr_opt
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tblentry" in
     CaseV
       ( mixop,
@@ -1198,7 +1199,7 @@ and in_table_entries (graph : Dep.Graph.t) (table_entries : P4.table_entries) :
       graph table_entries
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tblentryprop" in
     CaseV (mixop, [ value_table_entries_const; value_table_entries ])
     $$$ { vid; typ }
@@ -1215,7 +1216,7 @@ and in_table_default (graph : Dep.Graph.t) (table_default : P4.table_default) :
   let value_table_default_const = in_bool graph table_default_const in
   let value_table_action = in_table_action graph table_action in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tbldefaultprop" in
     CaseV (mixop, [ value_table_default_const; value_table_action ])
     $$$ { vid; typ }
@@ -1233,7 +1234,7 @@ and in_table_custom (graph : Dep.Graph.t) (table_custom : P4.table_custom) :
   let value_member = in_member graph member in
   let value_expr = in_expr graph expr in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "tblcustomprop" in
     CaseV (mixop, [ value_table_custom_const; value_member; value_expr ])
     $$$ { vid; typ }
@@ -1267,7 +1268,7 @@ and in_mthd (graph : Dep.Graph.t) (mthd : P4.mthd) : value =
         (mixop, [ value_id; value_typ_ret; value_tparams; value_params ])
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = in_typ_var "method" in
     CaseV (mixop, values) $$$ { vid; typ }
   in

@@ -1,6 +1,6 @@
 open Xl
 open Il.Ast
-module Value = Runtime_dynamic_il.Value
+module Value = Runtime_dynamic.Value
 open Error
 open Util.Source
 
@@ -26,12 +26,12 @@ let set_of_value (value : value) : set =
 let value_of_set (typ_key : typ) (set : set) : value =
   let values_element = VSet.elements set in
   let value_elements =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.IterT (typ_key, Il.Ast.List) in
     ListV values_element $$$ { vid; typ }
   in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.VarT ("set" $ no_region, [ typ_key ]) in
     CaseV
       ( [ [ Atom.LBrace $ no_region ]; [ Atom.RBrace $ no_region ] ],
@@ -88,7 +88,7 @@ let sub_set (at : region) (targs : targ list) (values_input : value list) :
   let set_a = set_of_value value_set_a in
   let set_b = set_of_value value_set_b in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.BoolT in
     BoolV (VSet.subset set_a set_b) $$$ { vid; typ }
   in
@@ -103,7 +103,7 @@ let eq_set (at : region) (targs : targ list) (values_input : value list) : value
   let set_a = set_of_value value_set_a in
   let set_b = set_of_value value_set_b in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.BoolT in
     BoolV (VSet.equal set_a set_b) $$$ { vid; typ }
   in

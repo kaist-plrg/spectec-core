@@ -1,6 +1,6 @@
 open Xl
-open Sl.Ast
-module Value = Runtime_dynamic_sl.Value
+open Il.Ast
+module Value = Runtime_dynamic.Value
 module Dep = Runtime_testgen.Dep
 open Error
 open Util.Source
@@ -40,7 +40,7 @@ let value_of_map (ctx : Ctx.t) (typ_key : typ) (typ_value : typ) (map : map) :
     value =
   let value_of_tuple ((value_key, value_value) : value * value) : value =
     let value =
-      let vid = Dep.Graph.fresh () in
+      let vid = Value.fresh () in
       let typ = Il.Ast.VarT ("pair" $ no_region, [ typ_key; typ_value ]) in
       CaseV ([ []; [ Atom.Arrow $ no_region ]; [] ], [ value_key; value_value ])
       $$$ { vid; typ }
@@ -49,7 +49,7 @@ let value_of_map (ctx : Ctx.t) (typ_key : typ) (typ_value : typ) (map : map) :
     value
   in
   let value_pairs =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ =
       Il.Ast.IterT
         ( Il.Ast.VarT ("pair" $ no_region, [ typ_key; typ_value ]) $ no_region,
@@ -59,7 +59,7 @@ let value_of_map (ctx : Ctx.t) (typ_key : typ) (typ_value : typ) (map : map) :
   in
   Ctx.add_node ctx value_pairs;
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.VarT ("map" $ no_region, [ typ_key; typ_value ]) in
     CaseV
       ( [ [ Atom.LBrace $ no_region ]; [ Atom.RBrace $ no_region ] ],
@@ -80,7 +80,7 @@ let find_map (ctx : Ctx.t) (at : region) (targs : targ list)
   let map = map_of_value value_map in
   let value_opt = VMap.find_opt value_key map in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.IterT (typ_value, Il.Ast.Opt) in
     OptV value_opt $$$ { vid; typ }
   in
@@ -103,7 +103,7 @@ let find_maps (ctx : Ctx.t) (at : region) (targs : targ list)
       None maps
   in
   let value =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.IterT (typ_value, Il.Ast.Opt) in
     OptV value_opt $$$ { vid; typ }
   in

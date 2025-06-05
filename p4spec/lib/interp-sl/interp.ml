@@ -3,38 +3,25 @@ open Xl
 open Sl.Ast
 module Hint = Runtime_static.Rel.Hint
 module Typ = Runtime_dynamic.Typ
-module Value = Runtime_dynamic_sl.Value
+module Value = Runtime_dynamic.Value
+module Cache = Runtime_dynamic.Cache
 module Rel = Runtime_dynamic_sl.Rel
 open Runtime_dynamic_sl.Envs
 module Dep = Runtime_testgen.Dep
 module SCov = Runtime_testgen.Cov.Single
 module MCov = Runtime_testgen.Cov.Multiple
-module Cache = Cache.Cache
 open Error
 module F = Format
 open Util.Source
 
-(* Caches *)
+(* Option monad *)
 
-let is_cached_func = function
-  | "subst_typ" | "subst_typdef_poly" | "specialize_typdef" | "canon_typ"
-  | "free_typ" | "is_nominal" | "find_map" | "update_map" | "dom_map"
-  | "bound_tids" | "in_set" | "merge_cstr'" | "merge_cstr"
-  | "find_matching_funcs" | "nestable_structt" | "nestable_structt_in_headert"
-    ->
-      true
-  | _ -> false
-
-let func_cache = ref (Cache.create 1000)
-
-let is_cached_rule = function
-  | "Sub_expl" | "Sub_expl_canon" | "Sub_expl_canon_neq" | "Sub_impl"
-  | "Sub_impl_canon" | "Sub_impl_canon_neq" | "Type_wf" | "Type_alpha" ->
-      true
-  | _ -> false
-
-let rule_cache = ref (Cache.create 50)
 let ( let* ) = Option.bind
+
+(* Cache *)
+
+let func_cache = ref (Cache.Cache.create 1000)
+let rule_cache = ref (Cache.Cache.create 50)
 
 (* Assignments *)
 
@@ -76,9 +63,9 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
   | ConsE (exp_h, exp_t), ListV values_inner ->
       let value_h = List.hd values_inner in
       let value_t =
-        let vid = Dep.Graph.fresh () in
+        let vid = Value.fresh () in
         let typ = note in
-        ListV (List.tl values_inner) $$$ { vid; typ }
+        Il.Ast.(ListV (List.tl values_inner) $$$ { vid; typ })
       in
       Ctx.add_node ctx value_t;
       let ctx = assign_exp ctx exp_h value_h in
@@ -91,9 +78,9 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
       List.fold_left
         (fun ctx (id, typ, iters) ->
           let value_sub =
-            let vid = Dep.Graph.fresh () in
+            let vid = Value.fresh () in
             let typ = Typ.iterate typ (iters @ [ Il.Ast.Opt ]) in
-            OptV None $$$ { vid; typ = typ.it }
+            Il.Ast.(OptV None $$$ { vid; typ = typ.it })
           in
           Ctx.add_node ctx value_sub;
           Ctx.add_edge ctx value_sub value Dep.Edges.Assign;
@@ -107,9 +94,9 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
         (fun ctx (id, typ, iters) ->
           let value_sub =
             let value = Ctx.find_value Local ctx (id, iters) in
-            let vid = Dep.Graph.fresh () in
+            let vid = Value.fresh () in
             let typ = Typ.iterate typ (iters @ [ Il.Ast.Opt ]) in
-            OptV (Some value) $$$ { vid; typ = typ.it }
+            Il.Ast.(OptV (Some value) $$$ { vid; typ = typ.it })
           in
           Ctx.add_node ctx value_sub;
           Ctx.add_edge ctx value_sub value Dep.Edges.Assign;
@@ -136,9 +123,9 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
             List.map (fun ctx -> Ctx.find_value Local ctx (id, iters)) ctxs
           in
           let value_sub =
-            let vid = Dep.Graph.fresh () in
+            let vid = Value.fresh () in
             let typ = Typ.iterate typ (iters @ [ Il.Ast.List ]) in
-            ListV values $$$ { vid; typ = typ.it }
+            Il.Ast.(ListV values $$$ { vid; typ = typ.it })
           in
           Ctx.add_node ctx value_sub;
           Ctx.add_edge ctx value_sub value Dep.Edges.Assign;
@@ -252,9 +239,9 @@ and eval_exps (ctx : Ctx.t) (exps : exp list) : Ctx.t * value list =
 
 and eval_bool_exp (note : typ') (ctx : Ctx.t) (b : bool) : Ctx.t * value =
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    BoolV b $$$ { vid; typ }
+    Il.Ast.(BoolV b $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   List.iter
@@ -267,9 +254,9 @@ and eval_bool_exp (note : typ') (ctx : Ctx.t) (b : bool) : Ctx.t * value =
 
 and eval_num_exp (note : typ') (ctx : Ctx.t) (n : Num.t) : Ctx.t * value =
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    NumV n $$$ { vid; typ }
+    Il.Ast.(NumV n $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   List.iter
@@ -282,9 +269,9 @@ and eval_num_exp (note : typ') (ctx : Ctx.t) (n : Num.t) : Ctx.t * value =
 
 and eval_text_exp (note : typ') (ctx : Ctx.t) (s : string) : Ctx.t * value =
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    TextV s $$$ { vid; typ }
+    Il.Ast.(TextV s $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   List.iter
@@ -302,12 +289,12 @@ and eval_var_exp (_note : typ') (ctx : Ctx.t) (id : id) : Ctx.t * value =
 (* Unary expression evaluation *)
 
 and eval_un_bool (unop : Bool.unop) (value : value) : value' =
-  match unop with `NotOp -> BoolV (not (Value.get_bool value))
+  match unop with `NotOp -> Il.Ast.BoolV (not (Value.get_bool value))
 
 and eval_un_num (unop : Num.unop) (value : value) : value' =
   let num = Value.get_num value in
   let num = Num.un unop num in
-  NumV num
+  Il.Ast.NumV num
 
 and eval_un_exp (note : typ') (ctx : Ctx.t) (unop : unop) (_optyp : optyp)
     (exp : exp) : Ctx.t * value =
@@ -318,9 +305,9 @@ and eval_un_exp (note : typ') (ctx : Ctx.t) (unop : unop) (_optyp : optyp)
     | #Num.unop as unop -> eval_un_num unop value
   in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    value_res $$$ { vid; typ }
+    Il.Ast.(value_res $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   Ctx.add_edge ctx value_res value (Dep.Edges.Op (UnOp unop));
@@ -333,16 +320,16 @@ and eval_bin_bool (binop : Bool.binop) (value_l : value) (value_r : value) :
   let bool_l = Value.get_bool value_l in
   let bool_r = Value.get_bool value_r in
   match binop with
-  | `AndOp -> BoolV (bool_l && bool_r)
-  | `OrOp -> BoolV (bool_l || bool_r)
-  | `ImplOp -> BoolV ((not bool_l) || bool_r)
-  | `EquivOp -> BoolV (bool_l = bool_r)
+  | `AndOp -> Il.Ast.BoolV (bool_l && bool_r)
+  | `OrOp -> Il.Ast.BoolV (bool_l || bool_r)
+  | `ImplOp -> Il.Ast.BoolV ((not bool_l) || bool_r)
+  | `EquivOp -> Il.Ast.BoolV (bool_l = bool_r)
 
 and eval_bin_num (binop : Num.binop) (value_l : value) (value_r : value) :
     value' =
   let num_l = Value.get_num value_l in
   let num_r = Value.get_num value_r in
-  NumV (Num.bin binop num_l num_r)
+  Il.Ast.NumV (Num.bin binop num_l num_r)
 
 and eval_bin_exp (note : typ') (ctx : Ctx.t) (binop : binop) (_optyp : optyp)
     (exp_l : exp) (exp_r : exp) : Ctx.t * value =
@@ -354,9 +341,9 @@ and eval_bin_exp (note : typ') (ctx : Ctx.t) (binop : binop) (_optyp : optyp)
     | #Num.binop as binop -> eval_bin_num binop value_l value_r
   in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    value_res $$$ { vid; typ }
+    Il.Ast.(value_res $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   Ctx.add_edge ctx value_res value_l (Dep.Edges.Op (BinOp binop));
@@ -368,13 +355,13 @@ and eval_bin_exp (note : typ') (ctx : Ctx.t) (binop : binop) (_optyp : optyp)
 and eval_cmp_bool (cmpop : Bool.cmpop) (value_l : value) (value_r : value) :
     value' =
   let eq = Value.eq value_l value_r in
-  match cmpop with `EqOp -> BoolV eq | `NeOp -> BoolV (not eq)
+  match cmpop with `EqOp -> Il.Ast.BoolV eq | `NeOp -> Il.Ast.BoolV (not eq)
 
 and eval_cmp_num (cmpop : Num.cmpop) (value_l : value) (value_r : value) :
     value' =
   let num_l = Value.get_num value_l in
   let num_r = Value.get_num value_r in
-  BoolV (Num.cmp cmpop num_l num_r)
+  Il.Ast.BoolV (Num.cmp cmpop num_l num_r)
 
 and eval_cmp_exp (note : typ') (ctx : Ctx.t) (cmpop : cmpop) (_optyp : optyp)
     (exp_l : exp) (exp_r : exp) : Ctx.t * value =
@@ -386,9 +373,9 @@ and eval_cmp_exp (note : typ') (ctx : Ctx.t) (cmpop : cmpop) (_optyp : optyp)
     | #Num.cmpop as cmpop -> eval_cmp_num cmpop value_l value_r
   in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    value_res $$$ { vid; typ }
+    Il.Ast.(value_res $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   Ctx.add_edge ctx value_res value_l (Dep.Edges.Op (CmpOp cmpop));
@@ -403,9 +390,9 @@ and upcast (ctx : Ctx.t) (typ : typ) (value : value) : Ctx.t * value =
       match value.it with
       | NumV (`Nat n) ->
           let value_res =
-            let vid = Dep.Graph.fresh () in
+            let vid = Value.fresh () in
             let typ = typ.it in
-            NumV (`Int n) $$$ { vid; typ }
+            Il.Ast.(NumV (`Int n) $$$ { vid; typ })
           in
           Ctx.add_node ctx value_res;
           Ctx.add_edge ctx value_res value (Dep.Edges.Op (CastOp typ));
@@ -431,9 +418,9 @@ and upcast (ctx : Ctx.t) (typ : typ) (value : value) : Ctx.t * value =
               (ctx, []) typs values
           in
           let value_res =
-            let vid = Dep.Graph.fresh () in
+            let vid = Value.fresh () in
             let typ = typ.it in
-            TupleV values $$$ { vid; typ }
+            Il.Ast.(TupleV values $$$ { vid; typ })
           in
           Ctx.add_node ctx value_res;
           Ctx.add_edge ctx value_res value (Dep.Edges.Op (CastOp typ));
@@ -456,9 +443,9 @@ and downcast (ctx : Ctx.t) (typ : typ) (value : value) : Ctx.t * value =
       | NumV (`Nat _) -> (ctx, value)
       | NumV (`Int i) when Bigint.(i >= zero) ->
           let value_res =
-            let vid = Dep.Graph.fresh () in
+            let vid = Value.fresh () in
             let typ = typ.it in
-            NumV (`Nat i) $$$ { vid; typ }
+            Il.Ast.(NumV (`Nat i) $$$ { vid; typ })
           in
           Ctx.add_node ctx value_res;
           Ctx.add_edge ctx value_res value (Dep.Edges.Op (CastOp typ));
@@ -483,9 +470,9 @@ and downcast (ctx : Ctx.t) (typ : typ) (value : value) : Ctx.t * value =
               (ctx, []) typs values
           in
           let value_res =
-            let vid = Dep.Graph.fresh () in
+            let vid = Value.fresh () in
             let typ = typ.it in
-            TupleV values $$$ { vid; typ }
+            Il.Ast.(TupleV values $$$ { vid; typ })
           in
           Ctx.add_node ctx value_res;
           Ctx.add_edge ctx value_res value (Dep.Edges.Op (CastOp typ));
@@ -535,9 +522,9 @@ and eval_sub_exp (note : typ') (ctx : Ctx.t) (exp : exp) (typ : typ) :
   let ctx, value = eval_exp ctx exp in
   let sub = subtyp ctx typ value in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    BoolV sub $$$ { vid; typ }
+    Il.Ast.(BoolV sub $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   Ctx.add_edge ctx value_res value (Dep.Edges.Op (SubOp typ));
@@ -562,9 +549,9 @@ and eval_match_exp (note : typ') (ctx : Ctx.t) (exp : exp) (pattern : pattern) :
     | _ -> false
   in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    BoolV matches $$$ { vid; typ }
+    Il.Ast.(BoolV matches $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   Ctx.add_edge ctx value_res value (Dep.Edges.Op (MatchOp pattern));
@@ -576,9 +563,9 @@ and eval_tuple_exp (note : typ') (ctx : Ctx.t) (exps : exp list) : Ctx.t * value
     =
   let ctx, values = eval_exps ctx exps in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    TupleV values $$$ { vid; typ }
+    Il.Ast.(TupleV values $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   if List.length values = 0 then
@@ -595,9 +582,9 @@ and eval_case_exp (note : typ') (ctx : Ctx.t) (notexp : notexp) : Ctx.t * value
   let mixop, exps = notexp in
   let ctx, values = eval_exps ctx exps in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    CaseV (mixop, values) $$$ { vid; typ }
+    Il.Ast.(CaseV (mixop, values) $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   if List.length values = 0 then
@@ -615,9 +602,9 @@ and eval_str_exp (note : typ') (ctx : Ctx.t) (fields : (atom * exp) list) :
   let ctx, values = eval_exps ctx exps in
   let fields = List.combine atoms values in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    StructV fields $$$ { vid; typ }
+    Il.Ast.(StructV fields $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   if List.length values = 0 then
@@ -639,9 +626,9 @@ and eval_opt_exp (note : typ') (ctx : Ctx.t) (exp_opt : exp option) :
     | None -> (ctx, None)
   in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    OptV value_opt $$$ { vid; typ }
+    Il.Ast.(OptV value_opt $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   if Option.is_none value_opt then
@@ -657,9 +644,9 @@ and eval_list_exp (note : typ') (ctx : Ctx.t) (exps : exp list) : Ctx.t * value
     =
   let ctx, values = eval_exps ctx exps in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    ListV values $$$ { vid; typ }
+    Il.Ast.(ListV values $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   if List.length values = 0 then
@@ -677,9 +664,9 @@ and eval_cons_exp (note : typ') (ctx : Ctx.t) (exp_h : exp) (exp_t : exp) :
   let ctx, value_t = eval_exp ctx exp_t in
   let values_t = Value.get_list value_t in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    ListV (value_h :: values_t) $$$ { vid; typ }
+    Il.Ast.(ListV (value_h :: values_t) $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   (ctx, value_res)
@@ -692,14 +679,14 @@ and eval_cat_exp (note : typ') (ctx : Ctx.t) (at : region) (exp_l : exp)
   let ctx, value_r = eval_exp ctx exp_r in
   let value_res =
     match (value_l.it, value_r.it) with
-    | TextV s_l, TextV s_r -> TextV (s_l ^ s_r)
-    | ListV values_l, ListV values_r -> ListV (values_l @ values_r)
+    | TextV s_l, TextV s_r -> Il.Ast.TextV (s_l ^ s_r)
+    | ListV values_l, ListV values_r -> Il.Ast.ListV (values_l @ values_r)
     | _ -> error at "concatenation expects either two texts or two lists"
   in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    value_res $$$ { vid; typ }
+    Il.Ast.(value_res $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   Ctx.add_edge ctx value_res value_l (Dep.Edges.Op CatOp);
@@ -714,9 +701,9 @@ and eval_mem_exp (note : typ') (ctx : Ctx.t) (exp_e : exp) (exp_s : exp) :
   let ctx, value_s = eval_exp ctx exp_s in
   let values_s = Value.get_list value_s in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    BoolV (List.exists (Value.eq value_e) values_s) $$$ { vid; typ }
+    Il.Ast.(BoolV (List.exists (Value.eq value_e) values_s) $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   Ctx.add_edge ctx value_res value_e (Dep.Edges.Op MemOp);
@@ -729,9 +716,9 @@ and eval_len_exp (note : typ') (ctx : Ctx.t) (exp : exp) : Ctx.t * value =
   let ctx, value = eval_exp ctx exp in
   let len = value |> Value.get_list |> List.length |> Bigint.of_int in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    NumV (`Nat len) $$$ { vid; typ }
+    Il.Ast.(NumV (`Nat len) $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   Ctx.add_edge ctx value_res value (Dep.Edges.Op LenOp);
@@ -780,9 +767,9 @@ and eval_slice_exp (note : typ') (ctx : Ctx.t) (exp_b : exp) (exp_i : exp)
     |> List.filter_map Fun.id
   in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    ListV values_slice $$$ { vid; typ }
+    Il.Ast.(ListV values_slice $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   (ctx, value_res)
@@ -814,9 +801,9 @@ and eval_update_path (ctx : Ctx.t) (value_b : value) (path : path)
           fields
       in
       let value =
-        let vid = Dep.Graph.fresh () in
+        let vid = Value.fresh () in
         let typ = path.note in
-        StructV fields $$$ { vid; typ }
+        Il.Ast.(StructV fields $$$ { vid; typ })
       in
       Ctx.add_node ctx value;
       eval_update_path ctx value_b path value
@@ -848,9 +835,9 @@ and eval_hold_exp (note : typ') (ctx : Ctx.t) (id : id) (notexp : notexp) :
     | None -> (ctx, false)
   in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    BoolV hold $$$ { vid; typ }
+    Il.Ast.(BoolV hold $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   List.iteri
@@ -870,16 +857,16 @@ and eval_iter_exp_opt (note : typ') (ctx : Ctx.t) (exp : exp) (vars : var list)
         let ctx_sub, value = eval_exp ctx_sub exp in
         let ctx = Ctx.commit ctx ctx_sub in
         let value_res =
-          let vid = Dep.Graph.fresh () in
+          let vid = Value.fresh () in
           let typ = note in
-          OptV (Some value) $$$ { vid; typ }
+          Il.Ast.(OptV (Some value) $$$ { vid; typ })
         in
         (ctx, value_res)
     | None ->
         let value_res =
-          let vid = Dep.Graph.fresh () in
+          let vid = Value.fresh () in
           let typ = note in
-          OptV None $$$ { vid; typ }
+          Il.Ast.(OptV None $$$ { vid; typ })
         in
         (ctx, value_res)
   in
@@ -903,9 +890,9 @@ and eval_iter_exp_list (note : typ') (ctx : Ctx.t) (exp : exp) (vars : var list)
       (ctx, []) ctxs_sub
   in
   let value_res =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = note in
-    ListV values $$$ { vid; typ }
+    Il.Ast.(ListV values $$$ { vid; typ })
   in
   Ctx.add_node ctx value_res;
   List.iter
@@ -929,9 +916,9 @@ and eval_arg (ctx : Ctx.t) (arg : arg) : Ctx.t * value =
   | ExpA exp -> eval_exp ctx exp
   | DefA id ->
       let value_res =
-        let vid = Dep.Graph.fresh () in
+        let vid = Value.fresh () in
         let typ = Il.Ast.FuncT in
-        FuncV id $$$ { vid; typ }
+        Il.Ast.(FuncV id $$$ { vid; typ })
       in
       Ctx.add_node ctx value_res;
       (ctx, value_res)
@@ -998,9 +985,9 @@ and eval_if_cond_iter' (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list)
             eval_if_cond_list ctx exp_cond vars_h iterexps_t
           in
           let value_cond =
-            let vid = Dep.Graph.fresh () in
+            let vid = Value.fresh () in
             let typ = Il.Ast.IterT (Il.Ast.BoolT $ no_region, Il.Ast.List) in
-            ListV values_cond $$$ { vid; typ }
+            Il.Ast.(ListV values_cond $$$ { vid; typ })
           in
           Ctx.add_node ctx value_cond;
           List.iter
@@ -1057,9 +1044,9 @@ and eval_cases (ctx : Ctx.t) (exp : exp) (cases : case list) :
        (ctx, None, [])
   |> fun (ctx, block_match, values_cond) ->
   let value_cond =
-    let vid = Dep.Graph.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.IterT (Il.Ast.BoolT $ no_region, Il.Ast.List) in
-    ListV values_cond $$$ { vid; typ }
+    Il.Ast.(ListV values_cond $$$ { vid; typ })
   in
   Ctx.add_node ctx value_cond;
   (ctx, block_match, value_cond)
@@ -1102,11 +1089,11 @@ and eval_let_opt (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
           List.map
             (fun (_id_binding, typ_binding, iters_binding) ->
               let value_binding =
-                let vid = Dep.Graph.fresh () in
+                let vid = Value.fresh () in
                 let typ =
                   Typ.iterate typ_binding (iters_binding @ [ Il.Ast.Opt ])
                 in
-                OptV None $$$ { vid; typ = typ.it }
+                Il.Ast.(OptV None $$$ { vid; typ = typ.it })
               in
               Ctx.add_node ctx value_binding;
               List.iter
@@ -1131,11 +1118,11 @@ and eval_let_opt (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
                 Ctx.find_value Local ctx_sub (id_binding, iters_binding)
               in
               let value_binding =
-                let vid = Dep.Graph.fresh () in
+                let vid = Value.fresh () in
                 let typ =
                   Typ.iterate typ_binding (iters_binding @ [ Il.Ast.Opt ])
                 in
-                OptV (Some value_binding) $$$ { vid; typ = typ.it }
+                Il.Ast.(OptV (Some value_binding) $$$ { vid; typ = typ.it })
               in
               Ctx.add_node ctx value_binding;
               List.iter
@@ -1205,9 +1192,9 @@ and eval_let_list (ctx : Ctx.t) (exp_l : exp) (exp_r : exp) (vars : var list)
   List.fold_left2
     (fun ctx (id_binding, typ_binding, iters_binding) values_binding ->
       let value_binding =
-        let vid = Dep.Graph.fresh () in
+        let vid = Value.fresh () in
         let typ = Typ.iterate typ_binding (iters_binding @ [ Il.Ast.List ]) in
-        ListV values_binding $$$ { vid; typ = typ.it }
+        Il.Ast.(ListV values_binding $$$ { vid; typ = typ.it })
       in
       Ctx.add_node ctx value_binding;
       List.iter
@@ -1310,9 +1297,9 @@ and eval_rule_list (ctx : Ctx.t) (id : id) (notexp : notexp) (vars : var list)
   List.fold_left2
     (fun ctx (id_binding, typ_binding, iters_binding) values_binding ->
       let value_binding =
-        let vid = Dep.Graph.fresh () in
+        let vid = Value.fresh () in
         let typ = Typ.iterate typ_binding (iters_binding @ [ Il.Ast.List ]) in
-        ListV values_binding $$$ { vid; typ = typ.it }
+        Il.Ast.(ListV values_binding $$$ { vid; typ = typ.it })
       in
       Ctx.add_node ctx value_binding;
       List.iter
@@ -1384,13 +1371,13 @@ and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
         Some (ctx, values_output)
     | _ -> None
   in
-  if (not ctx.derive) && is_cached_rule id.it then (
-    let cache_result = Cache.find_opt !rule_cache (id.it, values_input) in
+  if (not ctx.derive) && Cache.is_cached_rule id.it then (
+    let cache_result = Cache.Cache.find_opt !rule_cache (id.it, values_input) in
     match cache_result with
     | Some values_output -> Some (ctx, values_output)
     | None ->
         let* ctx, values_output = attempt_rules () in
-        Cache.add !rule_cache (id.it, values_input) values_output;
+        Cache.Cache.add !rule_cache (id.it, values_input) values_output;
         Some (ctx, values_output))
   else attempt_rules ()
 
@@ -1452,13 +1439,13 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
         (ctx, value_output)
     | _ -> error id.at "function was not matched"
   in
-  if (not ctx.derive) && is_cached_func id.it then (
-    let cache_result = Cache.find_opt !func_cache (id.it, values_input) in
+  if (not ctx.derive) && Cache.is_cached_func id.it then (
+    let cache_result = Cache.Cache.find_opt !func_cache (id.it, values_input) in
     match cache_result with
     | Some value_output -> (ctx, value_output)
     | None ->
         let ctx, value_output = attempt_clauses () in
-        Cache.add !func_cache (id.it, values_input) value_output;
+        Cache.Cache.add !func_cache (id.it, values_input) value_output;
         (ctx, value_output))
   else attempt_clauses ()
 

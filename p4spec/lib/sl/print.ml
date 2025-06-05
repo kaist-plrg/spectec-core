@@ -1,6 +1,4 @@
-open Xl
 open Ast
-open Util.Print
 open Util.Source
 
 (* Numbers *)
@@ -54,53 +52,8 @@ let string_of_typcases sep typcases = Il.Print.string_of_typcases sep typcases
 
 let string_of_vid vid = "@" ^ string_of_int vid
 
-let rec string_of_value ?(short = false) ?(level = 0) value =
-  match value.it with
-  | BoolV b -> string_of_bool b
-  | NumV n -> Num.string_of_num n
-  | TextV s -> "\"" ^ s ^ "\""
-  | StructV [] -> "{}"
-  | StructV valuefields when short ->
-      Format.asprintf "{ .../%d }" (List.length valuefields)
-  | StructV valuefields ->
-      Format.asprintf "{ %s }"
-        (String.concat ";\n"
-           (List.mapi
-              (fun idx (atom, value) ->
-                let indent = if idx = 0 then "" else indent (level + 1) in
-                Format.asprintf "%s%s %s" indent (string_of_atom atom)
-                  (string_of_value ~short ~level:(level + 2) value))
-              valuefields))
-  | CaseV (mixop, _) when short -> string_of_mixop mixop
-  | CaseV (mixop, values) -> "(" ^ string_of_notval (mixop, values) ^ ")"
-  | TupleV values ->
-      Format.asprintf "(%s)"
-        (String.concat ", "
-           (List.map (string_of_value ~short ~level:(level + 1)) values))
-  | OptV (Some value) ->
-      Format.asprintf "Some(%s)"
-        (string_of_value ~short ~level:(level + 1) value)
-  | OptV None -> "None"
-  | ListV [] -> "[]"
-  | ListV values when short -> Format.asprintf "[ .../%d ]" (List.length values)
-  | ListV values ->
-      Format.asprintf "[ %s ]"
-        (String.concat ",\n"
-           (List.mapi
-              (fun idx value ->
-                let indent = if idx = 0 then "" else indent (level + 1) in
-                indent ^ string_of_value ~short ~level:(level + 2) value)
-              values))
-  | FuncV id -> string_of_defid id
-
-and string_of_notval notval =
-  let mixop, values = notval in
-  let len = List.length mixop + List.length values in
-  List.init len (fun idx ->
-      if idx mod 2 = 0 then idx / 2 |> List.nth mixop |> string_of_atoms
-      else idx / 2 |> List.nth values |> string_of_value)
-  |> List.filter_map (fun str -> if str = "" then None else Some str)
-  |> String.concat " "
+let string_of_value ?(short = false) ?(level = 0) value =
+  Il.Print.string_of_value ~short ~level value
 
 (* Operators *)
 

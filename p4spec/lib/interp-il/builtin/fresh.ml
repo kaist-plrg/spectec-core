@@ -1,4 +1,5 @@
 open Il.Ast
+module Value = Runtime_dynamic.Value
 open Util.Source
 
 let ctr = ref 0
@@ -11,7 +12,7 @@ let fresh_tid (at : region) (targs : targ list) (values_input : value list) :
   Extract.zero at values_input;
   let tid = "FRESH__" ^ string_of_int !ctr in
   let value =
-    let vid = Runtime_dynamic.Vid.fresh () in
+    let vid = Value.fresh () in
     let typ = Il.Ast.VarT ("tid" $ no_region, []) in
     TextV tid $$$ { vid; typ }
   in

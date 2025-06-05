@@ -1,7 +1,7 @@
 open Xl
-open Sl.Ast
+open Il.Ast
 module Typ = Runtime_dynamic.Typ
-module Value = Runtime_dynamic_sl.Value
+module Value = Runtime_dynamic.Value
 module TDEnv = Runtime_dynamic_sl.Envs.TDEnv
 module Dep = Runtime_testgen.Dep
 open Config
