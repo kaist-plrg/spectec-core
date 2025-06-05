@@ -90,8 +90,8 @@ let load_mixops (mixopenv : MixopEnv.t) (def : def) : MixopEnv.t =
           if List.length typed_groups_new = 0 then mixopenv
           else
             let mixop_family_orig =
-              try MixopEnv.find id mixopenv
-              with Not_found -> Mixops.Family.empty
+              MixopEnv.find_opt id mixopenv
+              |> Option.value ~default:Mixops.Family.empty
             in
             let mixop_family =
               List.fold_left
@@ -100,10 +100,10 @@ let load_mixops (mixopenv : MixopEnv.t) (def : def) : MixopEnv.t =
                 mixop_family_orig typed_groups_new
             in
             MixopEnv.add id mixop_family mixopenv
-      | PlainT { it = VarT (id', _); _ } ->
+      | PlainT { it = VarT (id_alias, _); _ } ->
           let mixop_family =
-            try MixopEnv.find id' mixopenv
-            with Not_found -> Mixops.Family.empty
+            MixopEnv.find_opt id_alias mixopenv
+            |> Option.value ~default:Mixops.Family.empty
           in
           MixopEnv.add id mixop_family mixopenv
       | _ -> mixopenv)
