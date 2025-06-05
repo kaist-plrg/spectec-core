@@ -3,6 +3,8 @@ open Il.Ast
 module Typ = Runtime_dynamic.Typ
 module Value = Runtime_dynamic.Value
 module TDEnv = Runtime_dynamic_sl.Envs.TDEnv
+module Mixops = Runtime_testgen.Mixops
+module MixopEnv = Runtime_testgen.Envs.MixopEnv
 module Dep = Runtime_testgen.Dep
 open Config
 open Domain.Lib
@@ -139,29 +141,28 @@ let mutate_type_driven (tdenv : TDEnv.t) (texts : value' list) (value : value) :
 
 (* Constructor mutation *)
 
-let mutate_mixop (mixopenv : mixopenv) (value : value) : (kind * value) option =
+let mutate_mixop (mixopenv : MixopEnv.t) (value : value) : (kind * value) option
+    =
   let typ = value.note.typ in
   match typ with
   | VarT (id, _) -> (
       match value.it with
       | CaseV (mixop, values) ->
-          let* groups = MixopEnv.find_opt id.it mixopenv in
-          let mixop_set_set =
-            MixopSetSet.filter
-              (fun mixop_set ->
-                MixopSet.exists
-                  (fun mixop' -> Mixop.compare mixop' mixop = 0)
-                  mixop_set)
-              groups
+          let* mixop_family = MixopEnv.find_opt id mixopenv in
+          let mixop_family =
+            Mixops.Family.filter
+              (fun mixop_group ->
+                Mixops.Group.exists (Mixop.eq mixop) mixop_group)
+              mixop_family
           in
-          let* mixop_set =
-            if MixopSetSet.cardinal mixop_set_set = 0 then None
-            else mixop_set_set |> MixopSetSet.choose |> Option.some
+          let* mixop_group =
+            if Mixops.Family.cardinal mixop_family = 0 then None
+            else mixop_family |> Mixops.Family.choose |> Option.some
           in
           let* mixop =
-            mixop_set
-            |> MixopSet.filter (fun mixop' -> Mixop.compare mixop' mixop <> 0)
-            |> MixopSet.elements |> Rand.random_select
+            mixop_group
+            |> Mixops.Group.filter (fun mixop_e -> not (Mixop.eq mixop mixop_e))
+            |> Mixops.Group.elements |> Rand.random_select
           in
           let value = CaseV (mixop, values) |> wrap_value typ in
           (MixopGroup, value) |> Option.some
@@ -273,7 +274,7 @@ let mutate_list (value : value) : (kind * value) option =
   let* mutation = Rand.random_select mutations_list in
   mutation ()
 
-let mutate_node (tdenv : TDEnv.t) (groups : mixopenv) (texts : value' list)
+let mutate_node (tdenv : TDEnv.t) (mixopenv : MixopEnv.t) (texts : value' list)
     (value : value) : (kind * value) option =
   match value.it with
   | ListV _ ->
@@ -288,7 +289,7 @@ let mutate_node (tdenv : TDEnv.t) (groups : mixopenv) (texts : value' list)
   | CaseV (_, _) ->
       let* mutation =
         [
-          (fun () -> mutate_mixop groups value);
+          (fun () -> mutate_mixop mixopenv value);
           (fun () -> mutate_type_driven tdenv texts value);
         ]
         |> Rand.random_select
@@ -296,7 +297,7 @@ let mutate_node (tdenv : TDEnv.t) (groups : mixopenv) (texts : value' list)
       mutation ()
   | _ -> mutate_type_driven tdenv texts value
 
-let mutate_walk (tdenv : TDEnv.t) (groups : mixopenv) (texts : value' list)
+let mutate_walk (tdenv : TDEnv.t) (mixopenv : MixopEnv.t) (texts : value' list)
     (value : value) : (kind * value) option =
   (* Compute the best path to a leaf node in the value subtree *)
   let key_max = ref min_float in
@@ -327,7 +328,7 @@ let mutate_walk (tdenv : TDEnv.t) (groups : mixopenv) (texts : value' list)
     let typ = value.note.typ in
     match (path, value) with
     | [], value ->
-        let* kind, value = mutate_node tdenv groups texts value in
+        let* kind, value = mutate_node tdenv mixopenv texts value in
         kind_found := kind |> Option.some;
         value |> Option.some
     | idx :: path, value -> (
@@ -381,7 +382,7 @@ let find_parent (graph : Dep.Graph.t) (vid_source : vid) : vid option =
 
 (* Entry point for mutation *)
 
-let mutate (tdenv : TDEnv.t) (groups : mixopenv) (texts : value' list)
+let mutate (tdenv : TDEnv.t) (mixopenv : MixopEnv.t) (texts : value' list)
     (graph : Dep.Graph.t) (vid_source : vid) : (kind * value * value) option =
   (* Expand the node randomly *)
   let expansions =
@@ -397,10 +398,10 @@ let mutate (tdenv : TDEnv.t) (groups : mixopenv) (texts : value' list)
   (* Reassemble the node *)
   let value_source = Dep.Graph.reassemble_node graph VIdMap.empty vid_source in
   (* Mutate the node *)
-  let* kind, value_mutated = mutate_walk tdenv groups texts value_source in
+  let* kind, value_mutated = mutate_walk tdenv mixopenv texts value_source in
   (kind, value_source, value_mutated) |> Option.some
 
-let mutates (fuel_mutate : int) (tdenv : TDEnv.t) (groups : mixopenv)
+let mutates (fuel_mutate : int) (tdenv : TDEnv.t) (mixopenv : MixopEnv.t)
     (graph : Dep.Graph.t) (vid_program : vid) (vid_source : vid) :
     (kind * value * value) list =
   (* Collect the text pool *)
@@ -412,5 +413,5 @@ let mutates (fuel_mutate : int) (tdenv : TDEnv.t) (groups : mixopenv)
   in
   let texts = texts @ [ TextV "lazy"; TextV "fox" ] in
   (* Do mutations *)
-  List.init fuel_mutate (fun _ -> mutate tdenv groups texts graph vid_source)
+  List.init fuel_mutate (fun _ -> mutate tdenv mixopenv texts graph vid_source)
   |> List.filter_map Fun.id
