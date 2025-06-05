@@ -139,7 +139,7 @@ if __name__ == "__main__":
         "--ignores",
         nargs="*",
         type=Directory,
-        default=["coverage/relation.ignore", "coverage/function.ignore"],
+        default=["ignores/relation.ignore", "ignores/function.ignore"],
         help="List of ignore files for skipping phantom ids",
     )
     parser.add_argument(

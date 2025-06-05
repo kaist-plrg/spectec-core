@@ -13,8 +13,8 @@ DIR_INCLUDE=p4c/p4include
 DIR_EXCLUDE=excludes
 DIR_P4C_WELL=p4c/testdata/p4_16_samples
 DIR_P4C_ILL=p4c/testdata/p4_16_errors
-FILE_IGNORE_REL=coverage/relation.ignore
-FILE_IGNORE_FUNC=coverage/function.ignore
+FILE_IGNORE_REL=ignores/relation.ignore
+FILE_IGNORE_FUNC=ignores/function.ignore
 
 # Outputs
 FILE_P4C_POS=$1

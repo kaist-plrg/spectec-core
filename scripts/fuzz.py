@@ -51,7 +51,7 @@ def parse_args() -> FuzzConfig:
         "--ignores",
         nargs="*",
         type=str,
-        default=["coverage/relation.ignore", "coverage/function.ignore"],
+        default=["ignores/relation.ignore", "ignores/function.ignore"],
     )
     parser.add_argument("--coverage", type=str, default="coverage/p4c-pos.coverage")
     parser.add_argument("--reduce", action="store_true")
