@@ -1,9 +1,5 @@
 open Domain.Lib
 open Sl.Ast
-module Hint = Runtime_static.Rel.Hint
-module Typ = Runtime_dynamic.Typ
-module Value = Runtime_dynamic_sl.Value
-module Rel = Runtime_dynamic_sl.Rel
 module Dep = Runtime_testgen.Dep
 module Ignore = Runtime_testgen.Cov.Ignore
 module SCov = Runtime_testgen.Cov.Single
@@ -12,8 +8,6 @@ module Cache = Cache.Cache
 open Error
 module F = Format
 open Util.Source
-
-(* Entry point *)
 
 let do_typing (ctx : Ctx.t) (spec : spec) (value_program : value) :
     Ctx.t * value list =

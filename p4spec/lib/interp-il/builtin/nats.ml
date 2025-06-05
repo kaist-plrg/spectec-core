@@ -8,7 +8,13 @@ open Util.Source
 let bigint_of_value (value : value) : Bigint.t =
   value |> Value.get_num |> Num.to_int
 
-let value_of_bigint (i : Bigint.t) : value = NumV (`Nat i)
+let value_of_bigint (i : Bigint.t) : value =
+  let value =
+    let vid = Runtime_dynamic.Vid.fresh () in
+    let typ = Il.Ast.NumT `NatT in
+    NumV (`Nat i) $$$ { vid; typ }
+  in
+  value
 
 (* dec $sum(nat* ) : nat *)
 

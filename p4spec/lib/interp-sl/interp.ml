@@ -214,7 +214,7 @@ let rec eval_exp (ctx : Ctx.t) (exp : exp) : Ctx.t * value =
   | BoolE b -> eval_bool_exp note ctx b
   | NumE n -> eval_num_exp note ctx n
   | TextE s -> eval_text_exp note ctx s
-  | VarE id -> eval_var_exp ctx id
+  | VarE id -> eval_var_exp note ctx id
   | UnE (unop, optyp, exp) -> eval_un_exp note ctx unop optyp exp
   | BinE (binop, optyp, exp_l, exp_r) ->
       eval_bin_exp note ctx binop optyp exp_l exp_r
@@ -295,7 +295,7 @@ and eval_text_exp (note : typ') (ctx : Ctx.t) (s : string) : Ctx.t * value =
 
 (* Variable expression evaluation *)
 
-and eval_var_exp (ctx : Ctx.t) (id : id) : Ctx.t * value =
+and eval_var_exp (_note : typ') (ctx : Ctx.t) (id : id) : Ctx.t * value =
   let value = Ctx.find_value Local ctx (id, []) in
   (ctx, value)
 
@@ -496,8 +496,8 @@ and downcast (ctx : Ctx.t) (typ : typ) (value : value) : Ctx.t * value =
 and eval_downcast_exp (_note : typ') (ctx : Ctx.t) (typ : typ) (exp : exp) :
     Ctx.t * value =
   let ctx, value = eval_exp ctx exp in
-  let ctx, value = downcast ctx typ value in
-  (ctx, value)
+  let ctx, value_res = downcast ctx typ value in
+  (ctx, value_res)
 
 (* Subtype check expression evaluation *)
 

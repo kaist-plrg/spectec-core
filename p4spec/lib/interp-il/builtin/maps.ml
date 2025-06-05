@@ -14,7 +14,7 @@ type map = Value.t VMap.t
 
 let map_of_value (value : value) : map =
   let tuple_of_value (value : value) : value * value =
-    match value with
+    match value.it with
     | CaseV ([ []; [ { it = Atom.Arrow; _ } ]; [] ], [ value_key; value_value ])
       ->
         (value_key, value_value)
@@ -22,7 +22,7 @@ let map_of_value (value : value) : map =
         error no_region
           (Format.asprintf "expected a pair, but got %s" (Value.to_string value))
   in
-  match value with
+  match value.it with
   | CaseV
       ( [ [ { it = Atom.LBrace; _ } ]; [ { it = Atom.RBrace; _ } ] ],
         [ value_pairs ] ) ->
@@ -35,14 +35,34 @@ let map_of_value (value : value) : map =
       error no_region
         (Format.asprintf "expected a map, but got %s" (Value.to_string value))
 
-let value_of_map (map : map) : value =
+let value_of_map (typ_key : typ) (typ_value : typ) (map : map) : value =
   let value_of_tuple ((value_key, value_value) : value * value) : value =
-    CaseV ([ []; [ Atom.Arrow $ no_region ]; [] ], [ value_key; value_value ])
+    let value =
+      let vid = Runtime_dynamic.Vid.fresh () in
+      let typ = Il.Ast.VarT ("pair" $ no_region, [ typ_key; typ_value ]) in
+      CaseV ([ []; [ Atom.Arrow $ no_region ]; [] ], [ value_key; value_value ])
+      $$$ { vid; typ }
+    in
+    value
   in
-  let value_pairs = ListV (VMap.bindings map |> List.map value_of_tuple) in
-  CaseV
-    ( [ [ Atom.LBrace $ no_region ]; [ Atom.RBrace $ no_region ] ],
-      [ value_pairs ] )
+  let value_pairs =
+    let vid = Runtime_dynamic.Vid.fresh () in
+    let typ =
+      Il.Ast.IterT
+        ( Il.Ast.VarT ("pair" $ no_region, [ typ_key; typ_value ]) $ no_region,
+          Il.Ast.List )
+    in
+    ListV (VMap.bindings map |> List.map value_of_tuple) $$$ { vid; typ }
+  in
+  let value =
+    let vid = Runtime_dynamic.Vid.fresh () in
+    let typ = Il.Ast.VarT ("map" $ no_region, [ typ_key; typ_value ]) in
+    CaseV
+      ( [ [ Atom.LBrace $ no_region ]; [ Atom.RBrace $ no_region ] ],
+        [ value_pairs ] )
+    $$$ { vid; typ }
+  in
+  value
 
 (* Built-in implementations *)
 
@@ -50,17 +70,22 @@ let value_of_map (map : map) : value =
 
 let find_map (at : region) (targs : targ list) (values_input : value list) :
     value =
-  let _typ_key, _typ_value = Extract.two at targs in
+  let _typ_key, typ_value = Extract.two at targs in
   let value_map, value_key = Extract.two at values_input in
   let map = map_of_value value_map in
   let value_opt = VMap.find_opt value_key map in
-  match value_opt with Some value -> OptV (Some value) | None -> OptV None
+  let value =
+    let vid = Runtime_dynamic.Vid.fresh () in
+    let typ = Il.Ast.IterT (typ_value, Il.Ast.Opt) in
+    OptV value_opt $$$ { vid; typ }
+  in
+  value
 
 (* dec $find_maps<K, V>(map<K, V>*, K) : V? *)
 
 let find_maps (at : region) (targs : targ list) (values_input : value list) :
     value =
-  let _typ_key, _typ_value = Extract.two at targs in
+  let _typ_key, typ_value = Extract.two at targs in
   let value_maps, value_key = Extract.two at values_input in
   let maps = value_maps |> Value.get_list |> List.map map_of_value in
   let value_opt =
@@ -71,21 +96,28 @@ let find_maps (at : region) (targs : targ list) (values_input : value list) :
         | None -> VMap.find_opt value_key map)
       None maps
   in
-  match value_opt with Some value -> OptV (Some value) | None -> OptV None
+  let value =
+    let vid = Runtime_dynamic.Vid.fresh () in
+    let typ = Il.Ast.IterT (typ_value, Il.Ast.Opt) in
+    OptV value_opt $$$ { vid; typ }
+  in
+  value
 
 (* dec $add_map<K, V>(map<K, V>, K, V) : map<K, V> *)
 
 let add_map (at : region) (targs : targ list) (values_input : value list) :
     value =
-  let _typ_key, _typ_value = Extract.two at targs in
+  let typ_key, typ_value = Extract.two at targs in
   let value_map, value_key, value_value = Extract.three at values_input in
-  map_of_value value_map |> VMap.add value_key value_value |> value_of_map
+  map_of_value value_map
+  |> VMap.add value_key value_value
+  |> value_of_map typ_key typ_value
 
 (* dec $adds_map<K, V>(map<K, V>, K*, V* ) : map<K, V> *)
 
 let adds_map (at : region) (targs : targ list) (values_input : value list) :
     value =
-  let _typ_key, _typ_value = Extract.two at targs in
+  let typ_key, typ_value = Extract.two at targs in
   let value_map, value_keys, value_values = Extract.three at values_input in
   let map = map_of_value value_map in
   let values_key = value_keys |> Value.get_list in
@@ -93,12 +125,14 @@ let adds_map (at : region) (targs : targ list) (values_input : value list) :
   List.fold_left2
     (fun map value_key value_value -> VMap.add value_key value_value map)
     map values_key values_value
-  |> value_of_map
+  |> value_of_map typ_key typ_value
 
 (* dec $update_map<K, V>(map<K, V>, K, V) : map<K, V> *)
 
 let update_map (at : region) (targs : targ list) (values_input : value list) :
     value =
-  let _typ_key, _typ_value = Extract.two at targs in
+  let typ_key, typ_value = Extract.two at targs in
   let value_map, value_key, value_value = Extract.three at values_input in
-  map_of_value value_map |> VMap.add value_key value_value |> value_of_map
+  map_of_value value_map
+  |> VMap.add value_key value_value
+  |> value_of_map typ_key typ_value

@@ -82,7 +82,7 @@ and string_of_typcases sep typcases =
 (* Values *)
 
 and string_of_value ?(short = false) ?(level = 0) value =
-  match value with
+  match value.it with
   | BoolV b -> string_of_bool b
   | NumV n -> Num.string_of_num n
   | TextV s -> "\"" ^ s ^ "\""

@@ -80,7 +80,7 @@ let partition_ (ctx : Ctx.t) (at : region) (targs : targ list)
     let vid = Dep.Graph.fresh () in
     let typ =
       Il.Ast.TupleT
-        [ value_right.note.typ $ no_region; value_left.note.typ $ no_region ]
+        [ value_left.note.typ $ no_region; value_right.note.typ $ no_region ]
     in
     TupleV [ value_left; value_right ] $$$ { vid; typ }
   in
@@ -100,7 +100,7 @@ let assoc_ (ctx : Ctx.t) (at : region) (targs : targ list)
            | TupleV [ value_key; value_value ] -> (value_key, value_value)
            | _ -> assert false)
   in
-  let value =
+  let value_opt =
     List.fold_left
       (fun value_found (value_key, value_value) ->
         match value_found with
@@ -112,9 +112,7 @@ let assoc_ (ctx : Ctx.t) (at : region) (targs : targ list)
   let value =
     let vid = Dep.Graph.fresh () in
     let typ = Il.Ast.IterT (typ_value, Il.Ast.Opt) in
-    match value with
-    | Some value -> OptV (Some value) $$$ { vid; typ }
-    | None -> OptV None $$$ { vid; typ }
+    OptV value_opt $$$ { vid; typ }
   in
   Ctx.add_node ctx value;
   value
