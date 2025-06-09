@@ -37,18 +37,17 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 
 %}
 
-%token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE
-%token COLON COLONCOLON COLONSLASH SEMICOLON COMMA DOT DOTDOT DOTDOTDOT BAR DASH
+%token LPAREN RPAREN LBRACK RBRACK LBRACE RBRACE INVALID
+%token COLON COLONCOLON COLONSLASH SEMICOLON COMMA DOT DOTDOT DOTDOTDOT UNDERSCORE BAR BAREQ BARBAR DASH
 %token BIGAND BIGOR BIGADD BIGMUL BIGCAT
 %token COMMA_NL NL_BAR NL_NL NL_NL_NL
-%token EQ NE LANGLE RANGLE RANGLE_LPAREN LE GE APPROX EQUIV ASSIGN SUB SUP
+%token EQ NE LANGLE RANGLE RANGLE_LPAREN LE GE APPROX EQUIV NEQUIV ASSIGN SUB SUP
 %token NOT AND OR
-%token QUEST PLUS MINUS STAR SLASH BACKSLASH UP CAT
+%token QUEST BANG PLUS PLUSEQ SPLUS SPLUSEQ MINUS MINUSEQ SMINUS SMINUSEQ STAR STAREQ SLASH SLASHEQ BACKSLASH UP UPEQ AMP AMPEQ AMPAMP AMPAMPAMP CAT
 %token ARROW ARROW2 ARROWSUB ARROW2SUB DARROW2 SQARROW SQARROWSTAR
-%token MEM PREC SUCC TURNSTILE TILESTURN
-%token DOLLAR TICK
-%token BOT TOP
-%token HOLE MULTIHOLE NOTHING FUSE FUSEFUSE LATEX
+%token MEM PREC PRECEQ SUCC SUCCEQ TURNSTILE TILESTURN
+%token AT DOLLAR TICK
+%token HOLE HOLEEQ MULTIHOLE NOTHING FUSE FUSEFUSE LATEX
 %token<int> HOLEN
 %token BOOL NAT INT TEXT
 %token SYNTAX RELATION RULE VAR DEC DEF
@@ -172,25 +171,55 @@ atom_ :
   | atomid { Atom.Atom $1 }
   | atom_escape { $1 }
 atom_escape :
-  | TICK EQ { Atom.Equal }
-  | TICK NE { Atom.NotEqual }
-  | TICK LANGLE { Atom.LAngle }
-  | TICK RANGLE { Atom.RAngle }
-  | TICK LE { Atom.LessEqual }
-  | TICK GE { Atom.GreaterEqual }
-  | TICK MEM { Atom.Mem }
-  | TICK QUEST { Atom.Quest }
-  | TICK PLUS { Atom.Plus }
-  | TICK STAR { Atom.Star }
-  | TICK BAR { Atom.Bar }
-  | TICK CAT { Atom.Cat }
-  | TICK COMMA { Atom.Comma }
-  | TICK ARROW2 { Atom.Arrow2 }
   | TICK infixop_ { $2 }
   | TICK relop_ { $2 }
-  | BOT { Atom.Bot }
-  | TOP { Atom.Top }
   | INFINITY { Atom.Infinity }
+  | TICK UNDERSCORE { Atom.Underscore }
+  | TICK EQ { Atom.Equal }
+  | TICK LE { Atom.LessEqual }
+  | TICK GE { Atom.GreaterEqual }
+  | TICK NEQUIV { Atom.NotEquiv }
+  | TICK PRECEQ { Atom.PrecEq }
+  | TICK SUCCEQ { Atom.SuccEq }
+  | TICK NOT { Atom.Not }
+  | TICK QUEST { Atom.Quest }
+  | TICK BANG { Atom.Bang }
+  | TICK PLUS { Atom.Plus }
+  | TICK PLUSEQ { Atom.PlusEq }
+  | TICK SPLUS { Atom.SPlus }
+  | TICK SPLUSEQ { Atom.SPlusEq }
+  | TICK MINUS { Atom.Minus }
+  | TICK MINUSEQ { Atom.MinusEq }
+  | TICK SMINUS { Atom.SMinus }
+  | TICK SMINUSEQ { Atom.SMinusEq }
+  | TICK STAR { Atom.Star }
+  | TICK STAREQ { Atom.StarEq }
+  | TICK SLASH { Atom.Slash }
+  | TICK SLASHEQ { Atom.SlashEq }
+  | TICK UP { Atom.Up }
+  | TICK UPEQ { Atom.UpEq }
+  | TICK AMP { Atom.Amp }
+  | TICK AMPEQ { Atom.AmpEq }
+  | TICK AMPAMP { Atom.Amp2 }
+  | TICK AMPAMPAMP { Atom.Amp3 }
+  | TICK BAR { Atom.Bar }
+  | TICK BAREQ { Atom.BarEq }
+  | TICK BARBAR { Atom.Bar2 }
+  | TICK AT { Atom.At }
+  | TICK HOLE { Atom.Mod }
+  | TICK HOLEEQ { Atom.ModEq }
+  | TICK FUSE { Atom.Hash }
+  | TICK COMMA { Atom.Comma }
+  | TICK CAT { Atom.Cat }
+  | TICK INVALID { Atom.Invalid }
+  | TICK TICK LANGLE { Atom.LAngle }
+  | TICK TICK RANGLE { Atom.RAngle }
+  | TICK TICK LPAREN { Atom.LParen }
+  | TICK TICK RPAREN { Atom.RParen }
+  | TICK TICK LBRACK { Atom.LBrack }
+  | TICK TICK RBRACK { Atom.RBrack }
+  | TICK TICK LBRACE { Atom.LBrace }
+  | TICK TICK RBRACE { Atom.RBrace }
 
 (* Iterations *)
 

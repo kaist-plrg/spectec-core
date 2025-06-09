@@ -2,7 +2,8 @@
 ;; Misc
 ;;
 
-syntax trailingComma = COMMA
+;; (TODO) comma parsing
+syntax trailingComma = `, PHTM_0
 
 syntax optTrailingComma = trailingComma?
 
@@ -15,7 +16,8 @@ syntax optCONST = const?
 ;;
 
 syntax number =
-  | int PHTM_1 ;; (TODO) extension of plaintyp
+  ;; (TODO) extension of plaintyp
+  | int PHTM_1
   | nat W int
   | nat S int
 
@@ -23,40 +25,30 @@ syntax number =
 ;; Strings
 ;;
 
-syntax stringLiteral = text PHTM_2 ;; (TODO) extension of plaintyp
+;; (TODO) extension of plaintyp
+syntax stringLiteral = text PHTM_2
 
 ;;
 ;; Names
 ;;
 
-syntax dotPrefix = DOT
+syntax dotPrefix = `.
 
-syntax identifier = text PHTM_3 ;; (TODO) extension of plaintyp
-syntax typeIdentifier = text PHTM_4 ;; (TODO) extension of plaintyp
-
-syntax nonTableKwName =
-  | identifier
-  | APPLY
-  | KEY
-  | ACTIONS
-  | STATE
-  | ENTRIES
-  | TYPE
-  | PRIORITY
+;; (TODO) extension of plaintyp
+syntax identifier = text PHTM_3
+;; (TODO) extension of plaintyp
+syntax typeIdentifier = text PHTM_4
 
 syntax nonTypeName =
   | identifier
-  | APPLY
-  | KEY
-  | ACTIONS
-  | STATE
-  | ENTRIES
-  | TYPE
-  | PRIORITY
+  | APPLY | KEY | ACTIONS | STATE
+  | ENTRIES | TYPE | PRIORITY
 
 syntax prefixedNonTypeName =
   | nonTypeName
   | dotPrefix nonTypeName
+
+syntax nonTableKwName = nonTypeName
 
 syntax prefixedType =
   | typeIdentifier
@@ -88,9 +80,9 @@ syntax expression, initializer
 syntax derivedTypeDeclaration
 syntax optAnnotations
 
-;; -------------------
-
+;;
 ;;;; Base types
+;;
 
 syntax baseType =
   | BOOL
@@ -106,7 +98,9 @@ syntax baseType =
   | INT `< `( expression ) >
   | VARBIT `< `( expression ) >
 
+;;
 ;;;; Named types
+;;
 
 syntax specializedType = typeName `< typeArgumentList >
 
@@ -114,22 +108,30 @@ syntax namedType =
   | typeName
   | specializedType
 
+;;
 ;;;; Header stack types
+;;
 
 syntax headerStackType =
   | typeName `[ expression ]
   ;; (TODO) disambiguate with (typeName `[ expression ])
   | specializedType `[ expression ] PHTM_16
 
+;;
 ;;;; List types
+;;
 
 syntax listType = LIST `< typeArg >
 
+;;
 ;;;; Tuple types
+;;
 
 syntax tupleType = TUPLE `< typeArgumentList >
 
+;;
 ;;;; Type references
+;;
 
 syntax typeRef =
   | baseType
@@ -186,8 +188,6 @@ syntax realTypeArgumentList
 syntax argumentList
 syntax expressionList, kvList
 
-;; -------------------
-
 syntax nonBraceExpression =
   | number
   | stringLiteral
@@ -195,38 +195,38 @@ syntax nonBraceExpression =
   | FALSE
   | THIS
   | nonBraceExpression `[ expression ]
-  | nonBraceExpression `[ expression : expression ]
+  | nonBraceExpression `[ expression `: expression ]
   | `( expression )
-  | BANG expression
-  | TILDE expression
-  | MINUS expression
-  | PLUS expression
-  | typeName DOT member
-  | ERROR DOT member
-  ;; (TODO) disambiguate with (typeName DOT member)
-  | nonBraceExpression DOT member PHTM_5
-  | nonBraceExpression MULT expression
-  | nonBraceExpression DIV expression
-  | nonBraceExpression MOD expression
-  | nonBraceExpression PLUS expression
-  | nonBraceExpression MINUS expression
-  | nonBraceExpression SPLUS expression
-  | nonBraceExpression SMINUS expression
-  | nonBraceExpression LSHIFT expression
-  | nonBraceExpression RSHIFT expression
-  | nonBraceExpression LE expression
-  | nonBraceExpression GE expression
-  | nonBraceExpression LT expression
-  | nonBraceExpression GT expression
-  | nonBraceExpression NE expression
-  | nonBraceExpression EQEQ expression
-  | nonBraceExpression BAND expression
-  | nonBraceExpression BXOR expression
-  | nonBraceExpression BOR expression
-  | nonBraceExpression CONCAT expression
-  | nonBraceExpression LAND expression
-  | nonBraceExpression LOR expression
-  | nonBraceExpression QUEST expression COLON expression
+  | `! expression
+  | `~ expression
+  | `- expression
+  | `+ expression
+  | typeName `. member
+  | ERROR `. member
+  ;; (TODO) disambiguate with (typeName `. member)
+  | nonBraceExpression `. member PHTM_5
+  | nonBraceExpression `* expression
+  | nonBraceExpression `/ expression
+  | nonBraceExpression `% expression
+  | nonBraceExpression `+ expression
+  | nonBraceExpression `- expression
+  | nonBraceExpression `|+| expression
+  | nonBraceExpression `|-| expression
+  | nonBraceExpression `<< expression
+  | nonBraceExpression `>> expression
+  | nonBraceExpression `<= expression
+  | nonBraceExpression `>= expression
+  | nonBraceExpression ``< expression
+  | nonBraceExpression ``> expression
+  | nonBraceExpression `!= expression
+  | nonBraceExpression `== expression
+  | nonBraceExpression `& expression
+  | nonBraceExpression `^ expression
+  | nonBraceExpression `| expression
+  | nonBraceExpression `++ expression
+  | nonBraceExpression `&& expression
+  | nonBraceExpression `|| expression
+  | nonBraceExpression `? expression `: expression
   | nonBraceExpression `< realTypeArgumentList > `( argumentList )
   | nonBraceExpression `( argumentList )
   ;; (TODO) disambiguate with (nonBraceExpression `( argumentList ))
@@ -234,49 +234,51 @@ syntax nonBraceExpression =
   | `( typeRef ) expression
 
 syntax expression =
-  | DOTS
+  | number
+  | `...
+  | stringLiteral
   | TRUE
   | FALSE
   | THIS
   | prefixedNonTypeName
   | expression `[ expression ]
-  | expression `[ expression : expression ]
+  | expression `[ expression `: expression ]
   | `{ expressionList optTrailingComma }
-  | `{ HASH }
+  | `{#}
   ;; (TODO) disambiguate with (`{ expressionList optTrailingComma })
   | `{ kvList optTrailingComma } PHTM_7
-  | `{ kvList COMMA DOTS optTrailingComma }
+  | `{ kvList `, `... optTrailingComma }
   | `( expression )
-  | BANG expression
-  | TILDE expression
-  | MINUS expression
-  | PLUS expression
-  | typeName DOT member
-  | ERROR DOT member
-  ;; (TODO) disambiguate with (typeName DOT member)
-  | expression DOT member PHTM_8
-  | expression MULT expression
-  | expression DIV expression
-  | expression MOD expression
-  | expression PLUS expression
-  | expression MINUS expression
-  | expression SPLUS expression
-  | expression SMINUS expression
-  | expression LSHIFT expression
-  | expression RSHIFT expression
-  | expression LE expression
-  | expression GE expression
-  | expression LT expression
-  | expression GT expression
-  | expression NE expression
-  | expression EQEQ expression
-  | expression BAND expression
-  | expression BXOR expression
-  | expression BOR expression
-  | expression CONCAT expression
-  | expression LAND expression
-  | expression LOR expression
-  | expression QUEST expression COLON expression
+  | `! expression
+  | `~ expression
+  | `- expression
+  | `+ expression
+  | typeName `. member
+  | ERROR `. member
+  ;; (TODO) disambiguate with (typeName `. member)
+  | expression `. member PHTM_8
+  | expression `* expression
+  | expression `/ expression
+  | expression `% expression
+  | expression `+ expression
+  | expression `- expression
+  | expression `|+| expression
+  | expression `|-| expression
+  | expression `<< expression
+  | expression `>> expression
+  | expression `<= expression
+  | expression `>= expression
+  | expression ``< expression
+  | expression ``> expression
+  | expression `!= expression
+  | expression `== expression
+  | expression `& expression
+  | expression `^ expression
+  | expression `| expression
+  | expression `++ expression
+  | expression `&& expression
+  | expression `|| expression
+  | expression `? expression `: expression
   | expression `< realTypeArgumentList > `( argumentList )
   | expression `( argumentList )
   ;; (TODO) disambiguate with (expression `( argumentList ))
@@ -292,22 +294,22 @@ syntax expressionList = expression*
 
 syntax simpleKeysetExpression =
   | expression
-  | expression MASK expression
-  | expression RANGE expression
+  | expression `&&& expression
+  | expression `.. expression
   | DEFAULT
-  | UNDERSCORE
+  | `_
 
 syntax reducedSimpleKeysetExpression =
-  | expression MASK expression
-  | expression RANGE expression
+  | expression `&&& expression
+  | expression `.. expression
   | DEFAULT
-  | UNDERSCORE
+  | `_ 
 
 ;; (TODO) Add comma separator as hint?
 syntax simpleExpressionList = simpleKeysetExpression*
 
 syntax tupleKeysetExpression =
-  | `( simpleKeysetExpression COMMA simpleExpressionList )
+  | `( simpleKeysetExpression `, simpleExpressionList )
   ;; (TODO) disambiguate with `( expression )
   | `( reducedSimpleKeysetExpression ) PHTM_19
 
@@ -319,7 +321,7 @@ syntax keysetExpression =
 ;; Expression key-value pairs
 ;;
 
-syntax kvPair = name EQ expression
+syntax kvPair = name `= expression
 
 ;; (TODO) Add comma separator as hint?
 ;; (TODO) nonempty sequence with + iterator
@@ -332,7 +334,7 @@ syntax kvList = kvPair*
 syntax realTypeArg =
   | typeRef
   | VOID
-  | UNDERSCORE
+  | `_
 
 ;; (TODO) Add comma separator as hint?
 syntax realTypeArgumentList = realTypeArg*
@@ -341,7 +343,7 @@ syntax typeArg =
   | typeRef
   | nonTypeName
   | VOID
-  | UNDERSCORE
+  | `_
 
 ;; (TODO) Add comma separator as hint?
 syntax typeArgumentList = typeArg*
@@ -353,8 +355,8 @@ syntax typeArgumentList = typeArg*
 syntax argument =
   | expression
   | name EQ expression
-  | UNDERSCORE
-  | name EQ UNDERSCORE
+  | `_
+  | name EQ `_
 
 ;; (TODO) Add comma separator as hint?
 ;; (TODO) nonempty sequence with + iterator
@@ -370,9 +372,9 @@ syntax argumentList = argument*
 syntax lvalue =
   | prefixedNonTypeName
   | THIS
-  | lvalue DOT member
+  | lvalue `. member
   | lvalue `[ expression ]
-  | lvalue `[ expression : expression ]
+  | lvalue `[ expression `: expression ]
   | `( lvalue )
 
 ;;
@@ -385,11 +387,11 @@ syntax statement, parserStatements, statOrDeclList
 syntax objDeclarations
 syntax annotations
 
-;; -------------------
-
+;;
 ;;;; Variable and constant declarations
+;;
 
-syntax initializer = EQ expression
+syntax initializer = `= expression
 
 syntax optInitializer = initializer?
 
@@ -397,89 +399,110 @@ syntax variableDeclarationWithoutSemicolon =
   optAnnotations typeRef name optInitializer
 
 syntax variableDeclaration =
-  variableDeclarationWithoutSemicolon SEMICOLON
+  variableDeclarationWithoutSemicolon `;
 
 syntax constantDeclaration =
-  optAnnotations CONST typeRef name EQ initializer SEMICOLON
+  optAnnotations CONST typeRef name `= initializer `;
 
+;;
 ;;;; Assignment and method call statements
+;;
 
 syntax assignmentOrMethodCallStatementWithoutSemicolon =
   | lvalue `( argumentList )
   | lvalue `< typeArgumentList > `( argumentList )
-  | lvalue EQ expression
-  | lvalue MULTEQ expression
-  | lvalue DIVEQ expression
-  | lvalue MODEQ expression
-  | lvalue PLUSEQ expression
-  | lvalue MINUSEQ expression
-  | lvalue SPLUSEQ expression
-  | lvalue SMINUSEQ expression
-  | lvalue LSHIFTEQ expression
-  | lvalue RSHIFTEQ expression
-  | lvalue BANDEQ expression
-  | lvalue BXOREQ expression
-  | lvalue BOREQ expression
+  | lvalue `= expression
+  | lvalue `+= expression
+  | lvalue `|+|= expression
+  | lvalue `-= expression
+  | lvalue `|-|= expression
+  | lvalue `*= expression
+  | lvalue `/= expression
+  | lvalue `%= expression
+  | lvalue `<<= expression
+  | lvalue `>>= expression
+  | lvalue `&= expression
+  | lvalue `^= expression
+  | lvalue `|= expression
 
 syntax assignmentOrMethodCallStatement =
-  assignmentOrMethodCallStatementWithoutSemicolon SEMICOLON PHTM_11
+  assignmentOrMethodCallStatementWithoutSemicolon `; PHTM_11
 
+;;
 ;;;; Direct application statements
+;;
 
 syntax directApplication =
-  | typeName DOT APPLY `( argumentList ) SEMICOLON
-  ;; (TODO) disambiguate with (typeName DOT APPLY `( argumentList ) SEMICOLON)
-  | specializedType DOT APPLY `( argumentList ) SEMICOLON PHTM_10
+  | typeName `. APPLY `( argumentList ) `; 
+  ;; (TODO) disambiguate with (typeName `. APPLY `( argumentList ) `;)
+  | specializedType `. APPLY `( argumentList ) `; PHTM_10
 
+;;
 ;;;; Conditional statements
+;;
 
 syntax conditionalStatement =
   | IF `( expression ) statement
   | IF `( expression ) statement ELSE statement
 
+;;
 ;;;; Empty statements
+;;
 
-syntax emptyStatement = SEMICOLON
+syntax emptyStatement = `;
 
+;;
 ;;;; Block statements
+;;
 
-syntax blockStatement =
-  optAnnotations `{ statOrDeclList }
+syntax blockStatement = optAnnotations `{ statOrDeclList }
 
+;;
 ;;;; Return statements
+;;
 
 syntax returnStatement =
-  | RETURN SEMICOLON
-  | RETURN expression SEMICOLON
+  | RETURN `;
+  | RETURN expression `;
 
+;;
 ;;;; Break statements
+;;
 
-syntax breakStatement = BREAK SEMICOLON
+syntax breakStatement = BREAK `;
 
+;;
 ;;;; Continue statements
+;;
 
-syntax continueStatement = CONTINUE SEMICOLON
+syntax continueStatement = CONTINUE `;
 
+;;
 ;;;; Exit statements
+;;
 
-syntax exitStatement = EXIT SEMICOLON
+syntax exitStatement = EXIT `;
 
+;;
 ;;;; Switch statements
+;;
 
 syntax switchLabel =
   | DEFAULT
   | nonBraceExpression
 
 syntax switchCase =
-  | switchLabel COLON blockStatement
-  | switchLabel COLON
+  | switchLabel `: blockStatement
+  | switchLabel `: 
 
 ;; (TODO) Add whitespace separator as hint?
 syntax switchCases = switchCase*
 
 syntax switchStatement = SWITCH `( expression ) `{ switchCases }
 
+;;
 ;;;; For statements
+;;
 
 syntax declOrAssignmentOrMethodCallStatement =
   | variableDeclarationWithoutSemicolon
@@ -501,14 +524,16 @@ syntax forUpdateStatements = assignmentOrMethodCallStatementWithoutSemicolon*
 
 syntax forCollectionExpr =
   | expression
-  | expression DOTDOT expression
+  | expression `.. expression
 
 syntax forStatement =
-  | optAnnotations FOR `( forInitStatements ; expression ; forUpdateStatements ) statement
+  | optAnnotations FOR `( forInitStatements `; expression `; forUpdateStatements ) statement
   | optAnnotations FOR `( typeRef name IN forCollectionExpr ) statement
   | optAnnotations FOR `( annotations typeRef name IN forCollectionExpr ) statement
 
+;;
 ;;;; Statements
+;;
 
 syntax statement =
   | assignmentOrMethodCallStatement
@@ -531,7 +556,9 @@ syntax statementOrDeclaration =
 ;; (TODO) Add whitespace separator as hint?
 syntax statOrDeclList = statementOrDeclaration*
 
+;;
 ;;;; Error and match kind declarations
+;;
 
 ;; (TODO) Add comma separator as hint?
 syntax identifierList = name*
@@ -541,35 +568,41 @@ syntax matchKindDeclaration =
 
 syntax errorDeclaration = ERROR `{ identifierList }
 
+;;
 ;;;; Extern declarations
+;;
 
 syntax functionPrototype =
   typeOrVoid name optTypeParameters `( parameterList )
 
 syntax methodPrototype =
-  | optAnnotations functionPrototype SEMICOLON
-  | optAnnotations ABSTRACT functionPrototype SEMICOLON
-  | optAnnotations typeIdentifier `( parameterList ) SEMICOLON
+  | optAnnotations functionPrototype `;
+  | optAnnotations ABSTRACT functionPrototype `;
+  | optAnnotations typeIdentifier `( parameterList ) `;
 
 ;; (TODO) Add whitespace separator as hint?
 syntax methodPrototypes = methodPrototype*
 
 syntax externDeclaration =
   | optAnnotations EXTERN nonTypeName optTypeParameters `{ methodPrototypes }
-  | optAnnotations EXTERN functionPrototype SEMICOLON
+  | optAnnotations EXTERN functionPrototype `;
 
+;;
 ;;;; Function declarations
+;;
 
 syntax functionDeclaration =
   optAnnotations functionPrototype blockStatement
 
+;;
 ;;;; Instantiations
+;;
 
-syntax objInitializer = EQ `{ objDeclarations }
+syntax objInitializer = `= `{ objDeclarations }
 
 syntax instantiation =
-  | optAnnotations typeRef `( argumentList ) name SEMICOLON
-  | optAnnotations typeRef `( argumentList ) name objInitializer SEMICOLON
+  | optAnnotations typeRef `( argumentList ) name `;
+  | optAnnotations typeRef `( argumentList ) name objInitializer `;
 
 syntax objDeclaration =
   | functionDeclaration
@@ -578,51 +611,63 @@ syntax objDeclaration =
 ;; (TODO) Add whitespace separator as hint?
 syntax objDeclarations = objDeclaration*
 
+;;
 ;;;; Action declarations
+;;
 
 syntax actionDeclaration =
   optAnnotations ACTION name `( parameterList ) blockStatement
 
+;;
 ;;;; Table declarations
+;;
 
+;;
 ;;;;;; Table key property 
+;;
 
 syntax keyElement =
-  expression COLON name optAnnotations SEMICOLON
+  expression `: name optAnnotations `;
 
 ;; (TODO) Add whitespace separator as hint?
 syntax keyElementList = keyElement*
 
+;;
 ;;;;;; Table actions property
+;;
 
 syntax actionRef =
   | prefixedNonTypeName
   | prefixedNonTypeName `( argumentList )
 
-syntax action = optAnnotations actionRef SEMICOLON
+syntax action = optAnnotations actionRef `;
 
 ;; (TODO) Add whitespace separator as hint?
 syntax actionList = action*
 
+;;
 ;;;;;; Table entry property
+;;
 
 syntax entryPriority =
-  | PRIORITY EQ number COLON
-  | PRIORITY EQ `( expression ) COLON
+  | PRIORITY `= number `: 
+  | PRIORITY `= `( expression ) `:
 
 syntax entry =
-  | optCONST entryPriority keysetExpression COLON actionRef optAnnotations SEMICOLON
-  | optCONST keysetExpression COLON actionList optAnnotations SEMICOLON
+  | optCONST entryPriority keysetExpression `: actionRef optAnnotations`; 
+  | optCONST keysetExpression `: actionList optAnnotations `; 
 
 syntax entriesList = entry*
 
+;;
 ;;;;;; Table properties
+;;
 
 syntax tableProperty =
-  | KEY EQ `{ keyElementList }
-  | ACTIONS EQ `{ actionList }
-  | optAnnotations optCONST ENTRIES EQ `{ entriesList }
-  | optAnnotations optCONST nonTableKwName initializer SEMICOLON
+  | KEY `= `{ keyElementList }
+  | ACTIONS `= `{ actionList }
+  | optAnnotations optCONST ENTRIES `= `{ entriesList }
+  | optAnnotations optCONST nonTableKwName initializer `;
 
 ;; (TODO) Add whitespace separator as hint?
 syntax tablePropertyList = tableProperty*
@@ -630,7 +675,9 @@ syntax tablePropertyList = tableProperty*
 syntax tableDeclaration =
   optAnnotations TABLE name `{ tablePropertyList }
 
+;;
 ;;;; Control and control type declarations
+;;
 
 syntax controlBody = blockStatement
 
@@ -650,34 +697,41 @@ syntax controlTypeDeclaration =
 syntax controlDeclaration =
   controlTypeDeclaration optConstructorParameters `{ controlLocalDeclarations APPLY controlBody }
 
+;;
 ;;;; Value set declarations
+;;
 
 syntax valueSetDeclaration =
-  | optAnnotations VALUESET `< baseType > `( expression ) name SEMICOLON
-  ;; (TODO) disambiguate with (optAnnotations VALUESET `< baseType > `( expression ) name SEMICOLON)
-  | optAnnotations VALUESET `< tupleType > `( expression ) name SEMICOLON PHTM_17
-  ;; (TODO) disambiguate with (optAnnotations VALUESET `< baseType > `( expression ) name SEMICOLON)
-  | optAnnotations VALUESET `< typeName > `( expression ) name SEMICOLON PHTM_18
+  | optAnnotations VALUESET `< baseType > `( expression ) name `; 
+  ;; (TODO) disambiguate with (optAnnotations VALUESET `< baseType > `( expression ) name `;)
+  | optAnnotations VALUESET `< tupleType > `( expression ) name `; PHTM_17
+  ;; (TODO) disambiguate with (optAnnotations VALUESET `< baseType > `( expression ) name `;)
+  | optAnnotations VALUESET `< typeName > `( expression ) name `; PHTM_18
 
+;;
 ;;;; Select expressions
+;;
 
-syntax selectCase = keysetExpression COLON name SEMICOLON
+syntax selectCase = keysetExpression `: name `;
 
 ;; (TODO) Add whitespace separator as hint?
 syntax selectCaseList = selectCase*
 
-syntax selectExpression =
-  SELECT `( expressionList ) `{ selectCaseList }
+syntax selectExpression = SELECT `( expressionList ) `{ selectCaseList }
 
-;;;; State expressions
+;;
+;;;; Transition statements
+;;
 
 syntax stateExpression =
-  | name SEMICOLON
+  | name `;
   | selectExpression
 
 syntax transitionStatement = TRANSITION stateExpression
 
+;;
 ;;;; Parser and parser type declarations
+;;
 
 syntax parserBlockStatement = optAnnotations `{ parserStatements }
 
@@ -715,12 +769,16 @@ syntax parserLocalElements = parserLocalElement*
 syntax parserDeclaration =
   parserTypeDeclaration optConstructorParameters `{ parserLocalElements parserStates }
 
+;;
 ;;;; Package type declaration
+;;
 
 syntax packageTypeDeclaration =
   optAnnotations PACKAGE name optTypeParameters `( parameterList )
 
+;;
 ;;;; Enum type declaration
+;;
 
 syntax specifiedIdentifier = name initializer
 
@@ -731,9 +789,11 @@ syntax enumDeclaration =
   | optAnnotations ENUM name `{ identifierList optTrailingComma }
   | optAnnotations ENUM typeRef name `{ specifiedIdentifierList optTrailingComma }
 
+;;
 ;;;; Struct, header, and union type declarations
+;;
 
-syntax structField = optAnnotations typeRef name SEMICOLON
+syntax structField = optAnnotations typeRef name `;
 
 ;; (TODO) Add whitespace separator as hint?
 syntax structFieldList = structField*
@@ -747,7 +807,9 @@ syntax structTypeDeclaration =
 syntax headerTypeDeclaration =
   optAnnotations HEADER name optTypeParameters `{ structFieldList }
 
+;;
 ;;;; Derived type declarations
+;;
 
 syntax derivedTypeDeclaration =
   | headerTypeDeclaration
@@ -755,7 +817,9 @@ syntax derivedTypeDeclaration =
   | structTypeDeclaration
   | enumDeclaration
 
+;;
 ;;;; Typedef and newtype declarations
+;;
 
 syntax typedefDeclaration =
   | optAnnotations TYPEDEF typeRef name
@@ -763,19 +827,23 @@ syntax typedefDeclaration =
   | optAnnotations TYPEDEF derivedTypeDeclaration name PHTM_12
   | optAnnotations TYPE typeRef name
 
+;;
 ;;;; Type declarations
+;;
 
 syntax typeDeclaration =
   | derivedTypeDeclaration
-  | typedefDeclaration SEMICOLON
-  ;; (TODO) disambiguate with (typedefDeclaration SEMICOLON)
-  | parserTypeDeclaration SEMICOLON PHTM_13
-  ;; (TODO) disambiguate with (typedefDeclaration SEMICOLON)
-  | controlTypeDeclaration SEMICOLON PHTM_14
-  ;; (TODO) disambiguate with (typedefDeclaration SEMICOLON)
-  | packageTypeDeclaration SEMICOLON PHTM_15
+  | typedefDeclaration `; 
+  ;; (TODO) disambiguate with (typedefDeclaration `;)
+  | parserTypeDeclaration `; PHTM_13
+  ;; (TODO) disambiguate with (typedefDeclaration `;)
+  | controlTypeDeclaration `; PHTM_14
+  ;; (TODO) disambiguate with (typedefDeclaration `;)
+  | packageTypeDeclaration `; PHTM_15
 
+;;
 ;;;; Declaration
+;;
 
 syntax declaration =
   | constantDeclaration
@@ -793,6 +861,12 @@ syntax declaration =
 ;; Annotations
 ;;
 
+;; Forward declarations
+
+syntax simpleAnnotationBody
+
+;; -------------------
+
 syntax annotationToken =
   | UNEXPECTED_TOKEN | ABSTRACT | ACTION | ACTIONS | APPLY
   | BOOL | BIT | BREAK | CONST | CONTINUE
@@ -803,19 +877,24 @@ syntax annotationToken =
   | PARSER | PACKAGE | PRAGMA | RETURN | SELECT
   | STATE | STRING | STRUCT | SWITCH | TABLE
   | THIS | TRANSITION | TRUE | TUPLE | TYPEDEF
-  | VARBIT | VALUESET | LIST | VOID | UNDERSCORE
+  | VARBIT | VALUESET | LIST | VOID | `_
   | identifier | typeIdentifier | stringLiteral | number
-  | MASK | RANGE | SHL | LAND | LOR
-  | EQEQ | NE | GE | LE  | CONCAT
-  | PLUS | SPLUS | MINUS | SMINUS | MULT
-  | DIV | MOD | BOR | BAND | BXOR
-  | TILDE | LBRACK | RBRACK | LBRACE | RBRACE
-  | LANGLE | RANGLE | BANG | COLON | COMMA
-  | QUEST | DOT | EQ | SEMICOLON | AT
+  | `&&& | `.. | `<< | `&& | `|| 
+  | `== | `!= | `>= | `<=  | `++
+  | `+ | `|+| | `- | `|-| | `*
+  | `/ | `% | `| | `& | `^
+  | `~ | ``[ | ``] | ``{ | ``}
+  | ``< | ``> | `! | `:
+  ;; (TODO) comma parsing
+  | `, PHTM_21
+  | `? | `. | `= | `; | `@
 
-syntax annotationBody =
-  | annotationBody `( annotationBody )
-  | annotationBody annotationToken
+syntax simpleAnnotation =
+  | `( simpleAnnotationBody )
+  | annotationToken
+
+;; (TODO) Add whitespace separator as hint?
+syntax simpleAnnotationBody = simpleAnnotation*
 
 syntax structuredAnnotationBody =
   | expressionList optTrailingComma
@@ -823,9 +902,9 @@ syntax structuredAnnotationBody =
   | kvList optTrailingComma PHTM_20
 
 syntax annotation =
-  | AT name
-  | AT name `( annotationBody )
-  | AT name `[ structuredAnnotationBody ]
+  | `@ name
+  | `@ name `( simpleAnnotationBody )
+  | `@ name `[ structuredAnnotationBody ]
 
 ;; (TODO) Add whitespace separator as hint?
 syntax annotations = annotation*

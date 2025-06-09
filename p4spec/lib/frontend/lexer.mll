@@ -155,6 +155,7 @@ and token = parse
   | "]" { RBRACK }
   | "{" { LBRACE }
   | "}" { RBRACE }
+  | "{#}" { INVALID }
   | ":" { COLON }
   | "::" { COLONCOLON }
   | ":/" { COLONSLASH }
@@ -163,7 +164,10 @@ and token = parse
   | "." { DOT }
   | ".." { DOTDOT }
   | "..." { DOTDOTDOT }
+  | "_" { UNDERSCORE }
   | "|" { BAR }
+  | "|=" { BAREQ }
+  | "||" { BARBAR }
   | "--" { DASH }
   | "," indent* line_comment? '\n' { Lexing.new_line lexbuf; COMMA_NL }
   | line_comment? '\n' { Lexing.new_line lexbuf; after_nl lexbuf }
@@ -179,6 +183,7 @@ and token = parse
   | ":>" { SUP }
   | ":=" { ASSIGN }
   | "==" { EQUIV }
+  | "!=" { NEQUIV }
   | "~" { NOT }
   | "/\\" { AND }
   | "\\/" { OR }
@@ -188,12 +193,26 @@ and token = parse
   | "(*)" { BIGMUL }
   | "(++)" { BIGCAT }
   | "?" { QUEST }
+  | "!" { BANG }
   | "+" { PLUS }
+  | "+=" { PLUSEQ }
+  | "|+|" { SPLUS }
+  | "|+|=" { SPLUSEQ }
   | "-" { MINUS }
+  | "-=" { MINUSEQ }
+  | "|-|" { SMINUS }
+  | "|-|=" { SMINUSEQ }
   | "*" { STAR }
+  | "*=" { STAREQ }
   | "/" { SLASH }
+  | "/=" { SLASHEQ }
   | "\\" { BACKSLASH }
   | "^" { UP }
+  | "^=" { UPEQ }
+  | "&" { AMP }
+  | "&=" { AMPEQ }
+  | "&&" { AMPAMP }
+  | "&&&" { AMPAMPAMP }
   | "++" { CAT }
   | "<-" { MEM }
   | "->" { ARROW }
@@ -204,13 +223,15 @@ and token = parse
   | "~>" { SQARROW }
   | "~>*" { SQARROWSTAR }
   | "<<" { PREC }
+  | "<<=" { PRECEQ }
   | ">>" { SUCC }
+  | ">>=" { SUCCEQ }
   | "|-" { TURNSTILE }
   | "-|" { TILESTURN }
+  | "@" { AT }
   | "$" { DOLLAR }
-  | "_|_" { BOT }
-  | "^|^" { TOP }
   | "%" { HOLE }
+  | "%=" { HOLEEQ }
   | "%"(nat as s) { HOLEN (int lexbuf s) }
   | "%%" { MULTIHOLE }
   | "!%" { NOTHING }
