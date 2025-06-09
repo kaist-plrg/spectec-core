@@ -174,8 +174,8 @@ atom_ :
 atom_escape :
   | TICK EQ { Atom.Equal }
   | TICK NE { Atom.NotEqual }
-  | TICK LANGLE { Atom.Less }
-  | TICK RANGLE { Atom.Greater }
+  | TICK LANGLE { Atom.LAngle }
+  | TICK RANGLE { Atom.RAngle }
   | TICK LE { Atom.LessEqual }
   | TICK GE { Atom.GreaterEqual }
   | TICK MEM { Atom.Mem }
@@ -235,6 +235,10 @@ typ_prim_ :
   | atom
     {
       NotationT (AtomT $1 @@@ $loc($1))
+    }
+  | TICK LANGLE typ RANGLE
+    {
+      NotationT (BrackT (Atom.LAngle @@@ $loc($2), $3, Atom.RAngle @@@ $loc($4)) @@@ $loc($1))
     }
   | TICK LPAREN typ RPAREN
     {

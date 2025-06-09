@@ -21,8 +21,6 @@ type t =
   | Assign          (* `:=` *)
   | Equal           (* ``=` *)
   | NotEqual        (* ``=/=` *)
-  | Less            (* ``<` *)
-  | Greater         (* ``>` *)
   | LessEqual       (* ``<=` *)
   | GreaterEqual    (* ``>=` *)
   | Equiv           (* `==` *)
@@ -44,6 +42,8 @@ type t =
   | BigAdd          (* `(+)` *)
   | BigMul          (* `( * )` *)
   | BigCat          (* `(++)` *)
+  | LAngle
+  | RAngle          (* ``<` `>` *)
   | LParen
   | RParen          (* ``(` `)` *)
   | LBrack
@@ -77,8 +77,6 @@ let string_of_atom = function
   | Assign -> ":="
   | Equal -> "="
   | NotEqual -> "=/="
-  | Less -> "<"
-  | Greater -> ">"
   | LessEqual -> "<="
   | GreaterEqual -> ">="
   | Equiv -> "=="
@@ -100,6 +98,8 @@ let string_of_atom = function
   | BigAdd -> "(+)"
   | BigMul -> "(*)"
   | BigCat -> "(++)"
+  | LAngle -> "<"
+  | RAngle -> ">"
   | LParen -> "("
   | LBrack -> "["
   | LBrace -> "{"
@@ -131,8 +131,6 @@ let name = function
   | Assign -> "assign" (* Latex: := *)
   | Equal -> "eq"
   | NotEqual -> "neq" (* Latex: \neq *)
-  | Less -> "lt" (* Latex: < *)
-  | Greater -> "gt" (* Latex: > *)
   | LessEqual -> "leq" (* Latex: \leq *)
   | GreaterEqual -> "geq" (* Latex: \geq *)
   | Equiv -> "equiv"
@@ -154,9 +152,11 @@ let name = function
   | BigAdd -> "bigadd" (* Latex: \Sigma *)
   | BigMul -> "bigmul" (* Latex: \Pi *)
   | BigCat -> "bigcat" (* Latex: \bigoplus *)
-  | LParen -> "lparen" (* Latex: brackets... *)
+  | LAngle -> "langle" (* Latex: brackets... *)
+  | LParen -> "lparen"
   | LBrack -> "lbrack"
   | LBrace -> "lbrace"
+  | RAngle -> "rangle"
   | RParen -> "rparen"
   | RBrack -> "rbrack"
   | RBrace -> "rbrace"
