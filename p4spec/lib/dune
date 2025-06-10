@@ -16,6 +16,7 @@
   (re_export runtime_dynamic_il)
   (re_export runtime_dynamic_sl)
   (re_export runtime_testgen)
+  (re_export parsing)
   (re_export interp_il)
   (re_export interp_sl)
   (re_export testgen)))
