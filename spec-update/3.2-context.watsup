@@ -1,0 +1,81 @@
+;;
+;; Cursor
+;;
+
+syntax cursor = GLOBAL | BLOCK | LOCAL
+
+var p : cursor
+
+;;
+;; Layered context
+;;
+
+;; Global layer
+
+syntax glayer =
+  { CDENV cdenv,
+    TDENV tdenv,
+    FDENV fdenv,
+    FRAME frame }
+
+;; Block layer
+
+syntax blayer =
+  { ID name,
+    TDENV tdenv,
+    FDENV fdenv,
+    FRAME frame }
+
+;; Local layer
+
+syntax llayer =
+  { ID name,
+    TDENV tdenv,
+    FRAMES frame* }
+
+;;
+;; Typing context
+;;
+
+syntax context =
+  { GLOBAL glayer,
+    BLOCK blayer,
+    LOCAL llayer }
+
+var C : context
+
+;;
+;; Constructor
+;;
+
+dec $empty_context : context
+
+def $empty_context = C
+  -- if glayer =
+      { CDENV $empty_cdenv,
+        TDENV $empty_tdenv,
+        FDENV $empty_fdenv,
+        FRAME $empty_frame }
+  -- if blayer =
+      { ID `$ "",
+        TDENV $empty_tdenv,
+        FDENV $empty_fdenv,
+        FRAME $empty_frame }
+  -- if llayer =
+      { ID `$ "",
+        TDENV $empty_tdenv,
+        FRAMES ([ $empty_frame ]) }
+  -- if C = { GLOBAL glayer, BLOCK blayer, LOCAL llayer }
+
+;;
+;; Frame management
+;;
+
+dec $enter(context) : context
+
+def $enter(C) = C[ .LOCAL.FRAMES = $empty_frame :: C.LOCAL.FRAMES ]
+
+dec $exit(context) : context
+
+def $exit(C) = C[ .LOCAL.FRAMES = frame_t* ]
+  -- if frame_h :: frame_t* = C.LOCAL.FRAMES

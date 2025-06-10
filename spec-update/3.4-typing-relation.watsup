@@ -1,0 +1,185 @@
+;;
+;; Static evaluation
+;; of expressions that are local compile-time known
+;;
+
+relation Eval_static:
+  cursor context |- expressionIR ~> val
+  hint(input %0 %1 %2)
+
+;;
+;; Type evaluation and subtyping
+;;
+
+;;
+;;;; Type evaluation
+;;
+
+relation Type_ok:
+  cursor context |- typeOrVoid : typeIR name*
+  hint(input %0 %1 %2)
+
+;;
+;;;; Subtyping, explicit and implicit
+;;
+
+relation Sub_expl: typeIR <: typeIR hint(input %0 %1)
+relation Sub_expl_canon: typeIR <: typeIR hint(input %0 %1)
+relation Sub_expl_canon_neq: typeIR <: typeIR hint(input %0 %1)
+
+relation Sub_impl: typeIR << typeIR hint(input %0 %1)
+relation Sub_impl_canon: typeIR << typeIR hint(input %0 %1)
+relation Sub_impl_canon_neq: typeIR << typeIR hint(input %0 %1)
+
+;;
+;; Expression, Statement, and Declaration typing
+;;
+
+;;
+;;;; Expression typing
+;;
+
+relation Expr_ok:
+  cursor context |- expression : expressionIR
+  hint(input %0 %1 %2)
+
+;;
+;;;; Argument typing,
+;;
+
+relation Arg_ok:
+  cursor context |- argument : argumentIR typeIR
+  hint(input %0 %1 %2)
+
+;;
+;;;; L-value typing
+;;
+
+relation Lval_ok:
+  cursor context |- lvalueIR
+  hint(input %0 %1 %2)
+
+;;
+;;;; Statement typing
+;;;; note that block typing depends on whether it is the initial block or not
+;;
+
+syntax blkctxt = INIT | NOINIT
+
+relation Block_ok:
+  cursor context flow blkctxt |- blockStatement : context flow blockStatementIR
+  hint(input %0 %1 %2 %3 %4)
+
+relation Stmt_ok:
+  cursor context flow |- statement : context flow statementIR
+  hint(input %0 %1 %2 %3)
+
+relation Stmts_ok:
+  cursor context flow |- statement* : context flow statementIR*
+  hint(input %0 %1 %2 %3)
+
+;;
+;;;; Parameter typing
+;;;; inserts fresh type variables for parameters with don't care types
+;;
+
+relation Param_ok:
+  cursor context |- parameter : parameterIR name*
+  hint(input %0 %1 %2)
+
+relation CParam_ok:
+  cursor context |- parameter : parameterIR name*
+  hint(input %0 %1 %2)
+
+;;
+;;;; Declaration typing,
+;;
+
+relation Decl_ok:
+  cursor context |- declaration : context declarationIR
+  hint(input %0 %1 %2)
+
+relation Decls_ok:
+  cursor context |- declaration : context declarationIR*
+  hint(input %0 %1 %2)
+
+;;
+;;;; Program typing,
+;;
+
+relation Prog_ok:
+  |- p4program : context p4programIR
+  hint(input %0)
+
+;;
+;; Call typing
+;;
+
+;;
+;;;; Copy-in/out calling convention,
+;;;; note that it depends on whether an action is being called or not
+;;
+
+syntax actctxt = ACT | NOACT
+
+relation Call_convention_ok:
+  cursor context actctxt |- paramTypeIR ~~ (expressionIR, typeIR) : expressionIR
+  hint(input %0 %1 %2 %3 %4)
+
+relation Call_convention_arg_ok:
+  cursor context actctxt |- paramTypeIR ~~ (argumentIR, typeIR) : argumentIR
+  hint(input %0 %1 %2 %3 %4)
+
+;;
+;;;; Checks that an action/function/method invocation is valid,
+;;;; gets the return type,
+;;;; infers the types of missing type arguments,
+;;;; and inserts implicit casts for arguments, if necessary
+;;
+
+relation Call_site_ok:
+  cursor context |- funcTypeIR : CALLSITE_OK
+  hint(input %0 %1 %2)
+
+relation Call_ok:
+  cursor context funcTypeIR name* |- `< typeArgIR* > `( argumentIR* `# name* ) : typeIR typeArgIR* argumentIR*
+  hint(input %0 %1 %2 %3 %4 %5 %6)
+
+;;
+;;;; Finds the type of a function/method,
+;;;; inserts fresh type variables for parameters with don't care types,
+;;;; and also identifies the ids of default arguments
+;;
+
+relation FuncType_ok:
+  cursor context |- name typeArgIR* argumentIR* : funcTypeIR name* name*
+  hint(input %0 %1 %2 %3 %4)
+
+relation MethodType_ok:
+  cursor context |- expressionIR name typeArgIR* argumentIR* : funcTypeIR expressionIR name* name*
+  hint(input %0 %1 %2 %3 %4 %5)
+
+;;
+;;;; Finds the type of a constructor,
+;;;; inserts fresh type variables for parameters with don't care types,
+;;;; and also identifies the ids of default arguments
+;;
+
+relation ConsType_ok:
+  cursor context |- name typeArgIR* argumentIR* : consTypeIR name* name*
+  hint(input %0 %1 %2 %3 %4)
+
+;;
+;;;; Checks that a constructor invocation is valid,
+;;;; gets the constructed object type,
+;;;; infers the types of missing type arguments,
+;;;; and inserts implicit casts for arguments, if necessary
+;;
+
+relation Inst_site_ok:
+  cursor context |- consTypeIR : INSTSITE_OK
+  hint(input %0 %1 %2)
+
+relation Inst_ok:
+  cursor context consTypeIR name* |- `< typeArgIR* > `( argumentIR `# name* ) : typeIR typeArgIR* argumentIR*
+  hint(input %0 %1 %2 %3 %4 %5 %6)

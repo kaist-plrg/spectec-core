@@ -1,0 +1,33 @@
+;;
+;; Static type representation
+;;
+
+syntax varTypeIR = typeIR direction val? ctk
+
+;;
+;; Environments
+;;
+
+;; Map from variable identifiers to static types
+syntax frame = map<name, varTypeIR>
+
+dec $empty_frame() : frame
+def $empty_frame() = $empty_map<name, varTypeIR>
+
+;; Map from type identifiers to type definitions
+syntax tdenv = map<name, typeDefIR>
+
+dec $empty_tdenv() : tdenv
+def $empty_tdenv() = $empty_map<name, typeDefIR>
+
+;; Map from function identifiers to function type definitions
+syntax fdenv = map<funcName, funcTypeDefIR>
+
+dec $empty_fdenv() : fdenv
+def $empty_fdenv() = $empty_map<funcName, funcTypeDefIR>
+
+;; Map from constructor identifiers to constructor type definitions
+syntax cdenv = map<consName, consTypeDefIR>
+
+dec $empty_cdenv() : cdenv
+def $empty_cdenv() = $empty_map<consName, consTypeDefIR>

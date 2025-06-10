@@ -60,6 +60,7 @@ type t =
   | BarEq           (* ``|=` *)
   | Bar2            (* ``||` *)
   | At              (* ``@` *)
+  | Dollar          (* ``$` *)
   | Comma           (* ``,` *)
   | Cat             (* ``++` *)
   | BigAnd          (* `(/\)` *)
@@ -142,6 +143,7 @@ let string_of_atom = function
   | BarEq -> "|="
   | Bar2 -> "||"
   | At -> "@"
+  | Dollar -> "$"
   | Comma -> ","
   | Cat -> "++"
   | BigAnd -> "(/\\)"

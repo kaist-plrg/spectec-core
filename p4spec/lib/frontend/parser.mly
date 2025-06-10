@@ -207,6 +207,7 @@ atom_escape :
   | TICK BAREQ { Atom.BarEq }
   | TICK BARBAR { Atom.Bar2 }
   | TICK AT { Atom.At }
+  | TICK DOLLAR { Atom.Dollar }
   | TICK HOLE { Atom.Mod }
   | TICK HOLEEQ { Atom.ModEq }
   | TICK FUSE { Atom.Hash }
