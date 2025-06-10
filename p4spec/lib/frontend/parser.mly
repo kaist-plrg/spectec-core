@@ -175,6 +175,7 @@ atom_escape :
   | TICK relop_ { $2 }
   | INFINITY { Atom.Infinity }
   | TICK UNDERSCORE { Atom.Underscore }
+  | TICK ARROW2 { Atom.Arrow2 }
   | TICK EQ { Atom.Equal }
   | TICK LE { Atom.LessEqual }
   | TICK GE { Atom.GreaterEqual }

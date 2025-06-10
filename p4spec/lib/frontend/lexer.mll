@@ -86,7 +86,7 @@ let loletter = ['a'-'z']
 let letter = upletter | loletter
 
 let idchar = letter | digit | '_' | '\''
-let upid = upletter idchar*
+let upid = (upletter | '_') idchar*
 let loid = (loletter | '_') idchar*
 let id = upid | loid
 

@@ -1,0 +1,70 @@
+;;
+;; Value
+;;
+
+;; Forward declarations
+
+syntax val
+
+;;
+;;;; Base values
+;;
+
+;;
+;;;; Primitive values
+;;
+
+syntax primVal =
+  | BOOL bool
+  | ERROR `. name
+  | MATCH_KIND name
+  | STRING text
+
+;;
+;;;; Numeric values
+;;
+
+syntax numVal =
+  | INT int
+  | BIT `< nat > int
+  | INT `< nat > int
+  | VARBIT `< nat > int
+
+syntax baseVal = | primVal | numVal
+
+;;
+;;;; Composite values
+;;
+
+syntax dataVal =
+  | LIST `[ val* ]
+  | TUPLE `( val* )
+  | `[ val* `@ `( nat; nat ) ]
+  | HEADER name `{ (val, name)* }
+  | HEADER_UNION name `{ (val, name)* }
+  | STRUCT name `{ (val, name)* }
+  | ENUM name `. name
+  | ENUM name `. name `# val
+
+;;
+;;;; Synthesized values
+;;
+
+syntax setVal =
+  | `{ val }
+  | `{ val `&&& val }
+  | `{ val `.. val }
+
+syntax synthVal =
+  | DEFAULT
+  | SEQ `( val* )
+  | SEQ_DEFAULT `( val* )
+  | RECORD `{ (val, name)* }
+  | RECORD_DEFAULT `{ (val, name)* }
+  | INVALID
+  | SET setVal
+  | STATE
+  | ENUM_TABLE name `. name
+  | STRUCT_TABLE name `{ (val, name)* }
+
+syntax val = | baseVal | dataVal | synthVal

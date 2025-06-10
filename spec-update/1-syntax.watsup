@@ -61,6 +61,9 @@ syntax name =
   | LIST
   | typeIdentifier
 
+;; (TODO) Add comma separator as hint?
+syntax identifierList = name*
+
 syntax member = name
 
 ;;
@@ -162,10 +165,6 @@ syntax optTypeParameters = typeParameters?
 syntax parameter =
   | optAnnotations direction typeRef name
   | optAnnotations direction typeRef name initializer
-
-;; (TODO) Add comma separator as hint?
-;; (TODO) nonempty sequence with + iterator
-syntax nonEmptyParameterList = parameter*
 
 ;; (TODO) Add comma separator as hint?
 syntax parameterList = parameter*
@@ -354,13 +353,9 @@ syntax typeArgumentList = typeArg*
 
 syntax argument =
   | expression
-  | name EQ expression
+  | name `= expression
   | `_
-  | name EQ `_
-
-;; (TODO) Add comma separator as hint?
-;; (TODO) nonempty sequence with + iterator
-syntax nonEmptyArgList = argument*
+  | name `= `_
 
 ;; (TODO) Add comma separator as hint?
 syntax argumentList = argument*
@@ -402,7 +397,7 @@ syntax variableDeclaration =
   variableDeclarationWithoutSemicolon `;
 
 syntax constantDeclaration =
-  optAnnotations CONST typeRef name `= initializer `;
+  optAnnotations CONST typeRef name initializer `;
 
 ;;
 ;;;; Assignment and method call statements
@@ -433,9 +428,7 @@ syntax assignmentOrMethodCallStatement =
 ;;
 
 syntax directApplication =
-  | typeName `. APPLY `( argumentList ) `; 
-  ;; (TODO) disambiguate with (typeName `. APPLY `( argumentList ) `;)
-  | specializedType `. APPLY `( argumentList ) `; PHTM_10
+  | namedType `. APPLY `( argumentList ) `;
 
 ;;
 ;;;; Conditional statements
@@ -559,9 +552,6 @@ syntax statOrDeclList = statementOrDeclaration*
 ;;
 ;;;; Error and match kind declarations
 ;;
-
-;; (TODO) Add comma separator as hint?
-syntax identifierList = name*
 
 syntax matchKindDeclaration =
   MATCH_KIND `{ identifierList optTrailingComma }

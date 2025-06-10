@@ -1,0 +1,707 @@
+;;
+;; Parameters
+;;
+
+;; Forward declarations
+
+syntax initializerIR
+
+syntax parameterIR =
+  | direction typeIR name
+  | direction typeIR name initializerIR
+
+syntax parameterListIR = parameterIR*
+
+;;
+;; Constructor parameters
+;;
+
+syntax constructorParametersIR = `( parameterListIR )
+
+syntax optConstructorParametersIR = constructorParametersIR?
+
+;;
+;; Expressions
+;;
+
+;; Forward declarations
+
+syntax typeArgumentListIR
+syntax argumentListIR
+syntax nonBraceExpressionInnerIR
+syntax expressionInnerIR, expressionIR
+syntax expressionListIR, kvListIR
+
+syntax noteIL = `( typeIR `; ctk )
+
+syntax nonBraceExpressionIR = nonBraceExpressionInnerIR noteIL
+
+syntax nonBraceExpressionInnerIR =
+  | number
+  | stringLiteral
+  | TRUE
+  | FALSE
+  | THIS
+  | nonBraceExpressionIR `[ expressionIR ]
+  | nonBraceExpressionIR `[ expressionIR `: expressionIR ]
+  | `( expressionIR )
+  | `! expressionIR
+  | `~ expressionIR
+  | `- expressionIR
+  | `+ expressionIR
+  | typeName `. member
+  | ERROR `. member
+  ;; (TODO) disambiguate with (typeName `. member)
+  | nonBraceExpressionIR `. member PHTM_5
+  | nonBraceExpressionIR `* expressionIR
+  | nonBraceExpressionIR `/ expressionIR
+  | nonBraceExpressionIR `% expressionIR
+  | nonBraceExpressionIR `+ expressionIR
+  | nonBraceExpressionIR `- expressionIR
+  | nonBraceExpressionIR `|+| expressionIR
+  | nonBraceExpressionIR `|-| expressionIR
+  | nonBraceExpressionIR `<< expressionIR
+  | nonBraceExpressionIR `>> expressionIR
+  | nonBraceExpressionIR `<= expressionIR
+  | nonBraceExpressionIR `>= expressionIR
+  | nonBraceExpressionIR ``< expressionIR
+  | nonBraceExpressionIR ``> expressionIR
+  | nonBraceExpressionIR `!= expressionIR
+  | nonBraceExpressionIR `== expressionIR
+  | nonBraceExpressionIR `& expressionIR
+  | nonBraceExpressionIR `^ expressionIR
+  | nonBraceExpressionIR `| expressionIR
+  | nonBraceExpressionIR `++ expressionIR
+  | nonBraceExpressionIR `&& expressionIR
+  | nonBraceExpressionIR `|| expressionIR
+  | nonBraceExpressionIR `? expressionIR `: expressionIR
+  | nonBraceExpressionIR `< typeArgumentListIR > `( argumentListIR )
+  | nonBraceExpressionIR `( argumentListIR )
+  ;; (TODO) disambiguate with (nonBraceExpression `( argumentList ))
+  | namedTypeIR `( argumentListIR ) PHTM_6
+  | `( typeIR ) expressionIR
+
+
+syntax expressionIR = expressionInnerIR noteIL
+
+syntax expressionInnerIR =
+  | number
+  | `...
+  | stringLiteral
+  | TRUE
+  | FALSE
+  | THIS
+  | prefixedNonTypeName
+  | expressionIR `[ expressionIR ]
+  | expressionIR `[ expressionIR `: expressionIR ]
+  | `{ expressionListIR optTrailingComma }
+  | `{#}
+  ;; (TODO) disambiguate with (`{ expressionListIR optTrailingComma })
+  | `{ kvListIR optTrailingComma } PHTM_7
+  | `{ kvListIR `, `... optTrailingComma }
+  | `( expressionIR )
+  | `! expressionIR
+  | `~ expressionIR
+  | `- expressionIR
+  | `+ expressionIR
+  | typeName `. member
+  | ERROR `. member
+  ;; (TODO) disambiguate with (typeName `. member)
+  | expressionIR `. member PHTM_8
+  | expressionIR `* expressionIR
+  | expressionIR `/ expressionIR
+  | expressionIR `% expressionIR
+  | expressionIR `+ expressionIR
+  | expressionIR `- expressionIR
+  | expressionIR `|+| expressionIR
+  | expressionIR `|-| expressionIR
+  | expressionIR `<< expressionIR
+  | expressionIR `>> expressionIR
+  | expressionIR `<= expressionIR
+  | expressionIR `>= expressionIR
+  | expressionIR ``< expressionIR
+  | expressionIR ``> expressionIR
+  | expressionIR `!= expressionIR
+  | expressionIR `== expressionIR
+  | expressionIR `& expressionIR
+  | expressionIR `^ expressionIR
+  | expressionIR `| expressionIR
+  | expressionIR `++ expressionIR
+  | expressionIR `&& expressionIR
+  | expressionIR `|| expressionIR
+  | expressionIR `? expressionIR `: expressionIR
+  | expressionIR `< typeArgumentListIR > `( argumentListIR )
+  | expressionIR `( argumentListIR )
+  ;; (TODO) disambiguate with (expression `( argumentListIR ))
+  | namedTypeIR `( argumentListIR ) PHTM_9
+  | `( typeIR ) expressionIR
+
+;; (TODO) Add comma separator as hint?
+syntax expressionListIR = expressionIR*
+
+;;
+;; Keyset expressions
+;;
+
+syntax simpleKeysetExpressionIR =
+  | expressionIR
+  | expressionIR `&&& expressionIR
+  | expressionIR `.. expressionIR
+  | DEFAULT
+  | `_
+
+syntax reducedSimpleKeysetExpressionIR =
+  | expressionIR `&&& expressionIR
+  | expressionIR `.. expressionIR
+  | DEFAULT
+  | `_
+
+syntax simpleExpressionListIR = simpleKeysetExpressionIR*
+
+syntax tupleKeySetExpressionIR =
+  | `( simpleKeysetExpressionIR `, simpleExpressionListIR )
+  | `( reducedSimpleKeysetExpressionIR ) PHTM_19
+
+syntax keysetExpressionIR =
+  | tupleKeySetExpressionIR
+  | simpleKeysetExpressionIR
+
+;;
+;; Expression key-value pairs
+;;
+
+syntax kvPairIR = name `= expressionIR
+
+syntax kvListIR = kvPairIR*
+
+;;
+;; Type arguments
+;;
+
+syntax typeArgIR = typeIR
+
+syntax typeArgumentListIR = typeArgIR*
+
+;;
+;; Arguments
+;;
+
+syntax argumentIR =
+  | expressionIR
+  | name `= expressionIR
+  | `_
+  | name `= `_
+
+syntax argumentListIR = argumentIR*
+
+;;
+;; L-values
+;;
+
+syntax lvalueIR =
+  | prefixedNonTypeName
+  | THIS
+  | lvalueIR `. member
+  | lvalue `[ expressionIR ]
+  | lvalueIR `[ expressionIR `: expressionIR ]
+  | `( lvalueIR )
+
+;;
+;; Statements and declarations
+;;
+
+;; Forward declarations
+
+syntax statementIR, parserStatementsIR, statOrDeclListIR
+syntax objDeclarationsIR
+syntax annotationsIR, optAnnotationsIR
+
+;;
+;; Variable and constant declarations
+;;
+
+syntax initializerIR = `= expressionIR
+
+syntax optInitializerIR = initializerIR?
+
+syntax variableDeclarationWithoutSemicolonIR =
+  optAnnotationsIR typeIR name optInitializerIR
+
+syntax variableDeclarationIR =
+  variableDeclarationWithoutSemicolonIR `;
+
+syntax constantDeclarationIR =
+  optAnnotationsIR CONST typeIR name initializerIR `;
+
+;;
+;;;; Assignment and method call statements
+;;
+
+syntax assignmentOrMethodCallStatementWithoutSemicolonIR =
+  | lvalueIR `( argumentListIR )
+  | lvalueIR `< typeArgumentListIR > `( argumentListIR )
+  | lvalueIR `= expressionIR
+  | lvalueIR `+= expressionIR
+  | lvalueIR `|+|= expressionIR
+  | lvalueIR `-= expressionIR
+  | lvalueIR `|-|= expressionIR
+  | lvalueIR `*= expressionIR
+  | lvalueIR `/= expressionIR
+  | lvalueIR `%= expressionIR
+  | lvalueIR `<<= expressionIR
+  | lvalueIR `>>= expressionIR
+  | lvalueIR `&= expressionIR
+  | lvalueIR `^= expressionIR
+  | lvalueIR `|= expressionIR
+
+syntax assignmentOrMethodCallStatementIR =
+  assignmentOrMethodCallStatementWithoutSemicolonIR `; PHTM_11
+
+;;
+;;;; Direct application statements
+;;
+
+syntax directApplicationIR =
+  | namedTypeIR `. APPLY `( argumentListIR ) `;
+
+;;
+;;;; Conditional statements
+;;
+
+syntax conditionalStatementIR =
+  | IF `( expressionIR ) statementIR
+  | IF `( expressionIR ) statementIR ELSE statementIR
+
+;;
+;;;; Empty statements
+;;
+
+syntax emptyStatementIR = `;
+
+;;
+;;;; Block statements
+;;
+
+syntax blockStatementIR = optAnnotationsIR `{ statOrDeclListIR }
+
+;;
+;;;; Return statements
+;;
+
+syntax returnStatementIR =
+  | RETURN `;
+  | RETURN expressionIR `;
+
+;;
+;;;; Break statements
+;;
+
+syntax breakStatementIR = BREAK `;
+
+;;
+;;;; Continue statements
+;;
+
+syntax continueStatementIR = CONTINUE `;
+
+;;
+;;;; Exit statements
+;;
+
+syntax exitStatementIR = EXIT `;
+
+;;
+;;;; Switch statements
+;;
+
+syntax switchLabelIR =
+  | DEFAULT
+  | nonBraceExpressionIR
+
+syntax switchCaseIR =
+  | switchLabelIR `: blockStatementIR
+  | switchLabelIR `: 
+
+;; (TODO) Add whitespace separator as hint?
+syntax switchCasesIR = switchCaseIR*
+
+syntax switchStatementIR = SWITCH `( expressionIR ) `{ switchCasesIR }
+
+;;
+;;;; For statements
+;;
+
+syntax declOrAssignmentOrMethodCallStatementIR =
+  | variableDeclarationWithoutSemicolonIR
+  | assignmentOrMethodCallStatementWithoutSemicolonIR
+
+;; (TODO) Add comma separator as hint?
+syntax forInitStatementsIR = declOrAssignmentOrMethodCallStatementIR*
+
+;; (TODO) Add comma separator as hint?
+syntax forUpdateStatementsIR = assignmentOrMethodCallStatementWithoutSemicolonIR*
+
+syntax forCollectionExprIR =
+  | expressionIR
+  | expressionIR `.. expressionIR
+
+syntax forStatementIR =
+  | optAnnotationsIR FOR `( forInitStatementsIR `; expressionIR `; forUpdateStatementsIR ) statementIR
+  | optAnnotationsIR FOR `( typeIR name IN forCollectionExprIR ) statementIR
+  | optAnnotationsIR FOR `( annotationsIR typeIR name IN forCollectionExprIR ) statementIR
+
+;;
+;;;; Statements
+;;
+
+syntax statementIR =
+  | assignmentOrMethodCallStatementIR
+  | directApplicationIR
+  | conditionalStatementIR
+  | emptyStatementIR
+  | blockStatementIR
+  | returnStatementIR
+  | breakStatementIR
+  | continueStatementIR
+  | exitStatementIR
+  | switchStatementIR
+  | forStatementIR
+
+syntax statementOrDeclarationIR =
+  | variableDeclarationIR
+  | constantDeclarationIR
+  | statementIR
+
+;; (TODO) Add whitespace separator as hint?
+syntax statOrDeclListIR = statementOrDeclarationIR*
+
+;;
+;;;; Error and match kind declarations
+;;
+
+syntax matchKindDeclarationIR =
+  MATCH_KIND `{ identifierList optTrailingComma }
+
+syntax errorDeclarationIR = ERROR `{ identifierList }
+
+;;
+;;;; Extern declarations
+;;
+
+syntax functionPrototypeIR =
+  typeIR name optTypeParameters `( parameterListIR )
+
+syntax methodPrototypeIR =
+  | optAnnotationsIR functionPrototypeIR `;
+  | optAnnotationsIR ABSTRACT functionPrototypeIR `;
+  | optAnnotationsIR typeIdentifier `( parameterListIR ) `;
+
+;; (TODO) Add whitespace separator as hint?
+syntax methodPrototypesIR = methodPrototypeIR*
+
+syntax externDeclarationIR =
+  | optAnnotationsIR EXTERN nonTypeName optTypeParameters `{ methodPrototypesIR }
+  | optAnnotationsIR EXTERN functionPrototypeIR `;
+
+;;
+;;;; Function declarations
+;;
+
+syntax functionDeclarationIR =
+  optAnnotationsIR functionPrototypeIR blockStatementIR
+
+;;
+;;;; Instantiations
+;;
+
+syntax objInitializerIR = `= `{ objDeclarationsIR }
+
+syntax instantiationIR =
+  | optAnnotationsIR typeIR `( argumentListIR ) name `;
+  | optAnnotationsIR typeIR `( argumentListIR ) name objInitializerIR `;
+
+syntax objDeclarationIR =
+  | functionDeclarationIR
+  | instantiationIR
+
+;; (TODO) Add whitespace separator as hint?
+syntax objDeclarationsIR = objDeclarationIR*
+
+;;
+;;;; Action declarations
+;;
+
+syntax actionDeclarationIR =
+  optAnnotationsIR ACTION name `( parameterListIR ) blockStatementIR
+
+;;
+;;;; Table declarations
+;;
+
+;;
+;;;;;; Table key property 
+;;
+
+syntax keyElementIR =
+  expressionIR `: name optAnnotationsIR `;
+
+;; (TODO) Add whitespace separator as hint?
+syntax keyElementListIR = keyElementIR*
+
+;;
+;;;;;; Table actions property
+;;
+
+syntax actionRefIR =
+  | prefixedNonTypeName `# `( parameterListIR `, parameterListIR )
+  | prefixedNonTypeName `( argumentListIR ) `# `( parameterListIR `, parameterListIR )
+
+syntax actionIR = optAnnotationsIR actionRefIR `;
+
+;; (TODO) Add whitespace separator as hint?
+syntax actionListIR = actionIR*
+
+;;
+;;;;;; Table entry property
+;;
+
+syntax entryPriorityIR =
+  | PRIORITY `= number `: 
+  | PRIORITY `= `( expressionIR ) `:
+
+syntax entryIR =
+  | optCONST entryPriorityIR keysetExpressionIR `: actionRefIR optAnnotationsIR`; 
+  | optCONST keysetExpressionIR `: actionListIR optAnnotationsIR `; 
+
+syntax entriesListIR = entryIR*
+
+;;
+;;;;;; Table properties
+;;
+
+syntax tablePropertyIR =
+  | KEY `= `{ keyElementListIR }
+  | ACTIONS `= `{ actionListIR }
+  | optAnnotationsIR optCONST ENTRIES `= `{ entriesListIR }
+  | optAnnotationsIR optCONST nonTableKwName initializerIR `;
+
+;; (TODO) Add whitespace separator as hint?
+syntax tablePropertyListIR = tablePropertyIR*
+
+syntax tableDeclarationIR =
+  optAnnotationsIR TABLE name `{ tablePropertyListIR }
+
+;;
+;;;; Control and control type declarations
+;;
+
+syntax controlBodyIR = blockStatementIR
+
+syntax controlLocalDeclarationIR =
+  | constantDeclarationIR
+  | actionDeclarationIR
+  | tableDeclarationIR
+  | instantiationIR
+  | variableDeclarationIR
+
+;; (TODO) Add whitespace separator as hint?
+syntax controlLocalDeclarationsIR = controlLocalDeclarationIR*
+
+syntax controlTypeDeclarationIR =
+  optAnnotationsIR CONTROL name optTypeParameters `( parameterListIR )
+
+syntax controlDeclarationIR =
+  controlTypeDeclarationIR optConstructorParametersIR `{ controlLocalDeclarationsIR APPLY controlBodyIR }
+
+;;
+;;;; Value set declarations
+;;
+
+syntax valueSetDeclarationIR =
+  | optAnnotationsIR VALUESET `< typeIR > `( expressionIR ) name `; 
+
+;;
+;;;; Select expressions
+;;
+
+syntax selectCaseIR = keysetExpressionIR `: name `;
+
+;; (TODO) Add whitespace separator as hint?
+syntax selectCaseListIR = selectCaseIR*
+
+syntax selectExpressionIR = SELECT `( expressionListIR ) `{ selectCaseListIR }
+
+;;
+;;;; Transition statements
+;;
+
+syntax stateExpressionIR =
+  | name `;
+  | selectExpressionIR
+
+syntax transitionStatementIR = TRANSITION stateExpressionIR
+
+;;
+;;;; Parser and parser type declarations
+;;
+
+syntax parserBlockStatementIR = optAnnotationsIR `{ parserStatementsIR }
+
+syntax parserStatementIR =
+  | assignmentOrMethodCallStatementIR
+  | directApplicationIR
+  | emptyStatementIR
+  | variableDeclarationIR
+  | constantDeclarationIR
+  | parserBlockStatementIR
+  | conditionalStatementIR
+
+;; (TODO) Add whitespace separator as hint?
+syntax parserStatementsIR = parserStatementIR*
+
+syntax parserStateIR =
+  optAnnotationsIR STATE name `{ parserStatementsIR transitionStatementIR }
+
+;; (TODO) Add whitespace separator as hint?
+;; (TODO) nonempty sequence with + iterator
+syntax parserStatesIR = parserStateIR*
+
+syntax parserTypeDeclarationIR =
+  optAnnotationsIR PARSER name optTypeParameters `( parameterListIR )
+
+syntax parserLocalElementIR =
+  | constantDeclarationIR
+  | variableDeclarationIR
+  | instantiationIR
+  | valueSetDeclarationIR
+
+;; (TODO) Add whitespace separator as hint?
+syntax parserLocalElementsIR = parserLocalElementIR*
+
+syntax parserDeclarationIR =
+  parserTypeDeclarationIR optConstructorParametersIR `{ parserLocalElementsIR parserStatesIR }
+
+;;
+;;;; Package type declaration
+;;
+
+syntax packageTypeDeclarationIR =
+  optAnnotationsIR PACKAGE name optTypeParameters `( parameterListIR )
+
+;;
+;;;; Enum type declaration
+;;
+
+syntax specifiedIdentifierIR = name initializerIR
+
+;; (TODO) Add comma separator as hint?
+syntax specifiedIdentifierListIR = specifiedIdentifierIR*
+
+syntax enumDeclarationIR =
+  | optAnnotationsIR ENUM name `{ identifierList optTrailingComma }
+  | optAnnotationsIR ENUM typeIR name `{ specifiedIdentifierListIR optTrailingComma }
+
+;;
+;;;; Struct, header, and union type declarations
+;;
+
+syntax structFieldIR = optAnnotationsIR typeIR name `;
+
+;; (TODO) Add whitespace separator as hint?
+syntax structFieldListIR = structFieldIR*
+
+syntax headerUnionDeclarationIR =
+  optAnnotationsIR HEADER_UNION name optTypeParameters `{ structFieldListIR }
+
+syntax structTypeDeclarationIR =
+  optAnnotationsIR STRUCT name optTypeParameters `{ structFieldListIR }
+
+syntax headerTypeDeclarationIR =
+  optAnnotationsIR HEADER name optTypeParameters `{ structFieldListIR }
+
+;;
+;;;; Derived type declarations
+;;
+
+syntax derivedTypeDeclarationIR =
+  | headerTypeDeclarationIR
+  | headerUnionDeclarationIR
+  | structTypeDeclarationIR
+  | enumDeclarationIR
+
+;;
+;;;; Typedef and newtype declarations
+;;
+
+syntax typedefDeclarationIR =
+  | optAnnotationsIR TYPEDEF typeIR name
+  ;; (TODO) disambiguate with (optAnnotations TYPEDEF typeRef name)
+  | optAnnotationsIR TYPEDEF derivedTypeDeclarationIR name PHTM_12
+  | optAnnotationsIR TYPE typeIR name
+
+;;
+;;;; Type declarations
+;;
+
+syntax typeDeclarationIR =
+  | derivedTypeDeclarationIR
+  | typedefDeclarationIR `; 
+  ;; (TODO) disambiguate with (typedefDeclaration `;)
+  | parserTypeDeclarationIR `; PHTM_13
+  ;; (TODO) disambiguate with (typedefDeclaration `;)
+  | controlTypeDeclarationIR `; PHTM_14
+  ;; (TODO) disambiguate with (typedefDeclaration `;)
+  | packageTypeDeclarationIR `; PHTM_15
+
+;;
+;;;; Declaration
+;;
+
+syntax declarationIR =
+  | constantDeclarationIR
+  | errorDeclarationIR
+  | matchKindDeclarationIR
+  | externDeclarationIR
+  | instantiationIR
+  | functionDeclarationIR
+  | actionDeclarationIR
+  | parserDeclarationIR
+  | controlDeclarationIR
+  | typeDeclarationIR
+
+;;
+;; Annotations
+;;
+
+;; Forward declarations
+
+syntax simpleAnnotationBodyIR
+
+syntax simpleAnnotationIR =
+  | `( simpleAnnotationBodyIR )
+  | annotationToken
+
+;; (TODO) Add whitespace separator as hint?
+syntax simpleAnnotationBodyIR = simpleAnnotationIR*
+
+syntax structuredAnnotationBodyIR =
+  | expressionListIR optTrailingComma
+  ;; (TODO) disambiguate with (expressionList optTrailingComma)
+  | kvListIR optTrailingComma PHTM_20
+
+syntax annotationIR =
+  | `@ name
+  | `@ name `( simpleAnnotationBodyIR )
+  | `@ name `[ structuredAnnotationBodyIR ]
+
+;; (TODO) Add whitespace separator as hint?
+syntax annotationsIR = annotationIR*
+
+syntax optAnnotationsIR = annotationsIR?
+
+;;
+;; P4 program
+;;
+
+;; (TODO) nonempty sequence with + iterator
+syntax p4programIR = declarationIR*

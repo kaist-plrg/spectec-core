@@ -1,0 +1,15 @@
+;;
+;; Function names
+;;
+;; A pair of function name and a list of parameter names,
+;; with a boolean flag indicating whether the parameter has
+;; a default value
+;;
+
+syntax funcName = name (name, bool)*
+
+;;
+;; Constructor names
+;;
+
+syntax consName = funcName

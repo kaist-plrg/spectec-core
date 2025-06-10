@@ -59,7 +59,12 @@ and string_of_typs sep typs = String.concat sep (List.map string_of_typ typs)
 
 and string_of_nottyp nottyp =
   let mixop, typs = nottyp.it in
-  string_of_mixop mixop ^ "(" ^ string_of_typs ", " typs ^ ")"
+  let len = List.length mixop + List.length typs in
+  List.init len (fun idx ->
+      if idx mod 2 = 0 then idx / 2 |> List.nth mixop |> string_of_atoms
+      else idx / 2 |> List.nth typs |> string_of_typ)
+  |> List.filter_map (fun str -> if str = "" then None else Some str)
+  |> String.concat " "
 
 and string_of_deftyp deftyp =
   match deftyp.it with
@@ -164,7 +169,7 @@ and string_of_exp exp =
   | MatchE (exp, pattern) ->
       string_of_exp exp ^ " matches " ^ string_of_pattern pattern
   | TupleE es -> "(" ^ string_of_exps ", " es ^ ")"
-  | CaseE notexp -> string_of_notexp ~typ:(Some exp.note) notexp
+  | CaseE notexp -> string_of_notexp notexp
   | StrE expfields ->
       "{"
       ^ String.concat ", "
@@ -194,14 +199,14 @@ and string_of_exp exp =
 
 and string_of_exps sep exps = String.concat sep (List.map string_of_exp exps)
 
-and string_of_notexp ?(typ = None) notexp =
+and string_of_notexp notexp =
   let mixop, exps = notexp in
-  match typ with
-  | Some typ ->
-      string_of_mixop mixop ^ "_"
-      ^ string_of_typ (typ $ no_region)
-      ^ "(" ^ string_of_exps ", " exps ^ ")"
-  | None -> string_of_mixop mixop ^ "(" ^ string_of_exps ", " exps ^ ")"
+  let len = List.length mixop + List.length exps in
+  List.init len (fun idx ->
+      if idx mod 2 = 0 then idx / 2 |> List.nth mixop |> string_of_atoms
+      else idx / 2 |> List.nth exps |> string_of_exp)
+  |> List.filter_map (fun str -> if str = "" then None else Some str)
+  |> String.concat " "
 
 and string_of_iterexp iterexp =
   let iter, vars = iterexp in
