@@ -17,7 +17,9 @@
 open Lexing
 open Context
 open Il.Ast
-(* open Parser *)
+open Xl.Atom
+open Util.Source
+open Parser
 
 exception Error of string
 
@@ -84,27 +86,66 @@ let strip_prefix s =
   assert (length > 2);
   String.sub s 2 (length - 2)
 
-let parse_int n info =
-  let value = Bigint.of_string (sanitize n) in
-  info |> ignore;
-  Number.{ tags = info; value; width_signed = None }
+let parse_int n _info =
+  let i = Bigint.of_string (sanitize n) in
+  let mixop = [ [ Atom "INT" $ no_region ]; [] ] in
+  let value_int =
+    let vid = Value.fresh () in
+    let typ = NumT `IntT in
+    NumV (`Int i) $$$ { vid; typ }
+  in
+  let value =
+    let vid = Value.fresh () in
+    let typ = VarT ("num" $ no_region, []) in
+    CaseV (mixop, [ value_int ]) $$$ { vid; typ }
+  in
+  value
 
-let parse_width_int s n info =
+let parse_width_int s n _info =
   let l_s = String.length s in
   let width = String.sub s 0 (l_s - 1) in
   let sign = String.sub s (l_s - 1) 1 in
-  let value = Bigint.of_string (sanitize n) in
-  let width_signed = match sign with
-      "s" ->
+  let i = Bigint.of_string (sanitize n) in
+  let w = Bigint.of_string width in
+  let mixop, values = match sign with
+    | "s" ->
       if (int_of_string width < 2)
       then raise (Error "signed integers must have width at least 2")
-      else Some (Bigint.of_string width, true)
+      else 
+        let mixop = [ [ Atom "FINT" $ no_region ]; []; [] ] in
+        let value_width =
+          let vid = Value.fresh () in
+          let typ = NumT `NatT in
+          NumV (`Nat w) $$$ { vid; typ }
+        in
+        let value_int =
+          let vid = Value.fresh () in
+          let typ = NumT `IntT in
+          NumV (`Int i) $$$ { vid; typ }
+        in
+        (mixop, [ value_width; value_int ])
     | "w" ->
-      Some (Bigint.of_string width, false)
-    | _ -> 
+      let mixop = [ [ Atom "FBIT" $ no_region ]; []; [] ] in
+      let value_width =
+        let vid = Value.fresh () in
+        let typ = NumT `NatT in
+        NumV (`Nat w) $$$ { vid; typ }
+      in
+      let value_int =
+        let vid = Value.fresh () in
+        let typ = NumT `IntT in
+        NumV (`Int i) $$$ { vid; typ }
+      in
+      (mixop, [ value_width; value_int ])
+    | _ ->
       raise (Error "Illegal integer constant")
   in
-  Number.{ tags = info; value; width_signed }
+      let value =
+      let vid = Value.fresh () in
+      let typ = VarT ("num" $ no_region, []) in
+      CaseV (mixop, values) $$$ { vid; typ }
+    in
+    value
 }
 
 let name = [ 'A'-'Z' 'a'-'z' '_' ] [ 'A'-'Z' 'a'-'z' '0'-'9' '_' ]*
@@ -126,9 +167,9 @@ rule tokenize = parse
       { singleline_comment lexbuf; tokenize lexbuf }
   | '\n'
       { newline lexbuf; PRAGMA_END (info lexbuf) }
-  | '"'
-      { let str, end_info = (string lexbuf) in
-        STRING_LITERAL ({tags=Source.merge (info lexbuf) end_info; str}) }
+  (* | '"' *)
+  (*     { let str, end_info = (string lexbuf) in *)
+  (*       STRING_LITERAL ({tags=Source.merge (info lexbuf) end_info; str}) } *)
   | whitespace
       { tokenize lexbuf }
   | '#'
@@ -252,7 +293,13 @@ rule tokenize = parse
   | "_"
       { DONTCARE (info lexbuf) }
   | name
-      { NAME ({ tags = info lexbuf; str = Lexing.lexeme lexbuf }) }
+      { let text = Lexing.lexeme lexbuf in
+        let value =
+          let vid = Value.fresh () in
+          let typ = Il.Ast.TextT in
+          TextV text $$$ { vid; typ }
+        in
+        NAME value }
   | "<="
       { LE (info lexbuf) }
   | ">="
@@ -334,7 +381,13 @@ rule tokenize = parse
   | eof
       { END (info lexbuf) }
   | _
-      { UNEXPECTED_TOKEN({ tags = info lexbuf; str = lexeme lexbuf }) }
+      { let text = lexeme lexbuf in
+        let value =
+          let vid = Value.fresh () in
+          let typ = Il.Ast.TextT in
+          TextV text $$$ { vid; typ }
+        in
+        UNEXPECTED_TOKEN value }
       
 and string = parse
   | eof
@@ -430,8 +483,9 @@ let rec lexer (lexbuf:lexbuf): token =
       | PRAGMA_END _ -> 
         lexer_state := SRegular;
         lexer lexbuf
-      | NAME id as token ->
-        lexer_state := SIdent (id, SRegular);
+      | NAME value as token ->
+        let text = Value.get_text value in
+        lexer_state := SIdent (text, SRegular);
         token          
       | token -> 
         lexer_state := SRegular;
@@ -439,8 +493,9 @@ let rec lexer (lexbuf:lexbuf): token =
       end
     | SRegular ->
       begin match tokenize lexbuf with
-      | NAME id as token ->
-        lexer_state := SIdent (id, SRegular);
+      | NAME value as token ->
+        let text = Value.get_text value in
+        lexer_state := SIdent (text, SRegular);
         token
       | PRAGMA _ as token ->
         lexer_state := SPragma;
@@ -457,8 +512,9 @@ let rec lexer (lexbuf:lexbuf): token =
     | STemplate ->
       begin match tokenize lexbuf with
       | L_ANGLE info -> L_ANGLE_ARGS info
-      | NAME id as token ->
-        lexer_state := SIdent (id, SRegular);
+      | NAME value as token ->
+        let text = Value.get_text value in
+        lexer_state := SIdent (text, SRegular);
         token
       | PRAGMA _ as token ->
         lexer_state := SPragma;
@@ -476,8 +532,9 @@ let rec lexer (lexbuf:lexbuf): token =
       | PRAGMA_END _info as token -> 
          lexer_state := SRegular;
          token
-      | NAME id as token -> 
-         lexer_state := SIdent(id, SPragma);
+      | NAME value as token ->
+         let text = Value.get_text value in
+         lexer_state := SIdent(text, SPragma);
          token
       | token -> token
       end

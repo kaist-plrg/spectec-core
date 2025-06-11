@@ -1,11 +1,11 @@
 (library
  (name parsing)
  (libraries util domain xl il)
- (modules source context lexer))
+ (modules source context parser value lexer))
 
 (ocamllex
  (modules lexer))
 
-; (menhir
-;  (modules parser)
-;  (flags --explain))
+(menhir
+ (modules parser)
+ (flags --explain))
