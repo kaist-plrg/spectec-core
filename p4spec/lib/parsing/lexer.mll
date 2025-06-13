@@ -167,9 +167,11 @@ rule tokenize = parse
       { singleline_comment lexbuf; tokenize lexbuf }
   | '\n'
       { newline lexbuf; PRAGMA_END (info lexbuf) }
-  (* | '"' *)
-  (*     { let str, end_info = (string lexbuf) in *)
-  (*       STRING_LITERAL ({tags=Source.merge (info lexbuf) end_info; str}) } *)
+  | '"'
+      { let str, end_info = (string lexbuf) in
+        end_info |> ignore;
+        TextV str $$$ { vid = Value.fresh (); typ = TextT }
+      }
   | whitespace
       { tokenize lexbuf }
   | '#'
