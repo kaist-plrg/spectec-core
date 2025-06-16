@@ -443,13 +443,13 @@ typeOrVoid:
 
 (* TODO: listify *)
 typeParameterList:
-| names = separated_nonempty_list(COMMA, name)
+      | names = separated_nonempty_list(COMMA, name) { declare_types names }
 ;
 typeParameters:
-| info_l = l_angle typeParameterList info_r = r_angle
+| info_l = l_angle type_params = typeParameterList info_r = r_angle
     { let tags = Source.merge info_l info_r in
       tags |> ignore;
-      [ Term "<"; NT typeParameterList; Term ">" ]
+      [ Term "<"; NT type_params; Term ">" ]
       |> wrap_case_v 
       |> with_typ (wrap_var_t "typeParameters") }
 ;
@@ -709,38 +709,36 @@ expression:
 (* TODO: convert *)
 expressionList:
 | exprs = separated_list(COMMA, expression)
-    { exprs }
+    { let typ = wrap_var_t "expression" |> wrap_iter_t List in
+      ListV exprs |> with_typ typ }
 ;
 
-(* TODO: convert *)
 simpleKeysetExpression:
 | expr = expression
-    { let tags = Expression.tags expr in
-      Match.Expression { tags; expr } }
-| info = DONTCARE
-    { Match.DontCare { tags = info } }
-| info = DEFAULT
-    { Match.Default { tags = info } }
+    { [ NT expr ] |> wrap_case_v |> with_typ (wrap_var_t "simpleKeysetExpression") }
 | expr = expression MASK mask = expression
-    { let tags = Source.merge (Expression.tags expr) (Expression.tags mask) in
-      Match.Expression { tags; expr = Expression.Mask { tags; expr; mask } } }
+    { [ NT expr; Term "&&&"; NT mask ] |> wrap_case_v |> with_typ (wrap_var_t "simpleKeysetExpression") }
 | lo = expression RANGE hi = expression
-    { let tags = Source.merge (Expression.tags lo) (Expression.tags hi) in
-      Match.Expression { tags; expr = Expression.Range { tags; lo; hi } } }
+    { [ NT lo; Term ".."; NT hi ] |> wrap_case_v |> with_typ (wrap_var_t "simpleKeysetExpression") }
+| info = DONTCARE
+    { info |> ignore;
+      [ Term "_" ] |> wrap_case_v |> with_typ (wrap_var_t "simpleKeysetExpression") }
+| info = DEFAULT
+    { info |> ignore;
+      [ Term "default" ] |> wrap_case_v |> with_typ (wrap_var_t "simpleKeysetExpression") }
 ;
 
-(* TODO: convert *)
 reducedSimpleKeysetExpression:
-| info = DONTCARE
-    { Match.DontCare { tags = info } }
-| info = DEFAULT
-    { Match.Default { tags = info } }
 | expr = expression MASK mask = expression
-    { let tags = Source.merge (Expression.tags expr) (Expression.tags mask) in
-      Match.Expression { tags; expr = Expression.Mask { tags; expr; mask } } }
+    { [ NT expr; Term "&&&"; NT mask ] |> wrap_case_v |> with_typ (wrap_var_t "reducedSimpleKeysetExpression") }
 | lo = expression RANGE hi = expression
-    { let tags = Source.merge (Expression.tags lo) (Expression.tags hi) in
-      Match.Expression { tags; expr = Expression.Range { tags; lo; hi } } }
+    { [ NT lo; Term ".."; NT hi ] |> wrap_case_v |> with_typ (wrap_var_t "reducedSimpleKeysetExpression") }
+| info = DONTCARE
+    { info |> ignore;
+      [ Term "_" ] |> wrap_case_v |> with_typ (wrap_var_t "reducedSimpleKeysetExpression") }
+| info = DEFAULT
+    { info |> ignore;
+      [ Term "default" ] |> wrap_case_v |> with_typ (wrap_var_t "reducedSimpleKeysetExpression") }
 ;
 
 (* TODO: convert *)
@@ -749,34 +747,39 @@ reducedSimpleKeysetExpression:
 (* TODO: convert *)
 tupleKeysetExpression:
 | L_PAREN exprs = separated_atLeastTwo_list(COMMA, simpleKeysetExpression) R_PAREN
-    { exprs }
+    { let typ = wrap_var_t "simpleKeysetExpression" |> wrap_iter_t List in
+      ListV exprs |> with_typ typ }
 | L_PAREN expr = reducedSimpleKeysetExpression R_PAREN
-    { [ expr ] }
+    { let typ = wrap_var_t "reducedSimpleKeysetExpression" |> wrap_iter_t List in
+      ListV [expr] |> with_typ typ }
 ;
 
 (* TODO: convert *)
 keysetExpression:
 | exprs = tupleKeysetExpression
     { exprs }
-| expr  = simpleKeysetExpression
-    { [ expr ] }
+| expr = simpleKeysetExpression
+    { let typ = wrap_var_t "simpleKeysetExpression" |> wrap_iter_t List in
+      ListV [expr] |> with_typ typ }
+;
 
 (* TODO: convert *)
 %inline kvPair:
 | key = name ASSIGN value = expression 
-    { let tags = Source.merge (Text.tags key) (Expression.tags value) in
-      KeyValue.{ tags; key; value } }
+    { [ NT key; Term "="; NT value ] |> wrap_case_v |> with_typ (wrap_var_t "kvPair") }
+;
 
+kvTrailingList:
+| kvs = separated_nonempty_trailing_list(COMMA, kvPair)
+    { let typ = wrap_var_t "kvPair" |> wrap_iter_t List in
+      ListV kvs |> with_typ typ }
+;
 
-(* kvTrailingList: *)
-(* | kvs = separated_nonempty_trailing_list(COMMA, kvPair) *)
-(*     { kvs } *)
-(* ; *)
-(**)
-(* kvOptTrailingList: *)
-(* | kvs = separated_nonempty_opt_trailing_list(COMMA, kvPair) *)
-(*     { kvs } *)
-(* ; *)
+kvOptTrailingList:
+| kvs = separated_nonempty_opt_trailing_list(COMMA, kvPair)
+    { let typ = wrap_var_t "kvPair" |> wrap_iter_t List in
+      ListV kvs |> with_typ typ }
+;
 
 (******** Type arguments ********)
 
@@ -785,7 +788,7 @@ realTypeArg:
     { [ NT typeRef ] |> wrap_case_v |> with_typ (wrap_var_t "realTypeArg") }
 | info = VOID
     { info |> ignore;
-      [ Term "VOID" ] |> wrap_case_v |> with_typ (wrap_var_t "realTypeArg") }
+      [ Term "void" ] |> wrap_case_v |> with_typ (wrap_var_t "realTypeArg") }
 | info = DONTCARE
     { info |> ignore;
       [ Term "_" ] |> wrap_case_v |> with_typ (wrap_var_t "realTypeArg") }
@@ -806,7 +809,7 @@ typeArg:
     { [ NT nonTypeName ] |> wrap_case_v |> with_typ (wrap_var_t "typeArg") }
 | info = VOID
     { info |> ignore;
-      [ Term "VOID" ] |> wrap_case_v |> with_typ (wrap_var_t "typeArg") }
+      [ Term "void" ] |> wrap_case_v |> with_typ (wrap_var_t "typeArg") }
 | info = DONTCARE
     { info |> ignore;
       [ Term "_" ] |> wrap_case_v |> with_typ (wrap_var_t "typeArg") }
@@ -814,7 +817,8 @@ typeArg:
 
 typeArgumentList:
 | ts = separated_list(COMMA, typeArg)
-    { [ NT ts ] |> wrap_case_v |> with_typ (wrap_var_t "typeArgumentList") }
+    { let typ = wrap_var_t "typeArg" |> wrap_iter_t List in
+      ListV ts |> with_typ typ }
 ;
 
 (******** Arguments ********)
@@ -832,8 +836,9 @@ argument:
       [ NT name; Term "="; Term "_" ] |> wrap_case_v |> with_typ (wrap_var_t "argument") }
 ;
 argumentList: 
-  args = separated_list(COMMA, argument)
-    { [ NT args ] |> wrap_case_v |> with_typ (wrap_var_t "argumentList") }
+| args = separated_list(COMMA, argument)
+    { let typ = wrap_var_t "argument" |> wrap_iter_t List in
+      ListV args |> with_typ typ }
 ;
 (******** L-values ********)
 (** TODO **)
@@ -841,22 +846,19 @@ argumentList:
 lvalue:
 | prefixedNonTypeName = prefixedNonTypeName
     { [ NT prefixedNonTypeName ] |> wrap_case_v |> with_typ (wrap_var_t "lvalue") }
-(* TODO: convert *)
-| info1 = THIS
-    { let name = Text.{ tags = info1; str = "this" } in
-      let tags = Text.tags name in
-      Expression.Name { tags; name = BareName name } }
+| info = THIS
+    { info |> ignore;
+      [ Term "this" ] |> wrap_case_v |> with_typ (wrap_var_t "lvalue") }
 | expr = lvalue DOT name = member
-    { let tags = Source.merge (Expression.tags expr) (Text.tags name) in
-      Expression.ExpressionMember { tags; expr; name } }
+    { [ NT expr; Term "."; NT name ] |> wrap_case_v |> with_typ (wrap_var_t "lvalue") }
 | array = lvalue L_BRACKET index = expression info2 = R_BRACKET
-    { let tags = Source.merge (Expression.tags array) info2 in
-      Expression.ArrayAccess { tags; array; index } }
+    { info2 |> ignore;
+      [ NT array; Term "["; NT index; Term "]" ] |> wrap_case_v |> with_typ (wrap_var_t "lvalue") }
 | bits = lvalue L_BRACKET hi = expression COLON lo = expression info2 = R_BRACKET
-    { let tags = Source.merge (Expression.tags bits) info2 in
-      Expression.BitStringAccess { tags; bits; lo; hi } }
+    { info2 |> ignore;
+      [ NT bits; Term "["; NT hi; Term ":"; NT lo; Term "]" ] |> wrap_case_v |> with_typ (wrap_var_t "lvalue") }
 | L_PAREN expr = lvalue R_PAREN
-    { expr }
+    { [ Term "("; NT expr; Term ")" ] |> wrap_case_v |> with_typ (wrap_var_t "lvalue") }
 ;
 
 (******** Variable and constant declarations ********)
@@ -868,7 +870,9 @@ initialValue:
 ;
 
 optInitializer: 
-  | opt = option(initialValue) { opt }
+| opt = option(initialValue) 
+    {  let typ = value.note.typ |> wrap_iter_t Option in
+      OptV opt |> with_typ typ }
 ;
 (* Pert4 X / Spec O *)
 variableDeclarationWithoutSemicolon:
@@ -897,26 +901,23 @@ constantDeclaration:
   info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
-      [ NT optAnnotations; Term "const"; NT typeRef; NT name; NT init; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "constantDeclaration")
-    }
+      [ NT optAnnotations; Term "const"; NT typeRef; NT name; NT init; Term ";" ] 
+      |> wrap_case_v |> with_typ (wrap_var_t "constantDeclaration") }
 ;
 
 (******** Statements ********)
 
 (* Petr4 X / Spec O *)
-(* TODO: convert *)
 assignmentOrMethodCallStatementWithoutSemicolon:
 | func = lvalue L_PAREN args = argumentList R_PAREN
-    { let type_args = [] in
-      let tags = Source.merge (Expression.tags func) info2 in 
-      Statement.MethodCall { tags; func; type_args; args } }
+    { [ NT func; Term "("; NT args; Term ")" ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
 | func = lvalue l_angle type_args = typeArgumentList r_angle
     L_PAREN args = argumentList R_PAREN
-    { let tags = Source.merge (Expression.tags func) info2 in
-      Statement.MethodCall { tags; func; type_args; args } }
+    { [ NT func; Term "<"; NT type_args; Term ">"; Term "("; NT args; Term ")" ] 
+      |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
+(* TODO: disambiguate different assignment operators *)
 | lhs = lvalue ASSIGN rhs = expression
-    { let tags = Source.merge (Expression.tags lhs) info2 in 
-      Statement.Assignment { tags; lhs; rhs } }
+    { [ NT lhs; Term "="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
 ;
 
 assignmentOrMethodCallStatement:
@@ -934,18 +935,16 @@ directApplication:
       |> wrap_case_v |> with_typ (wrap_var_t "directApplication") }
 ;
 
-(* TODO: convert *)
 conditionalStatement:
+| info1 = IF L_PAREN cond = expression R_PAREN tru = statement %prec THEN
+    { info1 |> ignore;
+      [ Term "if"; Term "("; NT cond; Term ")"; NT tru ]
+      |> wrap_case_v |> with_typ (wrap_var_t "conditionalStatement") }
 | info1 = IF L_PAREN cond = expression R_PAREN tru = statement ELSE fls = statement
-    { let info2 = Statement.tags fls in
-      let fls = Some fls in
-      let tags = Source.merge info1 info2 in
-      Statement.Conditional { tags; cond; tru; fls } }
-| info1 = IF L_PAREN cond = expression R_PAREN tru = statement   %prec THEN
-    { let fls = None in
-      let tags = Source.merge info1 (Statement.tags tru) in
-      Statement.Conditional { tags; cond; tru; fls } }
-
+    { info1 |> ignore;
+      [ Term "if"; Term "("; NT cond; Term ")"; NT tru; Term "else"; NT fls ]
+      |> wrap_case_v |> with_typ (wrap_var_t "conditionalStatement") }
+;
 
 (* TODO: convert *)
 emptyStatement:
@@ -953,25 +952,27 @@ emptyStatement:
     { Statement.EmptyStatement { tags = info } }
 ;
 
-(* TODO: convert *)
 blockStatement:
 | annotations = optAnnotations
   info1 = L_BRACE
   push_scope
-  statements = list(statementOrDeclaration) info2 = R_BRACE
+  statements = statOrDeclList info2 = R_BRACE
   pop_scope
     { let tags = Source.merge info1 info2 in 
-      Block.{ tags; annotations; statements } }
+      tags |> ignore;
+      [ NT annotations; Term "{"; NT statements; Term "}" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "blockStatement") }
 ;
 
-(* TODO: convert *)
 returnStatement:
 | info1 = RETURN info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in 
-      Statement.Return { tags; expr = None } }
+      tags |> ignore;
+      [ Term "return"; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "returnStatement") }
 | info1 = RETURN expr = expression info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in
-      Statement.Return { tags; expr = Some expr } }
+      tags |> ignore;
+      [ Term "return"; NT expr; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "returnStatement") }
 ;
 
 (* Petr4 X / Spec O *)
@@ -998,69 +999,521 @@ exitStatement:
 ;
 
 
+switchLabel:
+| info = DEFAULT
+    { info |> ignore;
+      [ Term "default" ] |> wrap_case_v |> with_typ (wrap_var_t "switchLabel") }
+| expr = nonBraceExpression
+    { [ NT expr ] |> wrap_case_v |> with_typ (wrap_var_t "switchLabel") }
+;
+
+switchCase:
+| label = switchLabel COLON code = blockStatement
+    { [ NT label; Term ":"; NT code ] |> wrap_case_v |> with_typ (wrap_var_t "switchCase") }
+| label = switchLabel info2 = COLON
+    { info2 |> ignore;
+      [ NT label; Term ":" ] |> wrap_case_v |> with_typ (wrap_var_t "switchCase") }
+;
+
+switchCases: 
+| cases = list(switchCase) 
+    { let typ = switchCase.note.typ |> wrap_iter_t List in
+      ListV cases |> with_typ typ }
+;
+
+(* TODO: convert *)
+switchStatement:
+| info1 = SWITCH
+  L_PAREN expr = expression R_PAREN
+  L_BRACE cases = switchCases info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ Term "switch"; Term "("; NT expr; Term ")"; Term "{"; NT cases; Term "}" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "switchStatement") }
+;
+
+(* Petr4 X / Spec O whole for statement missing *)
+declOrAssignmentOrMethodCallStatement:
+| variableDeclarationWithoutSemicolon = variableDeclarationWithoutSemicolon
+    { [ NT variableDeclarationWithoutSemicolon ]
+      |> wrap_case_v |> with_typ (wrap_var_t "declOrAssignmentOrMethodCallStatement") }
+| assignmentOrMethodCallStatementWithoutSemicolon = assignmentOrMethodCallStatementWithoutSemicolon
+    { [ NT assignmentOrMethodCallStatementWithoutSemicolon ]
+      |> wrap_case_v |> with_typ (wrap_var_t "declOrAssignmentOrMethodCallStatement") }
+;
+
+  forInitStatementNonEmpty:
+| ls = separated_nonempty_list(COMMA, declOrAssignmentOrMethodCallStatement)
+    { let typ = wrap_var_t "declOrAssignmentOrMethodCallStatement" |> wrap_iter_t List in
+      ListV ls |> with_typ typ }
+  ;
+forInitStatements:
+| ls = separated_list(COMMA, declOrAssignmentOrMethodCallStatement)
+    { let typ = wrap_var_t "declOrAssignmentOrMethodCallStatement" |> wrap_iter_t List in
+      ListV ls |> with_typ typ }
+  ;
+forUpdateStatementsNonEmpty:
+| assignments = separated_nonempty_list(COMMA, assignmentOrMethodCallStatement)
+    { let typ = wrap_var_t "assignmentOrMethodCallStatement" |> wrap_iter_t List in
+      ListV assignments |> with_typ typ }
+;
+    
+forUpdateStatements:
+| assignments = separated_list(COMMA, assignmentOrMethodCallStatement)
+    { assignments }
+
+forCollectionExpr:
+| expr = expression
+    { [ NT expr ] |> wrap_case_v |> with_typ (wrap_var_t "forCollectionExpr") }
+| expr_l = expression DOTDOT expr_r = expression
+    { [ NT expr_l; Term ".."; NT expr_r ]
+      |> wrap_case_v |> with_typ (wrap_var_t "forCollectionExpr") }
+;
+
+forStatement:
+| anno = optAnnotations
+  info1 = FOR
+  L_PAREN init = forInitStatements SEMICOLON cond = expression SEMICOLON update = forUpdateStatements R_PAREN
+  body = statement
+    { [ NT anno; Term "for"; Term "("; NT init; Term ";"; NT cond; Term ";"; NT update; Term ")"; NT body ]
+      |> wrap_case_v |> with_typ (wrap_var_t "forStatement") }
+| anno = optAnnotations info1 = FOR L_PAREN
+    typ = typeRef name = name IN collection = forCollectionExpr R_PAREN body = statement
+    { [ NT anno; Term "for"; Term "("; NT typ; NT name; Term "in"; NT collection; Term ")"; NT body ]
+      |> wrap_case_v |> with_typ (wrap_var_t "forStatement") }
+| anno = optAnnotations info1 = FOR L_PAREN
+    anno_in = optAnnotations typ = typeRef name = name IN 
+    collection = forCollectionExpr R_PAREN body = statement
+    { [ NT anno; Term "for"; Term "("; NT anno_in; NT typ; NT name; Term "in"; NT collection; Term ")"; NT body ]
+      |> wrap_case_v |> with_typ (wrap_var_t "forStatement") }
+;
+
+statement:
+| stmt = assignmentOrMethodCallStatement
+| stmt = directApplication
+| stmt = conditionalStatement
+| stmt = emptyStatement
+| stmt = blockStatement
+| stmt = returnStatement
+| stmt = breakStatement
+| stmt = continueStatement
+| stmt = exitStatement
+| stmt = switchStatement
+| stmt = forStatement
+    { [ NT stmt ] |> wrap_case_v |> with_typ (wrap_var_t "statement") }
+;
+
+statementOrDeclaration:
+| variableDeclaration = variableDeclaration
+    { [ NT variableDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "statementOrDeclaration") }
+| constantDeclaration = constantDeclaration
+    { [ NT constantDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "statementOrDeclaration") }
+| statement = statement
+    { [ NT statement ] |> wrap_case_v |> with_typ (wrap_var_t "statementOrDeclaration") }
+;
+
+statOrDeclList:
+| list(statementOrDeclaration)
+    { let typ = wrap_var_t "statementOrDeclaration" |> wrap_iter_t List in
+      ListV (List.map (fun x -> x) s) |> with_typ typ }
+
 
 (******** Annotations ********)
-(** TODO **)
+(* TODO: optional *)
+%inline optAnnotations:
+| (* empty *)
+    { [ Term "empty" ] |> wrap_case_v |> with_typ (wrap_var_t "optAnnotations") }
+| annos = nonempty_list(annotation)
+    { let typ = wrap_var_t "annotation" |> wrap_iter_t List in
+      ListV annos |> with_typ typ }
+;
 
+annotations:
+| annos = nonempty_list(annotation)
+    { let typ = wrap_var_t "annotation" |> wrap_iter_t List in
+      ListV annos |> with_typ typ }
+;
 
+(* TODO: compare with Petr4 *)
+annotation:
+| info1 = AT name = name
+    { let tags = Source.merge info1 (Text.tags name) in
+      tags |> ignore;
+      [ Term "@"; NT name ] |> wrap_case_v |> with_typ (wrap_var_t "annotation") }
+| info1 = AT name = name L_PAREN body = simpleAnnotationBody R_PAREN
+    { info1 |> ignore;
+      [ Term "@"; NT name; Term "("; NT body; Term ")" ] |> wrap_case_v |> with_typ (wrap_var_t "annotation") }
+| info1 = AT name = name L_BRACKET body = structuredAnnotationBody R_BRACKET
+    { info1 |> ignore;
+      [ Term "@"; NT name; Term "["; NT body; Term "]" ] |> wrap_case_v |> with_typ (wrap_var_t "annotation") }
+;
 
+(******** Error and match kind declarations ********)
+
+matchKindDeclaration:
+| info1 = MATCH_KIND L_BRACE ids = identifierList comma = optTrailingComma info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ Term "MATCH_KIND"; Term "{"; NT ids; NT comma; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "matchKindDeclaration") }
+;
+
+errorDeclaration:
+| info1 = ERROR L_BRACE ids = identifierList info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ Term "ERROR"; Term "{"; NT ids; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "errorDeclaration") }
+;
 
 (******** Extern declarations ********)
 
-(* externDeclaration: *)
-(* | optAnnotations = optAnnotations *)
-(*   info1 = EXTERN *)
-(*   nonTypeName = externName (* TODO: -> nonTypeName *) *)
-(*   optTypeParameters = optTypeParameters *)
-(*   L_BRACE *)
-(*   methodPrototypes = list(methodPrototype) *)
-(*   info2 = R_BRACE *)
-(*   pop_scope *)
-(*     { let tags = Source.merge info1 info2 |> Source.merge info3 |> Source.merge info4 in *)
-(*       tags |> ignore; *)
-(*       (* []; ["EXTERN"]; []; ["{"]; ["}"] *) *)
-(*       wrap_case_v [ optAnnotations; term "EXTERN"; nonTypeName; optTypeParameters; term "{"; methodPrototypes; term "}" ] *)
-(*           |> with_typ (wrap_var_t "declaration") *)
-(*     } *)
-(* | optAnnotations = optAnnotations *)
-(*   info1 = EXTERN *)
-(*   functionPrototype = functionPrototype *)
-(*   pop_scope *)
-(*   info2 = SEMICOLON *)
-(*     { let tags = Source.merge info1 info2 in *)
-(*       tags |> ignore; *)
-(*       let mixop = [ []; [ wrap_atom "EXTERN" ]; [ wrap_atom ";" ] ] in *)
-(*       CaseV (mixop, [ optAnnotations; functionPrototype ]) *)
-(*           |> with_typ (wrap_var_t "declaration") *)
-(*     } *)
-(* ; *)
+functionPrototype:
+| typeOrVoid = typeOrVoid name = name
+    push_scope
+    optTypeParameters = optTypeParameters
+    L_PAREN params = parameterList info2 = R_PAREN
+    { info2 |> ignore;
+      [ NT typeOrVoid; NT name; NT optTypeParameters; Term "("; NT params; Term ")" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "functionPrototype") }
+;
 
-(******** Declarations ********)
-declaration:
-| c = constantDeclaration
-    { declare_var (name_of_declaration c) (has_typ_params_declaration c);
-      c }
-(* TODO: remove expressionStatement *)
-| e = expressionStatement
-    { e }
-(* | e = errorDeclaration *)
-(*     { e } *)
-(* | m = matchKindDeclaration *)
-(*     { m } *)
-(* | e = externDeclaration *)
-(*     { e } *)
-(* | i = instantiation *)
-(*     { i } *)
-(* | f = functionDeclaration *)
-(*     { f } *)
-(* | a = actionDeclaration *)
-(*     { a } *)
-(* | p = parserDeclaration *)
-(*     { p } *)
-(* | c = controlDeclaration *)
-(*     { c } *)
-(* | t = typeDeclaration *)
-(*     { t } *)
+methodPrototype:
+| anno = optAnnotations proto = functionPrototype pop_scope info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT anno; NT proto; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "methodPrototype") }
+| anno = optAnnotations info1 = ABSTRACT proto = functionPrototype
+    pop_scope info2 = SEMICOLON
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "abstract"; NT proto; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "methodPrototype") }
+(* Petr4: alias methodName in place of typeIdentifier *)
+| anno = optAnnotations tid = typeIdentifier L_PAREN params = parameterList info2 = R_PAREN
+    { info2 |> ignore;
+      [ NT anno; NT tid; Term "("; NT params; Term ")"; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "methodPrototype") }
+;
+
+methodPrototypes:
+| protos = list(methodPrototype)
+    { let typ = wrap_var_t "methodPrototype" |> wrap_iter_t List in
+      ListV protos |> with_typ typ }
+;
+
+externDeclaration:
+(* TODO: nonTypeName -> invoke push_externName *)
+| anno = optAnnotations info1 = EXTERN name = nonTypeName type_params = optTypeParameters
+    L_BRACE protos = methodPrototypes info2 = R_BRACE pop_scope
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "extern"; NT name; NT optTypeParams; Term "{"; NT protos; Term "}" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "externDeclaration") }
+| anno = optAnnotations info1 = EXTERN proto = functionPrototype pop_scope info2 = SEMICOLON
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "extern"; NT proto; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "externDeclaration") }
+;
+
+(******** Function declarations ********)
+
+functionDeclaration:
+| optAnnotations = optAnnotations functionPrototype = functionPrototype body = blockStatement pop_scope
+    { [ NT optAnnotations; NT functionPrototype; NT body ] |> wrap_case_v |> with_typ (wrap_var_t "functionDeclaration") }
+;
+
+(******** Instantiations ********)
+
+(* Petr4: ASSIGN kept outside *)
+objInitializer:
+| ASSIGN L_BRACE decls = objDeclarations info2 = R_BRACE
+    { info2 |> ignore;
+      [ Term "="; Term "{"; NT decls; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "objInitializer") }
+;
+
+instantiation:
+| anno = optAnnotations typ = typeRef L_PAREN args = argumentList R_PAREN name = name info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT anno; NT typ; Term "("; NT args; Term ")"; NT name; Term ";" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "instantiation") }
+| anno = optAnnotations typ = typeRef L_PAREN args = argumentList R_PAREN name = name init = objInitializer info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT anno; NT typ; Term "("; NT args; Term ")"; NT name; NT init; Term ";" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "instantiation") }
+;
+
+objDeclaration:
+| functionDeclaration = functionDeclaration
+    { [ NT functionDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "objDeclaration") }
+| instantiation = instantiation
+    { [ NT instantiation ] |> wrap_case_v |> with_typ (wrap_var_t "objDeclaration") }
+;
+
+objDeclarations:
+| decls = list(objDeclaration)
+    { let typ = wrap_var_t "objDeclaration" |> wrap_iter_t List in
+      ListV decls |> with_typ typ }
+;
+
+(******** Action declarations ********)
+
+actionDeclaration:
+| anno = optAnnotations info1 = ACTION name = name L_PAREN params = parameterList R_PAREN body = blockStatement
+    { info1 |> ignore;
+      [ NT anno; Term "action"; NT name; Term "("; NT params; Term ")"; NT body ]
+      |> wrap_case_v |> with_typ (wrap_var_t "actionDeclaration") }
+;
+
+(******** Table declarations ********)
+
+keyElement:
+| key = expression COLON match_kind = name anno = optAnnotations info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT key; Term ":"; NT match_kind; NT anno; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "keyElement") }
+;
+
+keyElementList:
+| elements = list(keyElement)
+    { let typ = wrap_var_t "keyElement" |> wrap_iter_t List in
+      ListV elements |> with_typ typ }
+;
+
+(* Petr4: contains optAnnotations, name = name *)
+actionRef:
+| name = prefixedNonTypeName
+    { [ NT name ] |> wrap_case_v |> with_typ (wrap_var_t "actionRef") }
+| name = prefixedNonTypeName L_PAREN args = argumentList R_PAREN
+    { [ NT name; Term "("; NT args; Term ")" ] |> wrap_case_v |> with_typ (wrap_var_t "actionRef") }
+;
+
+(* Petr4 X / Spec O *)
+action:
+| optAnnotations = optAnnotations actionRef = actionRef info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT optAnnotations; NT actionRef; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "action") }
+;
+
+actionList:
+| (* empty *) { [ ] }
+| actions = separated_nonempty_list_aux(SEMICOLON, action)
+    { let typ = wrap_var_t "action" |> wrap_iter_t List in
+      ListV actions |> with_typ typ }
+;
+
+entryPriority:
+| PRIORITY ASSIGN num = number COLON
+    { [ Term "priority"; Term "="; NT num; Term ":" ] |> wrap_case_v |> with_typ (wrap_var_t "entryPriority") }
+| PRIORITY ASSIGN L_PAREN expr = expression R_PAREN COLON
+    { [ Term "priority"; Term "="; Term "("; NT expr; Term ")"; Term ":" ] |> wrap_case_v |> with_typ (wrap_var_t "entryPriority") }
+;
+
+entry:
+| optConst = optCONST prio = entryPriority keyset = keysetExpression COLON actionRef = actionRef anno = optAnnotations info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT optConst; NT prio; NT keyset; Term ":"; NT actionRef; NT anno; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "entry") }
+| optConst = optCONST keyset = keysetExpression COLON actions = actionList anno = optAnnotations info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT optConst; NT keyset; Term ":"; NT actions; NT anno; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "entry") }
+;
+
+entriesList:
+| entries = list(entry)
+    { let typ = wrap_var_t "entry" |> wrap_iter_t List in
+      ListV entries |> with_typ typ }
+;
+
+tableProperty:
+| info1 = KEY ASSIGN L_BRACE keys = keyElementList info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ Term "key"; Term "="; Term "{"; NT keys; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "tableProperty") }
+| info1 = ACTIONS ASSIGN L_BRACE actions = actionList info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ Term "actions"; Term "="; Term "{"; NT actions; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "tableProperty") }
+| anno = optAnnotations optConst = optCONST info1 = ENTRIES ASSIGN L_BRACE entries = entriesList info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; NT optConst; Term "ENTRIES"; Term "="; Term "{"; NT entries; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "tableProperty") }
+| anno = optAnnotations optConst = optCONST name = nonTableKwName init = initializer info2 = SEMICOLON
+    { let tags = Source.merge (Type.tags init) info2 in
+      tags |> ignore;
+      [ NT anno; NT optConst; NT name; NT init; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "tableProperty") }
+;
+
+tablePropertyList:
+| properties = list(tableProperty)
+    { let typ = wrap_var_t "tableProperty" |> wrap_iter_t List in
+      ListV properties |> with_typ typ }
+;
+
+tableDeclaration:
+| anno = optAnnotations info1 = TABLE name = name L_BRACE props = tablePropertyList info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "table"; NT name; Term "{"; NT props; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "tableDeclaration") }
+;
+
+(******** Control and control type declarations ********)
+
+controlBody:
+| body = blockStatement
+    { [ NT body ] |> wrap_case_v |> with_typ (wrap_var_t "controlBody") }
+;
+
+controlLocalDeclaration:
+| const = constantDeclaration
+    { [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
+| action = actionDeclaration
+    { declare_var (name_of_declaration action) false;
+      [ NT action ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
+| table = tableDeclaration
+    { declare_var (name_of_declaration table) false;
+        [ NT table ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
+| inst = instantiation
+    { [ NT inst ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
+| var = variableDeclaration
+    { [ NT var ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
+;
+
+controlLocalDeclarations:
+| decls = list(controlLocalDeclaration)
+    { let typ = wrap_var_t "controlLocalDeclaration" |> wrap_iter_t List in
+      ListV decls |> with_typ typ }
+;
+
+controlTypeDeclaration:
+(* TODO: name to push_name *)
+| anno = optAnnotations info1 = CONTROL name = name type_params = optTypeParameters
+    L_PAREN params = parameterList info2 = R_PAREN
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "control"; NT name; NT type_params; Term "("; NT params; Term ")" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "controlTypeDeclaration") }
+;
+
+controlDeclaration:
+| controlTypeDeclaration = controlTypeDeclaration optConstructorParameters = optConstructorParameters
+    L_BRACE locals = controlLocalDeclarations APPLY apply = controlBody info2 = R_BRACE pop_scope
+    { let tags = Source.merge (Type.tags controlTypeDeclaration) info2 in
+      tags |> ignore; 
+      [ NT controlTypeDeclaration; NT optConstructorParameters; Term "{"; NT locals; Term "apply"; NT apply; Term "}" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "controlDeclaration") }
+;
+
+(******** Value set declarations ********)
+
+valueSetDeclaration:
+| anno = optAnnotations info1 = VALUESET l_angle base = baseType r_angle
+    L_PAREN size = expression R_PAREN name = name info2 = SEMICOLON
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "value_set"; Term "<"; NT base; Term ">"; Term "("; NT size; Term ")"; NT name; Term ";" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "valueSetDeclaration") }
+| anno = optAnnotations info1 = VALUESET l_angle tuple = tupleType r_angle
+    L_PAREN size = expression R_PAREN name = name info2 = SEMICOLON
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "value_set"; Term "<"; NT tuple; Term ">"; Term "("; NT size; Term ")"; NT name; Term ";"; Term "PHTM_17"]
+      |> wrap_case_v |> with_typ (wrap_var_t "valueSetDeclaration") }
+| anno = optAnnotations info1 = VALUESET l_angle typeName = typeName r_angle
+    L_PAREN size = expression R_PAREN name = name info2 = SEMICOLON
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "value_set"; Term "<"; NT typeName; Term ">"; Term "("; NT size; Term ")"; NT name; Term ";"; Term "PHTM_18"]
+      |> wrap_case_v |> with_typ (wrap_var_t "valueSetDeclaration") }
+;
+
+(******** Select expressions ********)
+
+selectCase:
+| keysetExpression = keysetExpression COLON name = name info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT keysetExpression; Term ":"; NT name; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "selectCase") }
+;
+
+selectCaseList:
+| cases = list(selectCase)
+    { let typ = wrap_var_t "selectCase" |> wrap_iter_t List in
+      ListV cases |> with_typ typ }
+;
+
+selectExpression:
+| info1 = SELECT L_PAREN exprs = expressionList R_PAREN L_BRACE cases = selectCaseList info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ Term "select"; Term "("; NT exprs; Term ")"; Term "{"; NT cases; Term "}" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "selectExpression") }
+;
+
+(******** Transition statements ********)
+
+stateExpression:
+| name = name info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT name; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "stateExpression") }
+| selectExpression = selectExpression
+    { [ NT selectExpression ] |> wrap_case_v |> with_typ (wrap_var_t "stateExpression") }
+;
+
+transitionStatement:
+| info1 = TRANSITION stateExpression = stateExpression
+    { info1 |> ignore;
+      [ Term "transition"; NT stateExpression ] |> wrap_case_v |> with_typ (wrap_var_t "transitionStatement") }
+;
+
+(******** Parser and parser type declarations ********)
+
+parserBlockStatement:
+| optAnnotations = optAnnotations info1 = L_BRACE parserStatements = parserStatements info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT optAnnotations; Term "{"; NT parserStatements; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "parserBlockStatement") }
+;
+
+parserStatement:
+| stmt = assignmentOrMethodCallStatement
+    { [ NT stmt ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+| app = directApplication
+    { [ NT app ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+| stmt = emptyStatement
+    { [ NT stmt ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+| var = variableDeclaration
+    { [ NT var ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+| const = constantDeclaration
+    { [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+| block = parserBlockStatement
+    { [ NT block ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+| cond = conditionalStatement
+    { [ NT cond ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+;
+
+parserStatements:
+| stmts = list(parserStatement)
+    { let typ = wrap_var_t "parserStatement" |> wrap_iter_t List in
+      ListV stmts |> with_typ typ }
+;
+
+(* TODO: name to push_name *)
+parserState:
+| anno = optAnnotations info1 = STATE name = name L_BRACE stmts = parserStatements trans = transitionStatement info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "STATE"; NT name; Term "{"; NT stmts; NT trans; Term "}" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "parserState") }
+;
+
+
+parserStates:
+| states = list(parserState)
+    { let typ = wrap_var_t "parserState" |> wrap_iter_t List in
+      ListV states |> with_typ typ }
+;
+
+(* TODO: name to push_name *)
+parserTypeDeclaration:
+| anno = optAnnotations info1 = PARSER name = name optTypeParams = optTypeParameters
+    L_PAREN params = parameterList R_PAREN
+    { let tags = Source.merge info1 (Type.tags params) in
+      tags |> ignore;
+      [ NT anno; Term "PARSER"; NT name; NT optTypeParams; Term "("; NT params; Term ")" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "parserTypeDeclaration") }
 ;
 
 (* AUX *)
@@ -1097,20 +1550,478 @@ p4program:
 | info_r = L_ANGLE_ARGS
     { info_r }
 ;
-(* TODO: remove expressionStatement *)
-expressionStatement:
-| expr = expression SEMICOLON
-    { expr }
+
+(* TODO: compare with Petr4 *)
+parserLocalElement:
+| const = constantDeclaration
+    { [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "parserLocalElement") }
+| var = variableDeclaration
+    { [ NT var ] |> wrap_case_v |> with_typ (wrap_var_t "parserLocalElement") }
+| inst = instantiation
+    { [ NT inst ] |> wrap_case_v |> with_typ (wrap_var_t "parserLocalElement") }
+| valueSet = valueSetDeclaration
+    { [ NT valueSet ] |> wrap_case_v |> with_typ (wrap_var_t "parserLocalElement") }
 ;
 
-expression:
-| value = NUMBER { fst value }
-| name = NAME { name }
-| TRUE
-    { BoolV true |> with_typ BoolT }
-| FALSE
-    { BoolV false |> with_typ BoolT }
-| L_PAREN expr = expression R_PAREN { expr } 
-| expressionStatement
+parserLocalElements:
+| elements = list(parserLocalElement)
+    { let typ = wrap_var_t "parserLocalElement" |> wrap_iter_t List in
+      ListV elements |> with_typ typ }
+;
+
+parserDeclaration:
+| parserTypeDeclaration = parserTypeDeclaration optConstructorParameters = optConstructorParameters
+    L_BRACE locals = parserLocalElements states = parserStates info2 = R_BRACE pop_scope
+    { let tags = Source.merge (Type.tags parserTypeDeclaration) info2 in
+      tags |> ignore;
+      [ NT parserTypeDeclaration; NT optConstructorParameters; Term "{"; NT locals; NT states; Term "}" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "parserDeclaration") }
+;
+
+packageTypeDeclaration:
+| anno = optAnnotations info1 = PACKAGE name = name type_params = optTypeParameters
+    L_PAREN params = parameterList R_PAREN
+    { let tags = Source.merge info1 (Type.tags params) in
+      tags |> ignore;
+      [ NT anno; Term "package"; NT name; NT type_params; Term "("; NT params; Term ")" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "packageTypeDeclaration") }
+;
+
+specifiedIdentifier:
+| name = name init = initializer
+    { [ NT name; NT init ] |> wrap_case_v |> with_typ (wrap_var_t "specifiedIdentifier") }
+;
+
+specifiedIdentifierList:
+| ids = list(specifiedIdentifier)
+    { let typ = wrap_var_t "specifiedIdentifier" |> wrap_iter_t List in
+      ListV ids |> with_typ typ }
+;
+
+enumDeclaration:
+| anno = optAnnotations info1 = ENUM name = name L_BRACE ids = identifierList comma = optTrailingComma info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "enum"; NT name; Term "{"; NT ids; NT comma; Term "}" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "enumDeclaration") }
+| anno = optAnnotations info1 = ENUM typeRef = typeRef name = name L_BRACE ids = specifiedIdentifierList comma = optTrailingComma info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "enum"; NT typeRef; NT name; Term "{"; NT ids; NT comma; Term "}" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "enumDeclaration") }
+;
+
+structField:
+| anno = optAnnotations typeRef = typeRef name = name info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT anno; NT typeRef; NT name; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "structField") }
+;
+
+structFieldList:
+| fields = list(structField)
+    { let typ = wrap_var_t "structField" |> wrap_iter_t List in
+      ListV fields |> with_typ typ }
+;
+
+headerUnionDeclaration:
+| anno = optAnnotations info1 = HEADER_UNION name = name type_params = optTypeParameters
+    L_BRACE fields = structFieldList info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "header_union"; NT name; NT type_params; Term "{"; NT fields; Term "}" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "headerUnionDeclaration") }
+;
+
+structTypeDeclaration:
+| anno = optAnnotations info1 = STRUCT name = name type_params = optTypeParameters
+    L_BRACE fields = structFieldList info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "struct"; NT name; NT type_params; Term "{"; NT fields; Term "}" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "structTypeDeclaration") }
+;
+
+headerTypeDeclaration:
+| anno = optAnnotations info1 = HEADER name = name type_params = optTypeParameters
+    L_BRACE fields = structFieldList info2 = R_BRACE
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ NT anno; Term "header"; NT name; NT type_params; Term "{"; NT fields; Term "}" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "headerTypeDeclaration") }
+;
+
+derivedTypeDeclaration:
+| header = headerTypeDeclaration
+    { [ NT header ] |> wrap_case_v |> with_typ (wrap_var_t "derivedTypeDeclaration") }
+| headerUnion = headerUnionDeclaration
+    { [ NT headerUnion ] |> wrap_case_v |> with_typ (wrap_var_t "derivedTypeDeclaration") }
+| struct = structTypeDeclaration
+    { [ NT struct ] |> wrap_case_v |> with_typ (wrap_var_t "derivedTypeDeclaration") }
+| enum = enumDeclaration
+    { [ NT enum ] |> wrap_case_v |> with_typ (wrap_var_t "derivedTypeDeclaration") }
+;
+
+typedefDeclaration:
+| anno = optAnnotations info1 = TYPEDEF typeRef = typeRef name = name
+    { info1 |> ignore;
+      [ NT anno; Term "typedef"; NT typeRef; NT name ] |> wrap_case_v |> with_typ (wrap_var_t "typedefDeclaration") }
+| anno = optAnnotations info1 = TYPEDEF derived = derivedTypeDeclaration name = name
+    { info1 |> ignore;
+      [ NT anno; Term "typedef"; NT derived; NT name; Term "PHTM_12" ] |> wrap_case_v |> with_typ (wrap_var_t "typedefDeclaration") }
+| anno = optAnnotations info1 = TYPE typeRef = typeRef name = name
+    { info1 |> ignore;
+      [ NT anno; Term "type"; NT typeRef; NT name ] |> wrap_case_v |> with_typ (wrap_var_t "typedefDeclaration") }
+;
+
+typeDeclaration:
+| derived = derivedTypeDeclaration
+    { [ NT derived ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
+| typedef = typedefDeclaration info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT typedef; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
+| parser = parserTypeDeclaration info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT parser; Term ";"; Term "PHTM_13" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
+| control = controlTypeDeclaration info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT control; Term ";"; Term "PHTM_14" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
+| package = packageTypeDeclaration info2 = SEMICOLON
+    { info2 |> ignore;
+      [ NT package; Term ";"; Term "PHTM_15" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
+;
+
+declaration:
+| const = constantDeclaration
+    { [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+| error = errorDeclaration
+    { [ NT error ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+| matchKind = matchKindDeclaration
+    { [ NT matchKind ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+| extern = externDeclaration
+    { [ NT extern ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+| inst = instantiation
+    { [ NT inst ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+| func = functionDeclaration
+    { [ NT func ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+| action = actionDeclaration
+    { [ NT action ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+| parser = parserDeclaration
+    { [ NT parser ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+| control = controlDeclaration
+    { [ NT control ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+| type = typeDeclaration
+    { [ NT type ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+;
+
+simpleAnnotationBody:
+| body = list(simpleAnnotation)
+    { let typ = wrap_var_t "simpleAnnotation" |> wrap_iter_t List in
+      ListV body |> with_typ typ }
+;
+
+annotationToken:
+| info = UNEXPECTED_TOKEN
+    { info |> ignore;
+      [ Term "UNEXPECTED_TOKEN" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = ABSTRACT
+    { info |> ignore;
+      [ Term "ABSTRACT" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = ACTION
+    { info |> ignore;
+      [ Term "ACTION" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = ACTIONS
+    { info |> ignore;
+      [ Term "ACTIONS" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = APPLY
+    { info |> ignore;
+      [ Term "APPLY" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = BOOL
+    { info |> ignore;
+      [ Term "BOOL" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = BIT
+    { info |> ignore;
+      [ Term "BIT" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = BREAK
+    { info |> ignore;
+      [ Term "BREAK" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = CONST
+    { info |> ignore;
+      [ Term "CONST" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = CONTINUE
+    { info |> ignore;
+      [ Term "CONTINUE" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = CONTROL
+    { info |> ignore;
+      [ Term "CONTROL" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = DEFAULT
+    { info |> ignore;
+      [ Term "DEFAULT" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = ELSE
+    { info |> ignore;
+      [ Term "ELSE" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = ENTRIES
+    { info |> ignore;
+      [ Term "ENTRIES" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = ENUM
+    { info |> ignore;
+      [ Term "ENUM" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = ERROR
+    { info |> ignore;
+      [ Term "ERROR" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = EXIT
+    { info |> ignore;
+      [ Term "EXIT" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = EXTERN
+    { info |> ignore;
+      [ Term "EXTERN" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = FALSE
+    { info |> ignore;
+      [ Term "FALSE" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = FOR
+    { info |> ignore;
+      [ Term "FOR" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = HEADER
+    { info |> ignore;
+      [ Term "HEADER" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = HEADER_UNION
+    { info |> ignore;
+      [ Term "HEADER_UNION" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = IF
+    { info |> ignore;
+      [ Term "IF" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = IN
+    { info |> ignore;
+      [ Term "IN" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = INOUT
+    { info |> ignore;
+      [ Term "INOUT" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = INT
+    { info |> ignore;
+      [ Term "INT" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = KEY
+    { info |> ignore;
+      [ Term "KEY" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = MATCH_KIND
+    { info |> ignore;
+      [ Term "MATCH_KIND" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = TYPE
+    { info |> ignore;
+      [ Term "TYPE" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = OUT
+    { info |> ignore;
+      [ Term "OUT" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = PARSER
+    { info |> ignore;
+      [ Term "PARSER" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = PACKAGE
+    { info |> ignore;
+      [ Term "PACKAGE" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = PRAGMA
+    { info |> ignore;
+      [ Term "PRAGMA" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = RETURN
+    { info |> ignore;
+      [ Term "RETURN" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = SELECT
+    { info |> ignore;
+      [ Term "SELECT" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = STATE
+    { info |> ignore;
+      [ Term "STATE" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = STRING
+    { info |> ignore;
+      [ Term "STRING" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = STRUCT
+    { info |> ignore;
+      [ Term "STRUCT" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = SWITCH
+    { info |> ignore;
+      [ Term "SWITCH" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = TABLE
+    { info |> ignore;
+      [ Term "TABLE" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = THIS
+    { info |> ignore;
+      [ Term "THIS" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = TRANSITION
+    { info |> ignore;
+      [ Term "TRANSITION" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = TRUE
+    { info |> ignore;
+      [ Term "TRUE" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = TUPLE
+    { info |> ignore;
+      [ Term "TUPLE" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = TYPEDEF
+    { info |> ignore;
+      [ Term "TYPEDEF" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = VARBIT
+    { info |> ignore;
+      [ Term "VARBIT" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = VALUESET
+    { info |> ignore;
+      [ Term "VALUESET" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = LIST
+    { info |> ignore;
+      [ Term "LIST" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = VOID
+    { info |> ignore;
+      [ Term "VOID" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `_
+    { info |> ignore;
+      [ Term "_" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| id = identifier
+    { [ NT id ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| tid = typeIdentifier
+    { [ NT tid ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| str = stringLiteral
+    { [ NT str ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| num = number
+    { [ NT num ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `&&&
+    { info |> ignore;
+      [ Term "&&&" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `..
+    { info |> ignore;
+      [ Term ".." ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `<<
+    { info |> ignore;
+      [ Term "<<" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `&&
+    { info |> ignore;
+      [ Term "&&" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `||
+    { info |> ignore;
+      [ Term "||" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `==
+    { info |> ignore;
+      [ Term "==" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `!=
+    { info |> ignore;
+      [ Term "!=" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `>=
+    { info |> ignore;
+      [ Term ">=" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `<=
+    { info |> ignore;
+      [ Term "<=" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `++
+    { info |> ignore;
+      [ Term "++" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `+
+    { info |> ignore;
+      [ Term "+" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `|+|
+    { info |> ignore;
+      [ Term "|+|" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `-
+    { info |> ignore;
+      [ Term "-" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `|-|
+    { info |> ignore;
+      [ Term "|-|" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `*
+    { info |> ignore;
+      [ Term "*" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `/
+    { info |> ignore;
+      [ Term "/" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `%
+    { info |> ignore;
+      [ Term "%" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `|
+    { info |> ignore;
+      [ Term "|" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `&
+    { info |> ignore;
+      [ Term "&" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `^
+    { info |> ignore;
+      [ Term "^" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `~
+    { info |> ignore;
+      [ Term "~" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = ``[
+    { info |> ignore;
+      [ Term "[" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = ``]
+    { info |> ignore;
+      [ Term "]" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = ``{
+    { info |> ignore;
+      [ Term "{" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = ``}
+    { info |> ignore;
+      [ Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = ``<
+    { info |> ignore;
+      [ Term "<" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = ``>
+    { info |> ignore;
+      [ Term ">" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `!
+    { info |> ignore;
+      [ Term "!" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `:
+    { info |> ignore;
+      [ Term ":" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `,
+    { info |> ignore;
+      [ Term ","; Term "PHTM_21" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `?
+    { info |> ignore;
+      [ Term "?" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `.
+    { info |> ignore;
+      [ Term "." ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `=
+    { info |> ignore;
+      [ Term "=" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `;
+    { info |> ignore;
+      [ Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| info = `@
+    { info |> ignore;
+      [ Term "@" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+;
+
+simpleAnnotation:
+| L_PAREN body = simpleAnnotationBody R_PAREN
+    { [ Term "("; NT body; Term ")" ] |> wrap_case_v |> with_typ (wrap_var_t "simpleAnnotation") }
+| token = annotationToken
+    { [ NT token ] |> wrap_case_v |> with_typ (wrap_var_t "simpleAnnotation") }
+;
+
+structuredAnnotationBody:
+| exprs = expressionList comma = optTrailingComma
+    { [ NT exprs; NT comma ] |> wrap_case_v |> with_typ (wrap_var_t "structuredAnnotationBody") }
+| kvs = kvList comma = optTrailingComma
+    { [ NT kvs; NT comma; Term "PHTM_20" ] |> wrap_case_v |> with_typ (wrap_var_t "structuredAnnotationBody") }
+;
+
+annotation:
+| info1 = AT name = name
+    { info1 |> ignore;
+      [ Term "@"; NT name ] |> wrap_case_v |> with_typ (wrap_var_t "annotation") }
+| info1 = AT name = name L_PAREN body = simpleAnnotationBody R_PAREN
+    { info1 |> ignore;
+      [ Term "@"; NT name; Term "("; NT body; Term ")" ] |> wrap_case_v |> with_typ (wrap_var_t "annotation") }
+| info1 = AT name = name L_BRACKET body = structuredAnnotationBody R_BRACKET
+    { info1 |> ignore;
+      [ Term "@"; NT name; Term "["; NT body; Term "]" ] |> wrap_case_v |> with_typ (wrap_var_t "annotation") }
+;
+
+annotations:
+| annos = list(annotation)
+    { let typ = wrap_var_t "annotation" |> wrap_iter_t List in
+      ListV annos |> with_typ typ }
+;
+
+optAnnotations:
+| (* empty *)
+    { [ Term "empty" ] |> wrap_case_v |> with_typ (wrap_var_t "optAnnotations") }
+| annos = nonempty_list(annotation)
+    { let typ = wrap_var_t "annotation" |> wrap_iter_t List in
+      ListV annos |> with_typ typ }
 ;
 
