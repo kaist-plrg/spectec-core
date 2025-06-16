@@ -40,9 +40,13 @@
   let with_typ (typ: typ') (v: value') : value =
     v $$$ with_fresh_val typ
 
-  let name_of_declaration (_d: value) : string =
+  let name_of_declaration (declaration: value) : string =
     (* TODO: fetch name from CaseV fields *)
-    "temp_name"
+    assert (declaration.note.typ = VarT ("declaration", []));
+    match declaration.it with
+    | Il.Ast.CaseV (mixop, values) ->
+      failwith "todo"
+    | _ -> assert false
 
   let has_typ_params_declaration (_d: value) : bool =
     (* TODO: check for type parameters in CaseV *)
@@ -266,25 +270,25 @@ nonTypeName:
     { [ NT identifier ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
 | info = APPLY
     { info |> ignore;
-      [ Term "APPLY" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
+      [ Term "apply" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
 | info = KEY
     { info |> ignore;
-      [ Term "KEY" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
+      [ Term "key" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
 | info = ACTIONS
     { info |> ignore;
-      [ Term "ACTIONS" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
+      [ Term "actions" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
 | info = STATE
     { info |> ignore;
-      [ Term "STATE" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
+      [ Term "state" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
 | info = ENTRIES
     { info |> ignore;
-      [ Term "ENTRIES" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
+      [ Term "entries" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
 | info = TYPE
     { info |> ignore;
-      [ Term "TYPE" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
+      [ Term "type" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
 | info = PRIORITY
     { info |> ignore;
-      [ Term "PRIORITY" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
+      [ Term "priority" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
 ;
 
 prefixedNonTypeName:
@@ -320,7 +324,7 @@ name:
     { [ NT nonTypeName ] |> wrap_case_v |> with_typ (wrap_var_t "name") }
 | info = LIST
     { info |> ignore;
-      [ Term "LIST" ] |> wrap_case_v |> with_typ (wrap_var_t "name") }
+      [ Term "list" ] |> wrap_case_v |> with_typ (wrap_var_t "name") }
 | typeIdentifier = typeIdentifier
     { [ NT typeIdentifier ] |> wrap_case_v |> with_typ (wrap_var_t "name") }
 ;
@@ -337,13 +341,13 @@ member:
 (******** Directions ********)
 direction:
 | IN
-    { [ Term "IN" ] |> wrap_case_v |> with_typ (wrap_var_t "direction") }
+    { [ Term "in" ] |> wrap_case_v |> with_typ (wrap_var_t "direction") }
 | OUT
-    { [ Term "OUT" ] |> wrap_case_v |> with_typ (wrap_var_t "direction") }
+    { [ Term "out" ] |> wrap_case_v |> with_typ (wrap_var_t "direction") }
 | INOUT
-    { [ Term "INOUT" ] |> wrap_case_v |> with_typ (wrap_var_t "direction") }
+    { [ Term "inout" ] |> wrap_case_v |> with_typ (wrap_var_t "direction") }
 | NONE
-    { [ Term "NONE" ] |> wrap_case_v |> with_typ (wrap_var_t "direction") }
+    { [ Term "none" ] |> wrap_case_v |> with_typ (wrap_var_t "direction") }
 
 
 (******** Types ********)
@@ -352,22 +356,22 @@ direction:
 baseType:
 | info = BOOL
     { info |> ignore;
-      [ Term "BOOL" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
+      [ Term "bool" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
 | info = MATCH_KIND
     { info |> ignore;
-      [ Term "MATCH_KIND" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
+      [ Term "match_kind" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
 | info = ERROR
     { info |> ignore;
-      [ Term "ERROR" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
+      [ Term "error" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
 | info = BIT
     { info |> ignore;
-      [ Term "BIT" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
+      [ Term "bit" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
 | info = STRING
     { info |> ignore;
-      [ Term "STRING" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
+      [ Term "string" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
 | info = INT
     { info |> ignore;
-      [ Term "INT" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
+      [ Term "int" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
 (* TODO *)
 ;
 
@@ -402,7 +406,7 @@ listType:
 | info1 = LIST l_angle typeArg = typeArg info_r = r_angle
     { let tags = Source.merge info1 info_r in
       tags |> ignore;
-      [ Term "LIST"; Term "<"; NT typeArg; Term ">" ]
+      [ Term "list"; Term "<"; NT typeArg; Term ">" ]
       |> wrap_case_v 
       |> with_typ (wrap_var_t "listType") }
 ;
@@ -410,7 +414,7 @@ tupleType:
 | info1 = TUPLE l_angle typeArgumentList = typeArgumentList info_r = r_angle
     { let tags = Source.merge info1 info_r in
       tags |> ignore;
-      [ Term "TUPLE"; Term "<"; NT typeArgumentList; Term ">" ]
+      [ Term "tuple"; Term "<"; NT typeArgumentList; Term ">" ]
       |> wrap_case_v 
       |> with_typ (wrap_var_t "tupleType") }
 ;
@@ -432,7 +436,7 @@ typeOrVoid:
     { [ NT typeRef ] |> wrap_case_v |> with_typ (wrap_var_t "typeOrVoid") }
 | info = VOID
     { info |> ignore;
-      [ Term "VOID" ] |> wrap_case_v |> with_typ (wrap_var_t "typeOrVoid") }
+      [ Term "void" ] |> wrap_case_v |> with_typ (wrap_var_t "typeOrVoid") }
 ;
 (* Petr4 O / Spec X *)
 (* | name = varName *)
@@ -564,6 +568,7 @@ nonBraceExpression:
       |> wrap_case_v |> with_typ (wrap_var_t "nonBraceExpression") }
 ;
 
+(* TODO: convert *)
 %inline binop:
 | info = MUL { info |> ignore; "*" }
 | info = DIV
@@ -1551,7 +1556,6 @@ p4program:
     { info_r }
 ;
 
-(* TODO: compare with Petr4 *)
 parserLocalElement:
 | const = constantDeclaration
     { [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "parserLocalElement") }
@@ -1563,6 +1567,7 @@ parserLocalElement:
     { [ NT valueSet ] |> wrap_case_v |> with_typ (wrap_var_t "parserLocalElement") }
 ;
 
+(* Petr4 X / Spec O *)
 parserLocalElements:
 | elements = list(parserLocalElement)
     { let typ = wrap_var_t "parserLocalElement" |> wrap_iter_t List in
@@ -1570,34 +1575,34 @@ parserLocalElements:
 ;
 
 parserDeclaration:
-| parserTypeDeclaration = parserTypeDeclaration optConstructorParameters = optConstructorParameters
+| decl = parserTypeDeclaration params = optConstructorParameters
     L_BRACE locals = parserLocalElements states = parserStates info2 = R_BRACE pop_scope
-    { let tags = Source.merge (Type.tags parserTypeDeclaration) info2 in
-      tags |> ignore;
-      [ NT parserTypeDeclaration; NT optConstructorParameters; Term "{"; NT locals; NT states; Term "}" ]
+    { info2 |> ignore;
+      [ NT decl; NT params; Term "{"; NT locals; NT states; Term "}" ]
       |> wrap_case_v |> with_typ (wrap_var_t "parserDeclaration") }
 ;
 
 packageTypeDeclaration:
 | anno = optAnnotations info1 = PACKAGE name = name type_params = optTypeParameters
-    L_PAREN params = parameterList R_PAREN
-    { let tags = Source.merge info1 (Type.tags params) in
+    L_PAREN params = parameterList info2 = R_PAREN
+    { let tags = Source.merge info1 info2 in
       tags |> ignore;
       [ NT anno; Term "package"; NT name; NT type_params; Term "("; NT params; Term ")" ]
       |> wrap_case_v |> with_typ (wrap_var_t "packageTypeDeclaration") }
 ;
 
 specifiedIdentifier:
-| name = name init = initializer
-    { [ NT name; NT init ] |> wrap_case_v |> with_typ (wrap_var_t "specifiedIdentifier") }
+| name = name init = initialValue
+    { [ NT name; NT initialValue ] |> wrap_case_v |> with_typ (wrap_var_t "specifiedIdentifier") }
 ;
 
 specifiedIdentifierList:
-| ids = list(specifiedIdentifier)
+| ids = comma_separated_list(specifiedIdentifier)
     { let typ = wrap_var_t "specifiedIdentifier" |> wrap_iter_t List in
       ListV ids |> with_typ typ }
 ;
 
+(* TODO: compare with Petr4 *)
 enumDeclaration:
 | anno = optAnnotations info1 = ENUM name = name L_BRACE ids = identifierList comma = optTrailingComma info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
@@ -1651,16 +1656,14 @@ headerTypeDeclaration:
 ;
 
 derivedTypeDeclaration:
-| header = headerTypeDeclaration
-    { [ NT header ] |> wrap_case_v |> with_typ (wrap_var_t "derivedTypeDeclaration") }
-| headerUnion = headerUnionDeclaration
-    { [ NT headerUnion ] |> wrap_case_v |> with_typ (wrap_var_t "derivedTypeDeclaration") }
-| struct = structTypeDeclaration
-    { [ NT struct ] |> wrap_case_v |> with_typ (wrap_var_t "derivedTypeDeclaration") }
-| enum = enumDeclaration
-    { [ NT enum ] |> wrap_case_v |> with_typ (wrap_var_t "derivedTypeDeclaration") }
+| decl = headerTypeDeclaration
+| decl = headerUnionDeclaration
+| decl = structTypeDeclaration
+| decl = enumDeclaration
+    { [ NT decl ] |> wrap_case_v |> with_typ (wrap_var_t "derivedTypeDeclaration") }
 ;
 
+(* TODO: Petr4 has trailing Semicolon here instead of typeDeclaration *)
 typedefDeclaration:
 | anno = optAnnotations info1 = TYPEDEF typeRef = typeRef name = name
     { info1 |> ignore;
@@ -1679,20 +1682,21 @@ typeDeclaration:
 | typedef = typedefDeclaration info2 = SEMICOLON
     { info2 |> ignore;
       [ NT typedef; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
-| parser = parserTypeDeclaration info2 = SEMICOLON
+| parser = parserTypeDeclaration pop_scope info2 = SEMICOLON
     { info2 |> ignore;
       [ NT parser; Term ";"; Term "PHTM_13" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
-| control = controlTypeDeclaration info2 = SEMICOLON
+| control = controlTypeDeclaration pop_scope info2 = SEMICOLON
     { info2 |> ignore;
       [ NT control; Term ";"; Term "PHTM_14" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
-| package = packageTypeDeclaration info2 = SEMICOLON
+| package = packageTypeDeclaration pop_scope info2 = SEMICOLON
     { info2 |> ignore;
       [ NT package; Term ";"; Term "PHTM_15" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
 ;
 
 declaration:
 | const = constantDeclaration
-    { [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+    { declare_var (name_of_declaration const) (has_typ_params_declaration const);
+      [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | error = errorDeclaration
     { [ NT error ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | matchKind = matchKindDeclaration
@@ -1700,30 +1704,30 @@ declaration:
 | extern = externDeclaration
     { [ NT extern ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | inst = instantiation
-    { [ NT inst ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+    { declare_var (name_of_declaration inst) false;
+      [ NT inst ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | func = functionDeclaration
-    { [ NT func ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+    { declare_var (name_of_declaration func) (has_typ_params_declaration func);
+      [ NT func ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | action = actionDeclaration
-    { [ NT action ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+    { declare_var (name_of_declaration action) false;
+      [ NT action ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | parser = parserDeclaration
-    { [ NT parser ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+    { declare_type (name_of_declaration parser) (has_typ_params_declaration parser);
+      [ NT parser ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | control = controlDeclaration
-    { [ NT control ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
-| type = typeDeclaration
-    { [ NT type ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
-;
-
-simpleAnnotationBody:
-| body = list(simpleAnnotation)
-    { let typ = wrap_var_t "simpleAnnotation" |> wrap_iter_t List in
-      ListV body |> with_typ typ }
+    { declare_type (name_of_declaration control) (has_typ_params_declaration control);
+      [ NT control ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+| typeDeclaration = typeDeclaration
+    { declare_type (name_of_declaration typeDeclaration) (has_typ_params_declaration typeDeclaration);
+      [ NT typeDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 ;
 
 annotationToken:
 | info = UNEXPECTED_TOKEN
     { info |> ignore;
       [ Term "UNEXPECTED_TOKEN" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
-| info = ABSTRACT
+| ABSTRACT
     { info |> ignore;
       [ Term "ABSTRACT" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
 | info = ACTION
@@ -1990,6 +1994,12 @@ simpleAnnotation:
     { [ Term "("; NT body; Term ")" ] |> wrap_case_v |> with_typ (wrap_var_t "simpleAnnotation") }
 | token = annotationToken
     { [ NT token ] |> wrap_case_v |> with_typ (wrap_var_t "simpleAnnotation") }
+;
+
+simpleAnnotationBody:
+| body = list(simpleAnnotation)
+    { let typ = wrap_var_t "simpleAnnotation" |> wrap_iter_t List in
+      ListV body |> with_typ typ }
 ;
 
 structuredAnnotationBody:
