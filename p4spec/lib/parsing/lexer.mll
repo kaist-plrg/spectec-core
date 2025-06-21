@@ -210,8 +210,12 @@ rule tokenize = parse
       { BOOL (info lexbuf) }
   | "bit"
       { BIT (info lexbuf) }
+  | "break"
+      { BREAK (info lexbuf) }
   | "const"
       { CONST (info lexbuf) }
+  | "continue"
+      { CONTINUE (info lexbuf) }
   | "control"
       { CONTROL (info lexbuf) }
   | "default"
