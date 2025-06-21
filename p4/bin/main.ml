@@ -1,16 +1,15 @@
-open Core
 open Util.Error
 
 let version = "0.1"
 
-let parse includes filename : El.Ast.program =
+let parse_ includes filename : El.Ast.program =
   Frontend.Parse.parse_file includes filename
 
 let roundtrip_el includes filename : El.Ast.program =
   Frontend.Parse.roundtrip_file includes filename
 
 let typecheck includes filename : Il.Ast.program =
-  parse includes filename |> Typing.Typecheck.type_program
+  parse_ includes filename |> Typing.Typecheck.type_program
 
 let roundtrip_il includes filename : Il.Ast.program =
   let program =
@@ -39,7 +38,7 @@ let parse_command =
      fun () ->
        try
          let program =
-           let func = if roundtrip_flag then roundtrip_el else parse in
+           let func = if roundtrip_flag then roundtrip_el else parse_ in
            func includes filename
          in
          Format.printf "%a\n" El.Pp.pp_program program
