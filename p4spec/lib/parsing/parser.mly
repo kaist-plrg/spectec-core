@@ -44,145 +44,91 @@
   let wrap_list_v (vs: value list) (s: string) : value = ListV vs |> with_typ (wrap_iter_t List (wrap_var_t s))
 
 
-  let name_of_declaration (_declaration: value) : value =
-    (* match declaration.it, declaration.note.typ with *)
-    (* | CaseV (_, [ const_decl ]), VarT ({ it = "constantDeclaration"; _ }, _) -> ( *)
-    (*     (* constantDeclaration = optAnnotations CONST typeRef name initializer `; *) *)
-    (*     (* Extract the name field (4th position: optAnnotations, CONST, typeRef, name, initializer, `;`) *) *)
-    (*     match const_decl.it with *)
-    (*     | CaseV (_, [ _; _; _; name; _; _ ]) -> name *)
-    (*     | _ -> failwith "invalid constantDeclaration structure") *)
-    (* | CaseV (_, [ func_decl ]), VarT ({ it = "functionDeclaration"; _ }, _) -> ( *)
-    (*     (* functionDeclaration = optAnnotations functionPrototype blockStatement *) *)
-    (*     (* Extract name from functionPrototype = typeOrVoid name optTypeParameters `( parameterList ) *) *)
-    (*     match func_decl.it with *)
-    (*     | CaseV (_, [ _; func_proto; _ ]) -> ( *)
-    (*         match func_proto.it with *)
-    (*         | CaseV (_, [ _; name; _; _ ]) -> name *)
-    (*         | _ -> failwith "invalid functionPrototype structure") *)
-    (*     | _ -> failwith "invalid functionDeclaration structure") *)
-    (* | CaseV (_, [ action_decl ]), VarT ({ it = "actionDeclaration"; _ }, _) -> ( *)
-    (*     (* actionDeclaration = optAnnotations ACTION name `( parameterList ) blockStatement *) *)
-    (*     (* Extract the name field (3rd position: optAnnotations, ACTION, name, `( parameterList )`, blockStatement) *) *)
-    (*     match action_decl.it with *)
-    (*     | CaseV (_, [ _; _; name; _; _ ]) -> name *)
-    (*     | _ -> failwith "invalid actionDeclaration structure") *)
-    (* | CaseV (_, [ inst_decl ]), VarT ({ it = "instantiation"; _ }, _) -> ( *)
-    (*     (* instantiation = optAnnotations typeRef `( argumentList ) name `; *) *)
-    (*     (* Extract the name field (5th position: optAnnotations, typeRef, `( argumentList )`, name, `;`) *) *)
-    (*     match inst_decl.it with *)
-    (*     | CaseV (_, [ _; _; _; name; _ ]) -> name *)
-    (*     | _ -> failwith "invalid instantiation structure") *)
-    (* | CaseV (_, [ table_decl ]), VarT ({ it = "tableDeclaration"; _ }, _) -> ( *)
-    (*     (* tableDeclaration = optAnnotations TABLE name `{ tablePropertyList } *) *)
-    (*     (* Extract the name field (3rd position: optAnnotations, TABLE, name, `{ tablePropertyList }`) *) *)
-    (*     match table_decl.it with *)
-    (*     | CaseV (_, [ _; _; name; _ ]) -> name *)
-    (*     | _ -> failwith "invalid tableDeclaration structure") *)
-    (* | CaseV (_, [ parser_decl ]), VarT ({ it = "parserDeclaration"; _ }, _) -> ( *)
-    (*     (* parserDeclaration = parserTypeDeclaration optConstructorParameters `{ parserLocalElements parserStates } *) *)
-    (*     (* Extract name from parserTypeDeclaration = optAnnotations PARSER name optTypeParameters `( parameterList ) *) *)
-    (*     match parser_decl.it with *)
-    (*     | CaseV (_, [ parser_type; _; _ ]) -> ( *)
-    (*         match parser_type.it with *)
-    (*         | CaseV (_, [ _; _; name; _; _ ]) -> name *)
-    (*         | _ -> failwith "invalid parserTypeDeclaration structure") *)
-    (*     | _ -> failwith "invalid parserDeclaration structure") *)
-    (* | CaseV (_, [ control_decl ]), VarT ({ it = "controlDeclaration"; _ }, _) -> ( *)
-    (*     (* controlDeclaration = controlTypeDeclaration optConstructorParameters `{ controlLocalDeclarations APPLY controlBody } *) *)
-    (*     (* Extract name from controlTypeDeclaration = optAnnotations CONTROL name optTypeParameters `( parameterList ) *) *)
-    (*     match control_decl.it with *)
-    (*     | CaseV (_, [ control_type; _; _ ]) -> ( *)
-    (*         match control_type.it with *)
-    (*         | CaseV (_, [ _; _; name; _; _ ]) -> name *)
-    (*         | _ -> failwith "invalid controlTypeDeclaration structure") *)
-    (*     | _ -> failwith "invalid controlDeclaration structure") *)
-    (* | CaseV (_, [ extern_decl ]), VarT ({ it = "externDeclaration"; _ }, _) -> ( *)
-    (*     (* externDeclaration = optAnnotations EXTERN nonTypeName optTypeParameters `{ methodPrototypes } *) *)
-    (*     (* Extract the nonTypeName field (3rd position: optAnnotations, EXTERN, nonTypeName, optTypeParameters, `{ methodPrototypes }`) *) *)
-    (*     match extern_decl.it with *)
-    (*     | CaseV (_, [ _; _; name; _; _ ]) -> name *)
-    (*     | _ -> failwith "invalid externDeclaration structure") *)
-    (* | CaseV (_, [ error_decl ]), VarT ({ it = "errorDeclaration"; _ }, _) -> ( *)
-    (*     (* errorDeclaration = ERROR `{ identifierList } *) *)
-    (*     (* This doesn't have a single name, but we can extract the first identifier from identifierList *) *)
-    (*     match error_decl.it with *)
-    (*     | CaseV (_, [ _; id_list ]) -> ( *)
-    (*         match id_list.it with *)
-    (*         | ListV (first_id :: _) -> first_id *)
-    (*         | _ -> failwith "empty identifierList in errorDeclaration") *)
-    (*     | _ -> failwith "invalid errorDeclaration structure") *)
-    (* | CaseV (_, [ match_kind_decl ]), VarT ({ it = "matchKindDeclaration"; _ }, _) -> ( *)
-    (*     (* matchKindDeclaration = MATCH_KIND `{ identifierList optTrailingComma } *) *)
-    (*     (* This doesn't have a single name, but we can extract the first identifier from identifierList *) *)
-    (*     match match_kind_decl.it with *)
-    (*     | CaseV (_, [ _; id_list; _ ]) -> ( *)
-    (*         match id_list.it with *)
-    (*         | ListV (first_id :: _) -> first_id *)
-    (*         | _ -> failwith "empty identifierList in matchKindDeclaration") *)
-    (*     | _ -> failwith "invalid matchKindDeclaration structure") *)
-    (* | CaseV (_, [ type_decl ]), VarT ({ it = "typeDeclaration"; _ }, _) -> ( *)
-    (*     (* typeDeclaration = derivedTypeDeclaration | typedefDeclaration `; | parserTypeDeclaration `; | controlTypeDeclaration `; | packageTypeDeclaration `; *) *)
-    (*     (* We need to handle each subtype *) *)
-    (*     match type_decl.it with *)
-    (*     | CaseV (_, [ derived_type ]) -> ( *)
-    (*         (* derivedTypeDeclaration = headerTypeDeclaration | headerUnionDeclaration | structTypeDeclaration | enumDeclaration *) *)
-    (*         match derived_type.it, derived_type.note.typ with *)
-    (*         | CaseV (_, [ header_type ]), VarT ({ it = "headerTypeDeclaration"; _ }, _) -> ( *)
-    (*             (* headerTypeDeclaration = optAnnotations HEADER name optTypeParameters `{ structFieldList } *) *)
-    (*             match header_type.it with *)
-    (*             | CaseV (_, [ _; _; name; _; _ ]) -> name *)
-    (*             | _ -> failwith "invalid headerTypeDeclaration structure") *)
-    (*         | CaseV (_, [ header_union ]), VarT ({ it = "headerUnionDeclaration"; _ }, _) -> ( *)
-    (*             (* headerUnionDeclaration = optAnnotations HEADER_UNION name optTypeParameters `{ structFieldList } *) *)
-    (*             match header_union.it with *)
-    (*             | CaseV (_, [ _; _; name; _; _ ]) -> name *)
-    (*             | _ -> failwith "invalid headerUnionDeclaration structure") *)
-    (*         | CaseV (_, [ struct_type ]), VarT ({ it = "structTypeDeclaration"; _ }, _) -> ( *)
-    (*             (* structTypeDeclaration = optAnnotations STRUCT name optTypeParameters `{ structFieldList } *) *)
-    (*             match struct_type.it with *)
-    (*             | CaseV (_, [ _; _; name; _; _ ]) -> name *)
-    (*             | _ -> failwith "invalid structTypeDeclaration structure") *)
-    (*         | CaseV (_, [ enum_type ]), VarT ({ it = "enumDeclaration"; _ }, _) -> ( *)
-    (*             (* enumDeclaration = optAnnotations ENUM name `{ identifierList optTrailingComma } *) *)
-    (*             match enum_type.it with *)
-    (*             | CaseV (_, [ _; _; name; _; _ ]) -> name *)
-    (*             | _ -> failwith "invalid enumDeclaration structure") *)
-    (*         | _ -> failwith "unknown derivedTypeDeclaration" *)
-    (*     ) *)
-    (*     | CaseV (_, [ typedef_decl; _ ]) -> ( *)
-    (*         (* typedefDeclaration = optAnnotations TYPEDEF typeRef name *) *)
-    (*         match typedef_decl.it with *)
-    (*         | CaseV (_, [ _; _; name ]) -> name *)
-    (*         | _ -> failwith "invalid typedefDeclaration structure" *)
-    (*     ) *)
-    (*     | CaseV (_, [ parser_type; _ ]) -> ( *)
-    (*         (* parserTypeDeclaration = optAnnotations PARSER name optTypeParameters `( parameterList ) *) *)
-    (*         match parser_type.it with *)
-    (*         | CaseV (_, [ _; _; name; _; _ ]) -> name *)
-    (*         | _ -> failwith "invalid parserTypeDeclaration structure" *)
-    (*     ) *)
-    (*     | CaseV (_, [ control_type; _ ]) -> ( *)
-    (*         (* controlTypeDeclaration = optAnnotations CONTROL name optTypeParameters `( parameterList ) *) *)
-    (*         match control_type.it with *)
-    (*         | CaseV (_, [ _; _; name; _; _ ]) -> name *)
-    (*         | _ -> failwith "invalid controlTypeDeclaration structure" *)
-    (*     ) *)
-    (*     | CaseV (_, [ package_type; _ ]) -> ( *)
-    (*         (* packageTypeDeclaration = optAnnotations PACKAGE name optTypeParameters `( parameterList ) *) *)
-    (*         match package_type.it with *)
-    (*         | CaseV (_, [ _; _; name; _; _ ]) -> name *)
-    (*         | _ -> failwith "invalid packageTypeDeclaration structure" *)
-    (*     ) *)
-    (*     | _ -> failwith "unknown typeDeclaration" *)
-    (* ) *)
-    (* | _ -> failwith "unknown declaration type" *)
-    failwith "not implemented yet"
-
   let id_of_case_v (v: value) : string =
     match v.it, v.note.typ with
     | CaseV _, VarT (id, _) -> id.it
     | _ -> failwith "not a case value"
+
+  let name_of_declaration (decl: value) : value =
+    if id_of_case_v decl = "declaration" then (
+      match decl.it with
+      (* constantDeclaration =  optAnnotations CONST typeRef name initializer `; *)
+      | CaseV (_, [ value ]) when id_of_case_v value = "constantDeclaration" -> (
+        match value.it with
+        | CaseV (_, [ _; _; name; _]) -> name
+        | _ -> failwith "invalid constantDeclaration structure"
+      )
+      (* errorDeclaration = ERROR `{ identifierList } *)
+      | CaseV (_, [ value ]) when id_of_case_v value = "errorDeclaration" -> failwith "no name"
+      (* matchKindDeclaration = MATCH_KIND `{ identifierList optTrailingComma } *)
+      | CaseV (_, [ value ]) when id_of_case_v value = "matchKindDeclaration" -> failwith "no name"
+      (* externDeclaration *)
+      | CaseV (_, [ value ]) when id_of_case_v value = "externDeclaration" -> (
+        match value.it with
+        (* optAnnotations EXTERN nonTypeName optTypeParameters `{ methodPrototypes } *)
+        | CaseV (_, [ _; nonTypeName; _; _ ]) -> nonTypeName
+        (* optAnnotations EXTERN functionPrototype `; *)
+        | CaseV (_, [ _; _ ]) -> failwith "no name"
+        | _ -> failwith "invalid externDeclaration structure"
+      )
+      (* instantiation *)
+      | CaseV (_, [ value ]) when id_of_case_v value = "instantiation" -> (
+        match value.it with
+        (* optAnnotations typeRef `( argumentList ) name `; *)
+        | CaseV (_, [ _; _; _; name ]) -> name
+        (* optAnnotations typeRef `( argumentList ) name objInitializer `; *)
+        | CaseV (_, [ _; _; _; name; _ ]) -> name
+        | _ -> failwith "invalid instantiation structure"
+      )
+      (* functionDeclaration = optAnnotations functionPrototype blockStatement *)
+      | CaseV (_, [ value ]) when id_of_case_v value = "functionDeclaration" -> (
+        match value.it with
+        | CaseV (_, [ _; functionPrototype; _ ]) -> functionPrototype
+        | _ -> failwith "invalid functionDeclaration structure"
+      )
+      (* actionDeclaration = optAnnotations ACTION name `( parameterList ) blockStatement *)
+      | CaseV (_, [ value ]) when id_of_case_v value = "actionDeclaration" -> ()
+      (* parserDeclaration = parserTypeDeclaration optConstructorParameters `{ parserLocalElements parserStates } *)
+      | CaseV (_, [ value ]) when id_of_case_v value = "parserDeclaration" -> ()
+      (* controlDeclaration = controlTypeDeclaration optConstructorParameters `{ controlLocalDeclarations APPLY controlBody } *)
+      | CaseV (_, [ value ]) when id_of_case_v value = "controlDeclaration" -> ()
+      | CaseV (_, [ value ]) when id_of_case_v value = "typeDeclaration" -> (
+        match value.it with
+        | CaseV (_, [ value ]) when id_of_case_v value = "derivedTypeDeclaration" -> (
+          match value.it with
+          | CaseV (_, [ value ]) when id_of_case_v value = "headerTypeDeclaration" -> ()
+          | CaseV (_, [ value ]) when id_of_case_v value = "headerUnionDeclaration" -> ()
+          | CaseV (_, [ value ]) when id_of_case_v value = "structDeclaration" -> ()
+          | CaseV (_, [ value ]) when id_of_case_v value = "enumDeclaration" -> ()
+        )
+        | CaseV (_, [ value ]) when id_of_case_v value = "typeDefDeclaration" -> (
+          match value.it with
+          (* TODO: disambiguate *)
+          | CaseV (_, [ _; _; name ]) -> name
+          | _ -> failwith "invalid typeDefDeclaration structure"
+        )
+        (* parserTypeDeclaration = optAnnotations PARSER name optTypeParameters `( parameterList ) *)
+        | CaseV (_, [ value ]) when id_of_case_v value = "parserTypeDeclaration" -> (
+          match value.it with
+          | CaseV (_, [ _; name; _; _ ]) -> name
+          | _ -> failwith "invalid parserTypeDeclaration structure"
+        )
+        (* controlTypeDeclaration = optAnnotations CONTROL name optTypeParameters `( parameterList ) *)
+        | CaseV (_, [ value ]) when id_of_case_v value = "controlTypeDeclaration" -> (
+          match value.it with
+          | CaseV (_, [ _; name; _; _ ]) -> name
+          | _ -> failwith "invalid controlTypeDeclaration structure"
+        )
+        (* packageTypeDeclaration = optAnnotations PACKAGE name optTypeParameters `( parameterList ) *)
+        | CaseV (_, [ value ]) when id_of_case_v value = "packageTypeDeclaration" -> (
+          match value.it with
+          | CaseV (_, [ _; name; _; _ ]) -> name
+          | _ -> failwith "invalid packageTypeDeclaration structure"
+        )
+        | _ -> failwith "invalid typeDeclaration structure"
+      )
+      | _ -> failwith "invalid declaration")
+    else failwith "not a declaration"
 
   let extract_id_from_name (v: value) : string =
     (* name = nonTypeName | LIST | typeIdentifier *)
@@ -191,8 +137,8 @@
         | CaseV (_, [ value ]) when id_of_case_v value = "nonTypeName" -> (
             (* nonTypeName = identifier | APPLY | KEY | ACTIONS | STATE | ENTRIES | TYPE | PRIORITY *)
             match value.it with
-            | CaseV (_, [ text_value ]) when id_of_case_v text_value = "identifier" -> (
-                match text_value.it with
+            | CaseV (_, [ value ]) when id_of_case_v value = "identifier" -> (
+                match value.it with
                 | TextV s -> s
                 | _ -> failwith "unknown identifier text"
             )
