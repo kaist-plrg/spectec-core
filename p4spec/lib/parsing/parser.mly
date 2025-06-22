@@ -421,15 +421,10 @@ optTrailingComma:
 ;
 (* TODO: convert *)
 kvList:
-| kvs = separated_list(COMMA, kvPair)
-    { let typ = wrap_var_t "kvPair" |> wrap_iter_t List in
-      ListV kvs |> with_typ typ }
+| kvs = separated_nonempty_list(COMMA, kvPair)
+    { wrap_list_v kvs "kvPair" }
 ;
-(* TODO: convert *)
-comma_separated_list(X):
-| xs = separated_list(COMMA, X)
-    { xs }
-;
+
 (**************************** P4-16 GRAMMAR ******************************)
 
 (******** Misc ********)
@@ -542,7 +537,6 @@ name:
     { [ NT typeIdentifier ] |> wrap_case_v |> with_typ (wrap_var_t "name") }
 ;
 
-(* TODO: ListV *)
 identifierList:
 | ids = separated_nonempty_list(COMMA, id = name { id })
     { wrap_list_v ids "identifier" }
@@ -910,8 +904,7 @@ expression:
 (* TODO: convert *)
 expressionList:
 | exprs = separated_list(COMMA, expression)
-    { let typ = wrap_var_t "expression" |> wrap_iter_t List in
-      ListV exprs |> with_typ typ }
+    { wrap_list_v exprs "expression" }
 ;
 
 simpleKeysetExpression:
@@ -942,29 +935,25 @@ reducedSimpleKeysetExpression:
       [ Term "default" ] |> wrap_case_v |> with_typ (wrap_var_t "reducedSimpleKeysetExpression") }
 ;
 
-(* TODO: convert *)
-(* simpleExressionList: *)
+simpleExpressionList:
+| exprs = separated_list(COMMA, simpleKeysetExpression)
+    { wrap_list_v exprs "simpleKeysetExpression" }
 
-(* TODO: convert *)
 tupleKeysetExpression:
-| L_PAREN exprs = separated_atLeastTwo_list(COMMA, simpleKeysetExpression) R_PAREN
-    { let typ = wrap_var_t "simpleKeysetExpression" |> wrap_iter_t List in
-      ListV exprs |> with_typ typ }
+| L_PAREN expr = simpleKeysetExpression COMMA exprs = simpleExpressionList R_PAREN
+              { [ Term "("; NT expr; Term ","; NT exprs; Term ")" ]
+      |> wrap_case_v |> with_typ (wrap_var_t "tupleKeysetExpression") }
 | L_PAREN expr = reducedSimpleKeysetExpression R_PAREN
-    { let typ = wrap_var_t "reducedSimpleKeysetExpression" |> wrap_iter_t List in
-      ListV [expr] |> with_typ typ }
+      { [ Term "("; NT expr; Term ")"; Term "PHTM_19" ]
+          |> wrap_case_v |> with_typ (wrap_var_t "tupleKeysetExpression") }
 ;
 
-(* TODO: convert *)
 keysetExpression:
-| exprs = tupleKeysetExpression
-    { exprs }
+| expr = tupleKeysetExpression
 | expr = simpleKeysetExpression
-    { let typ = wrap_var_t "simpleKeysetExpression" |> wrap_iter_t List in
-      ListV [expr] |> with_typ typ }
+    { [ NT expr ] |> wrap_case_v |> with_typ (wrap_var_t "keysetExpression") }
 ;
 
-(* TODO: convert *)
 %inline kvPair:
 | key = name ASSIGN value = expression 
     { [ NT key; Term "="; NT value ] |> wrap_case_v |> with_typ (wrap_var_t "kvPair") }
@@ -972,14 +961,12 @@ keysetExpression:
 
 kvTrailingList:
 | kvs = separated_nonempty_trailing_list(COMMA, kvPair)
-    { let typ = wrap_var_t "kvPair" |> wrap_iter_t List in
-      ListV kvs |> with_typ typ }
+    { wrap_list_v kvs "kvPair" }
 ;
 
 kvOptTrailingList:
 | kvs = separated_nonempty_opt_trailing_list(COMMA, kvPair)
-    { let typ = wrap_var_t "kvPair" |> wrap_iter_t List in
-      ListV kvs |> with_typ typ }
+    { wrap_list_v kvs "kvPair" }
 ;
 
 (******** Type arguments ********)
@@ -1766,9 +1753,8 @@ specifiedIdentifier:
 ;
 
 specifiedIdentifierList:
-| ids = comma_separated_list(specifiedIdentifier)
-    { let typ = wrap_var_t "specifiedIdentifier" |> wrap_iter_t List in
-      ListV ids |> with_typ typ }
+| ids = separated_list(COMMA, specifiedIdentifier)
+    { wrap_list_v ids "specifiedIdentifier" }
 ;
 
 (* TODO: compare with Petr4 *)
@@ -1793,8 +1779,7 @@ structField:
 
 structFieldList:
 | fields = list(structField)
-    { let typ = wrap_var_t "structField" |> wrap_iter_t List in
-      ListV fields |> with_typ typ }
+    { wrap_list_v fields "structField" }
 ;
 
 headerUnionDeclaration:
@@ -2110,14 +2095,10 @@ annotation:
 (* TODO: nonempty? *)
 annotations:
 | annos = list(annotation)
-  { let typ = wrap_var_t "annotation" |> wrap_iter_t List in
-    ListV annos |> with_typ typ }
+  { wrap_list_v annos "annotation" }
 ;
 
 %inline optAnnotations:
-| (* empty *)
-  { [ Term "empty" ] |> wrap_case_v |> with_typ (wrap_var_t "optAnnotations") }
-| annos = nonempty_list(annotation)
-  { let typ = wrap_var_t "annotation" |> wrap_iter_t List in
-    ListV annos |> with_typ typ }
-;
+| annos = option(annotations)
+    { wrap_opt_v annos "annotation" }
+  ;

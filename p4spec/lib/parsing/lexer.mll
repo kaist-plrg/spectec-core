@@ -170,7 +170,10 @@ rule tokenize = parse
   | '"'
       { let str, end_info = (string lexbuf) in
         end_info |> ignore;
-        TextV str $$$ { vid = Value.fresh (); typ = TextT }
+        let value = 
+          TextV str $$$ { vid = Value.fresh (); typ = TextT }
+        in
+        STRING_LITERAL value
       }
   | whitespace
       { tokenize lexbuf }
