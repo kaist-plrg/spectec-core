@@ -48,7 +48,7 @@
     let id = id_of_name v in
     declare_var id b
   
-  let declare_vars_of_il (vs: value list) : unit =
+  let _declare_vars_of_il (vs: value list) : unit =
     List.iter (fun s -> declare_var_of_il s false) vs
 
   let declare_type_of_il (v: value) (b: bool) : unit =
@@ -520,7 +520,7 @@ parameter:
 
 parameterList:
 | params = separated_list(COMMA, parameter)
-    { declare_vars_of_il (List.map name_of_any_declaration params);
+    { declare_vars (List.map name_of_any_declaration params);
       wrap_list_v params "parameter"}
 ;
 
@@ -1344,10 +1344,10 @@ controlLocalDeclaration:
 | const = constantDeclaration
     { [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
 | action = actionDeclaration
-    { declare_var_of_il (name_of_any_declaration action) false;
+    { declare_var (name_of_any_declaration action) false;
       [ NT action ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
 | table = tableDeclaration
-    { declare_var_of_il (name_of_any_declaration table) false;
+    { declare_var (name_of_any_declaration table) false;
         [ NT table ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
 | inst = instantiation
     { [ NT inst ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
@@ -1669,7 +1669,7 @@ typeDeclaration:
 
 declaration:
 | const = constantDeclaration
-    { declare_var_of_il (name_of_any_declaration const) (has_typ_params_declaration const);
+    { declare_var (name_of_any_declaration const) (has_typ_params_declaration const);
       [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | error = errorDeclaration
     { [ NT error ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
@@ -1678,22 +1678,22 @@ declaration:
 | extern = externDeclaration
     { [ NT extern ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | inst = instantiation
-    { declare_var_of_il (name_of_any_declaration inst) false;
+    { declare_var (name_of_any_declaration inst) false;
       [ NT inst ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | func = functionDeclaration
-    { declare_var_of_il (name_of_any_declaration func) (has_typ_params_declaration func);
+    { declare_var (name_of_any_declaration func) (has_typ_params_declaration func);
       [ NT func ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | action = actionDeclaration
-    { declare_var_of_il (name_of_any_declaration action) false;
+    { declare_var (name_of_any_declaration action) false;
       [ NT action ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | parserDeclaration = parserDeclaration
-    { declare_type_of_il (name_of_any_declaration parserDeclaration) (has_typ_params_declaration parserDeclaration);
+    { declare_type (name_of_any_declaration parserDeclaration) (has_typ_params_declaration parserDeclaration);
       [ NT parserDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | controlDeclaration = controlDeclaration
-    { declare_type_of_il (name_of_any_declaration controlDeclaration) (has_typ_params_declaration controlDeclaration);
+    { declare_type (name_of_any_declaration controlDeclaration) (has_typ_params_declaration controlDeclaration);
       [ NT controlDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | typeDeclaration = typeDeclaration
-    { declare_type_of_il (name_of_any_declaration typeDeclaration) (has_typ_params_declaration typeDeclaration);
+    { declare_type (name_of_any_declaration typeDeclaration) (has_typ_params_declaration typeDeclaration);
       [ NT typeDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 ;
 

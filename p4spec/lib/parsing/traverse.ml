@@ -7,286 +7,222 @@
     | CaseV _, VarT (id, _) -> id.it
     | _ -> failwith "not a case value"
 
-  let check_id (v: value) (expected_id: string) : unit =
-    let actual_id = id_of_case_v v in
-    if actual_id <> expected_id then
-      failwith (Printf.sprintf "Expected id '%s', but got '%s'" expected_id actual_id)
+  (* identifier = `$ text *)
+  let id_of_identifier (v: value) : string =
+    assert (id_of_case_v v = "identifier");
+    match v.it with
+    | CaseV (_, [ { it=(TextV s);_ } ]) -> s
+    | _ -> failwith (Printf.sprintf "invalid identifier: %s / %s" (Il.Print.string_of_value v) (Il.Print.string_of_typ' v.note.typ))
+
+  let id_of_non_type_name (v: value) : string =
+    assert (id_of_case_v v = "nonTypeName");
+    match v.it with
+    | CaseV (_, [ value ]) when id_of_case_v value = "identifier" -> id_of_identifier value
+    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "apply" -> "apply"
+    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "key" -> "key"
+    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "actions" -> "actions"
+    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "state" -> "state"
+    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "entries" -> "entries"
+    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "type" -> "type"
+    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "priority" -> "priority"
+    | _ -> failwith "invalid nonTypeName structure"
+
+  (* typeIdentifier = `@ text *)
+  let id_of_type_identifier (v: value) : string =
+    assert (id_of_case_v v = "typeIdentifier");
+    match v.it with
+    | CaseV (_, [ value ]) -> (
+        match value.it with
+        | TextV s -> s
+        | _ -> failwith "invalid typeIdentifier text"
+    )
+    | _ -> failwith (Printf.sprintf "invalid typeIdentifier: %s" (Il.Print.string_of_value v))
 
   (* name = nonTypeName | LIST | typeIdentifier *)
   let id_of_name (v: value) : string =
     assert (id_of_case_v v = "name");
     match v.it with
-    | CaseV (_, [ value ]) when id_of_case_v value = "nonTypeName" -> (
-        (* nonTypeName = identifier | APPLY | KEY | ACTIONS | STATE | ENTRIES | TYPE | PRIORITY *)
-        match value.it with
-        | CaseV (_, [ value ]) when id_of_case_v value = "identifier" -> (
-            match value.it with
-            | TextV s -> s
-            | _ -> failwith "unknown identifier text"
-        )
-        | CaseV ( [ [ atom ] ], []) when atom.it = Atom "apply" -> "apply"
-        | CaseV ( [ [ atom ] ], []) when atom.it = Atom "key" -> "key"
-        | CaseV ( [ [ atom ] ], []) when atom.it = Atom "actions" -> "actions"
-        | CaseV ( [ [ atom ] ], []) when atom.it = Atom "state" -> "state"
-        | CaseV ( [ [ atom ] ], []) when atom.it = Atom "entries" -> "entries"
-        | CaseV ( [ [ atom ] ], []) when atom.it = Atom "type" -> "type"
-        | CaseV ( [ [ atom ] ], []) when atom.it = Atom "priority" -> "priority"
-        | _ -> failwith "invalid nonTypeName structure"
-    )
+    | CaseV (_, [ value ]) when id_of_case_v value = "nonTypeName" -> id_of_non_type_name value
     | CaseV ( [ [ atom ] ], []) when atom.it = Atom "list" -> "list"
-    | CaseV (_, [ value ]) when id_of_case_v value = "typeIdentifier" -> (
-        (* typeIdentifier = `@ text *)
-        match value.it with
-        | CaseV (_, [_; text_value ]) -> (
-            match text_value.it with
-            | TextV s -> s
-            | _ -> failwith "invalid typeIdentifier text"
-        )
-        | _ -> failwith "invalid typeIdentifier structure"
-    )
+    | CaseV (_, [ value ]) when id_of_case_v value = "typeIdentifier" -> id_of_type_identifier value
     | _ -> failwith "invalid name structure"
 
+  (******** Name of declarations ********)
+
   (* constantDeclaration =  optAnnotations CONST typeRef name initializer `; *)
-  let name_of_constant_declaration (v: value) : value =
+  let name_of_constant_declaration (v: value) : string =
     assert (id_of_case_v v = "constantDeclaration");
-    let name =
-        match v.it with
-        | CaseV (_, [ _; _; name; _ ]) -> name
-        | _ -> failwith "invalid constantDeclaration structure"
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    | CaseV (_, [ _; _; name; _ ]) -> id_of_name name
+    | _ -> failwith "invalid constantDeclaration structure"
 
   (* functionPrototype = typeOrVoid name optTypeParameters `( parameterList ) *)
-  let name_of_function_prototype (v: value) : value =
+  let name_of_function_prototype (v: value) : string =
     assert (id_of_case_v v = "functionPrototype");
-    let name =
-        match v.it with
-        | CaseV (_, [ _; name; _; _ ]) -> name
-        | _ -> failwith "invalid functionPrototype structure"
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    | CaseV (_, [ _; name; _; _ ]) -> id_of_name name
+    | _ -> failwith "invalid functionPrototype structure"
 
   (* externDeclaration *)
-  let name_of_extern_declaration (v: value) : value =
+  let name_of_extern_declaration (v: value) : string =
     assert (id_of_case_v v = "externDeclaration");
-    let name =
-        match v.it with
-        (* optAnnotations EXTERN nonTypeName optTypeParameters `{ methodPrototypes } *)
-        | CaseV (_, [ _; nonTypeName; _; _ ]) -> nonTypeName
-        (* optAnnotations EXTERN functionPrototype `; *)
-        | CaseV (_, [ _; functionPrototype; _ ]) -> name_of_function_prototype functionPrototype
-        | _ -> failwith "invalid externDeclaration structure"
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    (* optAnnotations EXTERN nonTypeName optTypeParameters `{ methodPrototypes } *)
+    | CaseV (_, [ _; nonTypeName; _; _ ]) -> id_of_non_type_name nonTypeName
+    (* optAnnotations EXTERN functionPrototype `; *)
+    | CaseV (_, [ _; functionPrototype; _ ]) -> name_of_function_prototype functionPrototype
+    | _ -> failwith "invalid externDeclaration structure"
 
-  let name_of_instantiation (v: value) : value =
+  let name_of_instantiation (v: value) : string =
     assert (id_of_case_v v = "instantiation");
-    let name =
-        match v.it with
-        (* optAnnotations typeRef `( argumentList ) name `; *)
-        | CaseV (_, [ _; _; _; name ]) -> name
-        (* optAnnotations typeRef `( argumentList ) name objInitializer `; *)
-        | CaseV (_, [ _; _; _; name; _ ]) -> name
-        | _ -> failwith "invalid instantiation structure"
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    (* optAnnotations typeRef `( argumentList ) name `; *)
+    | CaseV (_, [ _; _; _; name ]) -> id_of_name name
+    (* optAnnotations typeRef `( argumentList ) name objInitializer `; *)
+    | CaseV (_, [ _; _; _; name; _ ]) -> id_of_name name
+    | _ -> failwith "invalid instantiation structure"
 
   (* functionDeclaration = optAnnotations functionPrototype blockStatement *)
-  let name_of_function_declaration (v: value) : value =
+  let name_of_function_declaration (v: value) : string =
     assert (id_of_case_v v = "functionDeclaration");
-    let name =
-        match v.it with
-      | CaseV (_, [ _; functionPrototype; _ ]) -> name_of_function_prototype functionPrototype
-        | _ -> failwith "invalid functionDeclaration structure"
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    | CaseV (_, [ _; functionPrototype; _ ]) -> name_of_function_prototype functionPrototype
+    | _ -> failwith "invalid functionDeclaration structure"
 
   (* actionDeclaration = optAnnotations ACTION name `( parameterList ) blockStatement *)
-  let name_of_action_declaration (v: value) : value =
+  let name_of_action_declaration (v: value) : string =
     assert (id_of_case_v v = "actionDeclaration");
-    let name =
-        match v.it with
-        (* optAnnotations ACTION name `( parameterList ) blockStatement *)
-        | CaseV (_, [ _; name; _; _ ]) -> name
-        | _ -> failwith "invalid actionDeclaration structure"
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    (* optAnnotations ACTION name `( parameterList ) blockStatement *)
+    | CaseV (_, [ _; name; _; _ ]) -> id_of_name name
+    | _ -> failwith "invalid actionDeclaration structure"
 
   (* parserTypeDeclaration = optAnnotations PARSER name optTypeParameters `( parameterList ) *)
-  let name_of_parser_type_declaration (v: value) : value =
+  let name_of_parser_type_declaration (v: value) : string =
     assert (id_of_case_v v = "parserTypeDeclaration");
-    let name =
         match v.it with
-        | CaseV (_, [ _; name; _; _ ]) -> name
+        | CaseV (_, [ _; name; _; _ ]) -> id_of_name name
         | _ -> failwith "invalid parserTypeDeclaration structure"
-    in
-    assert (id_of_case_v name = "name");
-    name
 
   (* parserDeclaration = parserTypeDeclaration optConstructorParameters `{ parserLocalElements parserStates } *)
-  let name_of_parser_declaration (v: value) : value =
+  let name_of_parser_declaration (v: value) : string =
     assert (id_of_case_v v = "parserDeclaration");
-    let name =
-        match v.it with
-        | CaseV (_, [ parserTypeDeclaration; _; _ ]) -> name_of_parser_type_declaration parserTypeDeclaration
-        | _ -> failwith "invalid parserDeclaration structure"
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    | CaseV (_, [ parserTypeDeclaration; _; _ ]) -> name_of_parser_type_declaration parserTypeDeclaration
+    | _ -> failwith "invalid parserDeclaration structure"
 
   (* controlDeclaration = controlTypeDeclaration optConstructorParameters `{ controlLocalDeclarations APPLY controlBody } *)
-  let name_of_control_declaration (v: value) : value =
+  let name_of_control_declaration (v: value) : string =
     assert (id_of_case_v v = "controlDeclaration");
-    let name =
-        match v.it with
-        | CaseV (_, [ controlTypeDeclaration; _; _ ]) -> (
-            assert (id_of_case_v controlTypeDeclaration = "controlTypeDeclaration");
-            match controlTypeDeclaration.it with
-            | CaseV (_, [ _; name; _; _ ]) -> name
-            | _ -> failwith "invalid controlTypeDeclaration structure"
-        )
-        | _ -> failwith "invalid controlDeclaration structure"
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    | CaseV (_, [ controlTypeDeclaration; _; _ ]) -> (
+        assert (id_of_case_v controlTypeDeclaration = "controlTypeDeclaration");
+        match controlTypeDeclaration.it with
+        | CaseV (_, [ _; name; _; _ ]) -> id_of_name name
+        | _ -> failwith "invalid controlTypeDeclaration structure"
+    )
+    | _ -> failwith "invalid controlDeclaration structure"
 
   (* headerTypeDeclaration = optAnnotations HEADER name optTypeParameters `{ structFieldList } *)
-  let name_of_header_type_declaration (v: value) : value =
+  let name_of_header_type_declaration (v: value) : string =
     assert (id_of_case_v v = "headerTypeDeclaration");
-    let name =
-        match v.it with
-        (* optAnnotations HEADER name optTypeParameters `{ structFieldList } *)
-        | CaseV (_, [ _; name; _; _ ]) -> name
-        | _ -> failwith "invalid headerTypeDeclaration structure"
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    (* optAnnotations HEADER name optTypeParameters `{ structFieldList } *)
+    | CaseV (_, [ _; name; _; _ ]) -> id_of_name name
+    | _ -> failwith "invalid headerTypeDeclaration structure"
 
   (* headerUnionDeclaration = optAnnotations HEADER_UNION name optTypeParameters `{ structFieldList } *)
-  let name_of_header_union_declaration (v: value) : value =
+  let name_of_header_union_declaration (v: value) : string =
     assert (id_of_case_v v = "headerUnionDeclaration");
-    let name =
-        match v.it with
-        (* optAnnotations HEADER_UNION name optTypeParameters `{ structFieldList } *)
-        | CaseV (_, [ _; name; _; _ ]) -> name
-        | _ -> failwith "invalid headerUnionDeclaration structure"
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    (* optAnnotations HEADER_UNION name optTypeParameters `{ structFieldList } *)
+    | CaseV (_, [ _; name; _; _ ]) -> id_of_name name
+    | _ -> failwith "invalid headerUnionDeclaration structure"
 
   (* structTypeDeclaration = optAnnotations STRUCT name optTypeParameters `{ structFieldList } *)
-  let name_of_struct_type_declaration (v: value) : value =
+  let name_of_struct_type_declaration (v: value) : string =
     assert (id_of_case_v v = "structTypeDeclaration");
-    let name =
-        match v.it with
-        (* optAnnotations STRUCT name optTypeParameters `{ structFieldList } *)
-        | CaseV (_, [ _; name; _; _ ]) -> name
-        | _ -> failwith "invalid structTypeDeclaration structure"
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    (* optAnnotations STRUCT name optTypeParameters `{ structFieldList } *)
+    | CaseV (_, [ _; name; _; _ ]) -> id_of_name name
+    | _ -> failwith "invalid structTypeDeclaration structure"
 
   (* enumDeclaration = optAnnotations ENUM name `{ identifierList optTrailingComma }
    * | optAnnotations ENUM typeRef name `{ specifiedIdentifierList optTrailingComma } *)
-  let name_of_enum_declaration (v: value) : value =
+  let name_of_enum_declaration (v: value) : string =
     assert (id_of_case_v v = "enumDeclaration");
-    let name =
-        match v.it with
-        | CaseV (_, [ _; name; _; _ ]) -> name
-        | CaseV (_, [ _; _; name; _; _ ]) -> name
-        | _ -> failwith "invalid enumDeclaration structure"
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    | CaseV (_, [ _; name; _; _ ]) -> id_of_name name
+    | CaseV (_, [ _; _; name; _; _ ]) -> id_of_name name
+    | _ -> failwith "invalid enumDeclaration structure"
 
   (* derivedTypeDeclaration = headerTypeDeclaration | headerUnionDeclaration | structTypeDeclaration | enumDeclaration *)
-  let name_of_derived_type_declaration (v: value) : value =
+  let name_of_derived_type_declaration (v: value) : string =
     assert (id_of_case_v v = "derivedTypeDeclaration");
-    let name =
-      match v.it with
-      | CaseV (_, [ value ]) when id_of_case_v value = "headerTypeDeclaration" -> name_of_header_type_declaration value
-      | CaseV (_, [ value ]) when id_of_case_v value = "headerUnionDeclaration" -> name_of_header_union_declaration value
-      | CaseV (_, [ value ]) when id_of_case_v value = "structTypeDeclaration" -> name_of_struct_type_declaration value
-      | CaseV (_, [ value ]) when id_of_case_v value = "enumDeclaration" -> name_of_enum_declaration value
-      | _ -> failwith (Printf.sprintf "Unknown derived type declaration: %s" (Il.Print.string_of_value v))
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    | CaseV (_, [ value ]) when id_of_case_v value = "headerTypeDeclaration" -> name_of_header_type_declaration value
+    | CaseV (_, [ value ]) when id_of_case_v value = "headerUnionDeclaration" -> name_of_header_union_declaration value
+    | CaseV (_, [ value ]) when id_of_case_v value = "structTypeDeclaration" -> name_of_struct_type_declaration value
+    | CaseV (_, [ value ]) when id_of_case_v value = "enumDeclaration" -> name_of_enum_declaration value
+    | _ -> failwith (Printf.sprintf "Unknown derived type declaration: %s" (Il.Print.string_of_value v))
   
   (* TODO: disambiguate mixops *)
-  let name_of_type_def_declaration (v: value) : value =
+  let name_of_type_def_declaration (v: value) : string =
     assert (id_of_case_v v = "typedefDeclaration");
     let name =
         match v.it with
         | CaseV (_, [ _; _; name ]) -> name
         | _ -> failwith "invalid typedefDeclaration structure"
     in
-    assert (id_of_case_v name = "name");
-    name
+    id_of_name name
 
   (* controlTypeDeclaration = optAnnotations CONTROL name optTypeParameters `( parameterList ) *)
-  let name_of_control_type_declaration (v: value) : value =
+  let name_of_control_type_declaration (v: value) : string =
     assert (id_of_case_v v = "controlTypeDeclaration");
     let name =
         match v.it with
         | CaseV (_, [ _; name; _; _ ]) -> name
         | _ -> failwith "invalid controlTypeDeclaration structure"
     in
-    assert (id_of_case_v name = "name");
-    name
+    id_of_name name
 
   (* packageTypeDeclaration = optAnnotations PACKAGE name optTypeParameters `( parameterList ) *)
-  let name_of_package_type_declaration (v: value) : value =
+  let name_of_package_type_declaration (v: value) : string =
     assert (id_of_case_v v = "packageTypeDeclaration");
     let name =
         match v.it with
         | CaseV (_, [ _; name; _; _ ]) -> name
         | _ -> failwith "invalid packageTypeDeclaration structure"
     in
-    assert (id_of_case_v name = "name");
-    name
+    id_of_name name
 
   (* typeDeclaration = derivedTypeDeclaration | typedefDeclaration | parserTypeDeclaration | controlTypeDeclaration | packageTypeDeclaration *)
-  let name_of_type_declaration (v: value) : value =
+  let name_of_type_declaration (v: value) : string =
     assert (id_of_case_v v = "typeDeclaration");
-    let name =
-        match v.it with
-        | CaseV (_, [ value ]) when id_of_case_v value = "derivedTypeDeclaration" -> name_of_derived_type_declaration value
-        | CaseV (_, [ value ]) when id_of_case_v value = "typedefDeclaration" -> name_of_type_def_declaration value
-        | CaseV (_, [ value ]) when id_of_case_v value = "parserTypeDeclaration" -> name_of_parser_type_declaration value
-        | CaseV (_, [ value ]) when id_of_case_v value = "controlTypeDeclaration" -> name_of_control_type_declaration value
-        | CaseV (_, [ value ]) when id_of_case_v value = "packageTypeDeclaration" -> name_of_package_type_declaration value
-        | _ -> failwith (Printf.sprintf "Unknown type declaration: %s" (id_of_case_v v))
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match v.it with
+    | CaseV (_, [ value ]) when id_of_case_v value = "derivedTypeDeclaration" -> name_of_derived_type_declaration value
+    | CaseV (_, [ value ]) when id_of_case_v value = "typedefDeclaration" -> name_of_type_def_declaration value
+    | CaseV (_, [ value ]) when id_of_case_v value = "parserTypeDeclaration" -> name_of_parser_type_declaration value
+    | CaseV (_, [ value ]) when id_of_case_v value = "controlTypeDeclaration" -> name_of_control_type_declaration value
+    | CaseV (_, [ value ]) when id_of_case_v value = "packageTypeDeclaration" -> name_of_package_type_declaration value
+    | _ -> failwith (Printf.sprintf "Unknown type declaration: %s" (id_of_case_v v))
 
-  let name_of_declaration (decl: value) : value =
+  let name_of_declaration (decl: value) : string =
     assert (id_of_case_v decl = "declaration");
-    let name =
-        match decl.it with
-        | CaseV (_, [ value ]) when id_of_case_v value = "constantDeclaration" -> name_of_constant_declaration value
-        | CaseV (_, [ value ]) when id_of_case_v value = "errorDeclaration" -> failwith "no name"
-        | CaseV (_, [ value ]) when id_of_case_v value = "matchKindDeclaration" -> failwith "no name"
-        | CaseV (_, [ value ]) when id_of_case_v value = "externDeclaration" -> name_of_extern_declaration value
-        | CaseV (_, [ value ]) when id_of_case_v value = "instantiation" -> name_of_instantiation value
-        | CaseV (_, [ value ]) when id_of_case_v value = "functionDeclaration" -> name_of_function_declaration value
-        | CaseV (_, [ value ]) when id_of_case_v value = "actionDeclaration" -> name_of_action_declaration value
-        | CaseV (_, [ value ]) when id_of_case_v value = "parserDeclaration" -> name_of_parser_declaration value
-        | CaseV (_, [ value ]) when id_of_case_v value = "controlDeclaration" -> name_of_control_declaration value
-        | CaseV (_, [ value ]) when id_of_case_v value = "typeDeclaration" -> name_of_type_declaration value
-        | _ -> failwith (Printf.sprintf "Unknown declaration type: %s" (id_of_case_v decl))
-    in
-    assert (id_of_case_v name = "name");
-    name
+    match decl.it with
+    | CaseV (_, [ value ]) when id_of_case_v value = "constantDeclaration" -> name_of_constant_declaration value
+    | CaseV (_, [ value ]) when id_of_case_v value = "errorDeclaration" -> failwith "no name"
+    | CaseV (_, [ value ]) when id_of_case_v value = "matchKindDeclaration" -> failwith "no name"
+    | CaseV (_, [ value ]) when id_of_case_v value = "externDeclaration" -> name_of_extern_declaration value
+    | CaseV (_, [ value ]) when id_of_case_v value = "instantiation" -> name_of_instantiation value
+    | CaseV (_, [ value ]) when id_of_case_v value = "functionDeclaration" -> name_of_function_declaration value
+    | CaseV (_, [ value ]) when id_of_case_v value = "actionDeclaration" -> name_of_action_declaration value
+    | CaseV (_, [ value ]) when id_of_case_v value = "parserDeclaration" -> name_of_parser_declaration value
+    | CaseV (_, [ value ]) when id_of_case_v value = "controlDeclaration" -> name_of_control_declaration value
+    | CaseV (_, [ value ]) when id_of_case_v value = "typeDeclaration" -> name_of_type_declaration value
+    | _ -> failwith (Printf.sprintf "Unknown declaration type: %s" (id_of_case_v decl))
 
-  let name_of_any_declaration (v: value) : value =
+  let name_of_any_declaration (v: value) : string =
     match id_of_case_v v with
     | "declaration" -> name_of_declaration v
     | "constantDeclaration" -> name_of_constant_declaration v
