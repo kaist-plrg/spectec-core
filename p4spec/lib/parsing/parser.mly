@@ -3,6 +3,7 @@
   open Xl.Atom
   open Util.Source
   open Context
+  open Traverse
 
   let wrap_atom (s : string) : atom = Atom s $ no_region
   let wrap_var_t (s : string) : typ' = VarT (s $ no_region, [])
@@ -43,141 +44,15 @@
   let wrap_opt_v (v: value option) (s: string) : value = OptV v |> with_typ (wrap_iter_t Opt (wrap_var_t s))
   let wrap_list_v (vs: value list) (s: string) : value = ListV vs |> with_typ (wrap_iter_t List (wrap_var_t s))
 
-
-  let id_of_case_v (v: value) : string =
-    match v.it, v.note.typ with
-    | CaseV _, VarT (id, _) -> id.it
-    | _ -> failwith "not a case value"
-
-  let name_of_declaration (decl: value) : value =
-    if id_of_case_v decl = "declaration" then (
-      match decl.it with
-      (* constantDeclaration =  optAnnotations CONST typeRef name initializer `; *)
-      | CaseV (_, [ value ]) when id_of_case_v value = "constantDeclaration" -> (
-        match value.it with
-        | CaseV (_, [ _; _; name; _]) -> name
-        | _ -> failwith "invalid constantDeclaration structure"
-      )
-      (* errorDeclaration = ERROR `{ identifierList } *)
-      | CaseV (_, [ value ]) when id_of_case_v value = "errorDeclaration" -> failwith "no name"
-      (* matchKindDeclaration = MATCH_KIND `{ identifierList optTrailingComma } *)
-      | CaseV (_, [ value ]) when id_of_case_v value = "matchKindDeclaration" -> failwith "no name"
-      (* externDeclaration *)
-      | CaseV (_, [ value ]) when id_of_case_v value = "externDeclaration" -> (
-        match value.it with
-        (* optAnnotations EXTERN nonTypeName optTypeParameters `{ methodPrototypes } *)
-        | CaseV (_, [ _; nonTypeName; _; _ ]) -> nonTypeName
-        (* optAnnotations EXTERN functionPrototype `; *)
-        | CaseV (_, [ _; _ ]) -> failwith "no name"
-        | _ -> failwith "invalid externDeclaration structure"
-      )
-      (* instantiation *)
-      | CaseV (_, [ value ]) when id_of_case_v value = "instantiation" -> (
-        match value.it with
-        (* optAnnotations typeRef `( argumentList ) name `; *)
-        | CaseV (_, [ _; _; _; name ]) -> name
-        (* optAnnotations typeRef `( argumentList ) name objInitializer `; *)
-        | CaseV (_, [ _; _; _; name; _ ]) -> name
-        | _ -> failwith "invalid instantiation structure"
-      )
-      (* functionDeclaration = optAnnotations functionPrototype blockStatement *)
-      | CaseV (_, [ value ]) when id_of_case_v value = "functionDeclaration" -> (
-        match value.it with
-        | CaseV (_, [ _; functionPrototype; _ ]) -> functionPrototype
-        | _ -> failwith "invalid functionDeclaration structure"
-      )
-      (* actionDeclaration = optAnnotations ACTION name `( parameterList ) blockStatement *)
-      | CaseV (_, [ value ]) when id_of_case_v value = "actionDeclaration" -> ()
-      (* parserDeclaration = parserTypeDeclaration optConstructorParameters `{ parserLocalElements parserStates } *)
-      | CaseV (_, [ value ]) when id_of_case_v value = "parserDeclaration" -> ()
-      (* controlDeclaration = controlTypeDeclaration optConstructorParameters `{ controlLocalDeclarations APPLY controlBody } *)
-      | CaseV (_, [ value ]) when id_of_case_v value = "controlDeclaration" -> ()
-      | CaseV (_, [ value ]) when id_of_case_v value = "typeDeclaration" -> (
-        match value.it with
-        | CaseV (_, [ value ]) when id_of_case_v value = "derivedTypeDeclaration" -> (
-          match value.it with
-          | CaseV (_, [ value ]) when id_of_case_v value = "headerTypeDeclaration" -> ()
-          | CaseV (_, [ value ]) when id_of_case_v value = "headerUnionDeclaration" -> ()
-          | CaseV (_, [ value ]) when id_of_case_v value = "structDeclaration" -> ()
-          | CaseV (_, [ value ]) when id_of_case_v value = "enumDeclaration" -> ()
-        )
-        | CaseV (_, [ value ]) when id_of_case_v value = "typeDefDeclaration" -> (
-          match value.it with
-          (* TODO: disambiguate *)
-          | CaseV (_, [ _; _; name ]) -> name
-          | _ -> failwith "invalid typeDefDeclaration structure"
-        )
-        (* parserTypeDeclaration = optAnnotations PARSER name optTypeParameters `( parameterList ) *)
-        | CaseV (_, [ value ]) when id_of_case_v value = "parserTypeDeclaration" -> (
-          match value.it with
-          | CaseV (_, [ _; name; _; _ ]) -> name
-          | _ -> failwith "invalid parserTypeDeclaration structure"
-        )
-        (* controlTypeDeclaration = optAnnotations CONTROL name optTypeParameters `( parameterList ) *)
-        | CaseV (_, [ value ]) when id_of_case_v value = "controlTypeDeclaration" -> (
-          match value.it with
-          | CaseV (_, [ _; name; _; _ ]) -> name
-          | _ -> failwith "invalid controlTypeDeclaration structure"
-        )
-        (* packageTypeDeclaration = optAnnotations PACKAGE name optTypeParameters `( parameterList ) *)
-        | CaseV (_, [ value ]) when id_of_case_v value = "packageTypeDeclaration" -> (
-          match value.it with
-          | CaseV (_, [ _; name; _; _ ]) -> name
-          | _ -> failwith "invalid packageTypeDeclaration structure"
-        )
-        | _ -> failwith "invalid typeDeclaration structure"
-      )
-      | _ -> failwith "invalid declaration")
-    else failwith "not a declaration"
-
-  let extract_id_from_name (v: value) : string =
-    (* name = nonTypeName | LIST | typeIdentifier *)
-    if id_of_case_v v = "name" then (
-        match v.it with
-        | CaseV (_, [ value ]) when id_of_case_v value = "nonTypeName" -> (
-            (* nonTypeName = identifier | APPLY | KEY | ACTIONS | STATE | ENTRIES | TYPE | PRIORITY *)
-            match value.it with
-            | CaseV (_, [ value ]) when id_of_case_v value = "identifier" -> (
-                match value.it with
-                | TextV s -> s
-                | _ -> failwith "unknown identifier text"
-            )
-            | CaseV ( [ [ atom ] ], []) when atom.it = Atom "apply" -> "apply"
-            | CaseV ( [ [ atom ] ], []) when atom.it = Atom "key" -> "key"
-            | CaseV ( [ [ atom ] ], []) when atom.it = Atom "actions" -> "actions"
-            | CaseV ( [ [ atom ] ], []) when atom.it = Atom "state" -> "state"
-            | CaseV ( [ [ atom ] ], []) when atom.it = Atom "entries" -> "entries"
-            | CaseV ( [ [ atom ] ], []) when atom.it = Atom "type" -> "type"
-            | CaseV ( [ [ atom ] ], []) when atom.it = Atom "priority" -> "priority"
-            | _ -> failwith "invalid nonTypeName structure"
-        )
-        | CaseV ( [ [ atom ] ], []) when atom.it = Atom "list" -> "list"
-        | CaseV (_, [ value ]) when id_of_case_v value = "typeIdentifier" -> (
-            (* typeIdentifier = `@ text *)
-            match value.it with
-            | CaseV (_, [_; text_value ]) -> (
-                match text_value.it with
-                | TextV s -> s
-                | _ -> failwith "invalid typeIdentifier text"
-            )
-            | _ -> failwith "invalid typeIdentifier structure"
-        )
-        | _ -> failwith "invalid name structure")
-    else failwith "not a name value"
-
-  let has_typ_params_declaration (_d: value) : bool =
-    (* TODO: check for type parameters in CaseV *)
-    false
-
   let declare_var_of_il (v: value) (b: bool) : unit =
-    let id = extract_id_from_name v in
+    let id = id_of_name v in
     declare_var id b
   
   let declare_vars_of_il (vs: value list) : unit =
     List.iter (fun s -> declare_var_of_il s false) vs
 
   let declare_type_of_il (v: value) (b: bool) : unit =
-    let id = extract_id_from_name v in
+    let id = id_of_name v in
     declare_type id b
 
   let declare_types_of_il (vs: value list) : unit =
@@ -645,7 +520,7 @@ parameter:
 
 parameterList:
 | params = separated_list(COMMA, parameter)
-    { declare_vars_of_il (List.map name_of_declaration params);
+    { declare_vars_of_il (List.map name_of_any_declaration params);
       wrap_list_v params "parameter"}
 ;
 
@@ -762,7 +637,6 @@ nonBraceExpression:
 | info = OR { info |> ignore; "||" }
 ;
 
-(* TODO: convert *)
 expression:
 | num = number
     { [ NT num ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
@@ -1470,10 +1344,10 @@ controlLocalDeclaration:
 | const = constantDeclaration
     { [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
 | action = actionDeclaration
-    { declare_var_of_il (name_of_declaration action) false;
+    { declare_var_of_il (name_of_any_declaration action) false;
       [ NT action ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
 | table = tableDeclaration
-    { declare_var_of_il (name_of_declaration table) false;
+    { declare_var_of_il (name_of_any_declaration table) false;
         [ NT table ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
 | inst = instantiation
     { [ NT inst ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
@@ -1795,7 +1669,7 @@ typeDeclaration:
 
 declaration:
 | const = constantDeclaration
-    { declare_var_of_il (name_of_declaration const) (has_typ_params_declaration const);
+    { declare_var_of_il (name_of_any_declaration const) (has_typ_params_declaration const);
       [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | error = errorDeclaration
     { [ NT error ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
@@ -1804,22 +1678,22 @@ declaration:
 | extern = externDeclaration
     { [ NT extern ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | inst = instantiation
-    { declare_var_of_il (name_of_declaration inst) false;
+    { declare_var_of_il (name_of_any_declaration inst) false;
       [ NT inst ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | func = functionDeclaration
-    { declare_var_of_il (name_of_declaration func) (has_typ_params_declaration func);
+    { declare_var_of_il (name_of_any_declaration func) (has_typ_params_declaration func);
       [ NT func ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | action = actionDeclaration
-    { declare_var_of_il (name_of_declaration action) false;
+    { declare_var_of_il (name_of_any_declaration action) false;
       [ NT action ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | parserDeclaration = parserDeclaration
-    { declare_type_of_il (name_of_declaration parserDeclaration) (has_typ_params_declaration parserDeclaration);
+    { declare_type_of_il (name_of_any_declaration parserDeclaration) (has_typ_params_declaration parserDeclaration);
       [ NT parserDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | controlDeclaration = controlDeclaration
-    { declare_type_of_il (name_of_declaration controlDeclaration) (has_typ_params_declaration controlDeclaration);
+    { declare_type_of_il (name_of_any_declaration controlDeclaration) (has_typ_params_declaration controlDeclaration);
       [ NT controlDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | typeDeclaration = typeDeclaration
-    { declare_type_of_il (name_of_declaration typeDeclaration) (has_typ_params_declaration typeDeclaration);
+    { declare_type_of_il (name_of_any_declaration typeDeclaration) (has_typ_params_declaration typeDeclaration);
       [ NT typeDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 ;
 
