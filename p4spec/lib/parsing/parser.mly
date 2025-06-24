@@ -3,7 +3,7 @@
   open Xl.Atom
   open Util.Source
   open Context
-  open Traverse
+  open Ast_utils
 
   let wrap_atom (s : string) : atom = Atom s $ no_region
   let wrap_var_t (s : string) : typ' = VarT (s $ no_region, [])
