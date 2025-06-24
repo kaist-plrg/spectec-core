@@ -2,50 +2,88 @@
   open Xl.Atom
   open Util.Source
 
+  let wrap_atom (s : string) : atom = Atom s $ no_region
+  let wrap_var_t (s : string) : typ' = VarT (s $ no_region, [])
+  let wrap_iter_t (i : iter) (t: typ') : typ' = IterT (t $ no_region, i)
+  
+  let with_fresh_val (typ: typ') : vnote = 
+    let vid = Value.fresh () in
+    { vid; typ }
+  let with_typ (typ: typ') (v: value') : value =
+    v $$$ with_fresh_val typ
+
+  type value_or_atom = NT of value | Term of string
+
+  let wrap_case_v (vs: value_or_atom list) : value' =
+    let rec build_mixop acc_mixop acc_terms = function
+      | [] -> 
+          (* Always add the final group, even if empty *)
+          acc_mixop @ [acc_terms]
+      | Term s :: rest ->
+          (* Accumulate terms *)
+          build_mixop acc_mixop (acc_terms @ [wrap_atom s]) rest
+      | NT _ :: rest ->
+          (* When we hit a non-terminal, add accumulated terms to mixop and start new group *)
+          let new_mixop = acc_mixop @ [acc_terms] in
+          build_mixop new_mixop [] rest
+    in
+    let mixop = build_mixop [] [] vs in
+    let values = 
+      vs 
+      |> List.filter (fun v -> match v with NT _ -> true | _ -> false) 
+      |> List.map (function
+        | NT v -> v
+        | Term _ -> assert false)
+    in
+    CaseV (mixop, values)
+
+  let wrap_opt_v (v: value option) (s: string) : value = OptV v |> with_typ (wrap_iter_t Opt (wrap_var_t s))
+  let wrap_list_v (vs: value list) (s: string) : value = ListV vs |> with_typ (wrap_iter_t List (wrap_var_t s))
+
   let id_of_case_v (v: value) : string =
     match v.it, v.note.typ with
     | CaseV _, VarT (id, _) -> id.it
     | _ -> failwith "not a case value"
 
-  (* identifier = `$ text *)
-  let id_of_identifier (v: value) : string =
-    assert (id_of_case_v v = "identifier");
-    match v.it with
-    | CaseV (_, [ { it=(TextV s);_ } ]) -> s
-    | _ -> failwith (Printf.sprintf "invalid identifier: %s / %s" (Il.Print.string_of_value v) (Il.Print.string_of_typ' v.note.typ))
-
-  let id_of_non_type_name (v: value) : string =
-    assert (id_of_case_v v = "nonTypeName");
-    match v.it with
-    | CaseV (_, [ value ]) when id_of_case_v value = "identifier" -> id_of_identifier value
-    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "apply" -> "apply"
-    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "key" -> "key"
-    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "actions" -> "actions"
-    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "state" -> "state"
-    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "entries" -> "entries"
-    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "type" -> "type"
-    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "priority" -> "priority"
-    | _ -> failwith "invalid nonTypeName structure"
-
-  (* typeIdentifier = `@ text *)
-  let id_of_type_identifier (v: value) : string =
-    assert (id_of_case_v v = "typeIdentifier");
-    match v.it with
-    | CaseV (_, [ value ]) -> (
-        match value.it with
-        | TextV s -> s
-        | _ -> failwith "invalid typeIdentifier text"
-    )
-    | _ -> failwith (Printf.sprintf "invalid typeIdentifier: %s" (Il.Print.string_of_value v))
+  let flatten_case_v (value: value) = 
+    match value.it with
+    | CaseV (mixop, values) ->
+        let mixop = List.map 
+            (List.map 
+              (fun p -> 
+                string_of_atom p.it
+              )
+            )
+            mixop
+        in
+        let values = List.map (fun v -> v.it) values in
+        let id = id_of_case_v value in
+        id, mixop, values
+    | _ -> failwith "Expected a CaseV value"
 
   (* name = nonTypeName | LIST | typeIdentifier *)
-  let id_of_name (v: value) : string =
-    assert (id_of_case_v v = "name");
-    match v.it with
-    | CaseV (_, [ value ]) when id_of_case_v value = "nonTypeName" -> id_of_non_type_name value
-    | CaseV ( [ [ atom ] ], []) when atom.it = Atom "list" -> "list"
-    | CaseV (_, [ value ]) when id_of_case_v value = "typeIdentifier" -> id_of_type_identifier value
-    | _ -> failwith "invalid name structure"
+  let id_of_name (value: value) : string =
+    match flatten_case_v value with
+    | "identifier", [ ["$"]; [] ], [ TextV s ]
+      -> s
+    | "nonTypeName", [ ["APPLY"] ], []
+      -> "apply"
+    | "nonTypeName", [ ["KEY"] ], []
+      -> "key"
+    | "nonTypeName", [ ["ACTIONS"] ], []
+      -> "actions"
+    | "nonTypeName", [ ["STATE"] ], []
+      -> "state"
+    | "nonTypeName", [ ["ENTRIES"] ], []
+      -> "entries"
+    | "nonTypeName", [ ["TYPE"] ], []
+      -> "type"
+    | "nonTypeName", [ ["PRIORITY"] ], []
+      -> "priority"
+    | "name", [ ["LIST"] ], []
+      -> "list"
+    | "typeIdentifier", [ ["@"]; [] ], [ TextV s ] -> s
+| _ -> failwith (Printf.sprintf "Invalid name structure %s: %s " (Il.Print.string_of_value value) (id_of_case_v value))
 
   (******** Name of declarations ********)
 
@@ -68,7 +106,7 @@
     assert (id_of_case_v v = "externDeclaration");
     match v.it with
     (* optAnnotations EXTERN nonTypeName optTypeParameters `{ methodPrototypes } *)
-    | CaseV (_, [ _; nonTypeName; _; _ ]) -> id_of_non_type_name nonTypeName
+    | CaseV (_, [ _; nonTypeName; _; _ ]) -> id_of_name nonTypeName
     (* optAnnotations EXTERN functionPrototype `; *)
     | CaseV (_, [ _; functionPrototype; _ ]) -> name_of_function_prototype functionPrototype
     | _ -> failwith "invalid externDeclaration structure"
@@ -246,6 +284,42 @@
     | "packageTypeDeclaration" -> name_of_package_type_declaration v
     | _ -> failwith (Printf.sprintf "Unknown declaration type: %s" (id_of_case_v v))
 
-  let has_typ_params_declaration (_d: value) : bool =
-    (* TODO: check for type parameters in CaseV *)
+  let has_typ_params_parser_type_declaration (_v: value') : bool =
     false
+    (* match flatten_case_v parserTypeDeclaration with *)
+    (* | "parserTypeDeclaration", [ []; ["PHTM_13"] ], _ -> true *)
+    (* | _ -> false *)
+
+  let has_typ_params_control_type_declaration (_v: value') : bool =
+    false
+
+  let has_typ_params_package_type_declaration (_v: value') : bool =
+    false
+
+  let has_typ_params_declaration (value_decl: value) : bool =
+    match flatten_case_v value_decl with
+    | "constantDeclaration", _, _
+    | "errorDeclaration", _, _
+    | "matchKindDeclaration", _, _ -> false
+    | "externDeclaration", [ []; ["EXTERN"]; []; ["{"]; ["}"] ], [ _; _; _optTypeParameters; _] -> failwith "TODO"
+    | "externDeclaration", _, _ -> false
+    | "instantiation", _, _ -> false
+    | "functionDeclaration", _, _ -> failwith "TODO"
+    | "actionDeclaration", _, _ -> false
+    | "parserDeclaration", _, _ -> false
+    | "controlDeclaration", _, _ -> false
+    | "headerTypeDeclaration", _, _
+    | "headerUnionDeclaration", _, _
+    | "structTypeDeclaration", _, _
+      ->  failwith "TODO"
+    | "enumDeclaration", _, _ -> false
+    | "typeDeclaration", [ []; [";"] ], [ _typedefDeclaration ] -> false
+    | "typeDeclaration", [ []; [";"; "PHTM_13"] ], [ parserTypeDeclaration ] ->
+      has_typ_params_parser_type_declaration parserTypeDeclaration
+    | "typeDeclaration", [ []; [";"; "PHTM_14"] ], [ controlTypeDeclaration ] ->
+      has_typ_params_control_type_declaration controlTypeDeclaration
+    | "typeDeclaration", [ []; [";"; "PHTM_15"] ], [ packageTypeDeclaration ] ->
+      has_typ_params_package_type_declaration packageTypeDeclaration
+    | _ -> failwith (Printf.sprintf "Unknown type declaration: %s" (id_of_case_v value_decl))
+
+

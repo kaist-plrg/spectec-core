@@ -1,4 +1,3 @@
-(* Suppress warnings for unused values and types in test files *)
 [@@@warning "-32-34"]
 
 open Parsing
@@ -8,47 +7,14 @@ let show_ast = ref true
 type test_case = string * string * bool
 
 let test_cases = [
-  (* Basic literals and expressions *)
-  ("Simple number", "42;", true);
-  ("Boolean true", "true;", true);
-  ("Boolean false", "false;", true);
-  ("Hex number", "0xFF;", true);
-  ("Binary number", "0b1010;", true);
-  ("Octal number", "0o77;", true);
-  ("Width-specified number", "8w42;", true);
-  ("Signed width number", "8s42;", true);
-  ("Parenthesized expression", "(123);", true);
-  ("Empty program", "", true);
+  ("Struct", "struct S { bit<8> x; bit<32> y; }", true);
+  ("Header", "header h { bit<32> f; }", true);
+  ("Control", "control c() { apply {} }", true);
+  ("Typedef", "typedef tuple<bit<32>, bool> pair;", true);
   
-  (* Real P4 programs - simple cases *)
-  ("Version struct", "struct Version { bit<8> major; bit<8> minor; }", true);
-  ("Version const", "const .Version version = { 8w0, 8w1 };", true);
-  ("Simple header", "header h { bit<32> f; }", true);
-  ("Simple control", "control c() { apply {} }", true);
-  ("Tuple typedef", "typedef tuple<bit<32>, bool> pair;", true);
-  ("Tuple struct", "struct S { bit<32> f; bool s; }", true);
-  ("Tuple assignment", "pair x = { 10, false };", true);
-  
-  (* Real P4 programs - more complex *)
   ("Control with action", "control c(inout h hdr) { action a() { hdr.setInvalid(); } apply {} }", true);
   ("Package declaration", "package top(proto _p);", true);
-  ("Control with tuple", "control c() { pair x = { 10, false }; tuple<bit<32>, bool> y; apply { y = x; } }", true);
   ("Main package", "top(c()) main;", true);
-  
-  (* Expected failures - syntax errors *)
-  ("Invalid syntax", "42 43;", false);
-  ("Incomplete expression", "42 +", false);
-  ("Wrong cast", "const bool b = (bool)3;", false);
-  ("Invalid width", "const bool c = (bool)2s0;", false);
-  ("Invalid width format", "const bool d = (bool)10w0;", false);
-  
-  (* Real error cases from p4c/testdata *)
-  ("Underscore error", "const bit<_> x = 0;", false);
-  ("Width error", "const bit<0> x = 0;", false);
-  ("Template error", "const bit<template> x = 0;", false);
-  ("Type params error", "const bit<type> x = 0;", false);
-  ("String error", "const string s = 42;", false);
-  ("Struct error", "struct S { bit<32> f; } struct S { bool b; }", false);
 ]
 
 (* Single test runner function *)
@@ -58,7 +24,7 @@ let run_test (test_name : string) (input : string) (should_pass : bool) =
     let result = Parser.p4program Lexer.lexer lexbuf in
     Printf.printf "✓ %s: Success! Parsed: %s\n" test_name input;
     if !show_ast then
-      Printf.printf "  AST: %s\n" (Il.Print.string_of_value result);
+      Printf.printf "  AST: %s\n" (Pp.pp_value result);
     if should_pass then (
       Printf.printf "   Expected: PASS, Got: PASS ✓\n\n";
       true

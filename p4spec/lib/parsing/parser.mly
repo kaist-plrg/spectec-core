@@ -1,48 +1,7 @@
 %{
   open Il.Ast
-  open Xl.Atom
-  open Util.Source
   open Context
   open Ast_utils
-
-  let wrap_atom (s : string) : atom = Atom s $ no_region
-  let wrap_var_t (s : string) : typ' = VarT (s $ no_region, [])
-  let wrap_iter_t (i : iter) (t: typ') : typ' = IterT (t $ no_region, i)
-  
-  let with_fresh_val (typ: typ') : vnote = 
-    let vid = Value.fresh () in
-    { vid; typ }
-  let with_typ (typ: typ') (v: value') : value =
-    v $$$ with_fresh_val typ
-
-  type value_or_atom = NT of value | Term of string
-
-  let wrap_case_v (vs: value_or_atom list) : value' =
-    let mixop : atom list list =
-      List.mapi
-        (fun i v ->
-          if i = 0 then [[]]
-          (* TODO: handle case where last value is an NT *)
-          else 
-            (let v_prev = List.nth vs i in
-              (match (v_prev, v) with
-              | NT _, NT _ -> [[]]
-              | _, Term s -> [[wrap_atom s]] 
-              | _, _ -> [])
-            )
-          ) vs |> List.concat
-    in
-    let values = 
-      vs 
-      |> List.filter (fun v -> match v with NT _ -> true | _ -> false) 
-      |> List.map (function
-        | NT v -> v
-        | Term _ -> assert false)
-    in
-    CaseV (mixop, values)
-
-  let wrap_opt_v (v: value option) (s: string) : value = OptV v |> with_typ (wrap_iter_t Opt (wrap_var_t s))
-  let wrap_list_v (vs: value list) (s: string) : value = ListV vs |> with_typ (wrap_iter_t List (wrap_var_t s))
 
   let declare_var_of_il (v: value) (b: bool) : unit =
     let id = id_of_name v in
@@ -260,19 +219,19 @@ const:
 optCONST:
 | c = option(const)
     { wrap_opt_v c "const" }
-
+            ;
 (******** Numbers ********)
 (* Processed by lexer *)
 number:
 | number = NUMBER
     { fst number }
-
+          ;
 (******** Strings ********)
 (* Petr4 X / Spec O *)
 stringLiteral:
 | text = STRING_LITERAL
     { [ NT text; Term "PHTM_2" ] |> wrap_case_v |> with_typ (wrap_var_t "stringLiteral")}
-
+;
 (******** Names ********)
 
 dotPrefix:
@@ -296,7 +255,7 @@ typeIdentifier:
 (* Petr4: nonTypeName + varName + tableKwName *)
 nonTypeName:
 | identifier = identifier
-    { [ NT identifier ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
+    { identifier }
 | info = APPLY
     { info |> ignore;
       [ Term "apply" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
@@ -322,7 +281,7 @@ nonTypeName:
 
 prefixedNonTypeName:
 | nonTypeName = nonTypeName
-    { [ NT nonTypeName ] |> wrap_case_v |> with_typ (wrap_var_t "prefixedNonTypeName") }
+    { nonTypeName }
 | dotPrefix = dotPrefix go_toplevel nonTypeName = nonTypeName go_local
     { [ NT dotPrefix; NT nonTypeName ] |> wrap_case_v |> with_typ (wrap_var_t "prefixedNonTypeName") }
 ;
@@ -330,13 +289,13 @@ prefixedNonTypeName:
 (* Petr4: nonTableKwName + tableKwName *)
 nonTableKwName:
 | nonTypeName = nonTypeName
-    { [ NT nonTypeName ] |> wrap_case_v |> with_typ (wrap_var_t "nonTableKwName") }
+    { nonTypeName }
 ;
 
 (* Petr4: prefixedType + prefixedTypeName *)
 prefixedType:
 | typeIdentifier = typeIdentifier
-    { [ NT typeIdentifier ] |> wrap_case_v |> with_typ (wrap_var_t "prefixedType") }
+    { typeIdentifier }
 | dotPrefix = dotPrefix go_toplevel typeIdentifier = typeIdentifier go_local
     { 
       [ NT dotPrefix; NT typeIdentifier ] |> wrap_case_v |> with_typ (wrap_var_t "prefixedType")
@@ -345,17 +304,17 @@ prefixedType:
 
 typeName:
 | prefixedType = prefixedType
-    { [ NT prefixedType ] |> wrap_case_v |> with_typ (wrap_var_t "typeName") }
+    { prefixedType }
 ;
 
 name:
 | nonTypeName = nonTypeName 
-    { [ NT nonTypeName ] |> wrap_case_v |> with_typ (wrap_var_t "name") }
+    { nonTypeName }
 | info = LIST
     { info |> ignore;
       [ Term "list" ] |> wrap_case_v |> with_typ (wrap_var_t "name") }
 | typeIdentifier = typeIdentifier
-    { [ NT typeIdentifier ] |> wrap_case_v |> with_typ (wrap_var_t "name") }
+    { typeIdentifier }
 ;
 
 identifierList:
@@ -364,7 +323,7 @@ identifierList:
 ;
 member:
 | name = name
-    { [ NT name ] |> wrap_case_v |> with_typ (wrap_var_t "member") }
+    { name }
 ;
 (******** Directions ********)
 direction:
@@ -420,7 +379,7 @@ specializedType:
 namedType:
 | t = typeName
 | t = specializedType
-    { [ NT t ] |> wrap_case_v |> with_typ (wrap_var_t "namedType") }
+    { t }
 ;
 
 headerStackType:
@@ -462,12 +421,12 @@ typeRef:
 | t = headerStackType
 | t = listType
 | t = tupleType
-    { [ NT t ] |> wrap_case_v |> with_typ (wrap_var_t "typeRef") }
+    { t }
 ;
 
 typeOrVoid:
 | typeRef = typeRef
-    { [ NT typeRef ] |> wrap_case_v |> with_typ (wrap_var_t "typeOrVoid") }
+    { typeRef }
 | info = VOID
     { info |> ignore;
       [ Term "void" ] |> wrap_case_v |> with_typ (wrap_var_t "typeOrVoid") }
@@ -537,9 +496,9 @@ optConstructorParameters:
 (******** Expressions ********)
 nonBraceExpression:
 | number = number
-    { [ NT number ] |> wrap_case_v |> with_typ (wrap_var_t "nonBraceExpression") }
+    { number }
 | stringLiteral = stringLiteral
-    { [ NT stringLiteral ] |> wrap_case_v |> with_typ (wrap_var_t "nonBraceExpression") }
+    { stringLiteral }
 (* TODO: TRUE / FALSE / THIS *)
 (* | info1 = TRUE *)
 (*     { Expression.True { tags = info1 } } *)
@@ -639,7 +598,7 @@ nonBraceExpression:
 
 expression:
 | num = number
-    { [ NT num ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
+    { num }
 | info1 = DOTS
     { info1 |> ignore;
       [ Term "..." ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
@@ -650,12 +609,12 @@ expression:
     { info1 |> ignore;
       [ Term "false" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
 | value = STRING_LITERAL
-    { [ NT value ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
+    { value }
 | info1 = THIS
     { info1 |> ignore;
       [ Term "this" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
 | name = nonTypeName
-    { [ NT name ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
+    { name }
 | info1 = dotPrefix go_toplevel name = nonTypeName go_local
     { [ NT info1; NT name ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
 | array = expression L_BRACKET index = expression info2 = R_BRACKET
@@ -729,7 +688,7 @@ expressionList:
 
 simpleKeysetExpression:
 | expr = expression
-    { [ NT expr ] |> wrap_case_v |> with_typ (wrap_var_t "simpleKeysetExpression") }
+    { expr }
 | expr = expression MASK mask = expression
     { [ NT expr; Term "&&&"; NT mask ] |> wrap_case_v |> with_typ (wrap_var_t "simpleKeysetExpression") }
 | lo = expression RANGE hi = expression
@@ -771,7 +730,7 @@ tupleKeysetExpression:
 keysetExpression:
 | expr = tupleKeysetExpression
 | expr = simpleKeysetExpression
-    { [ NT expr ] |> wrap_case_v |> with_typ (wrap_var_t "keysetExpression") }
+    { expr }
 ;
 
 %inline kvPair:
@@ -793,7 +752,7 @@ kvOptTrailingList:
 
 realTypeArg:
 | typeRef = typeRef
-    { [ NT typeRef ] |> wrap_case_v |> with_typ (wrap_var_t "realTypeArg") }
+    { typeRef }
 | info = VOID
     { info |> ignore;
       [ Term "void" ] |> wrap_case_v |> with_typ (wrap_var_t "realTypeArg") }
@@ -814,9 +773,9 @@ realTypeArgumentList:
 
 typeArg:
 | typeRef = typeRef
-    { [ NT typeRef ] |> wrap_case_v |> with_typ (wrap_var_t "typeArg") }
+    { typeRef }
 | nonTypeName = nonTypeName
-    { [ NT nonTypeName ] |> wrap_case_v |> with_typ (wrap_var_t "typeArg") }
+    { nonTypeName }
 | info = VOID
     { info |> ignore;
       [ Term "void" ] |> wrap_case_v |> with_typ (wrap_var_t "typeArg") }
@@ -835,7 +794,7 @@ typeArgumentList:
 
 argument:
 | expression = expression
-    { [ NT expression ] |> wrap_case_v |> with_typ (wrap_var_t "argument") }
+    { expression }
 | name = name ASSIGN expression = expression
     { [ NT name; Term "="; NT expression ] |> wrap_case_v |> with_typ (wrap_var_t "argument") }
 | info = DONTCARE
@@ -855,7 +814,7 @@ argumentList:
 
 lvalue:
 | prefixedNonTypeName = prefixedNonTypeName
-    { [ NT prefixedNonTypeName ] |> wrap_case_v |> with_typ (wrap_var_t "lvalue") }
+    { prefixedNonTypeName }
 | info = THIS
     { info |> ignore;
       [ Term "this" ] |> wrap_case_v |> with_typ (wrap_var_t "lvalue") }
@@ -1014,7 +973,7 @@ switchLabel:
     { info |> ignore;
       [ Term "default" ] |> wrap_case_v |> with_typ (wrap_var_t "switchLabel") }
 | expr = nonBraceExpression
-    { [ NT expr ] |> wrap_case_v |> with_typ (wrap_var_t "switchLabel") }
+    { expr }
 ;
 
 switchCase:
@@ -1111,16 +1070,16 @@ statement:
 | stmt = exitStatement
 | stmt = switchStatement
 (* | stmt = forStatement *)
-    { [ NT stmt ] |> wrap_case_v |> with_typ (wrap_var_t "statement") }
+    { stmt }
 ;
 
 statementOrDeclaration:
 | variableDeclaration = variableDeclaration
-    { [ NT variableDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "statementOrDeclaration") }
+    { variableDeclaration }
 | constantDeclaration = constantDeclaration
-    { [ NT constantDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "statementOrDeclaration") }
+    { constantDeclaration }
 | statement = statement
-    { [ NT statement ] |> wrap_case_v |> with_typ (wrap_var_t "statementOrDeclaration") }
+    { statement }
 ;
 
 statOrDeclList:
@@ -1226,9 +1185,9 @@ instantiation:
 
 objDeclaration:
 | functionDeclaration = functionDeclaration
-    { [ NT functionDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "objDeclaration") }
+    { functionDeclaration }
 | instantiation = instantiation
-    { [ NT instantiation ] |> wrap_case_v |> with_typ (wrap_var_t "objDeclaration") }
+    { instantiation }
 ;
 
 objDeclarations:
@@ -1263,7 +1222,7 @@ keyElementList:
 (* Petr4: contains optAnnotations, name = name *)
 actionRef:
 | name = prefixedNonTypeName
-    { [ NT name ] |> wrap_case_v |> with_typ (wrap_var_t "actionRef") }
+    { name }
 | name = prefixedNonTypeName L_PAREN args = argumentList R_PAREN
     { [ NT name; Term "("; NT args; Term ")" ] |> wrap_case_v |> with_typ (wrap_var_t "actionRef") }
 ;
@@ -1337,22 +1296,22 @@ tableDeclaration:
 
 controlBody:
 | body = blockStatement
-    { [ NT body ] |> wrap_case_v |> with_typ (wrap_var_t "controlBody") }
+    { body }
 ;
 
 controlLocalDeclaration:
 | const = constantDeclaration
-    { [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
+    { const }
 | action = actionDeclaration
     { declare_var (name_of_any_declaration action) false;
-      [ NT action ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
+      action }
 | table = tableDeclaration
     { declare_var (name_of_any_declaration table) false;
-        [ NT table ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
+        table }
 | inst = instantiation
-    { [ NT inst ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
+    { inst }
 | var = variableDeclaration
-    { [ NT var ] |> wrap_case_v |> with_typ (wrap_var_t "controlLocalDeclaration") }
+    { var }
 ;
 
 controlLocalDeclarations:
@@ -1431,7 +1390,7 @@ stateExpression:
     { info2 |> ignore;
       [ NT name; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "stateExpression") }
 | selectExpression = selectExpression
-    { [ NT selectExpression ] |> wrap_case_v |> with_typ (wrap_var_t "stateExpression") }
+    { selectExpression }
 ;
 
 transitionStatement:
@@ -1451,19 +1410,19 @@ parserBlockStatement:
 
 parserStatement:
 | stmt = assignmentOrMethodCallStatement
-    { [ NT stmt ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+    { stmt }
 | app = directApplication
-    { [ NT app ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+    { app }
 | stmt = emptyStatement
-    { [ NT stmt ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+    { stmt }
 | var = variableDeclaration
-    { [ NT var ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+    { var }
 | const = constantDeclaration
-    { [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+    { const }
 | block = parserBlockStatement
-    { [ NT block ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+    { block }
 | cond = conditionalStatement
-    { [ NT cond ] |> wrap_case_v |> with_typ (wrap_var_t "parserStatement") }
+    { cond }
 ;
 
 parserStatements:
@@ -1534,13 +1493,13 @@ p4program:
 
 parserLocalElement:
 | const = constantDeclaration
-    { [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "parserLocalElement") }
+    { const }
 | var = variableDeclaration
-    { [ NT var ] |> wrap_case_v |> with_typ (wrap_var_t "parserLocalElement") }
+    { var }
 | inst = instantiation
-    { [ NT inst ] |> wrap_case_v |> with_typ (wrap_var_t "parserLocalElement") }
+    { inst }
 | valueSet = valueSetDeclaration
-    { [ NT valueSet ] |> wrap_case_v |> with_typ (wrap_var_t "parserLocalElement") }
+    { valueSet }
 ;
 
 (* Petr4 X / Spec O *)

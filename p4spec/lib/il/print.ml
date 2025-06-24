@@ -21,14 +21,15 @@ let string_of_defid defid = "$" ^ defid.it
 
 (* Atoms *)
 
-let string_of_atom atom = Atom.string_of_atom atom.it
+let string_of_atom atom = Format.asprintf "\"%s\"" 
+  (Atom.string_of_atom atom.it)
 
 let string_of_atoms atoms =
   match atoms with
   | [] -> ""
   | _ ->
-      Format.asprintf "`%s`"
-        (atoms |> List.map string_of_atom |> String.concat "")
+      Format.asprintf "%s"
+      (atoms |> List.map string_of_atom |> String.concat "; ")
 
 (* Mixfix operators *)
 
@@ -55,16 +56,24 @@ let rec string_of_typ typ =
   | IterT (typ, iter) -> string_of_typ typ ^ string_of_iter iter
   | FuncT -> "func"
 
+and string_of_typ' typ =
+  match typ with
+  | BoolT -> "bool"
+  | NumT numtyp -> Num.string_of_typ numtyp
+  | TextT -> "text"
+  | VarT (typid, targs) -> string_of_typid typid ^ string_of_targs targs
+  | TupleT typs -> "(" ^ string_of_typs ", " typs ^ ")"
+  | IterT (typ, iter) -> string_of_typ typ ^ string_of_iter iter
+  | FuncT -> "func"
+
 and string_of_typs sep typs = String.concat sep (List.map string_of_typ typs)
 
 and string_of_nottyp nottyp =
   let mixop, typs = nottyp.it in
-  let len = List.length mixop + List.length typs in
-  List.init len (fun idx ->
-      if idx mod 2 = 0 then idx / 2 |> List.nth mixop |> string_of_atoms
-      else idx / 2 |> List.nth typs |> string_of_typ)
-  |> List.filter_map (fun str -> if str = "" then None else Some str)
-  |> String.concat " "
+  (String.concat "; "
+  (List.map (fun atoms -> "[" ^ string_of_atoms atoms ^ "]") mixop))
+  ^ " / " ^ (String.concat "; " (List.map string_of_typ typs))
+  
 
 and string_of_deftyp deftyp =
   match deftyp.it with
@@ -104,7 +113,7 @@ and string_of_value ?(short = false) ?(level = 0) value =
                   (string_of_value ~short ~level:(level + 2) value))
               valuefields))
   | CaseV (mixop, _) when short -> string_of_mixop mixop
-  | CaseV (mixop, values) -> "(" ^ string_of_notval (mixop, values) ^ ")"
+  | CaseV (mixop, values) -> "CaseV(" ^ string_of_notval (mixop, values) ^ ")"
   | TupleV values ->
       Format.asprintf "(%s)"
         (String.concat ", "
@@ -127,12 +136,9 @@ and string_of_value ?(short = false) ?(level = 0) value =
 
 and string_of_notval notval =
   let mixop, values = notval in
-  let len = List.length mixop + List.length values in
-  List.init len (fun idx ->
-      if idx mod 2 = 0 then idx / 2 |> List.nth mixop |> string_of_atoms
-      else idx / 2 |> List.nth values |> string_of_value)
-  |> List.filter_map (fun str -> if str = "" then None else Some str)
-  |> String.concat " "
+  (String.concat ", "
+  (List.map (fun atoms -> "[" ^ string_of_atoms atoms ^ "]") mixop))
+        ^ " / " ^ (String.concat ", " (List.map string_of_value values))
 
 (* Operators *)
 
