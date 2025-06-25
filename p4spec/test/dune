@@ -137,9 +137,3 @@
 ;      ../../../../p4c/testdata/p4_16_samples
 ;      -d
 ;      ../../../../p4c/testdata/p4_16_errors)))))
-
-(executable
- (public_name test_parser)
- (name test_parser)
- (libraries parsing util xl il domain)
- (flags (:standard -w -32-34)))
