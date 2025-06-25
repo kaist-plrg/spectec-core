@@ -6,6 +6,7 @@ open Ast_utils
 module Num = Num
 module F = Format
 
+let verbose = ref false
 let pp_atom fmt (atom: atom) : unit =
   F.fprintf fmt "%s" (Atom.string_of_atom atom.it)
 
@@ -18,7 +19,6 @@ let pp_atoms fmt (atoms: atom list) : unit =
     F.fprintf fmt "%s" (String.concat "" atoms)
 
 let rec pp_default_case_v fmt value : unit =
-  let verbose = false in
   match value.it with
   | CaseV (mixop, values) ->
     let len = List.length mixop + List.length values in
@@ -29,17 +29,22 @@ let rec pp_default_case_v fmt value : unit =
         idx / 2 |> List.nth values |> F.asprintf "%a" pp_value)
     |> List.filter (fun str -> str <> "")
     |> String.concat " "
-   |> if verbose then (
+   |> if !verbose then (
       F.fprintf fmt "@%s_< %s>_@" (id_of_case_v value)
     ) else 
     F.fprintf fmt "%s"
   | _ -> failwith "@pp_default_case_v: Expected CaseV value"
 
+and pp_num fmt (num: num) : unit =
+  match num with
+  | `Nat n -> F.fprintf fmt "%s" (Bigint.to_string n)
+  | `Int i -> F.fprintf fmt "%s" (
+      (if i >= Bigint.zero then "" else "-") ^ Bigint.to_string (Bigint.abs i))
 
 and pp_value fmt (value: value) : unit =
   match value.it with
   | BoolV b -> F.fprintf fmt "%b" b
-  | NumV n -> F.fprintf fmt "%s" (Num.string_of_num n)
+  | NumV n -> F.fprintf fmt "%a" pp_num n
   | TextV t -> F.fprintf fmt "%s" t
   | StructV _ -> failwith "not implemented"
   | CaseV _ -> pp_case_v fmt value

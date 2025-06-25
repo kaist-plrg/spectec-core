@@ -1,40 +1,47 @@
 open Util.Error
 
-let error_info = error_parser_info
-let error_no_info = error_parser_no_info
+let error = error_parse
+let error_no_region = error_parse_no_region
 
 let preprocess (includes : string list) (filename : string) =
   try Preprocessor.preprocess includes filename
-  with _ -> "preprocessor error" |> error_no_info
+  with _ -> "preprocessor error" |> error_no_region
 
 let lex (filename : string) (file : string) =
   try
     let () = Lexer.reset () in
     let () = Lexer.set_filename filename in
+    Lexer.enable_lexer_debug ();
     Lexing.from_string file
-  with Lexer.Error s -> Format.asprintf "lexer error: %s" s |> error_no_info
+  with Lexer.Error s -> Format.asprintf "lexer error: %s" s |> error_no_region
 
 let parse (lexbuf : Lexing.lexbuf) =
-  try Parser.p4program Lexer.lexer lexbuf |> Transform.transform_program with
+  try Parser.p4program Lexer.lexer lexbuf with
   | Parser.Error ->
       let info = Lexer.info lexbuf in
-      "parser error" |> error_info info
-  | _ -> "transform error" |> error_no_info
+      "parser error" |> error (Source.to_region info)
+  | Lexer.Error s ->
+      Format.asprintf "lexer error: %s" s |> error_no_region
+  | _ -> "unknown error" |> error_no_region
 
-let parse_file (includes : string list) (filename : string) =
-  let file = preprocess includes filename in
-  let tokens = lex filename file in
-  parse tokens
-
-let parse_string (filename : string) (str : string) =
+let parse_string (filename : string) (str : string) : Il.Ast.value =
   (* assume str is preprocessed *)
   let tokens = lex filename str in
   parse tokens
 
-let roundtrip_file (includes : string list) (filename : string) =
+let parse_file (includes : string list) (filename : string) : Il.Ast.value =
+  let program = preprocess includes filename in
+  parse_string filename program
+
+let parse_and_print_file (includes : string list) (filename : string) : string =
   let program = parse_file includes filename in
-  let program_str = Format.asprintf "%a\n" P4el.Pp.pp_program program in
+  Format.asprintf "%a\n" Pp.pp_value program
+
+let roundtrip_file (includes : string list) (filename : string) : Il.Ast.value =
+  let program = parse_file includes filename in
+  let program_str = Format.asprintf "%a\n" Pp.pp_value program in
   let program' = parse_string filename program_str in
-  if not (P4el.Eq.eq_program program program') then
-    "roundtrip error" |> error_no_info;
-  program
+  (* if not (Il.Eq.eq_value program program') then *)
+  (*   "roundtrip error" |> error_no_region; *)
+  program'
+

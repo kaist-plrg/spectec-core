@@ -17,6 +17,7 @@ let warn (at : region) (category : string) (msg : string) =
 (* Parser errors *)
 
 let error_parse (at : region) (msg : string) = raise (ParseError (at, msg))
+let error_parse_no_region (msg : string) = raise (ParseError (no_region, msg))
 
 (* Elaboration errors *)
 

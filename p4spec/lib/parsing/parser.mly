@@ -61,6 +61,8 @@
 %left DOT
 
 %start <Il.Ast.value> p4program
+%start <Il.Ast.value> variableDeclaration
+%start <Il.Ast.value> typeDeclaration
 
 %%
 
