@@ -17,9 +17,10 @@
 open Lexing
 open Context
 open Il.Ast
-open Xl.Atom
 open Util.Source
 open Parser
+open Ast_utils
+module F = Format
 
 exception Error of string
 
@@ -88,7 +89,7 @@ let strip_prefix s =
 
 let parse_int n _info =
   let i = Bigint.of_string (sanitize n) in
-  let mixop = [ [ Atom "INT" $ no_region ]; [] ] in
+  let mixop = [ [ ]; [ wrap_atom "PHTM_1" ] ] in
   let value_int =
     let vid = Value.fresh () in
     let typ = NumT `IntT in
@@ -96,7 +97,7 @@ let parse_int n _info =
   in
   let value =
     let vid = Value.fresh () in
-    let typ = VarT ("num" $ no_region, []) in
+    let typ = VarT ("number" $ no_region, []) in
     CaseV (mixop, [ value_int ]) $$$ { vid; typ }
   in
   value
@@ -112,7 +113,7 @@ let parse_width_int s n _info =
       if (int_of_string width < 2)
       then raise (Error "signed integers must have width at least 2")
       else 
-        let mixop = [ [ Atom "FINT" $ no_region ]; []; [] ] in
+        let mixop = [ [ ]; [ wrap_atom "S" ]; [] ] in
         let value_width =
           let vid = Value.fresh () in
           let typ = NumT `NatT in
@@ -125,7 +126,7 @@ let parse_width_int s n _info =
         in
         (mixop, [ value_width; value_int ])
     | "w" ->
-      let mixop = [ [ Atom "FBIT" $ no_region ]; []; [] ] in
+      let mixop = [ [ ]; [ wrap_atom "W" ]; [] ] in
       let value_width =
         let vid = Value.fresh () in
         let typ = NumT `NatT in
@@ -142,7 +143,7 @@ let parse_width_int s n _info =
   in
       let value =
       let vid = Value.fresh () in
-      let typ = VarT ("num" $ no_region, []) in
+      let typ = VarT ("number" $ no_region, []) in
       CaseV (mixop, values) $$$ { vid; typ }
     in
     value
@@ -382,7 +383,7 @@ rule tokenize = parse
   | "++"
       { PLUSPLUS (info lexbuf) }
   | "&&&"
-      { MASK (info lexbuf) }
+      {  MASK (info lexbuf) }
   | "..."
       { DOTS (info lexbuf) }
   | ".."

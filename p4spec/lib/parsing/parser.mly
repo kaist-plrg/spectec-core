@@ -2,6 +2,7 @@
   open Il.Ast
   open Context
   open Ast_utils
+  open Extract
 
   let declare_var_of_il (v: value) (b: bool) : unit =
     let id = id_of_name v in
@@ -479,7 +480,7 @@ parameter:
 
 parameterList:
 | params = separated_list(COMMA, parameter)
-    { declare_vars (List.map name_of_any_declaration params);
+    { declare_vars (List.map id_of_parameter params);
       wrap_list_v params "parameter"}
 ;
 
@@ -1139,7 +1140,7 @@ methodPrototypes:
 
 externDeclaration:
 (* TODO: nonTypeName -> invoke push_externName *)
-| anno = optAnnotations info1 = EXTERN name = nonTypeName type_params = optTypeParameters
+| anno = optAnnotations info1 = EXTERN name = push_externName type_params = optTypeParameters
     L_BRACE protos = methodPrototypes info2 = R_BRACE pop_scope
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
@@ -1321,8 +1322,7 @@ controlLocalDeclarations:
 ;
 
 controlTypeDeclaration:
-(* TODO: name to push_name *)
-| anno = optAnnotations info1 = CONTROL name = name type_params = optTypeParameters
+| anno = optAnnotations info1 = CONTROL name = push_name type_params = optTypeParameters
     L_PAREN params = parameterList info2 = R_PAREN
     { let tags = Source.merge info1 info2 in
       tags |> ignore;

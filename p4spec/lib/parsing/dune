@@ -1,7 +1,7 @@
 (library
  (name parsing)
  (libraries util domain xl il)
- (modules source context parser value lexer ast_utils pp))
+ (modules source context extract parser value lexer ast_utils pp parse))
 
 (ocamllex
  (modules lexer))
