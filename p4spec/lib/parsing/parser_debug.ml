@@ -4,11 +4,7 @@ module MI = MenhirLib.General
 module I = Parser.Incremental
 module Engine = Parser.MenhirInterpreter
 
-type debug_level = 
-  | Quiet
-  | Basic 
-  | Verbose
-  | Full
+type debug_level = Quiet | Basic | Verbose | Full
 
 let debug_level = ref Basic
 let set_debug_level level = debug_level := level
@@ -128,25 +124,27 @@ let state_description state_num =
 let rec collect_stack env acc =
   match Parser.MenhirInterpreter.top env with
   | None -> List.rev acc
-  | Some (Parser.MenhirInterpreter.Element (state, _, _, _)) ->
+  | Some (Parser.MenhirInterpreter.Element (state, _, _, _)) -> (
       let state_num = Parser.MenhirInterpreter.number state in
       match Parser.MenhirInterpreter.pop env with
       | None -> List.rev (state_num :: acc)
-      | Some env' -> collect_stack env' (state_num :: acc)
+      | Some env' -> collect_stack env' (state_num :: acc))
 
 let print_state env =
   let current_state = Parser.MenhirInterpreter.current_state_number env in
   let states = collect_stack env [] in
-  
+
   match states with
-  | [] -> 
+  | [] ->
       if !debug_level >= Basic then
-        Printf.printf "Parser: Current state: %d (%s)\n" current_state (state_description current_state);
+        Printf.printf "Parser: Current state: %d (%s)\n" current_state
+          (state_description current_state);
       if !debug_level >= Verbose then
         Printf.printf "Parser: No stack elements\n"
   | _ ->
       if !debug_level >= Basic then
-        Printf.printf "Parser: Current state: %d (%s)\n" current_state (state_description current_state);
+        Printf.printf "Parser: Current state: %d (%s)\n" current_state
+          (state_description current_state);
       if !debug_level >= Verbose then
         Printf.printf "Parser: Stack: [%s]\n"
           (String.concat "; " (List.map string_of_int states))
@@ -156,25 +154,23 @@ let debug_parse lexer lexbuf =
   let checkpoint = I.p4program lexbuf.lex_curr_p in
   let rec loop checkpoint =
     (match checkpoint with
-    | Engine.InputNeeded env ->
-        print_state env
-    | Engine.Shifting (env, _, _) ->
-        print_state env
+    | Engine.InputNeeded env -> print_state env
+    | Engine.Shifting (env, _, _) -> print_state env
     | Engine.AboutToReduce (env, _) ->
         print_state env;
         if !debug_level >= Verbose then
           Printf.printf "Parser: About to reduce\n"
     | Engine.HandlingError env ->
         print_state env;
-        if !debug_level >= Basic then
-          Printf.printf "Parser: Handling error\n"
+        if !debug_level >= Basic then Printf.printf "Parser: Handling error\n"
     | _ -> ());
     match checkpoint with
     | Engine.InputNeeded _env ->
-        let (token, _, _) = supplier () in
+        let token, _, _ = supplier () in
         if !debug_level >= Verbose then
           Printf.printf "Parser: Consuming token: %s\n" (token_name token);
-        loop (Engine.offer checkpoint (token, Lexing.dummy_pos, Lexing.dummy_pos))
+        loop
+          (Engine.offer checkpoint (token, Lexing.dummy_pos, Lexing.dummy_pos))
     | Engine.Shifting _ | Engine.AboutToReduce _ ->
         loop (Engine.resume checkpoint)
     | Engine.HandlingError _env ->
@@ -185,14 +181,13 @@ let debug_parse lexer lexbuf =
         if !debug_level >= Basic then
           Printf.printf "Parser: Parsing completed successfully\n";
         v
-    | Engine.Rejected ->
-        failwith "Parser: Rejected"
+    | Engine.Rejected -> failwith "Parser: Rejected"
   in
   if !debug_level >= Basic then
     Printf.printf "Parser: Starting parse with debug level %s\n"
       (match !debug_level with
-       | Quiet -> "quiet"
-       | Basic -> "basic"
-       | Verbose -> "verbose"
-       | Full -> "full");
+      | Quiet -> "quiet"
+      | Basic -> "basic"
+      | Verbose -> "verbose"
+      | Full -> "full");
   loop checkpoint

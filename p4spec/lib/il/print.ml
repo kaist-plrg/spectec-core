@@ -21,15 +21,14 @@ let string_of_defid defid = "$" ^ defid.it
 
 (* Atoms *)
 
-let string_of_atom atom = Format.asprintf "\"%s\"" 
-  (Atom.string_of_atom atom.it)
+let string_of_atom atom = Format.asprintf "%s" (Atom.string_of_atom atom.it)
 
 let string_of_atoms atoms =
   match atoms with
   | [] -> ""
   | _ ->
       Format.asprintf "%s"
-      (atoms |> List.map string_of_atom |> String.concat "; ")
+        (atoms |> List.map string_of_atom |> String.concat "; ")
 
 (* Mixfix operators *)
 
@@ -70,10 +69,10 @@ and string_of_typs sep typs = String.concat sep (List.map string_of_typ typs)
 
 and string_of_nottyp nottyp =
   let mixop, typs = nottyp.it in
-  (String.concat "; "
-  (List.map (fun atoms -> "[" ^ string_of_atoms atoms ^ "]") mixop))
-  ^ " / " ^ (String.concat "; " (List.map string_of_typ typs))
-  
+  String.concat "; "
+    (List.map (fun atoms -> "[" ^ string_of_atoms atoms ^ "]") mixop)
+  ^ " / "
+  ^ String.concat "; " (List.map string_of_typ typs)
 
 and string_of_deftyp deftyp =
   match deftyp.it with
@@ -99,7 +98,7 @@ and string_of_value ?(short = false) ?(level = 0) value =
   match value.it with
   | BoolV b -> string_of_bool b
   | NumV n -> Num.string_of_num n
-  | TextV s -> "\"" ^ s ^ "\""
+  | TextV s -> Printf.sprintf {|"%s"|} s
   | StructV [] -> "{}"
   | StructV valuefields when short ->
       Format.asprintf "{ .../%d }" (List.length valuefields)
@@ -113,7 +112,7 @@ and string_of_value ?(short = false) ?(level = 0) value =
                   (string_of_value ~short ~level:(level + 2) value))
               valuefields))
   | CaseV (mixop, _) when short -> string_of_mixop mixop
-  | CaseV (mixop, values) -> "CaseV(" ^ string_of_notval (mixop, values) ^ ")"
+  | CaseV (mixop, values) -> "@(" ^ string_of_notval (mixop, values) ^ ")"
   | TupleV values ->
       Format.asprintf "(%s)"
         (String.concat ", "
@@ -136,9 +135,10 @@ and string_of_value ?(short = false) ?(level = 0) value =
 
 and string_of_notval notval =
   let mixop, values = notval in
-  (String.concat ", "
-  (List.map (fun atoms -> "[" ^ string_of_atoms atoms ^ "]") mixop))
-        ^ " / " ^ (String.concat ", " (List.map string_of_value values))
+  String.concat ", "
+    (List.map (fun atoms -> "[" ^ string_of_atoms atoms ^ "]") mixop)
+  ^ " / "
+  ^ String.concat ", " (List.map string_of_value values)
 
 (* Operators *)
 

@@ -17,10 +17,11 @@ let lex (filename : string) (file : string) =
 
 let parse (lexbuf : Lexing.lexbuf) =
   let debug_level = Some "quiet" in
-  try 
+  try
     match debug_level with
     | Some level ->
-        let debug_level = match level with
+        let debug_level =
+          match level with
           | "quiet" -> Parser_debug.Quiet
           | "basic" -> Parser_debug.Basic
           | "verbose" -> Parser_debug.Verbose
@@ -29,14 +30,15 @@ let parse (lexbuf : Lexing.lexbuf) =
         in
         Parser_debug.set_debug_level debug_level;
         Parser_debug.debug_parse Lexer.lexer lexbuf
-    | None ->
-        Parser.p4program Lexer.lexer lexbuf
+    | None -> Parser.p4program Lexer.lexer lexbuf
   with
   | Parser.Error ->
       let info = Lexer.info lexbuf in
       let pos = Lexing.lexeme_start_p lexbuf in
-      let msg = Format.asprintf "syntax error at line %d, column %d" 
-        pos.Lexing.pos_lnum (pos.Lexing.pos_cnum - pos.Lexing.pos_bol) in
+      let msg =
+        Format.asprintf "syntax error at line %d, column %d" pos.Lexing.pos_lnum
+          (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)
+      in
       error (Source.to_region info) msg
   | e -> raise e
 
@@ -56,4 +58,3 @@ let roundtrip_file (includes : string list) (filename : string) : Il.Ast.value =
   (* if not (Il.Eq.eq_value program program') then *)
   (*   "roundtrip error" |> error_no_region; *)
   program'
-

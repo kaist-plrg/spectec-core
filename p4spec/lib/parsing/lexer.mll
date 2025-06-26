@@ -226,9 +226,9 @@ rule tokenize = parse
   | (sign as s) (int as n)
       { NUMBER (parse_width_int s n (info lexbuf), n) }
   | "abstract"
-{ debug_token "abstract"; ABSTRACT (info lexbuf) }
+      { debug_token "abstract"; ABSTRACT (info lexbuf) }
   | "action"
-{ debug_token "action"; ACTION (info lexbuf) }
+      { debug_token "action"; ACTION (info lexbuf) }
   | "actions"
       { debug_token "actions"; ACTIONS (info lexbuf) }
   | "apply"
@@ -236,7 +236,7 @@ rule tokenize = parse
   | "bool"
       { debug_token "bool"; BOOL (info lexbuf) }
   | "bit"
-{ debug_token "bit"; BIT (info lexbuf) }
+      { debug_token "bit"; BIT (info lexbuf) }
   | "break"
       { debug_token "break"; BREAK (info lexbuf) }
   | "const"
@@ -247,8 +247,6 @@ rule tokenize = parse
       { debug_token "control"; CONTROL (info lexbuf) }
   | "default"
       { debug_token "default"; DEFAULT (info lexbuf) }
-  | "default_action"
-      { debug_token "default_action"; DEFAULT_ACTION (info lexbuf) }
   | "else"
       { debug_token "else"; ELSE (info lexbuf) }
   | "entries"
@@ -413,7 +411,7 @@ rule tokenize = parse
   | ".."
       { debug_token ".."; RANGE (info lexbuf) }
   | eof
-{ debug_token "EOF"; END (info lexbuf) }
+      { debug_token "EOF"; END (info lexbuf) }
   | _
       { let text = lexeme lexbuf in
         let value =

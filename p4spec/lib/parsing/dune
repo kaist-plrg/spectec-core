@@ -1,7 +1,18 @@
 (library
  (name parsing)
  (libraries util domain xl il core_unix menhirLib)
- (modules source context extract parser value lexer preprocessor ast_utils pp parse parser_debug))
+ (modules
+  source
+  context
+  extract
+  parser
+  value
+  lexer
+  preprocessor
+  ast_utils
+  pp
+  parse
+  parser_debug))
 
 (ocamllex
  (modules lexer))

@@ -335,20 +335,23 @@ let interesting_command =
        | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
 
 let parse_command =
-  Core.Command.basic ~summary:"parse a P4 program with options for printing and roundtrip"
+  Core.Command.basic
+    ~summary:"parse a P4 program with options for printing and roundtrip"
     (let open Core.Command.Let_syntax in
      let open Core.Command.Param in
      let%map includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
-     and filename_p4 = flag "-p" (required string) ~doc:"p4 file to typecheck"
+     and filename_p4 =
+       flag "-p" (required string) ~doc:"p4 file to typecheck"
      in
      fun () ->
        try
-        let parsed_il = Parsing.Parse.parse_file includes_p4 filename_p4 in
-        Format.printf "✓ Parse successful\n";
-        Format.printf "%a\n" Parsing.Pp.pp_value parsed_il;
+         let parsed_il = Parsing.Parse.parse_file includes_p4 filename_p4 in
+         Format.printf "✓ Parse successful\n";
+         Format.printf "%a\n" Parsing.Pp.pp_value parsed_il
        with
        | Sys_error msg -> Format.printf "✗ File error: %s\n" msg
-       | ParseError (at, msg) -> Format.printf "✗ Parse error: %s\n" (string_of_error at msg)
+       | ParseError (at, msg) ->
+           Format.printf "✗ Parse error: %s\n" (string_of_error at msg)
        | Parsing.Lexer.Error msg -> Format.printf "✗ Lexer Error: %s\n" msg
        | e -> Format.printf "unknown error: %s\n" (Printexc.to_string e))
 
