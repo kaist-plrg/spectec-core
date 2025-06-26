@@ -7,19 +7,22 @@
  (action
   (progn
    (ignore-outputs
-    (diff elab.expected elab.actual))
-   (ignore-outputs
-    (diff struct.expected struct.actual))
-   (ignore-outputs
-    (diff run_il_pos_p4c.expected run_il_pos_p4c.actual))
-   (ignore-outputs
-    (diff run_il_neg_p4c.expected run_il_neg_p4c.actual))
-   (ignore-outputs
-    (diff run_sl_pos_p4c.expected run_sl_pos_p4c.actual))
-   (ignore-outputs
-    (diff run_sl_neg_p4c.expected run_sl_neg_p4c.actual))
-   (ignore-outputs
-    (diff cov_sl_p4c.expected cov_sl_p4c.actual)))))
+    (diff parser_p4c.expected parser_p4c.actual)))))
+
+;    (ignore-outputs
+;     (diff elab.expected elab.actual))
+;    (ignore-outputs
+;     (diff struct.expected struct.actual))
+;    (ignore-outputs
+;     (diff run_il_pos_p4c.expected run_il_pos_p4c.actual))
+;    (ignore-outputs
+;     (diff run_il_neg_p4c.expected run_il_neg_p4c.actual))
+;    (ignore-outputs
+;     (diff run_sl_pos_p4c.expected run_sl_pos_p4c.actual))
+;    (ignore-outputs
+;     (diff run_sl_neg_p4c.expected run_sl_neg_p4c.actual))
+;    (ignore-outputs
+;     (diff cov_sl_p4c.expected cov_sl_p4c.actual)))))
 
 ; (rule
 ;  (target elab.actual)
@@ -137,3 +140,20 @@
 ;      ../../../../p4c/testdata/p4_16_samples
 ;      -d
 ;      ../../../../p4c/testdata/p4_16_errors)))))
+
+(rule
+ (target parser_p4c.actual)
+ (action
+  (with-stdout-to
+   parser_p4c.actual
+   (with-stderr-to
+    parser_p4c.err
+    (run
+     ./test.exe
+     parser
+     -i
+     ../../../../p4c/p4include
+     -e
+     ../../../../excludes
+     -d
+     ../../../../p4c/testdata/p4_16_samples)))))
