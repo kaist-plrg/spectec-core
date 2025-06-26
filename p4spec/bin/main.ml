@@ -340,30 +340,17 @@ let parse_command =
      let open Core.Command.Param in
      let%map includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and filename_p4 = flag "-p" (required string) ~doc:"p4 file to typecheck"
-     (* and print = flag "-p" no_arg ~doc:"print the parsed AST" *)
-     (* and roundtrip = flag "-r" no_arg ~doc:"perform roundtrip parse and verify" *)
      in
      fun () ->
        try
-         (* if roundtrip then ( *)
-         (*   let program = Parsing.roundtrip_file includes filename in *)
-         (*   Format.printf "✓ Roundtrip successful\n"; *)
-         (*   if print then *)
-         (*     Format.printf "AST:\n%a\n" Pp.pp_value program *)
-         (* ) else if print then ( *)
-           let ast_str = Parsing.Parse.parse_and_print_file includes_p4 filename_p4 in
-           Format.printf "✓ Parse successful\n";
-Format.printf "AST:\n%s" ast_str;
-         (* ) else ( *)
-         (*   let _program = Parsing.parse_file includes filename in *)
-         (*   Format.printf "✓ Parse successful\n" *)
-         (* ) *)
+        let parsed_il = Parsing.Parse.parse_file includes_p4 filename_p4 in
+        Format.printf "✓ Parse successful\n";
+        Format.printf "%a\n" Parsing.Pp.pp_value parsed_il;
        with
        | Sys_error msg -> Format.printf "✗ File error: %s\n" msg
        | ParseError (at, msg) -> Format.printf "✗ Parse error: %s\n" (string_of_error at msg)
-       | _ -> Format.printf "unknwon error")
-       (*      Printf.printf "✗ Parse error:\n0 | %s\n- | %s^\n"  *)
-       (*  input (List.init (Lexing.lexeme_start lexbuf) (fun _ -> " ") |> String.concat ""); *)
+       | Parsing.Lexer.Error msg -> Format.printf "✗ Lexer Error: %s\n" msg
+       | e -> Format.printf "unknown error: %s\n" (Printexc.to_string e))
 
 let command =
   Core.Command.group
