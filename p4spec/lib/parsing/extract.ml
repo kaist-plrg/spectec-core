@@ -1,6 +1,7 @@
 open Il.Ast
 open Util.Source
 open Ast_utils
+module F = Format
 
 (* name = nonTypeName | LIST | typeIdentifier *)
 let id_of_name (value : value) : string =
@@ -38,14 +39,18 @@ let name_of_function_prototype (v : value) : string =
 
 (* externDeclaration *)
 let name_of_extern_declaration (v : value) : string =
-  assert (id_of_case_v v = "externDeclaration");
-  match v.it with
-  (* optAnnotations EXTERN nonTypeName optTypeParameters `{ methodPrototypes } *)
-  | CaseV (_, [ _; nonTypeName; _; _ ]) -> id_of_name nonTypeName
-  (* optAnnotations EXTERN functionPrototype `; *)
-  | CaseV (_, [ _; functionPrototype; _ ]) ->
+  match flatten_case_v v with
+  | ( "externDeclaration",
+      [ []; [ "EXTERN" ]; []; [ "{" ]; [ "}" ] ],
+      [ _; nonTypeName; _; _ ] ) ->
+      id_of_name nonTypeName
+  | "externDeclaration", [ []; [ "EXTERN" ]; [ ";" ] ], [ _; functionPrototype ]
+    ->
       name_of_function_prototype functionPrototype
-  | _ -> failwith "invalid externDeclaration structure"
+  | _ ->
+      failwith
+        (Printf.sprintf "invalid externDeclaration structure: %s"
+           (Il.Print.string_of_value v))
 
 let name_of_instantiation (v : value) : string =
   assert (id_of_case_v v = "instantiation");
