@@ -118,8 +118,11 @@ let state_description state_num =
   | 4 -> "tuple <"
   | 13 -> "{_typeId}"
   | 14 -> "{_id}"
+  | 68 -> "headerStackType -> specializedType"
+  | 69 -> "headerStackType -> specializedType ["
   | 536 -> "list(methodPrototype)"
-  | 545 -> "list_aux(methodPrototype)"
+  | 545 -> "@R: methodPrototype -> typeIdentifier ( parameterList )"
+  | 546 -> "@R: list_aux(methodPrototype) -> list_aux(methodPrototype) methodPrototype"
   | _ -> "unknown"
 
 (* Recursively collect stack states using top and pop *)
@@ -137,17 +140,14 @@ let print_state env =
   let states = collect_stack env [] in
   let debug_level = get_debug_level () in
 
+  if Debug_config.debug_enabled debug_level Basic then
+    Printf.printf "Parser: Current state: \n  > %d:\n    (%s)\n" current_state
+      (state_description current_state);
   match states with
   | [] ->
-      if Debug_config.debug_enabled debug_level Basic then
-        Printf.printf "Parser: Current state: %d (%s)\n" current_state
-          (state_description current_state);
       if Debug_config.debug_enabled debug_level Verbose then
         Printf.printf "Parser: No stack elements\n"
   | _ ->
-      if Debug_config.debug_enabled debug_level Basic then
-        Printf.printf "Parser: Current state: %d (%s)\n" current_state
-          (state_description current_state);
       if Debug_config.debug_enabled debug_level Verbose then
         Printf.printf "Parser: Stack: [%s]\n"
           (String.concat "; " (List.map string_of_int states))

@@ -67,17 +67,8 @@ and pp_value fmt (value : value) : unit =
 
 and pp_case_v fmt (value : value) : unit =
   match flatten_case_v value with
-  | "const", [ [ "CONST" ] ], [] -> F.fprintf fmt "const"
   | "number", [ []; [ "PHTM_1" ] ], [ value_int ] ->
       F.fprintf fmt "%a" pp_value value_int
-  | "number", [ []; [ "W" ]; [] ], [ value_nat; value_int ] ->
-      F.fprintf fmt "%aw%a" pp_value value_nat pp_value value_int
-  | "number", [ []; [ "S" ]; [] ], [ value_nat; value_int ] ->
-      F.fprintf fmt "%as%a" pp_value value_nat pp_value value_int
-  | "number", _, _ ->
-      failwith
-        (Printf.sprintf "@pp_case_v: Ill-formed number %s"
-           (Il.Print.string_of_value value))
   | "stringLiteral", [ []; [ "PHTM_2" ] ], [ value_text ] ->
       pp_value fmt value_text
   | "identifier", [ [ "$" ]; [] ], [ value_text ] -> pp_value fmt value_text
