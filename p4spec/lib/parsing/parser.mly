@@ -1147,7 +1147,7 @@ methodPrototype:
       tags |> ignore;
       [ NT anno; Term "ABSTRACT"; NT proto; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "methodPrototype") }
 (* Petr4: alias methodName in place of typeIdentifier *)
-| anno = optAnnotations tid = typeIdentifier L_PAREN params = parameterList info2 = R_PAREN
+| anno = optAnnotations tid = typeIdentifier L_PAREN params = parameterList R_PAREN info2 = SEMICOLON
     { info2 |> ignore;
       [ NT anno; NT tid; Term "("; NT params; Term ")"; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "methodPrototype") }
 ;
