@@ -8,15 +8,21 @@
     let id = id_of_name v in
     declare_var id b
   
-  let _declare_vars_of_il (vs: value list) : unit =
-    List.iter (fun s -> declare_var_of_il s false) vs
+  let declare_vars_of_il (v: value) : unit =
+    match v.it with
+    | ListV vs ->
+        List.iter (fun s -> declare_var_of_il s false) vs
+    | _ -> failwith "@declare_vars_of_il: expected a ListV value"
 
   let declare_type_of_il (v: value) (b: bool) : unit =
     let id = id_of_name v in
     declare_type id b
 
-  let declare_types_of_il (vs: value list) : unit =
-    List.iter (fun s -> declare_type_of_il s false) vs
+  let declare_types_of_il (v: value) : unit =
+    match v.it with
+    | ListV vs ->
+        List.iter (fun s -> declare_type_of_il s false) vs
+    | _ -> failwith "@declare_types_of_il: expected a ListV value"
 %}
 
 (**************************** TOKENS ******************************)
@@ -68,17 +74,15 @@
 %type <Il.Ast.value> declaration
 %type <Il.Ast.value> expressionOptTrailingList optTrailingComma kvList const optCONST number stringLiteral dotPrefix identifier typeIdentifier nonTypeName prefixedNonTypeName nonTableKwName prefixedType typeName name identifierList member direction baseType specializedType namedType headerStackType listType tupleType typeRef typeOrVoid typeParameterList typeParameters optTypeParameters parameter parameterList constructorParameters optConstructorParameters nonBraceExpression expression expressionList simpleKeysetExpression reducedSimpleKeysetExpression simpleExpressionList tupleKeysetExpression keysetExpression kvTrailingList kvOptTrailingList realTypeArg realTypeArgumentList typeArg typeArgumentList argument argumentList lvalue initialValue optInitializer variableDeclarationWithoutSemicolon constantDeclaration assignmentOrMethodCallStatementWithoutSemicolon assignmentOrMethodCallStatement directApplication conditionalStatement emptyStatement blockStatement returnStatement breakStatement continueStatement exitStatement switchLabel switchCase switchCases switchStatement statement statementOrDeclaration statOrDeclList matchKindDeclaration errorDeclaration functionPrototype methodPrototype methodPrototypes externDeclaration externName functionDeclaration objInitializer instantiation objDeclaration objDeclarations actionDeclaration keyElement keyElementList actionRef action actionList entryPriority entry entriesList
 %type <Il.Ast.value> annotation annotationToken annotations controlBody controlDeclaration controlLocalDeclaration controlLocalDeclarations controlTypeDeclaration derivedTypeDeclaration enumDeclaration headerTypeDeclaration headerUnionDeclaration packageTypeDeclaration parserBlockStatement parserDeclaration parserLocalElement parserLocalElements parserState parserStatement parserStatements parserStates parserTypeDeclaration selectCase selectCaseList selectExpression simpleAnnotation simpleAnnotationBody specifiedIdentifier specifiedIdentifierList stateExpression structField structFieldList structTypeDeclaration structuredAnnotationBody tableDeclaration tableProperty tablePropertyList transitionStatement typedefDeclaration valueSetDeclaration
-%type <Il.Ast.value list> lib_parsing_parser_list(action) lib_parsing_parser_list(annotation) lib_parsing_parser_list(controlLocalDeclaration) lib_parsing_parser_list(entry) lib_parsing_parser_list(keyElement) lib_parsing_parser_list(methodPrototype) lib_parsing_parser_list(objDeclaration) lib_parsing_parser_list(parserLocalElement) lib_parsing_parser_list(parserState) lib_parsing_parser_list(parserStatement) lib_parsing_parser_list(selectCase) lib_parsing_parser_list(simpleAnnotation) lib_parsing_parser_list(statementOrDeclaration) lib_parsing_parser_list(structField) lib_parsing_parser_list(switchCase) lib_parsing_parser_list(tableProperty)
+%type <Il.Ast.value list> lib_parsing_parser_list(action) lib_parsing_parser_list(annotation) lib_parsing_parser_list(controlLocalDeclaration) lib_parsing_parser_list(declaration) lib_parsing_parser_list(entry) lib_parsing_parser_list(keyElement) lib_parsing_parser_list(methodPrototype) lib_parsing_parser_list(objDeclaration) lib_parsing_parser_list(parserLocalElement) lib_parsing_parser_list(parserState) lib_parsing_parser_list(parserStatement) lib_parsing_parser_list(selectCase) lib_parsing_parser_list(simpleAnnotation) lib_parsing_parser_list(statementOrDeclaration) lib_parsing_parser_list(structField) lib_parsing_parser_list(switchCase) lib_parsing_parser_list(tableProperty)
 %type <Il.Ast.value list> lib_parsing_parser_separated_list(COMMA,argument) lib_parsing_parser_separated_list(COMMA,expression) lib_parsing_parser_separated_list(COMMA,parameter) lib_parsing_parser_separated_list(COMMA,realTypeArg) lib_parsing_parser_separated_list(COMMA,simpleKeysetExpression) lib_parsing_parser_separated_list(COMMA,specifiedIdentifier) lib_parsing_parser_separated_list(COMMA,typeArg)
 %type <Il.Ast.value list> lib_parsing_parser_separated_nonempty_list(COMMA,__anonymous_0) lib_parsing_parser_separated_nonempty_list(COMMA,kvPair) lib_parsing_parser_separated_nonempty_list(COMMA,name)
-%type <Il.Ast.value list> list_aux(action) list_aux(annotation) list_aux(controlLocalDeclaration) list_aux(entry) list_aux(keyElement) list_aux(methodPrototype) list_aux(objDeclaration) list_aux(parserLocalElement) list_aux(parserState) list_aux(parserStatement) list_aux(selectCase) list_aux(simpleAnnotation) list_aux(statementOrDeclaration) list_aux(structField) list_aux(switchCase) list_aux(tableProperty)
+%type <Il.Ast.value list> list_aux(action) list_aux(annotation) list_aux(controlLocalDeclaration) list_aux(declaration) list_aux(entry) list_aux(keyElement) list_aux(methodPrototype) list_aux(objDeclaration) list_aux(parserLocalElement) list_aux(parserState) list_aux(parserStatement) list_aux(selectCase) list_aux(simpleAnnotation) list_aux(statementOrDeclaration) list_aux(structField) list_aux(switchCase) list_aux(tableProperty)
 %type <Il.Ast.value list> separated_list_aux(COMMA,argument) separated_list_aux(COMMA,expression) separated_list_aux(COMMA,parameter) separated_list_aux(COMMA,realTypeArg) separated_list_aux(COMMA,simpleKeysetExpression) separated_list_aux(COMMA,specifiedIdentifier) separated_list_aux(COMMA,typeArg)
 %type <Il.Ast.value list> separated_nonempty_list_aux(COMMA,__anonymous_0) separated_nonempty_list_aux(COMMA,kvPair) separated_nonempty_list_aux(COMMA,name)
 %type <Il.Ast.value list> separated_nonempty_opt_trailing_list(COMMA,kvPair) separated_nonempty_trailing_list(COMMA,kvPair) separated_opt_trailing_list(COMMA,expression)
-%type <Il.Ast.value list> list(declaration)
 %type <Il.Ast.value> push_name push_externName
 %type <unit> push_scope pop_scope go_toplevel go_local
-%type <Il.Ast.value list> lib_parsing_parser_list(declaration) list_aux(declaration)
 %%
 
 (**************************** CONTEXTS ******************************)
@@ -448,24 +452,25 @@ typeOrVoid:
 | info = VOID
     { info |> ignore;
       [ Term "VOID" ] |> wrap_case_v |> with_typ (wrap_var_t "typeOrVoid") }
+(* Petr4 O / Spec X: HACK for generic return type *)
+| name = name
+    { match flatten_case_v name with
+        | "identifier", [ ["$"]; [] ], [ value_text ]  ->
+          [ Term "@"; NT value_text ]
+          |> wrap_case_v 
+          |> with_typ (wrap_var_t "typeIdentifier")
+        | _ -> failwith "@typeOrVoid: expected identifier" }
 ;
-(* Petr4 O / Spec X *)
-(* | name = varName *)
-(*   { let tags: P4util.Source.info = Text.tags name in *)
-(*     Type.TypeName { tags; name = BareName name } } *)
 
 (******** Type parameters ********)
 
-(* TODO: listify *)
 typeParameterList:
 | names = separated_nonempty_list(COMMA, name) 
-    { declare_types_of_il names;
-      wrap_list_v names "typeParameterList" }
+    { wrap_list_v names "typeParameterList" }
 ;
 typeParameters:
-| info_l = l_angle type_params = typeParameterList info_r = r_angle
-    { let tags = Source.merge info_l info_r in
-      tags |> ignore;
+| l_angle type_params = typeParameterList r_angle
+    { declare_types_of_il type_params;
       [ Term "<"; NT type_params; Term ">" ]
       |> wrap_case_v 
       |> with_typ (wrap_var_t "typeParameters") }
@@ -1108,6 +1113,7 @@ matchKindDeclaration:
 | info1 = MATCH_KIND L_BRACE ids = identifierList comma = optTrailingComma info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
+      declare_vars_of_il ids;
       [ Term "MATCH_KIND"; Term "{"; NT ids; NT comma; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "matchKindDeclaration") }
 ;
 
@@ -1115,6 +1121,7 @@ errorDeclaration:
 | info1 = ERROR L_BRACE ids = identifierList info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
+      declare_vars_of_il ids;
       [ Term "ERROR"; Term "{"; NT ids; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "errorDeclaration") }
 ;
 
@@ -1155,12 +1162,20 @@ externDeclaration:
     L_BRACE protos = methodPrototypes info2 = R_BRACE pop_scope
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
-      [ NT anno; Term "EXTERN"; NT name; NT type_params; Term "{"; NT protos; Term "}" ]
-      |> wrap_case_v |> with_typ (wrap_var_t "externDeclaration") }
+      let decl = 
+        [ NT anno; Term "EXTERN"; NT name; NT type_params; Term "{"; NT protos; Term "}" ]
+        |> wrap_case_v |> with_typ (wrap_var_t "externDeclaration")
+      in
+      declare_type_of_il name (has_typ_params_declaration decl);
+      decl }
 | anno = optAnnotations info1 = EXTERN proto = functionPrototype pop_scope info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
-      [ NT anno; Term "EXTERN"; NT proto; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "externDeclaration") }
+      let decl = 
+        [ NT anno; Term "EXTERN"; NT proto; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "externDeclaration") 
+      in
+      declare_var (name_of_any_declaration decl) (has_typ_params_declaration decl);
+      decl }
 ;
 
 (* Auxiliary from Petr4 for push_externName, changed from name to nonTypeName *)
