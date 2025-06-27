@@ -24,17 +24,12 @@ module F = Format
 
 exception Error of string
 
-(* Debug logging system *)
-let debug_enabled = ref false
 let debug_channel = ref stderr
-
-let enable_debug () = debug_enabled := true
-let disable_debug () = debug_enabled := false
 let set_debug_channel ch = debug_channel := ch
-let lexer_debug_enabled () = !debug_enabled
+let lexer_debug_enabled () = Debug_config.lexer_debug_enabled Debug_config.Basic
 
 let debug_print fmt =
-  if !debug_enabled then
+  if Debug_config.lexer_debug_enabled Debug_config.Basic then
     Printf.fprintf !debug_channel fmt
   else
     Printf.ifprintf !debug_channel fmt
@@ -80,8 +75,6 @@ let set_start_of_line c =
 let set_filename s =
   current_fname := s
 
-let enable_lexer_debug () = enable_debug ()
-let disable_lexer_debug () = disable_debug ()
 let set_lexer_debug_channel ch = set_debug_channel ch
 let newline lexbuf =
   current_line := line_number() + 1 ;
@@ -189,9 +182,9 @@ rule tokenize = parse
   | "//"
       { singleline_comment lexbuf; tokenize lexbuf }
   | '\n'
-{ debug_token "⏎\n"; newline lexbuf; PRAGMA_END (info lexbuf) }
+      { debug_token "⏎\n"; newline lexbuf; PRAGMA_END (info lexbuf) }
   | '"'
-{ debug_token "\"";
+      { debug_token "\"";
         let str, end_info = (string lexbuf) in
         end_info |> ignore;
         let value = 
@@ -200,9 +193,9 @@ rule tokenize = parse
         STRING_LITERAL value
       }
   | whitespace
-{ debug_token " "; tokenize lexbuf }
+      { debug_token " "; tokenize lexbuf }
   | '#'
-{ debug_token ""; preprocessor lexbuf ; tokenize lexbuf }
+      { debug_token ""; preprocessor lexbuf ; tokenize lexbuf }
   | "@pragma"
       { debug_token "@pragma"; PRAGMA (info lexbuf) }
   | hex_number as n
@@ -214,7 +207,7 @@ rule tokenize = parse
   | bin_number as n
       { debug_token n; NUMBER (parse_int n (info lexbuf), n) }
   | int as n
-{ debug_token n; NUMBER (parse_int n (info lexbuf), n) }
+      { debug_token n; NUMBER (parse_int n (info lexbuf), n) }
   | (sign as s) (hex_number as n)
       { NUMBER (parse_width_int s n (info lexbuf), n) }
   | (sign as s) (dec_number as n)
@@ -325,12 +318,12 @@ rule tokenize = parse
       { debug_token "_"; DONTCARE (info lexbuf) }
   | name
       { let text = Lexing.lexeme lexbuf in
+        debug_token text;
         let value =
           let vid = Value.fresh () in
           let typ = Il.Ast.TextT in
           TextV text $$$ { vid; typ }
         in
-        debug_token text;
         NAME value }
   | "<="
       { debug_token "<="; LE (info lexbuf) }
@@ -375,13 +368,13 @@ rule tokenize = parse
   | "]"
       { debug_token "]"; R_BRACKET (info lexbuf) }
   | "{"
-{ debug_token "{"; L_BRACE (info lexbuf) }
+      { debug_token "{"; L_BRACE (info lexbuf) }
   | "}"
-{ debug_token "}"; R_BRACE (info lexbuf) }
+      { debug_token "}"; R_BRACE (info lexbuf) }
   | "<"
       { debug_token "<"; L_ANGLE (info lexbuf) }
   | ">"
-{ debug_token ">"; R_ANGLE (info lexbuf) }
+      { debug_token ">"; R_ANGLE (info lexbuf) }
   | "("
       { debug_token "("; L_PAREN (info lexbuf) }
   | ")"
@@ -399,7 +392,7 @@ rule tokenize = parse
   | "="
       { debug_token "="; ASSIGN (info lexbuf) }
   | ";"
-{ debug_token ";"; SEMICOLON (info lexbuf) }
+      { debug_token ";"; SEMICOLON (info lexbuf) }
   | "@"
       { debug_token "@"; AT (info lexbuf) }
   | "++"
@@ -414,12 +407,12 @@ rule tokenize = parse
       { debug_token "EOF"; END (info lexbuf) }
   | _
       { let text = lexeme lexbuf in
+        debug_token text;
         let value =
           let vid = Value.fresh () in
           let typ = Il.Ast.TextT in
           TextV text $$$ { vid; typ }
         in
-        debug_token text;
         UNEXPECTED_TOKEN value }
       
 and string = parse

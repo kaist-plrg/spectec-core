@@ -3,80 +3,78 @@
 module MI = MenhirLib.General
 module I = Parser.Incremental
 module Engine = Parser.MenhirInterpreter
+module P = Printf
 
-type debug_level = Quiet | Basic | Verbose | Full
-
-let debug_level = ref Basic
-let set_debug_level level = debug_level := level
+let get_debug_level () = Debug_config.get_parser_debug_level ()
 
 let token_name token =
   try
     match token with
-    | Parser.ABSTRACT _ -> "ABSTRACT"
-    | Parser.ACTION _ -> "ACTION"
-    | Parser.ACTIONS _ -> "ACTIONS"
-    | Parser.APPLY _ -> "APPLY"
-    | Parser.BOOL _ -> "BOOL"
-    | Parser.BIT _ -> "BIT"
-    | Parser.BREAK _ -> "BREAK"
-    | Parser.CONST _ -> "CONST"
-    | Parser.CONTINUE _ -> "CONTINUE"
-    | Parser.CONTROL _ -> "CONTROL"
-    | Parser.DEFAULT _ -> "DEFAULT"
-    | Parser.ELSE _ -> "ELSE"
-    | Parser.ENTRIES _ -> "ENTRIES"
-    | Parser.ENUM _ -> "ENUM"
-    | Parser.ERROR _ -> "ERROR"
-    | Parser.EXIT _ -> "EXIT"
-    | Parser.EXTERN _ -> "EXTERN"
-    | Parser.HEADER _ -> "HEADER"
-    | Parser.HEADER_UNION _ -> "HEADER_UNION"
-    | Parser.IF _ -> "IF"
-    | Parser.IN _ -> "IN"
-    | Parser.INOUT _ -> "INOUT"
-    | Parser.INT _ -> "INT"
-    | Parser.KEY _ -> "KEY"
-    | Parser.LIST _ -> "LIST"
-    | Parser.SELECT _ -> "SELECT"
-    | Parser.MATCH_KIND _ -> "MATCH_KIND"
-    | Parser.OUT _ -> "OUT"
-    | Parser.PACKAGE _ -> "PACKAGE"
-    | Parser.PARSER _ -> "PARSER"
-    | Parser.PRIORITY _ -> "PRIORITY"
-    | Parser.RETURN _ -> "RETURN"
-    | Parser.STATE _ -> "STATE"
-    | Parser.STRING _ -> "STRING"
-    | Parser.STRUCT _ -> "STRUCT"
-    | Parser.SWITCH _ -> "SWITCH"
-    | Parser.TABLE _ -> "TABLE"
-    | Parser.THIS _ -> "THIS"
-    | Parser.TRANSITION _ -> "TRANSITION"
-    | Parser.TUPLE _ -> "TUPLE"
-    | Parser.TYPEDEF _ -> "TYPEDEF"
-    | Parser.TYPE _ -> "TYPE"
-    | Parser.VALUESET _ -> "VALUESET"
-    | Parser.VARBIT _ -> "VARBIT"
-    | Parser.VOID _ -> "VOID"
-    | Parser.TRUE _ -> "TRUE"
-    | Parser.FALSE _ -> "FALSE"
-    | Parser.END _ -> "END"
-    | Parser.TYPENAME -> "TYPENAME"
-    | Parser.IDENTIFIER -> "IDENTIFIER"
-    | Parser.NAME _ -> "NAME"
-    | Parser.STRING_LITERAL _ -> "STRING_LITERAL"
-    | Parser.NUMBER _ -> "NUMBER"
-    | Parser.LE _ -> "LE"
-    | Parser.GE _ -> "GE"
-    | Parser.SHL _ -> "SHL"
-    | Parser.AND _ -> "AND"
-    | Parser.OR _ -> "OR"
-    | Parser.NE _ -> "NE"
-    | Parser.EQ _ -> "EQ"
-    | Parser.PLUS _ -> "PLUS"
-    | Parser.MINUS _ -> "MINUS"
+    | Parser.ABSTRACT _ -> "abstract"
+    | Parser.ACTION _ -> "action"
+    | Parser.ACTIONS _ -> "actions"
+    | Parser.APPLY _ -> "apply"
+    | Parser.BOOL _ -> "bool"
+    | Parser.BIT _ -> "bit"
+    | Parser.BREAK _ -> "break"
+    | Parser.CONST _ -> "const"
+    | Parser.CONTINUE _ -> "continue"
+    | Parser.CONTROL _ -> "control"
+    | Parser.DEFAULT _ -> "default"
+    | Parser.ELSE _ -> "else"
+    | Parser.ENTRIES _ -> "entries"
+    | Parser.ENUM _ -> "enum"
+    | Parser.ERROR _ -> "error"
+    | Parser.EXIT _ -> "exit"
+    | Parser.EXTERN _ -> "extern"
+    | Parser.HEADER _ -> "header"
+    | Parser.HEADER_UNION _ -> "header_union"
+    | Parser.IF _ -> "if"
+    | Parser.IN _ -> "in"
+    | Parser.INOUT _ -> "inout"
+    | Parser.INT _ -> "int"
+    | Parser.KEY _ -> "key"
+    | Parser.LIST _ -> "list"
+    | Parser.SELECT _ -> "select"
+    | Parser.MATCH_KIND _ -> "match_kind"
+    | Parser.OUT _ -> "out"
+    | Parser.PACKAGE _ -> "package"
+    | Parser.PARSER _ -> "parser"
+    | Parser.PRIORITY _ -> "priority"
+    | Parser.RETURN _ -> "return"
+    | Parser.STATE _ -> "state"
+    | Parser.STRING _ -> "string"
+    | Parser.STRUCT _ -> "struct"
+    | Parser.SWITCH _ -> "switch"
+    | Parser.TABLE _ -> "table"
+    | Parser.THIS _ -> "this"
+    | Parser.TRANSITION _ -> "transition"
+    | Parser.TUPLE _ -> "tuple"
+    | Parser.TYPEDEF _ -> "typedef"
+    | Parser.TYPE _ -> "type"
+    | Parser.VALUESET _ -> "valueset"
+    | Parser.VARBIT _ -> "varbit"
+    | Parser.VOID _ -> "void"
+    | Parser.TRUE _ -> "true"
+    | Parser.FALSE _ -> "false"
+    | Parser.END _ -> "end"
+    | Parser.TYPENAME -> "typename"
+    | Parser.IDENTIFIER -> "identifier"
+    | Parser.NAME s -> P.sprintf "name %s" (Il.Print.string_of_value s)
+    | Parser.STRING_LITERAL _ -> "string_literal"
+    | Parser.NUMBER _ -> "number"
+    | Parser.LE _ -> "<="
+    | Parser.GE _ -> ">="
+    | Parser.SHL _ -> ">>"
+    | Parser.AND _ -> "&"
+    | Parser.OR _ -> "|"
+    | Parser.NE _ -> "!="
+    | Parser.EQ _ -> "=="
+    | Parser.PLUS _ -> "+"
+    | Parser.MINUS _ -> "-"
     | Parser.PLUS_SAT _ -> "PLUS_SAT"
     | Parser.MINUS_SAT _ -> "MINUS_SAT"
-    | Parser.MUL _ -> "MUL"
+    | Parser.MUL _ -> "*"
     | Parser.INVALID _ -> "INVALID"
     | Parser.DIV _ -> "DIV"
     | Parser.MOD _ -> "MOD"
@@ -118,6 +116,10 @@ let state_description state_num =
   | 2 -> "typedef"
   | 3 -> "tuple"
   | 4 -> "tuple <"
+  | 13 -> "{_typeId}"
+  | 14 -> "{_id}"
+  | 536 -> "list(methodPrototype)"
+  | 545 -> "list_aux(methodPrototype)"
   | _ -> "unknown"
 
 (* Recursively collect stack states using top and pop *)
@@ -133,59 +135,61 @@ let rec collect_stack env acc =
 let print_state env =
   let current_state = Parser.MenhirInterpreter.current_state_number env in
   let states = collect_stack env [] in
+  let debug_level = get_debug_level () in
 
   match states with
   | [] ->
-      if !debug_level >= Basic then
+      if Debug_config.debug_enabled debug_level Basic then
         Printf.printf "Parser: Current state: %d (%s)\n" current_state
           (state_description current_state);
-      if !debug_level >= Verbose then
+      if Debug_config.debug_enabled debug_level Verbose then
         Printf.printf "Parser: No stack elements\n"
   | _ ->
-      if !debug_level >= Basic then
+      if Debug_config.debug_enabled debug_level Basic then
         Printf.printf "Parser: Current state: %d (%s)\n" current_state
           (state_description current_state);
-      if !debug_level >= Verbose then
+      if Debug_config.debug_enabled debug_level Verbose then
         Printf.printf "Parser: Stack: [%s]\n"
           (String.concat "; " (List.map string_of_int states))
 
 let debug_parse lexer lexbuf =
   let supplier = Engine.lexer_lexbuf_to_supplier lexer lexbuf in
   let checkpoint = I.p4program lexbuf.lex_curr_p in
+  let debug_level = get_debug_level () in
   let rec loop checkpoint =
     (match checkpoint with
     | Engine.InputNeeded env -> print_state env
     | Engine.Shifting (env, _, _) -> print_state env
     | Engine.AboutToReduce (env, _) ->
         print_state env;
-        if !debug_level >= Verbose then
+        if Debug_config.debug_enabled debug_level Verbose then
           Printf.printf "Parser: About to reduce\n"
     | Engine.HandlingError env ->
         print_state env;
-        if !debug_level >= Basic then Printf.printf "Parser: Handling error\n"
+        if Debug_config.debug_enabled debug_level Basic then Printf.printf "Parser: Handling error\n"
     | _ -> ());
     match checkpoint with
     | Engine.InputNeeded _env ->
         let token, _, _ = supplier () in
-        if !debug_level >= Verbose then
+        if Debug_config.debug_enabled debug_level Verbose then
           Printf.printf "Parser: Consuming token: %s\n" (token_name token);
         loop
           (Engine.offer checkpoint (token, Lexing.dummy_pos, Lexing.dummy_pos))
     | Engine.Shifting _ | Engine.AboutToReduce _ ->
         loop (Engine.resume checkpoint)
     | Engine.HandlingError _env ->
-        if !debug_level >= Basic then
+        if Debug_config.debug_enabled debug_level Basic then
           Printf.printf "Parser: Syntax error occurred\n";
         raise Parser.Error
     | Engine.Accepted v ->
-        if !debug_level >= Basic then
+        if Debug_config.debug_enabled debug_level Basic then
           Printf.printf "Parser: Parsing completed successfully\n";
         v
     | Engine.Rejected -> failwith "Parser: Rejected"
   in
-  if !debug_level >= Basic then
+  if Debug_config.debug_enabled debug_level Basic then
     Printf.printf "Parser: Starting parse with debug level %s\n"
-      (match !debug_level with
+      (match debug_level with
       | Quiet -> "quiet"
       | Basic -> "basic"
       | Verbose -> "verbose"

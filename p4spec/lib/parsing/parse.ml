@@ -11,26 +11,15 @@ let lex (filename : string) (file : string) =
   try
     let () = Lexer.reset () in
     let () = Lexer.set_filename filename in
-    Lexer.enable_lexer_debug ();
     Lexing.from_string file
   with Lexer.Error s -> Format.asprintf "lexer error: %s" s |> error_no_region
 
 let parse (lexbuf : Lexing.lexbuf) =
-  let debug_level = Some "quiet" in
+  let debug_level = Debug_config.get_parser_debug_level () in
   try
     match debug_level with
-    | Some level ->
-        let debug_level =
-          match level with
-          | "quiet" -> Parser_debug.Quiet
-          | "basic" -> Parser_debug.Basic
-          | "verbose" -> Parser_debug.Verbose
-          | "full" -> Parser_debug.Full
-          | _ -> Parser_debug.Basic
-        in
-        Parser_debug.set_debug_level debug_level;
-        Parser_debug.debug_parse Lexer.lexer lexbuf
-    | None -> Parser.p4program Lexer.lexer lexbuf
+    | Debug_config.Quiet -> Parser.p4program Lexer.lexer lexbuf
+    | _ -> Parser_debug.debug_parse Lexer.lexer lexbuf
   with
   | Parser.Error ->
       let info = Lexer.info lexbuf in

@@ -81,7 +81,6 @@ let collect_excludes (paths_exclude : string list) =
 let run_parser includes filename =
   let time_start = start () in
   try
-    (* Run parser test *)
     let _program = Parsing.Parse.parse_file includes filename in
     time_start
   with
@@ -136,6 +135,10 @@ let run_parser_test stat includes excludes filename =
         }
 
 let run_parser_test_driver includes excludes testdir =
+  (* Force all debug levels to Quiet for testing *)
+  Unix.putenv "P4SPEC_LEXER_DEBUG" "quiet";
+  Unix.putenv "P4SPEC_PARSER_DEBUG" "quiet";
+  Unix.putenv "P4SPEC_CONTEXT_DEBUG" "quiet";
   let excludes = collect_excludes excludes in
   let filenames = collect_files ~suffix:".p4" testdir in
   let total = List.length filenames in

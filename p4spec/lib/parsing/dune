@@ -12,7 +12,8 @@
   ast_utils
   pp
   parse
-  parser_debug))
+  parser_debug
+  debug_config))
 
 (ocamllex
  (modules lexer))

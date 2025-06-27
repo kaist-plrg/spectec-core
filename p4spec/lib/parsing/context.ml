@@ -33,7 +33,10 @@ let reset () =
 let declare (id : string) (k : ident_kind) : unit =
   match !context with
   | [] -> failwith "ill-formed context"
-  | m :: l -> context := SMap.set m ~key:id ~data:k :: l
+  | m :: l ->
+      Debug_config.context_debug_print ">>> Declaring %s as %s\n" id
+        (match k with TypeName _ -> "TypeName" | Ident _ -> "Ident");
+      context := SMap.set m ~key:id ~data:k :: l
 
 let declare_type id has_params = declare id (TypeName has_params)
 let declare_types types = List.iter types ~f:(fun s -> declare_type s false)
@@ -58,17 +61,19 @@ let mark_template (id : string) =
     | m :: rest -> (
         match SMap.find m id with
         | None -> m :: loop rest
-        | Some (TypeName _) ->
-            SMap.set m ~key:id ~data:(TypeName true) :: rest
+        | Some (TypeName _) -> SMap.set m ~key:id ~data:(TypeName true) :: rest
         | Some (Ident _) -> SMap.set m ~key:id ~data:(Ident true) :: rest)
   in
   context := loop !context
 
 (* Takes a snapshot of the current context. *)
-let push_scope () = context := SMap.empty :: !context
+let push_scope () =
+  Debug_config.context_debug_print "[[ Pushing scope\n";
+  context := SMap.empty :: !context
 
 (* Remove scope *)
 let pop_scope () =
+  Debug_config.context_debug_print "]] Popping scope\n";
   match !context with
   | [] -> failwith "ill-formed context"
   | [ _ ] -> failwith "pop would produce ill-formed context"
