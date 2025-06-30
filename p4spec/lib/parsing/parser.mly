@@ -743,7 +743,7 @@ simpleExpressionList:
 
 tupleKeysetExpression:
 | L_PAREN expr = simpleKeysetExpression COMMA exprs = simpleExpressionList R_PAREN
-              { [ Term "("; NT expr; Term ","; NT exprs; Term ")" ]
+      { [ Term "("; NT expr; Term ","; NT exprs; Term ")" ]
       |> wrap_case_v |> with_typ (wrap_var_t "tupleKeysetExpression") }
 | L_PAREN expr = reducedSimpleKeysetExpression R_PAREN
       { [ Term "("; NT expr; Term ")"; Term "PHTM_19" ]
@@ -1166,7 +1166,7 @@ externDeclaration:
         [ NT anno; Term "EXTERN"; NT name; NT type_params; Term "{"; NT protos; Term "}" ]
         |> wrap_case_v |> with_typ (wrap_var_t "externDeclaration")
       in
-      declare_type_of_il name (has_typ_params_declaration decl);
+      declare_type_of_il name (has_type_params_declaration decl);
       decl }
 | anno = optAnnotations info1 = EXTERN proto = functionPrototype pop_scope info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in
@@ -1174,14 +1174,15 @@ externDeclaration:
       let decl = 
         [ NT anno; Term "EXTERN"; NT proto; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "externDeclaration") 
       in
-      declare_var (id_of_declaration decl) (has_typ_params_declaration decl);
+      declare_var (id_of_declaration decl) (has_type_params_declaration decl);
       decl }
 ;
 
 (* Auxiliary from Petr4 for push_externName, changed from name to nonTypeName *)
 externName:
 | n = nonTypeName
-    { declare_type_of_il n false; n}
+    { declare_type_of_il n false; 
+      n }
 
 (******** Function declarations ********)
 
@@ -1645,37 +1646,37 @@ typeDeclaration:
 
 declaration:
 | const = constantDeclaration
-    { declare_var (id_of_declaration const) (has_typ_params_declaration const);
-      [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+    { declare_var (id_of_declaration const) (has_type_params_declaration const);
+      const }
 | error = errorDeclaration
-    { [ NT error ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+    { error }
 | matchKind = matchKindDeclaration
-    { [ NT matchKind ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+    { matchKind }
 | extern = externDeclaration
-    { [ NT extern ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+    { extern }
 | inst = instantiation
     { declare_var (id_of_declaration inst) false;
-      [ NT inst ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+      inst }
 | func = functionDeclaration
-    { declare_var (id_of_declaration func) (has_typ_params_declaration func);
-      [ NT func ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+    { declare_var (id_of_declaration func) (has_type_params_declaration func);
+      func }
 | action = actionDeclaration
     { declare_var (id_of_declaration action) false;
-      [ NT action ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+      action }
 | parserDeclaration = parserDeclaration
-    { declare_type (id_of_declaration parserDeclaration) (has_typ_params_declaration parserDeclaration);
-      [ NT parserDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+    { declare_type (id_of_declaration parserDeclaration) (has_type_params_declaration parserDeclaration);
+      parserDeclaration }
 | controlDeclaration = controlDeclaration
-    { declare_type (id_of_declaration controlDeclaration) (has_typ_params_declaration controlDeclaration);
-      [ NT controlDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+    { declare_type (id_of_declaration controlDeclaration) (has_type_params_declaration controlDeclaration);
+      controlDeclaration }
 | typeDeclaration = typeDeclaration
-    { declare_type (id_of_declaration typeDeclaration) (has_typ_params_declaration typeDeclaration);
-      [ NT typeDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
+    { declare_type (id_of_declaration typeDeclaration) (has_type_params_declaration typeDeclaration);
+      typeDeclaration }
 ;
 
 annotationToken:
-| value = UNEXPECTED_TOKEN
-    { [ NT value ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+| UNEXPECTED_TOKEN
+    { [ Term "UNEXPECTED_TOKEN" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
 | ABSTRACT
     { [ Term "ABSTRACT" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
 | ACTION
@@ -1775,13 +1776,13 @@ annotationToken:
 | DONTCARE
     { [ Term "_" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
 | id = identifier
-    { [ NT id ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+    { id }
 | tid = typeIdentifier
-    { [ NT tid ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+    { tid }
 | str = stringLiteral
-    { [ NT str ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+    { str }
 | num = number
-    { [ NT num ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+    { num }
 | MASK
     { [ Term "&&&" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
   (* TODO: missing DOTS "..." in spec *)
@@ -1859,7 +1860,7 @@ simpleAnnotation:
 | L_PAREN body = simpleAnnotationBody R_PAREN
     { [ Term "("; NT body; Term ")" ] |> wrap_case_v |> with_typ (wrap_var_t "simpleAnnotation") }
 | token = annotationToken
-    { [ NT token ] |> wrap_case_v |> with_typ (wrap_var_t "simpleAnnotation") }
+    { token }
 ;
 
 simpleAnnotationBody:
