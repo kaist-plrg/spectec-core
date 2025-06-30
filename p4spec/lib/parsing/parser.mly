@@ -382,11 +382,40 @@ baseType:
 | info = INT
     { info |> ignore;
       [ Term "INT" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
-(* TODO: int handling *)
 | info1 = BIT l_angle value = number info_r = r_angle
     { let tags = Source.merge info1 info_r in
       tags |> ignore;
       [ Term "BIT"; Term "<"; NT value; Term ">" ]
+      |> wrap_case_v 
+      |> with_typ (wrap_var_t "baseType") }
+| info1 = INT l_angle value = number info_r = r_angle
+    { let tags = Source.merge info1 info_r in
+      tags |> ignore;
+      [ Term "INT"; Term "<"; NT value; Term ">" ]
+      |> wrap_case_v 
+      |> with_typ (wrap_var_t "baseType") }
+| info1 = VARBIT l_angle value = number info_r = r_angle
+    { let tags = Source.merge info1 info_r in
+      tags |> ignore;
+      [ Term "VARBIT"; Term "<"; NT value; Term ">" ]
+      |> wrap_case_v 
+      |> with_typ (wrap_var_t "baseType") }
+| info1 = BIT l_angle L_PAREN expr = expression R_PAREN info_r = r_angle
+    { let tags = Source.merge info1 info_r in
+      tags |> ignore;
+      [ Term "BIT"; Term "<"; Term "("; NT expr; Term ")"; Term ">" ]
+      |> wrap_case_v 
+      |> with_typ (wrap_var_t "baseType") }
+| info1 = INT l_angle L_PAREN expr = expression R_PAREN info_r = r_angle
+    { let tags = Source.merge info1 info_r in
+      tags |> ignore;
+      [ Term "INT"; Term "<"; Term "("; NT expr; Term ")"; Term ">" ]
+      |> wrap_case_v 
+      |> with_typ (wrap_var_t "baseType") }
+| info1 = VARBIT l_angle L_PAREN expr = expression R_PAREN info_r = r_angle
+    { let tags = Source.merge info1 info_r in
+      tags |> ignore;
+      [ Term "VARBIT"; Term "<"; Term "("; NT expr; Term ")"; Term ">" ]
       |> wrap_case_v 
       |> with_typ (wrap_var_t "baseType") }
 ;
@@ -523,15 +552,15 @@ nonBraceExpression:
     { number }
 | stringLiteral = stringLiteral
     { stringLiteral }
-(* TODO: TRUE / FALSE / THIS *)
-(* | info1 = TRUE *)
-(*     { Expression.True { tags = info1 } } *)
-(* | info1 = FALSE *)
-(*     { Expression.False { tags = info1 } } *)
-(* | info1 = THIS *)
-(*     { let name = Text.{ tags = info1; str = "this" } in *)
-(*       let tags = Text.tags name in *)
-(*       Expression.Name { tags; name = BareName name } } *)
+| info1 = TRUE
+    { info1 |> ignore;
+      [ Term "TRUE" ] |> wrap_case_v |> with_typ (wrap_var_t "nonBraceExpression") }
+| info1 = FALSE
+    { info1 |> ignore;
+      [ Term "FALSE" ] |> wrap_case_v |> with_typ (wrap_var_t "nonBraceExpression") }
+| info1 = THIS
+    { info1 |> ignore;
+      [ Term "THIS" ] |> wrap_case_v |> with_typ (wrap_var_t "nonBraceExpression") }
 (* Petr4 O / Spec X : SPEC BUG - no identifier variant in switchLabel *)
 | expr = prefixedNonTypeName
     { expr }
