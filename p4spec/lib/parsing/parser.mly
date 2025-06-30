@@ -1447,6 +1447,9 @@ stateExpression:
 ;
 
 transitionStatement:
+(* SPEC-BUG? transitionStatement can be empty in Petr4/p4c for REJECT, but not in Spec*)
+(* TODO: choose CaseV *)
+| (* empty *) { [ Term "SPEC_BUG" ] |> wrap_case_v |> with_typ (wrap_var_t "transitionStatement") }
 | info1 = TRANSITION stateExpression = stateExpression
     { info1 |> ignore;
       [ Term "TRANSITION"; NT stateExpression ] |> wrap_case_v |> with_typ (wrap_var_t "transitionStatement") }
