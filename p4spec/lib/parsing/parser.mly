@@ -438,7 +438,7 @@ tupleType:
 
 typeRef:
 | t = baseType
-| t = typeName
+| t = namedType
 (* | t = specializedType *) (* Petr4 O / Spec X *)
 | t = headerStackType
 | t = listType
@@ -1605,11 +1605,11 @@ headerTypeDeclaration:
 ;
 
 derivedTypeDeclaration:
-| decl = headerTypeDeclaration
-| decl = headerUnionDeclaration
-| decl = structTypeDeclaration
-| decl = enumDeclaration
-    { [ NT decl ] |> wrap_case_v |> with_typ (wrap_var_t "derivedTypeDeclaration") }
+| d = headerTypeDeclaration
+| d = headerUnionDeclaration
+| d = structTypeDeclaration
+| d = enumDeclaration
+    { d }
 ;
 
 (* TODO: Petr4 has trailing Semicolon here instead of typeDeclaration *)
@@ -1627,7 +1627,7 @@ typedefDeclaration:
 
 typeDeclaration:
 | derived = derivedTypeDeclaration
-    { [ NT derived ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
+    { derived }
 | typedef = typedefDeclaration info2 = SEMICOLON
     { info2 |> ignore;
       [ NT typedef; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
