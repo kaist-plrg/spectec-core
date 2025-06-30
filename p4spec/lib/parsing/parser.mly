@@ -81,6 +81,7 @@
 %type <Il.Ast.value list> separated_list_aux(COMMA,argument) separated_list_aux(COMMA,expression) separated_list_aux(COMMA,parameter) separated_list_aux(COMMA,realTypeArg) separated_list_aux(COMMA,simpleKeysetExpression) separated_list_aux(COMMA,specifiedIdentifier) separated_list_aux(COMMA,typeArg)
 %type <Il.Ast.value list> separated_nonempty_list_aux(COMMA,__anonymous_0) separated_nonempty_list_aux(COMMA,kvPair) separated_nonempty_list_aux(COMMA,name)
 %type <Il.Ast.value list> separated_nonempty_opt_trailing_list(COMMA,kvPair) separated_nonempty_trailing_list(COMMA,kvPair) separated_opt_trailing_list(COMMA,expression)
+%type <Il.Ast.value list> declarationList
 %type <Il.Ast.value> push_name push_externName
 %type <unit> push_scope pop_scope go_toplevel go_local
 %%
@@ -531,9 +532,9 @@ nonBraceExpression:
 (*     { let name = Text.{ tags = info1; str = "this" } in *)
 (*       let tags = Text.tags name in *)
 (*       Expression.Name { tags; name = BareName name } } *)
-(* TODO: Petr4 O / Spec X *)
-(* | expr = prefixedNonTypeName
-    { expr } *)
+(* Petr4 O / Spec X : SPEC BUG - no identifier variant in switchLabel *)
+| expr = prefixedNonTypeName
+    { expr }
 | array = nonBraceExpression L_BRACKET index = expression info2 = R_BRACKET
     { info2 |> ignore;
       [ NT array; Term "["; NT index; Term "]" ] 
