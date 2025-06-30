@@ -16,10 +16,10 @@ let get_env_debug_level env_var =
 
 let debug_enabled current required =
   match (current, required) with
-  | (Quiet, _) -> false
-  | (Basic, Basic) | (Verbose, Basic) | (Full, Basic) -> true
-  | (Verbose, Verbose) | (Full, Verbose) -> true
-  | (Full, Full) -> true
+  | Quiet, _ -> false
+  | Basic, Basic | Verbose, Basic | Full, Basic -> true
+  | Verbose, Verbose | Full, Verbose -> true
+  | Full, Full -> true
   | _ -> false
 
 let lexer_debug_enabled level =
@@ -35,11 +35,9 @@ let context_debug_enabled level =
   debug_enabled lvl level
 
 let context_debug_print fmt =
-  if context_debug_enabled Basic then
-    Printf.printf fmt
-  else
-    Printf.ifprintf stdout fmt
+  if context_debug_enabled Basic then Printf.printf fmt
+  else Printf.ifprintf stdout fmt
 
 let get_lexer_debug_level () = get_env_debug_level "P4SPEC_LEXER_DEBUG"
 let get_parser_debug_level () = get_env_debug_level "P4SPEC_PARSER_DEBUG"
-let get_context_debug_level () = get_env_debug_level "P4SPEC_CONTEXT_DEBUG" 
+let get_context_debug_level () = get_env_debug_level "P4SPEC_CONTEXT_DEBUG"
