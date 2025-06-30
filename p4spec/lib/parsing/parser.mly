@@ -733,7 +733,6 @@ expression:
       [ NT typ; Term "("; NT args; Term ")" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
 ;
 
-(* TODO: convert *)
 expressionList:
 | exprs = separated_list(COMMA, expression)
     { wrap_list_v exprs "expression" }
@@ -861,7 +860,6 @@ argumentList:
     { wrap_list_v args "argument" }
 ;
 (******** L-values ********)
-(** TODO **)
 
 lvalue:
 | prefixedNonTypeName = prefixedNonTypeName
@@ -965,7 +963,6 @@ conditionalStatement:
       |> wrap_case_v |> with_typ (wrap_var_t "conditionalStatement") }
 ;
 
-(* TODO: convert *)
 emptyStatement:
 | info = SEMICOLON
     { info |> ignore;
@@ -1040,7 +1037,6 @@ switchCases:
     { wrap_list_v cases "switchCase" }
 ;
 
-(* TODO: convert *)
 switchStatement:
 | info1 = SWITCH
   L_PAREN expr = expression R_PAREN
@@ -1304,12 +1300,13 @@ entryPriority:
 ;
 
 entry:
-| optConst = optCONST prio = entryPriority keyset = keysetExpression COLON actionRef = actionRef anno = optAnnotations info2 = SEMICOLON
+| optConst = optCONST prio = entryPriority keyset = keysetExpression COLON action = actionRef anno = optAnnotations info2 = SEMICOLON
     { info2 |> ignore;
-      [ NT optConst; NT prio; NT keyset; Term ":"; NT actionRef; NT anno; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "entry") }
-| optConst = optCONST keyset = keysetExpression COLON actions = actionList anno = optAnnotations info2 = SEMICOLON
+      [ NT optConst; NT prio; NT keyset; Term ":"; NT action; NT anno; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "entry") }
+(* SPEC BUG?: actionList in Spec, actionRef in Petr4/p4c *)
+| optConst = optCONST keyset = keysetExpression COLON action = actionRef anno = optAnnotations info2 = SEMICOLON
     { info2 |> ignore;
-      [ NT optConst; NT keyset; Term ":"; NT actions; NT anno; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "entry") }
+      [ NT optConst; NT keyset; Term ":"; NT action; NT anno; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "entry") }
 ;
 
 entriesList:
@@ -1579,12 +1576,12 @@ specifiedIdentifier:
     { [ NT name; NT init ] |> wrap_case_v |> with_typ (wrap_var_t "specifiedIdentifier") }
 ;
 
+(* From Petr4: opt trailing comma *)
 specifiedIdentifierList:
-| ids = separated_list(COMMA, specifiedIdentifier)
+| ids = separated_nonempty_opt_trailing_list(COMMA, specifiedIdentifier)
     { wrap_list_v ids "specifiedIdentifier" }
 ;
 
-(* TODO: compare with Petr4 *)
 enumDeclaration:
 | anno = optAnnotations info1 = ENUM name = name L_BRACE ids = identifierList comma = optTrailingComma info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
@@ -1644,7 +1641,7 @@ derivedTypeDeclaration:
     { d }
 ;
 
-(* TODO: Petr4 has trailing Semicolon here instead of typeDeclaration *)
+(* Petr4 has trailing Semicolon here instead of typeDeclaration *)
 typedefDeclaration:
 | anno = optAnnotations info1 = TYPEDEF typeRef = typeRef name = name
     { info1 |> ignore;
