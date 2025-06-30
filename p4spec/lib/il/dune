@@ -1,4 +1,4 @@
 (library
  (name il)
  (libraries bignum util xl el)
- (modules ast eq print free))
+ (modules ast eq print print_debug free))

@@ -19,7 +19,7 @@ let id_of_name (value : value) : string =
   | _ ->
       failwith
         (Printf.sprintf "Invalid name structure %s: %s "
-           (Il.Print.string_of_value value)
+           (Il.Print_debug.string_of_value value)
            (id_of_case_v value))
 (******** Name of declarations ********)
 
@@ -50,7 +50,7 @@ let name_of_extern_declaration (v : value) : string =
   | _ ->
       failwith
         (Printf.sprintf "invalid externDeclaration structure: %s"
-           (Il.Print.string_of_value v))
+           (Il.Print_debug.string_of_value v))
 
 let name_of_instantiation (v : value) : string =
   assert (id_of_case_v v = "instantiation");
@@ -82,15 +82,22 @@ let name_of_parser_type_declaration (v : value) : string =
   assert (id_of_case_v v = "parserTypeDeclaration");
   match v.it with
   | CaseV (_, [ _; name; _; _ ]) -> id_of_name name
-  | _ -> failwith "invalid parserTypeDeclaration structure"
+  | _ ->
+      failwith
+        (Printf.sprintf "invalid parserTypeDeclaration structure: %s"
+           (Il.Print_debug.string_of_value v))
 
 (* parserDeclaration = parserTypeDeclaration optConstructorParameters `{ parserLocalElements parserStates } *)
 let name_of_parser_declaration (v : value) : string =
-  assert (id_of_case_v v = "parserDeclaration");
-  match v.it with
-  | CaseV (_, [ parserTypeDeclaration; _; _ ]) ->
+  match flatten_case_v v with
+  | "parserDeclaration",
+      [ []; []; [ "{" ]; []; [ "}" ] ],
+    [ parserTypeDeclaration; _; _; _ ] ->
       name_of_parser_type_declaration parserTypeDeclaration
-  | _ -> failwith "invalid parserDeclaration structure"
+  | _ ->
+      failwith
+        (Printf.sprintf "invalid parserTypeDeclaration structure: %s"
+           (Il.Print_debug.string_of_value v))
 
 (* controlDeclaration = controlTypeDeclaration optConstructorParameters `{ controlLocalDeclarations APPLY controlBody } *)
 let name_of_control_declaration (v : value) : string =
@@ -102,7 +109,7 @@ let name_of_control_declaration (v : value) : string =
       | CaseV (_, [ _; name; _; _ ]) -> id_of_name name
       | _ -> failwith "invalid controlTypeDeclaration structure")
   | _ ->
-      Printf.printf "case_v: %s" (Il.Print.string_of_value v);
+      Printf.printf "case_v: %s" (Il.Print_debug.string_of_value v);
       failwith
         (Format.asprintf "invalid controlDeclaration structure: %a"
            Pp.pp_default_case_v v)
@@ -155,7 +162,7 @@ let name_of_derived_type_declaration (v : value) : string =
   | _ ->
       failwith
         (Printf.sprintf "Unknown derived type declaration: %s"
-           (Il.Print.string_of_value v))
+           (Il.Print_debug.string_of_value v))
 
 (* TODO: disambiguate mixops *)
 let name_of_type_def_declaration (v : value) : string =
@@ -238,7 +245,7 @@ let name_of_table_declaration (v : value) : string =
   | _ ->
       failwith
         (Printf.sprintf "Invalid tableDeclaration structure: %s"
-           (Il.Print.string_of_value v))
+           (Il.Print_debug.string_of_value v))
 
 let name_of_any_declaration (v : value) : string =
   match id_of_case_v v with
