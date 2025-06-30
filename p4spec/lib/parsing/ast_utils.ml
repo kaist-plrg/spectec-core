@@ -12,9 +12,9 @@ let with_fresh_val (typ : typ') : vnote =
 
 let with_typ (typ : typ') (v : value') : value = v $$$ with_fresh_val typ
 
-type value_or_atom = NT of value | Term of string
+type symbol = NT of value | Term of string
 
-let wrap_case_v (vs : value_or_atom list) : value' =
+let wrap_case_v (vs : symbol list) : value' =
   let rec build_mixop acc_mixop acc_terms = function
     | [] ->
         (* Always add the final group, even if empty *)
@@ -45,6 +45,10 @@ let id_of_case_v (v : value) : string =
   match (v.it, v.note.typ) with
   | CaseV _, VarT (id, _) -> id.it
   | _ -> failwith "not a case value"
+
+
+type syntax' = string list list * value' list
+type syntax = string list list * value list
 
 let flatten_case_v' (value : value) : string * string list list * value' list =
   match value.it with

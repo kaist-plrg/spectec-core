@@ -1174,7 +1174,7 @@ externDeclaration:
       let decl = 
         [ NT anno; Term "EXTERN"; NT proto; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "externDeclaration") 
       in
-      declare_var (name_of_any_declaration decl) (has_typ_params_declaration decl);
+      declare_var (id_of_declaration decl) (has_typ_params_declaration decl);
       decl }
 ;
 
@@ -1331,10 +1331,10 @@ controlLocalDeclaration:
 | const = constantDeclaration
     { const }
 | action = actionDeclaration
-    { declare_var (name_of_any_declaration action) false;
+    { declare_var (id_of_declaration action) false;
       action }
 | table = tableDeclaration
-    { declare_var (name_of_any_declaration table) false;
+    { declare_var (id_of_declaration table) false;
         table }
 | inst = instantiation
     { inst }
@@ -1645,7 +1645,7 @@ typeDeclaration:
 
 declaration:
 | const = constantDeclaration
-    { declare_var (name_of_any_declaration const) (has_typ_params_declaration const);
+    { declare_var (id_of_declaration const) (has_typ_params_declaration const);
       [ NT const ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | error = errorDeclaration
     { [ NT error ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
@@ -1654,22 +1654,22 @@ declaration:
 | extern = externDeclaration
     { [ NT extern ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | inst = instantiation
-    { declare_var (name_of_any_declaration inst) false;
+    { declare_var (id_of_declaration inst) false;
       [ NT inst ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | func = functionDeclaration
-    { declare_var (name_of_any_declaration func) (has_typ_params_declaration func);
+    { declare_var (id_of_declaration func) (has_typ_params_declaration func);
       [ NT func ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | action = actionDeclaration
-    { declare_var (name_of_any_declaration action) false;
+    { declare_var (id_of_declaration action) false;
       [ NT action ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | parserDeclaration = parserDeclaration
-    { declare_type (name_of_any_declaration parserDeclaration) (has_typ_params_declaration parserDeclaration);
+    { declare_type (id_of_declaration parserDeclaration) (has_typ_params_declaration parserDeclaration);
       [ NT parserDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | controlDeclaration = controlDeclaration
-    { declare_type (name_of_any_declaration controlDeclaration) (has_typ_params_declaration controlDeclaration);
+    { declare_type (id_of_declaration controlDeclaration) (has_typ_params_declaration controlDeclaration);
       [ NT controlDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 | typeDeclaration = typeDeclaration
-    { declare_type (name_of_any_declaration typeDeclaration) (has_typ_params_declaration typeDeclaration);
+    { declare_type (id_of_declaration typeDeclaration) (has_typ_params_declaration typeDeclaration);
       [ NT typeDeclaration ] |> wrap_case_v |> with_typ (wrap_var_t "declaration") }
 ;
 
