@@ -116,13 +116,24 @@ let state_description state_num =
   | 2 -> "typedef"
   | 3 -> "tuple"
   | 4 -> "tuple <"
-  | 13 -> "{_typeId}"
+  | 12 -> "- @T: NAME ... -> (@13) typeIdentifier or (@14) identifier"
+  | 13 -> "- @R: typeIdentifier -> NAME TYPENAME"
   | 14 -> "{_id}"
-  | 68 -> "headerStackType -> specializedType"
-  | 69 -> "headerStackType -> specializedType ["
+  | 37 -> "- @R: typeArg -> typeRef"
+  | 38 -> "- @T: typeName ... \n      `[ -> @39\n      `<(args) -> @61\n      `< -> @115\n- @R: typeRef <<- typeName ... "
+  | 62 -> "- @R: typeIdentifier ... <<- prefixedType"
+  | 63 -> "- @T: typeName `<(args) targList R_ANGLE_SHIFT -> @64\n- @T: typeName `< targList R_ANGLE -> @65"
+  | 68 -> "- @T: specializedType `[ -> @69"
+  | 69 -> "- @T: specializedType `[ ... -> ... "
+  | 71 -> "- @R: prefixedType ... <- typeName"
+  | 116 -> "- @T: typeName `< targList ... \n      `>(shift) -> @117 / `> ->@118"
+  | 118 -> "- @R: typeName `< targList `> ... <<- specializedType"
+  | 119 -> "- @T: separated_list_aux (COMMA,typeArg) COMMA -> (@120) separated_list_aux(COMMA,typeArg)\n- @R: separated_list(COMMA,typeArg) -> separated_list_aux(COMMA,typeArg)"
+  | 120 -> "- @R: separated_list_aux(COMMA,typeArg) -> separated_list_aux(COMMA,typeArg) COMMA ..."
+  | 121 -> "- @R: separated_list_aux(COMMA,typeArg) -> separated_list_aux(COMMA,typeArg) COMMA typeArg ..."
   | 536 -> "list(methodPrototype)"
-  | 545 -> "@R: methodPrototype -> typeIdentifier ( parameterList )"
-  | 546 -> "@R: list_aux(methodPrototype) -> list_aux(methodPrototype) methodPrototype"
+  | 545 -> "- @R: methodPrototype -> typeIdentifier ( parameterList )"
+  | 546 -> "- @R: list_aux(methodPrototype) -> list_aux(methodPrototype) methodPrototype"
   | _ -> "unknown"
 
 (* Recursively collect stack states using top and pop *)
@@ -141,15 +152,15 @@ let print_state env =
   let debug_level = get_debug_level () in
 
   if Debug_config.debug_enabled debug_level Basic then
-    Printf.printf "Parser: Current state: \n  > %d:\n    (%s)\n" current_state
+    Printf.printf "@%d ---------------------------------\n%s\n-------------------------------------\n" current_state
       (state_description current_state);
   match states with
   | [] ->
       if Debug_config.debug_enabled debug_level Verbose then
-        Printf.printf "Parser: No stack elements\n"
+        Printf.printf "+Stack empty\n"
   | _ ->
       if Debug_config.debug_enabled debug_level Verbose then
-        Printf.printf "Parser: Stack: [%s]\n"
+        Printf.printf "+Stack: [%s]\n"
           (String.concat "; " (List.map string_of_int states))
 
 let debug_parse lexer lexbuf =
@@ -163,7 +174,7 @@ let debug_parse lexer lexbuf =
     | Engine.AboutToReduce (env, _) ->
         print_state env;
         if Debug_config.debug_enabled debug_level Verbose then
-          Printf.printf "Parser: About to reduce\n"
+          Printf.printf "--- About to reduce\n"
     | Engine.HandlingError env ->
         print_state env;
         if Debug_config.debug_enabled debug_level Basic then Printf.printf "Parser: Handling error\n"
@@ -172,7 +183,7 @@ let debug_parse lexer lexbuf =
     | Engine.InputNeeded _env ->
         let token, _, _ = supplier () in
         if Debug_config.debug_enabled debug_level Verbose then
-          Printf.printf "Parser: Consuming token: %s\n" (token_name token);
+        Printf.printf "\n|-> Consuming token: %s\n\n" (token_name token);
         loop
           (Engine.offer checkpoint (token, Lexing.dummy_pos, Lexing.dummy_pos))
     | Engine.Shifting _ | Engine.AboutToReduce _ ->
