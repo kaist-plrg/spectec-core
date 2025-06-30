@@ -5,8 +5,7 @@ Running parser tests on 1278 files
 Parser success: ../../../../p4c/testdata/p4_16_samples/action-bind.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/action-synth.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/action-synth.p4
-../../../../p4c/testdata/p4_16_samples/action-synth.p4:20.13-20.14: syntax error at line 1, column 7362
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/action-synth.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/action-two-params.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/action-two-params.p4
@@ -48,8 +47,7 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/action_profile_sum_of_mem
 Excluding file: ../../../../p4c/testdata/p4_16_samples/action_selector_shared-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/action_selector_unused-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/action_selector_unused-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/action_selector_unused-bmv2.p4:4.13-4.14: syntax error at line 1, column 7358
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/action_selector_unused-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/actions-almost-duplicate-names1.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/actions-almost-duplicate-names1.p4
@@ -170,15 +168,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/bool_double_cast.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/bool_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/bool_to_bit_cast.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/bool_to_bit_cast.p4
-../../../../p4c/testdata/p4_16_samples/bool_to_bit_cast.p4:7.4-7.5: syntax error at line 1, column 7344
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/bool_to_bit_cast.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/bvec-hdr-bmv2.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/bvec-hdr-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/bvec_union-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/bvec_union-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/bvec_union-bmv2.p4:23.2-23.3: syntax error at line 1, column 7396
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/bvec_union-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/calc-ebpf.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/calc-ebpf.p4
@@ -351,8 +347,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/decl.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/decl2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/def-use.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/def-use.p4
-../../../../p4c/testdata/p4_16_samples/def-use.p4:20.13-20.14: syntax error at line 1, column 7376
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/def-use.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/default-action-arg-bmv2.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/default-action-arg-bmv2.p4
@@ -362,7 +357,7 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/default-control-argument.
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/default-initializer.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/default-initializer.p4
-../../../../p4c/testdata/p4_16_samples/default-initializer.p4:7.2-7.3: syntax error at line 1, column 1133
+../../../../p4c/testdata/p4_16_samples/default-initializer.p4:12.1-12.2: syntax error at line 1, column 1175
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/default-package-argument.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/default-package-argument.p4
@@ -402,8 +397,7 @@ Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/direct-
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/direct-call2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/drop-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/drop-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/drop-bmv2.p4:20.13-20.14: syntax error at line 1, column 7347
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/drop-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/duplicateMethod.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/duplicateMethod.p4
@@ -583,8 +577,7 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/functors8.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/functors9.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/fwd-bmv2-psa.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/fwd-bmv2-psa.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5973
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/fwd-bmv2-psa.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/gauntlet_action_mux-bmv2.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/gauntlet_action_mux-bmv2.p4
@@ -902,8 +895,7 @@ Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/graph-a
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/hash-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/hash-extern-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/hash-extern-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5986
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/hash-extern-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/hash_ubpf.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/hash_ubpf.p4
@@ -939,8 +931,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/header.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/highorder.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/hit-expr-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/hit-expr-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/hit-expr-bmv2.p4:20.13-20.14: syntax error at line 1, column 7367
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/hit-expr-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/hit_ebpf.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/hit_ebpf.p4
@@ -1009,12 +1000,10 @@ Error on parser: ../../../../p4c/testdata/p4_16_samples/interface1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/interface2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/internet_checksum1-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/internet_checksum1-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6008
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/internet_checksum1-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/intrinsic-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/intrinsic-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/intrinsic-bmv2.p4:22.13-22.14: syntax error at line 1, column 7426
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/intrinsic-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/invalid-hdr-warnings1.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/invalid-hdr-warnings1.p4
@@ -1103,8 +1092,7 @@ Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue10
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue1062-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1079-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue1079-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/issue1079-bmv2.p4:8.2-8.3: syntax error at line 1, column 7329
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue1079-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1097-2-bmv2.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1097-2-bmv2.p4
@@ -1113,8 +1101,7 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1097-2-bmv2.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1097-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1107.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue1107.p4
-../../../../p4c/testdata/p4_16_samples/issue1107.p4:4.13-4.14: syntax error at line 1, column 7286
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue1107.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1127-bmv2.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue1127-bmv2.p4
@@ -1132,8 +1119,7 @@ Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue11
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue1205-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1208-1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue1208-1.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5970
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue1208-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1208.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1208.p4
@@ -1152,8 +1138,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1301.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1304.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1325-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue1325-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/issue1325-bmv2.p4:6.2-6.3: syntax error at line 1, column 7314
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue1325-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1333.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1333.p4
@@ -1162,8 +1147,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1333.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1334.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue134-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue134-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/issue134-bmv2.p4:30.13-30.14: syntax error at line 1, column 7478
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue134-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1342.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1342.p4
@@ -1176,11 +1160,11 @@ Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue13
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1406.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/issue1406.p4
-../../../../p4c/testdata/p4_16_samples/issue1406.p4:5.2-5.3: syntax error at line 1, column 7305
+../../../../p4c/testdata/p4_16_samples/issue1406.p4:20.3-20.4: syntax error at line 1, column 7623
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1409-bmv2.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/issue1409-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/issue1409-bmv2.p4:6.2-6.3: syntax error at line 1, column 7321
+../../../../p4c/testdata/p4_16_samples/issue1409-bmv2.p4:33.3-33.4: syntax error at line 1, column 7757
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1412-bmv2.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue1412-bmv2.p4
@@ -1237,8 +1221,7 @@ Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue15
 Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1560-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1566-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue1566-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/issue1566-bmv2.p4:47.2-47.3: syntax error at line 1, column 7802
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue1566-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1586.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1586.p4
@@ -1809,12 +1792,11 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2844-enum.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2890.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2900.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue2900.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9045
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue2900.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2904.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/issue2904.p4
-../../../../p4c/testdata/p4_16_samples/issue2904.p4:6.2-6.3: syntax error at line 1, column 7331
+../../../../p4c/testdata/p4_16_samples/issue2904.p4:39.1-39.2: syntax error at line 1, column 8156
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2905-bmv2.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue2905-bmv2.p4
@@ -1884,8 +1866,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue313_3.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue314.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3178.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3178.p4
-../../../../p4c/testdata/p4_16_samples/issue3178.p4:1.47-1.48: syntax error at line 1, column 252
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3178.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3197.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3197.p4
@@ -1997,8 +1978,7 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3531.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue355-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3550.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3550.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5964
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue3550.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue356-bmv2.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue356-bmv2.p4
@@ -2044,7 +2024,7 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3699.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3702-bmv2.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3702-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/issue3702-bmv2.p4:12.2-12.3: syntax error at line 1, column 7407
+../../../../p4c/testdata/p4_16_samples/issue3702-bmv2.p4:40.1-40.7: syntax error at line 1, column 7810
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3779.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3779.p4
@@ -2181,7 +2161,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue4775.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue4796.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/issue4796.p4
-../../../../p4c/p4include/dpdk/pna.p4:262.2-262.3: syntax error at line 1, column 9065
+../../../../p4c/testdata/p4_16_samples/issue4796.p4:24.5-24.6: syntax error at line 1, column 14975
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue4835-generic-struct.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue4835-generic-struct.p4
@@ -2353,8 +2333,7 @@ Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue94
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue951.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue955.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue955.p4
-../../../../p4c/testdata/p4_16_samples/issue955.p4:21.23-21.24: syntax error at line 1, column 7384
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue955.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue982.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/issue982.p4
@@ -2373,8 +2352,7 @@ Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue98
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/issue995-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/junk-prop-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/junk-prop-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/junk-prop-bmv2.p4:20.13-20.14: syntax error at line 1, column 7372
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/junk-prop-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/key-bmv2.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/key-bmv2.p4
@@ -2461,8 +2439,7 @@ Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/lpm_ubp
 Parser success: ../../../../p4c/testdata/p4_16_samples/lvalue-parens.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/m_psa-dpdk-non-zero-arg-default-action-08.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/m_psa-dpdk-non-zero-arg-default-action-08.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6017
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/m_psa-dpdk-non-zero-arg-default-action-08.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/mask.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/mask.p4
@@ -2504,8 +2481,7 @@ Error on parser: ../../../../p4c/testdata/p4_16_samples/multicast-bmv2.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/mux-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/name_annotations_to_p4info-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/name_annotations_to_p4info-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/name_annotations_to_p4info-bmv2.p4:20.13-20.14: syntax error at line 1, column 7457
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/name_annotations_to_p4info-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/named-arg.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/named-arg.p4
@@ -2591,8 +2567,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/overwrite.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/p416-type-use3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/p4rt_digest_complex.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/p4rt_digest_complex.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5994
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/p4rt_digest_complex.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/package.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/package.p4
@@ -2664,12 +2639,10 @@ Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/parser-
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/parser-unroll-issue3537-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/parser-unroll-issue3537.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/parser-unroll-issue3537.p4
-../../../../p4c/testdata/p4_16_samples/parser-unroll-issue3537.p4:29.2-29.3: syntax error at line 1, column 7640
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/parser-unroll-issue3537.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/parser-unroll-issue4006_twice_extracted_header.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/parser-unroll-issue4006_twice_extracted_header.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6031
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/parser-unroll-issue4006_twice_extracted_header.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/parser-unroll-t1-cond.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/parser-unroll-t1-cond.p4
@@ -2695,7 +2668,7 @@ Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/parser-
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/parser-unroll-test6.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/parser-unroll-test6.p4
-../../../../p4c/testdata/p4_16_samples/parser-unroll-test6.p4:7.2-7.3: syntax error at line 1, column 7367
+../../../../p4c/testdata/p4_16_samples/parser-unroll-test6.p4:34.3-34.4: syntax error at line 1, column 7807
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/parser-unroll-test7.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/parser-unroll-test7.p4
@@ -2713,8 +2686,7 @@ Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/parser-
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/parser-unroll-uninitialized-slice-write.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/parser_error-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/parser_error-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/parser_error-bmv2.p4:12.2-12.3: syntax error at line 1, column 7423
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/parser_error-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pins/pins_fabric.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/pins/pins_fabric.p4
@@ -2732,8 +2704,7 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/pipe.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pipeline.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pkginfo_annotation.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pkginfo_annotation.p4
-../../../../p4c/testdata/p4_16_samples/pkginfo_annotation.p4:20.13-20.14: syntax error at line 1, column 7392
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pkginfo_annotation.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-action-selector-1.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/pna-action-selector-1.p4
@@ -2742,267 +2713,205 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/pna-action-selector-1.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/pna-action-selector.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-add-on-miss.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-add-on-miss.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9129
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-add-on-miss.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-add_on_miss_action_name.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-add_on_miss_action_name.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9177
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-add_on_miss_action_name.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-direction-main-parser-err.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-direction-main-parser-err.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9185
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-direction-main-parser-err.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-direction.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-direction.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9121
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-direction.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-add_on_miss0.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-add_on_miss0.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9083
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-add_on_miss0.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-add_on_miss1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-add_on_miss1.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9083
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-add_on_miss1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-bvec_union.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-bvec_union.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9075
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-bvec_union.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-counter-learner.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-counter-learner.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9111
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-counter-learner.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-counter.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-counter.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-meter-learner.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-meter-learner.p4
-../../../../p4c/p4include/dpdk/pna.p4:262.2-262.3: syntax error at line 1, column 9205
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-meter-learner.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-flatten-local-struct-decl.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-flatten-local-struct-decl.p4
-../../../../p4c/p4include/dpdk/pna.p4:262.2-262.3: syntax error at line 1, column 9225
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-flatten-local-struct-decl.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-header-stack-assignment.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-header-stack-assignment.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9115
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-header-stack-assignment.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-header-union-stack.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-header-union-stack.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9099
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-header-union-stack.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-header-union-stack1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-header-union-stack1.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9102
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-header-union-stack1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-header-union-stack2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-header-union-stack2.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9102
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-header-union-stack2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-invalid-hdr-warnings5.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-invalid-hdr-warnings5.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9108
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-invalid-hdr-warnings5.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-invalid-hdr-warnings6.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-invalid-hdr-warnings6.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9108
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-invalid-hdr-warnings6.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-large-constants.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-large-constants.p4
-../../../../p4c/p4include/dpdk/pna.p4:262.2-262.3: syntax error at line 1, column 9110
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-large-constants.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-parser-state-err.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-parser-state-err.p4
-../../../../p4c/p4include/dpdk/pna.p4:262.2-262.3: syntax error at line 1, column 9189
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-parser-state-err.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-parser-wrong-arith.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-parser-wrong-arith.p4
-../../../../p4c/p4include/dpdk/pna.p4:262.2-262.3: syntax error at line 1, column 9197
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-parser-wrong-arith.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-small_sample.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-small_sample.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9153
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-small_sample.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-1.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9237
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-3.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-3.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9237
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-4.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-4.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9237
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-5.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-5.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9237
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-5.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-6.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-6.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9237
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-6.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-7.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-7.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9237
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-consolidation-learner-7.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-use-annon.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-use-annon.p4
-../../../../p4c/p4include/dpdk/pna.p4:262.2-262.3: syntax error at line 1, column 9201
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-table-key-use-annon.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-toeplitz-hash-1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-toeplitz-hash-1.p4
-../../../../p4c/p4include/dpdk/pna.p4:262.2-262.3: syntax error at line 1, column 9185
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-toeplitz-hash-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-toeplitz-hash.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-toeplitz-hash.p4
-../../../../p4c/p4include/dpdk/pna.p4:262.2-262.3: syntax error at line 1, column 9177
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-toeplitz-hash.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-union-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-union-bmv2.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9145
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-union-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-wrong-warning.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-wrong-warning.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9084
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk-wrong-warning.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk_128bit_odd_size.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk_128bit_odd_size.p4
-../../../../p4c/p4include/dpdk/pna.p4:262.2-262.3: syntax error at line 1, column 9185
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-dpdk_128bit_odd_size.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-elim-hdr-copy-dpdk.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-elim-hdr-copy-dpdk.p4
-../../../../p4c/p4include/dpdk/pna.p4:262.2-262.3: syntax error at line 1, column 9177
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-elim-hdr-copy-dpdk.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-SelectByDirection.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-SelectByDirection.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9185
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-SelectByDirection.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-SelectByDirection1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-SelectByDirection1.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9189
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-SelectByDirection1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-SelectByDirection2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-SelectByDirection2.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9189
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-SelectByDirection2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-bAnd-in-tableKey.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-bAnd-in-tableKey.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9181
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-bAnd-in-tableKey.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-dpdk-optional.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-dpdk-optional.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9169
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-dpdk-optional.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-dpdk-varbit-1.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-dpdk-varbit-1.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9169
+../../../../p4c/testdata/p4_16_samples/pna-example-dpdk-varbit-1.p4:44.5-44.11: syntax error at line 1, column 14405
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-dpdk-varbit.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-dpdk-varbit.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9161
+../../../../p4c/testdata/p4_16_samples/pna-example-dpdk-varbit.p4:44.5-44.11: syntax error at line 1, column 14395
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-header-union.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-header-union.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9090
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-header-union.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-header-union1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-header-union1.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9093
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-header-union1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-ipsec.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-ipsec.p4
-../../../../p4c/p4include/dpdk/pna.p4:262.2-262.3: syntax error at line 1, column 9157
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-ipsec.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-mirror-packet-1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-mirror-packet-1.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9099
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-mirror-packet-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-mirror-packet.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-mirror-packet.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9093
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-mirror-packet.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-pass-1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-pass-1.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9141
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-pass-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-pass-2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-pass-2.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9141
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-pass-2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-pass-3.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-pass-3.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9141
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-pass-3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-pass-parser.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-pass-parser.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9161
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-pass-parser.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-pass.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-pass.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9133
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-pass.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-recirculate.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-recirculate.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9161
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-recirculate.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-tcp-connection-tracking.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-tcp-connection-tracking.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9209
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-tcp-connection-tracking.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-template.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-template.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9149
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-template.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-tunnel.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-tunnel.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9141
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-tunnel.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-1.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9157
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-2.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9157
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9149
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-extract-local-header.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-extract-local-header.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9165
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-extract-local-header.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-ipv6-actions.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-ipv6-actions.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9066
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-ipv6-actions.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-issue3041.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-issue3041.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9121
+../../../../p4c/testdata/p4_16_samples/pna-issue3041.p4:46.5-46.11: syntax error at line 1, column 14369
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-lookahead-structure-bit-field.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-lookahead-structure-bit-field.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9201
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-lookahead-structure-bit-field.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-lookahead-structure.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-lookahead-structure.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9161
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-lookahead-structure.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-mux-dismantle.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-mux-dismantle.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9137
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-mux-dismantle.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-subparser.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-subparser.p4
-../../../../p4c/p4include/pna.p4:262.2-262.3: syntax error at line 1, column 9121
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-subparser.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-too-big-label-name-dpdk.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-too-big-label-name-dpdk.p4
-../../../../p4c/p4include/dpdk/pna.p4:262.2-262.3: syntax error at line 1, column 9197
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pna-too-big-label-name-dpdk.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pr1363.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/pr1363.p4
@@ -3094,8 +3003,7 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-basic-counter-bmv2.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-bool-ternary-const-entry-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-conditional_operator.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-conditional_operator.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6009
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-conditional_operator.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-counter1.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-counter1.p4
@@ -3107,15 +3015,13 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-counter2.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-counter3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-counter4.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-counter4.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5973
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-counter4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-custom-type-counter-index.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-custom-type-counter-index.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-128bitCast.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-128bitCast.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5951
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-128bitCast.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-binary-operations-1.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-binary-operations-1.p4
@@ -3124,222 +3030,169 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-binary-operation
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-binary-operations.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-checksum-arg-header.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-checksum-arg-header.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5977
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-checksum-arg-header.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-errorcode-1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-errorcode-1.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5997
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-errorcode-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-errorcode-2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-errorcode-2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5997
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-errorcode-2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-errorcode.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-errorcode.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5991
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-errorcode.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-flatten-local-struct.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-flatten-local-struct.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5980
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-flatten-local-struct.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-hdr-field-non-align.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-hdr-field-non-align.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5978
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-hdr-field-non-align.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-header-union-typedef.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-header-union-typedef.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-large-header-fields.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-large-header-fields.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5977
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-large-header-fields.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-large-struct-fields.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-large-struct-fields.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5977
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-large-struct-fields.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-lpm-match-err3.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-lpm-match-err3.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5962
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-lpm-match-err3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-lpm-match-err4.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-lpm-match-err4.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5962
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-lpm-match-err4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-lpm-match-err5.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-lpm-match-err5.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5962
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-lpm-match-err5.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-lpm-match-valid.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-lpm-match-valid.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5965
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-lpm-match-valid.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-01.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-01.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6011
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-01.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-02.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-02.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6011
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-02.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-03.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-03.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6011
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-03.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-04.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-04.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6011
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-04.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-05.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-05.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6011
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-05.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-06.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-06.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6011
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-06.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-07.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-07.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6011
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-07.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-08.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-08.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6011
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-08.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-09.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-09.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6011
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-non-zero-arg-default-action-09.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-struct-field.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-struct-field.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5957
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-struct-field.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-entries-exact-ternary.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-entries-exact-ternary.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6088
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-entries-exact-ternary.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-if-1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-if-1.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6004
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-if-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-if.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-if.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5998
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-if.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-1.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6028
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-10.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-10.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6031
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-10.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-2.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6028
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-3.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-3.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6028
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-4.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-4.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6028
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-5.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-5.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6028
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-5.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-6.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-6.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6028
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-6.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-7.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-7.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6028
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-7.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-8.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-8.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6028
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-8.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-9.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-9.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6028
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys-9.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6022
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-mixed-keys.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-switch.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-switch.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 6010
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-consolidation-switch.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-error-1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-error-1.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5971
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-error-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-error.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-error.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5965
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-error.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid1.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5974
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid2.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5974
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid3.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid3.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5974
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid4.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid4.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5974
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid5.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid5.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5974
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid5.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid6.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid6.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5974
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid6.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid7.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid7.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5974
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid7.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-tmp-mask-align.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-tmp-mask-align.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5962
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-tmp-mask-align.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-token-too-big.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-token-too-big.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5959
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-dpdk-token-too-big.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-drop-all-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-drop-all-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6056
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-drop-all-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-drop-all-corrected-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-drop-all-corrected-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6096
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-drop-all-corrected-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-e2e-cloning-basic-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-e2e-cloning-basic-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6092
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-e2e-cloning-basic-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-end-of-ingress-test-bmv2.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-end-of-ingress-test-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-counters-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-counters-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6088
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-counters-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-digest-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-digest-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6080
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-digest-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_1.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_1.p4
@@ -3351,8 +3204,7 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-ali
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_4.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_4.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6120
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_5.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_5.p4
@@ -3373,15 +3225,13 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-ali
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-counter.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-directmeter.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-directmeter.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5977
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-directmeter.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-externs.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-externs.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-local-variable.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-local-variable.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5986
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-local-variable.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-meter-execute-err.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-meter-execute-err.p4
@@ -3396,120 +3246,91 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-meter1.p
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-varbit-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-incremental-checksum.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-incremental-checksum.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6116
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-incremental-checksum.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-logical-operations.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-logical-operations.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6027
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-logical-operations.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-mask-range.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-mask-range.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6003
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-mask-range.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-mask-range1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-mask-range1.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6006
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-mask-range1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-optional-match.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-optional-match.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6015
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-optional-match.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-parser-checksum.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-parser-checksum.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6096
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-parser-checksum.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-range-match.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-range-match.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6006
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-range-match.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-register2-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-register2-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6092
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-register2-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-select_tuple-1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-select_tuple-1.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5971
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-select_tuple-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-select_tuple-mask.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-select_tuple-mask.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5980
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-select_tuple-mask.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-select_tuple-wc.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-select_tuple-wc.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5974
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-select_tuple-wc.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-select_tuple.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-select_tuple.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5965
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-select_tuple.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-switch-with-constant-expr.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-switch-with-constant-expr.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6048
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-example-switch-with-constant-expr.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-fwd-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-fwd-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6036
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-fwd-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-hash-02.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-hash-02.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5970
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-hash-02.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-hash-03.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-hash-03.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5970
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-hash-03.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-hash-04.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-hash-04.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5970
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-hash-04.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-hash-05.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-hash-05.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5970
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-hash-05.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-hash-06.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-hash-06.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5970
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-hash-06.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-hash-07.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-hash-07.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5970
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-hash-07.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-hash-08.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-hash-08.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5970
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-hash-08.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-hash-09.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-hash-09.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5970
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-hash-09.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-hash-10.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-hash-10.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5970
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-hash-10.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-hash.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-hash.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5961
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-hash.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-header-stack.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-header-stack.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5985
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-header-stack.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-i2e-cloning-basic-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-i2e-cloning-basic-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6092
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-i2e-cloning-basic-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-idle-timeout.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-idle-timeout.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5985
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-idle-timeout.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-isvalid.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-isvalid.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5970
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-isvalid.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-metadata-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-metadata-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6056
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-metadata-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-meter1.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-meter1.p4
@@ -3518,38 +3339,31 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-meter1.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-meter3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-meter4.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-meter4.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5967
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-meter4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-meter5.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-meter5.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5967
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-meter5.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-meter7-bmv2.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-meter7-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-multicast-basic-2-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-multicast-basic-2-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6092
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-multicast-basic-2-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-multicast-basic-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-multicast-basic-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6084
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-multicast-basic-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-multicast-basic-corrected-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-multicast-basic-corrected-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6124
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-multicast-basic-corrected-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-parser-error-test-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-parser-error-test-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6092
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-parser-error-test-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-random.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-random.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-recirculate-no-meta-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-recirculate-no-meta-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6100
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-recirculate-no-meta-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-register-complex-bmv2.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-register-complex-bmv2.p4
@@ -3570,44 +3384,34 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-register2.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-register3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-remove-header.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-remove-header.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5988
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-remove-header.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-resubmit-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-resubmit-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6056
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-resubmit-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-subtract-inst1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-subtract-inst1.p4
-../../../../p4c/p4include/dpdk/psa.p4:206.2-206.3: syntax error at line 1, column 5948
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-subtract-inst1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-switch-expression-without-default.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-switch-expression-without-default.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6048
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-switch-expression-without-default.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-table-hit-miss.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-table-hit-miss.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5991
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-table-hit-miss.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-test.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-test.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5961
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-test.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-top-level-assignments-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-top-level-assignments-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6108
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-top-level-assignments-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-unicast-or-drop-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-unicast-or-drop-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6084
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-unicast-or-drop-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-unicast-or-drop-corrected-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-unicast-or-drop-corrected-bmv2.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 6124
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-unicast-or-drop-corrected-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-variable-index.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-variable-index.p4
-../../../../p4c/p4include/bmv2/psa.p4:218.2-218.3: syntax error at line 1, column 5992
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/psa-variable-index.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pvs-bitstring-bmv2.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/pvs-bitstring-bmv2.p4
@@ -3651,8 +3455,7 @@ Error on parser: ../../../../p4c/testdata/p4_16_samples/runtime-index-bmv2.p4
 ../../../../p4c/testdata/p4_16_samples/runtime-index-bmv2.p4:35.8-35.9: syntax error at line 1, column 7561
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/same_name_for_table_and_action.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/same_name_for_table_and_action.p4
-../../../../p4c/testdata/p4_16_samples/same_name_for_table_and_action.p4:4.13-4.14: syntax error at line 1, column 7370
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/same_name_for_table_and_action.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/saturated-bmv2.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/saturated-bmv2.p4
@@ -3809,8 +3612,7 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/spec-issue1068.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/spec-issue1297-string-cat.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/specIssue884.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/specIssue884.p4
-../../../../p4c/testdata/p4_16_samples/specIssue884.p4:30.20-30.21: syntax error at line 1, column 727
+Parser success: ../../../../p4c/testdata/p4_16_samples/specIssue884.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/specialization.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/specialization.p4
@@ -3819,8 +3621,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/specialization.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/stack-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/stack-bvec-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/stack-bvec-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/stack-bvec-bmv2.p4:23.2-23.3: syntax error at line 1, column 7400
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/stack-bvec-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/stack-init.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/stack-init.p4
@@ -4098,8 +3899,7 @@ Error on parser: ../../../../p4c/testdata/p4_16_samples/verify-bmv2.p4
 ../../../../p4c/testdata/p4_16_samples/verify-bmv2.p4:19.15-19.16: syntax error at line 1, column 7347
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/verify_disjunction.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/verify_disjunction.p4
-../../../../p4c/testdata/p4_16_samples/verify_disjunction.p4:10.2-10.3: syntax error at line 1, column 7357
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/verify_disjunction.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/verify_ebpf.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/verify_ebpf.p4
@@ -4137,4 +3937,4 @@ Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/xdp_vla
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 Error on parser: unknown error in ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 
-Running parser: [EXCLUDE] 223/1278 (17.45%) [PASS] 270/1278 (21.13%) [FAIL] 785/1278 (61.42%)
+Running parser: [EXCLUDE] 223/1278 (17.45%) [PASS] 272/1278 (21.28%) [FAIL] 783/1278 (61.27%)

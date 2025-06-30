@@ -1477,19 +1477,20 @@ parserTypeDeclaration:
       |> wrap_case_v |> with_typ (wrap_var_t "parserTypeDeclaration") }
 ;
 
-(* AUX *)
-(* declarationList: *)
-(* | (* empty *) { [] } *)
-(* | SEMICOLON ds = declarationList *)
-(*     { ds } *)
-(* | d = declaration ds = declarationList *)
-(*     { d :: ds } *)
-(* ; *)
 
 (******** P4 program ********)
 
+(* HACK: separator can be both semicolon or whitespace*)
+declarationList:
+| (* empty *) { [] }
+| SEMICOLON ds = declarationList
+    { ds }
+| d = declaration ds = declarationList
+    { d :: ds }
+;
+
 p4program: 
-  ds = list(declaration) END 
+| ds = declarationList END 
     { wrap_list_v ds "declaration" }
 ;
 
