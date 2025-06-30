@@ -341,7 +341,8 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/default-action-arg-bmv2.p
 Excluding file: ../../../../p4c/testdata/p4_16_samples/default-control-argument.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/default-initializer.p4
-Parser success: ../../../../p4c/testdata/p4_16_samples/default-initializer.p4
+Error on parser: ../../../../p4c/testdata/p4_16_samples/default-initializer.p4
+../../../../p4c/testdata/p4_16_samples/default-initializer.p4:75.25-75.28: syntax error at line 1, column 1960
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/default-package-argument.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/default-package-argument.p4
@@ -2845,24 +2846,19 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/pna-too-big-label-name-dp
 Excluding file: ../../../../p4c/testdata/p4_16_samples/pr1363.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pragma-action.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pragma-action.p4
-../../../../p4c/testdata/p4_16_samples/pragma-action.p4:24.13-24.20: syntax error at line 1, column 390
+Parser success: ../../../../p4c/testdata/p4_16_samples/pragma-action.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pragma-deprecated.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pragma-deprecated.p4
-../../../../p4c/testdata/p4_16_samples/pragma-deprecated.p4:1.1-1.8: syntax error at line 1, column 222
+Parser success: ../../../../p4c/testdata/p4_16_samples/pragma-deprecated.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pragma-pkginfo.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pragma-pkginfo.p4
-../../../../p4c/testdata/p4_16_samples/pragma-pkginfo.p4:1.1-1.8: syntax error at line 1, column 216
+Parser success: ../../../../p4c/testdata/p4_16_samples/pragma-pkginfo.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pragma-string.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pragma-string.p4
-../../../../p4c/testdata/p4_16_samples/pragma-string.p4:19.1-19.8: syntax error at line 1, column 277
+Parser success: ../../../../p4c/testdata/p4_16_samples/pragma-string.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pragmas.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pragmas.p4
-../../../../p4c/testdata/p4_16_samples/pragmas.p4:17.1-17.8: syntax error at line 1, column 259
+Parser success: ../../../../p4c/testdata/p4_16_samples/pragmas.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/precedence-lt.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/precedence-lt.p4
@@ -3847,4 +3843,4 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/xdp_vlan_push_pop_ebpf-ke
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 
-Running parser: [EXCLUDE] 223/1278 (17.45%) [PASS] 1043/1278 (81.61%) [FAIL] 12/1278 (0.94%)
+Running parser: [EXCLUDE] 223/1278 (17.45%) [PASS] 1047/1278 (81.92%) [FAIL] 8/1278 (0.63%)

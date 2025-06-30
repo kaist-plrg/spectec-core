@@ -72,17 +72,18 @@
 
 (**************************** TYPES ******************************)
 %type <Il.Ast.value> declaration
-%type <Il.Ast.value> expressionOptTrailingList optTrailingComma kvList const optCONST number stringLiteral dotPrefix identifier typeIdentifier nonTypeName prefixedNonTypeName nonTableKwName prefixedType typeName name identifierList member direction baseType specializedType namedType headerStackType listType tupleType typeRef typeOrVoid typeParameterList typeParameters optTypeParameters parameter parameterList constructorParameters optConstructorParameters nonBraceExpression expression expressionList simpleKeysetExpression reducedSimpleKeysetExpression simpleExpressionList tupleKeysetExpression keysetExpression kvTrailingList kvOptTrailingList realTypeArg realTypeArgumentList typeArg typeArgumentList argument argumentList lvalue initialValue optInitializer variableDeclarationWithoutSemicolon constantDeclaration assignmentOrMethodCallStatementWithoutSemicolon assignmentOrMethodCallStatement directApplication conditionalStatement emptyStatement blockStatement returnStatement breakStatement continueStatement exitStatement switchLabel switchCase switchCases switchStatement statement statementOrDeclaration statOrDeclList matchKindDeclaration errorDeclaration functionPrototype methodPrototype methodPrototypes externDeclaration externName functionDeclaration objInitializer instantiation objDeclaration objDeclarations actionDeclaration keyElement keyElementList actionRef action actionList entryPriority entry entriesList
+%type <Il.Ast.value> expressionOptTrailingList trailingComma optTrailingComma kvList const optCONST number stringLiteral dotPrefix identifier typeIdentifier nonTypeName prefixedNonTypeName nonTableKwName prefixedType typeName name identifierList member direction baseType specializedType namedType headerStackType listType tupleType typeRef typeOrVoid typeParameterList typeParameters optTypeParameters parameter parameterList constructorParameters optConstructorParameters nonBraceExpression expression expressionList simpleKeysetExpression reducedSimpleKeysetExpression simpleExpressionList tupleKeysetExpression keysetExpression realTypeArg realTypeArgumentList typeArg typeArgumentList argument argumentList lvalue initialValue optInitializer variableDeclarationWithoutSemicolon constantDeclaration assignmentOrMethodCallStatementWithoutSemicolon assignmentOrMethodCallStatement directApplication conditionalStatement emptyStatement blockStatement returnStatement breakStatement continueStatement exitStatement switchLabel switchCase switchCases switchStatement statement statementOrDeclaration statOrDeclList matchKindDeclaration errorDeclaration functionPrototype methodPrototype methodPrototypes externDeclaration externName functionDeclaration objInitializer instantiation objDeclaration objDeclarations actionDeclaration keyElement keyElementList actionRef action actionList entryPriority entry entriesList
 %type <Il.Ast.value> annotation annotationToken annotations controlBody controlDeclaration controlLocalDeclaration controlLocalDeclarations controlTypeDeclaration derivedTypeDeclaration enumDeclaration headerTypeDeclaration headerUnionDeclaration packageTypeDeclaration parserBlockStatement parserDeclaration parserLocalElement parserLocalElements parserState parserStatement parserStatements parserStates parserTypeDeclaration selectCase selectCaseList selectExpression simpleAnnotation simpleAnnotationBody specifiedIdentifier specifiedIdentifierList stateExpression structField structFieldList structTypeDeclaration structuredAnnotationBody tableDeclaration tableProperty tablePropertyList transitionStatement typedefDeclaration valueSetDeclaration
 %type <Il.Ast.value list> lib_parsing_parser_list(action) lib_parsing_parser_list(annotation) lib_parsing_parser_list(controlLocalDeclaration) lib_parsing_parser_list(declaration) lib_parsing_parser_list(entry) lib_parsing_parser_list(keyElement) lib_parsing_parser_list(methodPrototype) lib_parsing_parser_list(objDeclaration) lib_parsing_parser_list(parserLocalElement) lib_parsing_parser_list(parserState) lib_parsing_parser_list(parserStatement) lib_parsing_parser_list(selectCase) lib_parsing_parser_list(simpleAnnotation) lib_parsing_parser_list(statementOrDeclaration) lib_parsing_parser_list(structField) lib_parsing_parser_list(switchCase) lib_parsing_parser_list(tableProperty)
 %type <Il.Ast.value list> lib_parsing_parser_separated_list(COMMA,argument) lib_parsing_parser_separated_list(COMMA,expression) lib_parsing_parser_separated_list(COMMA,parameter) lib_parsing_parser_separated_list(COMMA,realTypeArg) lib_parsing_parser_separated_list(COMMA,simpleKeysetExpression) lib_parsing_parser_separated_list(COMMA,specifiedIdentifier) lib_parsing_parser_separated_list(COMMA,typeArg)
 %type <Il.Ast.value list> lib_parsing_parser_separated_nonempty_list(COMMA,__anonymous_0) lib_parsing_parser_separated_nonempty_list(COMMA,kvPair) lib_parsing_parser_separated_nonempty_list(COMMA,name)
 %type <Il.Ast.value list> list_aux(action) list_aux(annotation) list_aux(controlLocalDeclaration) list_aux(declaration) list_aux(entry) list_aux(keyElement) list_aux(methodPrototype) list_aux(objDeclaration) list_aux(parserLocalElement) list_aux(parserState) list_aux(parserStatement) list_aux(selectCase) list_aux(simpleAnnotation) list_aux(statementOrDeclaration) list_aux(structField) list_aux(switchCase) list_aux(tableProperty)
 %type <Il.Ast.value list> separated_list_aux(COMMA,argument) separated_list_aux(COMMA,expression) separated_list_aux(COMMA,parameter) separated_list_aux(COMMA,realTypeArg) separated_list_aux(COMMA,simpleKeysetExpression) separated_list_aux(COMMA,specifiedIdentifier) separated_list_aux(COMMA,typeArg)
-%type <Il.Ast.value list> separated_nonempty_list_aux(COMMA,__anonymous_0) separated_nonempty_list_aux(COMMA,kvPair) separated_nonempty_list_aux(COMMA,name)
-%type <Il.Ast.value list> separated_nonempty_opt_trailing_list(COMMA,kvPair) separated_nonempty_trailing_list(COMMA,kvPair) separated_opt_trailing_list(COMMA,expression)
+%type <Il.Ast.value list> separated_nonempty_list_aux(COMMA,__anonymous_0) separated_nonempty_list_aux(COMMA,kvPair) separated_nonempty_list_aux(COMMA,name) separated_nonempty_list_aux(COMMA,specifiedIdentifier)
+%type <Il.Ast.value list> separated_nonempty_opt_trailing_list(COMMA,kvPair) separated_nonempty_trailing_list(COMMA,kvPair) separated_opt_trailing_list(COMMA,expression) separated_nonempty_opt_trailing_list(COMMA,specifiedIdentifier)
 %type <Il.Ast.value list> declarationList
 %type <Il.Ast.value> push_name push_externName
+(* %type <Il.Ast.value option> lib_parsing_parser_option(COMMA) lib_parsing_parser_option(annotations) lib_parsing_parser_option(const) lib_parsing_parser_option(constructorParameters) lib_parsing_parser_option(initialValue) lib_parsing_parser_option(trailingComma) lib_parsing_parser_option(typeParameters) *)
 %type <unit> push_scope pop_scope go_toplevel go_local
 %%
 
@@ -209,20 +210,11 @@ list(X):
 ;
 
 (* Missing helper functions *)
-(* TODO: convert *)
 expressionOptTrailingList:
 | exprs = separated_opt_trailing_list(COMMA, expression)
     { wrap_list_v exprs "expression" }
 ;
 
-(* TODO: convert *)
-optTrailingComma:
-| (* empty *)
-    { [ Term "EMPTY" ] |> wrap_case_v |> with_typ (wrap_var_t "optTrailingComma") }
-| COMMA
-    { [ Term "," ] |> wrap_case_v |> with_typ (wrap_var_t "optTrailingComma") }
-;
-(* TODO: convert *)
 kvList:
 | kvs = separated_nonempty_list(COMMA, kvPair)
     { wrap_list_v kvs "kvPair" }
@@ -231,9 +223,16 @@ kvList:
 (**************************** P4-16 GRAMMAR ******************************)
 
 (******** Misc ********)
-(** TODO: are these necessary? **)
-(* trailingComma: *)
-(* optTrailingComma: *)
+trailingComma:
+| COMMA
+        { [ Term ","; Term "PHTM_0" ] |> wrap_case_v |> with_typ (wrap_var_t "trailingComma") }
+;
+
+optTrailingComma:
+| comma = option(trailingComma)
+    { wrap_opt_v comma "trailingComma" }
+;
+
 const:
 | CONST
     { [ Term "CONST" ] |> wrap_case_v |> with_typ (wrap_var_t "const") }
@@ -677,21 +676,22 @@ expression:
     { info2 |> ignore;
       [ NT bits; Term "["; NT hi; Term ":"; NT lo; Term "]" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
 (* List expressions *)
-| info1 = L_BRACE values = expressionOptTrailingList info2 = R_BRACE
+| info1 = L_BRACE exprs = expressionList comma = optTrailingComma info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
-      [ Term "{"; NT values; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
+    [ Term "{"; NT exprs; NT comma; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
 | info = INVALID
     { info |> ignore;
       [ Term "INVALID" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
-| info1 = L_BRACE entries = kvOptTrailingList info2 = R_BRACE 
+(* TODO: shift-reduce conflict with COMMA *)
+| info1 = L_BRACE entries = kvList comma = optTrailingComma info2 = R_BRACE 
+    { let tags = Source.merge info1 info2 in
+    tags |> ignore;
+    [ Term "{"; NT entries; NT comma; Term "}"; Term "PHTM_7" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
+| info1 = L_BRACE entries = kvList COMMA DOTS comma = optTrailingComma info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
-      [ Term "{"; NT entries; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
-| info1 = L_BRACE entries = kvTrailingList DOTS option(COMMA) info2 = R_BRACE
-    { let tags = Source.merge info1 info2 in
-      tags |> ignore;
-      [ Term "{"; NT entries; Term "..."; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
+    [ Term "{"; NT entries; Term ","; Term "..."; NT comma; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
 | L_PAREN exp = expression R_PAREN
     { exp }
 | info1 = NOT arg = expression %prec PREFIX
@@ -788,16 +788,6 @@ keysetExpression:
 %inline kvPair:
 | key = name ASSIGN value = expression 
     { [ NT key; Term "="; NT value ] |> wrap_case_v |> with_typ (wrap_var_t "kvPair") }
-;
-
-kvTrailingList:
-| kvs = separated_nonempty_trailing_list(COMMA, kvPair)
-    { wrap_list_v kvs "kvPair" }
-;
-
-kvOptTrailingList:
-| kvs = separated_nonempty_opt_trailing_list(COMMA, kvPair)
-    { wrap_list_v kvs "kvPair" }
 ;
 
 (******** Type arguments ********)
@@ -1509,22 +1499,6 @@ parserTypeDeclaration:
 ;
 
 
-(******** P4 program ********)
-
-(* HACK: separator can be both semicolon or whitespace*)
-declarationList:
-| (* empty *) { [] }
-| SEMICOLON ds = declarationList
-    { ds }
-| d = declaration ds = declarationList
-    { d :: ds }
-;
-
-p4program: 
-| ds = declarationList END 
-    { wrap_list_v ds "declaration" }
-;
-
 (********)
 
 %inline r_angle:
@@ -1905,7 +1879,6 @@ structuredAnnotationBody:
     { [ NT kvs; NT comma; Term "PHTM_20" ] |> wrap_case_v |> with_typ (wrap_var_t "structuredAnnotationBody") }
 ;
 
-(* Petr4 also has "pragma name body" *)
 annotation:
 | info1 = AT name = name
     { info1 |> ignore;
@@ -1916,6 +1889,11 @@ annotation:
 | info1 = AT name = name L_BRACKET body = structuredAnnotationBody R_BRACKET
     { info1 |> ignore;
       [ Term "@"; NT name; Term "["; NT body; Term "]" ] |> wrap_case_v |> with_typ (wrap_var_t "annotation") }
+(* From Petr4: PRAGMA not in Spec, but in Petr4/p4c *)
+| info1 = PRAGMA name = name body = simpleAnnotationBody info2 = PRAGMA_END
+    { let tags = Source.merge info1 info2 in
+      tags |> ignore;
+      [ Term "PRAGMA"; NT name; NT body; Term "PRAGMA_END" ] |> wrap_case_v |> with_typ (wrap_var_t "annotation") }
 ;
 
 (* TODO: nonempty? *)
@@ -1928,3 +1906,19 @@ annotations:
 | annos = option(annotations)
     { wrap_opt_v annos "annotation" }
   ;
+
+(******** P4 program ********)
+
+(* HACK: separator can be both semicolon or whitespace*)
+declarationList:
+| (* empty *) { [] }
+| SEMICOLON ds = declarationList
+    { ds }
+| d = declaration ds = declarationList
+    { d :: ds }
+;
+
+p4program: 
+| ds = declarationList END 
+    { wrap_list_v ds "declaration" }
+;
