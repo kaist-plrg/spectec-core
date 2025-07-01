@@ -485,8 +485,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/filter.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/flag_lost-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/flowlet_switching-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/flowlet_switching-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/flowlet_switching-bmv2.p4:63.29-63.34: syntax error at line 1, column 8482
+Parser success: ../../../../p4c/testdata/p4_16_samples/flowlet_switching-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/fold_match.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/fold_match.p4
@@ -2406,8 +2405,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/ml-headers.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/module.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/multicast-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/multicast-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/multicast-bmv2.p4:42.29-42.34: syntax error at line 1, column 8051
+Parser success: ../../../../p4c/testdata/p4_16_samples/multicast-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/mux-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/mux-bmv2.p4
@@ -2422,12 +2420,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/named-arg.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/named-arg1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/named_meter_1-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/named_meter_1-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/named_meter_1-bmv2.p4:41.29-41.34: syntax error at line 1, column 7782
+Parser success: ../../../../p4c/testdata/p4_16_samples/named_meter_1-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/named_meter_bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/named_meter_bmv2.p4
-../../../../p4c/testdata/p4_16_samples/named_meter_bmv2.p4:41.29-41.34: syntax error at line 1, column 7772
+Parser success: ../../../../p4c/testdata/p4_16_samples/named_meter_bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/names.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/names.p4
@@ -2580,8 +2576,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/parser-unroll-issue4006_t
 Parser success: ../../../../p4c/testdata/p4_16_samples/parser-unroll-t1-cond.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/parser-unroll-test1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/parser-unroll-test1.p4
-../../../../p4c/testdata/p4_16_samples/parser-unroll-test1.p4:64.22-64.27: syntax error at line 1, column 8334
+Parser success: ../../../../p4c/testdata/p4_16_samples/parser-unroll-test1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/parser-unroll-test10.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/parser-unroll-test10.p4
@@ -3724,8 +3719,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/ubpf_checksum_extern.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/ubpf_hash_extern.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/uninit-nowarnings.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/uninit-nowarnings.p4
-../../../../p4c/testdata/p4_16_samples/uninit-nowarnings.p4:37.5-37.10: syntax error at line 1, column 1492
+Parser success: ../../../../p4c/testdata/p4_16_samples/uninit-nowarnings.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/uninit.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/uninit.p4
@@ -3841,4 +3835,4 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/xdp_vlan_push_pop_ebpf-ke
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 
-Running parser: [EXCLUDE] 223/1278 (17.45%) [PASS] 1049/1278 (82.08%) [FAIL] 6/1278 (0.47%)
+Running parser: [EXCLUDE] 223/1278 (17.45%) [PASS] 1055/1278 (82.55%) [FAIL] 0/1278 (0.00%)

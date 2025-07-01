@@ -1903,10 +1903,15 @@ annotation:
       [ Term "PRAGMA"; NT name; NT body; Term "PRAGMA_END" ] |> wrap_case_v |> with_typ (wrap_var_t "annotation") }
 ;
 
-(* TODO: nonempty? *)
+(* HACK to solve reduce issues with built-in list *)
 annotations:
-| annos = list(annotation)
-  { wrap_list_v "annotation" annos }
+| (* empty *)
+    { wrap_list_v "annotation" [] }
+| annotations = annotations annotation = annotation
+    { 
+      let rest = match annotations.it with ListV xs -> xs | _ -> failwith "Expected ListV" in
+      wrap_list_v "annotation" (rest @ [annotation])
+    }
 ;
 
 %inline optAnnotations:
@@ -1916,7 +1921,7 @@ annotations:
 
 (******** P4 program ********)
 
-(* HACK: separator can be both semicolon or whitespace*)
+(* From Petr4: separator can be both semicolon or whitespace*)
 declarationList:
 | (* empty *) { [] }
 | SEMICOLON ds = declarationList
