@@ -184,8 +184,8 @@ rule tokenize = parse
   | '\n'
       { debug_token "⏎\n"; newline lexbuf; PRAGMA_END (info lexbuf) }
   | '"'
-      { debug_token "\"";
-        let str, end_info = (string lexbuf) in
+      { let str, end_info = (string lexbuf) in
+        debug_token ("\"" ^ str ^ "\"");
         end_info |> ignore;
         let value = 
           TextV str $$$ { vid = Value.fresh (); typ = TextT }

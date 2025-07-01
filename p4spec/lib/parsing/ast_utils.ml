@@ -38,7 +38,7 @@ let wrap_case_v (vs : symbol list) : value' =
 let wrap_opt_v (v : value option) (s : string) : value =
   OptV v |> with_typ (wrap_iter_t Opt (wrap_var_t s))
 
-let wrap_list_v (vs : value list) (s : string) : value =
+let wrap_list_v (s : string) (vs : value list) : value =
   ListV vs |> with_typ (wrap_iter_t List (wrap_var_t s))
 
 let id_of_case_v (v : value) : string =

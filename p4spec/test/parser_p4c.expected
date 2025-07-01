@@ -341,8 +341,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/default-action-arg-bmv2.p
 Excluding file: ../../../../p4c/testdata/p4_16_samples/default-control-argument.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/default-initializer.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/default-initializer.p4
-../../../../p4c/testdata/p4_16_samples/default-initializer.p4:75.25-75.28: syntax error at line 1, column 1960
+Parser success: ../../../../p4c/testdata/p4_16_samples/default-initializer.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/default-package-argument.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/default-package-argument.p4
@@ -3671,8 +3670,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/test-parserinvalidargumen
 Excluding file: ../../../../p4c/testdata/p4_16_samples/test_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/trailing-comma.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/trailing-comma.p4
-../../../../p4c/testdata/p4_16_samples/trailing-comma.p4:4.1-4.2: syntax error at line 1, column 239
+Parser success: ../../../../p4c/testdata/p4_16_samples/trailing-comma.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/truncate_ubpf.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/truncate_ubpf.p4
@@ -3843,4 +3841,4 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/xdp_vlan_push_pop_ebpf-ke
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 
-Running parser: [EXCLUDE] 223/1278 (17.45%) [PASS] 1047/1278 (81.92%) [FAIL] 8/1278 (0.63%)
+Running parser: [EXCLUDE] 223/1278 (17.45%) [PASS] 1049/1278 (82.08%) [FAIL] 6/1278 (0.47%)

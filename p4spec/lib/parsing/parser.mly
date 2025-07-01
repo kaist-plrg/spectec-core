@@ -72,7 +72,7 @@
 
 (**************************** TYPES ******************************)
 %type <Il.Ast.value> declaration
-%type <Il.Ast.value> expressionOptTrailingList trailingComma optTrailingComma kvList const optCONST number stringLiteral dotPrefix identifier typeIdentifier nonTypeName prefixedNonTypeName nonTableKwName prefixedType typeName name identifierList member direction baseType specializedType namedType headerStackType listType tupleType typeRef typeOrVoid typeParameterList typeParameters optTypeParameters parameter parameterList constructorParameters optConstructorParameters nonBraceExpression expression expressionList simpleKeysetExpression reducedSimpleKeysetExpression simpleExpressionList tupleKeysetExpression keysetExpression realTypeArg realTypeArgumentList typeArg typeArgumentList argument argumentList lvalue initialValue optInitializer variableDeclarationWithoutSemicolon constantDeclaration assignmentOrMethodCallStatementWithoutSemicolon assignmentOrMethodCallStatement directApplication conditionalStatement emptyStatement blockStatement returnStatement breakStatement continueStatement exitStatement switchLabel switchCase switchCases switchStatement statement statementOrDeclaration statOrDeclList matchKindDeclaration errorDeclaration functionPrototype methodPrototype methodPrototypes externDeclaration externName functionDeclaration objInitializer instantiation objDeclaration objDeclarations actionDeclaration keyElement keyElementList actionRef action actionList entryPriority entry entriesList
+%type <Il.Ast.value> expressionOptTrailingList trailingComma kvPair optTrailingComma const optCONST number stringLiteral dotPrefix identifier typeIdentifier nonTypeName prefixedNonTypeName nonTableKwName prefixedType typeName name identifierList member direction baseType specializedType namedType headerStackType listType tupleType typeRef typeOrVoid typeParameterList typeParameters optTypeParameters parameter parameterList constructorParameters optConstructorParameters nonBraceExpression expression simpleKeysetExpression reducedSimpleKeysetExpression simpleExpressionList tupleKeysetExpression keysetExpression realTypeArg realTypeArgumentList typeArg typeArgumentList argument argumentList lvalue initialValue optInitializer variableDeclarationWithoutSemicolon constantDeclaration assignmentOrMethodCallStatementWithoutSemicolon assignmentOrMethodCallStatement directApplication conditionalStatement emptyStatement blockStatement returnStatement breakStatement continueStatement exitStatement switchLabel switchCase switchCases switchStatement statement statementOrDeclaration statOrDeclList matchKindDeclaration errorDeclaration functionPrototype methodPrototype methodPrototypes externDeclaration externName functionDeclaration objInitializer instantiation objDeclaration objDeclarations actionDeclaration keyElement keyElementList actionRef action actionList entryPriority entry entriesList
 %type <Il.Ast.value> annotation annotationToken annotations controlBody controlDeclaration controlLocalDeclaration controlLocalDeclarations controlTypeDeclaration derivedTypeDeclaration enumDeclaration headerTypeDeclaration headerUnionDeclaration packageTypeDeclaration parserBlockStatement parserDeclaration parserLocalElement parserLocalElements parserState parserStatement parserStatements parserStates parserTypeDeclaration selectCase selectCaseList selectExpression simpleAnnotation simpleAnnotationBody specifiedIdentifier specifiedIdentifierList stateExpression structField structFieldList structTypeDeclaration structuredAnnotationBody tableDeclaration tableProperty tablePropertyList transitionStatement typedefDeclaration valueSetDeclaration
 %type <Il.Ast.value list> lib_parsing_parser_list(action) lib_parsing_parser_list(annotation) lib_parsing_parser_list(controlLocalDeclaration) lib_parsing_parser_list(declaration) lib_parsing_parser_list(entry) lib_parsing_parser_list(keyElement) lib_parsing_parser_list(methodPrototype) lib_parsing_parser_list(objDeclaration) lib_parsing_parser_list(parserLocalElement) lib_parsing_parser_list(parserState) lib_parsing_parser_list(parserStatement) lib_parsing_parser_list(selectCase) lib_parsing_parser_list(simpleAnnotation) lib_parsing_parser_list(statementOrDeclaration) lib_parsing_parser_list(structField) lib_parsing_parser_list(switchCase) lib_parsing_parser_list(tableProperty)
 %type <Il.Ast.value list> lib_parsing_parser_separated_list(COMMA,argument) lib_parsing_parser_separated_list(COMMA,expression) lib_parsing_parser_separated_list(COMMA,parameter) lib_parsing_parser_separated_list(COMMA,realTypeArg) lib_parsing_parser_separated_list(COMMA,simpleKeysetExpression) lib_parsing_parser_separated_list(COMMA,specifiedIdentifier) lib_parsing_parser_separated_list(COMMA,typeArg)
@@ -80,8 +80,8 @@
 %type <Il.Ast.value list> list_aux(action) list_aux(annotation) list_aux(controlLocalDeclaration) list_aux(declaration) list_aux(entry) list_aux(keyElement) list_aux(methodPrototype) list_aux(objDeclaration) list_aux(parserLocalElement) list_aux(parserState) list_aux(parserStatement) list_aux(selectCase) list_aux(simpleAnnotation) list_aux(statementOrDeclaration) list_aux(structField) list_aux(switchCase) list_aux(tableProperty)
 %type <Il.Ast.value list> separated_list_aux(COMMA,argument) separated_list_aux(COMMA,expression) separated_list_aux(COMMA,parameter) separated_list_aux(COMMA,realTypeArg) separated_list_aux(COMMA,simpleKeysetExpression) separated_list_aux(COMMA,specifiedIdentifier) separated_list_aux(COMMA,typeArg)
 %type <Il.Ast.value list> separated_nonempty_list_aux(COMMA,__anonymous_0) separated_nonempty_list_aux(COMMA,kvPair) separated_nonempty_list_aux(COMMA,name) separated_nonempty_list_aux(COMMA,specifiedIdentifier)
-%type <Il.Ast.value list> separated_nonempty_opt_trailing_list(COMMA,kvPair) separated_nonempty_trailing_list(COMMA,kvPair) separated_opt_trailing_list(COMMA,expression) separated_nonempty_opt_trailing_list(COMMA,specifiedIdentifier)
-%type <Il.Ast.value list> declarationList
+%type <Il.Ast.value list> separated_nonempty_opt_trailing_list(COMMA,__anonymous_0) separated_nonempty_opt_trailing_list(COMMA,kvPair) separated_nonempty_trailing_list(COMMA,kvPair) separated_opt_trailing_list(COMMA,expression) separated_nonempty_opt_trailing_list(COMMA,specifiedIdentifier)
+%type <Il.Ast.value list> declarationList kvList expressionList
 %type <Il.Ast.value> push_name push_externName
 (* %type <Il.Ast.value option> lib_parsing_parser_option(COMMA) lib_parsing_parser_option(annotations) lib_parsing_parser_option(const) lib_parsing_parser_option(constructorParameters) lib_parsing_parser_option(initialValue) lib_parsing_parser_option(trailingComma) lib_parsing_parser_option(typeParameters) *)
 %type <unit> push_scope pop_scope go_toplevel go_local
@@ -212,12 +212,7 @@ list(X):
 (* Missing helper functions *)
 expressionOptTrailingList:
 | exprs = separated_opt_trailing_list(COMMA, expression)
-    { wrap_list_v exprs "expression" }
-;
-
-kvList:
-| kvs = separated_nonempty_list(COMMA, kvPair)
-    { wrap_list_v kvs "kvPair" }
+    { wrap_list_v "expression" exprs }
 ;
 
 (**************************** P4-16 GRAMMAR ******************************)
@@ -339,9 +334,10 @@ name:
     { typeIdentifier }
 ;
 
+(* From Petr4: optional trailing comma *)
 identifierList:
-| ids = separated_nonempty_list(COMMA, id = name { id })
-    { wrap_list_v ids "identifier" }
+| ids = separated_nonempty_opt_trailing_list(COMMA, id = name { id })
+    { wrap_list_v "identifier" ids }
 ;
 member:
 | name = name
@@ -495,7 +491,7 @@ typeOrVoid:
 
 typeParameterList:
 | names = separated_nonempty_list(COMMA, name) 
-    { wrap_list_v names "typeParameterList" }
+    { wrap_list_v "typeParameterList" names }
 ;
 typeParameters:
 | l_angle type_params = typeParameterList r_angle
@@ -532,7 +528,7 @@ parameter:
 parameterList:
 | params = separated_list(COMMA, parameter)
     { declare_vars (List.map id_of_parameter params);
-      wrap_list_v params "parameter"}
+      wrap_list_v "parameter" params }
 ;
 
 constructorParameters:
@@ -679,19 +675,22 @@ expression:
 | info1 = L_BRACE exprs = expressionList comma = optTrailingComma info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
+      let exprs = List.rev exprs |> wrap_list_v "expression" in
     [ Term "{"; NT exprs; NT comma; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
 | info = INVALID
     { info |> ignore;
       [ Term "INVALID" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
 (* TODO: shift-reduce conflict with COMMA *)
-| info1 = L_BRACE entries = kvList comma = optTrailingComma info2 = R_BRACE 
+| info1 = L_BRACE kvs = kvList comma = optTrailingComma info2 = R_BRACE 
     { let tags = Source.merge info1 info2 in
     tags |> ignore;
-    [ Term "{"; NT entries; NT comma; Term "}"; Term "PHTM_7" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
-| info1 = L_BRACE entries = kvList COMMA DOTS comma = optTrailingComma info2 = R_BRACE
+      let kvs = List.rev kvs |> wrap_list_v "kvPair" in
+    [ Term "{"; NT kvs; NT comma; Term "}"; Term "PHTM_7" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
+| info1 = L_BRACE kvs = kvList COMMA DOTS comma = optTrailingComma info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
-    [ Term "{"; NT entries; Term ","; Term "..."; NT comma; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
+      let kvs = List.rev kvs |> wrap_list_v "kvPair" in
+    [ Term "{"; NT kvs; Term ","; Term "..."; NT comma; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
 | L_PAREN exp = expression R_PAREN
     { exp }
 | info1 = NOT arg = expression %prec PREFIX
@@ -733,9 +732,9 @@ expression:
       [ NT typ; Term "("; NT args; Term ")" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
 ;
 
-expressionList:
-| exprs = separated_list(COMMA, expression)
-    { wrap_list_v exprs "expression" }
+%inline expressionList:
+| exprs = separated_list_aux(COMMA, expression)
+    { exprs }
 ;
 
 simpleKeysetExpression:
@@ -768,7 +767,7 @@ reducedSimpleKeysetExpression:
 
 simpleExpressionList:
 | exprs = separated_list(COMMA, simpleKeysetExpression)
-    { wrap_list_v exprs "simpleKeysetExpression" }
+    { wrap_list_v "simpleKeysetExpression" exprs }
 
 tupleKeysetExpression:
 | L_PAREN expr = simpleKeysetExpression COMMA exprs = simpleExpressionList R_PAREN
@@ -785,9 +784,14 @@ keysetExpression:
     { expr }
 ;
 
-%inline kvPair:
+kvPair:
 | key = name ASSIGN value = expression 
     { [ NT key; Term "="; NT value ] |> wrap_case_v |> with_typ (wrap_var_t "kvPair") }
+;
+
+%inline kvList:
+| kvs = separated_nonempty_list_aux(COMMA, kvPair)
+    { kvs }
 ;
 
 (******** Type arguments ********)
@@ -806,7 +810,7 @@ realTypeArg:
 (* TODO: is this special case necessary? *)
 realTypeArgumentList:
 | ts = separated_list(COMMA, realTypeArg)
-    { wrap_list_v ts "realTypeArg" }
+    { wrap_list_v "realTypeArg" ts }
 (* | t = realTypeArg *)
 (*     { [ NT t ] |> wrap_case_v |> with_typ (wrap_var_t "realTypeArgumentList") } *)
 (* | t = realTypeArg COMMA ts = separated_list(COMMA, typeArg) *)
@@ -828,7 +832,7 @@ typeArg:
 
 typeArgumentList:
 | ts = separated_list(COMMA, typeArg)
-    { wrap_list_v ts "typeArg" }
+    { wrap_list_v "typeArg" ts }
 ;
 
 (******** Arguments ********)
@@ -847,7 +851,7 @@ argument:
 ;
 argumentList: 
 | args = separated_list(COMMA, argument)
-    { wrap_list_v args "argument" }
+    { wrap_list_v "argument" args }
 ;
 (******** L-values ********)
 
@@ -1024,7 +1028,7 @@ switchCase:
 
 switchCases: 
 | cases = list(switchCase) 
-    { wrap_list_v cases "switchCase" }
+    { wrap_list_v "switchCase" cases }
 ;
 
 switchStatement:
@@ -1120,7 +1124,7 @@ statementOrDeclaration:
 
 statOrDeclList:
 | s = list(statementOrDeclaration)
-    { wrap_list_v s "statementOrDeclaration" }
+    { wrap_list_v "statementOrDeclaration" s }
 
 
 (******** Error and match kind declarations ********)
@@ -1170,7 +1174,7 @@ methodPrototype:
 
 methodPrototypes:
 | protos = list(methodPrototype)
-    { wrap_list_v protos "methodPrototype" }
+    { wrap_list_v "methodPrototype" protos }
 ;
 
 externDeclaration:
@@ -1236,7 +1240,7 @@ objDeclaration:
 
 objDeclarations:
 | decls = list(objDeclaration)
-    { wrap_list_v decls "objDeclaration" }
+    { wrap_list_v "objDeclaration" decls }
 ;
 
 (******** Action declarations ********)
@@ -1258,7 +1262,7 @@ keyElement:
 
 keyElementList:
 | elements = list(keyElement)
-    { wrap_list_v elements "keyElement" }
+    { wrap_list_v "keyElement" elements }
 ;
 
 (* Petr4: contains optAnnotations, name = name *)
@@ -1279,7 +1283,7 @@ action:
 actionList:
 (* Diff: Petr4 uses actionRef with ';' separators *)
 | actions = list(action)
-    { wrap_list_v actions "action" }
+    { wrap_list_v "action" actions }
 ;
 
 entryPriority:
@@ -1301,7 +1305,7 @@ entry:
 
 entriesList:
 | entries = list(entry)
-    { wrap_list_v entries "entry" }
+    { wrap_list_v "entry" entries }
 ;
 
 tableProperty:
@@ -1328,7 +1332,7 @@ tableProperty:
 
 tablePropertyList:
 | properties = list(tableProperty)
-    { wrap_list_v properties "tableProperty" }
+    { wrap_list_v "tableProperty" properties }
 ;
 
 tableDeclaration:
@@ -1362,7 +1366,7 @@ controlLocalDeclaration:
 
 controlLocalDeclarations:
 | decls = list(controlLocalDeclaration)
-    { wrap_list_v decls "controlLocalDeclaration" }
+    { wrap_list_v "controlLocalDeclaration" decls }
 ;
 
 controlTypeDeclaration:
@@ -1415,13 +1419,14 @@ selectCase:
 
 selectCaseList:
 | cases = list(selectCase)
-    { wrap_list_v cases "selectCase" }
+    { wrap_list_v "selectCase" cases }
 ;
 
 selectExpression:
 | info1 = SELECT L_PAREN exprs = expressionList R_PAREN L_BRACE cases = selectCaseList info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
+      let exprs = List.rev exprs |> wrap_list_v "expression" in
       [ Term "SELECT"; Term "("; NT exprs; Term ")"; Term "{"; NT cases; Term "}" ]
       |> wrap_case_v |> with_typ (wrap_var_t "selectExpression") }
 ;
@@ -1473,7 +1478,7 @@ parserStatement:
 
 parserStatements:
 | stmts = list(parserStatement)
-    { wrap_list_v stmts "parserStatement" }
+    { wrap_list_v "parserStatement" stmts }
 ;
 
 parserState:
@@ -1487,7 +1492,7 @@ parserState:
 
 parserStates:
 | states = list(parserState)
-    { wrap_list_v states "parserState" }
+    { wrap_list_v "parserState" states }
 ;
 
 parserTypeDeclaration:
@@ -1528,7 +1533,7 @@ parserLocalElement:
 (* Petr4 X / Spec O *)
 parserLocalElements:
 | elements = list(parserLocalElement)
-    { wrap_list_v elements "parserLocalElement" }
+    { wrap_list_v "parserLocalElement" elements }
 ;
 
 parserDeclaration:
@@ -1556,7 +1561,7 @@ specifiedIdentifier:
 (* From Petr4: opt trailing comma *)
 specifiedIdentifierList:
 | ids = separated_nonempty_opt_trailing_list(COMMA, specifiedIdentifier)
-    { wrap_list_v ids "specifiedIdentifier" }
+    { wrap_list_v "specifiedIdentifier" ids }
 ;
 
 enumDeclaration:
@@ -1580,7 +1585,7 @@ structField:
 
 structFieldList:
 | fields = list(structField)
-    { wrap_list_v fields "structField" }
+    { wrap_list_v "structField" fields }
 ;
 
 headerUnionDeclaration:
@@ -1869,14 +1874,16 @@ simpleAnnotation:
 
 simpleAnnotationBody:
 | body = list(simpleAnnotation)
-    { wrap_list_v body "simpleAnnotation" }
+    { wrap_list_v "simpleAnnotation" body }
 ;
 
 structuredAnnotationBody:
 | exprs = expressionList comma = optTrailingComma
-    { [ NT exprs; NT comma ] |> wrap_case_v |> with_typ (wrap_var_t "structuredAnnotationBody") }
+    { let exprs = List.rev exprs |> wrap_list_v "expression" in
+      [ NT exprs; NT comma ] |> wrap_case_v |> with_typ (wrap_var_t "structuredAnnotationBody") }
 | kvs = kvList comma = optTrailingComma
-    { [ NT kvs; NT comma; Term "PHTM_20" ] |> wrap_case_v |> with_typ (wrap_var_t "structuredAnnotationBody") }
+    { let kvs = List.rev kvs |> wrap_list_v "kvPair" in
+      [ NT kvs; NT comma; Term "PHTM_20" ] |> wrap_case_v |> with_typ (wrap_var_t "structuredAnnotationBody") }
 ;
 
 annotation:
@@ -1899,7 +1906,7 @@ annotation:
 (* TODO: nonempty? *)
 annotations:
 | annos = list(annotation)
-  { wrap_list_v annos "annotation" }
+  { wrap_list_v "annotation" annos }
 ;
 
 %inline optAnnotations:
@@ -1920,5 +1927,5 @@ declarationList:
 
 p4program: 
 | ds = declarationList END 
-    { wrap_list_v ds "declaration" }
+    { wrap_list_v "declaration" ds }
 ;
