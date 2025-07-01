@@ -405,6 +405,30 @@ rule tokenize = parse
       { debug_token "..."; DOTS (info lexbuf) }
   | ".."
       { debug_token ".."; RANGE (info lexbuf) }
+  | "+="
+      { debug_token "+="; PLUS_ASSIGN (info lexbuf) }
+  | "|+|="
+      { debug_token "|+|="; PLUS_SAT_ASSIGN (info lexbuf) }
+  | "-="
+      { debug_token "-="; MINUS_ASSIGN (info lexbuf) }
+  | "|-|="
+      { debug_token "|-|="; MINUS_SAT_ASSIGN (info lexbuf) }
+  | "*="
+      { debug_token "*="; MUL_ASSIGN (info lexbuf) }
+  | "/="
+      { debug_token "/="; DIV_ASSIGN (info lexbuf) } 
+  | "%="
+      { debug_token "%="; MOD_ASSIGN (info lexbuf) }
+  | "<<="
+      { debug_token "<<="; SHL_ASSIGN (info lexbuf) }
+  | ">>="
+      { debug_token ">>="; SHR_ASSIGN (info lexbuf) }
+  | "&="
+      { debug_token "&="; BIT_AND_ASSIGN (info lexbuf) }
+  | "^="
+      { debug_token "^="; BIT_XOR_ASSIGN (info lexbuf) }
+  | "|="
+      { debug_token "|="; BIT_OR_ASSIGN (info lexbuf) }
   | eof
       { debug_token "EOF"; END (info lexbuf) }
   | _

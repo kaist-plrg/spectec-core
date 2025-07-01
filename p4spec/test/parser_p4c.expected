@@ -2481,16 +2481,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/omec/up4.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/op_bin.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/opassign1-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/opassign1-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/opassign1-bmv2.p4:35.21-35.22: syntax error at line 1, column 7860
+Parser success: ../../../../p4c/testdata/p4_16_samples/opassign1-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/opassign1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/opassign1.p4
-../../../../p4c/testdata/p4_16_samples/opassign1.p4:23.22-23.23: syntax error at line 1, column 1367
+Parser success: ../../../../p4c/testdata/p4_16_samples/opassign1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/opassign2-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/opassign2-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/opassign2-bmv2.p4:46.7-46.8: syntax error at line 1, column 8086
+Parser success: ../../../../p4c/testdata/p4_16_samples/opassign2-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/overwrite.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/overwrite.p4
@@ -3840,4 +3837,4 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/xdp_vlan_push_pop_ebpf-ke
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 
-Running parser: [EXCLUDE] 0/1278 (0.00%) [PASS] 1273/1278 (99.61%) [FAIL] 5/1278 (0.39%)
+Running parser: [EXCLUDE] 0/1278 (0.00%) [PASS] 1276/1278 (99.84%) [FAIL] 2/1278 (0.16%)

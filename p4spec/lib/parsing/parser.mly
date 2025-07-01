@@ -45,6 +45,7 @@
 %token<Source.info> INT KEY LIST SELECT MATCH_KIND OUT PACKAGE PARSER PRIORITY RETURN STATE STRING STRUCT
 %token<Source.info> SWITCH TABLE THIS TRANSITION TUPLE TYPEDEF TYPE VALUESET VARBIT VOID
 %token<Source.info> PRAGMA PRAGMA_END
+%token<Source.info> PLUS_ASSIGN PLUS_SAT_ASSIGN MINUS_ASSIGN MINUS_SAT_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN  SHL_ASSIGN SHR_ASSIGN BIT_AND_ASSIGN BIT_XOR_ASSIGN BIT_OR_ASSIGN
 %token<Il.Ast.value> UNEXPECTED_TOKEN
 
 (**************************** PRIORITY AND ASSOCIATIVITY ******************************)
@@ -926,9 +927,32 @@ assignmentOrMethodCallStatementWithoutSemicolon:
     L_PAREN args = argumentList R_PAREN
     { [ NT func; Term "<"; NT type_args; Term ">"; Term "("; NT args; Term ")" ] 
       |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
-(* TODO: disambiguate different assignment operators *)
 | lhs = lvalue ASSIGN rhs = expression
     { [ NT lhs; Term "="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
+| lhs = lvalue PLUS_ASSIGN rhs = expression
+    { [ NT lhs; Term "+="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
+| lhs = lvalue PLUS_SAT_ASSIGN rhs = expression
+    { [ NT lhs; Term "|+|="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
+| lhs = lvalue MINUS_ASSIGN rhs = expression
+    { [ NT lhs; Term "-="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
+| lhs = lvalue MINUS_SAT_ASSIGN rhs = expression
+    { [ NT lhs; Term "|-|="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
+| lhs = lvalue MUL_ASSIGN rhs = expression
+    { [ NT lhs; Term "*="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
+| lhs = lvalue DIV_ASSIGN rhs = expression
+    { [ NT lhs; Term "/="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
+| lhs = lvalue MOD_ASSIGN rhs = expression
+    { [ NT lhs; Term "%="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
+| lhs = lvalue SHL_ASSIGN rhs = expression
+    { [ NT lhs; Term "<<="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
+| lhs = lvalue SHR_ASSIGN rhs = expression
+    { [ NT lhs; Term ">>="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
+| lhs = lvalue BIT_AND_ASSIGN rhs = expression
+    { [ NT lhs; Term "&="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
+| lhs = lvalue BIT_XOR_ASSIGN rhs = expression
+    { [ NT lhs; Term "^="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
+| lhs = lvalue BIT_OR_ASSIGN rhs = expression
+    { [ NT lhs; Term "|="; NT rhs ] |> wrap_case_v |> with_typ (wrap_var_t "assignmentOrMethodCallStatementWithoutSemicolon") }
 ;
 
 assignmentOrMethodCallStatement:
@@ -1317,10 +1341,6 @@ tableProperty:
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
       [ NT anno; NT optConst; Term "ENTRIES"; Term "="; Term "{"; NT entries; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "tableProperty") }
-(* Petr4 O / Spec X : Spec bug *)
-(* | optConst = optCONST DEFAULT_ACTION ASSIGN actionRef = actionRef info2 = SEMICOLON *)
-(*     { info2 |> ignore; *)
-(*       [ NT optConst; Term "DEFAULT_ACTION"; Term "="; NT actionRef; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "tableProperty") } *)
 | anno = optAnnotations optConst = optCONST name = nonTableKwName init = initialValue info2 = SEMICOLON
     { info2 |> ignore;
       [ NT anno; NT optConst; NT name; NT init; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "tableProperty") }
@@ -1353,7 +1373,7 @@ controlLocalDeclaration:
       action }
 | table = tableDeclaration
     { declare_var (id_of_declaration table) false;
-        table }
+      table }
 | inst = instantiation
     { inst }
 | var = variableDeclaration
