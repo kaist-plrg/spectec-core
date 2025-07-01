@@ -304,10 +304,24 @@ prefixedNonTypeName:
     { [ NT dotPrefix; NT nonTypeName ] |> wrap_case_v |> with_typ (wrap_var_t "prefixedNonTypeName") }
 ;
 
-(* Petr4: nonTableKwName + tableKwName *)
+(* SPEC BUG: nonTableKwName should allow typeIdentifier *)
 nonTableKwName:
-| nonTypeName = nonTypeName
-    { nonTypeName }
+| identifier = identifier
+    { identifier }
+| typeIdentifier = typeIdentifier
+    { typeIdentifier }
+| info = APPLY
+    { info |> ignore;
+      [ Term "APPLY" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
+| info = STATE
+    { info |> ignore;
+      [ Term "STATE" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
+| info = TYPE
+    { info |> ignore;
+      [ Term "TYPE" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
+| info = PRIORITY
+    { info |> ignore;
+      [ Term "PRIORITY" ] |> wrap_case_v |> with_typ (wrap_var_t "nonTypeName") }
 ;
 
 (* Petr4: prefixedType + prefixedTypeName *)

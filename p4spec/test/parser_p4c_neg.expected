@@ -1,0 +1,961 @@
+Running parser tests on 310 files
+
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/accept_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/accept_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/action-bind.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/action-bind.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/action-bind1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/action-bind1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/action-bind2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/action-bind2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/action-bind3.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/action-bind3.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/action-named-default-bmv2.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/action-named-default-bmv2.p4
+../../../../p4c/testdata/p4_16_errors/action-named-default-bmv2.p4:56.12-56.19: syntax error at line 1, column 8097
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/actions-with-duplicate-control-plane-names1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/actions-with-duplicate-control-plane-names1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/annotation.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/annotation.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/assign.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/assign.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/binary_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/binary_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/bitExtract_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/bitExtract_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/call-table.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/call-table.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/call1_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/call1_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/compound-assignment.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/compound-assignment.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/conditional_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/conditional_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/const.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/const.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/const1_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/const1_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/const_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/const_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/constructor1_e.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/constructor1_e.p4
+../../../../p4c/testdata/p4_16_errors/constructor1_e.p4:18.9-18.10: syntax error at line 1, column 296
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/constructor2_e.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/constructor2_e.p4
+../../../../p4c/testdata/p4_16_errors/constructor2_e.p4:18.6-18.7: syntax error at line 1, column 293
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/constructor3_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/constructor3_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/constructor_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/constructor_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/control-inline.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/control-inline.p4
+../../../../p4c/testdata/p4_16_errors/control-inline.p4:34.11-34.12: syntax error at line 1, column 7673
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/control-verify.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/control-verify.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/default-initializer-err.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/default-initializer-err.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/default-last-switch.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/default-last-switch.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/default-param.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/default-param.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/default_action.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/default_action.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/default_action1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/default_action1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/directionless.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/directionless.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/div.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/div.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/div0.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/div0.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/div1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/div1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/div3.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/div3.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/dup-param.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/dup-param.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/dup-param1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/dup-param1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/dup-param2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/dup-param2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/dup-param3.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/dup-param3.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/dupConst.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/dupConst.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/duplicate-label.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/duplicate-label.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/enumCast.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/enumCast.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/equality-fail.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/equality-fail.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/expression_e.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/expression_e.p4
+../../../../p4c/testdata/p4_16_errors/expression_e.p4:21.20-21.21: syntax error at line 1, column 336
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/extern.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/extern.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/extract.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/extract.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/extract1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/extract1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/factory-err2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/factory-err2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/function1_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/function1_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/function_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/function_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/function_e1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/function_e1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/function_e2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/function_e2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/functors2_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/functors2_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/functors3_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/functors3_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/generic-struct-self-nested.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/generic-struct-self-nested.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/generic1_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/generic1_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/globalVar_e.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/globalVar_e.p4
+../../../../p4c/testdata/p4_16_errors/globalVar_e.p4:16.6-16.7: syntax error at line 1, column 273
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/header1_e.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/header1_e.p4
+../../../../p4c/testdata/p4_16_errors/header1_e.p4:18.5-18.6: syntax error at line 1, column 278
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/header2_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/header2_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/header3.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/header3.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/implicit.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/implicit.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/incorrect-label.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/incorrect-label.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/init-entries-error1-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/init-entries-error1-bmv2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/init-entries-error2-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/init-entries-error2-bmv2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/init-entries-error3-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/init-entries-error3-bmv2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/inro.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/inro.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/interface1_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/interface1_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/interface_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/interface_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/invalid-invalid.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/invalid-invalid.p4
+../../../../p4c/testdata/p4_16_errors/invalid-invalid.p4:2.1: syntax error at line 1, column 247
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue-2123_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue-2123_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1006-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1006-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1059.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1059.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1202.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/issue1202.p4
+../../../../p4c/testdata/p4_16_errors/issue1202.p4:1.19-1.22: syntax error at line 1, column 222
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue122.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue122.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1230.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1230.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1296.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1296.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1331.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1331.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1336.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/issue1336.p4
+../../../../p4c/testdata/p4_16_errors/issue1336.p4:3.15-3.16: syntax error at line 1, column 235
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1542.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1542.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1557-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1557-bmv2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1580.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1580.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1732.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1732.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1777-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1777-bmv2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1803_same_table_name.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1803_same_table_name.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1932-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1932-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1932-2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1932-2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1932.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1932.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1944.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1944.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1949-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1949-bmv2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1986-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1986-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1986.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue1986.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2021.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2021.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2033.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2033.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2036-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2036-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2036-2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2036-2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2036.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2036.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2206.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2206.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2220.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2220.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2230-1-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2230-1-bmv2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2230.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2230.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2260-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2260-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2267.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2267.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2283_2-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2283_2-bmv2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2290.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2290.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2317.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2317.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2332.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2332.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2335.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2335.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2354-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2354-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2354.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2354.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2373.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2373.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2413.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2413.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2441.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2441.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2444-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2444-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2454.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2454.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2496.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2496.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2525.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2525.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2544_recursive.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/issue2544_recursive.p4
+../../../../p4c/testdata/p4_16_errors/issue2544_recursive.p4:2.12-2.13: syntax error at line 1, column 236
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2544_self_ref.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2544_self_ref.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2544_shadowing1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2544_shadowing1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2545.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2545.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2597.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2597.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2835-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2835-bmv2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3045-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3045-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3045-2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3045-2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3045.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3045.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3057-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3057-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue306.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue306.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3153.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3153.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3170-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3170-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3170.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3170.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3188.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3188.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3197-e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3197-e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3210.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3210.p4
+../../../../p4c/testdata/p4_16_errors/issue3210.p4:9.6-9.7: syntax error at line 1, column 290
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3221.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3221.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3233.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3233.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3246.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3246.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3264.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3264.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3271-1.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3271-1.p4
+../../../../p4c/testdata/p4_16_errors/issue3271-1.p4:23.8-23.9: syntax error at line 1, column 393
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3271.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3271.p4
+../../../../p4c/testdata/p4_16_errors/issue3271.p4:3.8-3.9: syntax error at line 1, column 245
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3273.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3273.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3282.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3282.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3285.p4
+Error on parser: unknown error in ../../../../p4c/testdata/p4_16_errors/issue3285.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3291.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3291.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3293.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3293.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3299.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3299.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3304.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3304.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3305.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3305.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3316.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3316.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3335.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3335.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3338.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3338.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3345.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3345.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3346.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3346.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3359.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3359.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3363.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3363.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3378.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3378.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3430.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3430.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3442.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3442.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue345.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue345.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3522.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3522.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3534.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3534.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3589.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3589.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3611.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3611.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3613.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3613.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3622.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3622.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3623-2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3623-2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3623-3.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3623-3.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3644-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3644-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3644-2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3644-2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3644.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3644.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3656.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3656.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3671-2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3671-2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3727.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3727.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3750-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3750-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3750.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3750.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3751.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3751.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3787.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3787.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3808-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3808-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3808.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3808.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3813.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3813.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3814.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3814.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3846.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3846.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3847.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3847.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue388.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue388.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue394.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue394.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue401.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue401.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue407-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue407-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue413.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue413.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue4136.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue4136.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue4140.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue4140.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue4142.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue4142.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue4144.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue4144.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue4146.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue4146.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue435.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue435.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue4365_no_demote_error_to_info.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue4365_no_demote_error_to_info.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue4365_no_demote_error_to_warning.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue4365_no_demote_error_to_warning.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue4365_no_disable_error.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue4365_no_disable_error.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue473.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue473.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue477.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue477.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue478.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue478.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue532.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue532.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue561-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue561-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue584.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue584.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue600.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue600.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue67.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue67.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue764.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue764.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue774-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue774-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue774-2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue774-2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue803-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue803-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue807.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue807.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue816-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue816-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue816.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue816.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue818.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue818.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue819-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue819-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue819.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue819.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/key-name.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/key-name.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/list-error.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/list-error.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/loop1-err.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/loop1-err.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/loop2-err.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/loop2-err.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/loop3-err.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/loop3-err.p4
+../../../../p4c/testdata/p4_16_errors/loop3-err.p4:51.16-51.18: syntax error at line 1, column 7954
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/methodArgDontcare.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/methodArgDontcare.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/minWidth.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/minWidth.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/missing_actions.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/missing_actions.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/missing_match.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/missing_match.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/module_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/module_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/multicast-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/multicast-bmv2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/mux_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/mux_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/named-fail.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/named-fail.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/named-fail1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/named-fail1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/neg.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/neg.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/newtype-err.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/newtype-err.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/next.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/next.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/nostart.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/nostart.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/not_bound.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/not_bound.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/p_e.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/p_e.p4
+../../../../p4c/testdata/p4_16_errors/p_e.p4:18.1: syntax error at line 1, column 249
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/package.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/package.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/param.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/param.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/parser-arg.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/parser-arg.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/persistent_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/persistent_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/pr2918.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/pr2918.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/psa-meter2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/psa-meter2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/psa-type-hdr.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/psa-type-hdr.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/push_nonconstant.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/push_nonconstant.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/range_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/range_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/scope.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/scope.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/select-struct.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/select-struct.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/select-varbits.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/select-varbits.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/self-call.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/self-call.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/serEnumImplCast.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/serEnumImplCast.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/serenum-type.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/serenum-type.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/serenum-typedef.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/serenum-typedef.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/shift-int-non-const.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/shift-int-non-const.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/shift_e.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/shift_e.p4
+../../../../p4c/testdata/p4_16_errors/shift_e.p4:20.25-20.26: syntax error at line 1, column 332
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/signed.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/signed.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/signs.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/signs.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/slice_out_of_bound.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/slice_out_of_bound.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/spec-ex32_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/spec-ex32_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/spec-issue1297-string-cat-err-0.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/spec-issue1297-string-cat-err-0.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/spec-issue1297-string-cat-err-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/spec-issue1297-string-cat-err-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/spec-issue1297-string-cat-err-2-anno.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/spec-issue1297-string-cat-err-2-anno.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/spec-issue1297-string-cat-err-3-anno.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/spec-issue1297-string-cat-err-3-anno.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/spec-issue563.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/spec-issue563.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/stack-const-index-out-of-bounds-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/stack-const-index-out-of-bounds-bmv2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/stack1_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/stack1_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/stack2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/stack2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/stack3.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/stack3.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/stack_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/stack_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/string-e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/string-e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/string-e1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/string-e1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/string-e2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/string-e2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/struct_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/struct_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/structure-valued-expr-errs-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/structure-valued-expr-errs-1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/structure-valued-expr-errs-2.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/structure-valued-expr-errs-2.p4
+../../../../p4c/testdata/p4_16_errors/structure-valued-expr-errs-2.p4:106.28-106.29: syntax error at line 1, column 8591
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/structured-annotation-e.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/structured-annotation-e.p4
+../../../../p4c/testdata/p4_16_errors/structured-annotation-e.p4:1.23-1.24: syntax error at line 1, column 254
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/structured-annotation-e1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/structured-annotation-e1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/structured-annotation-e2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/structured-annotation-e2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/structured-annotation-e3.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/structured-annotation-e3.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/table-entries-decl-order.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/table-entries-decl-order.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/table-entries-exact-ternary.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/table-entries-exact-ternary.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/table-entries-exact.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/table-entries-exact.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/table-entries-lpm-2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/table-entries-lpm-2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/table-entries-lpm.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/table-entries-lpm.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/table-entries-optional-2-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/table-entries-optional-2-bmv2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/table-entries-outside-table.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/table-entries-outside-table.p4
+../../../../p4c/testdata/p4_16_errors/table-entries-outside-table.p4:68.11-68.18: syntax error at line 1, column 8421
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/table-entries-range.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/table-entries-range.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/table-entries-ternary.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/table-entries-ternary.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/template_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/template_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/tuple-left.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/tuple-left.p4
+../../../../p4c/testdata/p4_16_errors/tuple-left.p4:21.12-21.13: syntax error at line 1, column 332
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/tuple-newtype.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/tuple-newtype.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/tuple-to-header.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/tuple-to-header.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/twovarbit.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/twovarbit.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/type-field.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/type-field.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/type-in-expr-lex0.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/type-in-expr-lex0.p4
+../../../../p4c/testdata/p4_16_errors/type-in-expr-lex0.p4:8.26-8.27: syntax error at line 1, column 1151
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/type-in-expr-lex1.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/type-in-expr-lex1.p4
+../../../../p4c/testdata/p4_16_errors/type-in-expr-lex1.p4:8.22-8.23: syntax error at line 1, column 1180
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/type-in-expr.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/type-in-expr.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/type-params_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/type-params_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/typecheck1_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/typecheck1_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/typecheck_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/typecheck_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/typedef-and-type-definitions.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/typedef-and-type-definitions.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/underscore1_e.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/underscore1_e.p4
+../../../../p4c/testdata/p4_16_errors/underscore1_e.p4:17.9-17.10: syntax error at line 1, column 293
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/underscore2_e.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/underscore2_e.p4
+../../../../p4c/testdata/p4_16_errors/underscore2_e.p4:19.13-19.14: syntax error at line 1, column 312
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/underscore3_e.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/underscore3_e.p4
+../../../../p4c/testdata/p4_16_errors/underscore3_e.p4:16.11-16.12: syntax error at line 1, column 284
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/underscore_e.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/underscore_e.p4
+../../../../p4c/testdata/p4_16_errors/underscore_e.p4:16.13-16.14: syntax error at line 1, column 283
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/virtual1.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/virtual1.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/virtual2.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/virtual2.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/virtual3.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/virtual3.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/virtual4.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/virtual4.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/virtual5.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/virtual5.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/virtual6.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/virtual6.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/width1_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/width1_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/width_e.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/width_e.p4
+
+>>> Running parser test on ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
+Parser success: ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
+
+Running parser: [EXCLUDE] 0/310 (0.00%) [PASS] 282/310 (90.97%) [FAIL] 28/310 (9.03%)
