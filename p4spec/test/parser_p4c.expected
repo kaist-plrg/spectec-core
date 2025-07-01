@@ -491,8 +491,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/flowlet_switching-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/fold_match.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/forloop1.p4
-../../../../p4c/testdata/p4_16_samples/forloop1.p4:26.71-26.72: syntax error at line 1, column 1485
+Parser success: ../../../../p4c/testdata/p4_16_samples/forloop1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/forloop2.p4
@@ -504,16 +503,14 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/forloop3.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/forloop4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop5.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/forloop5.p4
-../../../../p4c/testdata/p4_16_samples/forloop5.p4:18.44-18.45: syntax error at line 1, column 1319
+Parser success: ../../../../p4c/testdata/p4_16_samples/forloop5.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop5a.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/forloop5a.p4
-../../../../p4c/testdata/p4_16_samples/forloop5a.p4:18.45-18.46: syntax error at line 1, column 1323
+../../../../p4c/testdata/p4_16_samples/forloop5a.p4:20.52-20.53: syntax error at line 1, column 1412
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop6.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/forloop6.p4
-../../../../p4c/testdata/p4_16_samples/forloop6.p4:19.45-19.46: syntax error at line 1, column 1353
+Parser success: ../../../../p4c/testdata/p4_16_samples/forloop6.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop7.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/forloop7.p4
@@ -2088,8 +2085,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue4661_pure_extern_fun
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue47.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue4739.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue4739.p4
-../../../../p4c/testdata/p4_16_samples/issue4739.p4:51.44-51.45: syntax error at line 1, column 7979
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue4739.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue4760_dontcare_action_out_arg.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue4760_dontcare_action_out_arg.p4
@@ -2365,8 +2361,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/logging-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/lookahead_ubpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/loop-3-clause-tricky2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/loop-3-clause-tricky2.p4
-../../../../p4c/testdata/p4_16_samples/loop-3-clause-tricky2.p4:53.37-53.38: syntax error at line 1, column 8062
+Parser success: ../../../../p4c/testdata/p4_16_samples/loop-3-clause-tricky2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/lpm_ebpf.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/lpm_ebpf.p4
@@ -3845,4 +3840,4 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/xdp_vlan_push_pop_ebpf-ke
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 
-Running parser: [EXCLUDE] 0/1278 (0.00%) [PASS] 1268/1278 (99.22%) [FAIL] 10/1278 (0.78%)
+Running parser: [EXCLUDE] 0/1278 (0.00%) [PASS] 1273/1278 (99.61%) [FAIL] 5/1278 (0.39%)

@@ -1052,19 +1052,21 @@ declOrAssignmentOrMethodCallStatement:
 forInitStatementNonEmpty:
 | ls = separated_nonempty_list(COMMA, declOrAssignmentOrMethodCallStatement)
     { wrap_list_v "declOrAssignmentOrMethodCallStatement" ls }
-  ;
+;
+
 forInitStatements:
 | ls = separated_list(COMMA, declOrAssignmentOrMethodCallStatement)
     { wrap_list_v "declOrAssignmentOrMethodCallStatement" ls }
-  ;
+;
 forUpdateStatementsNonEmpty:
-| assignments = separated_nonempty_list(COMMA, assignmentOrMethodCallStatement)
+| assignments = separated_nonempty_list(COMMA, assignmentOrMethodCallStatementWithoutSemicolon)
     { wrap_list_v "assignmentOrMethodCallStatement" assignments }
 ;
 
 forUpdateStatements:
-| assignments = separated_list(COMMA, assignmentOrMethodCallStatement)
+| assignments = separated_list(COMMA, assignmentOrMethodCallStatementWithoutSemicolon)
     { wrap_list_v "assignmentOrMethodCallStatement" assignments }
+;
 
 forCollectionExpr:
 | expr = expression
@@ -1079,16 +1081,16 @@ forStatement:
   FOR
   L_PAREN init = forInitStatements SEMICOLON cond = expression SEMICOLON update = forUpdateStatements R_PAREN
   body = statement
-    { [ NT anno; Term "for"; Term "("; NT init; Term ";"; NT cond; Term ";"; NT update; Term ")"; NT body ]
+    { [ NT anno; Term "FOR"; Term "("; NT init; Term ";"; NT cond; Term ";"; NT update; Term ")"; NT body ]
       |> wrap_case_v |> with_typ (wrap_var_t "forStatement") }
 | anno = optAnnotations FOR L_PAREN
     typ = typeRef name = name IN collection = forCollectionExpr R_PAREN body = statement
-    { [ NT anno; Term "for"; Term "("; NT typ; NT name; Term "in"; NT collection; Term ")"; NT body ]
+    { [ NT anno; Term "FOR"; Term "("; NT typ; NT name; Term "IN"; NT collection; Term ")"; NT body ]
       |> wrap_case_v |> with_typ (wrap_var_t "forStatement") }
 | anno = optAnnotations FOR L_PAREN
     anno_in = optAnnotations typ = typeRef name = name IN 
     collection = forCollectionExpr R_PAREN body = statement
-    { [ NT anno; Term "for"; Term "("; NT anno_in; NT typ; NT name; Term "in"; NT collection; Term ")"; NT body ]
+    { [ NT anno; Term "FOR"; Term "("; NT anno_in; NT typ; NT name; Term "IN"; NT collection; Term ")"; NT body ]
       |> wrap_case_v |> with_typ (wrap_var_t "forStatement") }
 ;
 
