@@ -492,7 +492,7 @@ typeOrVoid:
 | info = VOID
     { info |> ignore;
       [ Term "VOID" ] |> wrap_case_v |> with_typ (wrap_var_t "typeOrVoid") }
-(* Petr4 O / Spec X: HACK for generic return type *)
+(* From Petr4: HACK for generic return type *)
 | name = name
     { match flatten_case_v name with
         | "identifier", [ ["$"]; [] ], [ value_text ]  ->

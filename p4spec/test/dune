@@ -9,8 +9,7 @@
    (ignore-outputs
     (diff parser_p4c_pos.expected parser_p4c_pos.actual))
    (ignore-outputs
-    (diff parser_p4c_neg.expected parser_p4c_neg.actual))
-)))
+    (diff parser_p4c_neg.expected parser_p4c_neg.actual)))))
 
 ;    (ignore-outputs
 ;     (diff elab.expected elab.actual))
