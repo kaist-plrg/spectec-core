@@ -41,7 +41,7 @@
 %token<Source.info> MASK DOTS RANGE
 %token<Source.info> TRUE FALSE
 %token<Source.info> ABSTRACT ACTION ACTIONS APPLY BOOL BIT BREAK CONST CONTINUE CONTROL DEFAULT
-%token<Source.info> ELSE ENTRIES ENUM ERROR EXIT EXTERN HEADER HEADER_UNION IF IN INOUT
+%token<Source.info> ELSE ENTRIES ENUM ERROR EXIT EXTERN HEADER HEADER_UNION IF IN INOUT FOR
 %token<Source.info> INT KEY LIST SELECT MATCH_KIND OUT PACKAGE PARSER PRIORITY RETURN STATE STRING STRUCT
 %token<Source.info> SWITCH TABLE THIS TRANSITION TUPLE TYPEDEF TYPE VALUESET VARBIT VOID
 %token<Source.info> PRAGMA PRAGMA_END
@@ -1041,62 +1041,56 @@ switchStatement:
       |> wrap_case_v |> with_typ (wrap_var_t "switchStatement") }
 ;
 
-(* (* Petr4 X / Spec O whole for statement missing *) *)
-(* declOrAssignmentOrMethodCallStatement: *)
-(* | variableDeclarationWithoutSemicolon = variableDeclarationWithoutSemicolon *)
-(*     { [ NT variableDeclarationWithoutSemicolon ] *)
-(*       |> wrap_case_v |> with_typ (wrap_var_t "declOrAssignmentOrMethodCallStatement") } *)
-(* | assignmentOrMethodCallStatementWithoutSemicolon = assignmentOrMethodCallStatementWithoutSemicolon *)
-(*     { [ NT assignmentOrMethodCallStatementWithoutSemicolon ] *)
-(*       |> wrap_case_v |> with_typ (wrap_var_t "declOrAssignmentOrMethodCallStatement") } *)
-(* ; *)
-(**)
-(* forInitStatementNonEmpty: *)
-(* | ls = separated_nonempty_list(COMMA, declOrAssignmentOrMethodCallStatement) *)
-(*     { let typ = wrap_var_t "declOrAssignmentOrMethodCallStatement" |> wrap_iter_t List in *)
-(*       ListV ls |> with_typ typ } *)
-(*   ; *)
-(* forInitStatements: *)
-(* | ls = separated_list(COMMA, declOrAssignmentOrMethodCallStatement) *)
-(*     { let typ = wrap_var_t "declOrAssignmentOrMethodCallStatement" |> wrap_iter_t List in *)
-(*       ListV ls |> with_typ typ } *)
-(*   ; *)
-(* forUpdateStatementsNonEmpty: *)
-(* | assignments = separated_nonempty_list(COMMA, assignmentOrMethodCallStatement) *)
-(*     { let typ = wrap_var_t "assignmentOrMethodCallStatement" |> wrap_iter_t List in *)
-(*       ListV assignments |> with_typ typ } *)
-(* ; *)
-(**)
-(* forUpdateStatements: *)
-(* | assignments = separated_list(COMMA, assignmentOrMethodCallStatement) *)
-(*     { let typ = wrap_var_t "assignmentOrMethodCallStatement" |> wrap_iter_t List in *)
-(*       ListV assignments |> with_typ typ } *)
-(**)
-(* forCollectionExpr: *)
-(* | expr = expression *)
-(*     { [ NT expr ] |> wrap_case_v |> with_typ (wrap_var_t "forCollectionExpr") } *)
-(* | expr_l = expression DOTDOT expr_r = expression *)
-(*     { [ NT expr_l; Term ".."; NT expr_r ] *)
-(*       |> wrap_case_v |> with_typ (wrap_var_t "forCollectionExpr") } *)
-(* ; *)
-(**)
-(* forStatement: *)
-(* | anno = optAnnotations *)
-(*   info1 = FOR *)
-(*   L_PAREN init = forInitStatements SEMICOLON cond = expression SEMICOLON update = forUpdateStatements R_PAREN *)
-(*   body = statement *)
-(*     { [ NT anno; Term "for"; Term "("; NT init; Term ";"; NT cond; Term ";"; NT update; Term ")"; NT body ] *)
-(*       |> wrap_case_v |> with_typ (wrap_var_t "forStatement") } *)
-(* | anno = optAnnotations info1 = FOR L_PAREN *)
-(*     typ = typeRef name = name IN collection = forCollectionExpr R_PAREN body = statement *)
-(*     { [ NT anno; Term "for"; Term "("; NT typ; NT name; Term "in"; NT collection; Term ")"; NT body ] *)
-(*       |> wrap_case_v |> with_typ (wrap_var_t "forStatement") } *)
-(* | anno = optAnnotations info1 = FOR L_PAREN *)
-(*     anno_in = optAnnotations typ = typeRef name = name IN  *)
-(*     collection = forCollectionExpr R_PAREN body = statement *)
-(*     { [ NT anno; Term "for"; Term "("; NT anno_in; NT typ; NT name; Term "in"; NT collection; Term ")"; NT body ] *)
-(*       |> wrap_case_v |> with_typ (wrap_var_t "forStatement") } *)
-(* ; *)
+(* Petr4 X / Spec O whole for statement missing *)
+declOrAssignmentOrMethodCallStatement:
+| variableDeclarationWithoutSemicolon = variableDeclarationWithoutSemicolon
+    { variableDeclarationWithoutSemicolon }
+| assignmentOrMethodCallStatementWithoutSemicolon = assignmentOrMethodCallStatementWithoutSemicolon
+    { assignmentOrMethodCallStatementWithoutSemicolon }
+;
+
+forInitStatementNonEmpty:
+| ls = separated_nonempty_list(COMMA, declOrAssignmentOrMethodCallStatement)
+    { wrap_list_v "declOrAssignmentOrMethodCallStatement" ls }
+  ;
+forInitStatements:
+| ls = separated_list(COMMA, declOrAssignmentOrMethodCallStatement)
+    { wrap_list_v "declOrAssignmentOrMethodCallStatement" ls }
+  ;
+forUpdateStatementsNonEmpty:
+| assignments = separated_nonempty_list(COMMA, assignmentOrMethodCallStatement)
+    { wrap_list_v "assignmentOrMethodCallStatement" assignments }
+;
+
+forUpdateStatements:
+| assignments = separated_list(COMMA, assignmentOrMethodCallStatement)
+    { wrap_list_v "assignmentOrMethodCallStatement" assignments }
+
+forCollectionExpr:
+| expr = expression
+    { expr }
+| expr_l = expression RANGE expr_r = expression
+    { [ NT expr_l; Term ".."; NT expr_r ]
+      |> wrap_case_v |> with_typ (wrap_var_t "forCollectionExpr") }
+;
+
+forStatement:
+| anno = optAnnotations
+  FOR
+  L_PAREN init = forInitStatements SEMICOLON cond = expression SEMICOLON update = forUpdateStatements R_PAREN
+  body = statement
+    { [ NT anno; Term "for"; Term "("; NT init; Term ";"; NT cond; Term ";"; NT update; Term ")"; NT body ]
+      |> wrap_case_v |> with_typ (wrap_var_t "forStatement") }
+| anno = optAnnotations FOR L_PAREN
+    typ = typeRef name = name IN collection = forCollectionExpr R_PAREN body = statement
+    { [ NT anno; Term "for"; Term "("; NT typ; NT name; Term "in"; NT collection; Term ")"; NT body ]
+      |> wrap_case_v |> with_typ (wrap_var_t "forStatement") }
+| anno = optAnnotations FOR L_PAREN
+    anno_in = optAnnotations typ = typeRef name = name IN 
+    collection = forCollectionExpr R_PAREN body = statement
+    { [ NT anno; Term "for"; Term "("; NT anno_in; NT typ; NT name; Term "in"; NT collection; Term ")"; NT body ]
+      |> wrap_case_v |> with_typ (wrap_var_t "forStatement") }
+;
 
 statement:
 | stmt = assignmentOrMethodCallStatement
@@ -1109,7 +1103,7 @@ statement:
 | stmt = continueStatement
 | stmt = exitStatement
 | stmt = switchStatement
-(* | stmt = forStatement *)
+| stmt = forStatement
     { stmt }
 ;
 
@@ -1722,8 +1716,8 @@ annotationToken:
     { [ Term "EXTERN" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
 | FALSE
     { [ Term "FALSE" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
-(* | FOR *)
-(*     { [ Term "FOR" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") } *)
+| FOR
+    { [ Term "FOR" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
 | HEADER
     { [ Term "HEADER" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
 | HEADER_UNION

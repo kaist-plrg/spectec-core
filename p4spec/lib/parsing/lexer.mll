@@ -260,6 +260,8 @@ rule tokenize = parse
       { debug_token "true"; TRUE (info lexbuf) }
   | "false"
       { debug_token "false"; FALSE (info lexbuf) }
+  | "for"
+      { debug_token "for"; FOR (info lexbuf) }
   | "if"
       { debug_token "if"; IF (info lexbuf) }
   | "in"

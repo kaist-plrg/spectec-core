@@ -153,7 +153,5 @@
      parser
      -i
      ../../../../p4c/p4include
-     -e
-     ../../../../excludes
      -d
      ../../../../p4c/testdata/p4_16_samples)))))

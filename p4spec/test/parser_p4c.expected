@@ -8,7 +8,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/action-bind.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/action-synth.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/action-two-params.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/action-two-params.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/action-two-params.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/action-uses.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/action-uses.p4
@@ -35,16 +35,16 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/action_param.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/action_param1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/action_profile-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/action_profile-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/action_profile-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/action_profile_max_group_size_annotation.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/action_profile_max_group_size_annotation.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/action_profile_max_group_size_annotation.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/action_profile_sum_of_members_annotation.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/action_profile_sum_of_members_annotation.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/action_profile_sum_of_members_annotation.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/action_selector_shared-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/action_selector_shared-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/action_selector_shared-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/action_selector_unused-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/action_selector_unused-bmv2.p4
@@ -140,7 +140,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/basic2-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/basic_routing-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/bfd_offload.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/bfd_offload.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/bfd_offload.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/bit0-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/bit0-bmv2.p4
@@ -173,7 +173,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/bvec-hdr-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/bvec_union-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/calc-ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/calc-ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/calc-ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/call.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/call.p4
@@ -251,7 +251,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/concat.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/const.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/constStruct.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/constStruct.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/constStruct.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/constant-fold-infint.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/constant-fold-infint.p4
@@ -260,13 +260,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/constant-fold-infint.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/constant-in-calculation-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/constant_folding.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/constant_folding.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/constant_folding.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/constants.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/constants.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/constructor_cast.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/constructor_cast.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/constructor_cast.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/constsigned.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/constsigned.p4
@@ -320,10 +320,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/csum_ubpf.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/custom-type-restricted-fields.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-pna-dpdk.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-pna-dpdk.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-pna-dpdk.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-v1model-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-v1model-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-v1model-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/decl.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/decl.p4
@@ -338,13 +338,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/def-use.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/default-action-arg-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/default-control-argument.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/default-control-argument.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/default-control-argument.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/default-initializer.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/default-initializer.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/default-package-argument.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/default-package-argument.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/default-package-argument.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/default-switch.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/default-switch.p4
@@ -419,7 +419,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/enum-folding.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/enum.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/enumCast.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/enumCast.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/enumCast.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/equality-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/equality-bmv2.p4
@@ -452,16 +452,16 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/exit5.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/expression.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/extern-funcs-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/extern-funcs-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/extern-funcs-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/extern-inst-as-param.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/extern-inst-as-param.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/extern-inst-as-param.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/extern.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/extern.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/extern2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/extern2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/extern2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/extern3.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/extern3.p4
@@ -470,13 +470,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/extern3.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/extract_for_header_union.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/fabric_20190420/fabric.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/fabric_20190420/fabric.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/fabric_20190420/fabric.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/factory1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/factory1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/factory1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/factory2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/factory2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/factory2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/filter.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/filter.p4
@@ -491,28 +491,32 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/flowlet_switching-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/fold_match.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/forloop1.p4
+Error on parser: ../../../../p4c/testdata/p4_16_samples/forloop1.p4
+../../../../p4c/testdata/p4_16_samples/forloop1.p4:26.71-26.72: syntax error at line 1, column 1485
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/forloop2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/forloop2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop3.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/forloop3.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/forloop3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop4.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/forloop4.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/forloop4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop5.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/forloop5.p4
+Error on parser: ../../../../p4c/testdata/p4_16_samples/forloop5.p4
+../../../../p4c/testdata/p4_16_samples/forloop5.p4:18.44-18.45: syntax error at line 1, column 1319
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop5a.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/forloop5a.p4
+Error on parser: ../../../../p4c/testdata/p4_16_samples/forloop5a.p4
+../../../../p4c/testdata/p4_16_samples/forloop5a.p4:18.45-18.46: syntax error at line 1, column 1323
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop6.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/forloop6.p4
+Error on parser: ../../../../p4c/testdata/p4_16_samples/forloop6.p4
+../../../../p4c/testdata/p4_16_samples/forloop6.p4:19.45-19.46: syntax error at line 1, column 1353
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop7.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/forloop7.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/forloop7.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/free-form-annotation.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/free-form-annotation.p4
@@ -539,16 +543,16 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/functors4.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/functors5.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/functors6.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/functors6.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/functors6.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/functors7.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/functors7.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/functors7.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/functors8.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/functors8.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/functors8.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/functors9.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/functors9.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/functors9.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/fwd-bmv2-psa.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/fwd-bmv2-psa.p4
@@ -653,7 +657,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_exit_combination
 Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_extern_arguments_1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/gauntlet_extern_arguments_2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/gauntlet_extern_arguments_2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_extern_arguments_2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/gauntlet_extern_arguments_3.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_extern_arguments_3.p4
@@ -677,7 +681,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_hdr_assign_2-bmv
 Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_hdr_function_cast-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/gauntlet_hdr_in_value-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/gauntlet_hdr_in_value-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_hdr_in_value-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/gauntlet_hdr_init-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_hdr_init-bmv2.p4
@@ -773,7 +777,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_nested_switch-bm
 Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_nested_table_calls-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/gauntlet_optional-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/gauntlet_optional-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_optional-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/gauntlet_parser_test_1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_parser_test_1.p4
@@ -839,7 +843,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_uninitialized_bo
 Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_variable_shadowing-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/gauntlet_various_ops-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/gauntlet_various_ops-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/gauntlet_various_ops-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/generic-struct-tuple.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/generic-struct-tuple.p4
@@ -848,10 +852,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/generic-struct-tuple.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/generic-struct.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/generic.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/generic.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/generic.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/generic1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/generic1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/generic1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/global-action.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/global-action.p4
@@ -881,7 +885,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/hashext.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/hashext2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/hashext3.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/hashext3.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/hashext3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/hashing-non-tuple-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/hashing-non-tuple-bmv2.p4
@@ -908,7 +912,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/highorder.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/hit-expr-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/hit_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/hit_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/hit_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/index.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/index.p4
@@ -917,7 +921,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/index.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/init-entries-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/init_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/init_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/init_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/initializer.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/initializer.p4
@@ -1037,19 +1041,19 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue-4969-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1000-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1001-1-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1001-1-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1001-1-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1001-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1001-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1001-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1006.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1006.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1006.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1025-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1025-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1043-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1043-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1043-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1049-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1049-bmv2.p4
@@ -1064,10 +1068,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1062-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1079-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1097-2-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1097-2-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1097-2-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1097-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1097-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1097-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1107.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1107.p4
@@ -1103,7 +1107,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1291-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1301.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1304.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1304.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1304.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1325-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1325-bmv2.p4
@@ -1112,7 +1116,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1325-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1333.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1334.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1334.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1334.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue134-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue134-bmv2.p4
@@ -1163,7 +1167,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1524.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1535.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1538.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1538.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1538.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1540.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1540.p4
@@ -1184,7 +1188,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1544-2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1544-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1560-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1560-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1560-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1566-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1566-bmv2.p4
@@ -1208,16 +1212,16 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1630-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1638.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1642-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1642-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1642-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1653-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1653-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1653-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1653-complex-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1653-complex-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1653-complex-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1660-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1660-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1660-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1670-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1670-bmv2.p4
@@ -1241,7 +1245,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1755-1-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1755-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1765-1-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1765-1-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1765-1-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1765-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1765-bmv2.p4
@@ -1256,10 +1260,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1781-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1806.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1814-1-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1814-1-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1814-1-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1814-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1814-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1814-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1822.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1822.p4
@@ -1283,7 +1287,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1863.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1876.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1879-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1879-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1879-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1882-1-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1882-1-bmv2.p4
@@ -1295,10 +1299,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1882-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1897-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1914-1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1914-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1914-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1914.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1914.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1914.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1937-1-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1937-1-bmv2.p4
@@ -1316,7 +1320,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1937.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1955.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1958.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1958.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1958.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1985.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1985.p4
@@ -1328,16 +1332,16 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1989-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1997.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2019-1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2019-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2019-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2019.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2019.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2019.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2036-3.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2036-3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2037.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2037.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2037.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2044-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2044-bmv2.p4
@@ -1358,7 +1362,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2104-1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2104.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2105.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2105.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2105.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2126.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2126.p4
@@ -1391,16 +1395,16 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2155.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2170-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2175-1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2175-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2175-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2175-2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2175-2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2175-3.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2175-3.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2175-3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2175-4.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2175-4.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2175-4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2175-5.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2175-5.p4
@@ -1415,7 +1419,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2175.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2176-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2190.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2190.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2190.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2201-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2201-bmv2.p4
@@ -1460,13 +1464,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2261.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2265-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2265.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2265.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2265.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2266.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2266.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2273-1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2273-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2273-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2273.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2273.p4
@@ -1484,13 +1488,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2279_2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2279_3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2279_4.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2279_4.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2279_4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2283_1-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2283_1-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2287-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2287-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2287-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2288-1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2288-1.p4
@@ -1589,7 +1593,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2409.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue242.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2444.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2444.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2444.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2445.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2445.p4
@@ -1607,13 +1611,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2485.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2487.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2488-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2488-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2488-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue249.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue249.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2492.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2492.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2492.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2495-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2495-bmv2.p4
@@ -1628,7 +1632,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2514.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2542.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2543-1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2543-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2543-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2543-2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2543-2.p4
@@ -1667,19 +1671,19 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2617.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2627.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2630.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2630.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2630.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2635.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2635.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2648.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2648.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2648.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2657-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2657-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2664-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2664-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2664-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue270-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue270-bmv2.p4
@@ -1697,16 +1701,16 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue272-2-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2726-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2735-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2735-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2735-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2735.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2735.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2735.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2791_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2791_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2791_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2793_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2793_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2793_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2795.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2795.p4
@@ -1730,16 +1734,16 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2800d.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue281.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2810.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2810.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2810.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2816-1_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2816-1_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2816-1_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2816_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2816_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2816_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2844-enum.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2844-enum.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2844-enum.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2890.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2890.p4
@@ -1760,16 +1764,16 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2905.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2956.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2957.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2957.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2957.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2958.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2958.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue297-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue297-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue297-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue298-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue298-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue298-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2982.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2982.p4
@@ -1787,7 +1791,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue304-1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue304.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3051.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3051.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3051.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3056.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3056.p4
@@ -1796,10 +1800,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3056.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3057-2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3091-1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3091-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3091-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3091.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3091.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3091.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3118-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3118-bmv2.p4
@@ -1838,22 +1842,22 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3225.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue323.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3238.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3238.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3238.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3246-1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3246-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3246-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3274-1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3274-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3274-2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3274-2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3274-2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3274.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3274.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3274.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3283.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3283.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3283.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3287.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3287.p4
@@ -1865,10 +1869,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3288.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3289.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3291-1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3291-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3291-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3292.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3292.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3292.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3307.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3307.p4
@@ -1880,7 +1884,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3324.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3329-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3333.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3333.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3333.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3343.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3343.p4
@@ -1892,19 +1896,19 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3364.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3374.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3379-1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3379-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3379-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3379.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3379.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3379.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3394.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3394.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3417.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3417.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3417.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue344.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue344.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue344.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3483_ubpf.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3483_ubpf.p4
@@ -1919,7 +1923,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3488-1-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3488-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3531.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3531.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3531.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue355-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue355-bmv2.p4
@@ -1961,13 +1965,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3650.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3671-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3671.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3671.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3671.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3672.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3672.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3699.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3699.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3699.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3702-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3702-bmv2.p4
@@ -1979,7 +1983,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3779.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3806.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue383-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue383-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue383-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3884-1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3884-1.p4
@@ -2015,7 +2019,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue420.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue422.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue4288.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue4288.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue4288.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue430-1-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue430-1-bmv2.p4
@@ -2048,7 +2052,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue447-5-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue447-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue4500.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue4500.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue4500.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue4507_1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue4507_1.p4
@@ -2084,7 +2088,8 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue4661_pure_extern_fun
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue47.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue4739.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue4739.p4
+Error on parser: ../../../../p4c/testdata/p4_16_samples/issue4739.p4
+../../../../p4c/testdata/p4_16_samples/issue4739.p4:51.44-51.45: syntax error at line 1, column 7979
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue4760_dontcare_action_out_arg.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue4760_dontcare_action_out_arg.p4
@@ -2120,7 +2125,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue4901_new_start_with_
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue4901_new_start_with_start_state_loopback2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue4932.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue4932.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue4932.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue496.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue496.p4
@@ -2138,7 +2143,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue512.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue5211_simplify_parsers_dup_state_local_var_decl.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue5231-const-int-concat.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue5231-const-int-concat.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue5231-const-int-concat.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue529.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue529.p4
@@ -2171,7 +2176,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue561-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue561.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue562-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue562-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue562-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue584-1-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue584-1-bmv2.p4
@@ -2201,7 +2206,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue696-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue737-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue754.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue754.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue754.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue774-4-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue774-4-bmv2.p4
@@ -2234,10 +2239,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue823.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue841.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue870_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue870_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue870_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue871.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue871.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue871.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue887.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue887.p4
@@ -2252,7 +2257,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue907-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue914-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue933-1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue933-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue933-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue933.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue933.p4
@@ -2291,7 +2296,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/junk-prop-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/key-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/key-issue-1020_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/key-issue-1020_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/key-issue-1020_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/key1-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/key1-bmv2.p4
@@ -2300,7 +2305,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/key1-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/key_after_exit.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/key_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/key_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/key_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/kvanno.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/kvanno.p4
@@ -2327,10 +2332,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/list1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/list2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/list3.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/list3.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/list3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/list4.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/list4.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/list4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/list5.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/list5.p4
@@ -2339,7 +2344,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/list5.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/list6.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/list7.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/list7.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/list7.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/list8.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/list8.p4
@@ -2360,10 +2365,11 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/logging-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/lookahead_ubpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/loop-3-clause-tricky2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/loop-3-clause-tricky2.p4
+Error on parser: ../../../../p4c/testdata/p4_16_samples/loop-3-clause-tricky2.p4
+../../../../p4c/testdata/p4_16_samples/loop-3-clause-tricky2.p4:53.37-53.38: syntax error at line 1, column 8062
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/lpm_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/lpm_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/lpm_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/lpm_ubpf.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/lpm_ubpf.p4
@@ -2396,7 +2402,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/methodArgCast.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/methodArgs.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/minsize.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/minsize.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/minsize.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/ml-headers.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/ml-headers.p4
@@ -2417,7 +2423,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/name_annotations_to_p4inf
 Parser success: ../../../../p4c/testdata/p4_16_samples/named-arg.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/named-arg1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/named-arg1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/named-arg1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/named_meter_1-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/named_meter_1-bmv2.p4
@@ -2474,19 +2480,22 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/nonstandard_table_names-b
 Parser success: ../../../../p4c/testdata/p4_16_samples/octal.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/omec/up4.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/omec/up4.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/omec/up4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/op_bin.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/op_bin.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/op_bin.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/opassign1-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/opassign1-bmv2.p4
+Error on parser: ../../../../p4c/testdata/p4_16_samples/opassign1-bmv2.p4
+../../../../p4c/testdata/p4_16_samples/opassign1-bmv2.p4:35.21-35.22: syntax error at line 1, column 7860
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/opassign1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/opassign1.p4
+Error on parser: ../../../../p4c/testdata/p4_16_samples/opassign1.p4
+../../../../p4c/testdata/p4_16_samples/opassign1.p4:23.22-23.23: syntax error at line 1, column 1367
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/opassign2-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/opassign2-bmv2.p4
+Error on parser: ../../../../p4c/testdata/p4_16_samples/opassign2-bmv2.p4
+../../../../p4c/testdata/p4_16_samples/opassign2-bmv2.p4:46.7-46.8: syntax error at line 1, column 8086
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/overwrite.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/overwrite.p4
@@ -2615,16 +2624,16 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/parser-unroll-uninitializ
 Parser success: ../../../../p4c/testdata/p4_16_samples/parser_error-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pins/pins_fabric.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/pins/pins_fabric.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/pins/pins_fabric.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pins/pins_middleblock.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/pins/pins_middleblock.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/pins/pins_middleblock.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pins/pins_wbb.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/pins/pins_wbb.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/pins/pins_wbb.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pipe.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/pipe.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/pipe.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pipeline.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pipeline.p4
@@ -2633,10 +2642,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/pipeline.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pkginfo_annotation.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-action-selector-1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/pna-action-selector-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/pna-action-selector-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-action-selector.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/pna-action-selector.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/pna-action-selector.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-add-on-miss.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pna-add-on-miss.p4
@@ -2663,7 +2672,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-bvec_union.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-counter-learner.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-counter.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-counter.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-counter.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-meter-learner.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-direct-meter-learner.p4
@@ -2837,7 +2846,8 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/pna-subparser.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pna-too-big-label-name-dpdk.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pr1363.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/pr1363.p4
+Error on parser: ../../../../p4c/testdata/p4_16_samples/pr1363.p4
+../../../../p4c/testdata/p4_16_samples/pr1363.p4:12.5-12.19: syntax error at line 1, column 1195
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pragma-action.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pragma-action.p4
@@ -2855,10 +2865,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/pragma-string.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pragmas.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/precedence-lt.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/precedence-lt.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/precedence-lt.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/precedence.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/precedence.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/precedence.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pred.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pred.p4
@@ -2888,64 +2898,64 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/predication_issue_4.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/proliferation1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-action-profile1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-action-profile1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-action-profile1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-action-profile3.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-action-profile3.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-action-profile3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-action-profile4.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-action-profile4.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-action-profile4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-action-selector1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-action-selector1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-action-selector1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-action-selector2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-action-selector2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-action-selector2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-action-selector3.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-action-selector3.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-action-selector3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-action-selector4.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-action-selector4.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-action-selector4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-action-selector5.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-action-selector5.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-action-selector5.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-action-selector6.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-action-selector6.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-action-selector6.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-basic-counter-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-basic-counter-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-basic-counter-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-bool-ternary-const-entry-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-bool-ternary-const-entry-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-bool-ternary-const-entry-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-conditional_operator.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-conditional_operator.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-counter1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-counter1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-counter1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-counter2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-counter2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-counter2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-counter3.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-counter3.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-counter3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-counter4.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-counter4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-custom-type-counter-index.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-custom-type-counter-index.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-custom-type-counter-index.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-128bitCast.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-128bitCast.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-binary-operations-1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-binary-operations-1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-binary-operations-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-binary-operations.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-binary-operations.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-binary-operations.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-checksum-arg-header.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-checksum-arg-header.p4
@@ -2966,7 +2976,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-flatten-local-st
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-hdr-field-non-align.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-header-union-typedef.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-header-union-typedef.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-header-union-typedef.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-large-header-fields.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-large-header-fields.p4
@@ -3104,7 +3114,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/psa-drop-all-corrected-bm
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-e2e-cloning-basic-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-end-of-ingress-test-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-end-of-ingress-test-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-end-of-ingress-test-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-counters-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-counters-bmv2.p4
@@ -3113,55 +3123,55 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-counters-bmv2
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-digest-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_3.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_3.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_4.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_4.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_5.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_5.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_5.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_6.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_6.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_6.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_7.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_7.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_7.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_8.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_8.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_8.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_9.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_9.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_9.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-counter.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-counter.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-counter.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-directmeter.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-directmeter.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-externs.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-externs.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-externs.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-local-variable.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-local-variable.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-meter-execute-err.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-meter-execute-err.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-meter-execute-err.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-meter.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-meter.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-meter.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-meter1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-meter1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-meter1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-varbit-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-varbit-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-varbit-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-incremental-checksum.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-incremental-checksum.p4
@@ -3251,10 +3261,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/psa-isvalid.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-metadata-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-meter1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-meter1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-meter1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-meter3.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-meter3.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-meter3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-meter4.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-meter4.p4
@@ -3263,7 +3273,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/psa-meter4.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-meter5.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-meter7-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-meter7-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-meter7-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-multicast-basic-2-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-multicast-basic-2-bmv2.p4
@@ -3278,28 +3288,28 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/psa-multicast-basic-corre
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-parser-error-test-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-random.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-random.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-random.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-recirculate-no-meta-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-recirculate-no-meta-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-register-complex-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-register-complex-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-register-complex-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-register-read-write-2-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-register-read-write-2-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-register-read-write-2-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-register-read-write-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-register-read-write-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-register-read-write-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-register1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-register1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-register1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-register2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-register2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-register2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-register3.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/psa-register3.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-register3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-remove-header.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-remove-header.p4
@@ -3335,31 +3345,31 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/psa-variable-index.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pvs-bitstring-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pvs-nested-struct.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/pvs-nested-struct.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/pvs-nested-struct.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pvs-struct-1-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/pvs-struct-1-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/pvs-struct-1-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pvs-struct-2-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/pvs-struct-2-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/pvs-struct-2-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pvs-struct-3-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/pvs-struct-3-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/pvs-struct-3-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pvs.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/pvs.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/pvs.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/rcp.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/rcp.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/rcp.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/rcp1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/rcp1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/rcp1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/redundant_parsers_dangling_unused_parser_decl.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/redundant_parsers_dangling_unused_parser_decl.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/register-serenum-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/register-serenum-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/register-serenum-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/reject.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/reject.p4
@@ -3398,7 +3408,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/serenum-int.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/serenum.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/shadow-after-use.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/shadow-after-use.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/shadow-after-use.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/shadow.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/shadow.p4
@@ -3407,7 +3417,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/shadow.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/shadow1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/shadow3.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/shadow3.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/shadow3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/shift-int-const.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/shift-int-const.p4
@@ -3422,7 +3432,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/side_effects.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/simple-actions_ubpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/simple-firewall_ubpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/simple-firewall_ubpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/simple-firewall_ubpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/simplify.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/simplify.p4
@@ -3491,7 +3501,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/spec-ex20.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/spec-ex22.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/spec-ex25.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/spec-ex25.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/spec-ex25.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/spec-ex27.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/spec-ex27.p4
@@ -3512,10 +3522,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/spec-ex34.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/spec-issue1060.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/spec-issue1068.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/spec-issue1068.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/spec-issue1068.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/spec-issue1297-string-cat.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/spec-issue1297-string-cat.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/spec-issue1297-string-cat.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/specIssue884.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/specIssue884.p4
@@ -3542,7 +3552,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/stack2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/stack_complex-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/stack_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/stack_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/stack_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/standard_headers.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/standard_headers.p4
@@ -3554,7 +3564,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/states.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/std_meta_inlining.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/strength.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/strength.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/strength.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/strength2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/strength2.p4
@@ -3578,10 +3588,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/string.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/string_anno.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/struct.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/struct.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/struct.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/struct1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/struct1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/struct1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/structArg.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/structArg.p4
@@ -3611,7 +3621,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/subparser-with-header-sta
 Parser success: ../../../../p4c/testdata/p4_16_samples/switch-expression.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/switch_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/switch_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/switch_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/synth-action.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/synth-action.p4
@@ -3626,7 +3636,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-exact-terna
 Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-lpm-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/table-entries-no-arg-actions.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/table-entries-no-arg-actions.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-no-arg-actions.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/table-entries-optional-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-optional-bmv2.p4
@@ -3638,7 +3648,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-priority-bm
 Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-range-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/table-entries-ser-enum-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/table-entries-ser-enum-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-ser-enum-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/table-entries-ternary-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-ternary-bmv2.p4
@@ -3656,13 +3666,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/template.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/ternary2-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/ternary_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/ternary_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/ternary_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/test-parserinvalidargument-error-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/test-parserinvalidargument-error-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/test_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/test_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/test_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/trailing-comma.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/trailing-comma.p4
@@ -3686,7 +3696,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/tuple1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/tuple2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/tuple3.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/tuple3.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/tuple3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/tuple4.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/tuple4.p4
@@ -3698,7 +3708,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/two-functions.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/twoPipe.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/two_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/two_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/two_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/type-params.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/type-params.p4
@@ -3710,7 +3720,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/type-shadow.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/type-spec-nested.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/typedef-constructor.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/typedef-constructor.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/typedef-constructor.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/ubpf_checksum_extern.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/ubpf_checksum_extern.p4
@@ -3773,22 +3783,22 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/v1model-digest-containing
 Parser success: ../../../../p4c/testdata/p4_16_samples/v1model-digest-custom-type.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-enumint-types1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-enumint-types1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-enumint-types1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-most-types1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-most-types1.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-most-types1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/v1model-special-ops-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/v1model-special-ops-bmv2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/v1model-special-ops-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/valid.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/valid.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/valid_ebpf.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/valid_ebpf.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/valid_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/value-sets.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/value-sets.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/value-sets.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/value_set_ebpf.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/value_set_ebpf.p4
@@ -3809,13 +3819,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/version.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/very_simple_model.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/virtual.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/virtual.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/virtual.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/virtual2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/virtual2.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/virtual2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/virtual3.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/virtual3.p4
+Parser success: ../../../../p4c/testdata/p4_16_samples/virtual3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/vss-example.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/vss-example.p4
@@ -3835,4 +3845,4 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/xdp_vlan_push_pop_ebpf-ke
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 
-Running parser: [EXCLUDE] 223/1278 (17.45%) [PASS] 1055/1278 (82.55%) [FAIL] 0/1278 (0.00%)
+Running parser: [EXCLUDE] 0/1278 (0.00%) [PASS] 1268/1278 (99.22%) [FAIL] 10/1278 (0.78%)
