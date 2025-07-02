@@ -73,7 +73,7 @@
 
 (**************************** TYPES ******************************)
 %type <Il.Ast.value> declaration
-%type <Il.Ast.value> expressionOptTrailingList trailingComma kvPair optTrailingComma const optCONST number stringLiteral dotPrefix identifier typeIdentifier nonTypeName prefixedNonTypeName nonTableKwName prefixedType typeName name identifierList member direction baseType specializedType namedType headerStackType listType tupleType typeRef typeOrVoid typeParameterList typeParameters optTypeParameters parameter parameterList constructorParameters optConstructorParameters nonBraceExpression expression simpleKeysetExpression reducedSimpleKeysetExpression simpleExpressionList tupleKeysetExpression keysetExpression realTypeArg realTypeArgumentList typeArg typeArgumentList argument argumentList lvalue initialValue optInitializer variableDeclarationWithoutSemicolon constantDeclaration assignmentOrMethodCallStatementWithoutSemicolon assignmentOrMethodCallStatement directApplication conditionalStatement emptyStatement blockStatement returnStatement breakStatement continueStatement exitStatement switchLabel switchCase switchCases switchStatement statement statementOrDeclaration statOrDeclList matchKindDeclaration errorDeclaration functionPrototype methodPrototype methodPrototypes externDeclaration externName functionDeclaration objInitializer instantiation objDeclaration objDeclarations actionDeclaration keyElement keyElementList actionRef action actionList entryPriority entry entriesList
+%type <Il.Ast.value> trailingComma kvPair optTrailingComma const optCONST number stringLiteral dotPrefix identifier typeIdentifier nonTypeName prefixedNonTypeName nonTableKwName prefixedType typeName name identifierList member direction baseType specializedType namedType headerStackType listType tupleType typeRef typeOrVoid typeParameterList typeParameters optTypeParameters parameter parameterList constructorParameters optConstructorParameters nonBraceExpression expression simpleKeysetExpression reducedSimpleKeysetExpression simpleExpressionList tupleKeysetExpression keysetExpression realTypeArg realTypeArgumentList typeArg typeArgumentList argument argumentList lvalue initialValue optInitializer variableDeclarationWithoutSemicolon constantDeclaration assignmentOrMethodCallStatementWithoutSemicolon assignmentOrMethodCallStatement directApplication conditionalStatement emptyStatement blockStatement returnStatement breakStatement continueStatement exitStatement switchLabel switchCase switchCases switchStatement statement statementOrDeclaration statOrDeclList matchKindDeclaration errorDeclaration functionPrototype methodPrototype methodPrototypes externDeclaration externName functionDeclaration objInitializer instantiation objDeclaration objDeclarations actionDeclaration keyElement keyElementList actionRef action actionList entryPriority entry entriesList
 %type <Il.Ast.value> annotation annotationToken annotations controlBody controlDeclaration controlLocalDeclaration controlLocalDeclarations controlTypeDeclaration derivedTypeDeclaration enumDeclaration headerTypeDeclaration headerUnionDeclaration packageTypeDeclaration parserBlockStatement parserDeclaration parserLocalElement parserLocalElements parserState parserStatement parserStatements parserStates parserTypeDeclaration selectCase selectCaseList selectExpression simpleAnnotation simpleAnnotationBody specifiedIdentifier specifiedIdentifierList stateExpression structField structFieldList structTypeDeclaration structuredAnnotationBody tableDeclaration tableProperty tablePropertyList transitionStatement typedefDeclaration valueSetDeclaration
 %type <Il.Ast.value list> lib_parsing_parser_list(action) lib_parsing_parser_list(annotation) lib_parsing_parser_list(controlLocalDeclaration) lib_parsing_parser_list(declaration) lib_parsing_parser_list(entry) lib_parsing_parser_list(keyElement) lib_parsing_parser_list(methodPrototype) lib_parsing_parser_list(objDeclaration) lib_parsing_parser_list(parserLocalElement) lib_parsing_parser_list(parserState) lib_parsing_parser_list(parserStatement) lib_parsing_parser_list(selectCase) lib_parsing_parser_list(simpleAnnotation) lib_parsing_parser_list(statementOrDeclaration) lib_parsing_parser_list(structField) lib_parsing_parser_list(switchCase) lib_parsing_parser_list(tableProperty)
 %type <Il.Ast.value list> lib_parsing_parser_separated_list(COMMA,argument) lib_parsing_parser_separated_list(COMMA,expression) lib_parsing_parser_separated_list(COMMA,parameter) lib_parsing_parser_separated_list(COMMA,realTypeArg) lib_parsing_parser_separated_list(COMMA,simpleKeysetExpression) lib_parsing_parser_separated_list(COMMA,specifiedIdentifier) lib_parsing_parser_separated_list(COMMA,typeArg)
@@ -210,15 +210,10 @@ list(X):
     { Some x }
 ;
 
-(* Missing helper functions *)
-expressionOptTrailingList:
-| exprs = separated_opt_trailing_list(COMMA, expression)
-    { wrap_list_v "expression" exprs }
-;
-
 (**************************** P4-16 GRAMMAR ******************************)
 
 (******** Misc ********)
+
 trailingComma:
 | COMMA
         { [ Term ","; Term "PHTM_0" ] |> wrap_case_v |> with_typ (wrap_var_t "trailingComma") }
@@ -237,19 +232,22 @@ const:
 optCONST:
 | c = option(const)
     { wrap_opt_v "const" c }
-            ;
+;
+
 (******** Numbers ********)
-(* Processed by lexer *)
+(* Spec Mismatch: Processed by lexer *)
 number:
 | number = NUMBER
     { fst number }
-          ;
+;
+
 (******** Strings ********)
 (* Petr4 X / Spec O *)
 stringLiteral:
 | text = STRING_LITERAL
     { [ NT text; Term "PHTM_2" ] |> wrap_case_v |> with_typ (wrap_var_t "stringLiteral")}
 ;
+
 (******** Names ********)
 
 dotPrefix:
@@ -358,7 +356,9 @@ member:
 | name = name
     { name }
 ;
+
 (******** Directions ********)
+
 direction:
 | IN
     { [ Term "IN" ] |> wrap_case_v |> with_typ (wrap_var_t "direction") }
@@ -368,10 +368,9 @@ direction:
     { [ Term "INOUT" ] |> wrap_case_v |> with_typ (wrap_var_t "direction") }
 | (* empty *)
     { [ Term "NONE" ] |> wrap_case_v |> with_typ (wrap_var_t "direction") }
-
+;
 
 (******** Types ********)
-(** TODO **)
 
 baseType:
 | info = BOOL
@@ -479,7 +478,6 @@ tupleType:
 typeRef:
 | t = baseType
 | t = namedType
-(* | t = specializedType *) (* Petr4 O / Spec X *)
 | t = headerStackType
 | t = listType
 | t = tupleType
@@ -695,7 +693,7 @@ expression:
 | info = INVALID
     { info |> ignore;
       [ Term "INVALID" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
-(* TODO: shift-reduce conflict with COMMA *)
+(* HACK: shift-reduce conflict with COMMA *)
 | info1 = L_BRACE kvs = kvList comma = optTrailingComma info2 = R_BRACE 
     { let tags = Source.merge info1 info2 in
     tags |> ignore;

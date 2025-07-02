@@ -1,4 +1,8 @@
-(* Parser debugging utilities using Menhir's inspection API *)
+(*
+ * Parser debugging utilities using Menhir's inspection API:
+ *
+ *   Debugs parser stack state and token consumption
+ *)
 
 module MI = MenhirLib.General
 module I = Parser.Incremental
