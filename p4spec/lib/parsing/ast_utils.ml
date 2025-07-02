@@ -35,7 +35,7 @@ let wrap_case_v (vs : symbol list) : value' =
   in
   CaseV (mixop, values)
 
-let wrap_opt_v (v : value option) (s : string) : value =
+let wrap_opt_v (s : string) (v : value option) : value =
   OptV v |> with_typ (wrap_iter_t Opt (wrap_var_t s))
 
 let wrap_list_v (s : string) (vs : value list) : value =

@@ -226,7 +226,7 @@ trailingComma:
 
 optTrailingComma:
 | comma = option(trailingComma)
-    { wrap_opt_v comma "trailingComma" }
+    { wrap_opt_v "trailingComma" comma }
 ;
 
 const:
@@ -236,7 +236,7 @@ const:
 
 optCONST:
 | c = option(const)
-    { wrap_opt_v c "const" }
+    { wrap_opt_v "const" c }
             ;
 (******** Numbers ********)
 (* Processed by lexer *)
@@ -518,7 +518,7 @@ typeParameters:
   
 optTypeParameters:
 | typeParameters = option(typeParameters)
-    { wrap_opt_v typeParameters "typeParameters" }
+    { wrap_opt_v "typeParameters" typeParameters }
 ;
 (******** Parameters ********)
 
@@ -553,7 +553,7 @@ constructorParameters:
 
 optConstructorParameters:
 | params = option(constructorParameters)
-    { wrap_opt_v params "constructorParameters" }
+    { wrap_opt_v "constructorParameters" params }
 ;
 
 (******** Expressions ********)
@@ -898,7 +898,7 @@ initialValue:
 
 optInitializer: 
 | i = option(initialValue) 
-    { wrap_opt_v i "initializer" }
+    { wrap_opt_v "initializer" i }
 ;
 (* Pert4 X / Spec O *)
 variableDeclarationWithoutSemicolon:
@@ -1946,7 +1946,7 @@ annotations:
 
 %inline optAnnotations:
 | annos = option(annotations)
-    { wrap_opt_v annos "annotation" }
+    { wrap_opt_v "annotation" annos }
   ;
 
 (******** P4 program ********)
