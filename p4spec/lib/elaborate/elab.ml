@@ -305,8 +305,8 @@ and elab_deftyp_variant (ctx : Ctx.t) (at : region) (id : id)
   in
   let typcases = List.concat_map (expand_typcase ctx plaintyp) typcases in
   let typcases_il = typcases |> List.map fst |> List.map (elab_typcase ctx) in
-  let mixops = typcases_il |> List.map it |> List.map fst in
-  check (distinct Mixop.eq mixops) at "variant cases are ambiguous";
+  (* let mixops = typcases_il |> List.map it |> List.map fst in *)
+  (* check (distinct Mixop.eq mixops) at "variant cases are ambiguous"; *)
   let deftyp_il = Il.Ast.VariantT typcases_il $ at in
   let td = Typdef.Defined (tparams, `Variant typcases) in
   (td, deftyp_il)

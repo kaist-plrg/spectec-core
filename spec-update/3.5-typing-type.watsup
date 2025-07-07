@@ -1,0 +1,137 @@
+;; syntax typeOrVoid =
+;;   | typeRef
+;;   | VOID
+
+;;; syntax typeRef =
+;;;   | baseType
+;;;   | namedType
+;;;   | headerStackType
+;;;   | listType
+;;;   | tupleType
+
+;;;; syntax baseType =
+;;;;   | BOOL
+;;;;   | MATCH_KIND
+;;;;   | ERROR
+;;;;   | BIT
+;;;;   | STRING
+;;;;   | INT
+;;;;   | BIT `< int >
+;;;;   | INT `< int >
+;;;;   | VARBIT `< int >
+;;;;   | BIT `< `( expression ) >
+;;;;   | INT `< `( expression ) >
+;;;;   | VARBIT `< `( expression ) >
+
+rule Type_ok/boolean:
+  p C |- BOOL : BOOL eps
+
+rule Type_ok/matchkind:
+  p C |- MATCH_KIND : MATCH_KIND eps
+
+rule Type_ok/error:
+  p C |- ERROR : ERROR eps
+
+rule Type_ok/bit:
+  p C |- BIT : (BIT `< 1 >) eps
+
+rule Type_ok/string:
+  p C |- STRING : STRING eps
+
+rule Type_ok/arbint:
+  p C |- INT : INT eps
+
+rule Type_ok/fixbit:
+  p C |- BIT `< n > : (BIT `< n >) eps
+
+rule Type_ok/fixbit-expr:
+  p C |- BIT `< `( expression ) > : (BIT `< n >) eps
+  -- Expr_ok: p C |- expression : expressionIR
+  -- if _ `( _ `; LCTK) = expressionIR
+  -- Eval_static: p C |- expressionIR ~> val
+  -- if n = $number(val)
+
+rule Type_ok/fixint:
+  p C |- INT `< n > : (INT `< n >) eps
+
+rule Type_ok/fixint-expr:
+  p C |- INT `< `( expression ) > : (INT `< n >) eps
+  -- Expr_ok: p C |- expression : expressionIR
+  -- if _ `( _ `; LCTK) = expressionIR
+  -- Eval_static: p C |- expressionIR ~> val
+  -- if n = $number(val)
+
+rule Type_ok/varbit:
+  p C |- VARBIT `< n > : (VARBIT `< n >) eps
+
+rule Type_ok/varbit-expr:
+  p C |- VARBIT `< `( expression ) > : (VARBIT `< n >) eps
+  -- Expr_ok: p C |- expression : expressionIR
+  -- if _ `( _ `; LCTK) = expressionIR
+  -- Eval_static: p C |- expressionIR ~> val
+  -- if n = $number(val)
+
+;;;; syntax namedType =
+;;;;   | typeName
+;;;;   | specializedType
+
+rule Type_ok/namedtype-typename:
+  p C |- typeName : typeIR eps
+  -- if typeIR = $find_typedef(p, C, typeName)
+
+;;;;; syntax specializedType = typeName `< typeArgumentList >
+
+rule Type_ok/namedtype-specializedtype-mono:
+  p C |- typeName `< eps > : typeIR eps
+  -- if typeIR = $find_typedef(p, C, typeName)
+
+rule Type_ok/namedtype-specialiedtype-poly:
+  p C |- typeName `< typeArg* > : (polyTypeDefIR `< typeIR_a* >) name_fresh*
+  -- if polyTypeDefIR = $find_typedef(p, C, typeName)
+  -- if `< name* `, name_hidden* > `=> typeIR = polyTypeDefIR
+  -- (TypeArg_ok: p C |- typeArg : typeIR_a name_fresh_a*)*
+  -- if name_fresh* = $concat_<name>(name_fresh_a**)
+
+;;;; syntax headerStackType =
+;;;;   | typeName `[ expression ]
+;;;;   | specializedType `[ expression ]
+
+rule Type_ok/headerstacktype-typename:
+  p C |- typeName `[ expression ] : (polyTypeDefIR `< typeIR >) eps
+  -- Type_ok: p C |- typeName : typeIR eps
+  -- Expr_ok: p C |- expression : expressionIR
+  -- if _ `( _ `; LCTK) = expressionIR
+  -- Eval_static: p C |- expressionIR ~> val
+  -- if n_size = $number(val)
+  -- if polyTypeDefIR = `< (`$ "T") `, eps > `=> ((`@ "T") `[ n_size ])
+
+rule Type_ok/headerstacktype-specializedtype:
+  p C |- specializedType `[ expression ] : (polyTypeDefIR `< typeIR >) name_fresh*
+  -- Type_ok: p C |- specializedType : typeIR name_fresh*
+  -- Expr_ok: p C |- expression : expressionIR
+  -- if _ `( _ `; LCTK) = expressionIR
+  -- Eval_static: p C |- expressionIR ~> val
+  -- if n_size = $number(val)
+  -- if polyTypeDefIR = `< (`$ "T") `, eps > `=> ((`@ "T") `[ n_size ])
+
+;;;; syntax listType = LIST `< typeArg >
+
+rule Type_ok/listtype:
+  p C |- LIST `< typeArg > : (polyTypeDefIR `< typeIR >) name_fresh*
+  -- TypeArg_ok: p C |- typeArg : typeIR name_fresh*
+  -- if polyTypeDefIR = `< (`$ "T") `, eps > `=> (LIST `< `@ "T" >)
+
+;;;; syntax tupleType = TUPLE `< typeArgumentList >
+
+rule Type_ok/tupletype:
+  p C |- TUPLE `< typeArg* > : (polyTypeDefIR `< typeIR_a* >) name_fresh*
+  -- (TypeArg_ok: p C |- typeArg : typeIR_a name_fresh_a*)*
+  -- if name_fresh* = $concat_<name>(name_fresh_a**)
+  -- if i_idx* = $init_(|typeIR_a*|)
+  -- if (text = "T" ++ $int_to_text(i_idx))* 
+  -- if polyTypeDefIR = `< (`$ text)* `, eps > `=> (TUPLE `< (`@ text)* >)
+
+;;; VOID
+
+rule Type_ok/void:
+  p C |- VOID : VOID eps

@@ -1,0 +1,34 @@
+;;
+;; Constant declaration
+;;
+
+rule Decl_ok/constantDeclaration:
+  p C |- optAnnotations CONST typeRef name initializer `;
+       : C (eps CONST typeIR name initializerIR `;)
+  -- if `= expression = initializer
+  -- Type_ok: p C |- typeRef : typeIR eps
+  ----
+  -- Expr_ok: p C |- expression : expressionIR
+  -- if initializerIR = `= expressionIR
+
+;;
+;; Declaration sequence
+;;
+
+rule Decls_ok/nil:
+  p C |- eps : C eps
+
+rule Decls_ok/cons:
+  p C |- declaration_h :: declaration_t*
+        : C'' (declarationIR_h :: declarationIR_t*)
+  -- Decl_ok: p C |- declaration_h : C' declarationIR_h
+  -- Decls_ok: p C' |- declaration_t* : C'' declarationIR_t*
+
+;;
+;; Program
+;;
+
+rule Prog_ok:
+  |- declaration* : C' declarationIR*
+  -- if C = $empty_context
+  -- Decls_ok: GLOBAL C |- declaration* : C' declarationIR*

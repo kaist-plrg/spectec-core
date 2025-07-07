@@ -19,6 +19,10 @@ relation Type_ok:
   cursor context |- typeOrVoid : typeIR name*
   hint(input %0 %1 %2)
 
+relation TypeArg_ok:
+  cursor context |- typeArg : typeIR name*
+  hint(input %0 %1 %2)
+
 ;;
 ;;;; Subtyping, explicit and implicit
 ;;
@@ -27,9 +31,9 @@ relation Sub_expl: typeIR <: typeIR hint(input %0 %1)
 relation Sub_expl_canon: typeIR <: typeIR hint(input %0 %1)
 relation Sub_expl_canon_neq: typeIR <: typeIR hint(input %0 %1)
 
-relation Sub_impl: typeIR << typeIR hint(input %0 %1)
-relation Sub_impl_canon: typeIR << typeIR hint(input %0 %1)
-relation Sub_impl_canon_neq: typeIR << typeIR hint(input %0 %1)
+relation Sub_impl: typeIR <: typeIR hint(input %0 %1)
+relation Sub_impl_canon: typeIR <: typeIR hint(input %0 %1)
+relation Sub_impl_canon_neq: typeIR <: typeIR hint(input %0 %1)
 
 ;;
 ;; Expression, Statement, and Declaration typing
@@ -100,7 +104,7 @@ relation Decl_ok:
   hint(input %0 %1 %2)
 
 relation Decls_ok:
-  cursor context |- declaration : context declarationIR*
+  cursor context |- declaration* : context declarationIR*
   hint(input %0 %1 %2)
 
 ;;

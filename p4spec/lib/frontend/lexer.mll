@@ -86,7 +86,7 @@ let loletter = ['a'-'z']
 let letter = upletter | loletter
 
 let idchar = letter | digit | '_' | '\''
-let upid = (upletter | '_') idchar*
+let upid = upletter idchar*
 let loid = (loletter | '_') idchar*
 let id = upid | loid
 
@@ -143,102 +143,131 @@ rule after_nl = parse
 
 and after_nl_nl = parse
   | indent* "|"[' ''\t'] { NL_BAR }
-  | indent* '\n' { Lexing.new_line lexbuf; NL_NL_NL }
+  | indent* '\n' { Lexing.new_line lexbuf; NL3 }
   | indent* line_comment '\n' { Lexing.new_line lexbuf; after_nl_nl lexbuf }
   | indent* line_comment? eof { EOF }
-  | "" { NL_NL }
+  | "" { NL2 }
 
 and token = parse
+  (* escaped tokens *)
+  | "`_" { TICK_UNDERSCORE }
+  | "`->" { TICK_ARROW }
+  | "`=>" { TICK_DOUBLE_ARROW }
+  | "`." { TICK_DOT }
+  | "`.." { TICK_DOT2 }
+  | "`..." { TICK_DOT3 }
+  | "`," { TICK_COMMA }
+  | "`;" { TICK_SEMICOLON }
+  | "`:" { TICK_COLON }
+  | "`#" { TICK_HASH }
+  | "`$" { TICK_DOLLAR }
+  | "`@" { TICK_AT }
+  | "`?" { TICK_QUEST }
+  | "`!" { TICK_BANG }
+  | "`!=" { TICK_BANG_EQ }
+  | "`~" { TICK_TILDE }
+  | "``<" { TICK2_LANGLE }
+  | "`<" { TICK_LANGLE }
+  | "`<<" { TICK_LANGLE2 }
+  | "`<=" { TICK_LANGLE_EQ }
+  | "`<<=" { TICK_LANGLE2_EQ }
+  | "``>" { TICK2_RANGLE }
+  | "`>>" { TICK_RANGLE2 }
+  | "`>=" { TICK_RANGLE_EQ }
+  | "`>>=" { TICK_RANGLE2_EQ }
+  | "`(" { TICK_LPAREN }
+  | "`[" { TICK_LBRACK }
+  | "``[" { TICK2_LBRACK }
+  | "``]" { TICK2_RBRACK }
+  | "`{" { TICK_LBRACE }
+  | "`{#}" { TICK_LBRACE_HASH_RBRACE }
+  | "``{" { TICK2_LBRACE }
+  | "``}" { TICK2_RBRACE }
+  | "`+" { TICK_PLUS }
+  | "`++" { TICK_PLUS2 }
+  | "`+=" { TICK_PLUS_EQ }
+  | "`-" { TICK_MINUS }
+  | "`-=" { TICK_MINUS_EQ }
+  | "`*" { TICK_STAR }
+  | "`*=" { TICK_STAR_EQ }
+  | "`/" { TICK_SLASH }
+  | "`/=" { TICK_SLASH_EQ }
+  | "`%" { TICK_PERCENT }
+  | "`%=" { TICK_PERCENT_EQ }
+  | "`=" { TICK_EQ }
+  | "`==" { TICK_EQ2 }
+  | "`&" { TICK_AMP }
+  | "`&&" { TICK_AMP2 }
+  | "`&&&" { TICK_AMP3 }
+  | "`&=" { TICK_AMP_EQ }
+  | "`^" { TICK_UP }
+  | "`^=" { TICK_UP_EQ }
+  | "`|" { TICK_BAR }
+  | "`||" { TICK_BAR2 }
+  | "`|=" { TICK_BAR_EQ }
+  | "`|+|" { TICK_BAR_PLUS_BAR }
+  | "`|+|=" { TICK_BAR_PLUS_BAR_EQ }
+  | "`|-|" { TICK_BAR_MINUS_BAR }
+  | "`|-|=" { TICK_BAR_MINUS_BAR_EQ }
+  (* normal tokens *)
+  | "<:" { SUB }
+  | ":>" { SUP }
+  | "|-" { TURNSTILE }
+  | "-|" { TILESTURN }
+  | "|=" { ENTAIL }
+  | "->" { ARROW }
+  | "->_" { ARROW_SUB }
+  | "=>" { DOUBLE_ARROW }
+  | "=>_" { DOUBLE_ARROW_SUB }
+  | "<=>" { DOUBLE_ARROW_BOTH }
+  | "~>" { SQARROW }
+  | "~>*" { SQARROW_STAR }
+  | "/\\" { AND }
+  | "\\/" { OR }
+  | "." { DOT }
+  | ".." { DOT2 }
+  | "..." { DOT3 }
+  | "," { COMMA }
+  | "," indent* line_comment? '\n' { Lexing.new_line lexbuf; COMMA_NL }
+  | ";" { SEMICOLON }
+  | ":" { COLON }
+  | "::" { COLON2 }
+  | ":/" { COLON_SLASH }
+  | "#" { HASH }
+  | "##" { HASH2 }
+  | "$" { DOLLAR }
+  | "?" { QUEST }
+  | "~" { TILDE }
+  | "~~" { TILDE2 }
+  | "<" { LANGLE }
+  | "<-" { LANGLE_DASH }
+  | "<=" { LANGLE_EQ }
+  | ">" { RANGLE }
+  | ">=" { RANGLE_EQ }
+  | ">(" { RANGLE_LPAREN }
   | "(" { LPAREN }
   | ")" { RPAREN }
   | "[" { LBRACK }
   | "]" { RBRACK }
   | "{" { LBRACE }
   | "}" { RBRACE }
-  | "{#}" { INVALID }
-  | ":" { COLON }
-  | "::" { COLONCOLON }
-  | ":/" { COLONSLASH }
-  | ";" { SEMICOLON }
-  | "," { COMMA }
-  | "." { DOT }
-  | ".." { DOTDOT }
-  | "..." { DOTDOTDOT }
-  | "_" { UNDERSCORE }
-  | "|" { BAR }
-  | "|=" { BAREQ }
-  | "||" { BARBAR }
-  | "--" { DASH }
-  | "," indent* line_comment? '\n' { Lexing.new_line lexbuf; COMMA_NL }
-  | line_comment? '\n' { Lexing.new_line lexbuf; after_nl lexbuf }
-  | "=" { EQ }
-  | "=/=" { NE }
-  | "<" { LANGLE }
-  | ">" { RANGLE }
-  | ">(" { RANGLE_LPAREN }
-  | "<=" { LE }
-  | ">=" { GE }
-  | "~~" { APPROX }
-  | "<:" { SUB }
-  | ":>" { SUP }
-  | ":=" { ASSIGN }
-  | "==" { EQUIV }
-  | "!=" { NEQUIV }
-  | "~" { NOT }
-  | "/\\" { AND }
-  | "\\/" { OR }
-  | "(/\\)" { BIGAND }
-  | "(\\/)" { BIGOR }
-  | "(+)" { BIGADD }
-  | "(*)" { BIGMUL }
-  | "(++)" { BIGCAT }
-  | "?" { QUEST }
-  | "!" { BANG }
   | "+" { PLUS }
-  | "+=" { PLUSEQ }
-  | "|+|" { SPLUS }
-  | "|+|=" { SPLUSEQ }
+  | "++" { PLUS2 }
   | "-" { MINUS }
-  | "-=" { MINUSEQ }
-  | "|-|" { SMINUS }
-  | "|-|=" { SMINUSEQ }
+  | "--" { DASH }
   | "*" { STAR }
-  | "*=" { STAREQ }
   | "/" { SLASH }
-  | "/=" { SLASHEQ }
   | "\\" { BACKSLASH }
-  | "^" { UP }
-  | "^=" { UPEQ }
-  | "&" { AMP }
-  | "&=" { AMPEQ }
-  | "&&" { AMPAMP }
-  | "&&&" { AMPAMPAMP }
-  | "++" { CAT }
-  | "<-" { MEM }
-  | "->" { ARROW }
-  | "=>" { ARROW2 }
-  | "->_" { ARROWSUB }
-  | "=>_" { ARROW2SUB }
-  | "<=>" { DARROW2 }
-  | "~>" { SQARROW }
-  | "~>*" { SQARROWSTAR }
-  | "<<" { PREC }
-  | "<<=" { PRECEQ }
-  | ">>" { SUCC }
-  | ">>=" { SUCCEQ }
-  | "|-" { TURNSTILE }
-  | "-|" { TILESTURN }
-  | "@" { AT }
-  | "$" { DOLLAR }
   | "%" { HOLE }
-  | "%=" { HOLEEQ }
-  | "%"(nat as s) { HOLEN (int lexbuf s) }
-  | "%%" { MULTIHOLE }
-  | "!%" { NOTHING }
-  | "#" { FUSE }
-  | "##" { FUSEFUSE }
+  | "%"(nat as s) { HOLE_NUM (int lexbuf s) }
+  | "%%" { HOLE_MULTI }
+  | "!%" { HOLE_NIL }
+  | "=" { EQ }
+  | "=/=" { NEQ }
+  | "^" { UP }
+  | "|" { BAR }
+  | line_comment? '\n' { Lexing.new_line lexbuf; after_nl lexbuf }
   | "%latex" { LATEX }
-  | "`" { TICK }
   | "bool" { BOOL }
   | "nat" { NAT }
   | "int" { INT }
@@ -255,7 +284,6 @@ and token = parse
   | "eps" { EPS }
   | "true" { BOOLLIT true }
   | "false" { BOOLLIT false }
-  | "infinity" { INFINITY }
   | nat as s { NATLIT (nat lexbuf s) }
   | ("0x" hex) as s { HEXLIT (hex lexbuf s) }
   | text as s { TEXTLIT (text lexbuf s) }

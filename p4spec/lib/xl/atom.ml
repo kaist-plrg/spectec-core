@@ -1,162 +1,145 @@
 [@@@ocamlformat "disable"]
 
 type t =
-  | Atom of string  (* atomid *)
-  | Infinity        (* infinity *)
-  | Dot             (* `.` , ``.` *)
-  | Dot2            (* `..`, ``..` *)
-  | Dot3            (* `...` *)
-  | Underscore      (* ``_` *)
-  | Semicolon       (* `;` *)
-  | Backslash       (* `\` *)
-  | Mem             (* `<-` *)
-  | Arrow           (* `->` *)
-  | Arrow2          (* ``=>` *)
-  | ArrowSub        (* `->_` *)
-  | Arrow2Sub       (* ``=>_` *)
-  | Colon           (* `:` *)
-  | Sub             (* `<:` *)
-  | Sup             (* `:>` *)
-  | Assign          (* `:=` *)
-  | Equal           (* ``=` *)
-  | LessEqual       (* ``<=` *)
-  | GreaterEqual    (* ``>=` *)
-  | Equiv           (* `==` *)
-  | NotEquiv        (* ``!=` *)
-  | Approx          (* `~~` *)
-  | SqArrow         (* `~>` *)
-  | SqArrowStar     (* `~>*` *)
-  | Prec            (* `<<` *)
-  | PrecEq          (* `<<=` *)
-  | Succ            (* `>>` *)
-  | SuccEq          (* `>>=` *)
-  | Turnstile       (* `|-` *)
-  | Tilesturn       (* `-|` *)
-  | Not             (* ``~` *)
-  | Quest           (* ``?` *)
-  | Bang            (* ``!` *)
-  | Plus            (* ``+` *)
-  | PlusEq          (* ``+=` *)
-  | SPlus           (* ``|+|` *)
-  | SPlusEq         (* ``|+|=` *)
-  | Minus           (* ``-` *)
-  | MinusEq         (* ``-=` *)
-  | SMinus          (* ``|-|` *)
-  | SMinusEq        (* ``|-|=` *)
-  | Star            (* ``*` *)
-  | StarEq          (* ``*=` *)
-  | Slash           (* ``/` *)
-  | SlashEq         (* ``/=` *)
-  | Mod             (* ``%` *)
-  | ModEq           (* ``%=` *)
-  | Hash            (* ``#` *)
-  | Up              (* ``^` *)
-  | UpEq            (* ``^=` *)
-  | Amp             (* ``&` *)
-  | AmpEq           (* ``&=` *)
-  | Amp2            (* ``&&` *)
-  | Amp3            (* ``&&&` *)
-  | Bar             (* ``|` *)
-  | BarEq           (* ``|=` *)
-  | Bar2            (* ``||` *)
-  | At              (* ``@` *)
-  | Dollar          (* ``$` *)
-  | Comma           (* ``,` *)
-  | Cat             (* ``++` *)
-  | BigAnd          (* `(/\)` *)
-  | BigOr           (* `(\/)` *)
-  | BigAdd          (* `(+)` *)
-  | BigMul          (* `( * )` *)
-  | BigCat          (* `(++)` *)
-  | Invalid         (* `{#}` *)
-  | LAngle
-  | RAngle          (* ``<` `>` *)
-  | LParen
-  | RParen          (* ``(` `)` *)
-  | LBrack
-  | RBrack          (* ``[` `]` *)
-  | LBrace
-  | RBrace          (* ``{` `}` *)
+  | Atom of string    (* atomid *)
+  | Sub               (* `<:` *)
+  | Sup               (* `:>` *)
+  | Turnstile         (* `|-` *)
+  | Tilesturn         (* `-|` *)
+  | Underscore        (* ``_` *)
+  | Arrow             (* `->` *)
+  | ArrowSub          (* `->_` *)
+  | DoubleArrow       (* ``=>` *)
+  | DoubleArrowSub    (* ``=>_` *)
+  | SqArrow           (* `~>` *)
+  | SqArrowStar       (* `~>*` *)
+  | Dot               (* ``.` *)
+  | Dot2              (* ``..` *)
+  | Dot3              (* ``...` *)
+  | Comma             (* ``,` *)
+  | Semicolon         (* ``;` *)
+  | Colon             (* `:` *)
+  | Hash              (* ``#` *)
+  | Dollar            (* ``$` *)
+  | At                (* ``@` *)
+  | Quest             (* ``?` *)
+  | Bang              (* ``!` *)
+  | BangEq            (* ``!=` *)
+  | Tilde             (* ``~` *)
+  | Tilde2            (* `~~` *)
+  | LAngle            (* ``<` *)
+  | LAngle2           (* `<<` *)
+  | LAngleEq          (* ``<=` *)
+  | LAngle2Eq         (* `<<=` *)
+  | RAngle            (* ``>` *)
+  | RAngle2           (* `>>` *)
+  | RAngleEq          (* ``>=` *)
+  | RAngle2Eq         (* `>>=` *)
+  | LParen            (* ``(` *)
+  | RParen            (* ``)` *)
+  | LBrack            (* ``[` *)
+  | RBrack            (* ``]` *)
+  | LBrace            (* ``{` *)
+  | LBraceHashRBrace  (* `{#}` *)
+  | RBrace            (* ``}` *)
+  | Plus              (* ``+` *)
+  | Plus2             (* ``++` *)
+  | PlusEq            (* ``+=` *)
+  | Minus             (* ``-` *)
+  | MinusEq           (* ``-=` *)
+  | Star              (* ``*` *)
+  | StarEq            (* ``*=` *)
+  | Slash             (* ``/` *)
+  | SlashEq           (* ``/=` *)
+  | Backslash         (* ``\` *)
+  | Percent           (* ``%` *)
+  | PercentEq         (* ``%=` *)
+  | Eq                (* ``=` *)
+  | Eq2               (* `==` *)
+  | Amp               (* ``&` *)
+  | Amp2              (* ``&&` *)
+  | Amp3              (* ``&&&` *)
+  | AmpEq             (* ``&=` *)
+  | Up                (* ``^` *)
+  | UpEq              (* ``^=` *)
+  | Bar               (* ``|` *)
+  | Bar2              (* ``||` *)
+  | BarEq             (* ``|=` *)
+  | SPlus             (* ``|+|` *)
+  | SPlusEq           (* ``|+|=` *)
+  | SMinus            (* ``|-|` *)
+  | SMinusEq          (* ``|-|=` *)
 [@@@ocamlformat "enable"]
 
 let compare atom_a atom_b = compare atom_a atom_b
 let eq atom_a atom_b = compare atom_a atom_b = 0
 
 let string_of_atom = function
-  | Atom "_" -> "_"
   | Atom id -> id
-  | Infinity -> "infinity"
+  | Sub -> "<:"
+  | Sup -> ":>"
+  | Turnstile -> "|-"
+  | Tilesturn -> "-|"
+  | Underscore -> "_"
+  | Arrow -> "->"
+  | ArrowSub -> "->_"
+  | DoubleArrow -> "=>"
+  | DoubleArrowSub -> "=>_"
+  | SqArrow -> "~>"
+  | SqArrowStar -> "~>*"
   | Dot -> "."
   | Dot2 -> ".."
   | Dot3 -> "..."
-  | Underscore -> "_"
+  | Comma -> ","
   | Semicolon -> ";"
-  | Backslash -> "\\"
-  | Mem -> "<-"
-  | Arrow -> "->"
-  | Arrow2 -> "=>"
-  | ArrowSub -> "->_"
-  | Arrow2Sub -> "=>_"
   | Colon -> ":"
-  | Sub -> "<:"
-  | Sup -> ":>"
-  | Assign -> ":="
-  | Equal -> "="
-  | LessEqual -> "<="
-  | GreaterEqual -> ">="
-  | Equiv -> "=="
-  | NotEquiv -> "!="
-  | Approx -> "~~"
-  | SqArrow -> "~>"
-  | SqArrowStar -> "~>*"
-  | Prec -> "<<"
-  | PrecEq -> "<<="
-  | Succ -> ">>"
-  | SuccEq -> ">>="
-  | Tilesturn -> "-|"
-  | Turnstile -> "|-"
-  | Not -> "~"
+  | Hash -> "#"
+  | Dollar -> "$"
+  | At -> "@"
   | Quest -> "?"
   | Bang -> "!"
+  | BangEq -> "!="
+  | Tilde -> "~"
+  | Tilde2 -> "~~"
+  | LAngle -> "<"
+  | LAngle2 -> "<<"
+  | LAngleEq -> "<="
+  | LAngle2Eq -> "<<="
+  | RAngle -> ">"
+  | RAngle2 -> ">>"
+  | RAngleEq -> ">="
+  | RAngle2Eq -> ">>="
+  | LParen -> "("
+  | RParen -> ")"
+  | LBrack -> "["
+  | RBrack -> "]"
+  | LBrace -> "{"
+  | LBraceHashRBrace -> "{#}"
+  | RBrace -> "}"
   | Plus -> "+"
+  | Plus2 -> "++"
   | PlusEq -> "+="
-  | SPlus -> "|+|"
-  | SPlusEq -> "|+|="
   | Minus -> "-"
   | MinusEq -> "-="
-  | SMinus -> "|-|"
-  | SMinusEq -> "|-|="
   | Star -> "*"
   | StarEq -> "*="
   | Slash -> "/"
   | SlashEq -> "/="
-  | Mod -> "%"
-  | ModEq -> "%="
-  | Hash -> "#"
-  | Up -> "^"
-  | UpEq -> "^="
+  | Backslash -> "\\"
+  | Percent -> "%"
+  | PercentEq -> "%="
+  | Eq -> "="
+  | Eq2 -> "=="
   | Amp -> "&"
-  | AmpEq -> "&="
   | Amp2 -> "&&"
   | Amp3 -> "&&&"
+  | AmpEq -> "&="
+  | Up -> "^"
+  | UpEq -> "^="
   | Bar -> "|"
-  | BarEq -> "|="
   | Bar2 -> "||"
-  | At -> "@"
-  | Dollar -> "$"
-  | Comma -> ","
-  | Cat -> "++"
-  | BigAnd -> "(/\\)"
-  | BigOr -> "(\\/)"
-  | BigAdd -> "(+)"
-  | BigMul -> "(*)"
-  | BigCat -> "(++)"
-  | Invalid -> "{#}"
-  | LAngle -> "<"
-  | RAngle -> ">"
-  | LParen -> "("
-  | LBrack -> "["
-  | LBrace -> "{"
-  | RParen -> ")"
-  | RBrack -> "]"
-  | RBrace -> "}"
+  | BarEq -> "|="
+  | SPlus -> "|+|"
+  | SPlusEq -> "|+|="
+  | SMinus -> "|-|"
+  | SMinusEq -> "|-|="

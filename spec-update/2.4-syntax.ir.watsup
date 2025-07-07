@@ -62,18 +62,18 @@ syntax nonBraceExpressionInnerIR =
   | nonBraceExpressionIR `|-| expressionIR
   | nonBraceExpressionIR `<< expressionIR
   | nonBraceExpressionIR `>> expressionIR
-  | nonBraceExpressionIR `<= expressionIR
-  | nonBraceExpressionIR `>= expressionIR
-  | nonBraceExpressionIR ``< expressionIR
-  | nonBraceExpressionIR ``> expressionIR
-  | nonBraceExpressionIR `!= expressionIR
-  | nonBraceExpressionIR `== expressionIR
-  | nonBraceExpressionIR `& expressionIR
-  | nonBraceExpressionIR `^ expressionIR
-  | nonBraceExpressionIR `| expressionIR
-  | nonBraceExpressionIR `++ expressionIR
-  | nonBraceExpressionIR `&& expressionIR
-  | nonBraceExpressionIR `|| expressionIR
+;;  | nonBraceExpressionIR `<= expressionIR
+;;  | nonBraceExpressionIR `>= expressionIR
+;;  | nonBraceExpressionIR ``< expressionIR
+;;  | nonBraceExpressionIR ``> expressionIR
+;;  | nonBraceExpressionIR `!= expressionIR
+;;  | nonBraceExpressionIR `== expressionIR
+;;  | nonBraceExpressionIR `& expressionIR
+;;  | nonBraceExpressionIR `^ expressionIR
+;;  | nonBraceExpressionIR `| expressionIR
+;;  | nonBraceExpressionIR `++ expressionIR
+;;  | nonBraceExpressionIR `&& expressionIR
+;;  | nonBraceExpressionIR `|| expressionIR
   | nonBraceExpressionIR `? expressionIR `: expressionIR
   | nonBraceExpressionIR `< typeArgumentListIR > `( argumentListIR )
   | nonBraceExpressionIR `( argumentListIR )
@@ -117,18 +117,18 @@ syntax expressionInnerIR =
   | expressionIR `|-| expressionIR
   | expressionIR `<< expressionIR
   | expressionIR `>> expressionIR
-  | expressionIR `<= expressionIR
-  | expressionIR `>= expressionIR
-  | expressionIR ``< expressionIR
-  | expressionIR ``> expressionIR
-  | expressionIR `!= expressionIR
-  | expressionIR `== expressionIR
-  | expressionIR `& expressionIR
-  | expressionIR `^ expressionIR
-  | expressionIR `| expressionIR
-  | expressionIR `++ expressionIR
-  | expressionIR `&& expressionIR
-  | expressionIR `|| expressionIR
+;;  | expressionIR `<= expressionIR
+;;  | expressionIR `>= expressionIR
+;;  | expressionIR ``< expressionIR
+;;  | expressionIR ``> expressionIR
+;;  | expressionIR `!= expressionIR
+;;  | expressionIR `== expressionIR
+;;  | expressionIR `& expressionIR
+;;  | expressionIR `^ expressionIR
+;;  | expressionIR `| expressionIR
+;;  | expressionIR `++ expressionIR
+;;  | expressionIR `&& expressionIR
+;;  | expressionIR `|| expressionIR
   | expressionIR `? expressionIR `: expressionIR
   | expressionIR `< typeArgumentListIR > `( argumentListIR )
   | expressionIR `( argumentListIR )
@@ -248,11 +248,11 @@ syntax assignmentOrMethodCallStatementWithoutSemicolonIR =
   | lvalueIR `*= expressionIR
   | lvalueIR `/= expressionIR
   | lvalueIR `%= expressionIR
-  | lvalueIR `<<= expressionIR
-  | lvalueIR `>>= expressionIR
-  | lvalueIR `&= expressionIR
-  | lvalueIR `^= expressionIR
-  | lvalueIR `|= expressionIR
+;;  | lvalueIR `<<= expressionIR
+;;  | lvalueIR `>>= expressionIR
+;;  | lvalueIR `&= expressionIR
+;;  | lvalueIR `^= expressionIR
+;;  | lvalueIR `|= expressionIR
 
 syntax assignmentOrMethodCallStatementIR =
   assignmentOrMethodCallStatementWithoutSemicolonIR `; PHTM_11

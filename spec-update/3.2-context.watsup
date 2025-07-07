@@ -79,3 +79,7 @@ dec $exit(context) : context
 
 def $exit(C) = C[ .LOCAL.FRAMES = frame_t* ]
   -- if frame_h :: frame_t* = C.LOCAL.FRAMES
+
+;; Finder for type definitions
+
+dec $find_typedef(cursor, context, typeName) : typeDefIR?

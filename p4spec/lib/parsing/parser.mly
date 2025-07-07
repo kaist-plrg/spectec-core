@@ -220,7 +220,7 @@ expressionOptTrailingList:
 (******** Misc ********)
 trailingComma:
 | COMMA
-        { [ Term ","; Term "PHTM_0" ] |> wrap_case_v |> with_typ (wrap_var_t "trailingComma") }
+        { [ Term "," ] |> wrap_case_v |> with_typ (wrap_var_t "trailingComma") }
 ;
 
 optTrailingComma:
@@ -437,7 +437,7 @@ headerStackType:
       |> with_typ (wrap_var_t "headerStackType") }
 | specializedType = specializedType L_BRACKET expression = expression info2 = R_BRACKET
     { info2 |> ignore;
-      [ NT specializedType; Term "["; NT expression; Term "]"; Term "PHTM_16" ]
+      [ NT specializedType; Term "["; NT expression; Term "]" ]
       |> wrap_case_v 
       |> with_typ (wrap_var_t "headerStackType") }
 ;
@@ -590,7 +590,7 @@ nonBraceExpression:
       [ Term "ERROR"; Term "."; NT member ]
       |> wrap_case_v |> with_typ (wrap_var_t "nonBraceExpression") }
 | expr = nonBraceExpression DOT member = member
-    { [ NT expr; Term "."; NT member; Term "PHTM_5" ]
+    { [ NT expr; Term "."; NT member ]
       |> wrap_case_v |> with_typ (wrap_var_t "nonBraceExpression") }
 (* TODO: binop *)
 | arg1 = nonBraceExpression op_str = binop arg2 = expression
@@ -610,7 +610,7 @@ nonBraceExpression:
       |> wrap_case_v |> with_typ (wrap_var_t "nonBraceExpression") }
 | typ = namedType L_PAREN args = argumentList info2 = R_PAREN
     { info2 |> ignore;
-      [ NT typ; Term "("; NT args; Term ")"; Term "PHTM_6" ]
+      [ NT typ; Term "("; NT args; Term ")" ]
       |> wrap_case_v |> with_typ (wrap_var_t "nonBraceExpression") }
 | info1 = L_PAREN typ = typeRef R_PAREN expr = expression %prec PREFIX
     { info1 |> ignore;
@@ -685,7 +685,7 @@ expression:
     { let tags = Source.merge info1 info2 in
     tags |> ignore;
       let kvs = List.rev kvs |> wrap_list_v "kvPair" in
-    [ Term "{"; NT kvs; NT comma; Term "}"; Term "PHTM_7" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
+    [ Term "{"; NT kvs; NT comma; Term "}" ] |> wrap_case_v |> with_typ (wrap_var_t "expression") }
 | info1 = L_BRACE kvs = kvList COMMA DOTS comma = optTrailingComma info2 = R_BRACE
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
@@ -774,7 +774,7 @@ tupleKeysetExpression:
       { [ Term "("; NT expr; Term ","; NT exprs; Term ")" ]
       |> wrap_case_v |> with_typ (wrap_var_t "tupleKeysetExpression") }
 | L_PAREN expr = reducedSimpleKeysetExpression R_PAREN
-      { [ Term "("; NT expr; Term ")"; Term "PHTM_19" ]
+      { [ Term "("; NT expr; Term ")" ]
           |> wrap_case_v |> with_typ (wrap_var_t "tupleKeysetExpression") }
 ;
 
@@ -1399,13 +1399,13 @@ valueSetDeclaration:
     L_PAREN size = expression R_PAREN name = name info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
-      [ NT anno; Term "VALUESET"; Term "<"; NT tuple; Term ">"; Term "("; NT size; Term ")"; NT name; Term ";"; Term "PHTM_17"]
+      [ NT anno; Term "VALUESET"; Term "<"; NT tuple; Term ">"; Term "("; NT size; Term ")"; NT name; Term ";" ]
       |> wrap_case_v |> with_typ (wrap_var_t "valueSetDeclaration") }
 | anno = optAnnotations info1 = VALUESET l_angle typeName = typeName r_angle
     L_PAREN size = expression R_PAREN name = name info2 = SEMICOLON
     { let tags = Source.merge info1 info2 in
       tags |> ignore;
-      [ NT anno; Term "VALUESET"; Term "<"; NT typeName; Term ">"; Term "("; NT size; Term ")"; NT name; Term ";"; Term "PHTM_18"]
+      [ NT anno; Term "VALUESET"; Term "<"; NT typeName; Term ">"; Term "("; NT size; Term ")"; NT name; Term ";" ]
       |> wrap_case_v |> with_typ (wrap_var_t "valueSetDeclaration") }
 ;
 
@@ -1630,7 +1630,7 @@ typedefDeclaration:
       [ NT anno; Term "TYPEDEF"; NT typeRef; NT name ] |> wrap_case_v |> with_typ (wrap_var_t "typedefDeclaration") }
 | anno = optAnnotations info1 = TYPEDEF derived = derivedTypeDeclaration name = name
     { info1 |> ignore;
-      [ NT anno; Term "TYPEDEF"; NT derived; NT name; Term "PHTM_12" ] |> wrap_case_v |> with_typ (wrap_var_t "typedefDeclaration") }
+      [ NT anno; Term "TYPEDEF"; NT derived; NT name ] |> wrap_case_v |> with_typ (wrap_var_t "typedefDeclaration") }
 | anno = optAnnotations info1 = TYPE typeRef = typeRef name = name
     { info1 |> ignore;
       [ NT anno; Term "TYPE"; NT typeRef; NT name ] |> wrap_case_v |> with_typ (wrap_var_t "typedefDeclaration") }
@@ -1644,13 +1644,13 @@ typeDeclaration:
       [ NT typedef; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
 | parserTypeDeclaration = parserTypeDeclaration pop_scope info2 = SEMICOLON
     { info2 |> ignore;
-      [ NT parserTypeDeclaration; Term ";"; Term "PHTM_13" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
+      [ NT parserTypeDeclaration; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
 | controlTypeDeclaration = controlTypeDeclaration pop_scope info2 = SEMICOLON
     { info2 |> ignore;
-      [ NT controlTypeDeclaration; Term ";"; Term "PHTM_14" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
+      [ NT controlTypeDeclaration; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
 | packageTypeDeclaration = packageTypeDeclaration pop_scope info2 = SEMICOLON
     { info2 |> ignore;
-      [ NT packageTypeDeclaration; Term ";"; Term "PHTM_15" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
+      [ NT packageTypeDeclaration; Term ";" ] |> wrap_case_v |> with_typ (wrap_var_t "typeDeclaration") }
 ;
 
 declaration:
@@ -1852,7 +1852,7 @@ annotationToken:
 | COLON
     { [ Term ":" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
 | COMMA
-    { [ Term ","; Term "PHTM_21" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
+    { [ Term "," ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
 | QUESTION
     { [ Term "?" ] |> wrap_case_v |> with_typ (wrap_var_t "annotationToken") }
 | DOT
@@ -1883,7 +1883,7 @@ structuredAnnotationBody:
       [ NT exprs; NT comma ] |> wrap_case_v |> with_typ (wrap_var_t "structuredAnnotationBody") }
 | kvs = kvList comma = optTrailingComma
     { let kvs = List.rev kvs |> wrap_list_v "kvPair" in
-      [ NT kvs; NT comma; Term "PHTM_20" ] |> wrap_case_v |> with_typ (wrap_var_t "structuredAnnotationBody") }
+      [ NT kvs; NT comma ] |> wrap_case_v |> with_typ (wrap_var_t "structuredAnnotationBody") }
 ;
 
 annotation:

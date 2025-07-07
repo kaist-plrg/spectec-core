@@ -1,0 +1,3 @@
+;; Underlying raw integer of a numeric value
+
+dec $number(val) : int

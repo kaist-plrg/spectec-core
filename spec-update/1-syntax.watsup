@@ -3,7 +3,7 @@
 ;;
 
 ;; (TODO) comma parsing
-syntax trailingComma = `, PHTM_0
+syntax trailingComma = `,
 
 syntax optTrailingComma = trailingComma?
 
@@ -117,8 +117,7 @@ syntax namedType =
 
 syntax headerStackType =
   | typeName `[ expression ]
-  ;; (TODO) disambiguate with (typeName `[ expression ])
-  | specializedType `[ expression ] PHTM_16
+  | specializedType `[ expression ]
 
 ;;
 ;;;; List types
@@ -203,8 +202,7 @@ syntax nonBraceExpression =
   | `+ expression
   | typeName `. member
   | ERROR `. member
-  ;; (TODO) disambiguate with (typeName `. member)
-  | nonBraceExpression `. member PHTM_5
+  | nonBraceExpression `. member
   | nonBraceExpression `* expression
   | nonBraceExpression `/ expression
   | nonBraceExpression `% expression
@@ -229,8 +227,7 @@ syntax nonBraceExpression =
   | nonBraceExpression `? expression `: expression
   | nonBraceExpression `< realTypeArgumentList > `( argumentList )
   | nonBraceExpression `( argumentList )
-  ;; (TODO) disambiguate with (nonBraceExpression `( argumentList ))
-  | namedType `( argumentList ) PHTM_6
+  | namedType `( argumentList )
   | `( typeRef ) expression
 
 syntax expression =
@@ -245,8 +242,7 @@ syntax expression =
   | expression `[ expression `: expression ]
   | `{ expressionList optTrailingComma }
   | `{#}
-  ;; (TODO) disambiguate with (`{ expressionList optTrailingComma })
-  | `{ kvList optTrailingComma } PHTM_7
+  | `{ kvList optTrailingComma }
   | `{ kvList `, `... optTrailingComma }
   | `( expression )
   | `! expression
@@ -255,8 +251,7 @@ syntax expression =
   | `+ expression
   | typeName `. member
   | ERROR `. member
-  ;; (TODO) disambiguate with (typeName `. member)
-  | expression `. member PHTM_8
+  | expression `. member
   | expression `* expression
   | expression `/ expression
   | expression `% expression
@@ -281,8 +276,7 @@ syntax expression =
   | expression `? expression `: expression
   | expression `< realTypeArgumentList > `( argumentList )
   | expression `( argumentList )
-  ;; (TODO) disambiguate with (expression `( argumentList ))
-  | namedType `( argumentList ) PHTM_9
+  | namedType `( argumentList )
   | `( typeRef ) expression
 
 ;; (TODO) Add comma separator as hint?
@@ -311,7 +305,7 @@ syntax simpleExpressionList = simpleKeysetExpression*
 syntax tupleKeysetExpression =
   | `( simpleKeysetExpression `, simpleExpressionList )
   ;; (TODO) disambiguate with `( expression )
-  | `( reducedSimpleKeysetExpression ) PHTM_19
+  | `( reducedSimpleKeysetExpression )
 
 syntax keysetExpression =
   | tupleKeysetExpression
@@ -422,7 +416,7 @@ syntax assignmentOrMethodCallStatementWithoutSemicolon =
   | lvalue `|= expression
 
 syntax assignmentOrMethodCallStatement =
-  assignmentOrMethodCallStatementWithoutSemicolon `; PHTM_11
+  assignmentOrMethodCallStatementWithoutSemicolon `;
 
 ;;
 ;;;; Direct application statements
@@ -694,10 +688,8 @@ syntax controlDeclaration =
 
 syntax valueSetDeclaration =
   | optAnnotations VALUESET `< baseType > `( expression ) name `; 
-  ;; (TODO) disambiguate with (optAnnotations VALUESET `< baseType > `( expression ) name `;)
-  | optAnnotations VALUESET `< tupleType > `( expression ) name `; PHTM_17
-  ;; (TODO) disambiguate with (optAnnotations VALUESET `< baseType > `( expression ) name `;)
-  | optAnnotations VALUESET `< typeName > `( expression ) name `; PHTM_18
+  | optAnnotations VALUESET `< tupleType > `( expression ) name `;
+  | optAnnotations VALUESET `< typeName > `( expression ) name `;
 
 ;;
 ;;;; Select expressions
@@ -814,8 +806,7 @@ syntax derivedTypeDeclaration =
 
 syntax typedefDeclaration =
   | optAnnotations TYPEDEF typeRef name
-  ;; (TODO) disambiguate with (optAnnotations TYPEDEF typeRef name)
-  | optAnnotations TYPEDEF derivedTypeDeclaration name PHTM_12
+  | optAnnotations TYPEDEF derivedTypeDeclaration name
   | optAnnotations TYPE typeRef name
 
 ;;
@@ -825,12 +816,9 @@ syntax typedefDeclaration =
 syntax typeDeclaration =
   | derivedTypeDeclaration
   | typedefDeclaration `; 
-  ;; (TODO) disambiguate with (typedefDeclaration `;)
-  | parserTypeDeclaration `; PHTM_13
-  ;; (TODO) disambiguate with (typedefDeclaration `;)
-  | controlTypeDeclaration `; PHTM_14
-  ;; (TODO) disambiguate with (typedefDeclaration `;)
-  | packageTypeDeclaration `; PHTM_15
+  | parserTypeDeclaration `;
+  | controlTypeDeclaration `;
+  | packageTypeDeclaration `;
 
 ;;
 ;;;; Declaration
@@ -875,9 +863,7 @@ syntax annotationToken =
   | `+ | `|+| | `- | `|-| | `*
   | `/ | `% | `| | `& | `^
   | `~ | ``[ | ``] | ``{ | ``}
-  | ``< | ``> | `! | `:
-  ;; (TODO) comma parsing
-  | `, PHTM_21
+  | ``< | ``> | `! | `: | `,
   | `? | `. | `= | `; | `@
 
 syntax simpleAnnotation =
@@ -889,8 +875,7 @@ syntax simpleAnnotationBody = simpleAnnotation*
 
 syntax structuredAnnotationBody =
   | expressionList optTrailingComma
-  ;; (TODO) disambiguate with (expressionList optTrailingComma)
-  | kvList optTrailingComma PHTM_20
+  | kvList optTrailingComma
 
 syntax annotation =
   | `@ name

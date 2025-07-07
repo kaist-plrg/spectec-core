@@ -120,20 +120,37 @@ let state_description state_num =
   | 13 -> "- @R: typeIdentifier -> NAME TYPENAME"
   | 14 -> "{_id}"
   | 37 -> "- @R: typeArg -> typeRef"
-  | 38 -> "- @T: typeName ... \n      `[ -> @39\n      `<(args) -> @61\n      `< -> @115\n- @R: typeRef <<- typeName ... "
+  | 38 ->
+      "- @T: typeName ... \n\
+      \      `[ -> @39\n\
+      \      `<(args) -> @61\n\
+      \      `< -> @115\n\
+       - @R: typeRef <<- typeName ... "
   | 62 -> "- @R: typeIdentifier ... <<- prefixedType"
-  | 63 -> "- @T: typeName `<(args) targList R_ANGLE_SHIFT -> @64\n- @T: typeName `< targList R_ANGLE -> @65"
+  | 63 ->
+      "- @T: typeName `<(args) targList R_ANGLE_SHIFT -> @64\n\
+       - @T: typeName `< targList R_ANGLE -> @65"
   | 68 -> "- @T: specializedType `[ -> @69"
   | 69 -> "- @T: specializedType `[ ... -> ... "
   | 71 -> "- @R: prefixedType ... <- typeName"
-  | 116 -> "- @T: typeName `< targList ... \n      `>(shift) -> @117 / `> ->@118"
+  | 116 ->
+      "- @T: typeName `< targList ... \n      `>(shift) -> @117 / `> ->@118"
   | 118 -> "- @R: typeName `< targList `> ... <<- specializedType"
-  | 119 -> "- @T: separated_list_aux (COMMA,typeArg) COMMA -> (@120) separated_list_aux(COMMA,typeArg)\n- @R: separated_list(COMMA,typeArg) -> separated_list_aux(COMMA,typeArg)"
-  | 120 -> "- @R: separated_list_aux(COMMA,typeArg) -> separated_list_aux(COMMA,typeArg) COMMA ..."
-  | 121 -> "- @R: separated_list_aux(COMMA,typeArg) -> separated_list_aux(COMMA,typeArg) COMMA typeArg ..."
+  | 119 ->
+      "- @T: separated_list_aux (COMMA,typeArg) COMMA -> (@120) \
+       separated_list_aux(COMMA,typeArg)\n\
+       - @R: separated_list(COMMA,typeArg) -> separated_list_aux(COMMA,typeArg)"
+  | 120 ->
+      "- @R: separated_list_aux(COMMA,typeArg) -> \
+       separated_list_aux(COMMA,typeArg) COMMA ..."
+  | 121 ->
+      "- @R: separated_list_aux(COMMA,typeArg) -> \
+       separated_list_aux(COMMA,typeArg) COMMA typeArg ..."
   | 536 -> "list(methodPrototype)"
   | 545 -> "- @R: methodPrototype -> typeIdentifier ( parameterList )"
-  | 546 -> "- @R: list_aux(methodPrototype) -> list_aux(methodPrototype) methodPrototype"
+  | 546 ->
+      "- @R: list_aux(methodPrototype) -> list_aux(methodPrototype) \
+       methodPrototype"
   | _ -> "unknown"
 
 (* Recursively collect stack states using top and pop *)
@@ -152,7 +169,11 @@ let print_state env =
   let debug_level = get_debug_level () in
 
   if Debug_config.debug_enabled debug_level Basic then
-    Printf.printf "@%d ---------------------------------\n%s\n-------------------------------------\n" current_state
+    Printf.printf
+      "@%d ---------------------------------\n\
+       %s\n\
+       -------------------------------------\n"
+      current_state
       (state_description current_state);
   match states with
   | [] ->
@@ -177,13 +198,14 @@ let debug_parse lexer lexbuf =
           Printf.printf "--- About to reduce\n"
     | Engine.HandlingError env ->
         print_state env;
-        if Debug_config.debug_enabled debug_level Basic then Printf.printf "Parser: Handling error\n"
+        if Debug_config.debug_enabled debug_level Basic then
+          Printf.printf "Parser: Handling error\n"
     | _ -> ());
     match checkpoint with
     | Engine.InputNeeded _env ->
         let token, _, _ = supplier () in
         if Debug_config.debug_enabled debug_level Verbose then
-        Printf.printf "\n|-> Consuming token: %s\n\n" (token_name token);
+          Printf.printf "\n|-> Consuming token: %s\n\n" (token_name token);
         loop
           (Engine.offer checkpoint (token, Lexing.dummy_pos, Lexing.dummy_pos))
     | Engine.Shifting _ | Engine.AboutToReduce _ ->
