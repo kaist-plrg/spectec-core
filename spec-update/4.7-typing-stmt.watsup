@@ -1,0 +1,101 @@
+;; syntax statementOrDeclaration =
+;;   | variableDeclaration
+;;   | constantDeclaration
+;;   | statement
+
+rule Stmt_ok/constantdeclaration:
+  p C f |- constantDeclaration : C' f constantDeclarationIR
+  -- Decl_ok: p C |- constantDeclaration : C' constantDeclarationIR
+
+;;; syntax statement =
+;;;   | assignmentOrMethodCallStatement
+;;;   | directApplication
+;;;   | conditionalStatement
+;;;   | emptyStatement
+;;;   | blockStatement
+;;;   | returnStatement
+;;;   | breakStatement
+;;;   | continueStatement
+;;;   | exitStatement
+;;;   | switchStatement
+;;;   | forStatement
+
+;;;; syntax assignmentOrMethodCallStatement =
+;;;;   assignmentOrMethodCallStatementWithoutSemicolon `;
+
+;;;;; syntax assignmentOrMethodCallStatementWithoutSemicolon =
+;;;;;   | lvalue `( argumentList )
+;;;;;   | lvalue `< typeArgumentList > `( argumentList )
+;;;;;   | lvalue `= expression
+;;;;;   | lvalue `+= expression
+;;;;;   | lvalue `|+|= expression
+;;;;;   | lvalue `-= expression
+;;;;;   | lvalue `|-|= expression
+;;;;;   | lvalue `*= expression
+;;;;;   | lvalue `/= expression
+;;;;;   | lvalue `%= expression
+;;;;;   | lvalue `<<= expression
+;;;;;   | lvalue `>>= expression
+;;;;;   | lvalue `&= expression
+;;;;;   | lvalue `^= expression
+;;;;;   | lvalue `|= expression
+
+;;;; syntax directApplication = namedType `. APPLY `( argumentList ) `;
+
+;;;; syntax conditionalStatement =
+;;;;   | IF `( expression ) statement
+;;;;   | IF `( expression ) statement ELSE statement
+
+rule Stmt_ok/conditionalstatement-noelse:
+  p C f |- IF `( expression_c ) statement_t
+        : C f (IF `( expressionIR_c ) statementIR_t)
+  -- Expr_ok: p C |- expression_c : expressionIR_c
+  -- if _ `( BOOL `; _) = expressionIR_c
+  -- Stmt_ok: p C f |- statement_t : C_t f_t statementIR_t
+
+rule Stmt_ok/conditionalstatement-else:
+  p C f |- IF `( expression_c ) statement_t ELSE statement_f
+        : C f_join (IF `( expressionIR_c ) statementIR_t)
+  -- Expr_ok: p C |- expression_c : expressionIR_c
+  -- if _ `( BOOL `; _) = expressionIR_c
+  -- Stmt_ok: p C f |- statement_t : C_t f_t statementIR_t
+  -- Stmt_ok: p C f |- statement_f : C_f f_f statementIR_f
+  -- if f_join = $join_flow(f_t, f_f)
+
+;;;; syntax emptyStatement = `;
+
+rule Stmt_ok/emptystatement:
+  p C f |- `; : C f `;
+
+;;;; syntax blockStatement = optAnnotations `{ statOrDeclList }
+
+;;;; syntax returnStatement =
+;;;;   | RETURN `;
+;;;;   | RETURN expression `;
+
+rule Stmt_ok/returnstatement-empty:
+  LOCAL C f |- RETURN `; : C RET (RETURN `;)
+  -- if VOID = $return(C.LOCAL)
+
+rule Stmt_ok/returnstatement-nonempty:
+  LOCAL C f |- RETURN expression `;
+            : C RET (RETURN expressionIR_cast `;)
+  -- Expr_ok: LOCAL C |- expression : expressionIR
+  -- if typeIR_ret = $return(C.LOCAL)
+  -- if expressionIR_cast = $coerce_unary(expressionIR, typeIR_ret)
+
+;;;; syntax breakStatement = BREAK `;
+
+;;;; syntax continueStatement = CONTINUE `;
+
+;;;; syntax exitStatement = EXIT `;
+
+rule Stmt_ok/exitstatement:
+  p C f |- EXIT `; : C f (EXIT `;)
+
+;;;; syntax switchStatement = SWITCH `( expression ) `{ switchCases }
+
+;;;; syntax forStatement =
+;;;;   | optAnnotations FOR `( forInitStatements `; expression `; forUpdateStatements ) statement
+;;;;   | optAnnotations FOR `( typeRef name IN forCollectionExpr ) statement
+;;;;   | optAnnotations FOR `( annotations typeRef name IN forCollectionExpr ) statement

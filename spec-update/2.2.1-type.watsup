@@ -37,14 +37,14 @@ syntax numTypeIR =
   | INT `< nat >
   | VARBIT `< nat >
 
-syntax baseTypeIR = | primTypeIR | numTypeIR
+syntax baseTypeIR = primTypeIR | numTypeIR
 
 ;;
 ;;;; Named types
 ;;
 
 syntax namedTypeIR =
-  | typeName
+  | name
   | polyTypeDefIR `< typeIR* >
 
 ;;
@@ -67,9 +67,9 @@ syntax dataTypeIR =
   | LIST `< typeIR >
   | TUPLE `< typeIR* >
   | typeIR `[ nat ]
-  | HEADER name `< name* > `{ (typeIR, name)* }
-  | HEADER_UNION name `< name* > `{ (typeIR, name)* }
-  | STRUCT name `< name* > `{ (typeIR, name)* }
+  | HEADER name `{ (typeIR, name)* }
+  | HEADER_UNION name `{ (typeIR, name)* }
+  | STRUCT name `{ (typeIR, name)* }
   | ENUM name `{ name* }
   | ENUM typeIR name `{ (name, val)* }
 
@@ -79,8 +79,8 @@ syntax dataTypeIR =
 
 syntax objTypeIR =
   | EXTERN name map<funcName, funcTypeDefIR>
-  | PARSER `( paramTypeIR )
-  | CONTROL `( paramTypeIR )
+  | PARSER `( paramTypeIR* )
+  | CONTROL `( paramTypeIR* )
   | PACKAGE `< typeIR* >
   | TABLE name `{ typeIR }
 
@@ -96,17 +96,17 @@ syntax defTypeIR =
 syntax synthTypeIR =
   | DEFAULT
   | SEQ `< typeIR* >
-  | SEQ_DEFAULT `< typeIR* >
+  | SEQ `< typeIR* `, `... >
   | RECORD `{ (typeIR, name)* }
-  | RECORD_DEFAULT `{ (typeIR, name)* }
+  | RECORD `{ (typeIR, name)* `, `... }
   | INVALID
   | SET `< typeIR* >
-  | STATE
+  | PARSERSTATE
   | ENUM_TABLE name `{ name* }
   | STRUCT_TABLE name
   | `_
 
-syntax typeIR = | baseTypeIR | namedTypeIR | defTypeIR | synthTypeIR
+syntax typeIR = baseTypeIR | namedTypeIR | defTypeIR | synthTypeIR
 
 ;;
 ;; Type definitions
@@ -114,23 +114,23 @@ syntax typeIR = | baseTypeIR | namedTypeIR | defTypeIR | synthTypeIR
 
 syntax monoTypeDefIR = typeIR
 
-syntax polyTypeDefIR = `< name* `, name* > `=> typeIR
+syntax polyTypeDefIR = typeIR `< name* `, name* >
 
-syntax typeDefIR = | monoTypeDefIR | polyTypeDefIR
+syntax typeDefIR = monoTypeDefIR | polyTypeDefIR
 
 ;;
 ;; Function types
 ;;
 
 syntax funcTypeIR =
-  | ACTION `( paramTypeIR )
-  | EXTERN_FUNC `( paramTypeIR ) -> typeIR
-  | FUNC `( paramTypeIR ) -> typeIR
-  | BUILTIN `( paramTypeIR ) -> typeIR
-  | EXTERN_METHOD `( paramTypeIR ) -> typeIR
-  | EXTERN_ABSTRACT_METHOD `( paramTypeIR ) -> typeIR
-  | PARSER_APPLY `( paramTypeIR )
-  | CONTROL_APPLY `( paramTypeIR )
+  | ACTION `( paramTypeIR* )
+  | EXTERN_FUNC `( paramTypeIR* ) -> typeIR
+  | FUNC `( paramTypeIR* ) -> typeIR
+  | BUILTIN `( paramTypeIR* ) -> typeIR
+  | EXTERN_METHOD `( paramTypeIR* ) -> typeIR
+  | EXTERN_ABSTRACT_METHOD `( paramTypeIR* ) -> typeIR
+  | PARSER_APPLY `( paramTypeIR* )
+  | CONTROL_APPLY `( paramTypeIR* )
   | TABLE_APPLY -> typeIR
 
 ;;
@@ -139,18 +139,18 @@ syntax funcTypeIR =
 
 syntax monoFuncTypeDefIR = funcTypeIR
 
-syntax polyFuncTypeDefIR = `< name* `, name* > `=> funcTypeIR
+syntax polyFuncTypeDefIR = funcTypeIR `< name* `, name* >
 
-syntax funcTypeDefIR = | monoFuncTypeDefIR | polyFuncTypeDefIR
+syntax funcTypeDefIR = monoFuncTypeDefIR | polyFuncTypeDefIR
 
 ;;
 ;; Constructor types
 ;;
 
-syntax consTypeIR = `( paramTypeIR ) -> typeIR
+syntax consTypeIR = `( paramTypeIR* ) -> typeIR
 
 ;;
 ;; Constructor type definitions
 ;;
 
-syntax consTypeDefIR = `< name* `, name* > `=> consTypeIR
+syntax consTypeDefIR = consTypeIR `< name* `, name* >

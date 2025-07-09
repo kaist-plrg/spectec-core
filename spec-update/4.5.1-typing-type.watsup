@@ -88,7 +88,7 @@ rule Type_ok/namedtype-specializedtype-mono:
 rule Type_ok/namedtype-specialiedtype-poly:
   p C |- typeName `< typeArg* > : (polyTypeDefIR `< typeIR_a* >) name_fresh*
   -- if polyTypeDefIR = $find_typedef(p, C, typeName)
-  -- if `< name* `, name_hidden* > `=> typeIR = polyTypeDefIR
+  -- if typeIR `< name* `, name_hidden* > = polyTypeDefIR
   -- (TypeArg_ok: p C |- typeArg : typeIR_a name_fresh_a*)*
   -- if name_fresh* = $concat_<name>(name_fresh_a**)
 
@@ -103,7 +103,7 @@ rule Type_ok/headerstacktype-typename:
   -- if _ `( _ `; LCTK) = expressionIR
   -- Eval_static: p C |- expressionIR ~> val
   -- if n_size = $number(val)
-  -- if polyTypeDefIR = `< (`$ "T") `, eps > `=> ((`@ "T") `[ n_size ])
+  -- if polyTypeDefIR = ((`@ "T") `[ n_size ]) `< (`$ "T") `, eps >
 
 rule Type_ok/headerstacktype-specializedtype:
   p C |- specializedType `[ expression ] : (polyTypeDefIR `< typeIR >) name_fresh*
@@ -112,14 +112,14 @@ rule Type_ok/headerstacktype-specializedtype:
   -- if _ `( _ `; LCTK) = expressionIR
   -- Eval_static: p C |- expressionIR ~> val
   -- if n_size = $number(val)
-  -- if polyTypeDefIR = `< (`$ "T") `, eps > `=> ((`@ "T") `[ n_size ])
+  -- if polyTypeDefIR = ((`@ "T") `[ n_size ]) `< (`$ "T") `, eps >
 
 ;;;; syntax listType = LIST `< typeArg >
 
 rule Type_ok/listtype:
   p C |- LIST `< typeArg > : (polyTypeDefIR `< typeIR >) name_fresh*
   -- TypeArg_ok: p C |- typeArg : typeIR name_fresh*
-  -- if polyTypeDefIR = `< (`$ "T") `, eps > `=> (LIST `< `@ "T" >)
+  -- if polyTypeDefIR = (LIST `< `@ "T" >) `< (`$ "T") `, eps >
 
 ;;;; syntax tupleType = TUPLE `< typeArgumentList >
 
@@ -129,7 +129,7 @@ rule Type_ok/tupletype:
   -- if name_fresh* = $concat_<name>(name_fresh_a**)
   -- if i_idx* = $init_(|typeIR_a*|)
   -- if (text = "T" ++ $int_to_text(i_idx))* 
-  -- if polyTypeDefIR = `< (`$ text)* `, eps > `=> (TUPLE `< (`@ text)* >)
+  -- if polyTypeDefIR = (TUPLE `< (`@ text)* >) `< (`$ text)* `, eps >
 
 ;;; VOID
 

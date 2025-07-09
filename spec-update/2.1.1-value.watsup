@@ -15,20 +15,20 @@ syntax val
 ;;
 
 syntax primVal =
-  | BOOL bool
+  | bool PHTM_0
   | ERROR `. name
-  | MATCH_KIND name
-  | STRING text
+  | MATCH_KIND `. name
+  | text PHTM_2
 
 ;;
 ;;;; Numeric values
 ;;
 
 syntax numVal =
-  | INT int
-  | BIT `< nat > int
-  | INT `< nat > int
-  | VARBIT `< nat > int
+  | int PHTM_1
+  | nat W int
+  | nat S int
+  | nat V int `@ nat
 
 syntax baseVal = | primVal | numVal
 
@@ -37,14 +37,14 @@ syntax baseVal = | primVal | numVal
 ;;
 
 syntax dataVal =
-  | LIST `[ val* ]
-  | TUPLE `( val* )
+  | `[ val* ]
+  | `( val* )
   | `[ val* `@ `( nat; nat ) ]
   | HEADER name `{ (val, name)* }
   | HEADER_UNION name `{ (val, name)* }
   | STRUCT name `{ (val, name)* }
-  | ENUM name `. name
-  | ENUM name `. name `# val
+  | name `. name
+  | name `. name `# val
 
 ;;
 ;;;; Synthesized values

@@ -1,0 +1,266 @@
+;;
+;; Relations for type alpha-equivalence
+;;
+
+relation Type_alpha:
+  typeIR ~~ typeIR
+  hint(input %0 %1)
+
+relation FuncType_alpha:
+  funcTypeIR ~~ funcTypeIR
+  hint(input %0 %1)
+
+relation FuncTypeDef_alpha:
+  funcTypeDefIR ~~ funcTypeDefIR
+  hint(input %0 %1)
+
+;;
+;;;; Alpha-equivalence of types
+;;
+
+;;; Base types
+
+rule Type_alpha/basetype:
+  baseTypeIR ~~ baseTypeIR
+
+;;; Named types
+
+rule Type_alpha/nametype:
+  name ~~ name 
+
+rule Type_alpha/spectype-nominal:
+  (polyTypeDefIR_a `< typeIR_a* >) ~~ (polyTypeDefIR_b `< typeIR_b* >)
+  -- if typeIR_a_spec = $specialize_typeDef(polyTypeDefIR_a, typeIR_a*)
+  -- if typeIR_b_spec = $specialize_typeDef(polyTypeDefIR_b, typeIR_b*)
+  -- Type_alpha: typeIR_a_spec ~~ typeIR_b_spec
+  -- if $is_nominal(typeIR_a_spec) /\ $is_nominal(typeIR_b_spec)
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+
+rule Type_alpha/spectype-structural:
+  (polyTypeDefIR_a `< typeIR_a* >) ~~ (polyTypeDefIR_b `< typeIR_b* >)
+  -- if typeIR_a_spec = $specialize_typeDef(polyTypeDefIR_a, typeIR_a*)
+  -- if typeIR_b_spec = $specialize_typeDef(polyTypeDefIR_b, typeIR_b*)
+  -- Type_alpha: typeIR_a_spec ~~ typeIR_b_spec
+  -- if ~$is_nominal(typeIR_a_spec) /\ ~$is_nominal(typeIR_b_spec)
+
+;;; Typedef types
+
+rule Type_alpha/typedeftype-left:
+  (TYPEDEF _ typeIR_a) ~~ typeIR_b
+  -- Type_alpha: typeIR_a ~~ typeIR_b
+
+rule Type_alpha/typedeftype-right:
+  typeIR_a ~~ (TYPEDEF _ typeIR_b)
+  -- Type_alpha: typeIR_a ~~ typeIR_b
+
+rule Type_alpha/newtype:
+  (TYPE name typeIR_a) ~~ (TYPE name typeIR_b)
+  -- Type_alpha: typeIR_a ~~ typeIR_b
+
+;;; Data types
+
+rule Type_alpha/listtype:
+  (LIST `< typeIR_a >) ~~ (LIST `< typeIR_b >)
+  -- Type_alpha: typeIR_a ~~ typeIR_b
+
+rule Type_alpha/tupletype:
+  (TUPLE `< typeIR_a* >) ~~ (TUPLE `< typeIR_b* >)
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+
+rule Type_alpha/stacktype:
+  (typeIR_a `[ n_s ]) ~~ (typeIR_b `[ n_s ])
+  -- Type_alpha: typeIR_a ~~ typeIR_b
+
+rule Type_alpha/headertype:
+  (HEADER name `{ (typeIR_f_a, name_f)* })
+  ~~ (HEADER name `{ (typeIR_f_b, name_f)* })
+  -- (Type_alpha: typeIR_f_a ~~ typeIR_f_b)*
+
+rule Type_alpha/headeruniontype:
+  (HEADER_UNION name `{ (typeIR_f_a, name_f)* })
+  ~~ (HEADER_UNION name `{ (typeIR_f_b, name_f)* })
+  -- (Type_alpha: typeIR_f_a ~~ typeIR_f_b)*
+
+rule Type_alpha/structtype:
+  (STRUCT name `{ (typeIR_f_a, name_f)* })
+  ~~ (STRUCT name `{ (typeIR_f_b, name_f)* })
+  -- (Type_alpha: typeIR_f_a ~~ typeIR_f_b)*
+
+rule Type_alpha/enumtype:
+  (ENUM name `{ name_f* }) ~~ (ENUM name `{ name_f* })
+
+rule Type_alpha/serenumtype:
+  (ENUM typeIR_a name `{ (name_f, val_f)* })
+  ~~ (ENUM typeIR_b name `{ (name_f, val_f)* })
+  -- Type_alpha: typeIR_a ~~ typeIR_b
+
+;;; Object types
+
+rule Type_alpha/externtype:
+  (EXTERN name (`{ (funcName_a `: funcTypeDefIR_a)* }))
+  ~~ (EXTERN name (`{ (funcName_b `: funcTypeDefIR_b)* }))
+  -- if $eq_set<funcName>(`{ funcName_a* }, `{ funcName_b* })
+  -- if (funcTypeDefIR_a'
+        = $find_map<funcName, funcTypeDefIR>(
+            `{ (funcName_a `: funcTypeDefIR_a)* },
+            funcName_a))*
+  -- if (funcTypeDefIR_b'
+        = $find_map<funcName, funcTypeDefIR>(
+            `{ (funcName_a `: funcTypeDefIR_a)* },
+            funcName_a))*
+  -- (FuncTypeDef_alpha: funcTypeDefIR_a' ~~ funcTypeDefIR_b')*
+
+rule Type_alpha/parsertype:
+  (PARSER `( paramTypeIR_a* )) ~~ (PARSER `( paramTypeIR_b* ))
+  -- if (_ direction typeIR_a _ = paramTypeIR_a)*
+  -- if (_ direction typeIR_b _ = paramTypeIR_b)*
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+
+rule Type_alpha/controltype:
+  (CONTROL `( paramTypeIR_a* )) ~~ (CONTROL `( paramTypeIR_b* ))
+  -- if (_ direction typeIR_a _ = paramTypeIR_a)*
+  -- if (_ direction typeIR_b _ = paramTypeIR_b)*
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+
+rule Type_alpha/packagetype:
+  (PACKAGE `< typeIR_a* >) ~~ (PACKAGE `< typeIR_b* >)
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+
+rule Type_alpha/tabletype:
+  (TABLE name `{ typeIR_a }) ~~ (TABLE name `{ typeIR_b })
+  -- Type_alpha: typeIR_a ~~ typeIR_b
+
+;;; Synthesized types
+
+rule Type_alpha/defaulttype:
+  DEFAULT ~~ DEFAULT
+
+rule Type_alpha/sequencetype:
+  (SEQ `< typeIR_a* >) ~~ (SEQ `< typeIR_b* >)
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+
+rule Type_alpha/sequencedefaulttype:
+  (SEQ `< typeIR_a* `, `... >) ~~ (SEQ `< typeIR_b* `, `... >)
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+
+rule Type_alpha/recordtype:
+  (RECORD `{ (typeIR_a, name)* }) ~~ (RECORD `{ (typeIR_b, name)* })
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+
+rule Type_alpha/recorddefaulttype:
+  (RECORD `{ (typeIR_a, name)* `, `... })
+  ~~ (RECORD `{ (typeIR_b, name)* `, `... })
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+
+rule Type_alpha/invalidtype:
+  INVALID ~~ INVALID
+
+rule Type_alpha/settype:
+  (SET `< typeIR_a >) ~~ (SET `< typeIR_b >)
+  -- Type_alpha: typeIR_a ~~ typeIR_b
+
+rule Type_alpha/parserstatetype:
+  PARSERSTATE ~~ PARSERSTATE
+
+rule Type_alpha/tableenumtype:
+  (ENUM_TABLE name `{ name_f* }) ~~ (ENUM_TABLE name `{ name_f* })
+
+rule Type_alpha/tablestructtype:
+  (STRUCT_TABLE name) ~~ (STRUCT_TABLE name)
+
+rule Type_alpha/dontcaretype:
+  `_ ~~ `_
+
+;;
+;;;; Alpha-equivalence of function types
+;;
+
+rule FuncType_alpha/actiontype:
+  (ACTION `( paramTypeIR_a* )) ~~ (ACTION `( paramTypeIR_b* ))
+  -- if (_ direction typeIR_a _ = paramTypeIR_a)*
+  -- if (_ direction typeIR_b _ = paramTypeIR_b)*
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+
+rule FuncType_alpha/externfunctype:
+  (EXTERN_FUNC `( paramTypeIR_a* ) -> typeIR_ret_a)
+  ~~ (EXTERN_FUNC `( paramTypeIR_b* ) -> typeIR_ret_b)
+  -- if (_ direction typeIR_a _ = paramTypeIR_a)*
+  -- if (_ direction typeIR_b _ = paramTypeIR_b)*
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+  -- Type_alpha: typeIR_ret_a ~~ typeIR_ret_b
+
+rule FuncType_alpha/functype:
+  (FUNC `( paramTypeIR_a* ) -> typeIR_ret_a)
+  ~~ (FUNC `( paramTypeIR_b* ) -> typeIR_ret_b)
+  -- if (_ direction typeIR_a _ = paramTypeIR_a)*
+  -- if (_ direction typeIR_b _ = paramTypeIR_b)*
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+  -- Type_alpha: typeIR_ret_a ~~ typeIR_ret_b
+
+rule FuncType_alpha/builtinfunctype:
+  (BUILTIN `( paramTypeIR_a* ) -> typeIR_ret_a)
+  ~~ (BUILTIN `( paramTypeIR_b* ) -> typeIR_ret_b)
+  -- if (_ direction typeIR_a _ = paramTypeIR_a)*
+  -- if (_ direction typeIR_b _ = paramTypeIR_b)*
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+  -- Type_alpha: typeIR_ret_a ~~ typeIR_ret_b
+
+rule FuncType_alpha/externmethodtype:
+  (EXTERN_METHOD `( paramTypeIR_a* ) -> typeIR_ret_a)
+  ~~ (EXTERN_METHOD `( paramTypeIR_b* ) -> typeIR_ret_b)
+  -- if (_ direction typeIR_a _ = paramTypeIR_a)*
+  -- if (_ direction typeIR_b _ = paramTypeIR_b)*
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+  -- Type_alpha: typeIR_ret_a ~~ typeIR_ret_b
+
+rule FuncType_alpha/externabstractmethodtype:
+  (EXTERN_ABSTRACT_METHOD `( paramTypeIR_a* ) -> typeIR_ret_a)
+  ~~ (EXTERN_ABSTRACT_METHOD `( paramTypeIR_b* ) -> typeIR_ret_b)
+  -- if (_ direction typeIR_a _ = paramTypeIR_a)*
+  -- if (_ direction typeIR_b _ = paramTypeIR_b)*
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+  -- Type_alpha: typeIR_ret_a ~~ typeIR_ret_b
+
+rule FuncType_alpha/parserapplymethodtype:
+  (PARSER_APPLY `( paramTypeIR_a* ))
+  ~~ (PARSER_APPLY `( paramTypeIR_b* ))
+  -- if (_ direction typeIR_a _ = paramTypeIR_a)*
+  -- if (_ direction typeIR_b _ = paramTypeIR_b)*
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+
+rule FuncType_alpha/controlapplymethodtype:
+  (CONTROL_APPLY `( paramTypeIR_a* ))
+  ~~ (CONTROL_APPLY `( paramTypeIR_b* ))
+  -- if (_ direction typeIR_a _ = paramTypeIR_a)*
+  -- if (_ direction typeIR_b _ = paramTypeIR_b)*
+  -- (Type_alpha: typeIR_a ~~ typeIR_b)*
+
+rule FuncType_alpha/tableapplymethodtype:
+  (TABLE_APPLY -> typeIR_a) ~~ (TABLE_APPLY -> typeIR_b)
+  -- Type_alpha: typeIR_a ~~ typeIR_b
+
+;;
+;;;; Alpha-equivalence of function definitions
+;;
+
+rule FuncTypeDef_alpha/mono:
+  funcTypeIR_a ~~ funcTypeIR_b
+  -- FuncType_alpha: funcTypeIR_a ~~ funcTypeIR_b
+
+rule FuncTypeDef_alpha/poly:
+  (funcTypeIR_a `< name_a* `, name_hidden_a* >)
+  ~~ (funcTypeIR_b `< name_b* `, name_hidden_b* >)
+  -- if |name_a*| = |name_b*|
+  -- if |name_hidden_a*| = |name_hidden_b*|
+  ----
+  -- if name_fresh* = $fresh_names($(|name_a*| + |name_hidden_a*|))
+  ----
+  -- if name_a'* = name_a* ++ name_hidden_a*
+  -- if theta_a = `{ (name_a' `: name_fresh)* }
+  -- if funcTypeIR_a_subst = $subst_funcType(theta_a, funcTypeIR_a)
+  ----
+  -- if name_b'* = name_b* ++ name_hidden_b*
+  -- if theta_b = `{ (name_b' `: name_fresh)* }
+  -- if funcTypeIR_b_subst = $subst_funcType(theta_b, funcTypeIR_b)
+  ----
+  -- FuncType_alpha: funcTypeIR_a_subst ~~ funcTypeIR_b_subst

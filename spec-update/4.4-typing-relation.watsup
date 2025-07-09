@@ -75,11 +75,13 @@ relation Block_ok:
   hint(input %0 %1 %2 %3 %4)
 
 relation Stmt_ok:
-  cursor context flow |- statement : context flow statementIR
+  cursor context flow |- statementOrDeclaration
+                      : context flow statementOrDeclarationIR
   hint(input %0 %1 %2 %3)
 
 relation Stmts_ok:
-  cursor context flow |- statement* : context flow statementIR*
+  cursor context flow |- statementOrDeclaration
+                      : context flow statementOrDeclarationIR*
   hint(input %0 %1 %2 %3)
 
 ;;

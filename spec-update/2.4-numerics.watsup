@@ -1,0 +1,627 @@
+;;
+;; Bitwise operations
+;;
+
+dec $to_bitstr(int, int) : int
+dec $to_int(int, int) : int
+
+dec $pow2(nat) : int
+
+dec $shl(int, int) : int
+dec $shr(int, int) : int
+dec $shr_arith(int, int, int) : int
+
+dec $bneg(int) : int
+dec $band(int, int) : int
+dec $bxor(int, int) : int
+dec $bor(int, int) : int
+
+dec $bitacc(int, int, int) : int
+
+;;
+;; Unary operations
+;;
+
+;;; Unary bitwise not
+
+dec $un_bnot(val) : val
+
+def $un_bnot(w W i) = w W i'
+  -- if i' = $bneg(i)
+
+;;; Unary logical not
+
+dec $un_lnot(val) : val
+
+def $un_lnot(b PHTM_0) = (~b) PHTM_0
+
+;;; Unary plus
+
+dec $un_plus(val) : val
+
+def $un_plus(i PHTM_1) = i PHTM_1
+def $un_plus(w W i) = w W i
+def $un_plus(w S i) = w S i
+
+;;; Unary minus
+
+dec $un_minus(val) : val
+
+def $un_minus(i PHTM_1) = $(-i) PHTM_1
+def $un_minus(w W i) = w W i'
+  -- if i' = $($pow2(w) - i)
+def $un_minus(w S i) = w S i'
+  -- if i' = $to_bitstr(w, $to_int(w, $(-i)))
+
+;;
+;; Binary operation
+;;
+
+;;; Binary plus
+
+dec $bin_plus(val, val) : val
+
+def $bin_plus(i_l PHTM_1, i_r PHTM_1) = $(i_l + i_r) PHTM_1
+def $bin_plus(w W i_l, w W i_r) = w W i'
+  -- if i_l' = $to_int(w, i_l)
+  -- if i_r' = $to_int(w, i_r)
+  -- if i' = $to_bitstr(w, $(i_l' + i_r'))
+def $bin_plus(w S i_l, w S i_r) = w S i'
+  -- if i_l' = $to_int(w, i_l)
+  -- if i_r' = $to_int(w, i_r)
+  -- if i' = $to_bitstr(w, $(i_l' + i_r'))
+
+;;; Binary saturating plus
+
+;;; Binary minus
+
+dec $bin_minus(val, val) : val
+
+def $bin_minus(i_l PHTM_1, i_r PHTM_1) = $(i_l - i_r) PHTM_1
+def $bin_minus(w W i_l, w W i_r) = w W i'
+  -- if i_l' = $to_int(w, i_l)
+  -- if i_r' = $to_int(w, i_r)
+  -- if i' = $to_bitstr(w, $(i_l' - i_r'))
+def $bin_plus(w S i_l, w S i_r) = w S i'
+  -- if i_l' = $to_int(w, i_l)
+  -- if i_r' = $to_int(w, i_r)
+  -- if i' = $to_bitstr(w, $(i_l' - i_r'))
+
+;;; Binary saturating minus
+
+;;; Binary multiplication
+
+dec $bin_mul(val, val) : val
+
+def $bin_mul(i_l PHTM_1, i_r PHTM_1) = $(i_l * i_r) PHTM_1
+def $bin_minus(w W i_l, w W i_r) = w W i'
+  -- if i_l' = $to_int(w, i_l)
+  -- if i_r' = $to_int(w, i_r)
+  -- if i' = $to_bitstr(w, $(i_l' * i_r'))
+def $bin_plus(w S i_l, w S i_r) = w S i'
+  -- if i_l' = $to_int(w, i_l)
+  -- if i_r' = $to_int(w, i_r)
+  -- if i' = $to_bitstr(w, $(i_l' * i_r'))
+
+;;; Binary division
+
+dec $bin_div(val, val) : val
+
+def $bin_div(i_l PHTM_1, i_r PHTM_1) = $(i_l / i_r) PHTM_1
+
+;;; Binary modulo
+
+dec $bin_mod(val, val) : val
+
+def $bin_mod(i_l PHTM_1, i_r PHTM_1) = $(i_l \ i_r) PHTM_1
+
+;;; Binary shift left
+
+dec $bin_shl(val, val) : val
+
+def $bin_shl(i_l PHTM_1, i_r PHTM_1) = $shl(i_l, i_r) PHTM_1
+def $bin_shl(i_l PHTM_1, w_r W i_r) = $shl(i_l, i_r) PHTM_1
+def $bin_shl(i_l PHTM_1, w_r S i_r) = $shl(i_l, i_r') PHTM_1
+  -- if i_r' = $to_int(w_r, i_r)
+
+def $bin_shl(w_l W i_l, i_r PHTM_1)
+  = $bin_shl(w_l W i_l, w_l W $to_int(w_l, i_r))
+def $bin_shl(w_l W i_l, w_r W i_r) = w_l W i'
+  -- if i' = $to_bitstr(w_l, $shl(i_l, i_r))
+def $bin_shl(w_l W i_l, w_r S i_r) = w_l W i'
+  -- if i_r' = $to_int(w_r, i_r)
+  -- if i' = $to_bitstr(w_l, $shl(i_l, i_r'))
+
+def $bin_shl(w_l S i_l, i_r PHTM_1)
+  = $bin_shl(w_l S i_l, w_l S $to_int(w_l, i_r))
+def $bin_shl(w_l S i_l, w_r W i_r) = w_l S i'
+  -- if i_l' = $to_int(w_l, i_l)
+  -- if i' = $to_bitstr(w_l, $shl(i_l', i_r))
+def $bin_shl(w_l S i_l, w_r S i_r) = w_l S i'
+  -- if i_l' = $to_int(w_l, i_l)
+  -- if i_r' = $to_int(w_r, i_r)
+  -- if i' = $to_bitstr(w_l, $shl(i_l', i_r'))
+
+;;; Binary shift right
+
+dec $bin_shr(val, val) : val
+
+def $bin_shr(i_l PHTM_1, i_r PHTM_1) = $shr(i_l, i_r) PHTM_1
+def $bin_shr(i_l PHTM_1, w_r W i_r) = $shr(i_l, i_r) PHTM_1
+def $bin_shr(i_l PHTM_1, w_r S i_r) = $shr(i_l, i_r') PHTM_1
+  -- if i_r' = $to_int(w_r, i_r)
+
+def $bin_shr(w_l W i_l, i_r PHTM_1)
+  = $bin_shr(w_l W i_l, w_l W $to_int(w_l, i_r))
+def $bin_shr(w_l W i_l, w_r W i_r) = w_l W i'
+  -- if i' = $to_bitstr(w_l, $shr(i_l, i_r))
+def $bin_shr(w_l W i_l, w_r S i_r) = w_l W i'
+  -- if i_r' = $to_int(w_r, i_r)
+  -- if i' = $to_bitstr(w_l, $shr(i_l, i_r'))
+
+def $bin_shr(w_l S i_l, i_r PHTM_1) = w_l S i''
+  -- if i_l' = $to_int(w_l, i_l)
+  -- if $(i_l' < 0)
+  -- if i' = $shr_arith(i_l, i_r, $($pow2(w_l) - 1))
+  -- if i'' = $to_bitstr(w_l, i')
+def $bin_shr(w_l S i_l, i_r PHTM_1) = w_l S i''
+  -- if i_l' = $to_int(w_l, i_l)
+  -- if $(i_l' >= 0)
+  -- if i' = $shr(i_l, i_r)
+  -- if i'' = $to_bitstr(w_l, i')
+def $bin_shr(w_l S i_l, w_r W i_r) = w_l S i''
+  -- if i_l' = $to_int(w_l, i_l)
+  -- if $(i_l' < 0)
+  -- if i' = $shr_arith(i_l, i_r, $($pow2(w_l) - 1))
+  -- if i'' = $to_bitstr(w_l, i')
+def $bin_shr(w_l S i_l, w_r W i_r) = w_l S i''
+  -- if i_l' = $to_int(w_l, i_l)
+  -- if $(i_l' >= 0)
+  -- if i' = $shr(i_l, i_r)
+  -- if i'' = $to_bitstr(w_l, i')
+def $bin_shr(w_l S i_l, w_r S i_r) = w_l S i''
+  -- if i_l' = $to_int(w_l, i_l)
+  -- if i_r' = $to_int(w_r, i_r)
+  -- if $(i_l' < 0)
+  -- if i' = $shr_arith(i_l, i_r, $($pow2(w_l) - 1))
+  -- if i'' = $to_bitstr(w_l, i')
+def $bin_shr(w_l S i_l, w_r S i_r) = w_l S i''
+  -- if i_l' = $to_int(w_l, i_l)
+  -- if i_r' = $to_int(w_r, i_r)
+  -- if $(i_l' >= 0)
+  -- if i' = $shr(i_l, i_r)
+  -- if i'' = $to_bitstr(w_l, i')
+
+;;; Binary less than or equal
+
+dec $bin_le(val, val) : bool
+
+def $bin_le(i_l PHTM_1, i_r PHTM_1) = $(i_l <= i_r)
+def $bin_le(w W i_l, w W i_r) = $(i_l <= i_r)
+def $bin_le(w S i_l, w S i_r) = $(i_l' <= i_r')
+  -- if i_l' = $to_int(w, i_l)
+  -- if i_r' = $to_int(w, i_r)
+
+;;; Binary greater than or equal
+
+dec $bin_ge(val, val) : bool
+
+def $bin_ge(i_l PHTM_1, i_r PHTM_1) = $(i_l >= i_r)
+def $bin_ge(w W i_l, w W i_r) = $(i_l >= i_r)
+def $bin_ge(w S i_l, w S i_r) = $(i_l' >= i_r')
+  -- if i_l' = $to_int(w, i_l)
+  -- if i_r' = $to_int(w, i_r)
+
+;;; Binary less than
+
+dec $bin_lt(val, val) : bool
+
+def $bin_lt(i_l PHTM_1, i_r PHTM_1) = $(i_l < i_r)
+def $bin_lt(w W i_l, w W i_r) = $(i_l < i_r)
+def $bin_lt(w S i_l, w S i_r) = $(i_l' < i_r')
+  -- if i_l' = $to_int(w, i_l)
+  -- if i_r' = $to_int(w, i_r)
+
+;;; Binary greater than
+
+dec $bin_gt(val, val) : bool
+
+def $bin_gt(i_l PHTM_1, i_r PHTM_1) = $(i_l > i_r)
+def $bin_gt(w W i_l, w W i_r) = $(i_l > i_r)
+def $bin_gt(w S i_l, w S i_r) = $(i_l' > i_r')
+  -- if i_l' = $to_int(w, i_l)
+  -- if i_r' = $to_int(w, i_r)
+
+;;; Binary equals
+
+dec $bin_eq(val, val) : bool
+dec $bin_eqs(val*, val*) : bool
+dec $bin_eqs_fields((val, name)*, (val, name)*) : bool
+
+def $bin_eq(primVal_a, primVal_b) = (primVal_a = primVal_b)
+
+def $bin_eq(i_a PHTM_1, i_b PHTM_1) = (i_a = i_b)
+def $bin_eq(w_a W i_a, w_b W i_b) = (w_a = w_b) /\ (i_a = i_b)
+def $bin_eq(w_a S i_a, w_b S i_b) = (w_a = w_b) /\ (i_a = i_b)
+def $bin_eq(w_a V i_a `@ _, w_b V i_b `@ _) = (w_a = w_b) /\ (i_a = i_b)
+
+def $bin_eq(`[ val_a* ], `[ val_b* ])
+  = $bin_eqs(val_a*, val_b*)
+def $bin_eq(`( val_a* ), `( val_b* ))
+  = $bin_eqs(val_a*, val_b*)
+def $bin_eq(`[ val_a* `@ `( _; n_s_a ) ], `[ val_b* `@ `( _; n_s_b ) ])
+  = $bin_eqs(val_a*, val_b*) /\ (n_s_a = n_s_b)
+def $bin_eq(
+    HEADER name_a `{ (val_f_a, name_f_a)* },
+    HEADER name_b `{ (val_f_b, name_f_b)* }
+  )
+  = (name_a = name_b)
+    /\ $bin_eqs_fields((val_f_a, name_f_a)*, (val_f_b, name_f_b)*)
+def $bin_eq(
+    HEADER_UNION name_a `{ (val_f_a, name_f_a)* },
+    HEADER_UNION name_b `{ (val_f_b, name_f_b)* }
+  )
+  = (name_a = name_b)
+    /\ $bin_eqs_fields((val_f_a, name_f_a)*, (val_f_b, name_f_b)*)
+def $bin_eq(
+    STRUCT name_a `{ (val_f_a, name_f_a)* },
+    STRUCT name_b `{ (val_f_b, name_f_b)* }
+  )
+  = (name_a = name_b)
+    /\ $bin_eqs_fields((val_f_a, name_f_a)*, (val_f_b, name_f_b)*)
+def $bin_eq(name_a `. name_f_a, name_b `. name_f_b)
+  = (name_a = name_b) /\ (name_f_a = name_f_b)
+def $bin_eq(name_a `. name_f_a `# val_f_a, name_b `. name_f_b `# val_f_b)
+  = (name_a = name_b) /\ (name_f_a = name_f_b) /\ $bin_eq(val_f_a, val_f_b)
+
+def $bin_eq(INVALID, INVALID) = true
+
+;;; Binary not equals
+
+dec $bin_ne(val, val) : bool
+
+def $bin_ne(val_l, val_r) = ~$bin_eq(val_l, val_r)
+
+;;; Binary bitwise and
+
+dec $bin_band(val, val) : val
+
+def $bin_band(w W i_l, w W i_r) = w W i'
+  -- if i' = $to_bitstr(w, $band(i_l, i_r))
+
+def $bin_band(w S i_l, w S i_r) = w S i'
+  -- if i_l' = $to_int(w, i_l)
+  -- if i_r' = $to_int(w, i_r)
+  -- if i' = $to_bitstr(w, $band(i_l', i_r'))
+
+;;; Binary bitwise xor
+
+dec $bin_bxor(val, val) : val
+
+def $bin_bxor(w W i_l, w W i_r) = w W i'
+  -- if i' = $to_bitstr(w, $bxor(i_l, i_r))
+
+def $bin_bxor(w S i_l, w S i_r) = w S i'
+  -- if i_l' = $to_int(w, i_l)
+  -- if i_r' = $to_int(w, i_r)
+  -- if i' = $to_bitstr(w, $bxor(i_l', i_r'))
+
+;;; Binary bitwise or
+
+dec $bin_bor(val, val) : val
+
+def $bin_bor(w W i_l, w W i_r) = w W i'
+  -- if i' = $to_bitstr(w, $bor(i_l, i_r))
+
+def $bin_bor(w S i_l, w S i_r) = w S i'
+  -- if i_l' = $to_int(w, i_l)
+  -- if i_r' = $to_int(w, i_r)
+  -- if i' = $to_bitstr(w, $bor(i_l', i_r'))
+
+;;; Binary bitwise concat
+
+dec $bin_concat(val, val) : val
+
+def $bin_concat(w_l W i_l, w_r W i_r) = w W i''
+  -- if i_l' = $shl(i_l, w_r)
+  -- if i_l'' = $(i_l' + i_r)
+  -- if w = $(w_l + w_r)
+  -- if i'' = $to_bitstr(w, i_l'')
+def $bin_concat(w_l W i_l, w_r S i_r) = w W i''
+  -- if i_l' = $shl(i_l, w_r)
+  -- if i_l'' = $(i_l' + i_r)
+  -- if w = $(w_l + w_r)
+  -- if i'' = $to_bitstr(w, i_l'')
+
+def $bin_concat(w_l S i_l, w_r W i_r) = w S i'''
+  -- if i_l' = $to_int(w_l, i_l)
+  -- if i_l'' = $shl(i_l', w_r)
+  -- if i_l''' = $(i_l'' + i_r)
+  -- if w = $(w_l + w_r)
+  -- if i''' = $to_bitstr(w, i_l''')
+def $bin_concat(w_l S i_l, w_r S i_r) = w S i'''
+  -- if i_l' = $to_int(w_l, i_l)
+  -- if i_l'' = $shl(i_l', w_r)
+  -- if i_l''' = $(i_l'' + i_r)
+  -- if w = $(w_l + w_r)
+  -- if i''' = $to_bitstr(w, i_l''')
+
+;;; Binary logical and
+
+dec $bin_land(val, val) : val
+
+def $bin_land(b_l PHTM_0, b_r PHTM_0) = (b_l /\ b_r) PHTM_0
+
+;;; Binary logical or
+
+dec $bin_lor(val, val) : val
+
+def $bin_lor(b_l PHTM_0, b_r PHTM_0) = (b_l \/ b_r) PHTM_0
+
+;;
+;; Type cast operations
+;;
+
+dec $cast_op(typeIR, val) : val
+
+dec $default(typeIR) : val
+dec $default'(typeIR) : val
+
+;;; Cast from boolean
+
+dec $cast_bool(typeIR, bool) : val
+dec $cast_bool'(typeIR, bool) : val
+
+def $cast_bool(typeIR, b) = $cast_bool'($canon(typeIR), b)
+
+def $cast_bool'(BOOL, b) = b PHTM_0
+def $cast_bool'(BIT `< w >, true) = w W 1
+def $cast_bool'(BIT `< w >, false) = w W 0
+def $cast_bool'(TYPE _ typeIR, b) = $cast_bool(typeIR, b)
+
+def $cast_op(typeIR, b PHTM_0) = $cast_bool(typeIR, b)
+
+;;; Cast from integer
+
+dec $cast_arbint(typeIR, int) : val
+dec $cast_arbint'(typeIR, int) : val
+
+def $cast_arbint(typeIR, i) = $cast_arbint'($canon(typeIR), i)
+
+def $cast_arbint'(BOOL, i) = (i = 0) PHTM_0
+def $cast_arbint'(INT, i) = i PHTM_1
+def $cast_arbint'(BIT `< w >, i) = w W ($to_bitstr(w, i))
+def $cast_arbint'(INT `< w >, i) = w S ($to_bitstr(w, i))
+def $cast_arbint'(TYPE _ typeIR, i) = $cast_arbint(typeIR, i)
+def $cast_arbint'(SET `< typeIR >, i) = SET `{ $cast_arbint(typeIR, i) }
+
+def $cast_op(typeIR, i PHTM_1) = $cast_arbint(typeIR, i)
+
+;;; Cast from fixed unsigned integer
+
+dec $cast_fixbit(typeIR, nat, int) : val
+dec $cast_fixbit'(typeIR, nat, int) : val
+
+def $cast_fixbit(typeIR, w, i) = $cast_fixbit'($canon(typeIR), w, i)
+
+def $cast_fixbit'(BOOL, w, i) = (i = 1) PHTM_0
+def $cast_fixbit'(INT, _, i) = i PHTM_1
+def $cast_fixbit'(BIT `< w_to >, _, i) = w_to W i'
+  -- if i' = $to_bitstr(w_to, i)
+def $cast_fixbit'(INT `< w_to >, _, i) = w_to S i'
+  -- if i' = $to_bitstr(w_to, i)
+def $cast_fixbit'(TYPE _ typeIR, w, i) = $cast_fixbit(typeIR, w, i)
+def $cast_fixbit'(SET `< typeIR >, w, i) = SET `{ $cast_fixbit(typeIR, w, i) }
+
+def $cast_op(typeIR, w W i) = $cast_fixbit(typeIR, w, i)
+
+;;; Cast from fixed signed integer
+
+dec $cast_fixint(typeIR, nat, int) : val
+dec $cast_fixint'(typeIR, nat, int) : val
+
+def $cast_fixint(typeIR, w, i) = $cast_fixint'($canon(typeIR), w, i)
+
+def $cast_fixint'(INT, w, i) = ($to_int(w, i)) PHTM_1
+def $cast_fixint'(BIT `< w_to >, w_from, i) = w_to W i'
+  -- if i' = $to_bitstr(w_to, $to_int(w_from, i))
+def $cast_fixint'(INT `< w_to >, w_from, i) = w_to S i'
+  -- if i' = $to_bitstr(w_to, $to_int(w_from, i))
+def $cast_fixint'(TYPE _ typeIR, w, i) = $cast_fixint(typeIR, w, i)
+def $cast_fixint'(SET `< typeIR >, w, i) = SET `{ $cast_fixint(typeIR, w, i) }
+
+def $cast_op(typeIR, w S i) = $cast_fixint(typeIR, w, i)
+
+;;; Cast from header
+
+dec $cast_header(typeIR, name, (val, name)*) : val
+dec $cast_header'(typeIR, name, (val, name)*) : val
+
+def $cast_header(typeIR, name, (val_f, name_f)*)
+  = $cast_header'($canon(typeIR), name, (val_f, name_f)*)
+
+def $cast_header'(HEADER name `{ _ }, name, (val_f, name_f)*)
+  = HEADER name `{ (val_f, name_f)* }
+
+def $cast_op(typeIR, HEADER name `{ (val_f, name_f)* })
+  = $cast_header(typeIR, name, (val_f, name_f)*)
+
+;;; Cast from struct
+
+dec $cast_struct(typeIR, name, (val, name)*) : val
+dec $cast_struct'(typeIR, name, (val, name)*) : val
+
+def $cast_struct(typeIR, name, (val_f, name_f)*)
+  = $cast_struct'($canon(typeIR), name, (val_f, name_f)*)
+
+def $cast_struct'(STRUCT name `{ _ }, name, (val_f, name_f)*)
+  = STRUCT name `{ (val_f, name_f)* }
+
+def $cast_op(typeIR, STRUCT name `{ (val_f, name_f)* })
+  = $cast_struct(typeIR, name, (val_f, name_f)*)
+
+;;; Cast from serializable enum field
+
+def $cast_op(typeIR, _ `. _ `# val) = $cast_op(typeIR, val)
+
+;; Cast from sequence
+
+dec $cast_sequence(typeIR, val*) : val
+dec $cast_sequence'(typeIR, val*) : val
+
+def $cast_sequence(typeIR, val*)
+  = $cast_sequence'($canon(typeIR), val*)
+
+def $cast_sequence'(LIST `< typeIR >, val*)
+  = `[ $cast_op(typeIR, val)* ]
+
+def $cast_sequence'(TUPLE `< typeIR* >, val*)
+  = `( $cast_op(typeIR, val)* )
+
+def $cast_sequence'(typeIR `[ n_s ], val*)
+  = `[ val_cast* `@ `( n_idx; n_s ) ]
+  -- if (val_cast = $cast_op(typeIR, val))*
+  -- if n_idx = |val*|
+
+def $cast_sequence'(HEADER name `{ (typeIR_f, name_f)* }, val*)
+  = HEADER name `{ (val_cast, name_f)* }
+  -- if (val_cast = $cast_op(typeIR_f, val))*
+
+def $cast_sequence'(STRUCT name `{ (typeIR_f, name_f)* }, val*)
+  = STRUCT name `{ (val_cast, name_f)* }
+  -- if (val_cast = $cast_op(typeIR_f, val))*
+
+def $cast_op(typeIR, SEQ `( val* )) = $cast_sequence(typeIR, val*)
+
+;; Cast from default sequence
+
+;; Cast from record
+
+dec $cast_record(typeIR, (val, name)*) : val
+dec $cast_record'(typeIR, (val, name)*) : val
+
+def $cast_record(typeIR, (val, name)*)
+  = $cast_record'($canon(typeIR), (val, name)*)
+
+def $cast_record'(
+    HEADER name `{ (typeIR_t_f, name_t_f)* },
+    (val_f, name_f)*
+  )
+  = HEADER name `{ (val_f_cast, name_f)* }
+  -- if (val_f' = $find_map<name, val>(`{ (name_f `: val_f)* }, name_t_f))*
+  -- if (val_f_cast = $cast_op(typeIR_t_f, val_f'))*
+
+def $cast_record'(
+    STRUCT name `{ (typeIR_t_f, name_t_f)* },
+    (val_f, name_f)*
+  )
+  = STRUCT name `{ (val_f_cast, name_f)* }
+  -- if (val_f' = $find_map<name, val>(`{ (name_f `: val_f)* }, name_t_f))*
+  -- if (val_f_cast = $cast_op(typeIR_t_f, val_f'))*
+
+def $cast_op(typeIR, RECORD `{ (val, name)* })
+  = $cast_record(typeIR, (val, name)*)
+
+;; Cast from default record
+
+;; Cast from default
+
+def $cast_op(typeIR, DEFAULT) = $default(typeIR)
+
+;; Cast from invalid
+
+;; Cast from set
+
+dec $cast_set_singleton(typeIR, val) : val
+dec $cast_set_singleton'(typeIR, val) : val
+
+def $cast_set_singleton(typeIR, val)
+  = $cast_set_singleton'($canon(typeIR), val)
+
+def $cast_set_singleton'(SET `< typeIR >, val)
+  = SET `{ $cast_op(typeIR, val) }
+
+dec $cast_set_mask(typeIR, val, val) : val
+dec $cast_set_mask'(typeIR, val, val) : val
+
+def $cast_set_mask(typeIR, val_b, val_m)
+  = $cast_set_mask'($canon(typeIR), val_b, val_m)
+
+def $cast_set_mask'(SET `< typeIR >, val_b, val_m)
+  = SET `{ val_b_cast `&&& val_m_cast }
+  -- if val_b_cast = $cast_op(typeIR, val_b)
+  -- if val_m_cast = $cast_op(typeIR, val_m)
+
+dec $cast_set_range(typeIR, val, val) : val
+dec $cast_set_range'(typeIR, val, val) : val
+
+def $cast_set_range(typeIR, val_l, val_u)
+  = $cast_set_range'($canon(typeIR), val_l, val_u)
+
+def $cast_set_range'(SET `< typeIR >, val_l, val_u)
+  = SET `{ val_l_cast `.. val_u_cast }
+  -- if val_l_cast = $cast_op(typeIR, val_l)
+  -- if val_u_cast = $cast_op(typeIR, val_u)
+
+def $cast_op(typeIR, SET `{ val })
+  = $cast_set_singleton(typeIR, val)
+def $cast_op(typeIR, SET `{ val_b `&&& val_m })
+  = $cast_set_mask(typeIR, val_b, val_m)
+def $cast_op(typeIR, SET `{ val_l `.. val_u })
+  = $cast_set_range(typeIR, val_l, val_u)
+
+;;
+;; Default values for types
+;; (TODO) This should be target-specific
+;;
+
+def $default(typeIR) = $default'($canon(typeIR))
+
+def $default'(BOOL) = false PHTM_0
+def $default'(ERROR) = ERROR `. (`$ "NoError")
+def $default'(STRING) = "" PHTM_2
+
+def $default'(INT) = 0 PHTM_1
+def $default'(BIT `< w >) = w W 0
+def $default'(INT `< w >) = w S 0
+def $default'(VARBIT `< w >) = w V 0 `@ 0
+
+def $default'(TUPLE `< typeIR* >) = `[ $default(typeIR)* ]
+
+def $default'(typeIR `[ n_s ]) = `[ val* `@ `( 0; n_s ) ]
+  -- if val* = $repeat_<val>($default(typeIR), n_s)
+
+def $default'(HEADER name `{ (typeIR_f, name_f)* })
+  = HEADER name `{ ($default(typeIR_f), name_f)* }
+
+def $default'(HEADER_UNION name `{ (typeIR_f, name_f)* })
+  = HEADER_UNION name `{ ($default(typeIR_f), name_f)* }
+
+def $default'(STRUCT name `{ (typeIR_f, name_f)* })
+  = STRUCT name `{ ($default(typeIR_f), name_f)* }
+
+def $default'(ENUM name `{ name_f_h :: _ }) = name `. name_f_h
+
+def $default'(ENUM typeIR name `{ (name_f, val_f)* })
+  = name `. name_zero `# val_zero
+  -- if val_zero = $cast_arbint(typeIR, 0)
+  -- if name_zero = $assoc_<val, name>(val_zero, (val_f, name_f)*)
+
+def $default'(ENUM typeIR name `{ (name_f, val_f)* })
+  = name `. name_zero `# val_zero
+  -- if val_zero = $cast_arbint(typeIR, 0)
+  -- if eps = $assoc_<val, name>(val_zero, (val_f, name_f)*)
+  -- if name_zero = `$ "__UNSPECIFIED"
+
+;;
+;; Bitstring access
+;;
+
+dec $bitacc_op(val, val, val) : val
+
+def $bitacc_op(val_b, val_h, val_l) = w W i
+  -- if i_b = $number(val_b)
+  -- if i_h = $number(val_h)
+  -- if i_l = $number(val_l)
+  -- if w = $(i_h + 1 - i_l)
+  -- if i = $bitacc(i_b, i_h, i_l)

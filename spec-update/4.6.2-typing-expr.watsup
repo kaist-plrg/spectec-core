@@ -1,0 +1,255 @@
+;;; syntax number =
+;;;   | int PHTM_1
+;;;   | nat W int
+;;;   | nat S int
+
+rule Expr_ok/number-arbint:
+  p C |- i PHTM_1 : (i PHTM_1) `( INT `; LCTK )
+
+rule Expr_ok/number-fixbit:
+  p C |- n W i : (n W i) `( (BIT `< n >) `; LCTK )
+
+rule Expr_ok/number-fixbit:
+  p C |- n S i : (n S i) `( (INT `< n >) `; LCTK )
+
+;;; `...
+
+;;; stringLiteral
+
+rule Expr_ok/stringliteral:
+  p C |- (text PHTM_2) : (text PHTM_2) `( STRING `; LCTK )
+
+;;; TRUE
+;;; FALSE
+
+rule Expr_ok/boolean-true:
+  p C |- TRUE : TRUE `( BOOL `; LCTK )
+
+rule Expr_ok/boolean-false:
+  p C |- FALSE : FALSE `( BOOL `; LCTK )
+
+;;; THIS
+
+;;; prefixedNonTypeName
+
+;;; expression `[ expression ]
+
+dec $compat_arrayindex(typeIR) : bool
+dec $compat'_arrayindex(typeIR) : bool
+
+def $compat_arrayindex(typeIR) = $compat'_arrayindex($canon(typeIR))
+def $compat'_arrayindex(INT) = true
+def $compat'_arrayindex(INT `< _ >) = true
+def $compat'_arrayindex(BIT `< _ >) = true
+def $compat'_arrayindex(typeIR) = false
+  -- otherwise
+
+rule Expr_ok/arrayaccess-tuple:
+  p C |- expression_b `[ expression_i ]
+      : (expressionIR_b `[ expressionIR_i ]) `( typeIR `; DYN )
+  -- Expr_ok: p C |- expression_b : expressionIR_b
+  -- if _ `( typeIR_b `; _ ) = expressionIR_b
+  -- if TUPLE `< typeIR_e* > = $canon(typeIR_b)
+  ----
+  -- Expr_ok: p C |- expression_i : expressionIR_i
+  -- if expressionIR_i_cast
+        = $reduce_serenum_unary(expressionIR_i, def $compat_arrayindex)
+  -- if _ `( typeIR_i `; LCTK ) = expressionIR_i
+  -- Eval_static: p C |- expressionIR_i ~> val_i
+  -- if n = $number(val_i)
+  -- if typeIR = typeIR_e*[n]
+
+rule Expr_ok/arrayaccess-stack-lctk:
+  p C |- expression_b `[ expression_i ]
+      : (expressionIR_b `[ expressionIR_i ]) `( typeIR_s `; DYN )
+  -- Expr_ok: p C |- expression_b : expressionIR_b
+  -- if _ `( typeIR_b `; _ ) = expressionIR_b
+  -- if typeIR_s `[ n_s ] = typeIR_b
+  ----
+  -- Expr_ok: p C |- expression_i : expressionIR_i
+  -- if expressionIR_i_cast
+        = $reduce_serenum_unary(expressionIR_i, def $compat_arrayindex)
+  -- if _ `( typeIR_i `; LCTK ) = expressionIR_i
+  -- Eval_static: p C |- expressionIR_i ~> val_i
+  -- if n = $number(val_i)
+  -- if $(0 <= n) /\ $(n <= n_s)
+
+rule Expr_ok/arrayaccess-stack-non-lctk:
+  p C |- expression_b `[ expression_i ]
+      : (expressionIR_b `[ expressionIR_i ]) `( typeIR_s `; DYN )
+  -- Expr_ok: p C |- expression_b : expressionIR_b
+  -- if _ `( typeIR_b `; _ ) = expressionIR_b
+  -- if typeIR_s `[ n_s ] = typeIR_b
+  ----
+  -- Expr_ok: p C |- expression_i : expressionIR_i
+  -- if expressionIR_i_cast
+        = $reduce_serenum_unary(expressionIR_i, def $compat_arrayindex)
+  -- if _ `( typeIR_i `; ctk_i ) = expressionIR_i
+  -- if ctk_i =/= LCTK
+
+;;; expression `[ expression `: expression ]
+
+;;; `{ expressionList optTrailingComma }
+
+;;; `{#}
+
+rule Expr_ok/invalid:
+  p C |- `{#} : `{#} `( INVALID `; LCTK )
+
+;;; `{ kvList optTrailingComma }
+
+;;; `{ kvList `, `... optTrailingComma }
+
+;;; `( expression )
+
+rule Expr_ok/parentheses:
+  p C |- `( expression ) : `( expressionIR ) `( typeIR `; ctk )
+  -- Expr_ok: p C |- expression : expressionIR
+  -- if _ `( typeIR `; ctk ) = expressionIR
+
+;;; `! expression
+
+dec $compat_bnot(typeIR) : bool
+dec $compat'_bnot(typeIR) : bool
+
+def $compat_bnot(typeIR) = $compat'_bnot($canon(typeIR))
+def $compat'_bnot(INT `< _ >) = true
+def $compat'_bnot(BIT `< _ >) = true
+def $compat'_bnot(typeIR) = false
+  -- otherwise
+
+rule Expr_ok/unary-bnot:
+  p C |- `! expression
+      : (`! expressionIR_cast) `( typeIR `; ctk )
+  -- Expr_ok: p C |- expression : expressionIR
+  -- if expressionIR_cast
+        = $reduce_serenum_unary(expressionIR, def $compat_bnot)
+  -- if _ `( typeIR `; ctk ) = expressionIR
+
+;;; `~ expression
+
+dec $compat_lnot(typeIR) : bool
+dec $compat'_lnot(typeIR) : bool
+
+def $compat_lnot(typeIR) = $compat'_lnot($canon(typeIR))
+def $compat'_lnot(BOOL) = true
+def $compat'_lnot(typeIR) = false
+  --otherwise
+
+rule Expr_ok/unary-lnot:
+  p C |- `~ expression
+      : (`~ expressionIR_cast) `( typeIR `; ctk )
+  -- Expr_ok: p C |- expression : expressionIR
+  -- if expressionIR_cast
+        = $reduce_serenum_unary(expressionIR, def $compat_lnot)
+  -- if _ `( typeIR `; ctk ) = expressionIR
+
+;;; `+ expression
+;;; `- expression
+
+dec $compat_uplusminus(typeIR) : bool
+dec $compat'_uplusminus(typeIR) : bool
+
+def $compat_uplusminus(typeIR) = $compat'_uplusminus($canon(typeIR))
+def $compat'_uplusminus(INT) = true
+def $compat'_uplusminus(INT `< _ >) = true
+def $compat'_uplusminus(BIT `< _ >) = true
+def $compat'_uplusminus(typeIR) = false
+  -- otherwise
+
+rule Expr_ok/unary-plus:
+  p C |- `+ expression
+      : (`+ expressionIR_cast) `( typeIR `; ctk )
+  -- Expr_ok: p C |- expression : expressionIR
+  -- if expressionIR_cast
+        = $reduce_serenum_unary(expressionIR, def $compat_uplusminus)
+  -- if _ `( typeIR `; ctk ) = expressionIR
+
+rule Expr_ok/unary-minus:
+  p C |- `- expression
+      : (`- expressionIR_cast) `( typeIR `; ctk )
+  -- Expr_ok: p C |- expression : expressionIR
+  -- if expressionIR_cast
+        = $reduce_serenum_unary(expressionIR, def $compat_uplusminus)
+  -- if _ `( typeIR `; ctk ) = expressionIR
+
+;;; typeName `. member
+
+;;; ERROR `. member
+
+;;; expression `. member
+
+;;; expression `+ expression
+;;; expression `- expression
+;;; expression `* expression
+
+dec $compat_plusminusmult(typeIR, typeIR) : bool
+dec $compat'_plusminusmult(typeIR, typeIR) : bool
+
+def $compat_plusminusmult(typeIR_l, typeIR_r)
+  = $compat'_plusminusmult($canon(typeIR_l), $canon(typeIR_r))
+def $compat'_plusminusmult(INT, INT) = true
+def $compat'_plusminusmult(INT `< w >, INT `< w >) = true
+def $compat'_plusminusmult(BIT `< w >, BIT `< w >) = true
+def $compat'_plusminusmult(typeIR_l, typeIR_r) = false
+  -- otherwise
+
+rule Expr_ok/binary-plus:
+  p C |- expression_l `+ expression_r
+      : (expressionIR_l_red `+ expressionIR_r_red) `( typeIR_red `; ctk_red )
+  -- Expr_ok: p C |- expression_l : expressionIR_l
+  -- Expr_ok: p C |- expression_r : expressionIR_r
+  -- if (expressionIR_l_cast, expressionIR_r_cast)
+        = $coerce_binary(expressionIR_l, expressionIR_r)
+  -- if (expressionIR_l_red, expressionIR_r_red)
+        = $reduce_serenum_binary(expressionIR_l_cast, expressionIR_r_cast,
+                                  def $compat_plusminusmult)
+  -- if _ `( typeIR_red `; ctk_l_red ) = expressionIR_l_red
+  -- if _ `( typeIR_red `; ctk_r_red ) = expressionIR_r_red
+  -- if ctk_red = $join_ctk(ctk_l_red, ctk_r_red)
+
+;;; expression `/ expression
+
+;;; expression `% expression
+
+;;; expression `|+| expression
+
+;;; expression `|-| expression
+
+;;; expression `<< expression
+
+;;; expression `>> expression
+
+;;; expression `<= expression
+
+;;; expression `>= expression
+
+;;; expression ``< expression
+
+;;; expression ``> expression
+
+;;; expression `!= expression
+
+;;; expression `== expression
+
+;;; expression `& expression
+
+;;; expression `^ expression
+
+;;; expression `| expression
+
+;;; expression `++ expression
+
+;;; expression `&& expression
+
+;;; expression `|| expression
+
+;;; expression `? expression `: expression
+
+;;; expression `< realTypeArgumentList > `( argumentList )
+
+;;; expression `( argumentList )
+
+;;; namedType `( argumentList )
+
+;;; `( typeRef ) expression

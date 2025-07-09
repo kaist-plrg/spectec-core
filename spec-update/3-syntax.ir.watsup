@@ -51,8 +51,7 @@ syntax nonBraceExpressionInnerIR =
   | `+ expressionIR
   | typeName `. member
   | ERROR `. member
-  ;; (TODO) disambiguate with (typeName `. member)
-  | nonBraceExpressionIR `. member PHTM_5
+  | nonBraceExpressionIR `. member
   | nonBraceExpressionIR `* expressionIR
   | nonBraceExpressionIR `/ expressionIR
   | nonBraceExpressionIR `% expressionIR
@@ -62,23 +61,22 @@ syntax nonBraceExpressionInnerIR =
   | nonBraceExpressionIR `|-| expressionIR
   | nonBraceExpressionIR `<< expressionIR
   | nonBraceExpressionIR `>> expressionIR
-;;  | nonBraceExpressionIR `<= expressionIR
-;;  | nonBraceExpressionIR `>= expressionIR
-;;  | nonBraceExpressionIR ``< expressionIR
-;;  | nonBraceExpressionIR ``> expressionIR
-;;  | nonBraceExpressionIR `!= expressionIR
-;;  | nonBraceExpressionIR `== expressionIR
-;;  | nonBraceExpressionIR `& expressionIR
-;;  | nonBraceExpressionIR `^ expressionIR
-;;  | nonBraceExpressionIR `| expressionIR
-;;  | nonBraceExpressionIR `++ expressionIR
-;;  | nonBraceExpressionIR `&& expressionIR
-;;  | nonBraceExpressionIR `|| expressionIR
+  | nonBraceExpressionIR `<= expressionIR
+  | nonBraceExpressionIR `>= expressionIR
+  | nonBraceExpressionIR ``< expressionIR
+  | nonBraceExpressionIR ``> expressionIR
+  | nonBraceExpressionIR `!= expressionIR
+  | nonBraceExpressionIR `== expressionIR
+  | nonBraceExpressionIR `& expressionIR
+  | nonBraceExpressionIR `^ expressionIR
+  | nonBraceExpressionIR `| expressionIR
+  | nonBraceExpressionIR `++ expressionIR
+  | nonBraceExpressionIR `&& expressionIR
+  | nonBraceExpressionIR `|| expressionIR
   | nonBraceExpressionIR `? expressionIR `: expressionIR
   | nonBraceExpressionIR `< typeArgumentListIR > `( argumentListIR )
   | nonBraceExpressionIR `( argumentListIR )
-  ;; (TODO) disambiguate with (nonBraceExpression `( argumentList ))
-  | namedTypeIR `( argumentListIR ) PHTM_6
+  | namedTypeIR `( argumentListIR )
   | `( typeIR ) expressionIR
 
 
@@ -96,8 +94,7 @@ syntax expressionInnerIR =
   | expressionIR `[ expressionIR `: expressionIR ]
   | `{ expressionListIR optTrailingComma }
   | `{#}
-  ;; (TODO) disambiguate with (`{ expressionListIR optTrailingComma })
-  | `{ kvListIR optTrailingComma } PHTM_7
+  | `{ kvListIR optTrailingComma }
   | `{ kvListIR `, `... optTrailingComma }
   | `( expressionIR )
   | `! expressionIR
@@ -106,8 +103,7 @@ syntax expressionInnerIR =
   | `+ expressionIR
   | typeName `. member
   | ERROR `. member
-  ;; (TODO) disambiguate with (typeName `. member)
-  | expressionIR `. member PHTM_8
+  | expressionIR `. member
   | expressionIR `* expressionIR
   | expressionIR `/ expressionIR
   | expressionIR `% expressionIR
@@ -117,23 +113,22 @@ syntax expressionInnerIR =
   | expressionIR `|-| expressionIR
   | expressionIR `<< expressionIR
   | expressionIR `>> expressionIR
-;;  | expressionIR `<= expressionIR
-;;  | expressionIR `>= expressionIR
-;;  | expressionIR ``< expressionIR
-;;  | expressionIR ``> expressionIR
-;;  | expressionIR `!= expressionIR
-;;  | expressionIR `== expressionIR
-;;  | expressionIR `& expressionIR
-;;  | expressionIR `^ expressionIR
-;;  | expressionIR `| expressionIR
-;;  | expressionIR `++ expressionIR
-;;  | expressionIR `&& expressionIR
-;;  | expressionIR `|| expressionIR
+  | expressionIR `<= expressionIR
+  | expressionIR `>= expressionIR
+  | expressionIR ``< expressionIR
+  | expressionIR ``> expressionIR
+  | expressionIR `!= expressionIR
+  | expressionIR `== expressionIR
+  | expressionIR `& expressionIR
+  | expressionIR `^ expressionIR
+  | expressionIR `| expressionIR
+  | expressionIR `++ expressionIR
+  | expressionIR `&& expressionIR
+  | expressionIR `|| expressionIR
   | expressionIR `? expressionIR `: expressionIR
   | expressionIR `< typeArgumentListIR > `( argumentListIR )
   | expressionIR `( argumentListIR )
-  ;; (TODO) disambiguate with (expression `( argumentListIR ))
-  | namedTypeIR `( argumentListIR ) PHTM_9
+  | namedTypeIR `( argumentListIR )
   | `( typeIR ) expressionIR
 
 ;; (TODO) Add comma separator as hint?
@@ -635,8 +630,7 @@ syntax derivedTypeDeclarationIR =
 
 syntax typedefDeclarationIR =
   | optAnnotationsIR TYPEDEF typeIR name
-  ;; (TODO) disambiguate with (optAnnotations TYPEDEF typeRef name)
-  | optAnnotationsIR TYPEDEF derivedTypeDeclarationIR name PHTM_12
+  | optAnnotationsIR TYPEDEF derivedTypeDeclarationIR name
   | optAnnotationsIR TYPE typeIR name
 
 ;;
@@ -646,12 +640,9 @@ syntax typedefDeclarationIR =
 syntax typeDeclarationIR =
   | derivedTypeDeclarationIR
   | typedefDeclarationIR `; 
-  ;; (TODO) disambiguate with (typedefDeclaration `;)
-  | parserTypeDeclarationIR `; PHTM_13
-  ;; (TODO) disambiguate with (typedefDeclaration `;)
-  | controlTypeDeclarationIR `; PHTM_14
-  ;; (TODO) disambiguate with (typedefDeclaration `;)
-  | packageTypeDeclarationIR `; PHTM_15
+  | parserTypeDeclarationIR `;
+  | controlTypeDeclarationIR `;
+  | packageTypeDeclarationIR `;
 
 ;;
 ;;;; Declaration
@@ -686,8 +677,7 @@ syntax simpleAnnotationBodyIR = simpleAnnotationIR*
 
 syntax structuredAnnotationBodyIR =
   | expressionListIR optTrailingComma
-  ;; (TODO) disambiguate with (expressionList optTrailingComma)
-  | kvListIR optTrailingComma PHTM_20
+  | kvListIR optTrailingComma
 
 syntax annotationIR =
   | `@ name

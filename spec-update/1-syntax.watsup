@@ -145,8 +145,7 @@ syntax typeRef =
 syntax typeOrVoid =
   | typeRef
   | VOID
-;; (TODO) Why is this necessary? typeRef already includes identifier
-;;  | identifier
+  | identifier
 
 ;;
 ;; Type parameters
@@ -422,8 +421,7 @@ syntax assignmentOrMethodCallStatement =
 ;;;; Direct application statements
 ;;
 
-syntax directApplication =
-  | namedType `. APPLY `( argumentList ) `;
+syntax directApplication = namedType `. APPLY `( argumentList ) `;
 
 ;;
 ;;;; Conditional statements

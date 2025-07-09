@@ -2,7 +2,76 @@ open Il.Ast
 open Xl.Atom
 open Util.Source
 
-let wrap_atom (s : string) : atom = Atom s $ no_region
+let wrap_atom (s : string) : atom =
+  match s with
+  | "<:" -> Sub $ no_region
+  | ":>" -> Sup $ no_region
+  | "|-" -> Turnstile $ no_region
+  | "-|" -> Tilesturn $ no_region
+  | "->" -> Arrow $ no_region
+  | "->_" -> ArrowSub $ no_region
+  | "=>" -> DoubleArrow $ no_region
+  | "=>_" -> DoubleArrowSub $ no_region
+  | "~>" -> SqArrow $ no_region
+  | "~>*" -> SqArrowStar $ no_region
+  | "." -> Dot $ no_region
+  | ".." -> Dot2 $ no_region
+  | "..." -> Dot3 $ no_region
+  | "," -> Comma $ no_region
+  | ";" -> Semicolon $ no_region
+  | ":" -> Colon $ no_region
+  | "#" -> Hash $ no_region
+  | "$" -> Dollar $ no_region
+  | "@" -> At $ no_region
+  | "?" -> Quest $ no_region
+  | "!" -> Bang $ no_region
+  | "!=" -> BangEq $ no_region
+  | "~" -> Tilde $ no_region
+  | "~~" -> Tilde2 $ no_region
+  | "<" -> LAngle $ no_region
+  | "<<" -> LAngle2 $ no_region
+  | "<=" -> LAngleEq $ no_region
+  | "<<=" -> LAngle2Eq $ no_region
+  | ">" -> RAngle $ no_region
+  | ">>" -> RAngle2 $ no_region
+  | ">=" -> RAngleEq $ no_region
+  | ">>=" -> RAngle2Eq $ no_region
+  | "(" -> LParen $ no_region
+  | ")" -> RParen $ no_region
+  | "[" -> LBrack $ no_region
+  | "]" -> RBrack $ no_region
+  | "{" -> LBrace $ no_region
+  | "{#}" -> LBraceHashRBrace $ no_region
+  | "}" -> RBrace $ no_region
+  | "+" -> Plus $ no_region
+  | "++" -> Plus2 $ no_region
+  | "+=" -> PlusEq $ no_region
+  | "-" -> Minus $ no_region
+  | "-=" -> MinusEq $ no_region
+  | "*" -> Star $ no_region
+  | "*=" -> StarEq $ no_region
+  | "/" -> Slash $ no_region
+  | "/=" -> SlashEq $ no_region
+  | "\\" -> Backslash $ no_region
+  | "%" -> Percent $ no_region
+  | "%=" -> PercentEq $ no_region
+  | "=" -> Eq $ no_region
+  | "==" -> Eq2 $ no_region
+  | "&" -> Amp $ no_region
+  | "&&" -> Amp2 $ no_region
+  | "&&&" -> Amp3 $ no_region
+  | "&=" -> AmpEq $ no_region
+  | "^" -> Up $ no_region
+  | "^=" -> UpEq $ no_region
+  | "|" -> Bar $ no_region
+  | "||" -> Bar2 $ no_region
+  | "|=" -> BarEq $ no_region
+  | "|+|" -> SPlus $ no_region
+  | "|+|=" -> SPlusEq $ no_region
+  | "|-|" -> SMinus $ no_region
+  | "|-|=" -> SMinusEq $ no_region
+  | _ -> Atom s $ no_region
+
 let wrap_var_t (s : string) : typ' = VarT (s $ no_region, [])
 let wrap_iter_t (i : iter) (t : typ') : typ' = IterT (t $ no_region, i)
 

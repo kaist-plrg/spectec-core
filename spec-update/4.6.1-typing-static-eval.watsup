@@ -1,0 +1,27 @@
+;;; syntax number =
+;;;   | int PHTM_1
+;;;   | nat W int
+;;;   | nat S int
+
+rule Eval_static/number-arbint:
+  p C |- (i PHTM_1) _ ~> i PHTM_1
+
+rule Eval_static/number-fixbit:
+  p C |- (n W i) _ ~> n W i
+
+rule Eval_static/number-fixint:
+  p C |- (n S i) _ ~> n S i
+
+;;; stringLiteral
+
+rule Eval_static/stringliteral:
+  p C |- (text PHTM_2) _ ~> text PHTM_2
+
+;;; TRUE
+;;; FALSE
+
+rule Eval_static/true:
+  p C |- TRUE _ ~> true PHTM_0
+
+rule Eval_static/false:
+  p C |- FALSE _ ~> false PHTM_0
