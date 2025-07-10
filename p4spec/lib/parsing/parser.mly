@@ -84,7 +84,6 @@
 %type <Il.Ast.value list> separated_nonempty_opt_trailing_list(COMMA,__anonymous_0) separated_nonempty_opt_trailing_list(COMMA,kvPair) separated_nonempty_trailing_list(COMMA,kvPair) separated_opt_trailing_list(COMMA,expression) separated_nonempty_opt_trailing_list(COMMA,specifiedIdentifier)
 %type <Il.Ast.value list> declarationList kvList expressionList
 %type <Il.Ast.value> push_name push_externName
-(* %type <Il.Ast.value option> lib_parsing_parser_option(COMMA) lib_parsing_parser_option(annotations) lib_parsing_parser_option(const) lib_parsing_parser_option(constructorParameters) lib_parsing_parser_option(initialValue) lib_parsing_parser_option(trailingComma) lib_parsing_parser_option(typeParameters) *)
 %type <unit> push_scope pop_scope go_toplevel go_local
 %%
 
