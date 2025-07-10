@@ -144,13 +144,19 @@ syntax polyFuncTypeDefIR = funcTypeIR `< name* `, name* >
 syntax funcTypeDefIR = monoFuncTypeDefIR | polyFuncTypeDefIR
 
 ;;
-;; Constructor types
+;;;; Constructor Parameter types
 ;;
 
-syntax consTypeIR = `( paramTypeIR* ) -> typeIR
+syntax consParamTypeIR = paramTypeIR
 
 ;;
-;; Constructor type definitions
+;;;; Constructor types
+;;
+
+syntax consTypeIR = `( consParamTypeIR* ) -> typeIR
+
+;;
+;;;; Constructor type definitions
 ;;
 
 syntax consTypeDefIR = consTypeIR `< name* `, name* >

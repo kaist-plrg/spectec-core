@@ -215,7 +215,7 @@ syntax annotationsIR, optAnnotationsIR
 ;; Variable and constant declarations
 ;;
 
-syntax initializerIR = `= expressionIR
+syntax initializerIR = `= val
 
 syntax optInitializerIR = initializerIR?
 
@@ -277,7 +277,7 @@ syntax emptyStatementIR = `;
 ;;;; Block statements
 ;;
 
-syntax blockStatementIR = optAnnotationsIR `{ statOrDeclListIR }
+syntax blockStatementIR = `{ statOrDeclListIR }
 
 ;;
 ;;;; Return statements
@@ -427,7 +427,7 @@ syntax objDeclarationsIR = objDeclarationIR*
 ;;
 
 syntax actionDeclarationIR =
-  optAnnotationsIR ACTION name `( parameterListIR ) blockStatementIR
+  ACTION name `( parameterListIR ) blockStatementIR
 
 ;;
 ;;;; Table declarations

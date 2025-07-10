@@ -71,17 +71,22 @@ relation Lval_ok:
 syntax blkctxt = INIT | NOINIT
 
 relation Block_ok:
-  cursor context flow blkctxt |- blockStatement : context flow blockStatementIR
-  hint(input %0 %1 %2 %3 %4)
+  context flow blkctxt |- blockStatement
+                        : context flow blockStatementIR
+  hint(input %0 %1 %2 %3)
+
+relation ControlBody_ok:
+  context |- controlBody : context flow controlBodyIR
+  hint(input %0 %1)
 
 relation Stmt_ok:
   cursor context flow |- statementOrDeclaration
-                      : context flow statementOrDeclarationIR
+                       : context flow statementOrDeclarationIR
   hint(input %0 %1 %2 %3)
 
 relation Stmts_ok:
-  cursor context flow |- statementOrDeclaration
-                      : context flow statementOrDeclarationIR*
+  cursor context flow |- statOrDeclList
+                       : context flow statOrDeclListIR
   hint(input %0 %1 %2 %3)
 
 ;;
@@ -93,13 +98,49 @@ relation Param_ok:
   cursor context |- parameter : parameterIR name*
   hint(input %0 %1 %2)
 
-relation CParam_ok:
-  cursor context |- parameter : parameterIR name*
+relation Params_ok:
+  cursor context |- parameterList : parameterListIR name*
   hint(input %0 %1 %2)
 
+dec $paramtypes(parameterListIR) : paramTypeIR*
+dec $paramtype(parameterIR) : paramTypeIR
+
+def $paramtypes(parameterIR*) = $paramtype(parameterIR)*
+
+def $paramtype(direction typeIR name)
+  = name direction typeIR eps
+def $paramtype(direction typeIR name initializerIR)
+  = name direction typeIR val
+  -- if `= val = initializerIR
+
+relation ConsParam_ok:
+  context |- parameter : parameterIR name*
+  hint(input %0 %1)
+
+relation ConsParams_ok:
+  context |- optConstructorParameters
+           : optConstructorParametersIR name*
+  hint(input %0 %1)
+
+dec $consParamtypes(optConstructorParametersIR) : consParamTypeIR*
+
+def $consParamtypes(eps) = eps
+def $consParamtypes(`( parameterListIR ))
+  = $paramtypes(parameterListIR)
+
 ;;
-;;;; Declaration typing,
+;;;; Declaration typing
 ;;
+
+relation ControlLocalDecl_ok:
+  context |- controlLocalDeclaration
+           : context controlLocalDeclarationIR
+  hint(input %0 %1)
+
+relation ControlLocalDecls_ok:
+  context |- controlLocalDeclarations
+           : context controlLocalDeclarationsIR
+  hint(input %0 %1)
 
 relation Decl_ok:
   cursor context |- declaration : context declarationIR
@@ -110,7 +151,7 @@ relation Decls_ok:
   hint(input %0 %1 %2)
 
 ;;
-;;;; Program typing,
+;;;; Program typing
 ;;
 
 relation Prog_ok:

@@ -1,47 +1,58 @@
-;; syntax statementOrDeclaration =
-;;   | variableDeclaration
-;;   | constantDeclaration
-;;   | statement
+;;
+;; syntax statementOrDeclaration
+;;
+
+;;; | variableDeclaration
+
+;;; | constantDeclaration
 
 rule Stmt_ok/constantdeclaration:
   p C f |- constantDeclaration : C' f constantDeclarationIR
   -- Decl_ok: p C |- constantDeclaration : C' constantDeclarationIR
 
-;;; syntax statement =
-;;;   | assignmentOrMethodCallStatement
-;;;   | directApplication
-;;;   | conditionalStatement
-;;;   | emptyStatement
-;;;   | blockStatement
-;;;   | returnStatement
-;;;   | breakStatement
-;;;   | continueStatement
-;;;   | exitStatement
-;;;   | switchStatement
-;;;   | forStatement
+;;; | statement
+;;; syntax statement
 
+;;;; | assignmentOrMethodCallStatement
 ;;;; syntax assignmentOrMethodCallStatement =
 ;;;;   assignmentOrMethodCallStatementWithoutSemicolon `;
 
-;;;;; syntax assignmentOrMethodCallStatementWithoutSemicolon =
-;;;;;   | lvalue `( argumentList )
-;;;;;   | lvalue `< typeArgumentList > `( argumentList )
-;;;;;   | lvalue `= expression
-;;;;;   | lvalue `+= expression
-;;;;;   | lvalue `|+|= expression
-;;;;;   | lvalue `-= expression
-;;;;;   | lvalue `|-|= expression
-;;;;;   | lvalue `*= expression
-;;;;;   | lvalue `/= expression
-;;;;;   | lvalue `%= expression
-;;;;;   | lvalue `<<= expression
-;;;;;   | lvalue `>>= expression
-;;;;;   | lvalue `&= expression
-;;;;;   | lvalue `^= expression
-;;;;;   | lvalue `|= expression
+;;;;; syntax assignmentOrMethodCallStatementWithoutSemicolon
 
+;;;;;; | lvalue `( argumentList )
+
+;;;;;; | lvalue `< typeArgumentList > `( argumentList )
+
+;;;;;; | lvalue `= expression
+
+;;;;;; | lvalue `+= expression
+
+;;;;;; | lvalue `|+|= expression
+
+;;;;;; | lvalue `-= expression
+
+;;;;;; | lvalue `|-|= expression
+
+;;;;;; | lvalue `*= expression
+
+;;;;;; | lvalue `/= expression
+
+;;;;;; | lvalue `%= expression
+
+;;;;;; | lvalue `<<= expression
+
+;;;;;; | lvalue `>>= expression
+
+;;;;;; | lvalue `&= expression
+
+;;;;;; | lvalue `^= expression
+
+;;;;;; | lvalue `|= expression
+
+;;;; | directApplication
 ;;;; syntax directApplication = namedType `. APPLY `( argumentList ) `;
 
+;;;; | conditionalStatement
 ;;;; syntax conditionalStatement =
 ;;;;   | IF `( expression ) statement
 ;;;;   | IF `( expression ) statement ELSE statement
@@ -62,13 +73,30 @@ rule Stmt_ok/conditionalstatement-else:
   -- Stmt_ok: p C f |- statement_f : C_f f_f statementIR_f
   -- if f_join = $join_flow(f_t, f_f)
 
+;;;; | emptyStatement
 ;;;; syntax emptyStatement = `;
 
 rule Stmt_ok/emptystatement:
   p C f |- `; : C f `;
 
+;;;; | blockStatement
 ;;;; syntax blockStatement = optAnnotations `{ statOrDeclList }
 
+rule Block_ok/init:
+  C f INIT |- optAnnotations `{ statOrDeclList }
+            : C' f' `{ statOrDeclListIR }
+  -- Stmts_ok: LOCAL C f |- statOrDeclList
+                          : C' f' statOrDeclListIR
+
+rule Block_ok/noinit:
+  C f NOINIT |- optAnnotations `{ statOrDeclList }
+              : C_exit f_end `{ statOrDeclListIR }
+  -- if C_enter = $enter(C)
+  -- Stmts_ok: LOCAL C_enter f |- statOrDeclList
+                                : C_end f_end statOrDeclListIR
+  -- if C_exit = $exit(C_end)
+
+;;;; | returnStatement
 ;;;; syntax returnStatement =
 ;;;;   | RETURN `;
 ;;;;   | RETURN expression `;
@@ -84,18 +112,46 @@ rule Stmt_ok/returnstatement-nonempty:
   -- if typeIR_ret = $return(C.LOCAL)
   -- if expressionIR_cast = $coerce_unary(expressionIR, typeIR_ret)
 
+;;;; | breakStatement
 ;;;; syntax breakStatement = BREAK `;
 
+;;;; | continueStatement
 ;;;; syntax continueStatement = CONTINUE `;
 
+;;;; | exitStatement
 ;;;; syntax exitStatement = EXIT `;
 
 rule Stmt_ok/exitstatement:
   p C f |- EXIT `; : C f (EXIT `;)
 
+;;;; | switchStatement
 ;;;; syntax switchStatement = SWITCH `( expression ) `{ switchCases }
 
+;;;; | forStatement
 ;;;; syntax forStatement =
 ;;;;   | optAnnotations FOR `( forInitStatements `; expression `; forUpdateStatements ) statement
 ;;;;   | optAnnotations FOR `( typeRef name IN forCollectionExpr ) statement
 ;;;;   | optAnnotations FOR `( annotations typeRef name IN forCollectionExpr ) statement
+
+;;
+;; syntax statOrDeclList
+;;
+
+rule Stmts_ok/nil:
+  p C f |- eps : C f eps
+
+rule Stmts_ok/cons:
+  p C f |- statementOrDeclaration_h :: statementOrDeclaration_t*
+         : C'' f'' (statementOrDeclarationIR_h :: statementOrDeclarationIR_t*)
+  -- Stmt_ok: p C f |- statementOrDeclaration_h
+                     : C' f' statementOrDeclarationIR_h
+  -- Stmts_ok: p C' f' |- statementOrDeclaration_t*
+                      : C'' f'' statementOrDeclarationIR_t*
+
+;;
+;; syntax controlBody = blockStatement
+;;
+
+rule ControlBody_ok:
+  C |- controlBody : C' f controlBodyIR
+  -- Block_ok: C CONT INIT |- controlBody : C' f controlBodyIR

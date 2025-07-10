@@ -8,8 +8,27 @@
 
 syntax funcName = name (name, bool)*
 
+dec $funcName(name, parameterList) : funcName
+dec $funcName'(parameter) : (name, bool)
+
+def $funcName(name, parameter*)
+  = name $funcName'(parameter)*
+
+def $funcName'(_ _ _ name) = (name, false)
+def $funcName'(_ _ _ name _) = (name, true)
+
 ;;
 ;; Constructor names
 ;;
 
 syntax consName = funcName
+
+dec $consName(name, optConstructorParameters) : consName
+dec $consName'(parameter) : (name, bool)
+
+def $consName(name, eps) = name eps
+def $consName(name, `( parameter* ))
+  = name $consName'(parameter)*
+
+def $consName'(_ _ _ name) = (name, false)
+def $consName'(_ _ _ name _) = (name, true)

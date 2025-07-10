@@ -1,0 +1,65 @@
+;;
+;; Parameter typing
+;;
+
+rule Param_ok/init-none:
+  p C |- optAnnotations direction typeRef name
+       : (direction typeIR name) name_fresh*
+  -- Type_ok: p C |- typeRef : typeIR name_fresh*
+  -- if bound
+        = $union_set<name>($bound(p, C), `{ name_fresh* })
+  -- Type_wf: bound |- typeIR
+
+rule Param_ok/init-some:
+  p C |- optAnnotations direction typeRef name initializer
+       : (direction typeIR name initializerIR) name_fresh*
+  -- Type_ok: p C |- typeRef : typeIR name_fresh*
+  -- if bound
+        = $union_set<name>($bound(p, C), `{ name_fresh* })
+  -- Type_wf: bound |- typeIR
+  -- if `= expression_init = initializer
+  -- Expr_ok: p C |- expression_init : expressionIR_init
+  -- if _ `( typeIR_init `; LCTK ) = expressionIR_init
+  -- Sub_impl: typeIR_init <: typeIR
+  -- Eval_static: p C |- expressionIR_init ~> val_init
+  -- if initializerIR = `= val_init
+
+rule Params_ok:
+  p C |- parameter* : parameterIR* name_fresh'*
+  -- (Param_ok: p C |- parameter : parameterIR name_fresh*)*
+  -- if name_fresh'* = $concat_<name>(name_fresh**)
+
+;;
+;; Constructor parameter typing
+;;
+
+rule ConsParam_ok/init-none:
+  C |- optAnnotations direction typeRef name
+     : (direction typeIR name) name_fresh*
+  -- Type_ok: BLOCK C |- typeRef : typeIR name_fresh*
+  -- if bound
+        = $union_set<name>($bound(BLOCK, C), `{ name_fresh* })
+  -- Type_wf: bound |- typeIR
+
+rule ConsParam_ok/init-some:
+  C |- optAnnotations direction typeRef name initializer
+     : (direction typeIR name initializerIR) name_fresh*
+  -- Type_ok: BLOCK C |- typeRef : typeIR name_fresh*
+  -- if bound
+        = $union_set<name>($bound(BLOCK, C), `{ name_fresh* })
+  -- Type_wf: bound |- typeIR
+  -- if `= expression_init = initializer
+  -- Expr_ok: BLOCK C |- expression_init : expressionIR_init
+  -- if _ `( typeIR_init `; LCTK ) = expressionIR_init
+  -- Sub_impl: typeIR_init <: typeIR
+  -- Eval_static: BLOCK C |- expressionIR_init ~> val_init
+  -- if initializerIR = `= val_init
+
+rule ConsParams_ok/params-none:
+  C |- eps : eps eps
+
+rule ConsParams_ok/params-some:
+  C |- `( parameter* )
+     : `( parameterIR* ) name_fresh'*
+  -- (ConsParam_ok: C |- parameter : parameterIR name_fresh*)*
+  -- if name_fresh'* = $concat_<name>(name_fresh**)

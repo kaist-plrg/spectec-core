@@ -81,6 +81,18 @@ def $exit(C) = C[ .LOCAL.FRAMES = frame_t* ]
   -- if frame_h :: frame_t* = C.LOCAL.FRAMES
 
 ;;
+;; Bound type variabls
+;;
+
+dec $bound(cursor, context) : bound
+
+def $bound(GLOBAL, C) = `{ eps }
+def $bound(BLOCK, C) = $dom_map<name, typeDefIR>(C.BLOCK.TDENV)
+def $bound(LOCAL, C) = $union_set<name>(bound_block, bound_local)
+  -- if bound_block = $bound(BLOCK, C)
+  -- if bound_local = $dom_map<name, typeDefIR>(C.LOCAL.TDENV)
+
+;;
 ;; Return type
 ;;
 
@@ -90,21 +102,88 @@ dec $return(llayer) : typeIR
 ;; Adders
 ;;
 
-;; Adder for variables
+;;; Adder for variables
 
 dec $add_var(cursor, context, name, varTypeIR) : context
 
-def $add_var(GLOBAL, C, name, varTypeIR) = C [ .GLOBAL.FRAME = frame ]
+def $add_var(GLOBAL, C, name, varTypeIR) = C[ .GLOBAL.FRAME = frame ]
   -- if frame = $add_map<name, varTypeIR>(C.GLOBAL.FRAME, name, varTypeIR)
+
+def $add_var(BLOCK, C, name, varTypeIR) = C[ .BLOCK.FRAME = frame ]
+  -- if frame = $add_map<name, varTypeIR>(C.BLOCK.FRAME, name, varTypeIR)
+
+def $add_var(LOCAL, C, name, varTypeIR) = C[ .LOCAL.FRAMES = frame* ]
+  -- if frame_h :: frame_t* = C.LOCAL.FRAMES
+  -- if frame_h_update = $add_map<name, varTypeIR>(frame_h, name, varTypeIR)
+  -- if frame* = frame_h_update :: frame_t*
+
+;;; Adder for parameters
+
+dec $add_param(cursor, context, paramTypeIR) : context
+dec $add_params(cursor, context, paramTypeIR*) : context
+
+def $add_param(cursor, C, name direction typeIR eps) = C'
+  -- if varTypeIR = typeIR direction eps DYN
+  -- if C' = $add_var(cursor, C, name, varTypeIR)
+def $add_param(cursor, C, name direction typeIR val) = C'
+  -- if varTypeIR = typeIR direction val DYN
+  -- if C' = $add_var(cursor, C, name, varTypeIR)
+
+def $add_params(cursor, C, eps) = C
+def $add_params(cursor, C, paramTypeIR_h :: paramTypeIR_t*) = C''
+  -- if C' = $add_param(cursor, C, paramTypeIR_h)
+  -- if C'' = $add_params(cursor, C', paramTypeIR_t*)
+
+;;; Adder for constructor parameters
+
+dec $add_consParam(context, consParamTypeIR) : context
+dec $add_consParams(context, consParamTypeIR*) : context
+
+def $add_consParam(C, name direction typeIR eps) = C'
+  -- if varTypeIR = typeIR direction eps CTK -- if C' = $add_var(BLOCK, C, name, varTypeIR)
+def $add_consParam(C, name direction typeIR val) = C'
+  -- if varTypeIR = typeIR direction val CTK
+  -- if C' = $add_var(BLOCK, C, name, varTypeIR)
+
+def $add_consParams(C, eps) = C
+def $add_consParams(C, consParamTypeIR_h :: consParamTypeIR_t* ) = C''
+  -- if C' = $add_consParam(C, consParamTypeIR_h)
+  -- if C'' = $add_consParams(C', consParamTypeIR_t*)
+
+;;; Adder for functions
+
+dec $add_func(cursor, context, funcName, funcTypeDefIR) : context
+
+def $add_func(GLOBAL, C, funcName, funcTypeDefIR) = C'
+  -- if fdenv = C.GLOBAL.FDENV
+  -- if fdenv_update
+        = $add_map<funcName, funcTypeDefIR>(fdenv, funcName, funcTypeDefIR)
+  -- if C' = C [ .GLOBAL.FDENV = fdenv_update ]
+
+def $add_func(BLOCK, C, funcName, funcTypeDefIR) = C'
+  -- if fdenv = C.BLOCK.FDENV
+  -- if fdenv_update
+        = $add_map<funcName, funcTypeDefIR>(fdenv, funcName, funcTypeDefIR)
+  -- if C' = C [ .BLOCK.FDENV = fdenv_update ]
+
+;;; Adder for constructors
+
+dec $add_cons(context, consName, consTypeDefIR) : context
+
+def $add_cons(C, consName, consTypeDefIR) = C'
+  -- if cdenv = C.GLOBAL.CDENV
+  -- if cdenv_update
+        = $add_map<consName, consTypeDefIR>(cdenv, consName, consTypeDefIR)
+  -- if C' = C [ .GLOBAL.CDENV = cdenv_update ]
 
 ;;
 ;; Finders
 ;;
 
-;; Finder for values
+;;; Finder for values
 
 dec $find_val(cursor, context, name) : val?
 
-;; Finder for type definitions
+;;; Finder for type definitions
 
 dec $find_typedef(cursor, context, typeName) : typeDefIR?
