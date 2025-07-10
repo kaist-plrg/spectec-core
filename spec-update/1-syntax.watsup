@@ -48,7 +48,10 @@ syntax prefixedNonTypeName =
   | nonTypeName
   | dotPrefix nonTypeName
 
-syntax nonTableKwName = nonTypeName
+syntax nonTableKwName =
+  | identifier
+  | typeIdentifier
+  | APPLY | STATE | TYPE | PRIORITY
 
 syntax prefixedType =
   | typeIdentifier
@@ -194,6 +197,7 @@ syntax nonBraceExpression =
   | TRUE
   | FALSE
   | THIS
+  | prefixedNonTypeName
   | nonBraceExpression `[ expression ]
   | nonBraceExpression `[ expression `: expression ]
   | `( expression )
@@ -646,7 +650,7 @@ syntax entryPriority =
 
 syntax entry =
   | optCONST entryPriority keysetExpression `: actionRef optAnnotations`; 
-  | optCONST keysetExpression `: actionList optAnnotations `; 
+  | optCONST keysetExpression `: actionRef optAnnotations `; 
 
 syntax entriesList = entry*
 
