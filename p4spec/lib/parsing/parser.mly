@@ -30,7 +30,7 @@
 %token<Source.info> END
 %token TYPENAME IDENTIFIER
 %token<Il.Ast.value> NAME STRING_LITERAL
-%token<Il.Ast.value * string> NUMBER
+%token<Il.Ast.value * string> NUMBER_INT NUMBER
 %token<Source.info> LE GE SHL AND OR NE EQ
 %token<Source.info> PLUS MINUS PLUS_SAT MINUS_SAT MUL INVALID DIV MOD
 %token<Source.info> BIT_OR BIT_AND BIT_XOR COMPLEMENT
@@ -210,6 +210,11 @@ list(X):
 ;
 
 (**************************** P4-16 GRAMMAR ******************************)
+(******** Built-in ********)
+int:
+| int = NUMBER_INT
+    { fst int }
+;
 
 (******** Misc ********)
 
@@ -236,6 +241,8 @@ optCONST:
 (******** Numbers ********)
 (* Spec Mismatch: Processed by lexer *)
 number:
+| int = int
+      { [ NT int; Term "PHTM_2" ] |> wrap_case_v |> with_typ (wrap_var_t "number") }
 | number = NUMBER
     { fst number }
 ;
@@ -390,19 +397,19 @@ baseType:
 | info = INT
     { info |> ignore;
       [ Term "INT" ] |> wrap_case_v |> with_typ (wrap_var_t "baseType") }
-| info1 = BIT l_angle value = number info_r = r_angle
+| info1 = BIT l_angle value = int info_r = r_angle
     { let tags = Source.merge info1 info_r in
       tags |> ignore;
       [ Term "BIT"; Term "<"; NT value; Term ">" ]
       |> wrap_case_v 
       |> with_typ (wrap_var_t "baseType") }
-| info1 = INT l_angle value = number info_r = r_angle
+| info1 = INT l_angle value = int info_r = r_angle
     { let tags = Source.merge info1 info_r in
       tags |> ignore;
       [ Term "INT"; Term "<"; NT value; Term ">" ]
       |> wrap_case_v 
       |> with_typ (wrap_var_t "baseType") }
-| info1 = VARBIT l_angle value = number info_r = r_angle
+| info1 = VARBIT l_angle value = int info_r = r_angle
     { let tags = Source.merge info1 info_r in
       tags |> ignore;
       [ Term "VARBIT"; Term "<"; NT value; Term ">" ]

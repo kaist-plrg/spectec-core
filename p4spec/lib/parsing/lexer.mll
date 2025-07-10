@@ -103,18 +103,7 @@ let strip_prefix s =
 
 let parse_int n _info =
   let i = Bigint.of_string (sanitize n) in
-  let mixop = [ [ ]; [ wrap_atom "PHTM_1" ] ] in
-  let value_int =
-    let vid = Value.fresh () in
-    let typ = NumT `IntT in
-    NumV (`Int i) $$$ { vid; typ }
-  in
-  let value =
-    let vid = Value.fresh () in
-    let typ = VarT ("number" $ no_region, []) in
-    CaseV (mixop, [ value_int ]) $$$ { vid; typ }
-  in
-  value
+  NumV (`Int i) |> with_typ (NumT `IntT)
 
 let parse_width_int s n _info =
   let l_s = String.length s in
@@ -129,38 +118,26 @@ let parse_width_int s n _info =
       else 
         let mixop = [ [ ]; [ wrap_atom "S" ]; [] ] in
         let value_width =
-          let vid = Value.fresh () in
-          let typ = NumT `NatT in
-          NumV (`Nat w) $$$ { vid; typ }
+          NumV (`Nat w) |> with_typ (NumT `NatT)
         in
         let value_int =
-          let vid = Value.fresh () in
-          let typ = NumT `IntT in
-          NumV (`Int i) $$$ { vid; typ }
+          NumV (`Int i) |> with_typ (NumT `IntT)
         in
         (mixop, [ value_width; value_int ])
     | "w" ->
       let mixop = [ [ ]; [ wrap_atom "W" ]; [] ] in
       let value_width =
-        let vid = Value.fresh () in
-        let typ = NumT `NatT in
-        NumV (`Nat w) $$$ { vid; typ }
+        NumV (`Nat w) |> with_typ (NumT `NatT)
       in
       let value_int =
-        let vid = Value.fresh () in
-        let typ = NumT `IntT in
-        NumV (`Int i) $$$ { vid; typ }
+        NumV (`Int i) |> with_typ (NumT `IntT)
       in
       (mixop, [ value_width; value_int ])
     | _ ->
       raise (Error "Illegal integer constant")
   in
-      let value =
-      let vid = Value.fresh () in
-      let typ = VarT ("number" $ no_region, []) in
-      CaseV (mixop, values) $$$ { vid; typ }
-    in
-    value
+  let typ = "number" |> wrap_var_t in
+  CaseV (mixop, values) |> with_typ typ
 }
 
 let name = [ 'A'-'Z' 'a'-'z' '_' ] [ 'A'-'Z' 'a'-'z' '0'-'9' '_' ]*
@@ -199,15 +176,15 @@ rule tokenize = parse
   | "@pragma"
       { debug_token "@pragma"; PRAGMA (info lexbuf) }
   | hex_number as n
-      { debug_token n; NUMBER (parse_int n (info lexbuf), n) }
+      { debug_token n; NUMBER_INT (parse_int n (info lexbuf), n) }
   | dec_number as n
-      { debug_token n; NUMBER (parse_int (strip_prefix n) (info lexbuf), n) }
+      { debug_token n; NUMBER_INT (parse_int (strip_prefix n) (info lexbuf), n) }
   | oct_number as n
-      { debug_token n; NUMBER (parse_int n (info lexbuf), n) }
+      { debug_token n; NUMBER_INT (parse_int n (info lexbuf), n) }
   | bin_number as n
-      { debug_token n; NUMBER (parse_int n (info lexbuf), n) }
+      { debug_token n; NUMBER_INT (parse_int n (info lexbuf), n) }
   | int as n
-      { debug_token n; NUMBER (parse_int n (info lexbuf), n) }
+      { debug_token n; NUMBER_INT (parse_int n (info lexbuf), n) }
   | (sign as s) (hex_number as n)
       { NUMBER (parse_width_int s n (info lexbuf), n) }
   | (sign as s) (dec_number as n)
