@@ -242,7 +242,7 @@ optCONST:
 (* Spec Mismatch: Processed by lexer *)
 number:
 | int = int
-      { [ NT int; Term "PHTM_2" ] |> wrap_case_v |> with_typ (wrap_var_t "number") }
+      { [ NT int; Term "PHTM_1" ] |> wrap_case_v |> with_typ (wrap_var_t "number") }
 | number = NUMBER
     { fst number }
 ;
