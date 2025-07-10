@@ -9,7 +9,7 @@ SPEC = p4spectec
 EXEMAIN = p4/_build/default/bin/main.exe
 EXESPEC = p4spec/_build/default/bin/main.exe
 
-build: build-p4 build-watsup
+build: build-p4
 
 build-p4:
 	rm -f ./$(MAIN)
@@ -25,6 +25,7 @@ build-p4-release:
 
 build-spec:
 	rm -f ./$(SPEC)
+	rm -f ./p4spec/lib/parsing/parser.ml ./p4spec/lib/parsing/parser.mli
 	opam switch 4.14.0
 	cd p4spec && opam exec -- dune build bin/main.exe && echo
 	ln -f $(EXESPEC) ./$(SPEC)
