@@ -711,7 +711,7 @@ rule Inst_site_ok/local-controlapplymethod:
 
 
 rule Inst_ok/global-packaget-no-targsinfer:
-  GLOBAL C_0 eps |- ct targIL* arg* id_deft* : typ_i targIL* argIL''*
+  GLOBAL C_0 eps |- ct targIL* arg* id_deft* : typ_i targIL* eps argIL''*
   -- if ConsT pt* typ_i = ct
   -- if $is_packaget($canon_typ(typ_i))
   ----
@@ -729,7 +729,7 @@ rule Inst_ok/global-packaget-no-targsinfer:
   -- (Call_convention_arg_ok: BLOCK C_1 NOACT |- pt'' ~~ (argIL, typ_a) : argIL'')*
 
 rule Inst_ok/global-packaget-targsinfer:
-  GLOBAL C_0 tid_fresh* |- ct targIL* arg* id_deft* : typ_i' targIL''* argIL''*
+  GLOBAL C_0 tid_fresh* |- ct targIL* arg* id_deft* : typ_i' targIL* targIL_hidden* argIL''*
   -- if ConsT pt* typ_i = ct
   -- if $is_packaget($canon_typ(typ_i))
   ----
@@ -745,8 +745,7 @@ rule Inst_ok/global-packaget-targsinfer:
   ----
   -- if theta = $infer_targs(tid_fresh*, pt''*, typ_a*)
   ----
-  -- if (targIL' = $find_map<tid, typ>(theta, tid_fresh))*
-  -- if targIL''* = targIL* ++ targIL'*
+  -- if (targIL_hidden = $find_map<tid, typ>(theta, tid_fresh))*
   ----
   -- if ConsT pt'''* typ_i' = $subst_constyp(theta, ConsT pt''* typ_i)
   ----
@@ -756,7 +755,7 @@ rule Inst_ok/global-packaget-targsinfer:
   -- (Call_convention_arg_ok: BLOCK C_1 NOACT |- pt''' ~~ (argIL, typ_a) : argIL'')*
 
 rule Inst_ok/else-no-targsinfer:
-  p C eps |- ct targIL* arg* id_deft* : typ_i targIL* argIL''*
+  p C eps |- ct targIL* arg* id_deft* : typ_i targIL* eps argIL''*
   -- if ConsT pt* typ_i = ct
   -- if ~((p = GLOBAL) /\ $is_packaget($canon_typ(typ_i)))
   ----
@@ -773,7 +772,7 @@ rule Inst_ok/else-no-targsinfer:
   -- (Call_convention_arg_ok: p C NOACT |- pt'' ~~ (argIL, typ_a) : argIL'')*
 
 rule Inst_ok/else-targsinfer:
-  p C tid_fresh* |- ct targIL* arg* id_deft* : typ_i' targIL* argIL''*
+  p C tid_fresh* |- ct targIL* arg* id_deft* : typ_i' targIL* targIL_hidden* argIL''*
   -- if ConsT pt* typ_i = ct
   -- if ~((p = GLOBAL) /\ $is_packaget($canon_typ(typ_i)))
   ----
@@ -786,8 +785,7 @@ rule Inst_ok/else-targsinfer:
   ----
   -- if theta = $infer_targs(tid_fresh*, pt''*, typ_a*)
   ----
-  -- if (targIL' = $find_map<tid, typ>(theta, tid_fresh))*
-  -- if targIL''* = targIL* ++ targIL'*
+  -- if (targIL_hidden = $find_map<tid, typ>(theta, tid_fresh))*
   ----
   -- if ConsT pt'''* typ_i' = $subst_constyp(theta, ConsT pt''* typ_i)
   ----

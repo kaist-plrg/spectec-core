@@ -148,7 +148,7 @@ syntax exprIL =
   | CallFuncE nameIL targIL* argIL* annotIL                   hint(show %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
   | CallMethodE exprIL memberIL targIL* argIL* annotIL        hint(show %.%#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
   | CallTypeE nameIL memberIL targIL* argIL* annotIL          hint(show %.%#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
-  | InstE nameIL targIL* argIL* annotIL                       hint(show %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
+  | InstE nameIL targIL* targIL* argIL* annotIL               hint(show %1#%latex("\\langle")#%2#%latex("\\rangle")#(%4)#%latex())
 
 ;;
 ;; Blocks (sequence of statements)
@@ -262,7 +262,7 @@ syntax declIL =
   | VarD idIL typeIL exprIL?                                            hint(show %2 %1 = %3)
   | ErrD memberIL*                                                      hint(show ERROR %latex("\\{")#%#%latex("\\}"))
   | MatchKindD memberIL*                                                hint(show MATCH#_#KIND %latex("\\{")#%#%latex("\\}"))
-  | InstD idIL typeIL nameIL targIL* argIL* declIL*                     hint(show %3#%latex("\\langle")#%4#%latex("\\rangle")#(%5) %1 = %latex("\\{")#%6#%latex("\\}") %latex("/*")%2%latex("*/"))
+  | InstD idIL typeIL nameIL targIL* targIL* argIL* declIL*             hint(show %3#%latex("\\langle")#%4#%latex("\\rangle")#(%6) %1 = %latex("\\{")#%7#%latex("\\}") %latex("/*")%2%latex("*/"))
   | StructD idIL tparamIL* tparamIL* (memberIL, typeIL)*                ;;hint(show STRUCT %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | HeaderD idIL tparamIL* tparamIL* (memberIL, typeIL)*                ;;hint(show HEADER %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | UnionD idIL tparamIL* tparamIL* (memberIL, typeIL)*                 ;;hint(show UNION %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
