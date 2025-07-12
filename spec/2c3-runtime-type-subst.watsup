@@ -192,12 +192,12 @@ def $subst_typ(theta, ExternT id fmap) = ExternT id fmap'
   -- if fmap' = `{ (fid -> $subst_funcdef(theta, funcdef))* }
 
 def $subst_typ(theta, ParserT id pt*) = ParserT id pt'*
-  -- if (id dir typ exprIL? = pt)*
-  -- if (pt' = id dir ($subst_typ(theta, typ)) exprIL?)*
+  -- if (id' dir typ exprIL? = pt)*
+  -- if (pt' = id' dir ($subst_typ(theta, typ)) exprIL?)*
 
 def $subst_typ(theta, ControlT id pt*) = ControlT id pt'*
-  -- if (id dir typ exprIL? = pt)*
-  -- if (pt' = id dir ($subst_typ(theta, typ)) exprIL?)*
+  -- if (id' dir typ exprIL? = pt)*
+  -- if (pt' = id' dir ($subst_typ(theta, typ)) exprIL?)*
 
 def $subst_typ(theta, PackageT id typ*) = PackageT id ($subst_typ(theta, typ))*
 
