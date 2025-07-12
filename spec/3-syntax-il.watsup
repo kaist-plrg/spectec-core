@@ -60,7 +60,7 @@ syntax dirIL = dir
 ;; Forward declarations of mutually recursive syntax
 ;;
 
-syntax exprIL, stmtIL, switchcaseIL, declIL, tblpropIL
+syntax stmtIL, switchcaseIL, declIL, tblpropIL
 
 ;;
 ;; Types
@@ -78,7 +78,7 @@ syntax tparamIL = id
 ;; Parameters
 ;;
 
-syntax paramIL = idIL dirIL typeIL val?
+syntax paramIL = idIL dirIL typeIL exprIL?
 
 ;;
 ;; Constructor parameters
