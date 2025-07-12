@@ -8,8 +8,14 @@ syntax typ, polytypdef, funcdef
 ;; Parameter Type
 ;;
 
+;;
+;; Forward declaration of mutually recursive syntax
+;;
+
+syntax exprIL
+
 syntax paramtyp hint(show %latex("\\tau_\\texttt{param}")) =
-  id dir typ val?
+  id dir typ exprIL?
 
 var pt : paramtyp hint(show %latex("\\tau_\\texttt{param}"))
 

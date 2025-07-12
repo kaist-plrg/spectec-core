@@ -3,21 +3,21 @@
 ;;
 
 rule Call_convention_ok/in:
-  p C actctxt |- (id IN typ_p val?) ~~ (exprIL, typ_a) : exprIL'
+  p C actctxt |- (id IN typ_p exprIL_deft?) ~~ (exprIL, typ_a) : exprIL'
   -- if exprIL' = $coerce_assign(exprIL, typ_p)
 
 rule Call_convention_ok/out-inout:
-  p C actctxt |- (id dir typ_p val?) ~~ (exprIL, typ_a) : exprIL
+  p C actctxt |- (id dir typ_p exprIL_deft?) ~~ (exprIL, typ_a) : exprIL
   -- if dir = OUT \/ dir = INOUT
   -- Type_alpha: typ_a ~~ typ_p
   -- Lval_ok: p C |- exprIL
 
 rule Call_convention_ok/no-action:
-  p C ACT |- (id NO typ_p val?) ~~ (exprIL, typ_a) : exprIL'
+  p C ACT |- (id NO typ_p exprIL_deft?) ~~ (exprIL, typ_a) : exprIL'
   -- if exprIL' = $coerce_assign(exprIL, typ_p)
 
 rule Call_convention_ok/no-not-action:
-  p C NOACT |- (id NO typ val?) ~~ (exprIL, typ') : exprIL
+  p C NOACT |- (id NO typ exprIL_deft?) ~~ (exprIL, typ') : exprIL
   -- if `(_; ctk) = $annot(exprIL)
   -- if ctk = LCTK \/ ctk = CTK
   -- Type_alpha: typ' ~~ typ
@@ -109,8 +109,8 @@ rule MethodType_ok/parsert:
   -- if ft = ParserApplyMethodT pt*
   -- if fd = MonoFD ft
   ----
-  -- if (id_p _ _ val_deft? = pt)*
-  -- if (b_deft = (val_deft? =/= eps))*
+  -- if (id_p _ _ exprIL_deft? = pt)*
+  -- if (b_deft = (exprIL_deft? =/= eps))*
   -- if fid = "apply" (id_p, b_deft)*
   ----
   -- if (fid, MonoFD ft, id_deft*) = $find_func<funcdef>("apply", $to_fkey(arg*), `{ (fid -> fd) })
@@ -125,8 +125,8 @@ rule MethodType_ok/controlt:
   -- if ft = ControlApplyMethodT pt*
   -- if fd = MonoFD ft
   ----
-  -- if (id_p _ _ val_deft? = pt)*
-  -- if (b_deft = (val_deft? =/= eps))*
+  -- if (id_p _ _ exprIL_deft? = pt)*
+  -- if (b_deft = (exprIL_deft? =/= eps))*
   -- if fid = "apply" (id_p, b_deft)*
   ----
   -- if (fid, MonoFD ft, id_deft*) = $find_func<funcdef>("apply", $to_fkey(arg*), `{ (fid -> fd) })
@@ -332,7 +332,7 @@ def $resolve_cstrs(`{ ((tid_h -> (KNOWN typ_h)) :: (tid_t -> typcstr_t)*) })
 dec $infer_targs(tid*, paramtyp*, typ*) : map<tid, typ>
     ;;hint(show INFER_TARGS(%1, %2, %3))
 
-def $infer_targs(tid*, (id dir typ_p val?)*, typ_a*) = $resolve_cstrs(cstr')
+def $infer_targs(tid*, (id dir typ_p exprIL_deft?)*, typ_a*) = $resolve_cstrs(cstr')
   -- if cstr = $empty_cstr(tid*)
   -- if cstr' = $gen_cstrs(cstr, typ_p*, typ_a*)
 

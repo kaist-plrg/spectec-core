@@ -383,7 +383,7 @@ rule ParamType_wf/none:
   -- if $is_externt($canon_typ(typ)) => (dir = NO)
 
 rule ParamType_wf/some:
-  tidset |- _ dir typ val
+  tidset |- _ dir typ exprIL
   -- Type_wf: tidset |- typ
   -- if $is_externt($canon_typ(typ)) => (dir = NO)
   -- if dir = IN \/ dir = NO
@@ -417,7 +417,7 @@ def $is_trailing_action'(_, dir_h :: dir_t*) = $is_trailing_action'(false, dir_t
 rule FuncType_wf/actiont:
   tidset |- ActionT pt*
   -- ParamTypes_wf: tidset |- pt*
-  -- if (id dir typ val? = pt)*
+  -- if (id dir typ exprIL? = pt)*
   -- if $is_trailing_action(dir*)
   -- if (typ' = $canon_typ(typ))*
   ----
@@ -428,7 +428,7 @@ rule FuncType_wf/actiont:
 rule FuncType_wf/parserapplymethodt:
   tidset |- ParserApplyMethodT pt*
   -- ParamTypes_wf: tidset |- pt*
-  -- if (id dir typ val? = pt)*
+  -- if (id dir typ exprIL? = pt)*
   -- if (typ' = $canon_typ(typ))*
   ----
   -- if (~$is_deft(typ') /\ ~$is_spect(typ')
@@ -439,7 +439,7 @@ rule FuncType_wf/parserapplymethodt:
 rule FuncType_wf/controlapplymethodt:
   tidset |- ControlApplyMethodT pt*
   -- ParamTypes_wf: tidset |- pt*
-  -- if (id dir typ val? = pt)*
+  -- if (id dir typ exprIL? = pt)*
   -- if (typ' = $canon_typ(typ))*
   ----
   ;;-- if (~$is_deft(typ') /\ ~$is_spect(typ')
@@ -453,7 +453,7 @@ rule FuncType_wf/tableapplymethodt:
 rule FuncType_wf/externfunctiont:
   tidset |- ExternFuncT pt* typ_r
   -- ParamTypes_wf: tidset |- pt*
-  -- if (id dir typ val? = pt)*
+  -- if (id dir typ exprIL? = pt)*
   -- if (typ' = $canon_typ(typ))*
   ----
   -- if (~$is_deft(typ') /\ ~$is_spect(typ')
@@ -466,7 +466,7 @@ rule FuncType_wf/externfunctiont:
 rule FuncType_wf/functiont:
   tidset |- FuncT pt* typ_r
   -- ParamTypes_wf: tidset |- pt*
-  -- if (id dir typ val? = pt)*
+  -- if (id dir typ exprIL? = pt)*
   -- if (typ' = $canon_typ(typ))*
   ----
   -- if (~$is_deft(typ') /\ ~$is_spect(typ') /\ ~$is_obj(typ')
@@ -478,7 +478,7 @@ rule FuncType_wf/functiont:
 rule FuncType_wf/externmethodt:
   tidset |- ExternMethodT pt* typ_r
   -- ParamTypes_wf: tidset |- pt*
-  -- if (id dir typ val? = pt)*
+  -- if (id dir typ exprIL? = pt)*
   -- if (typ' = $canon_typ(typ))*
   ----
   -- if (~$is_deft(typ') /\ ~$is_spect(typ')
@@ -491,7 +491,7 @@ rule FuncType_wf/externmethodt:
 rule FuncType_wf/externabstractmethodt:
   tidset |- ExternAbstractMethodT pt* typ_r
   -- ParamTypes_wf: tidset |- pt*
-  -- if (id dir typ val? = pt)*
+  -- if (id dir typ exprIL? = pt)*
   -- if (typ' = $canon_typ(typ))*
   ----
   -- if (~$is_deft(typ') /\ ~$is_spect(typ')
@@ -531,7 +531,7 @@ rule FuncDef_wf/polyfd:
 ;;
 
 rule CParamType_wf:
-  tidset consctxt |- id NO typ val?
+  tidset consctxt |- id NO typ exprIL?
   -- Type_wf: tidset |- typ
 
 rule CParamTypes_wf:
@@ -562,7 +562,7 @@ rule ConsType_wf/parsert:
   -- Type_wf: tidset |- typ
   -- if ParserT _ = $canon_typ(typ)
   ----
-  -- if (_ _ typ_p _ = pt)*
+  -- if (_ _ typ_p exprIL? = pt)*
   -- if (typ_p' = $canon_typ(typ_p))*
   ----
   -- if (~$is_deft(typ_p') /\ ~$is_spect(typ_p')
@@ -574,7 +574,7 @@ rule ConsType_wf/controlt:
   -- Type_wf: tidset |- typ
   -- if ControlT _ = $canon_typ(typ)
   ----
-  -- if (_ _ typ_p _ = pt)*
+  -- if (_ _ typ_p exprIL? = pt)*
   -- if (typ_p' = $canon_typ(typ_p))*
   ----
   -- if (~$is_deft(typ_p') /\ ~$is_spect(typ_p')
@@ -586,7 +586,7 @@ rule ConsType_wf/packaget:
   -- Type_wf: tidset |- typ
   -- if PackageT _ = $canon_typ(typ)
   ----
-  -- if (_ _ typ_p _ = pt)*
+  -- if (_ _ typ_p exprIL? = pt)*
   -- if (typ_p' = $canon_typ(typ_p))*
   ----
   -- if (~$is_deft(typ_p') /\ ~$is_spect(typ_p') /\ ~$is_tablet(typ_p'))*

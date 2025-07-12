@@ -224,7 +224,7 @@ rule Expr_ok/bine-div-mod-lctk:
   -- if `(typ''; ctk_l'') = $annot(exprIL_l'')
   -- if `(_; LCTK) = $annot(exprIL_r'')
   ----
-  -- Eval_static: p C |- exprIL_r'' ~> val_r
+  -- Eval_static: p C |- exprIL_r'' ~> val_r _
   -- if n_r = $get_num(val_r)
   -- if $(n_r > 0)
   ----
@@ -291,7 +291,7 @@ rule Expr_ok/bine-shift-intt:
   ----
   -- if $is_intt(typ_r') \/ $is_fintt(typ_r')
   -- if ctk_r' = LCTK
-  -- Eval_static: p C |- exprIL_r' ~> val_r'
+  -- Eval_static: p C |- exprIL_r' ~> val_r' _
   -- if n_r = $get_num(val_r')
   ----
   -- if ctk = $join_ctk(ctk_l', ctk_r')
@@ -621,7 +621,7 @@ rule Expr_ok/arracce-tuplet:
   -- if exprIL_i' = $reduce_senum_unary(exprIL_i, def $compatible_arrayindex)
   ----
   -- if TupleT typ_b'* = $canon_typ(typ_b)
-  -- Eval_static: p C |- exprIL_i' ~> val_i
+  -- Eval_static: p C |- exprIL_i' ~> val_i _
   -- if n = $get_num(val_i)
   -- if typ = typ_b'*[n]
 
@@ -636,7 +636,7 @@ rule Expr_ok/arracce-stackt-lctk:
   -- if exprIL_i' = $reduce_senum_unary(exprIL_i, def $compatible_arrayindex)
   ----
   -- if StackT typ_b' i_s = $canon_typ(typ_b)
-  -- Eval_static: p C |- exprIL_i' ~> val_i
+  -- Eval_static: p C |- exprIL_i' ~> val_i _
   -- if i = $get_num(val_i)
   -- if $(0 <= i) /\ $(i <= i_s)
 
@@ -704,7 +704,7 @@ rule Expr_ok/bitacce:
   ----
   -- if exprIL_l' = $reduce_senum_unary(exprIL_l, def $compatible_bitstringindex)
   ----
-  -- Eval_static: p C |- exprIL_l' ~> val_l
+  -- Eval_static: p C |- exprIL_l' ~> val_l _
   -- if n_l = $get_num(val_l)
   -- if exprIL_l'' = ValueE val_l `(typ_l; LCTK)
   ----
@@ -713,7 +713,7 @@ rule Expr_ok/bitacce:
   ----
   -- if exprIL_h' = $reduce_senum_unary(exprIL_h, def $compatible_bitstringindex)
   ----
-  -- Eval_static: p C |- exprIL_h' ~> val_h
+  -- Eval_static: p C |- exprIL_h' ~> val_h _
   -- if n_h = $get_num(val_h)
   -- if exprIL_h'' = ValueE val_h `(typ_h; LCTK)
   ----
