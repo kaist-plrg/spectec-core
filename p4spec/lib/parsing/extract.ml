@@ -1,9 +1,17 @@
+(* 
+ * Helper functions for context management
+ *
+ * - id_of : extracts identifiers from CaseV values
+ * - has_type_params : checks for type parameters in CaseV values
+ *)
+
 open Il.Ast
 open Ast_utils
 open Util.Source
 module F = Format
 
-(* name = nonTypeName | LIST | typeIdentifier *)
+(* Identifier extraction *)
+
 let id_of_name (value : value) : string =
   match flatten_case_v' value with
   | "identifier", [ [ "$" ]; [] ], [ TextV s ] -> s
@@ -21,8 +29,6 @@ let id_of_name (value : value) : string =
         (Printf.sprintf "Invalid name structure %s: %s "
            (Il.Print_debug.string_of_value value)
            (id_of_case_v value))
-
-(******** Name of declarations ********)
 
 let id_of_function_prototype (v : value) : string =
   match flatten_case_v v with
@@ -157,8 +163,9 @@ let id_of_parameter (v : value) : string =
       id_of_name name
   | _ -> failwith "@id_of_parameter: invalid CaseV"
 
-(* takes optTypeParameters *)
-let has_type_params_opt (v : value) : bool =
+(* Type parameter extraction *)
+
+let has_type_params_opt_type_parameters (v : value) : bool =
   match v.it with
   | OptV (Some typeParameters) -> (
       match flatten_case_v typeParameters with
@@ -166,17 +173,17 @@ let has_type_params_opt (v : value) : bool =
           match typeParameterList.it with
           | ListV [] -> false
           | ListV _ -> true
-          | _ -> failwith "@has_type_params_opt: not ListV")
+          | _ -> failwith "@has_type_params_opt_type_parameters: not ListV")
       | _ -> failwith "@has_type_params_opt_type_parameters: invalid CaseV")
   | OptV None -> false
-  | _ -> failwith "@has_type_params_opt: not OptV"
+  | _ -> failwith "@has_type_params_opt_type_parameters: not OptV"
 
 let has_type_params_function_prototype (v : value) : bool =
   match flatten_case_v v with
   | ( "functionPrototype",
       [ []; []; []; [ "(" ]; [ ")" ] ],
       [ _; _; optTypeParameters; _ ] ) ->
-      has_type_params_opt optTypeParameters
+      has_type_params_opt_type_parameters optTypeParameters
   | _ ->
       failwith
         (Printf.sprintf "Invalid functionPrototype: %s"
@@ -187,7 +194,7 @@ let has_type_params_parser_type_declaration (v : value) : bool =
   | ( "parserTypeDeclaration",
       [ []; [ "PARSER" ]; []; [ "(" ]; [ ")" ] ],
       [ _; _; optTypeParameters; _ ] ) ->
-      has_type_params_opt optTypeParameters
+      has_type_params_opt_type_parameters optTypeParameters
   | _ ->
       failwith
         (Printf.sprintf "Invalid parserTypeDeclaration: %s"
@@ -198,7 +205,7 @@ let has_type_params_control_type_declaration (v : value) : bool =
   | ( "controlTypeDeclaration",
       [ []; [ "CONTROL" ]; []; [ "(" ]; [ ")" ] ],
       [ _; _; optTypeParameters; _ ] ) ->
-      has_type_params_opt optTypeParameters
+      has_type_params_opt_type_parameters optTypeParameters
   | _ ->
       failwith
         (Printf.sprintf "Invalid controlTypeDeclaration: %s"
@@ -209,7 +216,7 @@ let has_type_params_package_type_declaration (v : value) : bool =
   | ( "packageTypeDeclaration",
       [ []; [ "PACKAGE" ]; []; [ "(" ]; [ ")" ] ],
       [ _; _; optTypeParameters; _ ] ) ->
-      has_type_params_opt optTypeParameters
+      has_type_params_opt_type_parameters optTypeParameters
   | _ ->
       failwith
         (Printf.sprintf "Invalid packageTypeDeclaration: %s"
@@ -224,7 +231,7 @@ let has_type_params_declaration (decl : value) : bool =
   | ( "externDeclaration",
       [ []; [ "EXTERN" ]; []; [ "{" ]; [ "}" ] ],
       [ _; _; optTypeParameters; _ ] ) ->
-      has_type_params_opt optTypeParameters
+      has_type_params_opt_type_parameters optTypeParameters
   | "externDeclaration", _, _ -> false
   | "instantiation", _, _ -> false
   | "functionDeclaration", [ []; []; []; [] ], [ _; functionPrototype; _ ] ->
@@ -241,18 +248,15 @@ let has_type_params_declaration (decl : value) : bool =
   | ( "structTypeDeclaration",
       [ []; [ "STRUCT" ]; []; [ "{" ]; [ "}" ] ],
       [ _; _; optTypeParameters; _ ] ) ->
-      has_type_params_opt optTypeParameters
+      has_type_params_opt_type_parameters optTypeParameters
   | "enumDeclaration", _, _ -> false
-  | "typeDeclaration", [ []; [ ";" ] ], [ nonterminal ] -> (
-      match flatten_case_v nonterminal with
-      | "typedefDeclaration", _, _ -> false
-      | "parserTypeDeclaration", _, _ ->
-          has_type_params_parser_type_declaration nonterminal
-      | "controlTypeDeclaration", _, _ ->
-          has_type_params_control_type_declaration nonterminal
-      | "packageTypeDeclaration", _, _ ->
-          has_type_params_package_type_declaration nonterminal
-      | _ -> assert false)
+  | "typeDeclaration", [ []; [ ";" ] ], [ _typedefDeclaration ] -> false
+  | "typeDeclaration", [ []; [ ";"; "PHTM_13" ] ], [ parserTypeDeclaration ] ->
+      has_type_params_parser_type_declaration parserTypeDeclaration
+  | "typeDeclaration", [ []; [ ";"; "PHTM_14" ] ], [ controlTypeDeclaration ] ->
+      has_type_params_control_type_declaration controlTypeDeclaration
+  | "typeDeclaration", [ []; [ ";"; "PHTM_15" ] ], [ packageTypeDeclaration ] ->
+      has_type_params_package_type_declaration packageTypeDeclaration
   | _ ->
       failwith
         (Printf.sprintf "@has_typ_params: Unknown declaration %s"

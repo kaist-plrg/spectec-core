@@ -1,4 +1,8 @@
-(* Parser debugging utilities using Menhir's inspection API *)
+(*
+ * Parser debugging utilities using Menhir's inspection API:
+ *
+ *   Debugs parser stack state and token consumption
+ *)
 
 module MI = MenhirLib.General
 module I = Parser.Incremental
@@ -57,6 +61,7 @@ let token_name token =
     | Parser.VOID _ -> "void"
     | Parser.TRUE _ -> "true"
     | Parser.FALSE _ -> "false"
+    | Parser.FOR _ -> "for"
     | Parser.END _ -> "end"
     | Parser.TYPENAME -> "typename"
     | Parser.IDENTIFIER -> "identifier"
@@ -108,6 +113,7 @@ let token_name token =
     | Parser.PRAGMA _ -> "PRAGMA"
     | Parser.PRAGMA_END _ -> "PRAGMA_END"
     | Parser.UNEXPECTED_TOKEN _ -> "UNEXPECTED_TOKEN"
+    | _ -> "unknown"
   with _ -> "UNKNOWN_TOKEN"
 
 let state_description state_num =
@@ -170,11 +176,8 @@ let print_state env =
 
   if Debug_config.debug_enabled debug_level Basic then
     Printf.printf
-      "@%d ---------------------------------\n\
-       %s\n\
-       -------------------------------------\n"
-      current_state
-      (state_description current_state);
+      "@State %d:\n"
+      current_state;
   match states with
   | [] ->
       if Debug_config.debug_enabled debug_level Verbose then
