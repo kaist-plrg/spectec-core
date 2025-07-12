@@ -3,28 +3,28 @@
 ;;
 
 rule Expr_ok/boole:
-  p C |- BoolE b : ValueE (BoolV b) `(BoolT; LCTK)
+  p C |- BoolE b : BoolE b `(BoolT; LCTK)
 
 ;;
 ;; String expression
 ;;
 
 rule Expr_ok/stre:
-  p C |- StrE t : ValueE (StrV t) `(StrT; LCTK)
+  p C |- StrE t : StrE t `(StrT; LCTK)
 
 ;;
 ;; Number expression
 ;;
 
 rule Expr_ok/nume-intt:
-  p C |- NumE (INT i) : ValueE (IntV i) `(IntT; LCTK)
+  p C |- NumE (INT i) : NumE (INT i) `(IntT; LCTK)
 
 rule Expr_ok/nume-fintt:
-  p C |- NumE (FINT w i) : ValueE (FIntV w bs) `(FIntT w; LCTK)
+  p C |- NumE (FINT w i) : NumE (FINT w i) `(FIntT w; LCTK)
   -- if bs = $to_bitstr(w, i)
 
 rule Expr_ok/nume-fbitt:
-  p C |- NumE (FBIT w i) : ValueE (FBitV w bs) `(FBitT w; LCTK)
+  p C |- NumE (FBIT w i) : NumE (FBIT w i) `(FBitT w; LCTK)
   -- if bs = $to_bitstr(w, i)
 
 ;;
@@ -79,7 +79,7 @@ rule Expr_ok/defaulte:
 ;;
 
 rule Expr_ok/invalide:
-  p C |- InvalidE : ValueE InvalidV `(InvalidT; LCTK)
+  p C |- InvalidE : InvalidE `(InvalidT; LCTK)
 
 ;;
 ;; Unary expression
@@ -726,22 +726,22 @@ rule Expr_ok/bitacce:
 ;;
 
 rule Expr_ok/erracce:
-  p C |- ErrAccE member : ValueE (ErrV member) `(ErrT; LCTK)
+  p C |- ErrAccE member : ErrAccE member `(ErrT; LCTK)
   -- if id = $concat_text([ "error.", member ])
-  -- if ErrV member = $find_val(p, C, TOP id)
+  -- if ErrV _ = $find_val(p, C, TOP id)
 
 ;;
 ;; Type access expression
 ;;
 
 rule Expr_ok/typeacce-enumt:
-  p C |- TypeAccE name member : ValueE (EnumFieldV id_t member) `(typ; LCTK)
+  p C |- TypeAccE name member : TypeAccE name member `(typ; LCTK)
   -- if MonoD typ = $find_typdef(p, C, name)
   -- if EnumT id_t member_t* = $canon_typ(typ)
   -- if member <- member_t*
 
 rule Expr_ok/typeacce-senumt:
-  p C |- TypeAccE name member : ValueE (SEnumFieldV id_t member val) `(typ; LCTK)
+  p C |- TypeAccE name member : TypeAccE name member `(typ; LCTK)
   -- if MonoD typ = $find_typdef(p, C, name)
   -- if SEnumT id_t typ_t (member_t, val_t)* = $canon_typ(typ)
   -- if val = $assoc_<member, val>(member, (member_t, val_t)*)

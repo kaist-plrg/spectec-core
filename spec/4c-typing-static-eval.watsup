@@ -10,6 +10,35 @@ rule Eval_static/valuee:
   p C |- ValueE val _ ~> val
 
 ;;
+;; Boolean expression
+;;
+
+rule Eval_static/boole:
+  p C |- BoolE b _ ~> BoolV b
+
+;;
+;; String expression
+;;
+
+rule Eval_static/stre:
+  p C |- StrE t _ ~> StrV t
+
+;;
+;; Number expression
+;;
+
+rule Eval_static/nume-intt:
+  p C |- NumE (INT i) _ ~> IntV i
+
+rule Eval_static/nume-fintt:
+  p C |- NumE (FINT w i) _ ~> FIntV w bs
+  -- if bs = $to_bitstr(w, i)
+
+rule Eval_static/nume-fbitt:
+  p C |- NumE (FBIT w i) _ ~> FBitV w bs
+  -- if bs = $to_bitstr(w, i)
+
+;;
 ;; Variable expression
 ;;
 
@@ -47,6 +76,9 @@ rule Eval_static/recorddefaulte:
 
 rule Eval_static/defaulte:
   p C |- DefaultE _ ~> DefaultV 
+
+rule Eval_static/invalide:
+  p C |- InvalidE _ ~> InvalidV
 
 ;;
 ;; Unary expression
@@ -96,6 +128,31 @@ rule Eval_static/bitacce:
   -- Eval_static: p C |- exprIL_b ~> val_b
   -- Eval_static: p C |- exprIL_l ~> val_l
   -- Eval_static: p C |- exprIL_h ~> val_h
+
+;;
+;; Error access expression
+;;
+
+rule Eval_static/erracce:
+  p C |- ErrAccE member _ ~> ErrV member
+  -- if id = $concat_text([ "error.", member ])
+  -- if ErrV member = $find_val(p, C, TOP id)
+
+;;
+;; Type access expression
+;;
+
+rule Eval_static/typeacce-enumt:
+  p C |- TypeAccE name member _ ~> EnumFieldV id_t member
+  -- if MonoD typ = $find_typdef(p, C, name)
+  -- if EnumT id_t member_t* = $canon_typ(typ)
+  -- if member <- member_t*
+
+rule Eval_static/typeacce-senumt:
+  p C |- TypeAccE name member _ ~> SEnumFieldV id_t member val
+  -- if MonoD typ = $find_typdef(p, C, name)
+  -- if SEnumT id_t typ_t (member_t, val_t)* = $canon_typ(typ)
+  -- if val = $assoc_<member, val>(member, (member_t, val_t)*)
 
 ;;
 ;; Expression access expression
