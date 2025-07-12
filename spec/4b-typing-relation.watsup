@@ -30,7 +30,7 @@ def $annot(ExprAccE _ _ annotIL) = annotIL
 def $annot(CallFuncE _ _ _ annotIL) = annotIL
 def $annot(CallMethodE _ _ _ _ annotIL) = annotIL
 def $annot(CallTypeE _ _ _ _ annotIL) = annotIL
-def $annot(InstE _ _ _ annotIL) = annotIL
+def $annot(InstE _ _ _ _ annotIL) = annotIL
 
 ;;
 ;; Static evaluation
@@ -178,5 +178,5 @@ relation Inst_site_ok:
   cursor context |- constyp : INSTSITE_OK
   hint(input %0 %1 %2)
 relation Inst_ok:
-  cursor context tid* |- constyp targIL* arg* id* : typ targIL* argIL*
+  cursor context tid* |- constyp targIL* arg* id* : typ targIL* targIL* argIL*
   hint(input %0 %1 %2 %3 %4 %5 %6)

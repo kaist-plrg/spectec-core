@@ -243,7 +243,7 @@ rule Stmt_ok/callinsts:
   p C f |- CallInstS name targ* arg* : C f (CallInstS typ name targIL'* argIL'*)
   -- ConsType_ok: p C |- name eps eps : ct eps eps
   ----
-  -- Inst_ok: p C eps |- ct eps eps eps : typ eps eps
+  -- Inst_ok: p C eps |- ct eps eps eps : typ eps eps eps
   ----
   -- if typ' = $canon_typ(typ)
   -- if $is_parsert(typ') \/ $is_controlt(typ')

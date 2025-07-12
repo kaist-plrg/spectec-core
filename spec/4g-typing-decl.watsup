@@ -150,7 +150,7 @@ def $update_fdenv_extern(fdenv_ext, theta, fid_h :: fid_t*, fd_h :: fd_t*) = $up
   -- if fdenv_ext' = $update_map<fid, funcdef>(fdenv_ext, fid_h, fd_ext')
 
 rule Decl_ok/instd-some:
-  p C |- InstD id name_inst targ* arg* decl* : C'' (InstD id typ name_inst targIL'* argIL'* declIL*)
+  p C |- InstD id name_inst targ* arg* decl* : C'' (InstD id typ name_inst targIL'* targIL_hidden* argIL'* declIL*)
   -- if |decl*| > 0
   ----
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
@@ -158,7 +158,7 @@ rule Decl_ok/instd-some:
   ----
   -- ConsType_ok: p C |- name_inst targIL* arg* : ct tid_fresh_inserted* id_deft*
   ----
-  -- Inst_ok: p C (tid_fresh* ++ tid_fresh_inserted*) |- ct targIL* arg* id_deft* : typ targIL'* argIL'*
+  -- Inst_ok: p C (tid_fresh* ++ tid_fresh_inserted*) |- ct targIL* arg* id_deft* : typ targIL'* targIL_hidden* argIL'*
   ----
   -- if typ = SpecT (PolyD (tparam*, tparam_hidden*) -> (ExternT id_ext fdenv_ext)) typ_a*
   -- if C' = $add_styp(LOCAL, C, "this", typ NO CTK eps)
@@ -178,13 +178,13 @@ rule Decl_ok/instd-some:
   -- if C'' = $add_styp(p, C, id, typ' NO CTK eps)
 
 rule Decl_ok/instd-none:
-  p C |- InstD id name_inst targ* arg* eps : C' (InstD id typ name_inst targIL'* argIL'* eps)
+  p C |- InstD id name_inst targ* arg* eps : C' (InstD id typ name_inst targIL'* targIL_hidden* argIL'* eps)
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
   -- if tid_fresh* = $concat_<tid>(tid_fresh_a**)
   ----
   -- ConsType_ok: p C |- name_inst targIL* arg* : ct tid_fresh_inserted* id_deft*
   ----
-  -- Inst_ok: p C (tid_fresh* ++ tid_fresh_inserted*) |- ct targIL* arg* id_deft* : typ targIL'* argIL'*
+  -- Inst_ok: p C (tid_fresh* ++ tid_fresh_inserted*) |- ct targIL* arg* id_deft* : typ targIL'* targIL_hidden* argIL'*
   ----
   -- if C' = $add_styp(p, C, id, typ NO CTK eps)
 
