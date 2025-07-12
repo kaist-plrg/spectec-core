@@ -893,9 +893,9 @@ syntax abstyp =
    | `VarT%`(id)
    | `SpecT%%`(polytypdef, typ*)
 
-;; ../../../../spec/2c1-runtime-type.watsup:59.1-59.57
+;; ../../../../spec/2c1-runtime-type.watsup:59.1-59.60
 syntax aliastyp = 
-   | `DefT%`(typ)
+   | `DefT%%`(id, typ)
 
 ;; ../../../../spec/2c1-runtime-type.watsup:62.1-70.89
 syntax datatyp = 
@@ -912,14 +912,14 @@ syntax datatyp =
 ;; ../../../../spec/2c1-runtime-type.watsup:73.1-77.59
 syntax objtyp = 
    | `ExternT%%`(id, map<fid, funcdef>)
-   | `ParserT%`(paramtyp*)
-   | `ControlT%`(paramtyp*)
-   | `PackageT%`(typ*)
+   | `ParserT%%`(id, paramtyp*)
+   | `ControlT%%`(id, paramtyp*)
+   | `PackageT%%`(id, typ*)
    | `TableT%%`(id, typ)
 
 ;; ../../../../spec/2c1-runtime-type.watsup:80.1-80.32
 syntax deftyp = 
-   | `DefT%`(typ)
+   | `DefT%%`(id, typ)
    | `NewT%%`(id, typ)
    | `EnumT%%`(id, member*)
    | `SEnumT%%%`(id, typ, (member, val)*)
@@ -930,9 +930,9 @@ syntax deftyp =
    | `HeaderT%%`(id, (member, typ)*)
    | `UnionT%%`(id, (member, typ)*)
    | `ExternT%%`(id, map<fid, funcdef>)
-   | `ParserT%`(paramtyp*)
-   | `ControlT%`(paramtyp*)
-   | `PackageT%`(typ*)
+   | `ParserT%%`(id, paramtyp*)
+   | `ControlT%%`(id, paramtyp*)
+   | `PackageT%%`(id, typ*)
    | `TableT%%`(id, typ)
 
 ;; ../../../../spec/2c1-runtime-type.watsup:87.1-97.55
@@ -962,7 +962,7 @@ syntax typ =
    | `VBitT%`(width)
    | `VarT%`(id)
    | `SpecT%%`(polytypdef, typ*)
-   | `DefT%`(typ)
+   | `DefT%%`(id, typ)
    | `NewT%%`(id, typ)
    | `EnumT%%`(id, member*)
    | `SEnumT%%%`(id, typ, (member, val)*)
@@ -973,9 +973,9 @@ syntax typ =
    | `HeaderT%%`(id, (member, typ)*)
    | `UnionT%%`(id, (member, typ)*)
    | `ExternT%%`(id, map<fid, funcdef>)
-   | `ParserT%`(paramtyp*)
-   | `ControlT%`(paramtyp*)
-   | `PackageT%`(typ*)
+   | `ParserT%%`(id, paramtyp*)
+   | `ControlT%%`(id, paramtyp*)
+   | `PackageT%%`(id, typ*)
    | `TableT%%`(id, typ)
    | `DefaultT`()
    | `SeqT%`(typ*)
@@ -1246,10 +1246,10 @@ def $is_alias(typ) : bool =
 ;; ../../../../spec/2c2-runtime-type-aux.watsup:109.1-110.26
 def $is_deft(typ) : bool =
 
-   ;; ../../../../spec/2c2-runtime-type-aux.watsup:111.1-111.28
+   ;; ../../../../spec/2c2-runtime-type-aux.watsup:111.1-111.30
    clause 0(typ) = true
       -- if typ <: aliastyp
-      -- let `DefT%`_aliastyp(_typ) = typ as aliastyp
+      -- let `DefT%%`_aliastyp(_id, _typ) = typ as aliastyp
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:112.1-113.15
    clause 1(typ) = false
@@ -1422,12 +1422,12 @@ def $is_externt(typ) : bool =
 ;; ../../../../spec/2c2-runtime-type-aux.watsup:187.1-188.29
 def $is_parsert(typ) : bool =
 
-   ;; ../../../../spec/2c2-runtime-type-aux.watsup:189.1-189.34
+   ;; ../../../../spec/2c2-runtime-type-aux.watsup:189.1-189.36
    clause 0(typ) = true
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ParserT%`
-      -- let `ParserT%`_objtyp(_paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
+      -- if objtyp matches `ParserT%%`
+      -- let `ParserT%%`_objtyp(_id, _paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:190.1-191.15
    clause 1(typ) = false
@@ -1436,12 +1436,12 @@ def $is_parsert(typ) : bool =
 ;; ../../../../spec/2c2-runtime-type-aux.watsup:193.1-194.30
 def $is_controlt(typ) : bool =
 
-   ;; ../../../../spec/2c2-runtime-type-aux.watsup:195.1-195.36
+   ;; ../../../../spec/2c2-runtime-type-aux.watsup:195.1-195.38
    clause 0(typ) = true
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ControlT%`
-      -- let `ControlT%`_objtyp(_paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
+      -- if objtyp matches `ControlT%%`
+      -- let `ControlT%%`_objtyp(_id, _paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:196.1-197.15
    clause 1(typ) = false
@@ -1450,12 +1450,12 @@ def $is_controlt(typ) : bool =
 ;; ../../../../spec/2c2-runtime-type-aux.watsup:199.1-200.30
 def $is_packaget(typ) : bool =
 
-   ;; ../../../../spec/2c2-runtime-type-aux.watsup:201.1-201.36
+   ;; ../../../../spec/2c2-runtime-type-aux.watsup:201.1-201.38
    clause 0(typ) = true
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `PackageT%`
-      -- let `PackageT%`_objtyp(_typ*{_typ <- _typ*}) = objtyp
+      -- if objtyp matches `PackageT%%`
+      -- let `PackageT%%`_objtyp(_id, _typ*{_typ <- _typ*}) = objtyp
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:202.1-203.15
    clause 1(typ) = false
@@ -1800,10 +1800,10 @@ def $free_typ(typ) : set<tid> =
       -- let tidset_ptd = $free_typdef_poly(ptd)
       -- let tidset_typs = $unions_set<tid>($free_typ(typ)*{typ <- typ*})
 
-   ;; ../../../../spec/2c3-runtime-type-subst.watsup:39.1-39.41
+   ;; ../../../../spec/2c3-runtime-type-subst.watsup:39.1-39.43
    clause 3(typ') = $free_typ(typ)
       -- if typ' <: aliastyp
-      -- let `DefT%`_aliastyp(typ) = typ' as aliastyp
+      -- let `DefT%%`_aliastyp(_id, typ) = typ' as aliastyp
 
    ;; ../../../../spec/2c3-runtime-type-subst.watsup:41.1-41.43
    clause 4(typ') = $free_typ(typ)
@@ -1886,24 +1886,24 @@ def $free_typ(typ) : set<tid> =
    clause 15(typ') = $unions_set<tid>($free_typ(typ)*{typ <- typ*})
       -- if typ' <: objtyp
       -- let objtyp = typ' as objtyp
-      -- if objtyp matches `ParserT%`
-      -- let `ParserT%`_objtyp(pt*{pt <- pt*}) = objtyp
-      -- (let `%%%%`_paramtyp(_id, _dir, typ, _exprIL?{_exprIL <- _exprIL?}) = pt)*{_dir <- _dir*, _exprIL? <- _exprIL?*, _id <- _id*, pt <- pt*, typ <- typ*}
+      -- if objtyp matches `ParserT%%`
+      -- let `ParserT%%`_objtyp(_id, pt*{pt <- pt*}) = objtyp
+      -- (let `%%%%`_paramtyp(_id', _dir, typ, _exprIL?{_exprIL <- _exprIL?}) = pt)*{_dir <- _dir*, _exprIL? <- _exprIL?*, _id' <- _id'*, pt <- pt*, typ <- typ*}
 
    ;; ../../../../spec/2c3-runtime-type-subst.watsup:66.1-67.26
    clause 16(typ') = $unions_set<tid>($free_typ(typ)*{typ <- typ*})
       -- if typ' <: objtyp
       -- let objtyp = typ' as objtyp
-      -- if objtyp matches `ControlT%`
-      -- let `ControlT%`_objtyp(pt*{pt <- pt*}) = objtyp
-      -- (let `%%%%`_paramtyp(_id, _dir, typ, _exprIL?{_exprIL <- _exprIL?}) = pt)*{_dir <- _dir*, _exprIL? <- _exprIL?*, _id <- _id*, pt <- pt*, typ <- typ*}
+      -- if objtyp matches `ControlT%%`
+      -- let `ControlT%%`_objtyp(_id, pt*{pt <- pt*}) = objtyp
+      -- (let `%%%%`_paramtyp(_id', _dir, typ, _exprIL?{_exprIL <- _exprIL?}) = pt)*{_dir <- _dir*, _exprIL? <- _exprIL?*, _id' <- _id'*, pt <- pt*, typ <- typ*}
 
-   ;; ../../../../spec/2c3-runtime-type-subst.watsup:69.1-69.65
+   ;; ../../../../spec/2c3-runtime-type-subst.watsup:69.1-69.67
    clause 17(typ') = $unions_set<tid>($free_typ(typ)*{typ <- typ*})
       -- if typ' <: objtyp
       -- let objtyp = typ' as objtyp
-      -- if objtyp matches `PackageT%`
-      -- let `PackageT%`_objtyp(typ*{typ <- typ*}) = objtyp
+      -- if objtyp matches `PackageT%%`
+      -- let `PackageT%%`_objtyp(_id, typ*{typ <- typ*}) = objtyp
 
    ;; ../../../../spec/2c3-runtime-type-subst.watsup:71.1-71.45
    clause 18(typ') = $free_typ(typ)
@@ -2089,10 +2089,10 @@ def $subst_typ(theta, typ) : typ =
       -- let ptd' = $subst_typdef_poly(theta, ptd)
       -- let typ'*{typ' <- typ'*} = $subst_typ(theta, typ)*{typ <- typ*}
 
-   ;; ../../../../spec/2c3-runtime-type-subst.watsup:172.1-172.57
+   ;; ../../../../spec/2c3-runtime-type-subst.watsup:172.1-172.59
    clause 2(theta, typ') = $subst_typ(theta, typ)
       -- if typ' <: aliastyp
-      -- let `DefT%`_aliastyp(typ) = typ' as aliastyp
+      -- let `DefT%%`_aliastyp(_id, typ) = typ' as aliastyp
 
    ;; ../../../../spec/2c3-runtime-type-subst.watsup:174.1-174.70
    clause 3(theta, typ') = `NewT%%`_datatyp(id, $subst_typ(theta, typ)) as typ
@@ -2159,30 +2159,30 @@ def $subst_typ(theta, typ) : typ =
       -- let `{%}`_set<pair<fid, funcdef>>(`%->%`_pair<fid, funcdef>(fid, funcdef)*{fid <- fid*, funcdef <- funcdef*}) = fmap
       -- let fmap' = `{%}`_set<pair<fid, funcdef>>(`%->%`_pair<fid, funcdef>(fid, $subst_funcdef(theta, funcdef))*{fid <- fid*, funcdef <- funcdef*})
 
-   ;; ../../../../spec/2c3-runtime-type-subst.watsup:194.1-196.57
-   clause 12(theta, typ') = `ParserT%`_objtyp(pt'*{pt' <- pt'*}) as typ
+   ;; ../../../../spec/2c3-runtime-type-subst.watsup:194.1-196.58
+   clause 12(theta, typ') = `ParserT%%`_objtyp(id, pt'*{pt' <- pt'*}) as typ
       -- if typ' <: objtyp
       -- let objtyp = typ' as objtyp
-      -- if objtyp matches `ParserT%`
-      -- let `ParserT%`_objtyp(pt*{pt <- pt*}) = objtyp
-      -- (let `%%%%`_paramtyp(id, dir, typ, exprIL?{exprIL <- exprIL?}) = pt)*{dir <- dir*, exprIL? <- exprIL?*, id <- id*, pt <- pt*, typ <- typ*}
-      -- (let pt' = `%%%%`_paramtyp(id, dir, $subst_typ(theta, typ), exprIL?{exprIL <- exprIL?}))*{dir <- dir*, exprIL? <- exprIL?*, id <- id*, pt' <- pt'*, typ <- typ*}
+      -- if objtyp matches `ParserT%%`
+      -- let `ParserT%%`_objtyp(id, pt*{pt <- pt*}) = objtyp
+      -- (let `%%%%`_paramtyp(id', dir, typ, exprIL?{exprIL <- exprIL?}) = pt)*{dir <- dir*, exprIL? <- exprIL?*, id' <- id'*, pt <- pt*, typ <- typ*}
+      -- (let pt' = `%%%%`_paramtyp(id', dir, $subst_typ(theta, typ), exprIL?{exprIL <- exprIL?}))*{dir <- dir*, exprIL? <- exprIL?*, id' <- id'*, pt' <- pt'*, typ <- typ*}
 
-   ;; ../../../../spec/2c3-runtime-type-subst.watsup:198.1-200.57
-   clause 13(theta, typ') = `ControlT%`_objtyp(pt'*{pt' <- pt'*}) as typ
+   ;; ../../../../spec/2c3-runtime-type-subst.watsup:198.1-200.58
+   clause 13(theta, typ') = `ControlT%%`_objtyp(id, pt'*{pt' <- pt'*}) as typ
       -- if typ' <: objtyp
       -- let objtyp = typ' as objtyp
-      -- if objtyp matches `ControlT%`
-      -- let `ControlT%`_objtyp(pt*{pt <- pt*}) = objtyp
-      -- (let `%%%%`_paramtyp(id, dir, typ, exprIL?{exprIL <- exprIL?}) = pt)*{dir <- dir*, exprIL? <- exprIL?*, id <- id*, pt <- pt*, typ <- typ*}
-      -- (let pt' = `%%%%`_paramtyp(id, dir, $subst_typ(theta, typ), exprIL?{exprIL <- exprIL?}))*{dir <- dir*, exprIL? <- exprIL?*, id <- id*, pt' <- pt'*, typ <- typ*}
+      -- if objtyp matches `ControlT%%`
+      -- let `ControlT%%`_objtyp(id, pt*{pt <- pt*}) = objtyp
+      -- (let `%%%%`_paramtyp(id', dir, typ, exprIL?{exprIL <- exprIL?}) = pt)*{dir <- dir*, exprIL? <- exprIL?*, id' <- id'*, pt <- pt*, typ <- typ*}
+      -- (let pt' = `%%%%`_paramtyp(id', dir, $subst_typ(theta, typ), exprIL?{exprIL <- exprIL?}))*{dir <- dir*, exprIL? <- exprIL?*, id' <- id'*, pt' <- pt'*, typ <- typ*}
 
-   ;; ../../../../spec/2c3-runtime-type-subst.watsup:202.1-202.74
-   clause 14(theta, typ') = `PackageT%`_objtyp($subst_typ(theta, typ)*{typ <- typ*}) as typ
+   ;; ../../../../spec/2c3-runtime-type-subst.watsup:202.1-202.80
+   clause 14(theta, typ') = `PackageT%%`_objtyp(id, $subst_typ(theta, typ)*{typ <- typ*}) as typ
       -- if typ' <: objtyp
       -- let objtyp = typ' as objtyp
-      -- if objtyp matches `PackageT%`
-      -- let `PackageT%`_objtyp(typ*{typ <- typ*}) = objtyp
+      -- if objtyp matches `PackageT%%`
+      -- let `PackageT%%`_objtyp(id, typ*{typ <- typ*}) = objtyp
 
    ;; ../../../../spec/2c3-runtime-type-subst.watsup:204.1-204.74
    clause 15(theta, typ') = `TableT%%`_objtyp(id, $subst_typ(theta, typ)) as typ
@@ -2433,10 +2433,10 @@ def $canon_typ(typ) : typ =
       -- let `SpecT%%`_abstyp(ptd, typ_a*{typ_a <- typ_a*}) = abstyp
       -- let typ = $specialize_typdef(ptd as typdef, typ_a*{typ_a <- typ_a*})
 
-   ;; ../../../../spec/2c3-runtime-type-subst.watsup:392.1-392.43
+   ;; ../../../../spec/2c3-runtime-type-subst.watsup:392.1-392.45
    clause 1(typ') = $canon_typ(typ)
       -- if typ' <: aliastyp
-      -- let `DefT%`_aliastyp(typ) = typ' as aliastyp
+      -- let `DefT%%`_aliastyp(_id, typ) = typ' as aliastyp
 
    ;; ../../../../spec/2c3-runtime-type-subst.watsup:393.1-394.15
    clause 2(typ) = typ
@@ -2648,26 +2648,26 @@ def $is_equalable'(typ) : bool =
       -- if objtyp matches `ExternT%%`
       -- let `ExternT%%`_objtyp(_id, _map<fid, funcdef>) = objtyp
 
-   ;; ../../../../spec/2c4-runtime-type-util.watsup:62.1-62.38
+   ;; ../../../../spec/2c4-runtime-type-util.watsup:62.1-62.40
    clause 3(typ) = false
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ParserT%`
-      -- let `ParserT%`_objtyp(_paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
+      -- if objtyp matches `ParserT%%`
+      -- let `ParserT%%`_objtyp(_id, _paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
 
-   ;; ../../../../spec/2c4-runtime-type-util.watsup:63.1-63.39
+   ;; ../../../../spec/2c4-runtime-type-util.watsup:63.1-63.41
    clause 4(typ) = false
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ControlT%`
-      -- let `ControlT%`_objtyp(_paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
+      -- if objtyp matches `ControlT%%`
+      -- let `ControlT%%`_objtyp(_id, _paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
 
-   ;; ../../../../spec/2c4-runtime-type-util.watsup:64.1-64.39
+   ;; ../../../../spec/2c4-runtime-type-util.watsup:64.1-64.41
    clause 5(typ) = false
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `PackageT%`
-      -- let `PackageT%`_objtyp(_typ*{_typ <- _typ*}) = objtyp
+      -- if objtyp matches `PackageT%%`
+      -- let `PackageT%%`_objtyp(_id, _typ*{_typ <- _typ*}) = objtyp
 
    ;; ../../../../spec/2c4-runtime-type-util.watsup:65.1-65.39
    clause 6(typ) = false
@@ -2814,13 +2814,13 @@ relation Type_alpha: `%~~%`(typ, typ)
    ;; ../../../../spec/2c5-runtime-type-alpha.watsup:48.1-50.32
    rule deft-left: `%~~%`(typ, typ_b)
       -- if typ <: aliastyp
-      -- let `DefT%`_aliastyp(typ_a) = typ as aliastyp
+      -- let `DefT%%`_aliastyp(_id, typ_a) = typ as aliastyp
       -- if Type_alpha: `%~~%`(typ_a, typ_b) holds
 
    ;; ../../../../spec/2c5-runtime-type-alpha.watsup:52.1-54.32
    rule deft-right: `%~~%`(typ_a, typ)
       -- if typ <: aliastyp
-      -- let `DefT%`_aliastyp(typ_b) = typ as aliastyp
+      -- let `DefT%%`_aliastyp(_id, typ_b) = typ as aliastyp
       -- if Type_alpha: `%~~%`(typ_a, typ_b) holds
 
    ;; ../../../../spec/2c5-runtime-type-alpha.watsup:56.1-58.32
@@ -2969,14 +2969,14 @@ relation Type_alpha: `%~~%`(typ, typ)
    rule parsert: `%~~%`(typ, typ')
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ParserT%`
-      -- let `ParserT%`_objtyp(pt_a*{pt_a <- pt_a*}) = objtyp
+      -- if objtyp matches `ParserT%%`
+      -- let `ParserT%%`_objtyp(_id, pt_a*{pt_a <- pt_a*}) = objtyp
       -- if typ' <: objtyp
       -- let objtyp' = typ' as objtyp
-      -- if objtyp' matches `ParserT%`
-      -- let `ParserT%`_objtyp(pt_b*{pt_b <- pt_b*}) = objtyp'
-      -- (let `%%%%`_paramtyp(_id, dir_a, typ_a, _exprIL?{_exprIL <- _exprIL?}) = pt_a)*{_exprIL? <- _exprIL?*, _id <- _id*, dir_a <- dir_a*, pt_a <- pt_a*, typ_a <- typ_a*}
-      -- (let `%%%%`_paramtyp(_id', dir_b, typ_b, _exprIL'?{_exprIL' <- _exprIL'?}) = pt_b)*{_exprIL'? <- _exprIL'?*, _id' <- _id'*, dir_b <- dir_b*, pt_b <- pt_b*, typ_b <- typ_b*}
+      -- if objtyp' matches `ParserT%%`
+      -- let `ParserT%%`_objtyp(_id', pt_b*{pt_b <- pt_b*}) = objtyp'
+      -- (let `%%%%`_paramtyp(_id'', dir_a, typ_a, _exprIL?{_exprIL <- _exprIL?}) = pt_a)*{_exprIL? <- _exprIL?*, _id'' <- _id''*, dir_a <- dir_a*, pt_a <- pt_a*, typ_a <- typ_a*}
+      -- (let `%%%%`_paramtyp(_id''', dir_b, typ_b, _exprIL'?{_exprIL' <- _exprIL'?}) = pt_b)*{_exprIL'? <- _exprIL'?*, _id''' <- _id'''*, dir_b <- dir_b*, pt_b <- pt_b*, typ_b <- typ_b*}
       -- (if (dir_a = dir_b))*{dir_a <- dir_a*, dir_b <- dir_b*}
       -- (if Type_alpha: `%~~%`(typ_a, typ_b) holds)*{typ_a <- typ_a*, typ_b <- typ_b*}
 
@@ -2984,14 +2984,14 @@ relation Type_alpha: `%~~%`(typ, typ)
    rule controlt: `%~~%`(typ, typ')
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ControlT%`
-      -- let `ControlT%`_objtyp(pt_a*{pt_a <- pt_a*}) = objtyp
+      -- if objtyp matches `ControlT%%`
+      -- let `ControlT%%`_objtyp(_id, pt_a*{pt_a <- pt_a*}) = objtyp
       -- if typ' <: objtyp
       -- let objtyp' = typ' as objtyp
-      -- if objtyp' matches `ControlT%`
-      -- let `ControlT%`_objtyp(pt_b*{pt_b <- pt_b*}) = objtyp'
-      -- (let `%%%%`_paramtyp(_id, dir_a, typ_a, _exprIL?{_exprIL <- _exprIL?}) = pt_a)*{_exprIL? <- _exprIL?*, _id <- _id*, dir_a <- dir_a*, pt_a <- pt_a*, typ_a <- typ_a*}
-      -- (let `%%%%`_paramtyp(_id', dir_b, typ_b, _exprIL'?{_exprIL' <- _exprIL'?}) = pt_b)*{_exprIL'? <- _exprIL'?*, _id' <- _id'*, dir_b <- dir_b*, pt_b <- pt_b*, typ_b <- typ_b*}
+      -- if objtyp' matches `ControlT%%`
+      -- let `ControlT%%`_objtyp(_id', pt_b*{pt_b <- pt_b*}) = objtyp'
+      -- (let `%%%%`_paramtyp(_id'', dir_a, typ_a, _exprIL?{_exprIL <- _exprIL?}) = pt_a)*{_exprIL? <- _exprIL?*, _id'' <- _id''*, dir_a <- dir_a*, pt_a <- pt_a*, typ_a <- typ_a*}
+      -- (let `%%%%`_paramtyp(_id''', dir_b, typ_b, _exprIL'?{_exprIL' <- _exprIL'?}) = pt_b)*{_exprIL'? <- _exprIL'?*, _id''' <- _id'''*, dir_b <- dir_b*, pt_b <- pt_b*, typ_b <- typ_b*}
       -- (if (dir_a = dir_b))*{dir_a <- dir_a*, dir_b <- dir_b*}
       -- (if Type_alpha: `%~~%`(typ_a, typ_b) holds)*{typ_a <- typ_a*, typ_b <- typ_b*}
 
@@ -2999,12 +2999,12 @@ relation Type_alpha: `%~~%`(typ, typ)
    rule packaget: `%~~%`(typ, typ')
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `PackageT%`
-      -- let `PackageT%`_objtyp(typ_a*{typ_a <- typ_a*}) = objtyp
+      -- if objtyp matches `PackageT%%`
+      -- let `PackageT%%`_objtyp(_id, typ_a*{typ_a <- typ_a*}) = objtyp
       -- if typ' <: objtyp
       -- let objtyp' = typ' as objtyp
-      -- if objtyp' matches `PackageT%`
-      -- let `PackageT%`_objtyp(typ_b*{typ_b <- typ_b*}) = objtyp'
+      -- if objtyp' matches `PackageT%%`
+      -- let `PackageT%%`_objtyp(_id', typ_b*{typ_b <- typ_b*}) = objtyp'
       -- (if Type_alpha: `%~~%`(typ_a, typ_b) holds)*{typ_a <- typ_a*, typ_b <- typ_b*}
 
    ;; ../../../../spec/2c5-runtime-type-alpha.watsup:123.1-125.32
@@ -3287,7 +3287,7 @@ relation Type_wf: `%|-%`(tidset, typ)
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:47.1-50.28
    rule deft: `%|-%`(tidset, typ')
       -- if typ' <: aliastyp
-      -- let `DefT%`_aliastyp(typ) = typ' as aliastyp
+      -- let `DefT%%`_aliastyp(_id, typ) = typ' as aliastyp
       -- if $nestable_deft(typ)
       -- if Type_wf: `%|-%`(tidset, typ) holds
 
@@ -3389,24 +3389,24 @@ relation Type_wf: `%|-%`(tidset, typ)
    rule parsert: `%|-%`(tidset, typ)
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ParserT%`
-      -- let `ParserT%`_objtyp(pt*{pt <- pt*}) = objtyp
+      -- if objtyp matches `ParserT%%`
+      -- let `ParserT%%`_objtyp(_id, pt*{pt <- pt*}) = objtyp
       -- if ParamTypes_wf: `%|-%`(tidset, pt*{pt <- pt*}) holds
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:224.1-226.34
    rule controlt: `%|-%`(tidset, typ)
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ControlT%`
-      -- let `ControlT%`_objtyp(pt*{pt <- pt*}) = objtyp
+      -- if objtyp matches `ControlT%%`
+      -- let `ControlT%%`_objtyp(_id, pt*{pt <- pt*}) = objtyp
       -- if ParamTypes_wf: `%|-%`(tidset, pt*{pt <- pt*}) holds
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:228.1-230.31
    rule packaget: `%|-%`(tidset, typ')
       -- if typ' <: objtyp
       -- let objtyp = typ' as objtyp
-      -- if objtyp matches `PackageT%`
-      -- let `PackageT%`_objtyp(typ*{typ <- typ*}) = objtyp
+      -- if objtyp matches `PackageT%%`
+      -- let `PackageT%%`_objtyp(_id, typ*{typ <- typ*}) = objtyp
       -- (if Type_wf: `%|-%`(tidset, typ) holds)*{typ <- typ*}
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:232.1-236.28
@@ -3699,9 +3699,9 @@ relation ConsType_wf: `%|-%`(tidset, constyp)
       -- let typ' = $canon_typ(typ)
       -- if typ' <: objtyp
       -- let objtyp = typ' as objtyp
-      -- if objtyp matches `ParserT%`
-      -- let `ParserT%`_objtyp(_paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
-      -- (let `%%%%`_paramtyp(_id, _dir, typ_p, exprIL?{exprIL <- exprIL?}) = pt)*{_dir <- _dir*, _id <- _id*, exprIL? <- exprIL?*, pt <- pt*, typ_p <- typ_p*}
+      -- if objtyp matches `ParserT%%`
+      -- let `ParserT%%`_objtyp(_id, _paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
+      -- (let `%%%%`_paramtyp(_id', _dir, typ_p, exprIL?{exprIL <- exprIL?}) = pt)*{_dir <- _dir*, _id' <- _id'*, exprIL? <- exprIL?*, pt <- pt*, typ_p <- typ_p*}
       -- (let typ_p' = $canon_typ(typ_p))*{typ_p <- typ_p*, typ_p' <- typ_p'*}
       -- (if ((((~$is_deft(typ_p') /\ ~$is_spect(typ_p')) /\ ~$is_controlt(typ_p')) /\ ~$is_packaget(typ_p')) /\ ~$is_tablet(typ_p')))*{typ_p' <- typ_p'*}
 
@@ -3712,9 +3712,9 @@ relation ConsType_wf: `%|-%`(tidset, constyp)
       -- let typ' = $canon_typ(typ)
       -- if typ' <: objtyp
       -- let objtyp = typ' as objtyp
-      -- if objtyp matches `ControlT%`
-      -- let `ControlT%`_objtyp(_paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
-      -- (let `%%%%`_paramtyp(_id, _dir, typ_p, exprIL?{exprIL <- exprIL?}) = pt)*{_dir <- _dir*, _id <- _id*, exprIL? <- exprIL?*, pt <- pt*, typ_p <- typ_p*}
+      -- if objtyp matches `ControlT%%`
+      -- let `ControlT%%`_objtyp(_id, _paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
+      -- (let `%%%%`_paramtyp(_id', _dir, typ_p, exprIL?{exprIL <- exprIL?}) = pt)*{_dir <- _dir*, _id' <- _id'*, exprIL? <- exprIL?*, pt <- pt*, typ_p <- typ_p*}
       -- (let typ_p' = $canon_typ(typ_p))*{typ_p <- typ_p*, typ_p' <- typ_p'*}
       -- (if ((((~$is_deft(typ_p') /\ ~$is_spect(typ_p')) /\ ~$is_parsert(typ_p')) /\ ~$is_packaget(typ_p')) /\ ~$is_tablet(typ_p')))*{typ_p' <- typ_p'*}
 
@@ -3725,9 +3725,9 @@ relation ConsType_wf: `%|-%`(tidset, constyp)
       -- let typ' = $canon_typ(typ)
       -- if typ' <: objtyp
       -- let objtyp = typ' as objtyp
-      -- if objtyp matches `PackageT%`
-      -- let `PackageT%`_objtyp(_typ*{_typ <- _typ*}) = objtyp
-      -- (let `%%%%`_paramtyp(_id, _dir, typ_p, exprIL?{exprIL <- exprIL?}) = pt)*{_dir <- _dir*, _id <- _id*, exprIL? <- exprIL?*, pt <- pt*, typ_p <- typ_p*}
+      -- if objtyp matches `PackageT%%`
+      -- let `PackageT%%`_objtyp(_id, _typ*{_typ <- _typ*}) = objtyp
+      -- (let `%%%%`_paramtyp(_id', _dir, typ_p, exprIL?{exprIL <- exprIL?}) = pt)*{_dir <- _dir*, _id' <- _id'*, exprIL? <- exprIL?*, pt <- pt*, typ_p <- typ_p*}
       -- (let typ_p' = $canon_typ(typ_p))*{typ_p <- typ_p*, typ_p' <- typ_p'*}
       -- (if ((~$is_deft(typ_p') /\ ~$is_spect(typ_p')) /\ ~$is_tablet(typ_p')))*{typ_p' <- typ_p'*}
 
@@ -4416,10 +4416,10 @@ def $nestable_monod(typ) : bool =
       -- if abstyp matches `VarT%`
       -- let `VarT%`_abstyp(_id) = abstyp
 
-   ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:342.1-342.35
+   ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:342.1-342.37
    clause 1(typ) = true
       -- if typ <: aliastyp
-      -- let `DefT%`_aliastyp(_typ) = typ as aliastyp
+      -- let `DefT%%`_aliastyp(_id, _typ) = typ as aliastyp
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:343.1-343.37
    clause 2(typ) = true
@@ -4498,26 +4498,26 @@ def $nestable_polyd(typ) : bool =
       -- if objtyp matches `ExternT%%`
       -- let `ExternT%%`_objtyp(_id, _map<fid, funcdef>) = objtyp
 
-   ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:363.1-363.38
+   ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:363.1-363.40
    clause 6(typ) = true
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ParserT%`
-      -- let `ParserT%`_objtyp(_paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
+      -- if objtyp matches `ParserT%%`
+      -- let `ParserT%%`_objtyp(_id, _paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
 
-   ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:364.1-364.39
+   ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:364.1-364.41
    clause 7(typ) = true
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ControlT%`
-      -- let `ControlT%`_objtyp(_paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
+      -- if objtyp matches `ControlT%%`
+      -- let `ControlT%%`_objtyp(_id, _paramtyp*{_paramtyp <- _paramtyp*}) = objtyp
 
-   ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:365.1-365.39
+   ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:365.1-365.41
    clause 8(typ) = true
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `PackageT%`
-      -- let `PackageT%`_objtyp(_typ*{_typ <- _typ*}) = objtyp
+      -- if objtyp matches `PackageT%%`
+      -- let `PackageT%%`_objtyp(_id, _typ*{_typ <- _typ*}) = objtyp
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:366.1-367.15
    clause 9(typ) = false
@@ -6610,7 +6610,7 @@ syntax selectcaseIL =
 syntax annotIL = 
    | `(%;%)`(typ, ctk)
 
-;; ../../../../spec/3-syntax-il.watsup:125.1-151.128
+;; ../../../../spec/3-syntax-il.watsup:125.1-151.131
 syntax exprIL = 
    | `ValueE%%`(val, annotIL)
    | `BoolE%%`(bool, annotIL)
@@ -6638,7 +6638,7 @@ syntax exprIL =
    | `CallFuncE%%%%`(nameIL, targIL*, argIL*, annotIL)
    | `CallMethodE%%%%%`(exprIL, memberIL, targIL*, argIL*, annotIL)
    | `CallTypeE%%%%%`(nameIL, memberIL, targIL*, argIL*, annotIL)
-   | `InstE%%%%`(nameIL, targIL*, argIL*, annotIL)
+   | `InstE%%%%%`(nameIL, targIL*, targIL*, argIL*, annotIL)
 
 ;; ../../../../spec/3-syntax-il.watsup:157.18-157.75
 syntax blockIL = 
@@ -6726,7 +6726,7 @@ syntax declIL =
    | `VarD%%%`(idIL, typeIL, exprIL?)
    | `ErrD%`(memberIL*)
    | `MatchKindD%`(memberIL*)
-   | `InstD%%%%%%`(idIL, typeIL, nameIL, targIL*, argIL*, declIL*)
+   | `InstD%%%%%%%`(idIL, typeIL, nameIL, targIL*, targIL*, argIL*, declIL*)
    | `StructD%%%%`(idIL, tparamIL*, tparamIL*, (memberIL, typeIL)*)
    | `HeaderD%%%%`(idIL, tparamIL*, tparamIL*, (memberIL, typeIL)*)
    | `UnionD%%%%`(idIL, tparamIL*, tparamIL*, (memberIL, typeIL)*)
@@ -7645,10 +7645,10 @@ def $annot(exprIL) : annotIL =
       -- if exprIL matches `CallTypeE%%%%%`
       -- let `CallTypeE%%%%%`_exprIL(_nameIL, _memberIL, _targIL*{_targIL <- _targIL*}, _argIL*{_argIL <- _argIL*}, annotIL) = exprIL
 
-   ;; ../../../../spec/4b-typing-relation.watsup:33.1-33.42
+   ;; ../../../../spec/4b-typing-relation.watsup:33.1-33.44
    clause 26(exprIL) = annotIL
-      -- if exprIL matches `InstE%%%%`
-      -- let `InstE%%%%`_exprIL(_nameIL, _targIL*{_targIL <- _targIL*}, _argIL*{_argIL <- _argIL*}, annotIL) = exprIL
+      -- if exprIL matches `InstE%%%%%`
+      -- let `InstE%%%%%`_exprIL(_nameIL, _targIL*{_targIL <- _targIL*}, _targIL'*{_targIL' <- _targIL'*}, _argIL*{_argIL <- _argIL*}, annotIL) = exprIL
 
 ;; ../../../../spec/4b-typing-relation.watsup:40.1-42.23
 relation Eval_static: `%%|-%~>%%`(cursor, context, exprIL, val, exprIL)
@@ -9384,14 +9384,14 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if argIL*{argIL <- argIL*} matches []
 
    ;; ../../../../spec/4e-typing-expr.watsup:893.1-903.41
-   rule inste: `%%|-%:%`(p, C, expr, `InstE%%%%`_exprIL(name, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*}, `(%;%)`_annotIL(typ, `CTK`_ctk())))
+   rule inste: `%%|-%:%`(p, C, expr, `InstE%%%%%`_exprIL(name, targIL'*{targIL' <- targIL'*}, targIL_hidden*{targIL_hidden <- targIL_hidden*}, argIL'*{argIL' <- argIL'*}, `(%;%)`_annotIL(typ, `CTK`_ctk())))
       -- if expr matches `InstE%%%`
       -- let `InstE%%%`_expr(name, targ*{targ <- targ*}, arg*{arg <- arg*}) = expr
       -- (Type_ok: `%%|-%:%%`(p, C, targ, targIL, tid_fresh_a*{tid_fresh_a <- tid_fresh_a*}))*{targ <- targ*, targIL <- targIL*, tid_fresh_a* <- tid_fresh_a**}
       -- let tid_fresh*{tid_fresh <- tid_fresh*} = $concat_<tid>(tid_fresh_a*{tid_fresh_a <- tid_fresh_a*}*{tid_fresh_a* <- tid_fresh_a**})
       -- ConsType_ok: `%%|-%%%:%%%`(p, C, name, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, ct, tid_fresh_inserted*{tid_fresh_inserted <- tid_fresh_inserted*}, id_deft*{id_deft <- id_deft*})
       -- let tid_fresh'*{tid_fresh' <- tid_fresh'*} = $concat_<tid>([tid_fresh*{tid_fresh <- tid_fresh*} ++ tid_fresh_inserted*{tid_fresh_inserted <- tid_fresh_inserted*}])
-      -- Inst_ok: `%%%|-%%%%:%%%`(p, C, tid_fresh'*{tid_fresh' <- tid_fresh'*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*})
+      -- Inst_ok: `%%%|-%%%%:%%%%`(p, C, tid_fresh'*{tid_fresh' <- tid_fresh'*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ, targIL'*{targIL' <- targIL'*}, targIL_hidden*{targIL_hidden <- targIL_hidden*}, argIL'*{argIL' <- argIL'*})
       -- if $not_abstract_extern_object(typ)
 
 ;; ../../../../spec/4b-typing-relation.watsup:87.1-89.23
@@ -9596,8 +9596,9 @@ relation Stmt_ok: `%%%|-%:%%%`(cursor, context, flow, stmt, context, flow, stmtI
       -- ConsType_ok: `%%|-%%%:%%%`(p, C, name, [], [], ct, tid*{tid <- tid*}, id'*{id' <- id'*})
       -- if tid*{tid <- tid*} matches []
       -- if id'*{id' <- id'*} matches []
-      -- Inst_ok: `%%%|-%%%%:%%%`(p, C, [], ct, [], [], [], typ, targIL*{targIL <- targIL*}, argIL*{argIL <- argIL*})
+      -- Inst_ok: `%%%|-%%%%:%%%%`(p, C, [], ct, [], [], [], typ, targIL*{targIL <- targIL*}, targIL''*{targIL'' <- targIL''*}, argIL*{argIL <- argIL*})
       -- if targIL*{targIL <- targIL*} matches []
+      -- if targIL''*{targIL'' <- targIL''*} matches []
       -- if argIL*{argIL <- argIL*} matches []
       -- let typ' = $canon_typ(typ)
       -- if ($is_parsert(typ') \/ $is_controlt(typ'))
@@ -9733,14 +9734,14 @@ relation Decl_ok: `%%|-%:%%`(cursor, context, decl, context, declIL)
       -- let C' = $add_styp(p, C, id, `%%%%`_styp(typ, `INOUT`_dir(), `DYN`_ctk(), ?()))
 
    ;; ../../../../spec/4g-typing-decl.watsup:152.1-178.51
-   rule instd-some: `%%|-%:%%`(p, C, decl', C'', `InstD%%%%%%`_declIL(id, typ, name_inst, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*}, declIL*{declIL <- declIL*}))
+   rule instd-some: `%%|-%:%%`(p, C, decl', C'', `InstD%%%%%%%`_declIL(id, typ, name_inst, targIL'*{targIL' <- targIL'*}, targIL_hidden*{targIL_hidden <- targIL_hidden*}, argIL'*{argIL' <- argIL'*}, declIL*{declIL <- declIL*}))
       -- if decl' matches `InstD%%%%%`
       -- let `InstD%%%%%`_decl(id, name_inst, targ*{targ <- targ*}, arg*{arg <- arg*}, decl*{decl <- decl*}) = decl'
       -- if (|decl*{decl <- decl*}| > 0)
       -- (Type_ok: `%%|-%:%%`(p, C, targ, targIL, tid_fresh_a*{tid_fresh_a <- tid_fresh_a*}))*{targ <- targ*, targIL <- targIL*, tid_fresh_a* <- tid_fresh_a**}
       -- let tid_fresh*{tid_fresh <- tid_fresh*} = $concat_<tid>(tid_fresh_a*{tid_fresh_a <- tid_fresh_a*}*{tid_fresh_a* <- tid_fresh_a**})
       -- ConsType_ok: `%%|-%%%:%%%`(p, C, name_inst, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, ct, tid_fresh_inserted*{tid_fresh_inserted <- tid_fresh_inserted*}, id_deft*{id_deft <- id_deft*})
-      -- Inst_ok: `%%%|-%%%%:%%%`(p, C, tid_fresh*{tid_fresh <- tid_fresh*} ++ tid_fresh_inserted*{tid_fresh_inserted <- tid_fresh_inserted*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*})
+      -- Inst_ok: `%%%|-%%%%:%%%%`(p, C, tid_fresh*{tid_fresh <- tid_fresh*} ++ tid_fresh_inserted*{tid_fresh_inserted <- tid_fresh_inserted*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ, targIL'*{targIL' <- targIL'*}, targIL_hidden*{targIL_hidden <- targIL_hidden*}, argIL'*{argIL' <- argIL'*})
       -- let typ''' = typ
       -- if typ''' <: abstyp
       -- let abstyp = typ''' as abstyp
@@ -9765,14 +9766,14 @@ relation Decl_ok: `%%|-%:%%`(cursor, context, decl, context, declIL)
       -- let C'' = $add_styp(p, C, id, `%%%%`_styp(typ', `NO`_dir(), `CTK`_ctk(), ?()))
 
    ;; ../../../../spec/4g-typing-decl.watsup:180.1-189.49
-   rule instd-none: `%%|-%:%%`(p, C, decl', C', `InstD%%%%%%`_declIL(id, typ, name_inst, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*}, []))
+   rule instd-none: `%%|-%:%%`(p, C, decl', C', `InstD%%%%%%%`_declIL(id, typ, name_inst, targIL'*{targIL' <- targIL'*}, targIL_hidden*{targIL_hidden <- targIL_hidden*}, argIL'*{argIL' <- argIL'*}, []))
       -- if decl' matches `InstD%%%%%`
       -- let `InstD%%%%%`_decl(id, name_inst, targ*{targ <- targ*}, arg*{arg <- arg*}, decl*{decl <- decl*}) = decl'
       -- if decl*{decl <- decl*} matches []
       -- (Type_ok: `%%|-%:%%`(p, C, targ, targIL, tid_fresh_a*{tid_fresh_a <- tid_fresh_a*}))*{targ <- targ*, targIL <- targIL*, tid_fresh_a* <- tid_fresh_a**}
       -- let tid_fresh*{tid_fresh <- tid_fresh*} = $concat_<tid>(tid_fresh_a*{tid_fresh_a <- tid_fresh_a*}*{tid_fresh_a* <- tid_fresh_a**})
       -- ConsType_ok: `%%|-%%%:%%%`(p, C, name_inst, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, ct, tid_fresh_inserted*{tid_fresh_inserted <- tid_fresh_inserted*}, id_deft*{id_deft <- id_deft*})
-      -- Inst_ok: `%%%|-%%%%:%%%`(p, C, tid_fresh*{tid_fresh <- tid_fresh*} ++ tid_fresh_inserted*{tid_fresh_inserted <- tid_fresh_inserted*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ, targIL'*{targIL' <- targIL'*}, argIL'*{argIL' <- argIL'*})
+      -- Inst_ok: `%%%|-%%%%:%%%%`(p, C, tid_fresh*{tid_fresh <- tid_fresh*} ++ tid_fresh_inserted*{tid_fresh_inserted <- tid_fresh_inserted*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ, targIL'*{targIL' <- targIL'*}, targIL_hidden*{targIL_hidden <- targIL_hidden*}, argIL'*{argIL' <- argIL'*})
       -- let C' = $add_styp(p, C, id, `%%%%`_styp(typ, `NO`_dir(), `CTK`_ctk(), ?()))
 
    ;; ../../../../spec/4g-typing-decl.watsup:195.1-203.51
@@ -9936,7 +9937,7 @@ relation Decl_ok: `%%|-%:%%`(cursor, context, decl, context, declIL)
       -- Type_ok: `%%|-%:%%`(`GLOBAL`_cursor(), C, type, typ, tid*{tid <- tid*})
       -- if tid*{tid <- tid*} matches []
       -- if Type_wf: `%|-%`($bound_tids(`GLOBAL`_cursor(), C), typ) holds
-      -- let typ_d = `DefT%`_aliastyp(typ) as typ
+      -- let typ_d = `DefT%%`_aliastyp(id, typ) as typ
       -- let td = `MonoD%`_monotypdef(typ_d) as typdef
       -- let tidset = $bound_tids(`GLOBAL`_cursor(), C)
       -- if TypeDef_wf: `%|-%`(tidset, td) holds
@@ -9958,7 +9959,7 @@ relation Decl_ok: `%%|-%:%%`(cursor, context, decl, context, declIL)
       -- let ?(typdef) = typdef'?{typdef' <- typdef'?}
       -- if typdef <: monotypdef
       -- let `MonoD%`_monotypdef(typ_d) = typdef as monotypdef
-      -- let td = `MonoD%`_monotypdef(`DefT%`_aliastyp(typ_d) as typ) as typdef
+      -- let td = `MonoD%`_monotypdef(`DefT%%`_aliastyp(id, typ_d) as typ) as typdef
       -- if TypeDef_wf: `%|-%`($bound_tids(`GLOBAL`_cursor(), C), td) holds
       -- let C'' = $add_typdef(`GLOBAL`_cursor(), C, id, td)
 
@@ -9978,7 +9979,7 @@ relation Decl_ok: `%%|-%:%%`(cursor, context, decl, context, declIL)
       -- let ?(typdef) = typdef'?{typdef' <- typdef'?}
       -- if typdef <: polytypdef
       -- let ptd = typdef as polytypdef
-      -- let td = `MonoD%`_monotypdef(`DefT%`_aliastyp(`SpecT%%`_abstyp(ptd, []) as typ) as typ) as typdef
+      -- let td = `MonoD%`_monotypdef(`DefT%%`_aliastyp(id, `SpecT%%`_abstyp(ptd, []) as typ) as typ) as typdef
       -- if TypeDef_wf: `%|-%`($bound_tids(`GLOBAL`_cursor(), C), td) holds
       -- let C'' = $add_typdef(`GLOBAL`_cursor(), C, id, td)
 
@@ -10072,7 +10073,7 @@ relation Decl_ok: `%%|-%:%%`(cursor, context, decl, context, declIL)
       -- (Param_ok: `%%|-%:%%`(`LOCAL`_cursor(), C_2, param, paramIL, tid_fresh_p*{tid_fresh_p <- tid_fresh_p*}))*{param <- param*, paramIL <- paramIL*, tid_fresh_p* <- tid_fresh_p**}
       -- (let `%%%%`_paramIL(id_p, dir_p, typ_p, exprIL_p?{exprIL_p <- exprIL_p?}) = paramIL)*{dir_p <- dir_p*, exprIL_p? <- exprIL_p?*, id_p <- id_p*, paramIL <- paramIL*, typ_p <- typ_p*}
       -- let tparam_hidden*{tparam_hidden <- tparam_hidden*} = $concat_<tid>(tid_fresh_p*{tid_fresh_p <- tid_fresh_p*}*{tid_fresh_p* <- tid_fresh_p**})
-      -- let td = `PolyD%->%`_polytypdef((tparam*{tparam <- tparam*}, tparam_hidden*{tparam_hidden <- tparam_hidden*}), `ParserT%`_objtyp(`%%%%`_paramtyp(id_p, dir_p, typ_p, exprIL_p?{exprIL_p <- exprIL_p?})*{dir_p <- dir_p*, exprIL_p? <- exprIL_p?*, id_p <- id_p*, typ_p <- typ_p*}) as typ) as typdef
+      -- let td = `PolyD%->%`_polytypdef((tparam*{tparam <- tparam*}, tparam_hidden*{tparam_hidden <- tparam_hidden*}), `ParserT%%`_objtyp(id, `%%%%`_paramtyp(id_p, dir_p, typ_p, exprIL_p?{exprIL_p <- exprIL_p?})*{dir_p <- dir_p*, exprIL_p? <- exprIL_p?*, id_p <- id_p*, typ_p <- typ_p*}) as typ) as typdef
       -- if TypeDef_wf: `%|-%`($bound_tids(`GLOBAL`_cursor(), C_0), td) holds
       -- let C_3 = $add_typdef(`GLOBAL`_cursor(), C_0, id, td)
 
@@ -10102,7 +10103,7 @@ relation Decl_ok: `%%|-%:%%`(cursor, context, decl, context, declIL)
       -- let styp*{styp <- styp*} = $repeat_<styp>(`%%%%`_styp(`StateT`_synthtyp() as typ, `NO`_dir(), `DYN`_ctk(), ?()), |statelabel'*{statelabel' <- statelabel'*}|)
       -- let C_6 = $add_styps(`BLOCK`_cursor(), C_5, statelabel'*{statelabel' <- statelabel'*}, styp*{styp <- styp*})
       -- (ParserState_ok: `%|-%:%`(C_6, parserstate, parserstateIL))*{parserstate <- parserstate*, parserstateIL <- parserstateIL*}
-      -- let ptd = `PolyD%->%`_polytypdef(([], []), `ParserT%`_objtyp(paramIL*{paramIL <- paramIL*} as paramtyp*) as typ)
+      -- let ptd = `PolyD%->%`_polytypdef(([], []), `ParserT%%`_objtyp(id, paramIL*{paramIL <- paramIL*} as paramtyp*) as typ)
       -- let typ = `SpecT%%`_abstyp(ptd, []) as typ
       -- let cd = `ConsD%->%`_consdef(([], []), `ConsT%%`_constyp(cparamIL*{cparamIL <- cparamIL*} as paramtyp*, typ))
       -- if ConsDef_wf: `%|-%`($bound_tids(`GLOBAL`_cursor(), C_0), cd) holds
@@ -10133,7 +10134,7 @@ relation Decl_ok: `%%|-%:%%`(cursor, context, decl, context, declIL)
       -- (Param_ok: `%%|-%:%%`(`LOCAL`_cursor(), C', param, paramIL, tid_fresh_p*{tid_fresh_p <- tid_fresh_p*}))*{param <- param*, paramIL <- paramIL*, tid_fresh_p* <- tid_fresh_p**}
       -- (let `%%%%`_paramIL(id_p, dir_p, typ_p, exprIL_p?{exprIL_p <- exprIL_p?}) = paramIL)*{dir_p <- dir_p*, exprIL_p? <- exprIL_p?*, id_p <- id_p*, paramIL <- paramIL*, typ_p <- typ_p*}
       -- let tparam_hidden*{tparam_hidden <- tparam_hidden*} = $concat_<tid>(tid_fresh_p*{tid_fresh_p <- tid_fresh_p*}*{tid_fresh_p* <- tid_fresh_p**})
-      -- let td = `PolyD%->%`_polytypdef((tparam*{tparam <- tparam*}, tparam_hidden*{tparam_hidden <- tparam_hidden*}), `ControlT%`_objtyp(`%%%%`_paramtyp(id_p, dir_p, typ_p, exprIL_p?{exprIL_p <- exprIL_p?})*{dir_p <- dir_p*, exprIL_p? <- exprIL_p?*, id_p <- id_p*, typ_p <- typ_p*}) as typ) as typdef
+      -- let td = `PolyD%->%`_polytypdef((tparam*{tparam <- tparam*}, tparam_hidden*{tparam_hidden <- tparam_hidden*}), `ControlT%%`_objtyp(id, `%%%%`_paramtyp(id_p, dir_p, typ_p, exprIL_p?{exprIL_p <- exprIL_p?})*{dir_p <- dir_p*, exprIL_p? <- exprIL_p?*, id_p <- id_p*, typ_p <- typ_p*}) as typ) as typdef
       -- if TypeDef_wf: `%|-%`($bound_tids(`GLOBAL`_cursor(), C), td) holds
       -- let C''' = $add_typdef(`GLOBAL`_cursor(), C, id, td)
 
@@ -10155,7 +10156,7 @@ relation Decl_ok: `%%|-%:%%`(cursor, context, decl, context, declIL)
       -- Decls_ok: `%%|-%:%%`(`BLOCK`_cursor(), C_3, decl*{decl <- decl*}, C_4, declIL*{declIL <- declIL*})
       -- let C_5 = $set_localkind(C_4, `CONTROLAPPLYMETHOD`_lkind())
       -- Block_ok: `%%%%|-%:%%%`(`LOCAL`_cursor(), C_5, `CONT`_flow(), `INIT`_blkctxt(), block, C_6, f, blockIL)
-      -- let ptd = `PolyD%->%`_polytypdef(([], []), `ControlT%`_objtyp(paramIL*{paramIL <- paramIL*} as paramtyp*) as typ)
+      -- let ptd = `PolyD%->%`_polytypdef(([], []), `ControlT%%`_objtyp(id, paramIL*{paramIL <- paramIL*} as paramtyp*) as typ)
       -- let typ = `SpecT%%`_abstyp(ptd, []) as typ
       -- let cd = `ConsD%->%`_consdef(([], []), `ConsT%%`_constyp(cparamIL*{cparamIL <- cparamIL*} as paramtyp*, typ))
       -- if ConsDef_wf: `%|-%`($bound_tids(`GLOBAL`_cursor(), C_0), cd) holds
@@ -10172,7 +10173,7 @@ relation Decl_ok: `%%|-%:%%`(cursor, context, decl, context, declIL)
       -- (CParam_ok: `%%|-%:%%`(`BLOCK`_cursor(), C_2, cparam, cparamIL, tid_fresh_c*{tid_fresh_c <- tid_fresh_c*}))*{cparam <- cparam*, cparamIL <- cparamIL*, tid_fresh_c* <- tid_fresh_c**}
       -- let tparam_hidden*{tparam_hidden <- tparam_hidden*} = $concat_<tid>(tid_fresh_c*{tid_fresh_c <- tid_fresh_c*}*{tid_fresh_c* <- tid_fresh_c**})
       -- (let `%%%%`_paramIL(_idIL, _dirIL, typ_c, _exprIL?{_exprIL <- _exprIL?}) = cparamIL)*{_dirIL <- _dirIL*, _exprIL? <- _exprIL?*, _idIL <- _idIL*, cparamIL <- cparamIL*, typ_c <- typ_c*}
-      -- let ptd = `PolyD%->%`_polytypdef((tparam*{tparam <- tparam*}, tparam_hidden*{tparam_hidden <- tparam_hidden*}), `PackageT%`_objtyp(typ_c*{typ_c <- typ_c*}) as typ)
+      -- let ptd = `PolyD%->%`_polytypdef((tparam*{tparam <- tparam*}, tparam_hidden*{tparam_hidden <- tparam_hidden*}), `PackageT%%`_objtyp(id, typ_c*{typ_c <- typ_c*}) as typ)
       -- if TypeDef_wf: `%|-%`($bound_tids(`BLOCK`_cursor(), C_2), ptd as typdef) holds
       -- let tparam'*{tparam' <- tparam'*} = tparam*{tparam <- tparam*} ++ tparam_hidden*{tparam_hidden <- tparam_hidden*}
       -- let typ = `SpecT%%`_abstyp(ptd, `VarT%`_abstyp(tparam') as typ*{tparam' <- tparam'*}) as typ
@@ -10711,8 +10712,8 @@ relation MethodType_ok: `%%|-%%%%:%%%%`(cursor, context, expr, member, targIL*, 
       -- let typ = $canon_typ(typ_b)
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ParserT%`
-      -- let `ParserT%`_objtyp(pt*{pt <- pt*}) = objtyp
+      -- if objtyp matches `ParserT%%`
+      -- let `ParserT%%`_objtyp(_id, pt*{pt <- pt*}) = objtyp
       -- let ft = `ParserApplyMethodT%`_functyp(pt*{pt <- pt*})
       -- let fd = `MonoFD%`_monofuncdef(ft) as funcdef
       -- (let `%%%%`_paramtyp(id_p, _dir, _typ, exprIL_deft?{exprIL_deft <- exprIL_deft?}) = pt)*{_dir <- _dir*, _typ <- _typ*, exprIL_deft? <- exprIL_deft?*, id_p <- id_p*, pt <- pt*}
@@ -10733,8 +10734,8 @@ relation MethodType_ok: `%%|-%%%%:%%%%`(cursor, context, expr, member, targIL*, 
       -- let typ = $canon_typ(typ_b)
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ControlT%`
-      -- let `ControlT%`_objtyp(pt*{pt <- pt*}) = objtyp
+      -- if objtyp matches `ControlT%%`
+      -- let `ControlT%%`_objtyp(_id, pt*{pt <- pt*}) = objtyp
       -- let ft = `ControlApplyMethodT%`_functyp(pt*{pt <- pt*})
       -- let fd = `MonoFD%`_monofuncdef(ft) as funcdef
       -- (let `%%%%`_paramtyp(id_p, _dir, _typ, exprIL_deft?{exprIL_deft <- exprIL_deft?}) = pt)*{_dir <- _dir*, _typ <- _typ*, exprIL_deft? <- exprIL_deft?*, id_p <- id_p*, pt <- pt*}
@@ -10815,10 +10816,10 @@ relation Inst_site_ok: `%%|-%:INSTSITE_OK`(cursor, context, constyp)
       -- if ($is_externt(typ_i') \/ $is_controlt(typ_i'))
 
 ;; ../../../../spec/4b-typing-relation.watsup:180.1-182.35
-relation Inst_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, constyp, targIL*, arg*, id*, typ, targIL*, argIL*)
+relation Inst_ok: `%%%|-%%%%:%%%%`(cursor, context, tid*, constyp, targIL*, arg*, id*, typ, targIL*, targIL*, argIL*)
 
    ;; ../../../../spec/4h-typing-call.watsup:713.1-729.84
-   rule global-packaget-no-targsinfer: `%%%|-%%%%:%%%`(cursor, C_0, tid*{tid <- tid*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_i, targIL*{targIL <- targIL*}, argIL''*{argIL'' <- argIL''*})
+   rule global-packaget-no-targsinfer: `%%%|-%%%%:%%%%`(cursor, C_0, tid*{tid <- tid*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_i, targIL*{targIL <- targIL*}, [], argIL''*{argIL'' <- argIL''*})
       -- if cursor matches `GLOBAL`
       -- if tid*{tid <- tid*} matches []
       -- let `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i) = ct
@@ -10832,8 +10833,8 @@ relation Inst_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, constyp, targIL*, arg*,
       -- if Inst_site_ok: `%%|-%:INSTSITE_OK`(`GLOBAL`_cursor(), C_0, `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i)) holds
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(`BLOCK`_cursor(), C_1, `NOACT`_actctxt(), pt'', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt'' <- pt''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:731.1-756.85
-   rule global-packaget-targsinfer: `%%%|-%%%%:%%%`(cursor, C_0, tid_fresh*{tid_fresh <- tid_fresh*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_i', targIL''*{targIL'' <- targIL''*}, argIL''*{argIL'' <- argIL''*})
+   ;; ../../../../spec/4h-typing-call.watsup:731.1-755.85
+   rule global-packaget-targsinfer: `%%%|-%%%%:%%%%`(cursor, C_0, tid_fresh*{tid_fresh <- tid_fresh*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_i', targIL*{targIL <- targIL*}, targIL_hidden*{targIL_hidden <- targIL_hidden*}, argIL''*{argIL'' <- argIL''*})
       -- if cursor matches `GLOBAL`
       -- let `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i) = ct
       -- if $is_packaget($canon_typ(typ_i))
@@ -10846,15 +10847,14 @@ relation Inst_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, constyp, targIL*, arg*,
       -- let theta = $infer_targs(tid_fresh*{tid_fresh <- tid_fresh*}, pt''*{pt'' <- pt''*}, typ_a*{typ_a <- typ_a*})
       -- (let typ?{typ <- typ?} = $find_map<tid, typ>(theta, tid_fresh))*{tid_fresh <- tid_fresh*, typ? <- typ?*}
       -- (if typ?{typ <- typ?} matches (_))*{typ? <- typ?*}
-      -- (let ?(targIL') = typ?{typ <- typ?})*{targIL' <- targIL'*, typ? <- typ?*}
-      -- let targIL''*{targIL'' <- targIL''*} = targIL*{targIL <- targIL*} ++ targIL'*{targIL' <- targIL'*}
+      -- (let ?(targIL_hidden) = typ?{typ <- typ?})*{targIL_hidden <- targIL_hidden*, typ? <- typ?*}
       -- let `ConsT%%`_constyp(pt'''*{pt''' <- pt'''*}, typ_i') = $subst_constyp(theta, `ConsT%%`_constyp(pt''*{pt'' <- pt''*}, typ_i))
       -- if ConsType_wf: `%|-%`($bound_tids(`GLOBAL`_cursor(), C_0), `ConsT%%`_constyp(pt'''*{pt''' <- pt'''*}, typ_i')) holds
       -- if Inst_site_ok: `%%|-%:INSTSITE_OK`(`GLOBAL`_cursor(), C_0, `ConsT%%`_constyp(pt'''*{pt''' <- pt'''*}, typ_i')) holds
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(`BLOCK`_cursor(), C_1, `NOACT`_actctxt(), pt''', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt''' <- pt'''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:758.1-773.78
-   rule else-no-targsinfer: `%%%|-%%%%:%%%`(p, C, tid*{tid <- tid*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_i, targIL*{targIL <- targIL*}, argIL''*{argIL'' <- argIL''*})
+   ;; ../../../../spec/4h-typing-call.watsup:757.1-772.78
+   rule else-no-targsinfer: `%%%|-%%%%:%%%%`(p, C, tid*{tid <- tid*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_i, targIL*{targIL <- targIL*}, [], argIL''*{argIL'' <- argIL''*})
       -- if tid*{tid <- tid*} matches []
       -- let `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i) = ct
       -- if ~((p = `GLOBAL`_cursor()) /\ $is_packaget($canon_typ(typ_i)))
@@ -10866,8 +10866,8 @@ relation Inst_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, constyp, targIL*, arg*,
       -- if Inst_site_ok: `%%|-%:INSTSITE_OK`(p, C, `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i)) holds
       -- (Call_convention_arg_ok: `%%%|-%~~%:%`(p, C, `NOACT`_actctxt(), pt'', (argIL, typ_a), argIL''))*{argIL <- argIL*, argIL'' <- argIL''*, pt'' <- pt''*, typ_a <- typ_a*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:775.1-797.79
-   rule else-targsinfer: `%%%|-%%%%:%%%`(p, C, tid_fresh*{tid_fresh <- tid_fresh*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_i', targIL*{targIL <- targIL*}, argIL''*{argIL'' <- argIL''*})
+   ;; ../../../../spec/4h-typing-call.watsup:774.1-795.79
+   rule else-targsinfer: `%%%|-%%%%:%%%%`(p, C, tid_fresh*{tid_fresh <- tid_fresh*}, ct, targIL*{targIL <- targIL*}, arg*{arg <- arg*}, id_deft*{id_deft <- id_deft*}, typ_i', targIL*{targIL <- targIL*}, targIL_hidden*{targIL_hidden <- targIL_hidden*}, argIL''*{argIL'' <- argIL''*})
       -- let `ConsT%%`_constyp(pt*{pt <- pt*}, typ_i) = ct
       -- if ~((p = `GLOBAL`_cursor()) /\ $is_packaget($canon_typ(typ_i)))
       -- (Arg_ok: `%%|-%:%%`(p, C, arg, argIL, typ_a))*{arg <- arg*, argIL <- argIL*, typ_a <- typ_a*}
@@ -10877,8 +10877,7 @@ relation Inst_ok: `%%%|-%%%%:%%%`(cursor, context, tid*, constyp, targIL*, arg*,
       -- let theta = $infer_targs(tid_fresh*{tid_fresh <- tid_fresh*}, pt''*{pt'' <- pt''*}, typ_a*{typ_a <- typ_a*})
       -- (let typ?{typ <- typ?} = $find_map<tid, typ>(theta, tid_fresh))*{tid_fresh <- tid_fresh*, typ? <- typ?*}
       -- (if typ?{typ <- typ?} matches (_))*{typ? <- typ?*}
-      -- (let ?(targIL') = typ?{typ <- typ?})*{targIL' <- targIL'*, typ? <- typ?*}
-      -- let targIL''*{targIL'' <- targIL''*} = targIL*{targIL <- targIL*} ++ targIL'*{targIL' <- targIL'*}
+      -- (let ?(targIL_hidden) = typ?{typ <- typ?})*{targIL_hidden <- targIL_hidden*, typ? <- typ?*}
       -- let `ConsT%%`_constyp(pt'''*{pt''' <- pt'''*}, typ_i') = $subst_constyp(theta, `ConsT%%`_constyp(pt''*{pt'' <- pt''*}, typ_i))
       -- if ConsType_wf: `%|-%`($bound_tids(p, C), `ConsT%%`_constyp(pt'''*{pt''' <- pt'''*}, typ_i')) holds
       -- if Inst_site_ok: `%%|-%:INSTSITE_OK`(p, C, `ConsT%%`_constyp(pt'''*{pt''' <- pt'''*}, typ_i')) holds
@@ -12835,15 +12834,15 @@ def $gen_cstr(map<tid, typcstr>, typ, typ) : map<tid, typcstr> =
       -- if ~($is_nominal(typ_p'') /\ $is_nominal(typ_a''))
       -- let cstr' = $gen_cstr(cstr, typ_p'', typ_a'')
 
-   ;; ../../../../spec/4h-typing-call.watsup:226.1-226.73
+   ;; ../../../../spec/4h-typing-call.watsup:226.1-226.75
    clause 3(cstr, typ, typ_a) = $gen_cstr(cstr, typ_p', typ_a)
       -- if typ <: aliastyp
-      -- let `DefT%`_aliastyp(typ_p') = typ as aliastyp
+      -- let `DefT%%`_aliastyp(_id, typ_p') = typ as aliastyp
 
-   ;; ../../../../spec/4h-typing-call.watsup:228.1-228.73
+   ;; ../../../../spec/4h-typing-call.watsup:228.1-228.75
    clause 4(cstr, typ_p, typ) = $gen_cstr(cstr, typ_p, typ_a')
       -- if typ <: aliastyp
-      -- let `DefT%`_aliastyp(typ_a') = typ as aliastyp
+      -- let `DefT%%`_aliastyp(_id, typ_a') = typ as aliastyp
 
    ;; ../../../../spec/4h-typing-call.watsup:230.1-230.86
    clause 5(cstr, typ, typ') = $gen_cstr(cstr, typ_p', typ_a')
@@ -12945,40 +12944,40 @@ def $gen_cstr(map<tid, typcstr>, typ, typ) : map<tid, typcstr> =
    clause 13(cstr, typ, typ') = $gen_cstrs(cstr, typ_p'*{typ_p' <- typ_p'*}, typ_a'*{typ_a' <- typ_a'*})
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ParserT%`
-      -- let `ParserT%`_objtyp(pt_p*{pt_p <- pt_p*}) = objtyp
+      -- if objtyp matches `ParserT%%`
+      -- let `ParserT%%`_objtyp(_id, pt_p*{pt_p <- pt_p*}) = objtyp
       -- if typ' <: objtyp
       -- let objtyp' = typ' as objtyp
-      -- if objtyp' matches `ParserT%`
-      -- let `ParserT%`_objtyp(pt_a*{pt_a <- pt_a*}) = objtyp'
-      -- (let `%%%%`_paramtyp(_id, dir, typ_p', _exprIL?{_exprIL <- _exprIL?}) = pt_p)*{_exprIL? <- _exprIL?*, _id <- _id*, dir <- dir*, pt_p <- pt_p*, typ_p' <- typ_p'*}
-      -- (let `%%%%`_paramtyp(_id', dir', typ_a', _exprIL'?{_exprIL' <- _exprIL'?}) = pt_a)*{_exprIL'? <- _exprIL'?*, _id' <- _id'*, dir' <- dir'*, pt_a <- pt_a*, typ_a' <- typ_a'*}
+      -- if objtyp' matches `ParserT%%`
+      -- let `ParserT%%`_objtyp(_id', pt_a*{pt_a <- pt_a*}) = objtyp'
+      -- (let `%%%%`_paramtyp(_id'', dir, typ_p', _exprIL?{_exprIL <- _exprIL?}) = pt_p)*{_exprIL? <- _exprIL?*, _id'' <- _id''*, dir <- dir*, pt_p <- pt_p*, typ_p' <- typ_p'*}
+      -- (let `%%%%`_paramtyp(_id''', dir', typ_a', _exprIL'?{_exprIL' <- _exprIL'?}) = pt_a)*{_exprIL'? <- _exprIL'?*, _id''' <- _id'''*, dir' <- dir'*, pt_a <- pt_a*, typ_a' <- typ_a'*}
       -- (if (dir' = dir))*{dir <- dir*, dir' <- dir'*}
 
    ;; ../../../../spec/4h-typing-call.watsup:253.1-255.33
    clause 14(cstr, typ, typ') = $gen_cstrs(cstr, typ_p'*{typ_p' <- typ_p'*}, typ_a'*{typ_a' <- typ_a'*})
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `ControlT%`
-      -- let `ControlT%`_objtyp(pt_p*{pt_p <- pt_p*}) = objtyp
+      -- if objtyp matches `ControlT%%`
+      -- let `ControlT%%`_objtyp(_id, pt_p*{pt_p <- pt_p*}) = objtyp
       -- if typ' <: objtyp
       -- let objtyp' = typ' as objtyp
-      -- if objtyp' matches `ControlT%`
-      -- let `ControlT%`_objtyp(pt_a*{pt_a <- pt_a*}) = objtyp'
-      -- (let `%%%%`_paramtyp(_id, dir, typ_p', _exprIL?{_exprIL <- _exprIL?}) = pt_p)*{_exprIL? <- _exprIL?*, _id <- _id*, dir <- dir*, pt_p <- pt_p*, typ_p' <- typ_p'*}
-      -- (let `%%%%`_paramtyp(_id', dir', typ_a', _exprIL'?{_exprIL' <- _exprIL'?}) = pt_a)*{_exprIL'? <- _exprIL'?*, _id' <- _id'*, dir' <- dir'*, pt_a <- pt_a*, typ_a' <- typ_a'*}
+      -- if objtyp' matches `ControlT%%`
+      -- let `ControlT%%`_objtyp(_id', pt_a*{pt_a <- pt_a*}) = objtyp'
+      -- (let `%%%%`_paramtyp(_id'', dir, typ_p', _exprIL?{_exprIL <- _exprIL?}) = pt_p)*{_exprIL? <- _exprIL?*, _id'' <- _id''*, dir <- dir*, pt_p <- pt_p*, typ_p' <- typ_p'*}
+      -- (let `%%%%`_paramtyp(_id''', dir', typ_a', _exprIL'?{_exprIL' <- _exprIL'?}) = pt_a)*{_exprIL'? <- _exprIL'?*, _id''' <- _id'''*, dir' <- dir'*, pt_a <- pt_a*, typ_a' <- typ_a'*}
       -- (if (dir' = dir))*{dir <- dir*, dir' <- dir'*}
 
-   ;; ../../../../spec/4h-typing-call.watsup:257.1-257.89
+   ;; ../../../../spec/4h-typing-call.watsup:257.1-257.93
    clause 15(cstr, typ, typ') = $gen_cstrs(cstr, typ_p*{typ_p <- typ_p*}, typ_a*{typ_a <- typ_a*})
       -- if typ <: objtyp
       -- let objtyp = typ as objtyp
-      -- if objtyp matches `PackageT%`
-      -- let `PackageT%`_objtyp(typ_p*{typ_p <- typ_p*}) = objtyp
+      -- if objtyp matches `PackageT%%`
+      -- let `PackageT%%`_objtyp(_id, typ_p*{typ_p <- typ_p*}) = objtyp
       -- if typ' <: objtyp
       -- let objtyp' = typ' as objtyp
-      -- if objtyp' matches `PackageT%`
-      -- let `PackageT%`_objtyp(typ_a*{typ_a <- typ_a*}) = objtyp'
+      -- if objtyp' matches `PackageT%%`
+      -- let `PackageT%%`_objtyp(_id', typ_a*{typ_a <- typ_a*}) = objtyp'
 
    ;; ../../../../spec/4h-typing-call.watsup:259.1-260.15
    clause 16(cstr, typ_p, typ_a) = cstr

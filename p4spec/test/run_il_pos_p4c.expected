@@ -2822,6 +2822,7 @@ Typecheck success: ../../../../p4c/testdata/p4_16_samples/pna-ipv6-actions.p4
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/pna-issue3041.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/pna-lookahead-structure-bit-field.p4
+negative inner acc: -0.153790
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/pna-lookahead-structure-bit-field.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/pna-lookahead-structure.p4
