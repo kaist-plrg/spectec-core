@@ -387,7 +387,7 @@ rule Decl_ok/typedefd:
   GLOBAL C |- TypeDefD id (TypeD type) : C' (TypeDefD id (TypeD typ))
   -- Type_ok: GLOBAL C |- type : typ eps
   -- Type_wf: $bound_tids(GLOBAL, C) |- typ
-  -- if typ_d = DefT typ
+  -- if typ_d = DefT id typ
   ----
   -- if td = MonoD typ_d
   -- if tidset = $bound_tids(GLOBAL, C)
@@ -402,7 +402,7 @@ rule Decl_ok/typedefd-decl-mono:
                       $dom_map<tid, typdef>(C.GLOBAL.TDENV))
   -- if MonoD typ_d = $find_typdef(GLOBAL, C', CURRENT tid_d)
   ----
-  -- if td = MonoD (DefT typ_d)
+  -- if td = MonoD (DefT id typ_d)
   -- TypeDef_wf: $bound_tids(GLOBAL, C) |- td
   -- if C'' = $add_typdef(GLOBAL, C, id, td)
 
@@ -414,7 +414,7 @@ rule Decl_ok/newtyped-decl-poly:
                       $dom_map<tid, typdef>(C.GLOBAL.TDENV))
   -- if ptd = $find_typdef(GLOBAL, C', CURRENT tid_d)
   ----
-  -- if td = MonoD (DefT (SpecT ptd eps))
+  -- if td = MonoD (DefT id (SpecT ptd eps))
   -- TypeDef_wf: $bound_tids(GLOBAL, C) |- td
   -- if C'' = $add_typdef(GLOBAL, C, id, td)
 
@@ -641,7 +641,7 @@ rule Decl_ok/parsertyped:
   -- if (id_p dir_p typ_p exprIL_p? = paramIL)*
   -- if tparam_hidden* = $concat_<tid>(tid_fresh_p**)
   ----
-  -- if td = PolyD (tparam*, tparam_hidden*) -> (ParserT (id_p dir_p typ_p exprIL_p?)*)
+  -- if td = PolyD (tparam*, tparam_hidden*) -> (ParserT id (id_p dir_p typ_p exprIL_p?)*)
   -- TypeDef_wf: $bound_tids(GLOBAL, C_0) |- td
   -- if C_3 = $add_typdef(GLOBAL, C_0, id, td)
 
@@ -694,7 +694,7 @@ rule Decl_ok/parserd:
   ----
   -- (ParserState_ok: C_6 |- parserstate : parserstateIL)*
   ----
-  -- if ptd = PolyD (eps, eps) -> (ParserT paramIL*)
+  -- if ptd = PolyD (eps, eps) -> (ParserT id paramIL*)
   -- if typ = SpecT ptd eps
   -- if cd = ConsD (eps, eps) -> (ConsT cparamIL* typ)
   ----
@@ -1294,7 +1294,7 @@ rule Decl_ok/controltyped:
   -- if (id_p dir_p typ_p exprIL_p? = paramIL)*
   -- if tparam_hidden* = $concat_<tid>(tid_fresh_p**)
   ----
-  -- if td = PolyD (tparam*, tparam_hidden*) -> (ControlT (id_p dir_p typ_p exprIL_p?)*)
+  -- if td = PolyD (tparam*, tparam_hidden*) -> (ControlT id (id_p dir_p typ_p exprIL_p?)*)
   -- TypeDef_wf: $bound_tids(GLOBAL, C) |- td
   -- if C''' = $add_typdef(GLOBAL, C, id, td)
 
@@ -1325,7 +1325,7 @@ rule Decl_ok/controld:
   ----
   -- Block_ok: LOCAL C_5 CONT INIT |- block : C_6 f blockIL
   ----
-  -- if ptd = PolyD (eps, eps) -> (ControlT paramIL*)
+  -- if ptd = PolyD (eps, eps) -> (ControlT id paramIL*)
   -- if typ = SpecT ptd eps
   -- if cd = ConsD (eps, eps) -> (ConsT cparamIL* typ)
   ----
@@ -1349,7 +1349,7 @@ rule Decl_ok/packagetyped:
   -- if tparam_hidden* = $concat_<tid>(tid_fresh_c**)
   ----
   -- if (_ _ typ_c _ = cparamIL)*
-  -- if ptd = PolyD (tparam*, tparam_hidden*) -> (PackageT typ_c*)
+  -- if ptd = PolyD (tparam*, tparam_hidden*) -> (PackageT id typ_c*)
   -- TypeDef_wf: $bound_tids(BLOCK, C_2) |- ptd
   ----
   -- if tparam'* = tparam* ++ tparam_hidden*

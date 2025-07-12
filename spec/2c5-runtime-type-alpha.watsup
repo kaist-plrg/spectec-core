@@ -46,11 +46,11 @@ rule Type_alpha/spect-structural:
   -- if ~$is_nominal(typ_a') /\ ~$is_nominal(typ_b')
 
 rule Type_alpha/deft-left:
-  (DefT typ_a) ~~ typ_b
+  (DefT _ typ_a) ~~ typ_b
   -- Type_alpha: typ_a ~~ typ_b
 
 rule Type_alpha/deft-right:
-  typ_a ~~ (DefT typ_b)
+  typ_a ~~ (DefT _ typ_b)
   -- Type_alpha: typ_a ~~ typ_b
 
 rule Type_alpha/newt:
@@ -101,7 +101,7 @@ rule Type_alpha/externt:
   -- (FuncDef_alpha: fd_a' ~~ fd_b')*
 
 rule Type_alpha/parsert:
-  (ParserT pt_a*) ~~ (ParserT pt_b*)
+  (ParserT _ pt_a*) ~~ (ParserT _ pt_b*)
   -- if (_ dir_a typ_a _ = pt_a)*
   -- if (_ dir_b typ_b _ = pt_b)*
   ----
@@ -109,7 +109,7 @@ rule Type_alpha/parsert:
   -- (Type_alpha: typ_a ~~ typ_b)*
 
 rule Type_alpha/controlt:
-  (ControlT pt_a*) ~~ (ControlT pt_b*)
+  (ControlT _ pt_a*) ~~ (ControlT _ pt_b*)
   -- if (_ dir_a typ_a _ = pt_a)*
   -- if (_ dir_b typ_b _ = pt_b)*
   ----
@@ -117,7 +117,7 @@ rule Type_alpha/controlt:
   -- (Type_alpha: typ_a ~~ typ_b)*
 
 rule Type_alpha/packaget:
-  (PackageT typ_a*) ~~ (PackageT typ_b*)
+  (PackageT _ typ_a*) ~~ (PackageT _ typ_b*)
   -- (Type_alpha: typ_a ~~ typ_b)*
 
 rule Type_alpha/tablet:
