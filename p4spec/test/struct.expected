@@ -19471,19 +19471,48 @@ def $resolve_cstrs(set<pair<tid, typcstr>>')
 
     1. (Let (KNOWN typ_h) be typcstr)
 
-    2. If ((typ_h =/= ((AnyT) as typ))), then
+    2. (Let typ be typ_h)
+
+    3. If ((typ has type synthtyp)), then
+
+      1. (Let synthtyp be (typ as synthtyp))
+
+      2. If ((synthtyp matches pattern `SeqT%`)), then
+
+        1. (Let (SeqT typ_inner*) be synthtyp)
+
+        2. (Let tparamIL be $gen_tparam(typ_inner))*
+
+        3. (Let typ_inner' be ((VarT tparamIL) as typ))*
+
+        4. (Let typ_h' be ((SpecT (PolyD (tparamIL*, []) -> ((TupleT typ_inner*) as typ)) typ_inner'*) as typ))
+
+        5. (Let ({ (tid_t' -> typ_t')* }) be $resolve_cstrs(({ (tid_t -> typcstr_t)* })))
+
+        6. Return $add_map<tid, typ>(({ (tid_t' -> typ_t')* }), tid_h, typ_h')
+
+      2. Else Phantom#1280
+
+    3. Else Phantom#1281
+
+    4. If ((typ_h =/= ((AnyT) as typ))), then
 
       1. (Let ({ (tid_t' -> typ_t')* }) be $resolve_cstrs(({ (tid_t -> typcstr_t)* })))
 
       2. Return $add_map<tid, typ>(({ (tid_t' -> typ_t')* }), tid_h, typ_h)
 
-    2. Else Phantom#1280
+    4. Else Phantom#1282
 
-  2. Else Phantom#1281
+  2. Else Phantom#1283
 
-3. Else Phantom#1282
+3. Else Phantom#1284
 
-;; ../../../../spec/4h-typing-call.watsup:332.1-332.56
+;; ../../../../spec/4h-typing-call.watsup:323.1-323.32
+def $gen_tparam(typ)
+
+1. Return $fresh_tid
+
+;; ../../../../spec/4h-typing-call.watsup:343.1-343.56
 def $infer_targs(tid*, (id dir typ_p exprIL_deft?)*, typ_a*)
 
 1. (Let cstr be $empty_cstr(tid*))
@@ -19492,7 +19521,7 @@ def $infer_targs(tid*, (id dir typ_p exprIL_deft?)*, typ_a*)
 
 3. Return $resolve_cstrs(cstr')
 
-;; ../../../../spec/4h-typing-call.watsup:438.1-439.43
+;; ../../../../spec/4h-typing-call.watsup:449.1-450.43
 def $is_table_apply_in_action_arg(argIL)
 
 1. Return false
