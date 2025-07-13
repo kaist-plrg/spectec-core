@@ -4,12 +4,12 @@ SPEC = p4spectec
 
 # Compile
 
-.PHONY: build build-p4 build-spectec
+.PHONY: build build-p4 build-spec
 
 EXEMAIN = p4/_build/default/bin/main.exe
 EXESPEC = p4spec/_build/default/bin/main.exe
 
-build: build-p4 build-watsup
+build: build-p4 build-spec
 
 build-p4:
 	rm -f ./$(MAIN)
