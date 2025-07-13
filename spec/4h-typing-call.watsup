@@ -320,13 +320,24 @@ def $merge_cstrs(cstr, cstr_h :: cstr_t*) = cstr''
   -- if cstr' = $merge_cstr(cstr, cstr_h)
   -- if cstr'' = $merge_cstrs(cstr', cstr_t*)
 
+dec $gen_tparam(typ) : tparamIL
+def $gen_tparam(typ) = $fresh_tid()
 
 def $resolve_cstrs(`{ eps }) = `{ eps }
+
+def $resolve_cstrs(`{ ((tid_h -> (KNOWN typ_h)) :: (tid_t -> typcstr_t)*) })
+  = $add_map<tid, typ>(`{ (tid_t' -> typ_t')* }, tid_h, typ_h')
+  -- if typ_h = SeqT typ_inner*
+  -- if (tparamIL = $gen_tparam(typ_inner))* 
+  -- if (typ_inner' = VarT tparamIL)*
+  -- if typ_h' = SpecT (PolyD (tparamIL*, eps) -> TupleT typ_inner*) typ_inner'*
+  -- if `{ (tid_t' -> typ_t')* } = $resolve_cstrs(`{ (tid_t -> typcstr_t)* })
 
 def $resolve_cstrs(`{ ((tid_h -> (KNOWN typ_h)) :: (tid_t -> typcstr_t)*) })
   = $add_map<tid, typ>(`{ (tid_t' -> typ_t')* }, tid_h, typ_h)
   -- if typ_h =/= AnyT
   -- if `{ (tid_t' -> typ_t')* } = $resolve_cstrs(`{ (tid_t -> typcstr_t)* })
+
 
 
 dec $infer_targs(tid*, paramtyp*, typ*) : map<tid, typ>
