@@ -1,0 +1,32 @@
+;; type gt = { cenv : CEnv.t; tdenv : TDEnv.t; fenv : FEnv.t; venv : VEnv.t }
+syntax glayerDyn =
+  { CENV cenv,
+    TDENV tdenv,
+    FENV fenv,
+    VENV venv }
+
+;; type bt = { theta : Theta.t; fenv : FEnv.t; senv : SEnv.t; venv : VEnv.t }
+syntax blayerDyn =
+  { THETA theta,
+    FENV fenv,
+    SENV senv,
+    VENV venv }
+
+;; type lt = { theta : Theta.t; venvs : VEnv.t list }
+syntax llayerDyn =
+  { THETA theta,
+    VENVS venv* }
+
+
+;; type t = { path : Domain.Dom.OId.t; global : gt; block : bt; local : lt }
+syntax contextInst =
+  { PATH objName,
+    GLOBAL glayerDyn,
+    BLOCK blayerDyn,
+    LOCAL llayerDyn }
+
+var Ci : contextInst
+
+;;
+;;
+;;
