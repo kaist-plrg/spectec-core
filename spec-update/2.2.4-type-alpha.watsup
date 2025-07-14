@@ -166,7 +166,9 @@ rule Type_alpha/tableenumtype:
   (ENUM_TABLE name `{ name_f* }) ~~ (ENUM_TABLE name `{ name_f* })
 
 rule Type_alpha/tablestructtype:
-  (STRUCT_TABLE name) ~~ (STRUCT_TABLE name)
+  (STRUCT_TABLE name `{ (typeIR_f_a, name_f)* })
+  ~~ (STRUCT_TABLE name `{ (typeIR_f_b, name_f)* })
+  -- (Type_alpha: typeIR_f_a ~~ typeIR_f_b)*
 
 rule Type_alpha/dontcaretype:
   `_ ~~ `_

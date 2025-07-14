@@ -1,4 +1,37 @@
 ;;
+;; L-value typing
+;;
+;; syntax lvalue
+;;
+
+;;; | prefixedNonTypeName
+;;;; syntax prefixedNonTypeName
+
+;;;; | nonTypeName
+
+
+;;;; | dotPrefix nonTypeName
+
+rule Lval_ok/prefixedNonTypeName-nodot:
+  p C |- nonTypeName : nonTypeName typeIR
+  -- if typeIR direction _ ctk
+      = $find_var(p, C, nonTypeName)
+  -- if direction = OUT \/ direction = INOUT
+  -- if ctk = DYN
+
+;;; | THIS
+
+;;; | lvalue `. member
+
+;;; | lvalue `[ expression ]
+
+;;; | lvalue `[ expression `: expression ]
+
+;;; | `( lvalue )
+
+;;
+;; Statement typing (including declaration statements)
+;;
 ;; syntax statementOrDeclaration
 ;;
 
@@ -21,9 +54,33 @@ rule Stmt_ok/constantdeclaration:
 
 ;;;;;; | lvalue `( argumentList )
 
+rule Stmt_ok/assignmentOrMethodCallStatement-lvalue-argumentList:
+  p C f |- (lvalue `( argumentList )) `;
+         : C f ((lvalueIR `( argumentIR_cast* )) `;)
+  ---- ;; check arguments
+  -- if argument* = argumentList
+  -- (Arg_ok: p C |- argument : argumentIR typeIR_arg)*
+  ---- ;; check lvalue
+  -- Method_ok: p C |- lvalue `< eps > `( argumentIR* )
+                     : lvalueIR `< `# eps > `( `# name_default* ) `@ funcTypeIR
+  ---- ;; check call convention
+  -- Call_ok: p C |- funcTypeIR `< eps `# eps > `( argumentIR* `# name_default* )
+                   : typeIR `< eps > `( argumentIR_cast* )
+
 ;;;;;; | lvalue `< typeArgumentList > `( argumentList )
 
 ;;;;;; | lvalue `= expression
+
+rule Stmt_ok/assignmentOrMethodCallStatement-lvalue-eq-expression:
+  p C f |- (lvalue `= expression) `;
+         : C f ((lvalueIR `= expressionIR_cast) `;)
+  ---- ;; check lvalue
+  -- Lval_ok: p C |- lvalue : lvalueIR typeIR
+  ---- ;; check expression
+  -- Expr_ok: p C |- expression : expressionIR
+  ---- ;; check type compatibility
+  -- if expressionIR_cast
+      = $coerce_unary(expressionIR, typeIR)
 
 ;;;;;; | lvalue `+= expression
 
@@ -101,11 +158,11 @@ rule Block_ok/noinit:
 ;;;;   | RETURN `;
 ;;;;   | RETURN expression `;
 
-rule Stmt_ok/returnstatement-empty:
+rule Stmt_ok/return:
   LOCAL C f |- RETURN `; : C RET (RETURN `;)
   -- if VOID = $return(C.LOCAL)
 
-rule Stmt_ok/returnstatement-nonempty:
+rule Stmt_ok/return-expression:
   LOCAL C f |- RETURN expression `;
             : C RET (RETURN expressionIR_cast `;)
   -- Expr_ok: LOCAL C |- expression : expressionIR
@@ -121,7 +178,7 @@ rule Stmt_ok/returnstatement-nonempty:
 ;;;; | exitStatement
 ;;;; syntax exitStatement = EXIT `;
 
-rule Stmt_ok/exitstatement:
+rule Stmt_ok/exit:
   p C f |- EXIT `; : C f (EXIT `;)
 
 ;;;; | switchStatement
@@ -133,6 +190,8 @@ rule Stmt_ok/exitstatement:
 ;;;;   | optAnnotations FOR `( typeRef name IN forCollectionExpr ) statement
 ;;;;   | optAnnotations FOR `( annotations typeRef name IN forCollectionExpr ) statement
 
+;;
+;; Statement list typing (including declaration statements)
 ;;
 ;; syntax statOrDeclList
 ;;
@@ -148,6 +207,8 @@ rule Stmts_ok/cons:
   -- Stmts_ok: p C' f' |- statementOrDeclaration_t*
                       : C'' f'' statementOrDeclarationIR_t*
 
+;;
+;; Control body typing
 ;;
 ;; syntax controlBody = blockStatement
 ;;

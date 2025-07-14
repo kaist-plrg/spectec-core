@@ -30,7 +30,18 @@ rule Expr_ok/boolean-false:
 
 ;;; THIS
 
-;;; prefixedNonTypeName
+;;; | prefixedNonTypeName
+;;; syntax prefixedNonTypeName
+
+;;;; | nonTypeName
+
+rule Expr_ok/prefixedNonTypeName-nonTypeName:
+  p C |- nonTypeName
+       : nonTypeName `( typeIR `; ctk )
+  -- if typeIR _ _ ctk
+      = $find_var(p, C, nonTypeName)
+
+;;;; | dotPrefix nonTypeName
 
 ;;; expression `[ expression ]
 

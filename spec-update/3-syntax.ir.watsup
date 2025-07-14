@@ -243,14 +243,14 @@ syntax assignmentOrMethodCallStatementWithoutSemicolonIR =
   | lvalueIR `*= expressionIR
   | lvalueIR `/= expressionIR
   | lvalueIR `%= expressionIR
-;;  | lvalueIR `<<= expressionIR
-;;  | lvalueIR `>>= expressionIR
-;;  | lvalueIR `&= expressionIR
-;;  | lvalueIR `^= expressionIR
-;;  | lvalueIR `|= expressionIR
+  | lvalueIR `<<= expressionIR
+  | lvalueIR `>>= expressionIR
+  | lvalueIR `&= expressionIR
+  | lvalueIR `^= expressionIR
+  | lvalueIR `|= expressionIR
 
 syntax assignmentOrMethodCallStatementIR =
-  assignmentOrMethodCallStatementWithoutSemicolonIR `; PHTM_11
+  assignmentOrMethodCallStatementWithoutSemicolonIR `;
 
 ;;
 ;;;; Direct application statements
@@ -448,10 +448,10 @@ syntax keyElementListIR = keyElementIR*
 ;;
 
 syntax actionRefIR =
-  | prefixedNonTypeName `# `( parameterListIR `, parameterListIR )
-  | prefixedNonTypeName `( argumentListIR ) `# `( parameterListIR `, parameterListIR )
+  | prefixedNonTypeName
+  | prefixedNonTypeName `( argumentListIR )
 
-syntax actionIR = optAnnotationsIR actionRefIR `;
+syntax actionIR = actionRefIR `;
 
 ;; (TODO) Add whitespace separator as hint?
 syntax actionListIR = actionIR*
@@ -477,14 +477,15 @@ syntax entriesListIR = entryIR*
 syntax tablePropertyIR =
   | KEY `= `{ keyElementListIR }
   | ACTIONS `= `{ actionListIR }
-  | optAnnotationsIR optCONST ENTRIES `= `{ entriesListIR }
-  | optAnnotationsIR optCONST nonTableKwName initializerIR `;
+  | optCONST ENTRIES `= `{ entriesListIR }
+  ;; (TODO) `= expressionIR should be initializerIR
+  | optCONST nonTableKwName `= expressionIR `;
 
 ;; (TODO) Add whitespace separator as hint?
 syntax tablePropertyListIR = tablePropertyIR*
 
 syntax tableDeclarationIR =
-  optAnnotationsIR TABLE name `{ tablePropertyListIR }
+  TABLE name `{ tablePropertyListIR }
 
 ;;
 ;;;; Control and control type declarations
@@ -503,7 +504,7 @@ syntax controlLocalDeclarationIR =
 syntax controlLocalDeclarationsIR = controlLocalDeclarationIR*
 
 syntax controlTypeDeclarationIR =
-  optAnnotationsIR CONTROL name optTypeParameters `( parameterListIR )
+  CONTROL name optTypeParameters `( parameterListIR )
 
 syntax controlDeclarationIR =
   controlTypeDeclarationIR optConstructorParametersIR `{ controlLocalDeclarationsIR APPLY controlBodyIR }

@@ -103,7 +103,7 @@ syntax synthTypeIR =
   | SET `< typeIR* >
   | PARSERSTATE
   | ENUM_TABLE name `{ name* }
-  | STRUCT_TABLE name
+  | STRUCT_TABLE name `{ (typeIR, name)* }
   | `_
 
 syntax typeIR = baseTypeIR | namedTypeIR | defTypeIR | synthTypeIR

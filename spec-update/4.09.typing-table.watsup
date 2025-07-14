@@ -1,0 +1,204 @@
+;;
+;; Table action typing
+;;
+;; syntax action = optAnnotations actionRef `;
+;; syntax actionRef
+;;
+
+dec $split_directionless_params(paramTypeIR*) : (paramTypeIR*, paramTypeIR*)
+
+def $split_directionless_params(eps) = (eps, eps)
+
+def $split_directionless_params(paramTypeIR_h :: paramTypeIR_t*)
+  = (paramTypeIR_data*, paramTypeIR_h :: paramTypeIR_control*)
+  -- if _ NONE _ _ = paramTypeIR_h
+  -- if (paramTypeIR_data*, paramTypeIR_control*)
+      = $split_directionless_params(paramTypeIR_t*)
+
+def $split_directionless_params(paramTypeIR_h :: paramTypeIR_t*)
+  = (paramTypeIR_h :: paramTypeIR_data*, paramTypeIR_control*)
+  -- if _ direction _ _ = paramTypeIR_h
+  -- if direction =/= NONE
+  -- if (paramTypeIR_data*, paramTypeIR_control*)
+      = $split_directionless_params(paramTypeIR_t*)
+
+rule Call_action_partial_ok:
+  p C |- paramTypeIR* `@ (argumentIR, typeIR)*
+       : (paramTypeIR_data*, paramTypeIR_control*) `@ argumentIR_cast*
+  -- if (paramTypeIR_data*, paramTypeIR_control*)
+      = $split_directionless_params(paramTypeIR*)
+  ----
+  -- if |paramTypeIR_data*| = |argumentIR*|
+  -- Call_convention_ok: p C ACT |- paramTypeIR_data* `@ (argumentIR, typeIR)*
+                                  : argumentIR_cast*
+
+;;; | prefixedNonTypeName
+
+rule TableAction_ok/prefixedNonTypeName:
+  C tblctx |- optAnnotations prefixedNonTypeName `;
+            : tblctx' (prefixedNonTypeName `;)
+  -- if (cursor, name) = $scopeof(BLOCK, prefixedNonTypeName)
+  -- if ACTION `( paramTypeIR* ) = $find_func_named(cursor, C, name)
+  -- Call_action_partial_ok: BLOCK C |- paramTypeIR* `@ eps
+                                     : (paramTypeIR_data*, paramTypeIR_control*) `@ eps
+  -- if tblctx' = $add_action(tblctx, name, paramTypeIR*, eps)
+
+;;; | prefixedNonTypeName `( argumentList )
+
+rule TableAction_ok/prefixedNonTypeName-argumentList:
+  C tblctx |- optAnnotations (prefixedNonTypeName `( argumentList ))`;
+            : tblctx' ((prefixedNonTypeName `( argumentIR_cast* )) `;)
+  -- if (cursor, name) = $scopeof(BLOCK, prefixedNonTypeName)
+  -- if ACTION `( paramTypeIR* ) = $find_func_named(cursor, C, name)
+  -- if argument* = argumentList
+  -- (Arg_ok: BLOCK C |- argument : argumentIR typeIR_arg)*
+  -- Call_action_partial_ok:
+      BLOCK C |- paramTypeIR* `@ (argumentIR, typeIR_arg)*
+              : (paramTypeIR_data*, paramTypeIR_control*) `@ argumentIR_cast*
+  -- if tblctx' = $add_action(tblctx, name, paramTypeIR*, argumentIR_cast*)
+
+;;
+;; Table action list typing
+;;
+;; syntax actionList = action*
+;;
+
+rule TableActions_ok/nil:
+  C tblctx |- eps : tblctx eps
+
+rule TableActions_ok/cons:
+  C tblctx |- action_h :: action_t*
+            : tblctx'' (actionIR_h :: actionIR_t*)
+  -- TableAction_ok: C tblctx |- action_h
+                               : tblctx' actionIR_h
+  -- TableActions_ok: C tblctx' |- action_t*
+                            : tblctx'' (actionIR_t*)
+
+;;
+;; Table default action typing
+;;
+;; syntax actionRef
+;;
+
+rule Call_action_default_ok:
+  p C |- paramTypeIR_action* `@ argumentIR_action* `@ (argumentIR, typeIR)*
+       : argumentIR_cast*
+  ---- ;; split dataplane and controlplane params
+  -- if (paramTypeIR_data*, paramTypeIR_control*)
+      = $split_directionless_params(paramTypeIR_action*)
+  ---- ;; check syntactic equality of dataplane params
+  -- if argumentIR_data* = argumentIR*[0 : |paramTypeIR_data*|]
+  -- if argumentIR_data* = argumentIR_action*
+  ---- ;; check call convention
+  -- Call_convention_ok: p C ACT |- paramTypeIR_action* `@ (argumentIR, typeIR)*
+                                  : argumentIR_cast*
+
+;;; | prefixedNonTypeName
+
+rule TableDefaultAction_ok/prefixedNonTypeName:
+  C tblctx |- prefixedNonTypeName : prefixedNonTypeName
+  -- if (_, name) = $scopeof(BLOCK, prefixedNonTypeName)
+  -- if (_, eps, eps) = $find_action(tblctx, name)
+
+;;; | prefixedNonTypeName `( argumentList )
+
+rule TableDefaultAction_ok/prefixedNonTypeName-argumentList:
+  C tblctx |- prefixedNonTypeName `( argumentList )
+            : prefixedNonTypeName `( argumentIR_cast* )
+  ---- ;; find matching action
+  -- if (_, name) = $scopeof(BLOCK, prefixedNonTypeName)
+  -- if (_, paramTypeIR_action*, argumentIR_action*)
+      = $find_action(tblctx, name)
+  ---- ;; check arguments
+  -- if argument* = argumentList
+  -- (Arg_ok: BLOCK C |- argument : argumentIR typeIR_arg)*
+  ---- ;; check call
+  -- Call_action_default_ok: BLOCK C |- paramTypeIR_action*
+                                          `@ argumentIR_action*
+                                          `@ (argumentIR, typeIR_arg)*
+                                      : argumentIR_cast*
+
+;;
+;; Table property typing
+;;
+;; syntax tableProperty
+;;
+
+;;; | KEY `= `{ keyElementList }
+
+;;; | ACTIONS `= `{ actionList }
+
+rule TableProp_ok/actions:
+  C tblctx |- ACTIONS `= `{ actionList }
+            : tblctx' (ACTIONS `= `{ actionListIR })
+  -- TableActions_ok: C tblctx |- actionList
+                                : tblctx' actionListIR
+
+;;; | optAnnotations optCONST ENTRIES `= `{ entriesList }
+
+;;; | optAnnotations optCONST nonTableKwName `= expressionIR `;
+
+rule TableProp_ok/nonTableKwName-initializer-default-action-prefixedNonTypeName:
+  C tblctx |- optAnnotations optCONST
+                (`$ "default_action") (`= prefixedNonTypeName) `;
+            : tblctx (optCONST
+                        (`$ "default_action") `= expressionIR `;)
+  -- TableDefaultAction_ok: C tblctx |- prefixedNonTypeName : prefixedNonTypeName
+  -- if expressionIR = prefixedNonTypeName `( VOID `; DYN )
+
+rule TableProp_ok/nonTableKwName-initializer-default-action-prefixedNonTypeName-argumentList:
+  C tblctx |- optAnnotations optCONST
+                (`$ "default_action") (`= (prefixedNonTypeName `( argumentList ))) `;
+            : tblctx (optCONST
+                        (`$ "default_action") `= expressionIR `;)
+  -- TableDefaultAction_ok: C tblctx |- prefixedNonTypeName `( argumentList )
+                                      : (prefixedNonTypeName `( argumentIR_cast* ))
+  -- if expressionIR
+      = ((prefixedNonTypeName `( VOID `; DYN )) `( argumentIR_cast* )) `( VOID `; DYN )
+
+;;
+;; Table property list typing
+;;
+;; syntax tablePropertyList = tableProperty*
+;;
+
+rule Table_ok/nil:
+  C tblctx |- eps : tblctx eps
+
+rule Table_ok/cons:
+  C tblctx_0 |- tableProperty_h :: tableProperty_t*
+              : tblctx_2 (tablePropertyIR_h :: tablePropertyIR_t*)
+  -- TableProp_ok: C tblctx_0 |- tableProperty_h
+                             : tblctx_1 tablePropertyIR_h
+  -- Table_ok: C tblctx_1 |- tableProperty_t*
+                           : tblctx_2 (tablePropertyIR_t*)
+
+;;
+;; Table type typing
+;;
+
+rule TableType_ok:
+  C_0 tblctx |- name : C_1 typeIR_table
+  ---- ;; create internal table enum type
+  -- if name_enum
+      = $ext_name_suffix($ext_name_prefix("action_list(", name), ")")
+  -- if (name_action, _, _)* = tblctx.ACTIONS
+  -- if typeIR_enum = ENUM_TABLE name_enum `{ name_action* }
+  ---- ;; add enum fields to context
+  -- if (val_enum_field = name_enum `. name_action)*
+  -- if (varTypeIR_enum_field
+        = typeIR_enum NONE val_enum_field LCTK)*
+  -- if (name_enum_field
+        = $ext_name($ext_name_suffix(name_enum, "."), name_action))*
+  -- if C_1 = $add_vars(BLOCK, C_0, name_enum_field*, varTypeIR_enum_field*)
+  ---- ;; create internal table struct type
+  -- if name_struct
+      = $ext_name_suffix($ext_name_prefix("apply_result(", name), ")")
+  -- if typeIR_struct
+      = STRUCT_TABLE name_struct
+          `{ [ (BOOL, `$ "hit"),
+               (BOOL, `$ "miss"),
+               (typeIR_enum,`$ "action_run") 
+              ] }
+  ---- ;; create internal table type
+  -- if typeIR_table = TABLE name `{ typeIR_struct }

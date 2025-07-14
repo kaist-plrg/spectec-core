@@ -106,7 +106,7 @@ def $free_type(PARSERSTATE) = `{ eps }
 
 def $free_type(ENUM_TABLE _ `{ _ }) = `{ eps }
 
-def $free_type(STRUCT_TABLE _) = `{ eps }
+def $free_type(STRUCT_TABLE _ `{ _ }) = `{ eps }
 
 def $free_type(`_) = `{ eps }
 

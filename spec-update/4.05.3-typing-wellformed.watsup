@@ -336,7 +336,7 @@ rule Type_wf/packagetype:
 
 rule Type_wf/tabletype:
   bound |- TABLE name `{ typeIR }
-  -- if STRUCT_TABLE _ = $canon(typeIR)
+  -- if STRUCT_TABLE _ `{ _ } = $canon(typeIR)
   -- Type_wf: bound |- typeIR
 
 ;;; Synthesized types
@@ -431,7 +431,7 @@ rule Type_wf/tableenumtype:
   -- if $distinct_<name>(name*)
 
 rule Type_wf/tablestructtype:
-  bound |- STRUCT_TABLE _
+  bound |- STRUCT_TABLE _ `{ _ }
 
 rule Type_wf/dontcaretype:
   bound |- `_
@@ -651,7 +651,7 @@ rule FuncType_wf/controlapplymethod:
   -- if $nestable_externabstractmethod(direction, typeIR)*
 
 rule FuncType_wf/tableapplymethod:
-  bound |- TABLE_APPLY -> (STRUCT_TABLE _)
+  bound |- TABLE_APPLY -> (STRUCT_TABLE _ `{ _ })
 
 ;;
 ;;;; Well-formedness of function type definitions

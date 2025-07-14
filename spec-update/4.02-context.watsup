@@ -68,17 +68,13 @@ def $empty_context = C
   -- if C = { GLOBAL glayer, BLOCK blayer, LOCAL llayer }
 
 ;;
-;; Frame management
+;; Scoping
 ;;
 
-dec $enter(context) : context
+dec $scopeof(cursor, prefixedNonTypeName) : (cursor, name)
 
-def $enter(C) = C[ .LOCAL.FRAMES = $empty_frame :: C.LOCAL.FRAMES ]
-
-dec $exit(context) : context
-
-def $exit(C) = C[ .LOCAL.FRAMES = frame_t* ]
-  -- if frame_h :: frame_t* = C.LOCAL.FRAMES
+def $scopeof(p, nonTypeName) = (p, nonTypeName)
+def $scopeof(p, `. nonTypeName) = (GLOBAL, nonTypeName)
 
 ;;
 ;; Bound type variabls
@@ -93,7 +89,20 @@ def $bound(LOCAL, C) = $union_set<name>(bound_block, bound_local)
   -- if bound_local = $dom_map<name, typeDefIR>(C.LOCAL.TDENV)
 
 ;;
-;; Return type
+;; Frame entry and exit
+;;
+
+dec $enter(context) : context
+
+def $enter(C) = C[ .LOCAL.FRAMES = $empty_frame :: C.LOCAL.FRAMES ]
+
+dec $exit(context) : context
+
+def $exit(C) = C[ .LOCAL.FRAMES = frame_t* ]
+  -- if frame_h :: frame_t* = C.LOCAL.FRAMES
+
+;;
+;; Return type tracking
 ;;
 
 dec $return(llayer) : typeIR
@@ -105,6 +114,7 @@ dec $return(llayer) : typeIR
 ;;; Adder for variables
 
 dec $add_var(cursor, context, name, varTypeIR) : context
+dec $add_vars(cursor, context, name*, varTypeIR*) : context
 
 def $add_var(GLOBAL, C, name, varTypeIR) = C[ .GLOBAL.FRAME = frame ]
   -- if frame = $add_map<name, varTypeIR>(C.GLOBAL.FRAME, name, varTypeIR)
@@ -116,6 +126,12 @@ def $add_var(LOCAL, C, name, varTypeIR) = C[ .LOCAL.FRAMES = frame* ]
   -- if frame_h :: frame_t* = C.LOCAL.FRAMES
   -- if frame_h_update = $add_map<name, varTypeIR>(frame_h, name, varTypeIR)
   -- if frame* = frame_h_update :: frame_t*
+
+def $add_vars(p, C, eps, eps) = C
+
+def $add_vars(p, C, name_h :: name_t*, varTypeIR_h :: varTypeIR_t*) = C''
+  -- if C' = $add_var(p, C, name_h, varTypeIR_h)
+  -- if C'' = $add_vars(p, C', name_t*, varTypeIR_t*)
 
 ;;; Adder for parameters
 
@@ -150,6 +166,22 @@ def $add_consParams(C, consParamTypeIR_h :: consParamTypeIR_t* ) = C''
   -- if C' = $add_consParam(C, consParamTypeIR_h)
   -- if C'' = $add_consParams(C', consParamTypeIR_t*)
 
+;;; Adder for types
+
+dec $add_type(cursor, context, name, typeDefIR) : context
+
+def $add_type(GLOBAL, C, name, typeDefIR) = C'
+  -- if tdenv = C.GLOBAL.TDENV
+  -- if tdenv_update
+        = $add_map<name, typeDefIR>(tdenv, name, typeDefIR)
+  -- if C' = C [ .GLOBAL.TDENV = tdenv_update ]
+
+def $add_type(BLOCK, C, name, typeDefIR) = C'
+  -- if tdenv = C.BLOCK.TDENV
+  -- if tdenv_update
+        = $add_map<name, typeDefIR>(tdenv, name, typeDefIR)
+  -- if C' = C [ .BLOCK.TDENV = tdenv_update ]
+
 ;;; Adder for functions
 
 dec $add_func(cursor, context, funcName, funcTypeDefIR) : context
@@ -180,6 +212,36 @@ def $add_cons(C, consName, consTypeDefIR) = C'
 ;; Finders
 ;;
 
+;;; Finder for variables
+
+dec $find_var(cursor, context, name) : varTypeIR?
+
+def $find_var(GLOBAL, C, name)
+  = $find_map<name, varTypeIR>(frame, name)
+  -- if frame = C.GLOBAL.FRAME
+
+def $find_var(BLOCK, C, name) = varTypeIR
+  -- if frame = C.BLOCK.FRAME
+  -- if varTypeIR
+      = $find_map<name, varTypeIR>(frame, name)
+
+def $find_var(BLOCK, C, name)
+  = $find_var(GLOBAL, C, name)
+  -- if frame = C.BLOCK.FRAME
+  -- if eps
+      = $find_map<name, varTypeIR>(frame, name)
+
+def $find_var(LOCAL, C, name) = varTypeIR
+  -- if frame* = C.LOCAL.FRAMES
+  -- if varTypeIR
+      = $find_maps<name, varTypeIR>(frame*, name)
+
+def $find_var(LOCAL, C, name)
+  = $find_var(BLOCK, C, name)
+  -- if frame* = C.LOCAL.FRAMES
+  -- if eps
+      = $find_maps<name, varTypeIR>(frame*, name)
+
 ;;; Finder for values
 
 dec $find_val(cursor, context, name) : val?
@@ -187,3 +249,20 @@ dec $find_val(cursor, context, name) : val?
 ;;; Finder for type definitions
 
 dec $find_typedef(cursor, context, typeName) : typeDefIR?
+
+;;; Finder for functions
+
+dec $find_func(cursor, context, funcName) : funcTypeDefIR?
+
+dec $find_func_named(cursor, context, name) : funcTypeDefIR?
+
+def $find_func_named(GLOBAL, C, name)
+  = $find_func_by_name(C.GLOBAL.FDENV, name)
+
+def $find_func_named(BLOCK, C, name) = funcTypeDefIR
+  -- if funcTypeDefIR = $find_func_by_name(C.BLOCK.FDENV, name)
+
+def $find_func_named(BLOCK, C, name) = $find_func_named(GLOBAL, C, name)
+  -- if eps  = $find_func_by_name(C.BLOCK.FDENV, name)
+
+def $find_func_named(LOCAL, C, name) = $find_func_named(BLOCK, C, name)

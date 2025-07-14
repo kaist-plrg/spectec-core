@@ -1,4 +1,53 @@
 ;;
+;; Variable names
+;;
+
+dec $ext_name_prefix(text, name) : name
+
+def $ext_name_prefix(t, `$ t_identifier)
+  = `$ (t ++ t_identifier)
+def $ext_name_prefix(t, APPLY) = `$ (t ++ "apply")
+def $ext_name_prefix(t, KEY) = `$ (t ++ "key")
+def $ext_name_prefix(t, ACTIONS) = `$ (t ++ "actions")
+def $ext_name_prefix(t, STATE) = `$ (t ++ "state")
+def $ext_name_prefix(t, ENTRIES) = `$ (t ++ "entries")
+def $ext_name_prefix(t, TYPE) = `$ (t ++ "type")
+def $ext_name_prefix(t, PRIORITY) = `$ (t ++ "priority")
+def $ext_name_prefix(t, LIST) = `$ (t ++ "list")
+def $ext_name_prefix(t, `@ t_identifier)
+  = `@ (t ++ t_identifier)
+
+dec $ext_name_suffix(name, text) : name
+
+def $ext_name_suffix(`$ t_identifier, t)
+  = `$ (t_identifier ++ t)
+def $ext_name_suffix(APPLY, t) = `$ ("apply" ++ t)
+def $ext_name_suffix(KEY, t) = `$ ("key" ++ t)
+def $ext_name_suffix(ACTIONS, t) = `$ ("actions" ++ t)
+def $ext_name_suffix(STATE, t) = `$ ("state" ++ t)
+def $ext_name_suffix(ENTRIES, t) = `$ ("entries" ++ t)
+def $ext_name_suffix(TYPE, t) = `$ ("type" ++ t)
+def $ext_name_suffix(PRIORITY, t) = `$ ("priority" ++ t)
+def $ext_name_suffix(LIST, t) = `$ ("list" ++ t)
+def $ext_name_suffix(`@ t_identifier, t)
+  = `@ (t_identifier ++ t)
+
+dec $ext_name(name, name) : name
+
+def $ext_name(name, `$ t_identifier)
+  = $ext_name_suffix(name, t_identifier)
+def $ext_name(name, APPLY) = $ext_name_suffix(name, "apply")
+def $ext_name(name, KEY) = $ext_name_suffix(name, "key")
+def $ext_name(name, ACTIONS) = $ext_name_suffix(name, "actions")
+def $ext_name(name, STATE) = $ext_name_suffix(name, "state")
+def $ext_name(name, ENTRIES) = $ext_name_suffix(name, "entries")
+def $ext_name(name, TYPE) = $ext_name_suffix(name, "type")
+def $ext_name(name, PRIORITY) = $ext_name_suffix(name, "priority")
+def $ext_name(name, LIST) = $ext_name_suffix(name, "list")
+def $ext_name(name, `@ t_identifier)
+  = $ext_name_suffix(name, t_identifier)
+
+;;
 ;; Function names
 ;;
 ;; A pair of function name and a list of parameter names,

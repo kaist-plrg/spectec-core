@@ -56,17 +56,23 @@ relation Arg_ok:
   hint(input %0 %1 %2)
 
 ;;
-;;;; L-value typing
-;;
-
-relation Lval_ok:
-  cursor context |- lvalueIR
-  hint(input %0 %1 %2)
-
-;;
 ;;;; Statement typing
 ;;;; note that block typing depends on whether it is the initial block or not
 ;;
+
+relation Lval_ok:
+  cursor context |- lvalue : lvalueIR typeIR
+  hint(input %0 %1 %2)
+
+relation Stmt_ok:
+  cursor context flow |- statementOrDeclaration
+                       : context flow statementOrDeclarationIR
+  hint(input %0 %1 %2 %3)
+
+relation Stmts_ok:
+  cursor context flow |- statOrDeclList
+                       : context flow statOrDeclListIR
+  hint(input %0 %1 %2 %3)
 
 syntax blkctxt = INIT | NOINIT
 
@@ -78,16 +84,6 @@ relation Block_ok:
 relation ControlBody_ok:
   context |- controlBody : context flow controlBodyIR
   hint(input %0 %1)
-
-relation Stmt_ok:
-  cursor context flow |- statementOrDeclaration
-                       : context flow statementOrDeclarationIR
-  hint(input %0 %1 %2 %3)
-
-relation Stmts_ok:
-  cursor context flow |- statOrDeclList
-                       : context flow statOrDeclListIR
-  hint(input %0 %1 %2 %3)
 
 ;;
 ;;;; Parameter typing
@@ -129,8 +125,54 @@ def $consParamtypes(`( parameterListIR ))
   = $paramtypes(parameterListIR)
 
 ;;
+;;;; Table typing
+;;
+
+relation Call_action_partial_ok:
+  cursor context |- paramTypeIR* `@ (argumentIR, typeIR)*
+                  : (paramTypeIR*, paramTypeIR*) `@ argumentIR*
+  hint(input %0 %1 %2 %3)
+
+relation TableAction_ok:
+  context tblctx |- action : tblctx actionIR
+  hint(input %0 %1 %2)
+
+relation TableActions_ok:
+  context tblctx |- actionList : tblctx actionListIR
+  hint(input %0 %1 %2)
+
+relation Call_action_default_ok:
+  cursor context |- paramTypeIR* `@ argumentIR* `@ (argumentIR, typeIR)*
+                  : argumentIR*
+  hint(input %0 %1 %2 %3 %4)
+
+relation TableDefaultAction_ok:
+  context tblctx |- actionRef : actionRefIR
+  hint(input %0 %1 %2)
+
+relation TableProp_ok:
+  context tblctx |- tableProperty : tblctx tablePropertyIR
+  hint(input %0 %1 %2)
+
+relation Table_ok:
+  context tblctx |- tablePropertyList : tblctx tablePropertyListIR
+  hint(input %0 %1 %2)
+
+relation TableType_ok:
+  context tblctx |- name : context typeIR
+  hint(input %0 %1 %2)
+
+;;
 ;;;; Declaration typing
 ;;
+
+relation Decl_ok:
+  cursor context |- declaration : context declarationIR
+  hint(input %0 %1 %2)
+
+relation Decls_ok:
+  cursor context |- declaration* : context declarationIR*
+  hint(input %0 %1 %2)
 
 relation ControlLocalDecl_ok:
   context |- controlLocalDeclaration
@@ -141,14 +183,6 @@ relation ControlLocalDecls_ok:
   context |- controlLocalDeclarations
            : context controlLocalDeclarationsIR
   hint(input %0 %1)
-
-relation Decl_ok:
-  cursor context |- declaration : context declarationIR
-  hint(input %0 %1 %2)
-
-relation Decls_ok:
-  cursor context |- declaration* : context declarationIR*
-  hint(input %0 %1 %2)
 
 ;;
 ;;;; Program typing
@@ -169,12 +203,28 @@ relation Prog_ok:
 
 syntax actctxt = ACT | NOACT
 
-relation Call_convention_ok:
-  cursor context actctxt |- paramTypeIR ~~ (expressionIR, typeIR) : expressionIR
+relation Call_convention_ok_:
+  cursor context actctxt |- paramTypeIR `@ (argumentIR, typeIR) : argumentIR
   hint(input %0 %1 %2 %3 %4)
 
-relation Call_convention_arg_ok:
-  cursor context actctxt |- paramTypeIR ~~ (argumentIR, typeIR) : argumentIR
+relation Call_convention_ok:
+  cursor context actctxt |- paramTypeIR* `@ (argumentIR, typeIR)* : argumentIR*
+  hint(input %0 %1 %2 %3 %4)
+
+;;
+;;;; Finds the type of a function/method,
+;;;; inserts fresh type variables for parameters with don't care types,
+;;;; and also identifies the ids of default arguments
+;;
+
+relation FuncType_ok:
+  cursor context |- name typeArgIR* argumentIR* : funcTypeIR name* name*
+  hint(input %0 %1 %2 %3 %4)
+
+relation Method_ok:
+  cursor context |- lvalue `< typeArgIR* > `( argumentIR* )
+                  : lvalueIR `< `# name* > `( `# name* )
+                    `@ funcTypeIR
   hint(input %0 %1 %2 %3 %4)
 
 ;;
@@ -189,22 +239,10 @@ relation Call_site_ok:
   hint(input %0 %1 %2)
 
 relation Call_ok:
-  cursor context funcTypeIR name* |- `< typeArgIR* > `( argumentIR* `# name* ) : typeIR typeArgIR* argumentIR*
+  cursor context |- funcTypeIR `< typeArgIR* `# name* >
+                               `( argumentIR* `# name* )
+                  : typeIR `< typeArgIR* > `( argumentIR* )
   hint(input %0 %1 %2 %3 %4 %5 %6)
-
-;;
-;;;; Finds the type of a function/method,
-;;;; inserts fresh type variables for parameters with don't care types,
-;;;; and also identifies the ids of default arguments
-;;
-
-relation FuncType_ok:
-  cursor context |- name typeArgIR* argumentIR* : funcTypeIR name* name*
-  hint(input %0 %1 %2 %3 %4)
-
-relation MethodType_ok:
-  cursor context |- expressionIR name typeArgIR* argumentIR* : funcTypeIR expressionIR name* name*
-  hint(input %0 %1 %2 %3 %4 %5)
 
 ;;
 ;;;; Finds the type of a constructor,

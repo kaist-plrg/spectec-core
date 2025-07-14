@@ -1,5 +1,5 @@
 ;;
-;; syntax declaration =
+;; syntax declaration
 ;;
 
 ;;; | constantDeclaration
@@ -61,27 +61,13 @@ rule Decl_ok/actionDeclaration:
 
 ;;; | parserDeclaration
 ;;; syntax parserDeclaration =
-;;;   parserTypeDeclaration optConstructorParameters `{ parserLocalElements parserStates }
+;;;   parserTypeDeclaration optConstructorParameters
+;;;     `{ parserLocalElements parserStates }
 
 ;;; | controlDeclaration 
 ;;; syntax controlDeclaration =
-;;;   controlTypeDeclaration optConstructorParameters `{ controlLocalDeclarations APPLY controlBody }
-
-rule ControlLocalDecl_ok/constantDeclaration:
-  C |- constantDeclaration : C' constantDeclarationIR
-  -- Decl_ok: BLOCK C |- constantDeclaration
-                       : C' constantDeclarationIR
-
-rule ControlLocalDecls_ok/nil:
-  C |- eps : C eps
-
-rule ControlLocalDecls_ok/cons:
-  C |- constantDeclaration_h :: constantDeclaration_t*
-    : C'' (constantDeclarationIR_h :: constantDeclarationIR_t*)
-  -- ControlLocalDecl_ok: C |- constantDeclaration_h
-                          : C' constantDeclarationIR_h
-  -- ControlLocalDecls_ok: C' |- constantDeclaration_t*
-                          : C'' constantDeclarationIR_t*
+;;;   controlTypeDeclaration optConstructorParameters
+;;;     `{ controlLocalDeclarations APPLY controlBody }
 
 rule Decl_ok/controlDeclaration:
   GLOBAL C_0 |- controlTypeDeclaration optConstructorParameters
@@ -119,12 +105,36 @@ rule Decl_ok/controlDeclaration:
   -- ConsTypeDef_wf: $bound(GLOBAL, C_0) |- consTypeDefIR
   -- if C_5 = $add_cons(C_0, consName, consTypeDefIR)
   ---- ;; assemble IR
-  -- if controlTypeDeclarationIR = eps CONTROL name eps `( parameterListIR )
+  -- if controlTypeDeclarationIR = CONTROL name eps `( parameterListIR )
   -- if controlDeclarationIR
       = controlTypeDeclarationIR optConstructorParametersIR
         `{ controlLocalDeclarationsIR APPLY controlBodyIR }
 
 ;;; | typeDeclaration
+;;;; syntax typeDeclaration
+
+;;;; | derivedTypeDeclaration
+
+;;;; | typedefDeclaration `; 
+
+;;;; | parserTypeDeclaration `;
+
+;;;; | controlTypeDeclaration `;
+;;;; syntax controlTypeDeclaration =
+;;;;  optAnnotations CONTROL name optTypeParameters `( parameterList )
+
+rule Decl_ok/controlTypeDeclaration:
+  GLOBAL C_0 |- (optAnnotations CONTROL name eps `( parameterList )) `; 
+              : C_1 (controlTypeDeclarationIR `;)
+  -- Params_ok: LOCAL C_0 |- parameterList : parameterListIR name_fresh*
+  -- if paramTypeIR* = $paramtypes(parameterListIR)
+  -- if typeIR = CONTROL `( paramTypeIR* )
+  -- if typeDefIR = typeIR `< eps `, name_fresh* >
+  -- TypeDef_wf: $bound(GLOBAL, C_0) |- typeDefIR
+  -- if C_1 = $add_type(GLOBAL, C_0, name, typeDefIR)
+  -- if controlTypeDeclarationIR = CONTROL name eps `( parameterListIR )
+
+;;;; | packageTypeDeclaration `;
 
 ;;
 ;; declaration*
@@ -138,6 +148,56 @@ rule Decls_ok/cons:
         : C'' (declarationIR_h :: declarationIR_t*)
   -- Decl_ok: p C |- declaration_h : C' declarationIR_h
   -- Decls_ok: p C' |- declaration_t* : C'' declarationIR_t*
+
+;;
+;; syntax controlLocalDeclaration
+;;
+
+;;; | constantDeclaration
+
+rule ControlLocalDecl_ok/constantDeclaration:
+  C |- constantDeclaration : C' constantDeclarationIR
+  -- Decl_ok: BLOCK C |- constantDeclaration
+                       : C' constantDeclarationIR
+
+;;; | actionDeclaration
+
+rule ControlLocalDecl_ok/actionDeclaration:
+  C |- actionDeclaration : C' actionDeclarationIR
+  -- Decl_ok: BLOCK C |- actionDeclaration
+                       : C' actionDeclarationIR
+
+;;; | tableDeclaration
+;;;; syntax tableDeclaration =
+;;;;   optAnnotations TABLE name `{ tablePropertyList }
+
+rule ControlLocalDecl_ok/tableDeclaration:
+  C_0 |- optAnnotations TABLE name `{ tablePropertyList }
+       : C_2 (TABLE name `{ tablePropertyListIR })
+  -- Table_ok: C_0 $empty_tblctx |- tablePropertyList : tblctx' tablePropertyListIR
+  -- TableType_ok: C_0 tblctx' |- name : C_1 typeIR_table
+  -- if C_2 = $add_var(BLOCK, C_1, name, typeIR_table NONE eps DYN)
+
+;;; | instantiation
+
+;;; | variableDeclaration
+
+;;
+;; Control-local declaration typing
+;;
+;; controlLocalDeclaration*
+;;
+
+rule ControlLocalDecls_ok/nil:
+  C |- eps : C eps
+
+rule ControlLocalDecls_ok/cons:
+  C |- controlLocalDeclaration_h :: controlLocalDeclaration_t*
+    : C'' (controlLocalDeclarationIR_h :: controlLocalDeclarationIR_t*)
+  -- ControlLocalDecl_ok: C |- controlLocalDeclaration_h
+                          : C' controlLocalDeclarationIR_h
+  -- ControlLocalDecls_ok: C' |- controlLocalDeclaration_t*
+                          : C'' controlLocalDeclarationIR_t*
 
 ;;
 ;; syntax p4program = declaration*
