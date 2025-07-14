@@ -507,7 +507,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/forloop5.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop5a.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/forloop5a.p4
-../../../../p4c/testdata/p4_16_samples/forloop5a.p4:20.52-20.53: syntax error at line 1, column 1409
+../../../../p4c/testdata/p4_16_samples/forloop5a.p4:20.52-20.53: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/forloop6.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/forloop6.p4

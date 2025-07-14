@@ -111,33 +111,30 @@ let parse_width_int s n _info =
   let sign = String.sub s (l_s - 1) 1 in
   let i = Bigint.of_string (sanitize n) in
   let w = Bigint.of_string width in
-  let mixop, values = match sign with
+  match sign with
     | "s" ->
       if (int_of_string width < 2)
       then raise (Error "signed integers must have width at least 2")
       else 
-        let mixop = [ [ ]; [ wrap_atom "S" ]; [] ] in
         let value_width =
           NumV (`Nat w) |> with_typ (NumT `NatT)
         in
         let value_int =
           NumV (`Int i) |> with_typ (NumT `IntT)
         in
-        (mixop, [ value_width; value_int ])
+        [ NT value_width; Term "S"; NT value_int ]
+        |> wrap_case_v |> with_typ (wrap_var_t "number")
     | "w" ->
-      let mixop = [ [ ]; [ wrap_atom "W" ]; [] ] in
       let value_width =
         NumV (`Nat w) |> with_typ (NumT `NatT)
       in
       let value_int =
         NumV (`Int i) |> with_typ (NumT `IntT)
       in
-      (mixop, [ value_width; value_int ])
+      [ NT value_width; Term "W"; NT value_int ]
+      |> wrap_case_v |> with_typ (wrap_var_t "number")
     | _ ->
       raise (Error "Illegal integer constant")
-  in
-  let typ = "number" |> wrap_var_t in
-  CaseV (mixop, values) |> with_typ typ
 }
 
 let name = [ 'A'-'Z' 'a'-'z' '_' ] [ 'A'-'Z' 'a'-'z' '0'-'9' '_' ]*

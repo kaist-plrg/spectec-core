@@ -18,7 +18,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/action-bind3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/action-named-default-bmv2.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/action-named-default-bmv2.p4
-../../../../p4c/testdata/p4_16_errors/action-named-default-bmv2.p4:56.12-56.19: syntax error at line 1, column 8094
+../../../../p4c/testdata/p4_16_errors/action-named-default-bmv2.p4:56.12-56.19: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/actions-with-duplicate-control-plane-names1.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/actions-with-duplicate-control-plane-names1.p4
@@ -58,11 +58,11 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/const_e.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/constructor1_e.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/constructor1_e.p4
-../../../../p4c/testdata/p4_16_errors/constructor1_e.p4:18.9-18.10: syntax error at line 1, column 293
+../../../../p4c/testdata/p4_16_errors/constructor1_e.p4:18.9-18.10: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/constructor2_e.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/constructor2_e.p4
-../../../../p4c/testdata/p4_16_errors/constructor2_e.p4:18.6-18.7: syntax error at line 1, column 290
+../../../../p4c/testdata/p4_16_errors/constructor2_e.p4:18.6-18.7: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/constructor3_e.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/constructor3_e.p4
@@ -72,7 +72,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/constructor_e.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/control-inline.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/control-inline.p4
-../../../../p4c/testdata/p4_16_errors/control-inline.p4:34.11-34.12: syntax error at line 1, column 7670
+../../../../p4c/testdata/p4_16_errors/control-inline.p4:34.11-34.12: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/control-verify.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/control-verify.p4
@@ -133,7 +133,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/equality-fail.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/expression_e.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/expression_e.p4
-../../../../p4c/testdata/p4_16_errors/expression_e.p4:21.20-21.21: syntax error at line 1, column 333
+../../../../p4c/testdata/p4_16_errors/expression_e.p4:21.20-21.21: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/extern.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/extern.p4
@@ -173,11 +173,11 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/generic1_e.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/globalVar_e.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/globalVar_e.p4
-../../../../p4c/testdata/p4_16_errors/globalVar_e.p4:16.6-16.7: syntax error at line 1, column 270
+../../../../p4c/testdata/p4_16_errors/globalVar_e.p4:16.6-16.7: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/header1_e.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/header1_e.p4
-../../../../p4c/testdata/p4_16_errors/header1_e.p4:18.5-18.6: syntax error at line 1, column 275
+../../../../p4c/testdata/p4_16_errors/header1_e.p4:18.5-18.6: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/header2_e.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/header2_e.p4
@@ -211,7 +211,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/interface_e.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/invalid-invalid.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/invalid-invalid.p4
-../../../../p4c/testdata/p4_16_errors/invalid-invalid.p4:2.1: syntax error at line 1, column 244
+../../../../p4c/testdata/p4_16_errors/invalid-invalid.p4:2.1: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue-2123_e.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/issue-2123_e.p4
@@ -224,7 +224,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/issue1059.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1202.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/issue1202.p4
-../../../../p4c/testdata/p4_16_errors/issue1202.p4:1.19-1.22: syntax error at line 1, column 219
+../../../../p4c/testdata/p4_16_errors/issue1202.p4:1.19-1.22: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue122.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/issue122.p4
@@ -240,7 +240,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/issue1331.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1336.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/issue1336.p4
-../../../../p4c/testdata/p4_16_errors/issue1336.p4:3.15-3.16: syntax error at line 1, column 232
+../../../../p4c/testdata/p4_16_errors/issue1336.p4:3.15-3.16: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue1542.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/issue1542.p4
@@ -358,7 +358,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/issue2525.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2544_recursive.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/issue2544_recursive.p4
-../../../../p4c/testdata/p4_16_errors/issue2544_recursive.p4:2.12-2.13: syntax error at line 1, column 233
+../../../../p4c/testdata/p4_16_errors/issue2544_recursive.p4:2.12-2.13: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2544_self_ref.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/issue2544_self_ref.p4
@@ -407,7 +407,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/issue3197-e.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3210.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3210.p4
-../../../../p4c/testdata/p4_16_errors/issue3210.p4:9.6-9.7: syntax error at line 1, column 287
+../../../../p4c/testdata/p4_16_errors/issue3210.p4:9.6-9.7: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3221.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/issue3221.p4
@@ -423,11 +423,11 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/issue3264.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3271-1.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3271-1.p4
-../../../../p4c/testdata/p4_16_errors/issue3271-1.p4:23.8-23.9: syntax error at line 1, column 390
+../../../../p4c/testdata/p4_16_errors/issue3271-1.p4:23.8-23.9: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3271.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3271.p4
-../../../../p4c/testdata/p4_16_errors/issue3271.p4:3.8-3.9: syntax error at line 1, column 242
+../../../../p4c/testdata/p4_16_errors/issue3271.p4:3.8-3.9: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3273.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/issue3273.p4
@@ -668,7 +668,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/loop2-err.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/loop3-err.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/loop3-err.p4
-../../../../p4c/testdata/p4_16_errors/loop3-err.p4:51.16-51.18: syntax error at line 1, column 7951
+../../../../p4c/testdata/p4_16_errors/loop3-err.p4:51.16-51.18: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/methodArgDontcare.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/methodArgDontcare.p4
@@ -714,7 +714,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/not_bound.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/p_e.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/p_e.p4
-../../../../p4c/testdata/p4_16_errors/p_e.p4:18.1: syntax error at line 1, column 246
+../../../../p4c/testdata/p4_16_errors/p_e.p4:18.1: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/package.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/package.p4
@@ -769,7 +769,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/shift-int-non-const.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/shift_e.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/shift_e.p4
-../../../../p4c/testdata/p4_16_errors/shift_e.p4:20.25-20.26: syntax error at line 1, column 329
+../../../../p4c/testdata/p4_16_errors/shift_e.p4:20.25-20.26: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/signed.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/signed.p4
@@ -830,11 +830,11 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/structure-valued-expr-errs
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/structure-valued-expr-errs-2.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/structure-valued-expr-errs-2.p4
-../../../../p4c/testdata/p4_16_errors/structure-valued-expr-errs-2.p4:106.28-106.29: syntax error at line 1, column 8588
+../../../../p4c/testdata/p4_16_errors/structure-valued-expr-errs-2.p4:106.28-106.29: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/structured-annotation-e.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/structured-annotation-e.p4
-../../../../p4c/testdata/p4_16_errors/structured-annotation-e.p4:1.23-1.24: syntax error at line 1, column 251
+../../../../p4c/testdata/p4_16_errors/structured-annotation-e.p4:1.23-1.24: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/structured-annotation-e1.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/structured-annotation-e1.p4
@@ -865,7 +865,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/table-entries-optional-2-b
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/table-entries-outside-table.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/table-entries-outside-table.p4
-../../../../p4c/testdata/p4_16_errors/table-entries-outside-table.p4:68.11-68.18: syntax error at line 1, column 8418
+../../../../p4c/testdata/p4_16_errors/table-entries-outside-table.p4:68.11-68.18: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/table-entries-range.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/table-entries-range.p4
@@ -878,7 +878,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/template_e.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/tuple-left.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/tuple-left.p4
-../../../../p4c/testdata/p4_16_errors/tuple-left.p4:21.12-21.13: syntax error at line 1, column 329
+../../../../p4c/testdata/p4_16_errors/tuple-left.p4:21.12-21.13: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/tuple-newtype.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/tuple-newtype.p4
@@ -894,11 +894,11 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/type-field.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/type-in-expr-lex0.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/type-in-expr-lex0.p4
-../../../../p4c/testdata/p4_16_errors/type-in-expr-lex0.p4:8.26-8.27: syntax error at line 1, column 1148
+../../../../p4c/testdata/p4_16_errors/type-in-expr-lex0.p4:8.26-8.27: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/type-in-expr-lex1.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/type-in-expr-lex1.p4
-../../../../p4c/testdata/p4_16_errors/type-in-expr-lex1.p4:8.22-8.23: syntax error at line 1, column 1177
+../../../../p4c/testdata/p4_16_errors/type-in-expr-lex1.p4:8.22-8.23: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/type-in-expr.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/type-in-expr.p4
@@ -917,19 +917,19 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/typedef-and-type-definitio
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/underscore1_e.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/underscore1_e.p4
-../../../../p4c/testdata/p4_16_errors/underscore1_e.p4:17.9-17.10: syntax error at line 1, column 290
+../../../../p4c/testdata/p4_16_errors/underscore1_e.p4:17.9-17.10: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/underscore2_e.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/underscore2_e.p4
-../../../../p4c/testdata/p4_16_errors/underscore2_e.p4:19.13-19.14: syntax error at line 1, column 309
+../../../../p4c/testdata/p4_16_errors/underscore2_e.p4:19.13-19.14: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/underscore3_e.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/underscore3_e.p4
-../../../../p4c/testdata/p4_16_errors/underscore3_e.p4:16.11-16.12: syntax error at line 1, column 281
+../../../../p4c/testdata/p4_16_errors/underscore3_e.p4:16.11-16.12: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/underscore_e.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/underscore_e.p4
-../../../../p4c/testdata/p4_16_errors/underscore_e.p4:16.13-16.14: syntax error at line 1, column 280
+../../../../p4c/testdata/p4_16_errors/underscore_e.p4:16.13-16.14: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/virtual1.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/virtual1.p4

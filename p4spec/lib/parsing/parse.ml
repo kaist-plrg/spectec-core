@@ -23,11 +23,7 @@ let parse (lexbuf : Lexing.lexbuf) =
   with
   | Parser.Error ->
       let info = Lexer.info lexbuf in
-      let pos = Lexing.lexeme_start_p lexbuf in
-      let msg =
-        Format.asprintf "syntax error at line %d, column %d" pos.Lexing.pos_lnum
-          (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)
-      in
+      let msg = Format.asprintf "syntax error" in
       error (Source.to_region info) msg
   | e -> raise e
 

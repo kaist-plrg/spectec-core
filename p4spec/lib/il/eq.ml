@@ -73,6 +73,32 @@ and eq_typ (typ_a : typ) (typ_b : typ) : bool =
 and eq_typs (typs_a : typ list) (typs_b : typ list) : bool =
   List.length typs_a = List.length typs_b && List.for_all2 eq_typ typs_a typs_b
 
+(* Values *)
+
+and eq_value (value_a : value) (value_b : value) : bool =
+  match (value_a.it, value_b.it) with
+  | BoolV b_a, BoolV b_b -> b_a = b_b
+  | NumV n_a, NumV n_b -> Num.eq n_a n_b
+  | TextV t_a, TextV t_b -> t_a = t_b
+  | StructV valuefields_a, StructV valuefields_b ->
+      List.length valuefields_a = List.length valuefields_b
+      && List.for_all2
+           (fun (atom_a, value_a) (atom_b, value_b) ->
+             eq_atom atom_a atom_b && eq_value value_a value_b)
+           valuefields_a valuefields_b
+  | CaseV (mixop_a, values_a), CaseV (mixop_b, values_b) ->
+      eq_mixop mixop_a mixop_b && eq_values values_a values_b
+  | TupleV values_a, TupleV values_b -> eq_values values_a values_b
+  | OptV (Some v_a), OptV (Some v_b) -> eq_value v_a v_b
+  | OptV None, OptV None -> true
+  | ListV values_a, ListV values_b -> eq_values values_a values_b
+  | FuncV id_a, FuncV id_b -> id_a = id_b
+  | _ -> false
+
+and eq_values (values_a : value list) (values_b : value list) : bool =
+  List.length values_a = List.length values_b
+  && List.for_all2 eq_value values_a values_b
+
 (* Expressions *)
 
 and eq_exp (exp_a : exp) (exp_b : exp) : bool =
