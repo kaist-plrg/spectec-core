@@ -48,21 +48,21 @@ syntax prefixedNonTypeName =
   | nonTypeName
   | dotPrefix nonTypeName
 
+syntax typeName = typeIdentifier
+
+syntax prefixedTypeName =
+  | typeName 
+  | dotPrefix typeName
+
+syntax name =
+  | nonTypeName
+  | typeName
+  | LIST
+
 syntax nonTableKwName =
   | identifier
   | typeIdentifier
   | APPLY | STATE | TYPE | PRIORITY
-
-syntax prefixedType =
-  | typeIdentifier
-  | dotPrefix typeIdentifier
-
-syntax typeName = prefixedType
-
-syntax name =
-  | nonTypeName
-  | LIST
-  | typeIdentifier
 
 ;; (TODO) Add comma separator as hint?
 syntax identifierList = name*
@@ -108,10 +108,10 @@ syntax baseType =
 ;;;; Named types
 ;;
 
-syntax specializedType = typeName `< typeArgumentList >
+syntax specializedType = prefixedTypeName `< typeArgumentList >
 
 syntax namedType =
-  | typeName
+  | prefixedTypeName
   | specializedType
 
 ;;
@@ -119,7 +119,7 @@ syntax namedType =
 ;;
 
 syntax headerStackType =
-  | typeName `[ expression ]
+  | prefixedTypeName `[ expression ]
   | specializedType `[ expression ]
 
 ;;
@@ -203,7 +203,7 @@ syntax nonBraceExpression =
   | `~ expression
   | `- expression
   | `+ expression
-  | typeName `. member
+  | prefixedTypeName `. member
   | ERROR `. member
   | nonBraceExpression `. member
   | nonBraceExpression `* expression
@@ -252,7 +252,7 @@ syntax expression =
   | `~ expression
   | `- expression
   | `+ expression
-  | typeName `. member
+  | prefixedTypeName `. member
   | ERROR `. member
   | expression `. member
   | expression `* expression
@@ -691,7 +691,7 @@ syntax controlDeclaration =
 syntax valueSetDeclaration =
   | optAnnotations VALUESET `< baseType > `( expression ) name `; 
   | optAnnotations VALUESET `< tupleType > `( expression ) name `;
-  | optAnnotations VALUESET `< typeName > `( expression ) name `;
+  | optAnnotations VALUESET `< prefixedTypeName > `( expression ) name `;
 
 ;;
 ;;;; Select expressions

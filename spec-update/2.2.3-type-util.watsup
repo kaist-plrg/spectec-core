@@ -51,7 +51,7 @@ dec $is_equalable'(typeIR) : bool
 
 def $is_equalable(typeIR) = $is_equalable'($canon(typeIR))
 def $is_equalable'(VOID) = false
-def $is_equalable'(name) = false
+def $is_equalable'(`@ tid) = false
 def $is_equalable'(EXTERN _ _) = false
 def $is_equalable'(PARSER `( _ )) = false
 def $is_equalable'(CONTROL `( _ )) = false

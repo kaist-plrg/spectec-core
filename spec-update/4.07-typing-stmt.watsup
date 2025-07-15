@@ -9,13 +9,19 @@
 
 ;;;; | nonTypeName
 
+rule Lval_ok/prefixedNonTypeName-nonTypeName:
+  p C |- nonTypeName : nonTypeName typeIR
+  -- if id = $id(nonTypeName)
+  -- if typeIR direction _ ctk = $find_var(p, C, id)
+  -- if direction = OUT \/ direction = INOUT
+  -- if ctk = DYN
 
 ;;;; | dotPrefix nonTypeName
 
-rule Lval_ok/prefixedNonTypeName-nodot:
-  p C |- nonTypeName : nonTypeName typeIR
-  -- if typeIR direction _ ctk
-      = $find_var(p, C, nonTypeName)
+rule Lval_ok/prefixedNonTypeName-nonTypeName:
+  p C |- `. nonTypeName : nonTypeName typeIR
+  -- if id = $id(nonTypeName)
+  -- if typeIR direction _ ctk = $find_var(GLOBAL, C, id)
   -- if direction = OUT \/ direction = INOUT
   -- if ctk = DYN
 
@@ -62,9 +68,9 @@ rule Stmt_ok/assignmentOrMethodCallStatement-lvalue-argumentList:
   -- (Arg_ok: p C |- argument : argumentIR typeIR_arg)*
   ---- ;; check lvalue
   -- Method_ok: p C |- lvalue `< eps > `( argumentIR* )
-                     : lvalueIR `< `# eps > `( `# name_default* ) `@ funcTypeIR
+                     : lvalueIR `< `# eps > `( `# id_default* ) `@ funcTypeIR
   ---- ;; check call convention
-  -- Call_ok: p C |- funcTypeIR `< eps `# eps > `( argumentIR* `# name_default* )
+  -- Call_ok: p C |- funcTypeIR `< eps `# eps > `( argumentIR* `# id_default* )
                    : typeIR `< eps > `( argumentIR_cast* )
 
 ;;;;;; | lvalue `< typeArgumentList > `( argumentList )

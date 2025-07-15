@@ -10,7 +10,7 @@ syntax typeIR, polyTypeDefIR, funcTypeDefIR
 ;;;; Parameter types
 ;;
 
-syntax paramTypeIR = name direction typeIR val?
+syntax paramTypeIR = id direction typeIR val?
 
 ;;
 ;;;; Base types
@@ -44,7 +44,7 @@ syntax baseTypeIR = primTypeIR | numTypeIR
 ;;
 
 syntax namedTypeIR =
-  | name
+  | `@ tid 
   | polyTypeDefIR `< typeIR* >
 
 ;;
@@ -56,8 +56,8 @@ syntax namedTypeIR =
 ;;
 
 syntax typedefTypeIR =
-  | TYPEDEF name typeIR
-  | TYPE name typeIR
+  | TYPEDEF tid typeIR
+  | TYPE tid typeIR
 
 ;;
 ;;;;;; Data types
@@ -67,22 +67,22 @@ syntax dataTypeIR =
   | LIST `< typeIR >
   | TUPLE `< typeIR* >
   | typeIR `[ nat ]
-  | HEADER name `{ (typeIR, name)* }
-  | HEADER_UNION name `{ (typeIR, name)* }
-  | STRUCT name `{ (typeIR, name)* }
-  | ENUM name `{ name* }
-  | ENUM typeIR name `{ (name, val)* }
+  | HEADER tid `{ (typeIR, id)* }
+  | HEADER_UNION tid `{ (typeIR, id)* }
+  | STRUCT tid `{ (typeIR, id)* }
+  | ENUM tid `{ id* }
+  | ENUM typeIR tid `{ (id, val)* }
 
 ;;
 ;;;;;; Object types
 ;;
 
 syntax objTypeIR =
-  | EXTERN name map<funcName, funcTypeDefIR>
+  | EXTERN tid map<fid, funcTypeDefIR>
   | PARSER `( paramTypeIR* )
   | CONTROL `( paramTypeIR* )
   | PACKAGE `< typeIR* >
-  | TABLE name `{ typeIR }
+  | TABLE tid `{ typeIR }
 
 syntax defTypeIR =
   | typedefTypeIR
@@ -97,13 +97,13 @@ syntax synthTypeIR =
   | DEFAULT
   | SEQ `< typeIR* >
   | SEQ `< typeIR* `, `... >
-  | RECORD `{ (typeIR, name)* }
-  | RECORD `{ (typeIR, name)* `, `... }
+  | RECORD `{ (typeIR, id)* }
+  | RECORD `{ (typeIR, id)* `, `... }
   | INVALID
   | SET `< typeIR* >
   | PARSERSTATE
-  | ENUM_TABLE name `{ name* }
-  | STRUCT_TABLE name `{ (typeIR, name)* }
+  | ENUM_TABLE tid `{ id* }
+  | STRUCT_TABLE tid `{ (typeIR, id)* }
   | `_
 
 syntax typeIR = baseTypeIR | namedTypeIR | defTypeIR | synthTypeIR
@@ -114,7 +114,7 @@ syntax typeIR = baseTypeIR | namedTypeIR | defTypeIR | synthTypeIR
 
 syntax monoTypeDefIR = typeIR
 
-syntax polyTypeDefIR = typeIR `< name* `, name* >
+syntax polyTypeDefIR = typeIR `< tid* `, tid* >
 
 syntax typeDefIR = monoTypeDefIR | polyTypeDefIR
 
@@ -139,7 +139,7 @@ syntax funcTypeIR =
 
 syntax monoFuncTypeDefIR = funcTypeIR
 
-syntax polyFuncTypeDefIR = funcTypeIR `< name* `, name* >
+syntax polyFuncTypeDefIR = funcTypeIR `< tid* `, tid* >
 
 syntax funcTypeDefIR = monoFuncTypeDefIR | polyFuncTypeDefIR
 
@@ -159,4 +159,4 @@ syntax consTypeIR = `( consParamTypeIR* ) -> typeIR
 ;;;; Constructor type definitions
 ;;
 
-syntax consTypeDefIR = consTypeIR `< name* `, name* >
+syntax consTypeDefIR = consTypeIR `< tid* `, tid* >

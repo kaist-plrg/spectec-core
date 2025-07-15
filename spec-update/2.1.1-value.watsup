@@ -16,8 +16,8 @@ syntax val
 
 syntax primVal =
   | bool PHTM_0
-  | ERROR `. name
-  | MATCH_KIND `. name
+  | ERROR `. id
+  | MATCH_KIND `. id
   | text PHTM_2
 
 ;;
@@ -40,11 +40,11 @@ syntax dataVal =
   | `[ val* ]
   | `( val* )
   | `[ val* `@ `( nat; nat ) ]
-  | HEADER name `{ (val, name)* }
-  | HEADER_UNION name `{ (val, name)* }
-  | STRUCT name `{ (val, name)* }
-  | name `. name
-  | name `. name `# val
+  | HEADER tid `{ (val, id)* }
+  | HEADER_UNION tid `{ (val, id)* }
+  | STRUCT tid `{ (val, id)* }
+  | tid `. id
+  | tid `. id `# val
 
 ;;
 ;;;; Synthesized values
@@ -59,12 +59,12 @@ syntax synthVal =
   | DEFAULT
   | SEQ `( val* )
   | SEQ_DEFAULT `( val* )
-  | RECORD `{ (val, name)* }
-  | RECORD_DEFAULT `{ (val, name)* }
+  | RECORD `{ (val, id)* }
+  | RECORD_DEFAULT `{ (val, id)* }
   | INVALID
   | SET setVal
   | STATE
-  | ENUM_TABLE name `. name
-  | STRUCT_TABLE name `{ (val, name)* }
+  | ENUM_TABLE tid `. id
+  | STRUCT_TABLE tid `{ (val, id)* }
 
 syntax val = | baseVal | dataVal | synthVal

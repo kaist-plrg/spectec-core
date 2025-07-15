@@ -26,7 +26,7 @@ rule Type_alpha/basetype:
 ;;; Named types
 
 rule Type_alpha/nametype:
-  name ~~ name 
+  (`@ tid) ~~  (`@ tid)
 
 rule Type_alpha/spectype-nominal:
   (polyTypeDefIR_a `< typeIR_a* >) ~~ (polyTypeDefIR_b `< typeIR_b* >)
@@ -54,7 +54,7 @@ rule Type_alpha/typedeftype-right:
   -- Type_alpha: typeIR_a ~~ typeIR_b
 
 rule Type_alpha/newtype:
-  (TYPE name typeIR_a) ~~ (TYPE name typeIR_b)
+  (TYPE tid typeIR_a) ~~ (TYPE tid typeIR_b)
   -- Type_alpha: typeIR_a ~~ typeIR_b
 
 ;;; Data types
@@ -72,42 +72,42 @@ rule Type_alpha/stacktype:
   -- Type_alpha: typeIR_a ~~ typeIR_b
 
 rule Type_alpha/headertype:
-  (HEADER name `{ (typeIR_f_a, name_f)* })
-  ~~ (HEADER name `{ (typeIR_f_b, name_f)* })
+  (HEADER tid `{ (typeIR_f_a, id_f)* })
+  ~~ (HEADER tid `{ (typeIR_f_b, id_f)* })
   -- (Type_alpha: typeIR_f_a ~~ typeIR_f_b)*
 
 rule Type_alpha/headeruniontype:
-  (HEADER_UNION name `{ (typeIR_f_a, name_f)* })
-  ~~ (HEADER_UNION name `{ (typeIR_f_b, name_f)* })
+  (HEADER_UNION tid `{ (typeIR_f_a, id_f)* })
+  ~~ (HEADER_UNION tid `{ (typeIR_f_b, id_f)* })
   -- (Type_alpha: typeIR_f_a ~~ typeIR_f_b)*
 
 rule Type_alpha/structtype:
-  (STRUCT name `{ (typeIR_f_a, name_f)* })
-  ~~ (STRUCT name `{ (typeIR_f_b, name_f)* })
+  (STRUCT tid `{ (typeIR_f_a, id_f)* })
+  ~~ (STRUCT tid `{ (typeIR_f_b, id_f)* })
   -- (Type_alpha: typeIR_f_a ~~ typeIR_f_b)*
 
 rule Type_alpha/enumtype:
-  (ENUM name `{ name_f* }) ~~ (ENUM name `{ name_f* })
+  (ENUM tid `{ id_f* }) ~~ (ENUM tid `{ id_f* })
 
 rule Type_alpha/serenumtype:
-  (ENUM typeIR_a name `{ (name_f, val_f)* })
-  ~~ (ENUM typeIR_b name `{ (name_f, val_f)* })
+  (ENUM typeIR_a tid `{ (id_f, val_f)* })
+  ~~ (ENUM typeIR_b tid `{ (id_f, val_f)* })
   -- Type_alpha: typeIR_a ~~ typeIR_b
 
 ;;; Object types
 
 rule Type_alpha/externtype:
-  (EXTERN name (`{ (funcName_a `: funcTypeDefIR_a)* }))
-  ~~ (EXTERN name (`{ (funcName_b `: funcTypeDefIR_b)* }))
-  -- if $eq_set<funcName>(`{ funcName_a* }, `{ funcName_b* })
+  (EXTERN tid (`{ (fid_a `: funcTypeDefIR_a)* }))
+  ~~ (EXTERN tid (`{ (fid_b `: funcTypeDefIR_b)* }))
+  -- if $eq_set<fid>(`{ fid_a* }, `{ fid_b* })
   -- if (funcTypeDefIR_a'
-        = $find_map<funcName, funcTypeDefIR>(
-            `{ (funcName_a `: funcTypeDefIR_a)* },
-            funcName_a))*
+        = $find_map<fid, funcTypeDefIR>(
+            `{ (fid_a `: funcTypeDefIR_a)* },
+            fid_a))*
   -- if (funcTypeDefIR_b'
-        = $find_map<funcName, funcTypeDefIR>(
-            `{ (funcName_a `: funcTypeDefIR_a)* },
-            funcName_a))*
+        = $find_map<fid, funcTypeDefIR>(
+            `{ (fid_b `: funcTypeDefIR_b)* },
+            fid_a))*
   -- (FuncTypeDef_alpha: funcTypeDefIR_a' ~~ funcTypeDefIR_b')*
 
 rule Type_alpha/parsertype:
@@ -127,7 +127,7 @@ rule Type_alpha/packagetype:
   -- (Type_alpha: typeIR_a ~~ typeIR_b)*
 
 rule Type_alpha/tabletype:
-  (TABLE name `{ typeIR_a }) ~~ (TABLE name `{ typeIR_b })
+  (TABLE tid `{ typeIR_a }) ~~ (TABLE tid `{ typeIR_b })
   -- Type_alpha: typeIR_a ~~ typeIR_b
 
 ;;; Synthesized types
@@ -144,12 +144,12 @@ rule Type_alpha/sequencedefaulttype:
   -- (Type_alpha: typeIR_a ~~ typeIR_b)*
 
 rule Type_alpha/recordtype:
-  (RECORD `{ (typeIR_a, name)* }) ~~ (RECORD `{ (typeIR_b, name)* })
+  (RECORD `{ (typeIR_a, id)* }) ~~ (RECORD `{ (typeIR_b, id)* })
   -- (Type_alpha: typeIR_a ~~ typeIR_b)*
 
 rule Type_alpha/recorddefaulttype:
-  (RECORD `{ (typeIR_a, name)* `, `... })
-  ~~ (RECORD `{ (typeIR_b, name)* `, `... })
+  (RECORD `{ (typeIR_a, id)* `, `... })
+  ~~ (RECORD `{ (typeIR_b, id)* `, `... })
   -- (Type_alpha: typeIR_a ~~ typeIR_b)*
 
 rule Type_alpha/invalidtype:
@@ -163,11 +163,11 @@ rule Type_alpha/parserstatetype:
   PARSERSTATE ~~ PARSERSTATE
 
 rule Type_alpha/tableenumtype:
-  (ENUM_TABLE name `{ name_f* }) ~~ (ENUM_TABLE name `{ name_f* })
+  (ENUM_TABLE tid `{ id_f* }) ~~ (ENUM_TABLE tid `{ id_f* })
 
 rule Type_alpha/tablestructtype:
-  (STRUCT_TABLE name `{ (typeIR_f_a, name_f)* })
-  ~~ (STRUCT_TABLE name `{ (typeIR_f_b, name_f)* })
+  (STRUCT_TABLE tid `{ (typeIR_f_a, id_f)* })
+  ~~ (STRUCT_TABLE tid `{ (typeIR_f_b, id_f)* })
   -- (Type_alpha: typeIR_f_a ~~ typeIR_f_b)*
 
 rule Type_alpha/dontcaretype:
@@ -250,19 +250,19 @@ rule FuncTypeDef_alpha/mono:
   -- FuncType_alpha: funcTypeIR_a ~~ funcTypeIR_b
 
 rule FuncTypeDef_alpha/poly:
-  (funcTypeIR_a `< name_a* `, name_hidden_a* >)
-  ~~ (funcTypeIR_b `< name_b* `, name_hidden_b* >)
-  -- if |name_a*| = |name_b*|
-  -- if |name_hidden_a*| = |name_hidden_b*|
+  (funcTypeIR_a `< tid_a* `, tid_hidden_a* >)
+  ~~ (funcTypeIR_b `< tid_b* `, tid_hidden_b* >)
+  -- if |tid_a*| = |tid_b*|
+  -- if |tid_hidden_a*| = |tid_hidden_b*|
   ----
-  -- if name_fresh* = $fresh_names($(|name_a*| + |name_hidden_a*|))
+  -- if tid_fresh* = $fresh_tids($(|tid_a*| + |tid_hidden_a*|))
   ----
-  -- if name_a'* = name_a* ++ name_hidden_a*
-  -- if theta_a = `{ (name_a' `: name_fresh)* }
+  -- if tid_a'* = tid_a* ++ tid_hidden_a*
+  -- if theta_a = `{ (tid_a' `: (`@ tid_fresh))* }
   -- if funcTypeIR_a_subst = $subst_funcType(theta_a, funcTypeIR_a)
   ----
-  -- if name_b'* = name_b* ++ name_hidden_b*
-  -- if theta_b = `{ (name_b' `: name_fresh)* }
+  -- if tid_b'* = tid_b* ++ tid_hidden_b*
+  -- if theta_b = `{ (tid_b' `: (`@ tid_fresh))* }
   -- if funcTypeIR_b_subst = $subst_funcType(theta_b, funcTypeIR_b)
   ----
   -- FuncType_alpha: funcTypeIR_a_subst ~~ funcTypeIR_b_subst

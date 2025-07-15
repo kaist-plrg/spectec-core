@@ -34,28 +34,28 @@ rule Call_action_partial_ok:
 
 ;;; | prefixedNonTypeName
 
-rule TableAction_ok/prefixedNonTypeName:
-  C tblctx |- optAnnotations prefixedNonTypeName `;
-            : tblctx' (prefixedNonTypeName `;)
-  -- if (cursor, name) = $scopeof(BLOCK, prefixedNonTypeName)
-  -- if ACTION `( paramTypeIR* ) = $find_func_named(cursor, C, name)
+rule TableAction_ok/nonTypeName:
+  C tblctx |- optAnnotations nonTypeName `;
+            : tblctx' (nonTypeName `;)
+  -- if id = $id(nonTypeName)
+  -- if ACTION `( paramTypeIR* ) = $find_func_named(BLOCK, C, id)
   -- Call_action_partial_ok: BLOCK C |- paramTypeIR* `@ eps
                                      : (paramTypeIR_data*, paramTypeIR_control*) `@ eps
-  -- if tblctx' = $add_action(tblctx, name, paramTypeIR*, eps)
+  -- if tblctx' = $add_action(tblctx, id, paramTypeIR*, eps)
 
 ;;; | prefixedNonTypeName `( argumentList )
 
-rule TableAction_ok/prefixedNonTypeName-argumentList:
-  C tblctx |- optAnnotations (prefixedNonTypeName `( argumentList ))`;
-            : tblctx' ((prefixedNonTypeName `( argumentIR_cast* )) `;)
-  -- if (cursor, name) = $scopeof(BLOCK, prefixedNonTypeName)
-  -- if ACTION `( paramTypeIR* ) = $find_func_named(cursor, C, name)
+rule TableAction_ok/nonTypeName-argumentList:
+  C tblctx |- optAnnotations (nonTypeName `( argumentList ))`;
+            : tblctx' ((nonTypeName `( argumentIR_cast* )) `;)
+  -- if id = $id(nonTypeName)
+  -- if ACTION `( paramTypeIR* ) = $find_func_named(BLOCK, C, id)
   -- if argument* = argumentList
   -- (Arg_ok: BLOCK C |- argument : argumentIR typeIR_arg)*
   -- Call_action_partial_ok:
       BLOCK C |- paramTypeIR* `@ (argumentIR, typeIR_arg)*
               : (paramTypeIR_data*, paramTypeIR_control*) `@ argumentIR_cast*
-  -- if tblctx' = $add_action(tblctx, name, paramTypeIR*, argumentIR_cast*)
+  -- if tblctx' = $add_action(tblctx, id, paramTypeIR*, argumentIR_cast*)
 
 ;;
 ;; Table action list typing
@@ -95,27 +95,25 @@ rule Call_action_default_ok:
 
 ;;; | prefixedNonTypeName
 
-rule TableDefaultAction_ok/prefixedNonTypeName:
-  C tblctx |- prefixedNonTypeName : prefixedNonTypeName
-  -- if (_, name) = $scopeof(BLOCK, prefixedNonTypeName)
-  -- if (_, eps, eps) = $find_action(tblctx, name)
+rule TableDefaultAction_ok/nonTypeName:
+  C tblctx |- nonTypeName : nonTypeName
+  -- if id = $id(nonTypeName)
+  -- if (eps, eps) = $find_action(tblctx, id)
 
 ;;; | prefixedNonTypeName `( argumentList )
 
-rule TableDefaultAction_ok/prefixedNonTypeName-argumentList:
-  C tblctx |- prefixedNonTypeName `( argumentList )
-            : prefixedNonTypeName `( argumentIR_cast* )
+rule TableDefaultAction_ok/nonTypeName-argumentList:
+  C tblctx |- nonTypeName `( argumentList )
+            : nonTypeName `( argumentIR_cast* )
   ---- ;; find matching action
-  -- if (_, name) = $scopeof(BLOCK, prefixedNonTypeName)
-  -- if (_, paramTypeIR_action*, argumentIR_action*)
-      = $find_action(tblctx, name)
+  -- if id = $id(nonTypeName)
+  -- if (paramTypeIR_action*, argumentIR_action*) = $find_action(tblctx, id)
   ---- ;; check arguments
   -- if argument* = argumentList
   -- (Arg_ok: BLOCK C |- argument : argumentIR typeIR_arg)*
   ---- ;; check call
-  -- Call_action_default_ok: BLOCK C |- paramTypeIR_action*
-                                          `@ argumentIR_action*
-                                          `@ (argumentIR, typeIR_arg)*
+  -- Call_action_default_ok: BLOCK C |- paramTypeIR_action* `@ argumentIR_action*
+                                                            `@ (argumentIR, typeIR_arg)*
                                       : argumentIR_cast*
 
 ;;
@@ -179,26 +177,24 @@ rule Table_ok/cons:
 
 rule TableType_ok:
   C_0 tblctx |- name : C_1 typeIR_table
+  ----
+  -- if tid = $tid(name)
   ---- ;; create internal table enum type
-  -- if name_enum
-      = $ext_name_suffix($ext_name_prefix("action_list(", name), ")")
-  -- if (name_action, _, _)* = tblctx.ACTIONS
-  -- if typeIR_enum = ENUM_TABLE name_enum `{ name_action* }
+  -- if tid_enum = "action_list(" ++ tid ++ ")"
+  -- if (id_action, _, _)* = tblctx.ACTIONS
+  -- if typeIR_enum = ENUM_TABLE tid_enum `{ id_action* }
   ---- ;; add enum fields to context
-  -- if (val_enum_field = name_enum `. name_action)*
+  -- if (val_enum_field = tid_enum `. id_action)*
   -- if (varTypeIR_enum_field
         = typeIR_enum NONE val_enum_field LCTK)*
-  -- if (name_enum_field
-        = $ext_name($ext_name_suffix(name_enum, "."), name_action))*
-  -- if C_1 = $add_vars(BLOCK, C_0, name_enum_field*, varTypeIR_enum_field*)
+  -- if (id_enum_field = tid_enum ++ "." ++ id_action)*
+  -- if C_1 = $add_vars(BLOCK, C_0, id_enum_field*, varTypeIR_enum_field*)
   ---- ;; create internal table struct type
-  -- if name_struct
-      = $ext_name_suffix($ext_name_prefix("apply_result(", name), ")")
+  -- if tid_struct = "apply_result(" ++ tid ++ ")"
   -- if typeIR_struct
-      = STRUCT_TABLE name_struct
-          `{ [ (BOOL, `$ "hit"),
-               (BOOL, `$ "miss"),
-               (typeIR_enum,`$ "action_run") 
-              ] }
+      = STRUCT_TABLE tid_struct
+          `{ [ (BOOL, "hit"),
+               (BOOL, "miss"),
+               (typeIR_enum,"action_run") ] }
   ---- ;; create internal table type
-  -- if typeIR_table = TABLE name `{ typeIR_struct }
+  -- if typeIR_table = TABLE tid `{ typeIR_struct }

@@ -72,64 +72,91 @@ rule Type_ok/varbit-expr:
   -- if n = $number(val)
 
 ;;;; syntax namedType =
-;;;;   | typeName
+;;;;   | prefixedTypeName
 ;;;;   | specializedType
 
-rule Type_ok/namedtype-typename:
+rule Type_ok/typeName-mono:
   p C |- typeName : typeIR eps
-  -- if typeIR = $find_typedef(p, C, typeName)
+  -- if tid = $tid(typeName)
+  -- if typeIR = $find_type(p, C, tid)
 
-;;;;; syntax specializedType = typeName `< typeArgumentList >
+rule Type_ok/typeName-poly:
+  p C |- typeName : (polyTypeDefIR `< eps >) eps
+  -- if tid = $tid(typeName)
+  -- if polyTypeDefIR = $find_type(p, C, tid)
 
-rule Type_ok/namedtype-specializedtype-mono:
+rule Type_ok/dotPrefix-typeName-mono:
+  p C |- `. typeName : typeIR eps
+  -- if tid = $tid(typeName)
+  -- if typeIR = $find_type(GLOBAL, C, tid)
+
+rule Type_ok/dotPrefix-typeName-poly:
+  p C |- `. typeName : (polyTypeDefIR `< eps >) eps
+  -- if tid = $tid(typeName)
+  -- if polyTypeDefIR = $find_type(GLOBAL, C, tid)
+
+;;;;; syntax specializedType = prefixedTypeName `< typeArgumentList >
+
+rule Type_ok/specializedType-typeName-nil:
   p C |- typeName `< eps > : typeIR eps
-  -- if typeIR = $find_typedef(p, C, typeName)
+  -- if tid = $tid(typeName)
+  -- if typeIR = $find_type(p, C, tid)
 
-rule Type_ok/namedtype-specialiedtype-poly:
-  p C |- typeName `< typeArg* > : (polyTypeDefIR `< typeIR_a* >) name_fresh*
-  -- if polyTypeDefIR = $find_typedef(p, C, typeName)
-  -- if typeIR `< name* `, name_hidden* > = polyTypeDefIR
-  -- (TypeArg_ok: p C |- typeArg : typeIR_a name_fresh_a*)*
-  -- if name_fresh* = $concat_<name>(name_fresh_a**)
+rule Type_ok/specializedType-dotPrefix-typeName-nil:
+  p C |- (`. typeName) `< eps > : typeIR eps
+  -- if tid = $tid(typeName)
+  -- if typeIR = $find_type(GLOBAL, C, tid)
+
+rule Type_ok/specializedType-typeName-typeArg:
+  p C |- typeName `< typeArg* > : (polyTypeDefIR `< typeIR_a* >) tid_fresh*
+  -- if tid = $tid(typeName)
+  -- if polyTypeDefIR = $find_type(p, C, tid)
+  -- if typeIR `< tid_def* `, tid_hidden* > = polyTypeDefIR
+  -- (TypeArg_ok: p C |- typeArg : typeIR_a tid_fresh_a*)*
+  -- if tid_fresh* = $concat_<tid>(tid_fresh_a**)
 
 ;;;; syntax headerStackType =
 ;;;;   | typeName `[ expression ]
 ;;;;   | specializedType `[ expression ]
 
-rule Type_ok/headerstacktype-typename:
-  p C |- typeName `[ expression ] : (polyTypeDefIR `< typeIR >) eps
-  -- Type_ok: p C |- typeName : typeIR eps
+rule Type_ok/headerStackType-typeName-expression:
+  p C |- typeName `[ expression ] : (polyTypeDefIR_stack `< typeIR_base >) eps
+  -- Type_ok: p C |- typeName : typeIR_base eps
   -- Expr_ok: p C |- expression : expressionIR
   -- if _ `( _ `; LCTK) = expressionIR
   -- Eval_static: p C |- expressionIR ~> val
   -- if n_size = $number(val)
-  -- if polyTypeDefIR = ((`@ "T") `[ n_size ]) `< (`$ "T") `, eps >
+  -- if typeIR_stack = (`@ "T") `[ n_size ]
+  -- if polyTypeDefIR_stack = typeIR_stack `< "T" `, eps >
 
-rule Type_ok/headerstacktype-specializedtype:
-  p C |- specializedType `[ expression ] : (polyTypeDefIR `< typeIR >) name_fresh*
-  -- Type_ok: p C |- specializedType : typeIR name_fresh*
+rule Type_ok/headerStackType-specializedType-expression:
+  p C |- specializedType `[ expression ] : (polyTypeDefIR_stack `< typeIR_base >) tid_fresh*
+  -- Type_ok: p C |- specializedType : typeIR_base tid_fresh*
   -- Expr_ok: p C |- expression : expressionIR
   -- if _ `( _ `; LCTK) = expressionIR
   -- Eval_static: p C |- expressionIR ~> val
   -- if n_size = $number(val)
-  -- if polyTypeDefIR = ((`@ "T") `[ n_size ]) `< (`$ "T") `, eps >
+  -- if typeIR_stack = (`@ "T") `[ n_size ]
+  -- if polyTypeDefIR_stack = typeIR_stack `< "T" `, eps >
 
 ;;;; syntax listType = LIST `< typeArg >
 
-rule Type_ok/listtype:
-  p C |- LIST `< typeArg > : (polyTypeDefIR `< typeIR >) name_fresh*
-  -- TypeArg_ok: p C |- typeArg : typeIR name_fresh*
-  -- if polyTypeDefIR = (LIST `< `@ "T" >) `< (`$ "T") `, eps >
+rule Type_ok/listType:
+  p C |- LIST `< typeArg > : (polyTypeDefIR_list `< typeIR_arg >) tid_fresh*
+  -- TypeArg_ok: p C |- typeArg : typeIR_arg tid_fresh*
+  -- if typeIR_list = LIST `< (`@ "T") >
+  -- if polyTypeDefIR_list = typeIR_list `< "T" `, eps >
 
 ;;;; syntax tupleType = TUPLE `< typeArgumentList >
 
-rule Type_ok/tupletype:
-  p C |- TUPLE `< typeArg* > : (polyTypeDefIR `< typeIR_a* >) name_fresh*
-  -- (TypeArg_ok: p C |- typeArg : typeIR_a name_fresh_a*)*
-  -- if name_fresh* = $concat_<name>(name_fresh_a**)
-  -- if i_idx* = $init_(|typeIR_a*|)
-  -- if (text = "T" ++ $int_to_text(i_idx))* 
-  -- if polyTypeDefIR = (TUPLE `< (`@ text)* >) `< (`$ text)* `, eps >
+rule Type_ok/tupleType:
+  p C |- TUPLE `< typeArg* > : (polyTypeDefIR_tuple `< typeIR_arg* >) tid_fresh*
+  -- (TypeArg_ok: p C |- typeArg : typeIR_arg tid_fresh_arg*)*
+  -- if tid_fresh* = $concat_<tid>(tid_fresh_arg**)
+  -- if i_idx* = $init_(|typeIR_arg*|)
+  -- if (tid_tparam = "T" ++ $int_to_text(i_idx))* 
+  -- if typeIR_tuple = TUPLE `< (`@ tid_tparam)* >
+  -- if polyTypeDefIR_tuple = typeIR_tuple `< tid_tparam* `, eps >
 
 ;;; VOID
 

@@ -2,10 +2,10 @@
 ;; Substitution (capture-avoiding)
 ;;
 
-syntax bound = set<name>
-syntax theta = map<name, typeIR>
+syntax bound = set<tid>
+syntax theta = map<tid, typeIR>
 
-dec $fresh_names(nat) : name*
+dec $fresh_tids(nat) : tid*
 
 dec $free_type(typeIR) : bound
 dec $free_typeDef(typeDefIR) : bound
@@ -28,36 +28,36 @@ def $free_type(baseTypeIR) = `{ eps }
 
 ;;; Named types
 
-def $free_type(name) = `{ name }
+def $free_type(`@ tid) = `{ tid }
 
 def $free_type(polyTypeDefIR `< typeIR* >)
-  = $union_set<name>(bound_base, bound_args)
+  = $union_set<tid>(bound_base, bound_args)
   -- if bound_base = $free_typeDef(polyTypeDefIR)
-  -- if bound_args = $unions_set<name>($free_type(typeIR)*)
+  -- if bound_args = $unions_set<tid>($free_type(typeIR)*)
 
 ;;; Typedef types
 
-def $free_type(TYPEDEF name typeIR) = $free_type(typeIR)
+def $free_type(TYPEDEF _ typeIR) = $free_type(typeIR)
 
-def $free_type(TYPE name typeIR) = $free_type(typeIR)
+def $free_type(TYPE _ typeIR) = $free_type(typeIR)
 
 ;;; Data types
 
 def $free_type(LIST `< typeIR >) = $free_type(typeIR)
 
 def $free_type(TUPLE `< typeIR* >)
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
 
 def $free_type(typeIR `[ _ ]) = $free_type(typeIR)
 
 def $free_type(HEADER _ `{ (typeIR, _)* })
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
 
 def $free_type(HEADER_UNION _ `{ (typeIR, _)* })
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
 
 def $free_type(STRUCT _ `{ (typeIR, _)* })
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
 
 def $free_type(ENUM _ `{ _ }) = `{ eps }
 
@@ -66,18 +66,18 @@ def $free_type(ENUM typeIR _ `{ _ }) = $free_type(typeIR)
 ;;; Object types
 
 def $free_type(EXTERN _ (`{ (_ `: funcTypeDefIR)* }))
-  = $unions_set<name>($free_funcTypeDef(funcTypeDefIR)*)
+  = $unions_set<tid>($free_funcTypeDef(funcTypeDefIR)*)
 
 def $free_type(PARSER `( paramTypeIR* ))
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
   -- if (_ _ typeIR _ = paramTypeIR)*
 
 def $free_type(CONTROL `( paramTypeIR* ))
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
   -- if (_ _ typeIR _ = paramTypeIR)*
 
 def $free_type(PACKAGE `< typeIR* >)
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
 
 def $free_type(TABLE _ `{ typeIR }) = $free_type(typeIR)
 
@@ -86,21 +86,21 @@ def $free_type(TABLE _ `{ typeIR }) = $free_type(typeIR)
 def $free_type(DEFAULT) = `{ eps }
 
 def $free_type(SEQ `< typeIR* >)
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
 
 def $free_type(SEQ `< typeIR* `, `... >)
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
 
 def $free_type(RECORD `{ (typeIR, _)* })
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
 
 def $free_type(RECORD `{ (typeIR, _)* `, `... })
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
 
 def $free_type(INVALID) = `{ eps }
 
 def $free_type(SET `< typeIR* >)
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
 
 def $free_type(PARSERSTATE) = `{ eps }
 
@@ -116,67 +116,67 @@ def $free_type(`_) = `{ eps }
 
 def $free_typeDef(typeIR) = $free_type(typeIR)
 
-def $free_typeDef(typeIR_base `< name* `, name_hidden* >)
-  = $diff_set<name>(bound_base, bound_tparams)
+def $free_typeDef(typeIR_base `< tid* `, tid_hidden* >)
+  = $diff_set<tid>(bound_base, bound_tparams)
   -- if bound_base = $free_typeDef(typeIR_base)
-  -- if bound_tparams = `{ name* ++ name_hidden* }
+  -- if bound_tparams = `{ tid* ++ tid_hidden* }
 
 ;;
 ;;;; Free type variables in function types
 ;;
 
 def $free_funcType(ACTION `( paramTypeIR*))
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
   -- if (_ _ typeIR _ = paramTypeIR)*
 
 def $free_funcType(
     EXTERN_FUNC `( paramTypeIR* ) -> typeIR_ret
   )
-  = $union_set<name>(bound_params, bound_ret)
+  = $union_set<tid>(bound_params, bound_ret)
   -- if (_ _ typeIR _ = paramTypeIR)*
   -- if bound_params
-      = $unions_set<name>($free_type(typeIR)*)
+      = $unions_set<tid>($free_type(typeIR)*)
   -- if bound_ret = $free_type(typeIR_ret)
 
 def $free_funcType(
     FUNC `( paramTypeIR* ) -> typeIR_ret
   )
-  = $union_set<name>(bound_params, bound_ret)
+  = $union_set<tid>(bound_params, bound_ret)
   -- if (_ _ typeIR _ = paramTypeIR)*
-  -- if bound_params = $unions_set<name>($free_type(typeIR)*)
+  -- if bound_params = $unions_set<tid>($free_type(typeIR)*)
   -- if bound_ret = $free_type(typeIR_ret)
 
 def $free_funcType(
     BUILTIN `( paramTypeIR* ) -> typeIR_ret
   )
-  = $union_set<name>(bound_params, bound_ret)
+  = $union_set<tid>(bound_params, bound_ret)
   -- if (_ _ typeIR _ = paramTypeIR)*
-  -- if bound_params = $unions_set<name>($free_type(typeIR)*)
+  -- if bound_params = $unions_set<tid>($free_type(typeIR)*)
   -- if bound_ret = $free_type(typeIR_ret)
 
 def $free_funcType(
     EXTERN_METHOD `( paramTypeIR* ) -> typeIR_ret
   )
-  = $union_set<name>(bound_params, bound_ret)
+  = $union_set<tid>(bound_params, bound_ret)
   -- if (_ _ typeIR _ = paramTypeIR)*
-  -- if bound_params = $unions_set<name>($free_type(typeIR)*)
+  -- if bound_params = $unions_set<tid>($free_type(typeIR)*)
   -- if bound_ret = $free_type(typeIR_ret)
 
 def $free_funcType(
     EXTERN_ABSTRACT_METHOD `( paramTypeIR* ) -> typeIR_ret
   )
-  = $union_set<name>(bound_params, bound_ret)
+  = $union_set<tid>(bound_params, bound_ret)
   -- if (_ _ typeIR _ = paramTypeIR)*
   -- if bound_params
-      = $unions_set<name>($free_type(typeIR)*)
+      = $unions_set<tid>($free_type(typeIR)*)
   -- if bound_ret = $free_type(typeIR_ret)
 
 def $free_funcType(PARSER_APPLY `( paramTypeIR* ))
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
   -- if (_ _ typeIR _ = paramTypeIR)*
 
 def $free_funcType(CONTROL_APPLY `( paramTypeIR* ))
-  = $unions_set<name>($free_type(typeIR)*)
+  = $unions_set<tid>($free_type(typeIR)*)
   -- if (_ _ typeIR _ = paramTypeIR)*
 
 def $free_funcType(
@@ -192,19 +192,18 @@ def $free_funcTypeDef(funcTypeIR)
   = $free_funcType(funcTypeIR)
 
 def $free_funcTypeDef(
-    funcTypeIR_base `< name* `, name_hidden* >
+    funcTypeIR_base `< tid* `, tid_hidden* >
   )
-  = $diff_set<name>(bound_base, bound_tparams)
+  = $diff_set<tid>(bound_base, bound_tparams)
   -- if bound_base = $free_funcTypeDef(funcTypeIR_base)
-  -- if bound_tparams = `{ name* ++ name_hidden* }
+  -- if bound_tparams = `{ tid* ++ tid_hidden* }
 
 ;;
 ;;;; Type substitutions
 ;;
 
-def $subst_type(theta, typeIdentifier) = typeIR
-  -- if typeIR
-      = $find_map<name, typeIR>(theta, typeIdentifier)
+def $subst_type(theta, `@ tid) = typeIR
+  -- if typeIR = $find_map<tid, typeIR>(theta, tid)
 
 def $subst_type(theta, polyTypeDefIR `< typeIR* >)
   = polyTypeDefIR_subst `< typeIR_subst* >
@@ -212,12 +211,12 @@ def $subst_type(theta, polyTypeDefIR `< typeIR* >)
       = $subst_typeDef(theta, polyTypeDefIR)
   -- if (typeIR_subst = $subst_type(theta, typeIR))*
 
-def $subst_type(theta, TYPEDEF name typeIR)
-  = TYPEDEF name typeIR_subst
+def $subst_type(theta, TYPEDEF tid typeIR)
+  = TYPEDEF tid typeIR_subst
   -- if typeIR_subst = $subst_type(theta, typeIR)
 
-def $subst_type(theta, TYPE name typeIR)
-  = TYPE name typeIR_subst
+def $subst_type(theta, TYPE tid typeIR)
+  = TYPE tid typeIR_subst
   -- if typeIR_subst = $subst_type(theta, typeIR)
 
 def $subst_type(theta, LIST `< typeIR >)
@@ -234,60 +233,60 @@ def $subst_type(theta, typeIR `[ n ])
 
 def $subst_type(
     theta,
-    HEADER name `{ (typeIR_f, name_f)* }
+    HEADER tid `{ (typeIR_f, id_f)* }
   )
-  = HEADER name `{ (typeIR_f_subst, name_f)* }
+  = HEADER tid `{ (typeIR_f_subst, id_f)* }
   -- if (typeIR_f_subst = $subst_type(theta, typeIR_f))*
 
 def $subst_type(
     theta,
-    HEADER_UNION name `{ (typeIR_f, name_f)* }
+    HEADER_UNION tid `{ (typeIR_f, id_f)* }
   )
-  = HEADER_UNION name `{ (typeIR_f_subst, name_f)* }
+  = HEADER_UNION tid `{ (typeIR_f_subst, id_f)* }
   -- if (typeIR_f_subst = $subst_type(theta, typeIR_f))*
 
 def $subst_type(
     theta,
-    STRUCT name `{ (typeIR_f, name_f)* }
+    STRUCT tid `{ (typeIR_f, id_f)* }
   )
-  = STRUCT name `{ (typeIR_f_subst, name_f)* }
+  = STRUCT tid `{ (typeIR_f_subst, id_f)* }
   -- if (typeIR_f_subst = $subst_type(theta, typeIR_f))*
 
 def $subst_type(
     theta,
-    ENUM typeIR name `{ (name_f, val_f)* }
+    ENUM typeIR tid `{ (id_f, val_f)* }
   )
-  = ENUM typeIR_subst name `{ (name_f, val_f)* }
+  = ENUM typeIR_subst tid `{ (id_f, val_f)* }
   -- if typeIR_subst = $subst_type(theta, typeIR)
 
 def $subst_type(
     theta,
-    EXTERN name (`{ (funcName `: funcTypeDefIR)* })
+    EXTERN tid (`{ (fid `: funcTypeDefIR)* })
   )
-  = EXTERN name (`{ (funcName `: funcTypeDefIR_subst)* })
+  = EXTERN tid (`{ (fid `: funcTypeDefIR_subst)* })
   -- if (funcTypeDefIR_subst
         = $subst_funcTypeDef(theta, funcTypeDefIR))*
 
 def $subst_type(theta, PARSER `( paramTypeIR* ))
   = PARSER `( paramTypeIR_subst* )
-  -- if (name direction typeIR val? = paramTypeIR)*
+  -- if (id direction typeIR val? = paramTypeIR)*
   -- if (typeIR_subst = $subst_type(theta, typeIR))*
   -- if (paramTypeIR_subst
-        = name direction typeIR_subst val?)*
+        = id direction typeIR_subst val?)*
 
 def $subst_type(theta, CONTROL `( paramTypeIR* ))
   = PARSER `( paramTypeIR_subst* )
-  -- if (name direction typeIR val? = paramTypeIR)*
+  -- if (id direction typeIR val? = paramTypeIR)*
   -- if (typeIR_subst = $subst_type(theta, typeIR))*
   -- if (paramTypeIR_subst
-        = name direction typeIR_subst val?)*
+        = id direction typeIR_subst val?)*
 
 def $subst_type(theta, PACKAGE `< typeIR* >)
   = PACKAGE `< typeIR_subst* >
   -- if (typeIR_subst = $subst_type(theta, typeIR))*
 
-def $subst_type(theta, TABLE name `{ typeIR })
-  = TABLE name `{ typeIR_subst }
+def $subst_type(theta, TABLE tid `{ typeIR })
+  = TABLE tid `{ typeIR_subst }
   -- if typeIR_subst = $subst_type(theta, typeIR)
 
 def $subst_type(theta, SEQ `< typeIR* >)
@@ -300,16 +299,16 @@ def $subst_type(theta, SEQ `< typeIR* `, `... >)
 
 def $subst_type(
     theta,
-    RECORD `{ (typeIR_f, name_f)* }
+    RECORD `{ (typeIR_f, id_f)* }
   )
-  = RECORD `{ (typeIR_f_subst, name_f)* }
+  = RECORD `{ (typeIR_f_subst, id_f)* }
   -- if (typeIR_f_subst = $subst_type(theta, typeIR_f))*
 
 def $subst_type(
     theta,
-    RECORD `{ (typeIR_f, name_f)* `, `... }
+    RECORD `{ (typeIR_f, id_f)* `, `... }
   )
-  = RECORD `{ (typeIR_f_subst, name_f)* `, `... }
+  = RECORD `{ (typeIR_f_subst, id_f)* `, `... }
   -- if (typeIR_f_subst = $subst_type(theta, typeIR_f))*
 
 def $subst_type(theta, SET `< typeIR* >)
@@ -325,21 +324,21 @@ def $subst_type(theta, typeIR) = typeIR
 
 def $subst_typeDef(theta, typeIR) = $subst_type(theta, typeIR)
 
-def $subst_typeDef(theta, typeIR_base `< name* `, name_hidden* >)
-  = typeIR_base_subst `< name_fresh* `, name_fresh_hidden* >
-  -- if `{ name_free* } = $diff_set<name>(
+def $subst_typeDef(theta, typeIR_base `< tid* `, tid_hidden* >)
+  = typeIR_base_subst `< tid_fresh* `, tid_fresh_hidden* >
+  -- if `{ tid_free* } = $diff_set<tid>(
                             $free_type(typeIR_base),
-                            `{ name* ++ name_hidden* })
-  -- if (typeIR_free = $find_map<name, typeIR>(theta, name_free))*
-  -- if bound_capture = $unions_set<name>($free_type(typeIR_free)*)
-  -- if name_fresh* = $fresh_names(|name* ++ name_hidden*|)
-  -- if (~$in_set<name>(name_fresh, bound_capture))*
-  -- if name_fresh_spec* = name_fresh*[0 : |name*|]
-  -- if name_fresh_hidden* = name_fresh*[|name*| : |name_hidden*|]
-  -- if theta' = $adds_map<name, typeIR>(
-                    theta, name*, name_fresh_spec*)
-  -- if theta'' = $adds_map<name, typeIR>(
-                    theta', name_hidden*, name_fresh_hidden*)
+                            `{ tid* ++ tid_hidden* })
+  -- if (typeIR_free = $find_map<tid, typeIR>(theta, tid_free))*
+  -- if bound_capture = $unions_set<tid>($free_type(typeIR_free)*)
+  -- if tid_fresh* = $fresh_tids(|tid* ++ tid_hidden*|)
+  -- if (~$in_set<tid>(tid_fresh, bound_capture))*
+  -- if tid_fresh_spec* = tid_fresh*[0 : |tid*|]
+  -- if tid_fresh_hidden* = tid_fresh*[|tid*| : |tid_hidden*|]
+  -- if theta' = $adds_map<tid, typeIR>(
+                    theta, tid*, (`@ tid_fresh_spec)*)
+  -- if theta'' = $adds_map<tid, typeIR>(
+                    theta', tid_hidden*, (`@ tid_fresh_hidden)*)
   -- if typeIR_base_subst = $subst_type(theta'', typeIR_base)
 
 ;;
@@ -348,20 +347,20 @@ def $subst_typeDef(theta, typeIR_base `< name* `, name_hidden* >)
 
 def $subst_funcType(theta, ACTION `( paramTypeIR* ))
   = ACTION `( paramTypeIR_subst* )
-  -- if (name direction typeIR val? = paramTypeIR)*
+  -- if (id direction typeIR val? = paramTypeIR)*
   -- if (typeIR_subst = $subst_type(theta, typeIR))*
   -- if (paramTypeIR_subst
-      = name direction typeIR_subst val?)*
+      = id direction typeIR_subst val?)*
 
 def $subst_funcType(
     theta,
     EXTERN_FUNC `( paramTypeIR* ) -> typeIR_ret
   )
   = EXTERN_FUNC `( paramTypeIR_subst* ) -> typeIR_ret_subst
-  -- if (name direction typeIR val? = paramTypeIR)*
+  -- if (id direction typeIR val? = paramTypeIR)*
   -- if (typeIR_subst = $subst_type(theta, typeIR))*
   -- if (paramTypeIR_subst
-        = name direction typeIR_subst val?)*
+        = id direction typeIR_subst val?)*
   -- if typeIR_ret_subst = $subst_type(theta, typeIR_ret)
 
 def $subst_funcType(
@@ -369,10 +368,10 @@ def $subst_funcType(
     FUNC `( paramTypeIR* ) -> typeIR_ret
   )
   = FUNC `( paramTypeIR_subst* ) -> typeIR_ret_subst
-  -- if (name direction typeIR val? = paramTypeIR)*
+  -- if (id direction typeIR val? = paramTypeIR)*
   -- if (typeIR_subst = $subst_type(theta, typeIR))*
   -- if (paramTypeIR_subst
-        = name direction typeIR_subst val?)*
+        = id direction typeIR_subst val?)*
   -- if typeIR_ret_subst = $subst_type(theta, typeIR_ret)
 
 def $subst_funcType(
@@ -380,10 +379,10 @@ def $subst_funcType(
     BUILTIN `( paramTypeIR* ) -> typeIR_ret
   )
   = BUILTIN `( paramTypeIR_subst* ) -> typeIR_ret_subst
-  -- if (name direction typeIR val? = paramTypeIR)*
+  -- if (id direction typeIR val? = paramTypeIR)*
   -- if (typeIR_subst = $subst_type(theta, typeIR))*
   -- if (paramTypeIR_subst
-        = name direction typeIR_subst val?)*
+        = id direction typeIR_subst val?)*
   -- if typeIR_ret_subst = $subst_type(theta, typeIR_ret)
 
 def $subst_funcType(
@@ -391,10 +390,10 @@ def $subst_funcType(
     EXTERN_METHOD `( paramTypeIR* ) -> typeIR_ret
   )
   = EXTERN_METHOD `( paramTypeIR_subst* ) -> typeIR_ret_subst
-  -- if (name direction typeIR val? = paramTypeIR)*
+  -- if (id direction typeIR val? = paramTypeIR)*
   -- if (typeIR_subst = $subst_type(theta, typeIR))*
   -- if (paramTypeIR_subst
-        = name direction typeIR_subst val?)*
+        = id direction typeIR_subst val?)*
   -- if typeIR_ret_subst = $subst_type(theta, typeIR_ret)
 
 def $subst_funcType(
@@ -402,25 +401,25 @@ def $subst_funcType(
     EXTERN_ABSTRACT_METHOD `( paramTypeIR* ) -> typeIR_ret
   )
   = EXTERN_ABSTRACT_METHOD `( paramTypeIR_subst* ) -> typeIR_ret_subst
-  -- if (name direction typeIR val? = paramTypeIR)*
+  -- if (id direction typeIR val? = paramTypeIR)*
   -- if (typeIR_subst = $subst_type(theta, typeIR))*
   -- if (paramTypeIR_subst
-        = name direction typeIR_subst val?)*
+        = id direction typeIR_subst val?)*
   -- if typeIR_ret_subst = $subst_type(theta, typeIR_ret)
 
 def $subst_funcType(theta, PARSER_APPLY `( paramTypeIR* ))
   = PARSER_APPLY `( paramTypeIR_subst* )
-  -- if (name direction typeIR val? = paramTypeIR)*
+  -- if (id direction typeIR val? = paramTypeIR)*
   -- if (typeIR_subst = $subst_type(theta, typeIR))*
   -- if (paramTypeIR_subst
-      = name direction typeIR_subst val?)*
+      = id direction typeIR_subst val?)*
 
 def $subst_funcType(theta, CONTROL_APPLY `( paramTypeIR* ))
   = CONTROL_APPLY `( paramTypeIR_subst* )
-  -- if (name direction typeIR val? = paramTypeIR)*
+  -- if (id direction typeIR val? = paramTypeIR)*
   -- if (typeIR_subst = $subst_type(theta, typeIR))*
   -- if (paramTypeIR_subst
-      = name direction typeIR_subst val?)*
+      = id direction typeIR_subst val?)*
 
 def $subst_funcType(theta, TABLE_APPLY -> typeIR_ret)
   = TABLE_APPLY -> typeIR_ret_subst
@@ -432,21 +431,21 @@ def $subst_funcType(theta, TABLE_APPLY -> typeIR_ret)
 
 def $subst_funcTypeDef(theta, funcTypeIR) = $subst_funcType(theta, funcTypeIR)
 
-def $subst_funcTypeDef(theta, funcTypeIR `< name* `, name_hidden* >)
-  = funcTypeIR_subst `< name_fresh* `, name_fresh_hidden* >
-  -- if `{ name_free* } = $diff_set<name>(
+def $subst_funcTypeDef(theta, funcTypeIR `< tid* `, tid_hidden* >)
+  = funcTypeIR_subst `< tid_fresh* `, tid_fresh_hidden* >
+  -- if `{ tid_free* } = $diff_set<tid>(
                             $free_funcType(funcTypeIR),
-                            `{ name* ++ name_hidden* })
-  -- if (typeIR_free = $find_map<name, typeIR>(theta, name_free))*
-  -- if bound_capture = $unions_set<name>($free_type(typeIR_free)*)
-  -- if name_fresh* = $fresh_names(|name* ++ name_hidden*|)
-  -- if (~$in_set<name>(name_fresh, bound_capture))*
-  -- if name_fresh_spec* = name_fresh*[0 : |name*|]
-  -- if name_fresh_hidden* = name_fresh*[|name*| : |name_hidden*|]
-  -- if theta' = $adds_map<name, typeIR>(
-                    theta, name*, name_fresh_spec*)
-  -- if theta'' = $adds_map<name, typeIR>(
-                    theta', name_hidden*, name_fresh_hidden*)
+                            `{ tid* ++ tid_hidden* })
+  -- if (typeIR_free = $find_map<tid, typeIR>(theta, tid_free))*
+  -- if bound_capture = $unions_set<tid>($free_type(typeIR_free)*)
+  -- if tid_fresh* = $fresh_tids(|tid* ++ tid_hidden*|)
+  -- if (~$in_set<tid>(tid_fresh, bound_capture))*
+  -- if tid_fresh_spec* = tid_fresh*[0 : |tid*|]
+  -- if tid_fresh_hidden* = tid_fresh*[|tid*| : |tid_hidden*|]
+  -- if theta' = $adds_map<tid, typeIR>(
+                    theta, tid*, (`@ tid_fresh_spec)*)
+  -- if theta'' = $adds_map<tid, typeIR>(
+                    theta', tid_hidden*, (`@ tid_fresh_hidden)*)
   -- if funcTypeIR_subst = $subst_funcType(theta'', funcTypeIR)
 
 ;;
@@ -455,10 +454,10 @@ def $subst_funcTypeDef(theta, funcTypeIR `< name* `, name_hidden* >)
 
 def $subst_consType(theta, `( paramTypeIR* ) -> typeIR_obj)
   = `( paramTypeIR_subst* ) -> typeIR_obj_subst
-  -- if (name direction typeIR val? = paramTypeIR)*
+  -- if (id direction typeIR val? = paramTypeIR)*
   -- if (typeIR_subst = $subst_type(theta, typeIR))*
   -- if (paramTypeIR_subst
-      = name direction typeIR_subst val?)*
+      = id direction typeIR_subst val?)*
   -- if typeIR_obj_subst = $subst_type(theta, typeIR_obj)
 
 ;;
@@ -473,88 +472,88 @@ dec $specialize_typeDef(typeDefIR, typeIR*) : typeIR
 
 def $specialize_typeDef(typeIR, eps) = typeIR
 
-def $specialize_typeDef(typeIR_base `< name* `, name_hidden* >, typeIR_arg*)
+def $specialize_typeDef(typeIR_base `< tid* `, tid_hidden* >, typeIR_arg*)
   = $subst_type(theta, typeIR_base)
-  -- if name_tparam* = name* ++ name_hidden*
-  -- if theta = `{ (name_tparam `: typeIR_arg)* }
+  -- if tid_tparam* = tid* ++ tid_hidden*
+  -- if theta = `{ (tid_tparam `: typeIR_arg)* }
 
 ;;
 ;;;; Function type definition specializations
 ;;
 
-dec $specialize_funcTypeDef(funcTypeDefIR, typeIR*) : (funcTypeDefIR, name*)
+dec $specialize_funcTypeDef(funcTypeDefIR, typeIR*) : (funcTypeDefIR, tid*)
 
 def $specialize_funcTypeDef(funcTypeIR, eps) = (funcTypeIR, eps)
 
 def $specialize_funcTypeDef(
-    funcTypeIR `< name* `, name_hidden* >,
+    funcTypeIR `< tid* `, tid_hidden* >,
     typeIR_arg*
   )
   = ($subst_funcType(theta, funcTypeIR), eps)
-  -- if name_tparam* = name* ++ name_hidden*
-  -- if |name_tparam*| = |typeIR_arg*|
-  -- if theta = `{ (name_tparam `: typeIR_arg)* }
+  -- if tid_tparam* = tid* ++ tid_hidden*
+  -- if |tid_tparam*| = |typeIR_arg*|
+  -- if theta = `{ (tid_tparam `: typeIR_arg)* }
 
 def $specialize_funcTypeDef(
-    funcTypeIR `< name* `, name_hidden* >,
+    funcTypeIR `< tid* `, tid_hidden* >,
     typeIR_arg*
   )
-  = ($subst_funcType(theta, funcTypeIR), name_fresh*)
-  -- if name_tparam* = name* ++ name_hidden*
-  -- if $(|name_tparam*| > 0) /\ $(|typeIR_arg*| = 0)
-  -- if name_fresh* = $fresh_names(|name_tparam*|)
-  -- if theta = `{ (name_tparam `: name_fresh)* }
+  = ($subst_funcType(theta, funcTypeIR), tid_fresh*)
+  -- if tid_tparam* = tid* ++ tid_hidden*
+  -- if $(|tid_tparam*| > 0) /\ $(|typeIR_arg*| = 0)
+  -- if tid_fresh* = $fresh_tids(|tid_tparam*|)
+  -- if theta = `{ (tid_tparam `: (`@ tid_fresh))* }
 
 def $specialize_funcTypeDef(
-    funcTypeIR `< name* `, name_hidden* >,
+    funcTypeIR `< tid* `, tid_hidden* >,
     typeIR_arg*
   )
-  = ($subst_funcType(theta, funcTypeIR), name_fresh*)
-  -- if name_tparam* = name* ++ name_hidden*
-  -- if $(|name_hidden*| > 0)
-        /\ $(|name*| = |typeIR_arg*|)
+  = ($subst_funcType(theta, funcTypeIR), tid_fresh*)
+  -- if tid_tparam* = tid* ++ tid_hidden*
+  -- if $(|tid_hidden*| > 0)
+        /\ $(|tid*| = |typeIR_arg*|)
         /\ $(|typeIR_arg*| > 0)
-  -- if name_fresh* = $fresh_names(|name_hidden*|)
-  -- if typeIR_arg_new* = typeIR_arg* ++ name_fresh*
-  -- if theta = `{ (name_tparam `: typeIR_arg_new)* }
+  -- if tid_fresh* = $fresh_tids(|tid_hidden*|)
+  -- if typeIR_arg_new* = typeIR_arg* ++ (`@ tid_fresh)*
+  -- if theta = `{ (tid_tparam `: typeIR_arg_new)* }
 
 ;;
 ;;;; Constructor type definition specializations
 ;;
 
-dec $specialize_consTypeDef(consTypeDefIR, typeIR*) : (consTypeIR, name*)
+dec $specialize_consTypeDef(consTypeDefIR, typeIR*) : (consTypeIR, tid*)
 
 def $specialize_consTypeDef(
-    consTypeIR `< name* `, name_hidden* >,
+    consTypeIR `< tid* `, tid_hidden* >,
     typeIR_arg*
   )
   = ($subst_consType(theta, consTypeIR), eps)
-  -- if name_tparam* = name* ++ name_hidden*
-  -- if |name_tparam*| = |typeIR_arg*|
-  -- if theta = `{ (name_tparam `: typeIR_arg)* }
+  -- if tid_tparam* = tid* ++ tid_hidden*
+  -- if |tid_tparam*| = |typeIR_arg*|
+  -- if theta = `{ (tid_tparam `: typeIR_arg)* }
 
 def $specialize_consTypeDef(
-    consTypeIR `< name* `, name_hidden* >,
+    consTypeIR `< tid* `, tid_hidden* >,
     typeIR_arg*
   )
-  = ($subst_consType(theta, consTypeIR), name_fresh*)
-  -- if name_tparam* = name* ++ name_hidden*
-  -- if $(|name_tparam*| > 0) /\ $(|typeIR_arg*| = 0)
-  -- if name_fresh* = $fresh_names(|name_tparam*|)
-  -- if theta = `{ (name_tparam `: name_fresh)* }
+  = ($subst_consType(theta, consTypeIR), tid_fresh*)
+  -- if tid_tparam* = tid* ++ tid_hidden*
+  -- if $(|tid_tparam*| > 0) /\ $(|typeIR_arg*| = 0)
+  -- if tid_fresh* = $fresh_tids(|tid_tparam*|)
+  -- if theta = `{ (tid_tparam `: (`@ tid_fresh))* }
 
 def $specialize_consTypeDef(
-    consTypeIR `< name* `, name_hidden* >,
+    consTypeIR `< tid* `, tid_hidden* >,
     typeIR_arg*
   )
-  = ($subst_consType(theta, consTypeIR), name_fresh*)
-  -- if name_tparam* = name* ++ name_hidden*
-  -- if $(|name_hidden*| > 0)
-        /\ $(|name*| = |typeIR_arg*|)
+  = ($subst_consType(theta, consTypeIR), tid_fresh*)
+  -- if tid_tparam* = tid* ++ tid_hidden*
+  -- if $(|tid_hidden*| > 0)
+        /\ $(|tid*| = |typeIR_arg*|)
         /\ $(|typeIR_arg*| > 0)
-  -- if name_fresh* = $fresh_names(|name_hidden*|)
-  -- if typeIR_arg_new* = typeIR_arg* ++ name_fresh*
-  -- if theta = `{ (name_tparam `: typeIR_arg_new)* }
+  -- if tid_fresh* = $fresh_tids(|tid_hidden*|)
+  -- if typeIR_arg_new* = typeIR_arg* ++ (`@ tid_fresh)*
+  -- if theta = `{ (tid_tparam `: typeIR_arg_new)* }
 
 ;;
 ;; Canonicalization

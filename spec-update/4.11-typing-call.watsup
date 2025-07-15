@@ -3,23 +3,23 @@
 ;;
 
 rule Call_convention_ok_/in:
-  p C actctxt |- (name IN typeIR_param val?) `@ (expressionIR, typeIR_arg)
+  p C actctxt |- (id IN typeIR_param val?) `@ (expressionIR, typeIR_arg)
                : expressionIR_cast
   -- if expressionIR_cast = $coerce_unary(expressionIR, typeIR_param)
 
 rule Call_convention_ok_/out-inout:
-  p C actctxt |- (name direction typeIR_param val?) `@ (expressionIR, typeIR_arg)
+  p C actctxt |- (id direction typeIR_param val?) `@ (expressionIR, typeIR_arg)
                : expressionIR
   -- if direction = OUT \/ direction = INOUT
   -- Type_alpha: typeIR_param ~~ typeIR_arg
 
 rule Call_convention_ok_/none-action:
-  p C ACT |- (name NONE typeIR_param val?) `@ (expressionIR, typeIR_arg)
+  p C ACT |- (id NONE typeIR_param val?) `@ (expressionIR, typeIR_arg)
            : expressionIR_cast
   -- if expressionIR_cast = $coerce_unary(expressionIR, typeIR_param)
 
 rule Call_convention_ok_/none-not-action:
-  p C NOACT |- (name NONE typeIR_param val?) `@ (expressionIR, typeIR_arg)
+  p C NOACT |- (id NONE typeIR_param val?) `@ (expressionIR, typeIR_arg)
             : expressionIR
   -- if _ `(_ `; ctk) = expressionIR
   -- if ctk = LCTK \/ ctk = CTK

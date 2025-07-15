@@ -8,13 +8,14 @@
 
 rule Decl_ok/constantDeclaration:
   p C |- optAnnotations CONST typeRef name (`= expression) `;
-       : C' (eps CONST typeIR name (`= val_init) `;)
+       : C' (CONST typeIR name (`= val_init) `;)
   -- Type_ok: p C |- typeRef : typeIR eps
   -- Expr_ok: p C |- expression : expressionIR
   -- if _ `( _ `; LCTK) = expressionIR
   -- if expressionIR_cast = $coerce_unary(expressionIR, typeIR)
   -- Eval_static: p C |- expressionIR_cast ~> val_init
-  -- if C' = $add_var(p, C, name, typeIR NONE val_init LCTK)
+  -- if id = $id(name)
+  -- if C' = $add_var(p, C, id, typeIR NONE val_init LCTK)
 
 ;;; | errorDeclaration
 ;;; syntax errorDeclaration = ERROR `{ identifierList }
@@ -51,10 +52,10 @@ rule Decl_ok/actionDeclaration:
   ---- ;; check body
   -- Block_ok: C_1 CONT INIT |- blockStatement : _ _ blockStatementIR
   ---- ;; create action
-  -- if funcName = $funcName(name, parameterList)
+  -- if fid = $fid(name, parameterList)
   -- if funcTypeIR = ACTION `( paramTypeIR* )
   -- FuncTypeDef_wf: $bound(GLOBAL, C_0) |- funcTypeIR
-  -- if C_2 = $add_func(p, C_0, funcName, funcTypeIR)
+  -- if C_2 = $add_func(p, C_0, fid, funcTypeIR)
   ---- ;; assemble IR
   -- if actionDeclarationIR
       = ACTION name `( parameterListIR ) blockStatementIR
@@ -96,14 +97,14 @@ rule Decl_ok/controlDeclaration:
   ---- ;; check control apply method
   -- ControlBody_ok: C_3 |- controlBody : C_4 f controlBodyIR
   ---- ;; create control object constructor
-  -- if consName = $consName(name, optConstructorParameters)
+  -- if cid = $cid(name, optConstructorParameters)
   -- if typeIR_control = CONTROL `( paramTypeIR* )
   -- if polyTypeDefIR_control = typeIR_control `< eps `, eps >
   -- if typeIR_spec = polyTypeDefIR_control `< eps >
   -- if consTypeIR = `( consParamTypeIR* ) -> typeIR_spec
   -- if consTypeDefIR = consTypeIR `< eps `, eps >
   -- ConsTypeDef_wf: $bound(GLOBAL, C_0) |- consTypeDefIR
-  -- if C_5 = $add_cons(C_0, consName, consTypeDefIR)
+  -- if C_5 = $add_cons(C_0, cid, consTypeDefIR)
   ---- ;; assemble IR
   -- if controlTypeDeclarationIR = CONTROL name eps `( parameterListIR )
   -- if controlDeclarationIR
@@ -126,15 +127,44 @@ rule Decl_ok/controlDeclaration:
 rule Decl_ok/controlTypeDeclaration:
   GLOBAL C_0 |- (optAnnotations CONTROL name eps `( parameterList )) `; 
               : C_1 (controlTypeDeclarationIR `;)
-  -- Params_ok: LOCAL C_0 |- parameterList : parameterListIR name_fresh*
+  -- Params_ok: LOCAL C_0 |- parameterList : parameterListIR tid_fresh*
   -- if paramTypeIR* = $paramtypes(parameterListIR)
   -- if typeIR = CONTROL `( paramTypeIR* )
-  -- if typeDefIR = typeIR `< eps `, name_fresh* >
+  -- if typeDefIR = typeIR `< eps `, tid_fresh* >
   -- TypeDef_wf: $bound(GLOBAL, C_0) |- typeDefIR
-  -- if C_1 = $add_type(GLOBAL, C_0, name, typeDefIR)
+  -- if tid = $tid(name)
+  -- if C_1 = $add_type(GLOBAL, C_0, tid, typeDefIR)
   -- if controlTypeDeclarationIR = CONTROL name eps `( parameterListIR )
 
 ;;;; | packageTypeDeclaration `;
+;;;;; syntax packageTypeDeclaration =
+;;;;;   optAnnotations PACKAGE name optTypeParameters `( parameterList )
+
+rule Decl_ok/packageTypeDeclaration-epsilon:
+  GLOBAL C_0 |- (optAnnotations PACKAGE name eps `( parameterList )) `; 
+              : C_3 (packageTypeDeclarationIR `;)
+  ---- ;; check type parameters
+  -- ConsParams_ok: C_0 |- `( parameterList )
+                         : `( parameterListIR ) tid_fresh*
+  -- if consParamTypeIR*
+      = $consParamtypes(`( parameterListIR ))
+  -- if C_1 = $add_consParams(C_0, consParamTypeIR*)
+  ---- ;; create package type
+  -- if tid = $tid(name)
+  -- if (_ _ typeIR_arg _ = consParamTypeIR)*
+  -- if typeIR_package = PACKAGE `< typeIR_arg* >
+  -- if polyTypeDefIR_package = typeIR_package `< eps `, tid_fresh* >
+  -- TypeDef_wf: $bound(GLOBAL, C_0) |- polyTypeDefIR_package
+  -- if C_2 = $add_type(GLOBAL, C_0, tid, polyTypeDefIR_package)
+  ---- ;; create package object constructor
+  -- if cid = $cid(name, `( parameterList ))
+  -- if typeIR_spec = polyTypeDefIR_package `< (`@ tid_fresh)* >
+  -- if consTypeIR = `( consParamTypeIR* ) -> typeIR_spec
+  -- if consTypeDefIR = consTypeIR `< eps `, tid_fresh* >
+  -- ConsTypeDef_wf: $bound(GLOBAL, C_0) |- consTypeDefIR
+  -- if C_3 = $add_cons(C_2, cid, consTypeDefIR)
+  ---- ;; assemble IR
+  -- if packageTypeDeclarationIR = PACKAGE name eps `( parameterListIR )
 
 ;;
 ;; declaration*
@@ -176,7 +206,8 @@ rule ControlLocalDecl_ok/tableDeclaration:
        : C_2 (TABLE name `{ tablePropertyListIR })
   -- Table_ok: C_0 $empty_tblctx |- tablePropertyList : tblctx' tablePropertyListIR
   -- TableType_ok: C_0 tblctx' |- name : C_1 typeIR_table
-  -- if C_2 = $add_var(BLOCK, C_1, name, typeIR_table NONE eps DYN)
+  -- if id = $id(name)
+  -- if C_2 = $add_var(BLOCK, C_1, id, typeIR_table NONE eps DYN)
 
 ;;; | instantiation
 

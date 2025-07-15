@@ -220,13 +220,13 @@ syntax initializerIR = `= val
 syntax optInitializerIR = initializerIR?
 
 syntax variableDeclarationWithoutSemicolonIR =
-  optAnnotationsIR typeIR name optInitializerIR
+  typeIR name optInitializerIR
 
 syntax variableDeclarationIR =
   variableDeclarationWithoutSemicolonIR `;
 
 syntax constantDeclarationIR =
-  optAnnotationsIR CONST typeIR name initializerIR `;
+  CONST typeIR name initializerIR `;
 
 ;;
 ;;;; Assignment and method call statements
@@ -341,9 +341,9 @@ syntax forCollectionExprIR =
   | expressionIR `.. expressionIR
 
 syntax forStatementIR =
-  | optAnnotationsIR FOR `( forInitStatementsIR `; expressionIR `; forUpdateStatementsIR ) statementIR
-  | optAnnotationsIR FOR `( typeIR name IN forCollectionExprIR ) statementIR
-  | optAnnotationsIR FOR `( annotationsIR typeIR name IN forCollectionExprIR ) statementIR
+  | FOR `( forInitStatementsIR `; expressionIR `; forUpdateStatementsIR ) statementIR
+  | FOR `( typeIR name IN forCollectionExprIR ) statementIR
+  | FOR `( annotationsIR typeIR name IN forCollectionExprIR ) statementIR
 
 ;;
 ;;;; Statements
@@ -387,23 +387,23 @@ syntax functionPrototypeIR =
   typeIR name optTypeParameters `( parameterListIR )
 
 syntax methodPrototypeIR =
-  | optAnnotationsIR functionPrototypeIR `;
-  | optAnnotationsIR ABSTRACT functionPrototypeIR `;
-  | optAnnotationsIR typeIdentifier `( parameterListIR ) `;
+  | functionPrototypeIR `;
+  | ABSTRACT functionPrototypeIR `;
+  | typeIdentifier `( parameterListIR ) `;
 
 ;; (TODO) Add whitespace separator as hint?
 syntax methodPrototypesIR = methodPrototypeIR*
 
 syntax externDeclarationIR =
-  | optAnnotationsIR EXTERN nonTypeName optTypeParameters `{ methodPrototypesIR }
-  | optAnnotationsIR EXTERN functionPrototypeIR `;
+  | EXTERN nonTypeName optTypeParameters `{ methodPrototypesIR }
+  | EXTERN functionPrototypeIR `;
 
 ;;
 ;;;; Function declarations
 ;;
 
 syntax functionDeclarationIR =
-  optAnnotationsIR functionPrototypeIR blockStatementIR
+  functionPrototypeIR blockStatementIR
 
 ;;
 ;;;; Instantiations
@@ -412,8 +412,8 @@ syntax functionDeclarationIR =
 syntax objInitializerIR = `= `{ objDeclarationsIR }
 
 syntax instantiationIR =
-  | optAnnotationsIR typeIR `( argumentListIR ) name `;
-  | optAnnotationsIR typeIR `( argumentListIR ) name objInitializerIR `;
+  | typeIR `( argumentListIR ) name `;
+  | typeIR `( argumentListIR ) name objInitializerIR `;
 
 syntax objDeclarationIR =
   | functionDeclarationIR
@@ -438,7 +438,7 @@ syntax actionDeclarationIR =
 ;;
 
 syntax keyElementIR =
-  expressionIR `: name optAnnotationsIR `;
+  expressionIR `: name `;
 
 ;; (TODO) Add whitespace separator as hint?
 syntax keyElementListIR = keyElementIR*
@@ -465,8 +465,8 @@ syntax entryPriorityIR =
   | PRIORITY `= `( expressionIR ) `:
 
 syntax entryIR =
-  | optCONST entryPriorityIR keysetExpressionIR `: actionRefIR optAnnotationsIR`; 
-  | optCONST keysetExpressionIR `: actionListIR optAnnotationsIR `; 
+  | optCONST entryPriorityIR keysetExpressionIR `: actionRefIR `; 
+  | optCONST keysetExpressionIR `: actionListIR `; 
 
 syntax entriesListIR = entryIR*
 
@@ -514,7 +514,7 @@ syntax controlDeclarationIR =
 ;;
 
 syntax valueSetDeclarationIR =
-  | optAnnotationsIR VALUESET `< typeIR > `( expressionIR ) name `; 
+  VALUESET `< typeIR > `( expressionIR ) name `; 
 
 ;;
 ;;;; Select expressions
@@ -541,7 +541,7 @@ syntax transitionStatementIR = TRANSITION stateExpressionIR
 ;;;; Parser and parser type declarations
 ;;
 
-syntax parserBlockStatementIR = optAnnotationsIR `{ parserStatementsIR }
+syntax parserBlockStatementIR = `{ parserStatementsIR }
 
 syntax parserStatementIR =
   | assignmentOrMethodCallStatementIR
@@ -556,14 +556,14 @@ syntax parserStatementIR =
 syntax parserStatementsIR = parserStatementIR*
 
 syntax parserStateIR =
-  optAnnotationsIR STATE name `{ parserStatementsIR transitionStatementIR }
+  STATE name `{ parserStatementsIR transitionStatementIR }
 
 ;; (TODO) Add whitespace separator as hint?
 ;; (TODO) nonempty sequence with + iterator
 syntax parserStatesIR = parserStateIR*
 
 syntax parserTypeDeclarationIR =
-  optAnnotationsIR PARSER name optTypeParameters `( parameterListIR )
+  PARSER name optTypeParameters `( parameterListIR )
 
 syntax parserLocalElementIR =
   | constantDeclarationIR
@@ -582,7 +582,7 @@ syntax parserDeclarationIR =
 ;;
 
 syntax packageTypeDeclarationIR =
-  optAnnotationsIR PACKAGE name optTypeParameters `( parameterListIR )
+  PACKAGE name optTypeParameters `( parameterListIR )
 
 ;;
 ;;;; Enum type declaration
@@ -594,26 +594,26 @@ syntax specifiedIdentifierIR = name initializerIR
 syntax specifiedIdentifierListIR = specifiedIdentifierIR*
 
 syntax enumDeclarationIR =
-  | optAnnotationsIR ENUM name `{ identifierList optTrailingComma }
-  | optAnnotationsIR ENUM typeIR name `{ specifiedIdentifierListIR optTrailingComma }
+  | ENUM name `{ identifierList optTrailingComma }
+  | ENUM typeIR name `{ specifiedIdentifierListIR optTrailingComma }
 
 ;;
 ;;;; Struct, header, and union type declarations
 ;;
 
-syntax structFieldIR = optAnnotationsIR typeIR name `;
+syntax structFieldIR = typeIR name `;
 
 ;; (TODO) Add whitespace separator as hint?
 syntax structFieldListIR = structFieldIR*
 
 syntax headerUnionDeclarationIR =
-  optAnnotationsIR HEADER_UNION name optTypeParameters `{ structFieldListIR }
+  HEADER_UNION name optTypeParameters `{ structFieldListIR }
 
 syntax structTypeDeclarationIR =
-  optAnnotationsIR STRUCT name optTypeParameters `{ structFieldListIR }
+  STRUCT name optTypeParameters `{ structFieldListIR }
 
 syntax headerTypeDeclarationIR =
-  optAnnotationsIR HEADER name optTypeParameters `{ structFieldListIR }
+  HEADER name optTypeParameters `{ structFieldListIR }
 
 ;;
 ;;;; Derived type declarations
@@ -630,9 +630,9 @@ syntax derivedTypeDeclarationIR =
 ;;
 
 syntax typedefDeclarationIR =
-  | optAnnotationsIR TYPEDEF typeIR name
-  | optAnnotationsIR TYPEDEF derivedTypeDeclarationIR name
-  | optAnnotationsIR TYPE typeIR name
+  | TYPEDEF typeIR name
+  | TYPEDEF derivedTypeDeclarationIR name
+  | TYPE typeIR name
 
 ;;
 ;;;; Type declarations

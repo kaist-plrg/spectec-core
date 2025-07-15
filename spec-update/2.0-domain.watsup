@@ -2,6 +2,21 @@
 ;; Variable names
 ;;
 
+syntax id = text
+
+dec $id(name) : id
+
+def $id(`$ id) = id
+def $id(`@ id) = id
+def $id(APPLY) = "apply"
+def $id(KEY) = "key"
+def $id(ACTIONS) = "actions"
+def $id(STATE) = "state"
+def $id(ENTRIES) = "entries"
+def $id(TYPE) = "type"
+def $id(PRIORITY) = "priority"
+def $id(LIST) = "list"
+
 dec $ext_name_prefix(text, name) : name
 
 def $ext_name_prefix(t, `$ t_identifier)
@@ -48,12 +63,43 @@ def $ext_name(name, `@ t_identifier)
   = $ext_name_suffix(name, t_identifier)
 
 ;;
+;; Type variable names
+;;
+
+syntax tid = id
+
+dec $tid(name) : tid
+
+def $tid(`$ tid) = tid
+def $tid(`@ tid) = tid
+def $tid(APPLY) = "apply"
+def $tid(KEY) = "key"
+def $tid(ACTIONS) = "actions"
+def $tid(STATE) = "state"
+def $tid(ENTRIES) = "entries"
+def $tid(TYPE) = "type"
+def $tid(PRIORITY) = "priority"
+def $tid(LIST) = "list"
+
+;;
 ;; Function names
 ;;
 ;; A pair of function name and a list of parameter names,
 ;; with a boolean flag indicating whether the parameter has
 ;; a default value
 ;;
+
+syntax pid = bool id
+syntax fid = id `( pid* )
+
+dec $fid(name, parameterList) : fid
+dec $pid(parameter) : pid
+
+def $fid(name, parameter*)
+  = $id(name) `( $pid(parameter)* )
+
+def $pid(_ _ _ name) = false $id(name)
+def $pid(_ _ _ name _) = true $id(name)
 
 syntax funcName = name (name, bool)*
 
@@ -69,6 +115,14 @@ def $funcName'(_ _ _ name _) = (name, true)
 ;;
 ;; Constructor names
 ;;
+
+syntax cid = fid
+
+dec $cid(name, optConstructorParameters) : cid
+
+def $cid(name, eps) = $id(name) `( eps )
+def $cid(name, `( parameter* ))
+  = $id(name) `( $pid(parameter)* )
 
 syntax consName = funcName
 

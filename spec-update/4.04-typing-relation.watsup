@@ -16,11 +16,11 @@ relation Eval_static:
 ;;
 
 relation Type_ok:
-  cursor context |- typeOrVoid : typeIR name*
+  cursor context |- typeOrVoid : typeIR tid*
   hint(input %0 %1 %2)
 
 relation TypeArg_ok:
-  cursor context |- typeArg : typeIR name*
+  cursor context |- typeArg : typeIR tid*
   hint(input %0 %1 %2)
 
 ;;
@@ -91,11 +91,11 @@ relation ControlBody_ok:
 ;;
 
 relation Param_ok:
-  cursor context |- parameter : parameterIR name*
+  cursor context |- parameter : parameterIR id*
   hint(input %0 %1 %2)
 
 relation Params_ok:
-  cursor context |- parameterList : parameterListIR name*
+  cursor context |- parameterList : parameterListIR id*
   hint(input %0 %1 %2)
 
 dec $paramtypes(parameterListIR) : paramTypeIR*
@@ -104,18 +104,17 @@ dec $paramtype(parameterIR) : paramTypeIR
 def $paramtypes(parameterIR*) = $paramtype(parameterIR)*
 
 def $paramtype(direction typeIR name)
-  = name direction typeIR eps
-def $paramtype(direction typeIR name initializerIR)
-  = name direction typeIR val
-  -- if `= val = initializerIR
+  = $id(name) direction typeIR eps
+def $paramtype(direction typeIR name (`= val))
+  = $id(name) direction typeIR val
 
 relation ConsParam_ok:
-  context |- parameter : parameterIR name*
+  context |- parameter : parameterIR id*
   hint(input %0 %1)
 
 relation ConsParams_ok:
   context |- optConstructorParameters
-           : optConstructorParametersIR name*
+           : optConstructorParametersIR id*
   hint(input %0 %1)
 
 dec $consParamtypes(optConstructorParametersIR) : consParamTypeIR*
@@ -218,12 +217,12 @@ relation Call_convention_ok:
 ;;
 
 relation FuncType_ok:
-  cursor context |- name typeArgIR* argumentIR* : funcTypeIR name* name*
+  cursor context |- name typeArgIR* argumentIR* : funcTypeIR tid* id*
   hint(input %0 %1 %2 %3 %4)
 
 relation Method_ok:
   cursor context |- lvalue `< typeArgIR* > `( argumentIR* )
-                  : lvalueIR `< `# name* > `( `# name* )
+                  : lvalueIR `< `# tid* > `( `# id* )
                     `@ funcTypeIR
   hint(input %0 %1 %2 %3 %4)
 
@@ -239,8 +238,8 @@ relation Call_site_ok:
   hint(input %0 %1 %2)
 
 relation Call_ok:
-  cursor context |- funcTypeIR `< typeArgIR* `# name* >
-                               `( argumentIR* `# name* )
+  cursor context |- funcTypeIR `< typeArgIR* `# tid* >
+                               `( argumentIR* `# id* )
                   : typeIR `< typeArgIR* > `( argumentIR* )
   hint(input %0 %1 %2 %3 %4 %5 %6)
 
@@ -251,7 +250,7 @@ relation Call_ok:
 ;;
 
 relation ConsType_ok:
-  cursor context |- name typeArgIR* argumentIR* : consTypeIR name* name*
+  cursor context |- name typeArgIR* argumentIR* : consTypeIR tid* id*
   hint(input %0 %1 %2 %3 %4)
 
 ;;
@@ -266,5 +265,5 @@ relation Inst_site_ok:
   hint(input %0 %1 %2)
 
 relation Inst_ok:
-  cursor context consTypeIR name* |- `< typeArgIR* > `( argumentIR `# name* ) : typeIR typeArgIR* argumentIR*
+  cursor context consTypeIR name* |- `< typeArgIR* > `( argumentIR `# id* ) : typeIR typeArgIR* argumentIR*
   hint(input %0 %1 %2 %3 %4 %5 %6)

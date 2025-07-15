@@ -2,9 +2,9 @@
 ;; Table context
 ;;
 
-syntax matchKey = (typeIR, name)
+syntax matchKey = (typeIR, id)
 
-syntax matchAction = (name, paramTypeIR*, argumentIR*)
+syntax matchAction = (id, paramTypeIR*, argumentIR*)
 
 syntax matchPriority =
   { VALUES int*,
@@ -67,12 +67,12 @@ def $empty_tblctx
 
 ;;; Adder for actions
 
-dec $add_action(tblctx, name, paramTypeIR*, argumentIR*)
+dec $add_action(tblctx, id, paramTypeIR*, argumentIR*)
   : tblctx
 
-def $add_action(tblctx, name, paramTypeIR*, argumentIR*)
+def $add_action(tblctx, id, paramTypeIR*, argumentIR*)
   = tblctx[ .ACTIONS = tblctx.ACTIONS ++ [ matchAction ] ]
-  -- if matchAction = (name, paramTypeIR*, argumentIR*)
+  -- if matchAction = (id, paramTypeIR*, argumentIR*)
 
 ;;
 ;; Finders
@@ -80,19 +80,18 @@ def $add_action(tblctx, name, paramTypeIR*, argumentIR*)
 
 ;;; Finder for actions
 
-dec $find_action(tblctx, name) : matchAction?
-dec $find_action'(matchAction*, name) : matchAction?
+dec $find_action(tblctx, id) : (paramTypeIR*, argumentIR*)?
+dec $find_action'(matchAction*, id) : (paramTypeIR*, argumentIR*)?
 
-def $find_action(tblctx, name)
-  = $find_action'(tblctx.ACTIONS, name)
+def $find_action(tblctx, id) = $find_action'(tblctx.ACTIONS, id)
 
-def $find_action'(eps, name) = eps
+def $find_action'(eps, id) = eps
 
-def $find_action'(matchAction_h :: matchAction_t*, name)
-  = matchAction_h
-  -- if (name, _, _) = matchAction_h
+def $find_action'(matchAction_h :: matchAction_t*, id)
+  = (paramTypeIR*, argumentIR*)
+  -- if (id, paramTypeIR*, argumentIR*) = matchAction_h
 
-def $find_action'(matchAction_h :: matchAction_t*, name)
-  = $find_action'(matchAction_t*, name)
-  -- if (name_h, _, _) = matchAction_h
-  -- if name_h =/= name
+def $find_action'(matchAction_h :: matchAction_t*, id)
+  = $find_action'(matchAction_t*, id)
+  -- if (id_h, _, _) = matchAction_h
+  -- if id_h =/= id 
