@@ -918,6 +918,10 @@ syntax setval =
    | `MaskSet%%`(val, val)
    | `RangeSet%%`(val, val)
 
+;; ../../../../spec/2b2-runtime-value.watsup:46.16-46.26
+syntax valIL = 
+   | `%%`(val, exprIL)
+
 ;; ../../../../spec/2b3-runtime-value-aux.watsup:3.1-3.24
 def $get_num(val)
 
@@ -949,11 +953,11 @@ def $get_num(val)
 
 1. Else Phantom#0
 
-;; ../../../../spec/2c1-runtime-type.watsup:18.3-18.21
+;; ../../../../spec/2c1-runtime-type.watsup:16.3-16.21
 syntax paramtyp = 
    | `%%%%`(id, dir, typ, exprIL?)
 
-;; ../../../../spec/2c1-runtime-type.watsup:31.1-35.38
+;; ../../../../spec/2c1-runtime-type.watsup:29.1-33.38
 syntax primtyp = 
    | `VoidT`()
    | `ErrT`()
@@ -961,14 +965,14 @@ syntax primtyp =
    | `StrT`()
    | `BoolT`()
 
-;; ../../../../spec/2c1-runtime-type.watsup:38.1-41.78
+;; ../../../../spec/2c1-runtime-type.watsup:36.1-39.78
 syntax numtyp = 
    | `IntT`()
    | `FIntT%`(width)
    | `FBitT%`(width)
    | `VBitT%`(width)
 
-;; ../../../../spec/2c1-runtime-type.watsup:44.1-44.21
+;; ../../../../spec/2c1-runtime-type.watsup:42.1-42.21
 syntax basetyp = 
    | `VoidT`()
    | `ErrT`()
@@ -980,16 +984,16 @@ syntax basetyp =
    | `FBitT%`(width)
    | `VBitT%`(width)
 
-;; ../../../../spec/2c1-runtime-type.watsup:51.1-52.98
+;; ../../../../spec/2c1-runtime-type.watsup:49.1-50.98
 syntax abstyp = 
    | `VarT%`(id)
    | `SpecT%%`(polytypdef, typ*)
 
-;; ../../../../spec/2c1-runtime-type.watsup:59.1-59.60
+;; ../../../../spec/2c1-runtime-type.watsup:57.1-57.60
 syntax aliastyp = 
    | `DefT%%`(id, typ)
 
-;; ../../../../spec/2c1-runtime-type.watsup:62.1-70.89
+;; ../../../../spec/2c1-runtime-type.watsup:60.1-68.89
 syntax datatyp = 
    | `NewT%%`(id, typ)
    | `EnumT%%`(id, member*)
@@ -1001,7 +1005,7 @@ syntax datatyp =
    | `HeaderT%%`(id, (member, typ)*)
    | `UnionT%%`(id, (member, typ)*)
 
-;; ../../../../spec/2c1-runtime-type.watsup:73.1-77.59
+;; ../../../../spec/2c1-runtime-type.watsup:71.1-75.59
 syntax objtyp = 
    | `ExternT%%`(id, map<fid, funcdef>)
    | `ParserT%%`(id, paramtyp*)
@@ -1009,7 +1013,7 @@ syntax objtyp =
    | `PackageT%%`(id, typ*)
    | `TableT%%`(id, typ)
 
-;; ../../../../spec/2c1-runtime-type.watsup:80.1-80.32
+;; ../../../../spec/2c1-runtime-type.watsup:78.1-78.32
 syntax deftyp = 
    | `DefT%%`(id, typ)
    | `NewT%%`(id, typ)
@@ -1027,7 +1031,7 @@ syntax deftyp =
    | `PackageT%%`(id, typ*)
    | `TableT%%`(id, typ)
 
-;; ../../../../spec/2c1-runtime-type.watsup:87.1-97.55
+;; ../../../../spec/2c1-runtime-type.watsup:85.1-95.55
 syntax synthtyp = 
    | `DefaultT`()
    | `SeqT%`(typ*)
@@ -1041,7 +1045,7 @@ syntax synthtyp =
    | `TableStructT%%`(id, (member, typ)*)
    | `AnyT`()
 
-;; ../../../../spec/2c1-runtime-type.watsup:100.1-100.41
+;; ../../../../spec/2c1-runtime-type.watsup:98.1-98.41
 syntax typ = 
    | `VoidT`()
    | `ErrT`()
@@ -1081,20 +1085,20 @@ syntax typ =
    | `TableStructT%%`(id, (member, typ)*)
    | `AnyT`()
 
-;; ../../../../spec/2c1-runtime-type.watsup:107.3-107.12
+;; ../../../../spec/2c1-runtime-type.watsup:105.3-105.12
 syntax monotypdef = 
    | `MonoD%`(typ)
 
-;; ../../../../spec/2c1-runtime-type.watsup:109.3-109.34
+;; ../../../../spec/2c1-runtime-type.watsup:107.3-107.34
 syntax polytypdef = 
    | `PolyD%->%`((tparam*, tparam*), typ)
 
-;; ../../../../spec/2c1-runtime-type.watsup:112.1-113.15
+;; ../../../../spec/2c1-runtime-type.watsup:110.1-111.15
 syntax typdef = 
    | `MonoD%`(typ)
    | `PolyD%->%`((tparam*, tparam*), typ)
 
-;; ../../../../spec/2c1-runtime-type.watsup:124.1-132.82
+;; ../../../../spec/2c1-runtime-type.watsup:122.1-130.82
 syntax functyp = 
    | `ActionT%`(paramtyp*)
    | `ExternFuncT%%`(paramtyp*, typ)
@@ -1106,24 +1110,24 @@ syntax functyp =
    | `ControlApplyMethodT%`(paramtyp*)
    | `TableApplyMethodT%`(typ)
 
-;; ../../../../spec/2c1-runtime-type.watsup:141.3-141.65
+;; ../../../../spec/2c1-runtime-type.watsup:139.3-139.65
 syntax monofuncdef = 
    | `MonoFD%`(functyp)
 
-;; ../../../../spec/2c1-runtime-type.watsup:144.3-144.69
+;; ../../../../spec/2c1-runtime-type.watsup:142.3-142.69
 syntax polyfuncdef = 
    | `PolyFD%->%`((tparam*, tparam*), functyp)
 
-;; ../../../../spec/2c1-runtime-type.watsup:147.1-148.16
+;; ../../../../spec/2c1-runtime-type.watsup:145.1-146.16
 syntax funcdef = 
    | `MonoFD%`(functyp)
    | `PolyFD%->%`((tparam*, tparam*), functyp)
 
-;; ../../../../spec/2c1-runtime-type.watsup:161.3-161.52
+;; ../../../../spec/2c1-runtime-type.watsup:159.3-159.52
 syntax constyp = 
    | `ConsT%%`(paramtyp*, typ)
 
-;; ../../../../spec/2c1-runtime-type.watsup:170.3-170.38
+;; ../../../../spec/2c1-runtime-type.watsup:168.3-168.38
 syntax consdef = 
    | `ConsD%->%`((tparam*, tparam*), constyp)
 
@@ -10459,19 +10463,19 @@ relation Eval_static: p, C, exprIL''
 
     1. (Let (ValueE val annotIL) be exprIL'')
 
-    2. Result in val, (ValueE val annotIL)
+    2. Result in (val (ValueE val annotIL))
 
   2. Case (% matches pattern `BoolE%%`)
 
     1. (Let (BoolE b annotIL) be exprIL'')
 
-    2. Result in (BoolV b), (BoolE b annotIL)
+    2. Result in ((BoolV b) (BoolE b annotIL))
 
   3. Case (% matches pattern `StrE%%`)
 
     1. (Let (StrE t annotIL) be exprIL'')
 
-    2. Result in (StrV t), (StrE t annotIL)
+    2. Result in ((StrV t) (StrE t annotIL))
 
   4. Case (% matches pattern `NumE%%`)
 
@@ -10483,7 +10487,7 @@ relation Eval_static: p, C, exprIL''
 
         1. (Let (INT i) be num)
 
-        2. Result in (IntV i), (NumE (INT i) annotIL)
+        2. Result in ((IntV i) (NumE (INT i) annotIL))
 
       2. Case (% matches pattern `FINT%%`)
 
@@ -10491,7 +10495,7 @@ relation Eval_static: p, C, exprIL''
 
         2. (Let bs be $to_bitstr((w as int), i))
 
-        3. Result in (FIntV w bs), (NumE (FINT w i) annotIL)
+        3. Result in ((FIntV w bs) (NumE (FINT w i) annotIL))
 
       3. Case (% matches pattern `FBIT%%`)
 
@@ -10499,7 +10503,7 @@ relation Eval_static: p, C, exprIL''
 
         2. (Let bs be $to_bitstr((w as int), i))
 
-        3. Result in (FBitV w bs), (NumE (FBIT w i) annotIL)
+        3. Result in ((FBitV w bs) (NumE (FBIT w i) annotIL))
 
   5. Case (% matches pattern `NameE%%`)
 
@@ -10511,7 +10515,7 @@ relation Eval_static: p, C, exprIL''
 
       1. (Let ?(val) be val'?)
 
-      2. Result in val, (NameE name annotIL)
+      2. Result in (val (NameE name annotIL))
 
     3. Else Phantom#572
 
@@ -10519,83 +10523,83 @@ relation Eval_static: p, C, exprIL''
 
     1. (Let (SeqE exprIL''* annotIL) be exprIL'')
 
-    2. (Eval_static: p C |- exprIL'' ~> val _exprIL)*
+    2. (Eval_static: p C |- exprIL'' ~> (val _exprIL))*
 
-    3. Result in (SeqV val*), (SeqE exprIL''* annotIL)
+    3. Result in ((SeqV val*) (SeqE exprIL''* annotIL))
 
   7. Case (% matches pattern `SeqDefaultE%%`)
 
     1. (Let (SeqDefaultE exprIL''* annotIL) be exprIL'')
 
-    2. (Eval_static: p C |- exprIL'' ~> val _exprIL)*
+    2. (Eval_static: p C |- exprIL'' ~> (val _exprIL))*
 
-    3. Result in (SeqDefaultV val*), (SeqDefaultE exprIL''* annotIL)
+    3. Result in ((SeqDefaultV val*) (SeqDefaultE exprIL''* annotIL))
 
   8. Case (% matches pattern `RecordE%%`)
 
     1. (Let (RecordE (member, exprIL'')* annotIL) be exprIL'')
 
-    2. (Eval_static: p C |- exprIL'' ~> val _exprIL)*
+    2. (Eval_static: p C |- exprIL'' ~> (val _exprIL))*
 
-    3. Result in (RecordV (member, val)*), (RecordE (member, exprIL'')* annotIL)
+    3. Result in ((RecordV (member, val)*) (RecordE (member, exprIL'')* annotIL))
 
   9. Case (% matches pattern `RecordDefaultE%%`)
 
     1. (Let (RecordDefaultE (member, exprIL'')* annotIL) be exprIL'')
 
-    2. (Eval_static: p C |- exprIL'' ~> val _exprIL)*
+    2. (Eval_static: p C |- exprIL'' ~> (val _exprIL))*
 
-    3. Result in (RecordDefaultV (member, val)*), (RecordDefaultE (member, exprIL'')* annotIL)
+    3. Result in ((RecordDefaultV (member, val)*) (RecordDefaultE (member, exprIL'')* annotIL))
 
   10. Case (% matches pattern `DefaultE%`)
 
     1. (Let (DefaultE annotIL) be exprIL'')
 
-    2. Result in (DefaultV), (DefaultE annotIL)
+    2. Result in ((DefaultV) (DefaultE annotIL))
 
   11. Case (% matches pattern `InvalidE%`)
 
     1. (Let (InvalidE annotIL) be exprIL'')
 
-    2. Result in (InvalidV), (InvalidE annotIL)
+    2. Result in ((InvalidV) (InvalidE annotIL))
 
   12. Case (% matches pattern `UnE%%%`)
 
     1. (Let (UnE unop exprIL'' annotIL) be exprIL'')
 
-    2. (Eval_static: p C |- exprIL'' ~> val _exprIL)
+    2. (Eval_static: p C |- exprIL'' ~> (val _exprIL))
 
-    3. Result in $un_op(unop, val), (UnE unop exprIL'' annotIL)
+    3. Result in ($un_op(unop, val) (UnE unop exprIL'' annotIL))
 
   13. Case (% matches pattern `BinE%%%%`)
 
     1. (Let (BinE binop exprIL_l exprIL_r annotIL) be exprIL'')
 
-    2. (Eval_static: p C |- exprIL_l ~> val_l _exprIL)
+    2. (Eval_static: p C |- exprIL_l ~> (val_l _exprIL))
 
-    3. (Eval_static: p C |- exprIL_r ~> val_r _exprIL')
+    3. (Eval_static: p C |- exprIL_r ~> (val_r _exprIL'))
 
-    4. Result in $bin_op(binop, val_l, val_r), (BinE binop exprIL_l exprIL_r annotIL)
+    4. Result in ($bin_op(binop, val_l, val_r) (BinE binop exprIL_l exprIL_r annotIL))
 
   14. Case (% matches pattern `TernE%%%%`)
 
     1. (Let (TernE exprIL_c exprIL_t exprIL_f annotIL) be exprIL'')
 
-    2. (Eval_static: p C |- exprIL_c ~> val' _exprIL)
+    2. (Eval_static: p C |- exprIL_c ~> (val' _exprIL))
 
     3. If ((val' = (BoolV true))), then
 
-      1. (Eval_static: p C |- exprIL_t ~> val _exprIL')
+      1. (Eval_static: p C |- exprIL_t ~> (val _exprIL'))
 
-      2. Result in val, (TernE exprIL_c exprIL_t exprIL_f annotIL)
+      2. Result in (val (TernE exprIL_c exprIL_t exprIL_f annotIL))
 
     3. Else Phantom#573
 
     4. If ((val' = (BoolV false))), then
 
-      1. (Eval_static: p C |- exprIL_f ~> val _exprIL')
+      1. (Eval_static: p C |- exprIL_f ~> (val _exprIL'))
 
-      2. Result in val, (TernE exprIL_c exprIL_t exprIL_f annotIL)
+      2. Result in (val (TernE exprIL_c exprIL_t exprIL_f annotIL))
 
     4. Else Phantom#574
 
@@ -10603,21 +10607,21 @@ relation Eval_static: p, C, exprIL''
 
     1. (Let (CastE typ exprIL'' annotIL) be exprIL'')
 
-    2. (Eval_static: p C |- exprIL'' ~> val _exprIL)
+    2. (Eval_static: p C |- exprIL'' ~> (val _exprIL))
 
-    3. Result in $cast_op(typ, val), (CastE typ exprIL'' annotIL)
+    3. Result in ($cast_op(typ, val) (CastE typ exprIL'' annotIL))
 
   16. Case (% matches pattern `BitAccE%%%%`)
 
     1. (Let (BitAccE exprIL_b exprIL_l exprIL_h annotIL) be exprIL'')
 
-    2. (Eval_static: p C |- exprIL_b ~> val_b _exprIL)
+    2. (Eval_static: p C |- exprIL_b ~> (val_b _exprIL))
 
-    3. (Eval_static: p C |- exprIL_l ~> val_l _exprIL')
+    3. (Eval_static: p C |- exprIL_l ~> (val_l _exprIL'))
 
-    4. (Eval_static: p C |- exprIL_h ~> val_h _exprIL'')
+    4. (Eval_static: p C |- exprIL_h ~> (val_h _exprIL''))
 
-    5. Result in $bitacc_op(val_b, val_h, val_l), (BitAccE exprIL_b exprIL_l exprIL_h annotIL)
+    5. Result in ($bitacc_op(val_b, val_h, val_l) (BitAccE exprIL_b exprIL_l exprIL_h annotIL))
 
   17. Case (% matches pattern `ErrAccE%%`)
 
@@ -10627,7 +10631,7 @@ relation Eval_static: p, C, exprIL''
 
     3. If ((?((ErrV member)) = $find_val(p, C, (TOP id)))), then
 
-      1. Result in (ErrV member), (ErrAccE member annotIL)
+      1. Result in ((ErrV member) (ErrAccE member annotIL))
 
     3. Else Phantom#575
 
@@ -10659,7 +10663,7 @@ relation Eval_static: p, C, exprIL''
 
               2. If (member is in member_t*), then
 
-                1. Result in (EnumFieldV id_t member), (TypeAccE name member annotIL)
+                1. Result in ((EnumFieldV id_t member) (TypeAccE name member annotIL))
 
               2. Else Phantom#576
 
@@ -10673,7 +10677,7 @@ relation Eval_static: p, C, exprIL''
 
                 1. (Let ?(val) be val'?)
 
-                2. Result in (SEnumFieldV id_t member val), (TypeAccE name member annotIL)
+                2. Result in ((SEnumFieldV id_t member val) (TypeAccE name member annotIL))
 
               3. Else Phantom#577
 
@@ -10691,13 +10695,13 @@ relation Eval_static: p, C, exprIL''
 
     2. If ((text = "size")), then
 
-      1. (Eval_static: p C |- exprIL_b ~> val' _exprIL)
+      1. (Eval_static: p C |- exprIL_b ~> (val' _exprIL))
 
       2. If ((val' matches pattern `StackV%%%`)), then
 
         1. (Let (StackV val* i_size i_idx) be val')
 
-        2. Result in (IntV i_size), (ExprAccE exprIL_b "size" annotIL)
+        2. Result in ((IntV i_size) (ExprAccE exprIL_b "size" annotIL))
 
       2. Else Phantom#582
 
@@ -10717,7 +10721,7 @@ relation Eval_static: p, C, exprIL''
 
           2. (Let val be $size(typ_b, member))
 
-          3. Result in val, (CallMethodE exprIL_b member [] [] annotIL)
+          3. Result in (val (CallMethodE exprIL_b member [] [] annotIL))
 
         1. Else Phantom#584
 
@@ -10745,7 +10749,7 @@ relation Eval_static: p, C, exprIL''
 
               1. (Let (MonoD typ) be (typdef as monotypdef))
 
-              2. Result in $size(typ, member), (CallTypeE name member [] [] annotIL)
+              2. Result in ($size(typ, member) (CallTypeE name member [] [] annotIL))
 
             2. Else Phantom#587
 
@@ -10798,7 +10802,7 @@ relation Type_ok: p, C, type''
 
     4. If ((ctk matches pattern `LCTK`)), then
 
-      1. (Eval_static: p C |- exprIL ~> val _exprIL)
+      1. (Eval_static: p C |- exprIL ~> (val _exprIL))
 
       2. (Let int be $get_num(val))
 
@@ -10826,7 +10830,7 @@ relation Type_ok: p, C, type''
 
     4. If ((ctk matches pattern `LCTK`)), then
 
-      1. (Eval_static: p C |- exprIL ~> val _exprIL)
+      1. (Eval_static: p C |- exprIL ~> (val _exprIL))
 
       2. (Let int be $get_num(val))
 
@@ -10850,7 +10854,7 @@ relation Type_ok: p, C, type''
 
     4. If ((ctk matches pattern `LCTK`)), then
 
-      1. (Eval_static: p C |- exprIL ~> val _exprIL)
+      1. (Eval_static: p C |- exprIL ~> (val _exprIL))
 
       2. (Let int be $get_num(val))
 
@@ -10876,7 +10880,7 @@ relation Type_ok: p, C, type''
 
     5. If ((ctk matches pattern `LCTK`)), then
 
-      1. (Eval_static: p C |- exprIL ~> val _exprIL)
+      1. (Eval_static: p C |- exprIL ~> (val _exprIL))
 
       2. (Let i_size be $get_num(val))
 
@@ -12381,7 +12385,7 @@ relation Expr_ok: p', C, expr''
 
               1. Case true
 
-                1. (Eval_static: p' C |- exprIL_r'' ~> val_r _exprIL)
+                1. (Eval_static: p' C |- exprIL_r'' ~> (val_r _exprIL))
 
                 2. (Let int be $get_num(val_r))
 
@@ -12437,7 +12441,7 @@ relation Expr_ok: p', C, expr''
 
             1. If ((ctk_r' matches pattern `LCTK`)), then
 
-              1. (Eval_static: p' C |- exprIL_r' ~> val_r' _exprIL)
+              1. (Eval_static: p' C |- exprIL_r' ~> (val_r' _exprIL))
 
               2. (Let int be $get_num(val_r'))
 
@@ -12767,7 +12771,7 @@ relation Expr_ok: p', C, expr''
 
                 1. (Let (TupleT typ_b'*) be datatyp)
 
-                2. (Eval_static: p' C |- exprIL_i' ~> val_i _exprIL)
+                2. (Eval_static: p' C |- exprIL_i' ~> (val_i _exprIL))
 
                 3. (Let int be $get_num(val_i))
 
@@ -12785,7 +12789,7 @@ relation Expr_ok: p', C, expr''
 
                 1. (Let (StackT typ_b' i_s) be datatyp)
 
-                2. (Eval_static: p' C |- exprIL_i' ~> val_i _exprIL)
+                2. (Eval_static: p' C |- exprIL_i' ~> (val_i _exprIL))
 
                 3. (Let i be $get_num(val_i))
 
@@ -12853,7 +12857,7 @@ relation Expr_ok: p', C, expr''
 
           1. (Let ?(exprIL_l') be exprIL'?)
 
-          2. (Eval_static: p' C |- exprIL_l' ~> val_l _exprIL)
+          2. (Eval_static: p' C |- exprIL_l' ~> (val_l _exprIL))
 
           3. (Let int be $get_num(val_l))
 
@@ -12875,7 +12879,7 @@ relation Expr_ok: p', C, expr''
 
                 1. (Let ?(exprIL_h') be exprIL''?)
 
-                2. (Eval_static: p' C |- exprIL_h' ~> val_h _exprIL')
+                2. (Eval_static: p' C |- exprIL_h' ~> (val_h _exprIL'))
 
                 3. (Let int' be $get_num(val_h))
 
@@ -13788,7 +13792,7 @@ relation Param_ok: p, C, (id dir type expr''?)
 
         1. If ((Sub_impl: typ_e << typ_p holds)), then
 
-          1. (Eval_static: p C |- exprIL_e ~> val exprIL)
+          1. (Eval_static: p C |- exprIL_e ~> (val exprIL))
 
           2. Result in (id dir typ_p ?(exprIL)), tid_fresh*
 
@@ -13833,7 +13837,7 @@ relation CParam_ok: p, C, (id dir type expr''?)
 
         1. If ((Sub_impl: typ_e << typ_p holds)), then
 
-          1. (Eval_static: p C |- exprIL_e ~> val exprIL)
+          1. (Eval_static: p C |- exprIL_e ~> (val exprIL))
 
           2. Result in (id dir typ_p ?(exprIL)), tid_fresh*
 
@@ -13882,7 +13886,7 @@ relation Decl_ok: p', C'''', decl''
 
             1. (Let ?(exprIL') be exprIL''?)
 
-            2. (Eval_static: p' C'''' |- exprIL' ~> val _exprIL)
+            2. (Eval_static: p' C'''' |- exprIL' ~> (val _exprIL))
 
             3. (Let C' be $add_styp(p', C'''', id, (typ_c (NO) (LCTK) ?(val))))
 
@@ -17550,7 +17554,7 @@ relation SEnum_field_ok: C, id_s, typ_s, (member_s, val_s)*, member, expr
 
     1. (Let ?(exprIL') be exprIL''?)
 
-    2. (Eval_static: (BLOCK) C |- exprIL' ~> val_e _exprIL)
+    2. (Eval_static: (BLOCK) C |- exprIL' ~> (val_e _exprIL))
 
     3. (Let val be (SEnumFieldV id_s member val_e))
 
@@ -18181,7 +18185,7 @@ relation Table_entry_keyset_ok: p, C, tblctx, (typ_k, text'), keyset
 
                   1. (Let (NOPRILPM n_w) be mode)
 
-                  2. (Eval_static: p C |- exprIL_m ~> val_m _exprIL)
+                  2. (Eval_static: p C |- exprIL_m ~> (val_m _exprIL))
 
                   3. (Let i_m be $get_num(val_m))
 
@@ -18645,7 +18649,7 @@ relation Table_entry_priority_ok: cursor, C, tblctx, tblstate, expr''?
 
               1. (Expr_ok: (LOCAL) C |- expr'' : exprIL)
 
-              2. (Eval_static: (LOCAL) C |- exprIL ~> val _exprIL)
+              2. (Eval_static: (LOCAL) C |- exprIL ~> (val _exprIL))
 
               3. (Let i be $get_num(val))
 
@@ -18665,7 +18669,7 @@ relation Table_entry_priority_ok: cursor, C, tblctx, tblstate, expr''?
 
                 1. (Expr_ok: (LOCAL) C |- expr'' : exprIL)
 
-                2. (Eval_static: (LOCAL) C |- exprIL ~> val _exprIL)
+                2. (Eval_static: (LOCAL) C |- exprIL ~> (val _exprIL))
 
                 3. (Let i be $get_num(val))
 
@@ -18794,7 +18798,7 @@ relation Table_custom_ok: p, C, tblctx, (b text' expr)
 
     3. If ((typ = ((BoolT) as typ))), then
 
-      1. (Eval_static: p C |- exprIL ~> val _exprIL)
+      1. (Eval_static: p C |- exprIL ~> (val _exprIL))
 
       2. If ((val matches pattern `BoolV%`)), then
 
@@ -18816,7 +18820,7 @@ relation Table_custom_ok: p, C, tblctx, (b text' expr)
 
     3. If ((($is_intt(typ) \/ $is_fintt(typ)) \/ $is_fbitt(typ))), then
 
-      1. (Eval_static: p C |- exprIL ~> val _exprIL)
+      1. (Eval_static: p C |- exprIL ~> (val _exprIL))
 
       2. (Let i_delta be $get_num(val))
 

@@ -12,8 +12,6 @@ syntax typ, polytypdef, funcdef
 ;; Forward declaration of mutually recursive syntax
 ;;
 
-syntax exprIL
-
 syntax paramtyp hint(show %latex("\\tau_\\texttt{param}")) =
   id dir typ exprIL?
 
