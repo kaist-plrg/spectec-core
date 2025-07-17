@@ -38,7 +38,7 @@ def $annot(InstE _ _ _ _ annotIL) = annotIL
 
 ;; Static evaluation of expressions that are local compile-time known
 relation Eval_static:
-  cursor context |- exprIL ~> val exprIL
+  cursor context |- exprIL ~> valIL
   hint(input %0 %1 %2)
 
 ;;
