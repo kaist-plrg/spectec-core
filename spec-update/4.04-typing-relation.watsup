@@ -222,8 +222,7 @@ relation FuncType_ok:
 
 relation Method_ok:
   cursor context |- lvalue `< typeArgIR* > `( argumentIR* )
-                  : lvalueIR `< `# tid* > `( `# id* )
-                    `@ funcTypeIR
+                  : lvalueIR `< `# tid* > `( `# id* ) `@ funcTypeIR
   hint(input %0 %1 %2 %3 %4)
 
 ;;
@@ -249,8 +248,9 @@ relation Call_ok:
 ;;;; and also identifies the ids of default arguments
 ;;
 
-relation ConsType_ok:
-  cursor context |- name typeArgIR* argumentIR* : consTypeIR tid* id*
+relation Cons_ok:
+  cursor context |- name `< typeArgIR* > `( argument* )
+                  : cid `< `# tid* > `( `# id* ) `@ consTypeIR
   hint(input %0 %1 %2 %3 %4)
 
 ;;
@@ -265,5 +265,7 @@ relation Inst_site_ok:
   hint(input %0 %1 %2)
 
 relation Inst_ok:
-  cursor context consTypeIR name* |- `< typeArgIR* > `( argumentIR `# id* ) : typeIR typeArgIR* argumentIR*
+  cursor context |- consTypeIR `< typeArgIR* `# tid* >
+                               `( argument* `# id* )
+                  : typeIR `< typeArgIR* > `( argumentIR* )
   hint(input %0 %1 %2 %3 %4 %5 %6)

@@ -175,9 +175,7 @@ let print_state env =
   let debug_level = get_debug_level () in
 
   if Debug_config.debug_enabled debug_level Basic then
-    Printf.printf
-      "@State %d:\n"
-      current_state;
+    Printf.printf "@State %d:\n" current_state;
   match states with
   | [] ->
       if Debug_config.debug_enabled debug_level Verbose then

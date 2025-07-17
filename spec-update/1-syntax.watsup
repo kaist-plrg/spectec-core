@@ -817,7 +817,7 @@ syntax typedefDeclaration =
 
 syntax typeDeclaration =
   | derivedTypeDeclaration
-  | typedefDeclaration `; 
+  | typedefDeclaration `;
   | parserTypeDeclaration `;
   | controlTypeDeclaration `;
   | packageTypeDeclaration `;

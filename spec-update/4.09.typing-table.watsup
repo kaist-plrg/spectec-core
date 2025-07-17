@@ -38,7 +38,7 @@ rule TableAction_ok/nonTypeName:
   C tblctx |- optAnnotations nonTypeName `;
             : tblctx' (nonTypeName `;)
   -- if id = $id(nonTypeName)
-  -- if ACTION `( paramTypeIR* ) = $find_func_named(BLOCK, C, id)
+  -- if ACTION `( paramTypeIR* ) = $find_func_non_overloaded(BLOCK, C, id)
   -- Call_action_partial_ok: BLOCK C |- paramTypeIR* `@ eps
                                      : (paramTypeIR_data*, paramTypeIR_control*) `@ eps
   -- if tblctx' = $add_action(tblctx, id, paramTypeIR*, eps)
@@ -49,7 +49,7 @@ rule TableAction_ok/nonTypeName-argumentList:
   C tblctx |- optAnnotations (nonTypeName `( argumentList ))`;
             : tblctx' ((nonTypeName `( argumentIR_cast* )) `;)
   -- if id = $id(nonTypeName)
-  -- if ACTION `( paramTypeIR* ) = $find_func_named(BLOCK, C, id)
+  -- if ACTION `( paramTypeIR* ) = $find_func_non_overloaded(BLOCK, C, id)
   -- if argument* = argumentList
   -- (Arg_ok: BLOCK C |- argument : argumentIR typeIR_arg)*
   -- Call_action_partial_ok:

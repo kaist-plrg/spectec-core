@@ -107,7 +107,8 @@ let run_il_new_command =
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
          let spec_il = Elaborate.Elab.elab_spec spec in
          match
-           Interp_il.Typing_new.run_typing ~debug spec_il includes_p4 filename_p4
+           Interp_il.Typing_new.run_typing ~debug spec_il includes_p4
+             filename_p4
          with
          | WellTyped -> Format.printf "well-typed\n"
          | IllTyped (_, msg) -> Format.printf "ill-typed: %s\n" msg

@@ -5,7 +5,12 @@
 syntax bound = set<tid>
 syntax theta = map<tid, typeIR>
 
+dec $fresh_tid() : tid
 dec $fresh_tids(nat) : tid*
+
+def $fresh_tids(0) = eps
+def $fresh_tids(n) = $fresh_tid() :: $fresh_tids($(n - 1))
+  -- otherwise
 
 dec $free_type(typeIR) : bound
 dec $free_typeDef(typeDefIR) : bound

@@ -60,3 +60,20 @@ rule Call_ok/table-apply-method:
           `< eps `# eps > `( eps `# eps )
        : typeIR_table `< eps > `( eps )
   -- FuncType_wf: $bound(p, C) |- TABLE_APPLY -> typeIR_table
+
+;;
+;; Constructor typing
+;;
+
+rule Cons_ok:
+  p C |- name `< typeArgIR* > `( argument* )
+       : cid `< `# tid_fresh* > `( `# id_default* ) `@ consTypeIR
+  -- if id = $id(name)
+  -- if (cid, consTypeDefIR, id_default*)
+      = $find_cons_overloaded(C, id, argument*)
+  -- if (consTypeIR, tid_fresh*)
+      = $specialize_consTypeDef(consTypeDefIR, typeArgIR*)
+
+;;
+;; Instantiation typing
+;;
