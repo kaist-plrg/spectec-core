@@ -194,7 +194,7 @@ atom_ :
   | atomid { Atom.Atom $1 }
   | atom_escape { $1 }
 atom_escape :
-  | TICK_UPID { Atom.Atom $1 }
+  | TICK_UPID { Atom.SilentAtom $1 }
   | TICK_DOUBLE_QUOTE { Atom.DoubleQuote }
   | TICK_UNDERSCORE { Atom.Underscore }
   | TICK_ARROW { Atom.Arrow }

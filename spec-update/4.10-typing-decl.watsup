@@ -89,10 +89,8 @@ rule Decl_ok/controlDeclaration:
                 `{ controlLocalDeclarations APPLY controlBody }
               : C_5 controlDeclarationIR
   ---- ;; unpack control type declaration
-  -- if optAnnotations CONTROL name optTypeParameters `( parameterList )
+  -- if optAnnotations CONTROL name `EMPTY `( parameterList )
         = controlTypeDeclaration
-  ---- ;; check type parameters
-  -- if optTypeParameters = eps
   ---- ;; check constructor parameters
   -- ConsParams_ok: C_0 |- optConstructorParameters
                         : optConstructorParametersIR eps
@@ -121,7 +119,7 @@ rule Decl_ok/controlDeclaration:
   -- if C_5 = $add_cons(C_0, cid, consTypeDefIR)
   ---- ;; assemble IR
   -- if controlTypeDeclarationIR
-      = optAnnotations CONTROL name eps `( parameterListIR )
+      = optAnnotations CONTROL name `EMPTY `( parameterListIR )
   -- if controlDeclarationIR
       = controlTypeDeclarationIR optConstructorParametersIR
         `{ controlLocalDeclarationsIR APPLY controlBodyIR }
@@ -140,7 +138,7 @@ rule Decl_ok/controlDeclaration:
 ;;;;  optAnnotations CONTROL name optTypeParameters `( parameterList )
 
 rule Decl_ok/controlTypeDeclaration:
-  GLOBAL C_0 |- (optAnnotations CONTROL name eps `( parameterList )) `; 
+  GLOBAL C_0 |- (optAnnotations CONTROL name `EMPTY `( parameterList )) `; 
               : C_1 (controlTypeDeclarationIR `;)
   -- Params_ok: LOCAL C_0 |- parameterList : parameterListIR tid_fresh*
   -- if paramTypeIR* = $paramtypes(parameterListIR)
@@ -150,14 +148,14 @@ rule Decl_ok/controlTypeDeclaration:
   -- if tid = $tid(name)
   -- if C_1 = $add_type(GLOBAL, C_0, tid, typeDefIR)
   -- if controlTypeDeclarationIR
-      = optAnnotations CONTROL name eps `( parameterListIR )
+      = optAnnotations CONTROL name `EMPTY `( parameterListIR )
 
 ;;;; | packageTypeDeclaration `;
 ;;;;; syntax packageTypeDeclaration =
 ;;;;;   optAnnotations PACKAGE name optTypeParameters `( parameterList )
 
 rule Decl_ok/packageTypeDeclaration-epsilon:
-  GLOBAL C_0 |- (optAnnotations PACKAGE name eps `( parameterList )) `; 
+  GLOBAL C_0 |- (optAnnotations PACKAGE name `EMPTY `( parameterList )) `; 
               : C_3 (packageTypeDeclarationIR `;)
   ---- ;; check type parameters
   -- ConsParams_ok: C_0 |- `( parameterList )
@@ -181,7 +179,7 @@ rule Decl_ok/packageTypeDeclaration-epsilon:
   -- if C_3 = $add_cons(C_2, cid, consTypeDefIR)
   ---- ;; assemble IR
   -- if packageTypeDeclarationIR
-      = optAnnotations PACKAGE name eps `( parameterListIR )
+      = optAnnotations PACKAGE name `EMPTY `( parameterListIR )
 
 ;;
 ;; declaration*

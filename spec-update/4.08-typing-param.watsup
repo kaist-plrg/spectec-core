@@ -61,7 +61,7 @@ rule ConsParam_ok/init-some:
   -- if initializerIR = `= val_init
 
 rule ConsParams_ok/epsilon:
-  C |- eps : eps eps
+  C |- `EMPTY : `EMPTY eps
 
 rule ConsParams_ok/empty:
   C |- `( `EMPTY ) : `( `EMPTY ) eps

@@ -145,19 +145,19 @@ rule TableProp_ok/actions:
 
 rule TableProp_ok/nonTableKwName-initializer-default-action-prefixedNonTypeName:
   C tblctx |- optAnnotations optCONST
-                (ID "default_action") (`= prefixedNonTypeName) `;
+                (`ID "default_action") (`= prefixedNonTypeName) `;
             : tblctx
                 (optAnnotations optCONST
-                  (ID "default_action") `= expressionIR `;)
+                  (`ID "default_action") `= expressionIR `;)
   -- TableDefaultAction_ok: C tblctx |- prefixedNonTypeName : prefixedNonTypeName
   -- if expressionIR = prefixedNonTypeName `( VOID `; DYN )
 
 rule TableProp_ok/nonTableKwName-initializer-default-action-prefixedNonTypeName-argumentList:
   C tblctx |- optAnnotations optCONST
-                (ID "default_action") (`= (prefixedNonTypeName `( argumentList ))) `;
+                (`ID "default_action") (`= (prefixedNonTypeName `( argumentList ))) `;
             : tblctx
                 (optAnnotations optCONST
-                  (ID "default_action") `= expressionIR `;)
+                  (`ID "default_action") `= expressionIR `;)
   -- TableDefaultAction_ok: C tblctx |- prefixedNonTypeName `( argumentList )
                                       : (prefixedNonTypeName `( argumentListIR_cast ))
   -- if expressionIR

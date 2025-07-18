@@ -24,7 +24,9 @@ syntax parameterListIR =
 
 syntax constructorParametersIR = `( parameterListIR )
 
-syntax optConstructorParametersIR = constructorParametersIR?
+syntax optConstructorParametersIR =
+  | `EMPTY
+  | constructorParametersIR
 
 ;;
 ;; Expressions
@@ -275,7 +277,9 @@ syntax annotationsIR, optAnnotationsIR
 
 syntax initializerIR = `= val
 
-syntax optInitializerIR = initializerIR?
+syntax optInitializerIR =
+  | `EMPTY
+  | initializerIR
 
 syntax variableDeclarationWithoutSemicolonIR =
   optAnnotations typeIR name optInitializerIR
@@ -767,10 +771,12 @@ syntax annotationIR =
   | `@ name `[ structuredAnnotationBodyIR ]
 
 syntax annotationsIR =
-  | `EMPTY
+  | annotationIR
   | annotationsIR annotationIR
 
-syntax optAnnotationsIR = annotationsIR?
+syntax optAnnotationsIR =
+  | `EMPTY
+  | annotationsIR
 
 ;;
 ;; P4 program

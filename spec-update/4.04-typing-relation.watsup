@@ -167,7 +167,7 @@ relation ConsParams_ok:
 
 dec $consParamtypes(optConstructorParametersIR) : consParamTypeIR*
 
-def $consParamtypes(eps) = eps
+def $consParamtypes(`EMPTY) = eps
 def $consParamtypes(`( parameterListIR ))
   = $paramtypes(parameterListIR)
 
