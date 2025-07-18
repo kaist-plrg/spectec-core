@@ -17,51 +17,6 @@ def $id(TYPE) = "type"
 def $id(PRIORITY) = "priority"
 def $id(LIST) = "list"
 
-dec $ext_name_prefix(text, name) : name
-
-def $ext_name_prefix(t, `$ t_identifier)
-  = `$ (t ++ t_identifier)
-def $ext_name_prefix(t, APPLY) = `$ (t ++ "apply")
-def $ext_name_prefix(t, KEY) = `$ (t ++ "key")
-def $ext_name_prefix(t, ACTIONS) = `$ (t ++ "actions")
-def $ext_name_prefix(t, STATE) = `$ (t ++ "state")
-def $ext_name_prefix(t, ENTRIES) = `$ (t ++ "entries")
-def $ext_name_prefix(t, TYPE) = `$ (t ++ "type")
-def $ext_name_prefix(t, PRIORITY) = `$ (t ++ "priority")
-def $ext_name_prefix(t, LIST) = `$ (t ++ "list")
-def $ext_name_prefix(t, `@ t_identifier)
-  = `@ (t ++ t_identifier)
-
-dec $ext_name_suffix(name, text) : name
-
-def $ext_name_suffix(`$ t_identifier, t)
-  = `$ (t_identifier ++ t)
-def $ext_name_suffix(APPLY, t) = `$ ("apply" ++ t)
-def $ext_name_suffix(KEY, t) = `$ ("key" ++ t)
-def $ext_name_suffix(ACTIONS, t) = `$ ("actions" ++ t)
-def $ext_name_suffix(STATE, t) = `$ ("state" ++ t)
-def $ext_name_suffix(ENTRIES, t) = `$ ("entries" ++ t)
-def $ext_name_suffix(TYPE, t) = `$ ("type" ++ t)
-def $ext_name_suffix(PRIORITY, t) = `$ ("priority" ++ t)
-def $ext_name_suffix(LIST, t) = `$ ("list" ++ t)
-def $ext_name_suffix(`@ t_identifier, t)
-  = `@ (t_identifier ++ t)
-
-dec $ext_name(name, name) : name
-
-def $ext_name(name, `$ t_identifier)
-  = $ext_name_suffix(name, t_identifier)
-def $ext_name(name, APPLY) = $ext_name_suffix(name, "apply")
-def $ext_name(name, KEY) = $ext_name_suffix(name, "key")
-def $ext_name(name, ACTIONS) = $ext_name_suffix(name, "actions")
-def $ext_name(name, STATE) = $ext_name_suffix(name, "state")
-def $ext_name(name, ENTRIES) = $ext_name_suffix(name, "entries")
-def $ext_name(name, TYPE) = $ext_name_suffix(name, "type")
-def $ext_name(name, PRIORITY) = $ext_name_suffix(name, "priority")
-def $ext_name(name, LIST) = $ext_name_suffix(name, "list")
-def $ext_name(name, `@ t_identifier)
-  = $ext_name_suffix(name, t_identifier)
-
 ;;
 ;; Type variable names
 ;;
@@ -93,24 +48,17 @@ syntax pid = bool id
 syntax fid = id `( pid* )
 
 dec $fid(name, parameterList) : fid
+dec $pids(parameterList) : pid*
 dec $pid(parameter) : pid
 
-def $fid(name, parameter*)
-  = $id(name) `( $pid(parameter)* )
+def $fid(name, parameterList) = $id(name) `( $pids(parameterList) )
+
+def $pids(`EMPTY) = eps
+def $pids(parameter) = $pid(parameter)
+def $pids(parameterList `, parameter) = $pids(parameterList) ++ [ $pid(parameter) ]
 
 def $pid(_ _ _ name) = false $id(name)
 def $pid(_ _ _ name _) = true $id(name)
-
-syntax funcName = name (name, bool)*
-
-dec $funcName(name, parameterList) : funcName
-dec $funcName'(parameter) : (name, bool)
-
-def $funcName(name, parameter*)
-  = name $funcName'(parameter)*
-
-def $funcName'(_ _ _ name) = (name, false)
-def $funcName'(_ _ _ name _) = (name, true)
 
 ;;
 ;; Constructor names
@@ -120,18 +68,4 @@ syntax cid = fid
 
 dec $cid(name, optConstructorParameters) : cid
 
-def $cid(name, eps) = $id(name) `( eps )
-def $cid(name, `( parameter* ))
-  = $id(name) `( $pid(parameter)* )
-
-syntax consName = funcName
-
-dec $consName(name, optConstructorParameters) : consName
-dec $consName'(parameter) : (name, bool)
-
-def $consName(name, eps) = name eps
-def $consName(name, `( parameter* ))
-  = name $consName'(parameter)*
-
-def $consName'(_ _ _ name) = (name, false)
-def $consName'(_ _ _ name _) = (name, true)
+def $cid(name, `( parameterList )) = $id(name) `( $pids(parameterList) )

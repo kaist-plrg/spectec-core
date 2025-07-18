@@ -23,39 +23,43 @@ def $split_directionless_params(paramTypeIR_h :: paramTypeIR_t*)
       = $split_directionless_params(paramTypeIR_t*)
 
 rule Call_action_partial_ok:
-  p C |- paramTypeIR* `@ (argumentIR, typeIR)*
-       : (paramTypeIR_data*, paramTypeIR_control*) `@ argumentIR_cast*
+  p C |- paramTypeIR* `@ typedArgumentListIR
+       : (paramTypeIR_data*, paramTypeIR_control*) `@ argumentListIR_cast
+  ---- ;; split data-plane and control-plane parameters
   -- if (paramTypeIR_data*, paramTypeIR_control*)
       = $split_directionless_params(paramTypeIR*)
-  ----
-  -- if |paramTypeIR_data*| = |argumentIR*|
-  -- Call_convention_ok: p C ACT |- paramTypeIR_data* `@ (argumentIR, typeIR)*
-                                  : argumentIR_cast*
+  ---- ;; check calling convention for data-plane parameters
+  -- if typedArgumentIR* = $flatten_typedArgumentListIR(typedArgumentListIR)
+  -- if |paramTypeIR_data*| = |typedArgumentIR*|
+  -- Call_convention_ok: p C ACT |- paramTypeIR_data* `@ typedArgumentIR* : argumentIR_cast*
+  -- if argumentListIR_cast = $structure_argumentListIR(argumentIR_cast*)
 
 ;;; | prefixedNonTypeName
 
 rule TableAction_ok/nonTypeName:
   C tblctx |- optAnnotations nonTypeName `;
-            : tblctx' (nonTypeName `;)
+            : tblctx' (optAnnotations nonTypeName `;)
   -- if id = $id(nonTypeName)
   -- if ACTION `( paramTypeIR* ) = $find_func_non_overloaded(BLOCK, C, id)
-  -- Call_action_partial_ok: BLOCK C |- paramTypeIR* `@ eps
-                                     : (paramTypeIR_data*, paramTypeIR_control*) `@ eps
-  -- if tblctx' = $add_action(tblctx, id, paramTypeIR*, eps)
+  -- Call_action_partial_ok: BLOCK C |- paramTypeIR* `@ `EMPTY
+                                     : (paramTypeIR_data*, paramTypeIR_control*) `@ `EMPTY
+  -- if tblctx' = $add_action(tblctx, id, paramTypeIR*, `EMPTY)
 
 ;;; | prefixedNonTypeName `( argumentList )
 
 rule TableAction_ok/nonTypeName-argumentList:
   C tblctx |- optAnnotations (nonTypeName `( argumentList ))`;
-            : tblctx' ((nonTypeName `( argumentIR_cast* )) `;)
+            : tblctx' (optAnnotations (nonTypeName `( argumentListIR_cast )) `;)
+  ---- ;; find action (non-overloaded)
   -- if id = $id(nonTypeName)
   -- if ACTION `( paramTypeIR* ) = $find_func_non_overloaded(BLOCK, C, id)
-  -- if argument* = argumentList
-  -- (Arg_ok: BLOCK C |- argument : argumentIR typeIR_arg)*
+  ---- ;; check partial call
+  -- Args_ok: BLOCK C |- argumentList : typedArgumentListIR
   -- Call_action_partial_ok:
-      BLOCK C |- paramTypeIR* `@ (argumentIR, typeIR_arg)*
-              : (paramTypeIR_data*, paramTypeIR_control*) `@ argumentIR_cast*
-  -- if tblctx' = $add_action(tblctx, id, paramTypeIR*, argumentIR_cast*)
+      BLOCK C |- paramTypeIR* `@ typedArgumentListIR
+              : (paramTypeIR_data*, paramTypeIR_control*) `@ argumentListIR_cast
+  ---- ;; update table context
+  -- if tblctx' = $add_action(tblctx, id, paramTypeIR*, argumentListIR_cast)
 
 ;;
 ;; Table action list typing
@@ -63,16 +67,20 @@ rule TableAction_ok/nonTypeName-argumentList:
 ;; syntax actionList = action*
 ;;
 
-rule TableActions_ok/nil:
-  C tblctx |- eps : tblctx eps
+rule TableActions_ok/empty:
+  C tblctx |- `EMPTY : tblctx `EMPTY
+
+rule TableActions_ok/action:
+  C tblctx |- action : tblctx' actionIR
+  -- TableAction_ok: C tblctx |- action : tblctx' actionIR
 
 rule TableActions_ok/cons:
-  C tblctx |- action_h :: action_t*
-            : tblctx'' (actionIR_h :: actionIR_t*)
-  -- TableAction_ok: C tblctx |- action_h
-                               : tblctx' actionIR_h
-  -- TableActions_ok: C tblctx' |- action_t*
-                            : tblctx'' (actionIR_t*)
+  C tblctx |- actionList action
+            : tblctx'' (actionListIR actionIR)
+  -- TableActions_ok: C tblctx |- actionList
+                                : tblctx' actionListIR
+  -- TableAction_ok: C tblctx' |- action
+                                : tblctx'' actionIR
 
 ;;
 ;; Table default action typing
@@ -81,40 +89,43 @@ rule TableActions_ok/cons:
 ;;
 
 rule Call_action_default_ok:
-  p C |- paramTypeIR_action* `@ argumentIR_action* `@ (argumentIR, typeIR)*
-       : argumentIR_cast*
+  p C |- paramTypeIR_action* `@ argumentListIR_action `@ typedArgumentListIR
+       : argumentListIR_cast
   ---- ;; split dataplane and controlplane params
   -- if (paramTypeIR_data*, paramTypeIR_control*)
       = $split_directionless_params(paramTypeIR_action*)
   ---- ;; check syntactic equality of dataplane params
+  -- if argumentIR_action* = $flatten_argumentListIR(argumentListIR_action)
+  -- if typedArgumentIR* = $flatten_typedArgumentListIR(typedArgumentListIR)
+  -- if (argumentIR `@ _ = typedArgumentIR)*
   -- if argumentIR_data* = argumentIR*[0 : |paramTypeIR_data*|]
   -- if argumentIR_data* = argumentIR_action*
   ---- ;; check call convention
-  -- Call_convention_ok: p C ACT |- paramTypeIR_action* `@ (argumentIR, typeIR)*
+  -- Call_convention_ok: p C ACT |- paramTypeIR_action* `@ typedArgumentIR*
                                   : argumentIR_cast*
+  -- if argumentListIR_cast = $structure_argumentListIR(argumentIR_cast*)
 
 ;;; | prefixedNonTypeName
 
 rule TableDefaultAction_ok/nonTypeName:
   C tblctx |- nonTypeName : nonTypeName
   -- if id = $id(nonTypeName)
-  -- if (eps, eps) = $find_action(tblctx, id)
+  -- if (eps, `EMPTY) = $find_action(tblctx, id)
 
 ;;; | prefixedNonTypeName `( argumentList )
 
 rule TableDefaultAction_ok/nonTypeName-argumentList:
   C tblctx |- nonTypeName `( argumentList )
-            : nonTypeName `( argumentIR_cast* )
+            : nonTypeName `( argumentListIR_cast )
   ---- ;; find matching action
   -- if id = $id(nonTypeName)
-  -- if (paramTypeIR_action*, argumentIR_action*) = $find_action(tblctx, id)
+  -- if (paramTypeIR_action*, argumentListIR_action) = $find_action(tblctx, id)
   ---- ;; check arguments
-  -- if argument* = argumentList
-  -- (Arg_ok: BLOCK C |- argument : argumentIR typeIR_arg)*
+  -- Args_ok: BLOCK C |- argumentList : typedArgumentListIR
   ---- ;; check call
-  -- Call_action_default_ok: BLOCK C |- paramTypeIR_action* `@ argumentIR_action*
-                                                            `@ (argumentIR, typeIR_arg)*
-                                      : argumentIR_cast*
+  -- Call_action_default_ok: BLOCK C |- paramTypeIR_action* `@ argumentListIR_action
+                                                            `@ typedArgumentListIR
+                                      : argumentListIR_cast
 
 ;;
 ;; Table property typing
@@ -139,20 +150,22 @@ rule TableProp_ok/actions:
 rule TableProp_ok/nonTableKwName-initializer-default-action-prefixedNonTypeName:
   C tblctx |- optAnnotations optCONST
                 (`$ "default_action") (`= prefixedNonTypeName) `;
-            : tblctx (optCONST
-                        (`$ "default_action") `= expressionIR `;)
+            : tblctx
+                (optAnnotations optCONST
+                  (`$ "default_action") `= expressionIR `;)
   -- TableDefaultAction_ok: C tblctx |- prefixedNonTypeName : prefixedNonTypeName
   -- if expressionIR = prefixedNonTypeName `( VOID `; DYN )
 
 rule TableProp_ok/nonTableKwName-initializer-default-action-prefixedNonTypeName-argumentList:
   C tblctx |- optAnnotations optCONST
                 (`$ "default_action") (`= (prefixedNonTypeName `( argumentList ))) `;
-            : tblctx (optCONST
-                        (`$ "default_action") `= expressionIR `;)
+            : tblctx
+                (optAnnotations optCONST
+                  (`$ "default_action") `= expressionIR `;)
   -- TableDefaultAction_ok: C tblctx |- prefixedNonTypeName `( argumentList )
-                                      : (prefixedNonTypeName `( argumentIR_cast* ))
+                                      : (prefixedNonTypeName `( argumentListIR_cast ))
   -- if expressionIR
-      = ((prefixedNonTypeName `( VOID `; DYN )) `( argumentIR_cast* )) `( VOID `; DYN )
+      = ((prefixedNonTypeName `( VOID `; DYN )) `( argumentListIR_cast )) `( VOID `; DYN )
 
 ;;
 ;; Table property list typing
@@ -160,16 +173,21 @@ rule TableProp_ok/nonTableKwName-initializer-default-action-prefixedNonTypeName-
 ;; syntax tablePropertyList = tableProperty*
 ;;
 
-rule Table_ok/nil:
-  C tblctx |- eps : tblctx eps
+rule Table_ok/empty:
+  C tblctx |- `EMPTY : tblctx `EMPTY
 
-rule Table_ok/cons:
-  C tblctx_0 |- tableProperty_h :: tableProperty_t*
-              : tblctx_2 (tablePropertyIR_h :: tablePropertyIR_t*)
-  -- TableProp_ok: C tblctx_0 |- tableProperty_h
-                             : tblctx_1 tablePropertyIR_h
-  -- Table_ok: C tblctx_1 |- tableProperty_t*
-                           : tblctx_2 (tablePropertyIR_t*)
+rule Table_ok/tableProperty:
+  C tblctx |- tableProperty : tblctx tablePropertyIR
+  -- TableProp_ok: C tblctx |- tableProperty
+                             : tblctx' tablePropertyIR
+
+rule Table_ok/tablePropertyList-tableProperty:
+  C tblctx_0 |- tablePropertyList tableProperty
+              : tblctx_2 (tablePropertyListIR tablePropertyIR)
+  -- Table_ok: C tblctx_0 |- tablePropertyList
+                           : tblctx_1 tablePropertyListIR
+  -- TableProp_ok: C tblctx_1 |- tableProperty
+                               : tblctx_2 tablePropertyIR
 
 ;;
 ;; Table type typing

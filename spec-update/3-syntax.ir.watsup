@@ -7,10 +7,13 @@
 syntax initializerIR
 
 syntax parameterIR =
-  | direction typeIR name
-  | direction typeIR name initializerIR
+  | optAnnotations direction typeIR name
+  | optAnnotations direction typeIR name initializerIR
 
-syntax parameterListIR = parameterIR*
+syntax parameterListIR =
+  | `EMPTY
+  | parameterIR
+  | parameterListIR `, parameterIR
 
 ;;
 ;; Constructor parameters
@@ -24,13 +27,35 @@ syntax optConstructorParametersIR = constructorParametersIR?
 ;; Expressions
 ;;
 
+;;
+;; Expression key-value pairs
+;;
+
 ;; Forward declarations
 
-syntax typeArgumentListIR
+syntax expressionIR
+
+syntax kvPairIR = name `= expressionIR
+
+syntax kvListIR =
+  | `EMPTY
+  | kvPairIR
+  | kvListIR `, kvPairIR
+
+syntax kvListNonEmptyIR =
+  | kvPairIR
+  | kvListNonEmptyIR `, kvPairIR
+
+;; Forward declarations
+
+syntax typeArgListIR
 syntax argumentListIR
+syntax accessBaseNonBraceIR, accessBaseIR
+syntax callBaseNonBraceIR, callBaseIR
 syntax nonBraceExpressionInnerIR
-syntax expressionInnerIR, expressionIR
-syntax expressionListIR, kvListIR
+syntax recordExpressionIR
+syntax expressionInnerIR
+syntax expressionListIR
 
 syntax noteIL = `( typeIR `; ctk )
 
@@ -49,9 +74,7 @@ syntax nonBraceExpressionInnerIR =
   | `~ expressionIR
   | `- expressionIR
   | `+ expressionIR
-  | typeName `. member
-  | ERROR `. member
-  | nonBraceExpressionIR `. member
+  | accessBaseNonBraceIR `. member
   | nonBraceExpressionIR `* expressionIR
   | nonBraceExpressionIR `/ expressionIR
   | nonBraceExpressionIR `% expressionIR
@@ -74,11 +97,18 @@ syntax nonBraceExpressionInnerIR =
   | nonBraceExpressionIR `&& expressionIR
   | nonBraceExpressionIR `|| expressionIR
   | nonBraceExpressionIR `? expressionIR `: expressionIR
-  | nonBraceExpressionIR `< typeArgumentListIR > `( argumentListIR )
-  | nonBraceExpressionIR `( argumentListIR )
-  | namedTypeIR `( argumentListIR )
+  | nonBraceExpressionIR `< typeArgListIR > `( argumentListIR )
+  | callBaseNonBraceIR `( argumentListIR )
   | `( typeIR ) expressionIR
 
+syntax accessBaseNonBraceIR =
+  | prefixedTypeName
+  | ERROR
+  | nonBraceExpression
+
+syntax callBaseNonBraceIR =
+  | namedTypeIR
+  | nonBraceExpressionIR
 
 syntax expressionIR = expressionInnerIR noteIL
 
@@ -92,18 +122,16 @@ syntax expressionInnerIR =
   | prefixedNonTypeName
   | expressionIR `[ expressionIR ]
   | expressionIR `[ expressionIR `: expressionIR ]
-  | `{ expressionListIR optTrailingComma }
   | `{#}
-  | `{ kvListIR optTrailingComma }
-  | `{ kvListIR `, `... optTrailingComma }
+  | `{ recordExpressionIR optTrailingComma }
   | `( expressionIR )
   | `! expressionIR
   | `~ expressionIR
   | `- expressionIR
   | `+ expressionIR
-  | typeName `. member
+  | prefixedTypeName `. member `ACC_1
   | ERROR `. member
-  | expressionIR `. member
+  | expressionIR `. member `ACC_2
   | expressionIR `* expressionIR
   | expressionIR `/ expressionIR
   | expressionIR `% expressionIR
@@ -126,13 +154,33 @@ syntax expressionInnerIR =
   | expressionIR `&& expressionIR
   | expressionIR `|| expressionIR
   | expressionIR `? expressionIR `: expressionIR
-  | expressionIR `< typeArgumentListIR > `( argumentListIR )
-  | expressionIR `( argumentListIR )
-  | namedTypeIR `( argumentListIR )
+  | expressionIR `< typeArgListIR > `( argumentListIR )
+  | callBaseIR `( argumentListIR )
   | `( typeIR ) expressionIR
 
-;; (TODO) Add comma separator as hint?
-syntax expressionListIR = expressionIR*
+syntax expressionListIR =
+  | `EMPTY
+  | expressionIR
+  | expressionListIR `, expressionIR
+
+syntax accessBaseIR =
+  | prefixedTypeName
+  | ERROR
+  | expressionIR
+
+syntax callBaseIR =
+  | namedTypeIR
+  | expressionIR
+
+syntax kvPairRecordExpressionIR =
+  | name `= expressionIR
+  | name `= expressionIR `, `...
+  | name `= expressionIR `, kvListNonEmptyIR
+  | name `= expressionIR `, kvListNonEmptyIR `, `...
+
+syntax recordExpressionIR =
+  | expressionListIR
+  | kvPairRecordExpressionIR
 
 ;;
 ;; Keyset expressions
@@ -145,29 +193,21 @@ syntax simpleKeysetExpressionIR =
   | DEFAULT
   | `_
 
-syntax reducedSimpleKeysetExpressionIR =
-  | expressionIR `&&& expressionIR
-  | expressionIR `.. expressionIR
-  | DEFAULT
-  | `_
-
-syntax simpleExpressionListIR = simpleKeysetExpressionIR*
+syntax simpleExpressionListIR =
+  | `EMPTY
+  | simpleKeysetExpressionIR
+  | simpleExpressionListIR `, simpleKeysetExpressionIR
 
 syntax tupleKeySetExpressionIR =
   | `( simpleKeysetExpressionIR `, simpleExpressionListIR )
-  | `( reducedSimpleKeysetExpressionIR ) PHTM_19
+  | `( expressionIR `&&& expressionIR )
+  | `( expressionIR `.. expressionIR )
+  | `( DEFAULT )
+  | `( `_ )
 
 syntax keysetExpressionIR =
   | tupleKeySetExpressionIR
   | simpleKeysetExpressionIR
-
-;;
-;; Expression key-value pairs
-;;
-
-syntax kvPairIR = name `= expressionIR
-
-syntax kvListIR = kvPairIR*
 
 ;;
 ;; Type arguments
@@ -175,7 +215,10 @@ syntax kvListIR = kvPairIR*
 
 syntax typeArgIR = typeIR
 
-syntax typeArgumentListIR = typeArgIR*
+syntax typeArgListIR =
+  | `EMPTY
+  | typeArgIR
+  | typeArgListIR `, typeArgIR
 
 ;;
 ;; Arguments
@@ -187,7 +230,17 @@ syntax argumentIR =
   | `_
   | name `= `_
 
-syntax argumentListIR = argumentIR*
+syntax argumentListIR =
+  | `EMPTY
+  | argumentIR
+  | argumentListIR `, argumentIR
+
+syntax typedArgumentIR = argumentIR `@ typeIR
+
+syntax typedArgumentListIR =
+  | `EMPTY
+  | typedArgumentIR
+  | typedArgumentListIR `, typedArgumentIR
 
 ;;
 ;; L-values
@@ -220,13 +273,13 @@ syntax initializerIR = `= val
 syntax optInitializerIR = initializerIR?
 
 syntax variableDeclarationWithoutSemicolonIR =
-  typeIR name optInitializerIR
+  optAnnotations typeIR name optInitializerIR
 
 syntax variableDeclarationIR =
-  variableDeclarationWithoutSemicolonIR `;
+  optAnnotations typeIR name optInitializerIR `;
 
 syntax constantDeclarationIR =
-  CONST typeIR name initializerIR `;
+  optAnnotations CONST typeIR name initializerIR `;
 
 ;;
 ;;;; Assignment and method call statements
@@ -234,7 +287,7 @@ syntax constantDeclarationIR =
 
 syntax assignmentOrMethodCallStatementWithoutSemicolonIR =
   | lvalueIR `( argumentListIR )
-  | lvalueIR `< typeArgumentListIR > `( argumentListIR )
+  | lvalueIR `< typeArgListIR > `( argumentListIR )
   | lvalueIR `= expressionIR
   | lvalueIR `+= expressionIR
   | lvalueIR `|+|= expressionIR
@@ -277,7 +330,7 @@ syntax emptyStatementIR = `;
 ;;;; Block statements
 ;;
 
-syntax blockStatementIR = `{ statOrDeclListIR }
+syntax blockStatementIR = optAnnotations `{ statOrDeclListIR }
 
 ;;
 ;;;; Return statements
@@ -317,8 +370,10 @@ syntax switchCaseIR =
   | switchLabelIR `: blockStatementIR
   | switchLabelIR `: 
 
-;; (TODO) Add whitespace separator as hint?
-syntax switchCasesIR = switchCaseIR*
+syntax switchCasesIR =
+  | `EMPTY
+  | switchCaseIR
+  | switchCasesIR switchCaseIR
 
 syntax switchStatementIR = SWITCH `( expressionIR ) `{ switchCasesIR }
 
@@ -330,20 +385,24 @@ syntax declOrAssignmentOrMethodCallStatementIR =
   | variableDeclarationWithoutSemicolonIR
   | assignmentOrMethodCallStatementWithoutSemicolonIR
 
-;; (TODO) Add comma separator as hint?
-syntax forInitStatementsIR = declOrAssignmentOrMethodCallStatementIR*
+syntax forInitStatementsIR =
+  | `EMPTY
+  | declOrAssignmentOrMethodCallStatementIR
+  | forInitStatementsIR `, declOrAssignmentOrMethodCallStatementIR
 
-;; (TODO) Add comma separator as hint?
-syntax forUpdateStatementsIR = assignmentOrMethodCallStatementWithoutSemicolonIR*
+syntax forUpdateStatementsIR =
+  | `EMPTY
+  | assignmentOrMethodCallStatementWithoutSemicolonIR
+  | forUpdateStatementsIR `, assignmentOrMethodCallStatementWithoutSemicolonIR
 
 syntax forCollectionExprIR =
   | expressionIR
   | expressionIR `.. expressionIR
 
 syntax forStatementIR =
-  | FOR `( forInitStatementsIR `; expressionIR `; forUpdateStatementsIR ) statementIR
-  | FOR `( typeIR name IN forCollectionExprIR ) statementIR
-  | FOR `( annotationsIR typeIR name IN forCollectionExprIR ) statementIR
+  | optAnnotations FOR `( forInitStatementsIR `; expressionIR `; forUpdateStatementsIR ) statementIR
+  | optAnnotations FOR `( typeIR name IN forCollectionExprIR ) statementIR
+  | optAnnotations FOR `( annotationsIR typeIR name IN forCollectionExprIR ) statementIR
 
 ;;
 ;;;; Statements
@@ -367,17 +426,19 @@ syntax statementOrDeclarationIR =
   | constantDeclarationIR
   | statementIR
 
-;; (TODO) Add whitespace separator as hint?
-syntax statOrDeclListIR = statementOrDeclarationIR*
+syntax statOrDeclListIR =
+  | `EMPTY
+  | statementOrDeclarationIR
+  | statOrDeclListIR statementOrDeclarationIR
 
 ;;
 ;;;; Error and match kind declarations
 ;;
 
 syntax matchKindDeclarationIR =
-  MATCH_KIND `{ identifierList optTrailingComma }
+  MATCH_KIND `{ nameList optTrailingComma }
 
-syntax errorDeclarationIR = ERROR `{ identifierList }
+syntax errorDeclarationIR = ERROR `{ nameList }
 
 ;;
 ;;;; Extern declarations
@@ -387,23 +448,25 @@ syntax functionPrototypeIR =
   typeIR name optTypeParameters `( parameterListIR )
 
 syntax methodPrototypeIR =
-  | functionPrototypeIR `;
-  | ABSTRACT functionPrototypeIR `;
-  | typeIdentifier `( parameterListIR ) `;
+  | optAnnotations functionPrototypeIR `;
+  | optAnnotations ABSTRACT functionPrototypeIR `;
+  | optAnnotations typeIdentifier `( parameterListIR ) `;
 
-;; (TODO) Add whitespace separator as hint?
-syntax methodPrototypesIR = methodPrototypeIR*
+syntax methodPrototypesIR =
+  | `EMPTY
+  | methodPrototypeIR
+  | methodPrototypesIR methodPrototypeIR
 
 syntax externDeclarationIR =
-  | EXTERN nonTypeName optTypeParameters `{ methodPrototypesIR }
-  | EXTERN functionPrototypeIR `;
+  | optAnnotations EXTERN nonTypeName optTypeParameters `{ methodPrototypesIR }
+  | optAnnotations EXTERN functionPrototypeIR `;
 
 ;;
 ;;;; Function declarations
 ;;
 
 syntax functionDeclarationIR =
-  functionPrototypeIR blockStatementIR
+  optAnnotations functionPrototypeIR blockStatementIR
 
 ;;
 ;;;; Instantiations
@@ -412,22 +475,24 @@ syntax functionDeclarationIR =
 syntax objInitializerIR = `= `{ objDeclarationsIR }
 
 syntax instantiationIR =
-  | typeIR `( argumentListIR ) name `;
-  | typeIR `( argumentListIR ) name objInitializerIR `;
+  | optAnnotations typeIR `( argumentListIR ) name `;
+  | optAnnotations typeIR `( argumentListIR ) name objInitializerIR `;
 
 syntax objDeclarationIR =
   | functionDeclarationIR
   | instantiationIR
 
-;; (TODO) Add whitespace separator as hint?
-syntax objDeclarationsIR = objDeclarationIR*
+syntax objDeclarationsIR =
+  | `EMPTY
+  | objDeclarationIR
+  | objDeclarationsIR objDeclarationIR
 
 ;;
 ;;;; Action declarations
 ;;
 
 syntax actionDeclarationIR =
-  ACTION name `( parameterListIR ) blockStatementIR
+  optAnnotations ACTION name `( parameterListIR ) blockStatementIR
 
 ;;
 ;;;; Table declarations
@@ -438,10 +503,12 @@ syntax actionDeclarationIR =
 ;;
 
 syntax keyElementIR =
-  expressionIR `: name `;
+  expressionIR `: name optAnnotations `;
 
-;; (TODO) Add whitespace separator as hint?
-syntax keyElementListIR = keyElementIR*
+syntax keyElementListIR =
+  | `EMPTY
+  | keyElementIR
+  | keyElementListIR keyElementIR
 
 ;;
 ;;;;;; Table actions property
@@ -451,10 +518,12 @@ syntax actionRefIR =
   | prefixedNonTypeName
   | prefixedNonTypeName `( argumentListIR )
 
-syntax actionIR = actionRefIR `;
+syntax actionIR = optAnnotations actionRefIR `;
 
-;; (TODO) Add whitespace separator as hint?
-syntax actionListIR = actionIR*
+syntax actionListIR =
+  | `EMPTY
+  | actionIR
+  | actionListIR actionIR
 
 ;;
 ;;;;;; Table entry property
@@ -465,10 +534,13 @@ syntax entryPriorityIR =
   | PRIORITY `= `( expressionIR ) `:
 
 syntax entryIR =
-  | optCONST entryPriorityIR keysetExpressionIR `: actionRefIR `; 
-  | optCONST keysetExpressionIR `: actionListIR `; 
+  | optCONST entryPriorityIR keysetExpressionIR `: actionRefIR optAnnotations `; 
+  | optCONST keysetExpressionIR `: actionRefIR optAnnotations `; 
 
-syntax entriesListIR = entryIR*
+syntax entriesListIR =
+  | `EMPTY
+  | entryIR
+  | entriesListIR entryIR
 
 ;;
 ;;;;;; Table properties
@@ -477,15 +549,17 @@ syntax entriesListIR = entryIR*
 syntax tablePropertyIR =
   | KEY `= `{ keyElementListIR }
   | ACTIONS `= `{ actionListIR }
-  | optCONST ENTRIES `= `{ entriesListIR }
+  | optAnnotations optCONST ENTRIES `= `{ entriesListIR }
   ;; (TODO) `= expressionIR should be initializerIR
-  | optCONST nonTableKwName `= expressionIR `;
+  | optAnnotations optCONST nonTableKwName `= expressionIR `;
 
-;; (TODO) Add whitespace separator as hint?
-syntax tablePropertyListIR = tablePropertyIR*
+syntax tablePropertyListIR =
+  | `EMPTY
+  | tablePropertyIR
+  | tablePropertyListIR tablePropertyIR
 
 syntax tableDeclarationIR =
-  TABLE name `{ tablePropertyListIR }
+  optAnnotations TABLE name `{ tablePropertyListIR }
 
 ;;
 ;;;; Control and control type declarations
@@ -500,11 +574,13 @@ syntax controlLocalDeclarationIR =
   | instantiationIR
   | variableDeclarationIR
 
-;; (TODO) Add whitespace separator as hint?
-syntax controlLocalDeclarationsIR = controlLocalDeclarationIR*
+syntax controlLocalDeclarationsIR =
+  | `EMPTY
+  | controlLocalDeclarationIR
+  | controlLocalDeclarationsIR controlLocalDeclarationIR
 
 syntax controlTypeDeclarationIR =
-  CONTROL name optTypeParameters `( parameterListIR )
+  optAnnotations CONTROL name optTypeParameters `( parameterListIR )
 
 syntax controlDeclarationIR =
   controlTypeDeclarationIR optConstructorParametersIR `{ controlLocalDeclarationsIR APPLY controlBodyIR }
@@ -514,7 +590,7 @@ syntax controlDeclarationIR =
 ;;
 
 syntax valueSetDeclarationIR =
-  VALUESET `< typeIR > `( expressionIR ) name `; 
+  optAnnotations VALUESET `< typeIR > `( expressionIR ) name `; 
 
 ;;
 ;;;; Select expressions
@@ -522,8 +598,10 @@ syntax valueSetDeclarationIR =
 
 syntax selectCaseIR = keysetExpressionIR `: name `;
 
-;; (TODO) Add whitespace separator as hint?
-syntax selectCaseListIR = selectCaseIR*
+syntax selectCaseListIR =
+  | `EMPTY
+  | selectCaseIR
+  | selectCaseListIR selectCaseIR
 
 syntax selectExpressionIR = SELECT `( expressionListIR ) `{ selectCaseListIR }
 
@@ -541,7 +619,7 @@ syntax transitionStatementIR = TRANSITION stateExpressionIR
 ;;;; Parser and parser type declarations
 ;;
 
-syntax parserBlockStatementIR = `{ parserStatementsIR }
+syntax parserBlockStatementIR = optAnnotations `{ parserStatementsIR }
 
 syntax parserStatementIR =
   | assignmentOrMethodCallStatementIR
@@ -552,18 +630,20 @@ syntax parserStatementIR =
   | parserBlockStatementIR
   | conditionalStatementIR
 
-;; (TODO) Add whitespace separator as hint?
-syntax parserStatementsIR = parserStatementIR*
+syntax parserStatementsIR =
+  | `EMPTY
+  | parserStatementIR
+  | parserStatementsIR parserStatementIR
 
 syntax parserStateIR =
-  STATE name `{ parserStatementsIR transitionStatementIR }
+  optAnnotations STATE name `{ parserStatementsIR transitionStatementIR }
 
-;; (TODO) Add whitespace separator as hint?
-;; (TODO) nonempty sequence with + iterator
-syntax parserStatesIR = parserStateIR*
+syntax parserStatesIR =
+  | parserStateIR
+  | parserStatesIR parserStateIR
 
 syntax parserTypeDeclarationIR =
-  PARSER name optTypeParameters `( parameterListIR )
+  optAnnotations PARSER name optTypeParameters `( parameterListIR )
 
 syntax parserLocalElementIR =
   | constantDeclarationIR
@@ -571,8 +651,10 @@ syntax parserLocalElementIR =
   | instantiationIR
   | valueSetDeclarationIR
 
-;; (TODO) Add whitespace separator as hint?
-syntax parserLocalElementsIR = parserLocalElementIR*
+syntax parserLocalElementsIR =
+  | `EMPTY
+  | parserLocalElementIR
+  | parserLocalElementsIR parserLocalElementIR
 
 syntax parserDeclarationIR =
   parserTypeDeclarationIR optConstructorParametersIR `{ parserLocalElementsIR parserStatesIR }
@@ -582,38 +664,40 @@ syntax parserDeclarationIR =
 ;;
 
 syntax packageTypeDeclarationIR =
-  PACKAGE name optTypeParameters `( parameterListIR )
+  optAnnotations PACKAGE name optTypeParameters `( parameterListIR )
 
 ;;
 ;;;; Enum type declaration
 ;;
 
-syntax specifiedIdentifierIR = name initializerIR
+syntax specifiedNameIR = name initializerIR
 
 ;; (TODO) Add comma separator as hint?
-syntax specifiedIdentifierListIR = specifiedIdentifierIR*
+syntax specifiedNameListIR = specifiedNameIR*
 
 syntax enumDeclarationIR =
-  | ENUM name `{ identifierList optTrailingComma }
-  | ENUM typeIR name `{ specifiedIdentifierListIR optTrailingComma }
+  | optAnnotations ENUM name `{ nameList optTrailingComma }
+  | optAnnotations ENUM typeIR name `{ specifiedNameListIR optTrailingComma }
 
 ;;
 ;;;; Struct, header, and union type declarations
 ;;
 
-syntax structFieldIR = typeIR name `;
+syntax structFieldIR = optAnnotations typeIR name `;
 
-;; (TODO) Add whitespace separator as hint?
-syntax structFieldListIR = structFieldIR*
+syntax structFieldListIR =
+  | `EMPTY
+  | structFieldIR
+  | structFieldListIR structFieldIR
 
 syntax headerUnionDeclarationIR =
-  HEADER_UNION name optTypeParameters `{ structFieldListIR }
+  optAnnotations HEADER_UNION name optTypeParameters `{ structFieldListIR }
 
 syntax structTypeDeclarationIR =
-  STRUCT name optTypeParameters `{ structFieldListIR }
+  optAnnotations STRUCT name optTypeParameters `{ structFieldListIR }
 
 syntax headerTypeDeclarationIR =
-  HEADER name optTypeParameters `{ structFieldListIR }
+  optAnnotations HEADER name optTypeParameters `{ structFieldListIR }
 
 ;;
 ;;;; Derived type declarations
@@ -629,21 +713,27 @@ syntax derivedTypeDeclarationIR =
 ;;;; Typedef and newtype declarations
 ;;
 
+syntax typedefBaseTypeIR =
+  | typeIR
+  | derivedTypeDeclarationIR
+
 syntax typedefDeclarationIR =
-  | TYPEDEF typeIR name
-  | TYPEDEF derivedTypeDeclarationIR name
-  | TYPE typeIR name
+  | optAnnotations TYPEDEF typedefBaseTypeIR name
+  | optAnnotations TYPE typeIR name
 
 ;;
 ;;;; Type declarations
 ;;
 
+syntax typeDeclarationWithoutSemicolonIR =
+  | typedefDeclarationIR
+  | parserTypeDeclarationIR
+  | controlTypeDeclarationIR
+  | packageTypeDeclarationIR
+
 syntax typeDeclarationIR =
   | derivedTypeDeclarationIR
-  | typedefDeclarationIR `; 
-  | parserTypeDeclarationIR `;
-  | controlTypeDeclarationIR `;
-  | packageTypeDeclarationIR `;
+  | typeDeclarationWithoutSemicolonIR `;
 
 ;;
 ;;;; Declaration
@@ -665,28 +755,23 @@ syntax declarationIR =
 ;; Annotations
 ;;
 
-;; Forward declarations
-
-syntax simpleAnnotationBodyIR
-
-syntax simpleAnnotationIR =
-  | `( simpleAnnotationBodyIR )
-  | annotationToken
-
-;; (TODO) Add whitespace separator as hint?
-syntax simpleAnnotationBodyIR = simpleAnnotationIR*
+syntax annotationBodyIR =
+  | `EMPTY
+  | annotationBodyIR `( annotationBodyIR )
+  | annotationBodyIR annotationToken
 
 syntax structuredAnnotationBodyIR =
-  | expressionListIR optTrailingComma
-  | kvListIR optTrailingComma
+  recordExpressionIR optTrailingComma
 
 syntax annotationIR =
   | `@ name
-  | `@ name `( simpleAnnotationBodyIR )
+  | `@ name `( annotationBodyIR )
   | `@ name `[ structuredAnnotationBodyIR ]
 
-;; (TODO) Add whitespace separator as hint?
-syntax annotationsIR = annotationIR*
+syntax annotationsIR =
+  | `EMPTY
+  | annotationIR
+  | annotationsIR annotationIR
 
 syntax optAnnotationsIR = annotationsIR?
 
@@ -694,5 +779,7 @@ syntax optAnnotationsIR = annotationsIR?
 ;; P4 program
 ;;
 
-;; (TODO) nonempty sequence with + iterator
-syntax p4programIR = declarationIR*
+syntax p4programIR =
+  | `EMPTY
+  | p4programIR declarationIR
+  | p4programIR `;

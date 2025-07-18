@@ -6,6 +6,7 @@ type t =
   | Sup               (* `:>` *)
   | Turnstile         (* `|-` *)
   | Tilesturn         (* `-|` *)
+  | DoubleQuote       (* ``''` *)
   | Underscore        (* ``_` *)
   | Arrow             (* `->` *)
   | ArrowSub          (* `->_` *)
@@ -80,6 +81,7 @@ let string_of_atom = function
   | Sup -> ":>"
   | Turnstile -> "|-"
   | Tilesturn -> "-|"
+  | DoubleQuote -> "\""
   | Underscore -> "_"
   | Arrow -> "->"
   | ArrowSub -> "->_"

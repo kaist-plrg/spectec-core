@@ -33,13 +33,13 @@ def $un_bnot(w W i) = w W i'
 
 dec $un_lnot(val) : val
 
-def $un_lnot(b PHTM_0) = (~b) PHTM_0
+def $un_lnot(B b) = B (~b)
 
 ;;; Unary plus
 
 dec $un_plus(val) : val
 
-def $un_plus(i PHTM_1) = i PHTM_1
+def $un_plus(D i) = D i
 def $un_plus(w W i) = w W i
 def $un_plus(w S i) = w S i
 
@@ -47,7 +47,7 @@ def $un_plus(w S i) = w S i
 
 dec $un_minus(val) : val
 
-def $un_minus(i PHTM_1) = $(-i) PHTM_1
+def $un_minus(D i) = D $(-i)
 def $un_minus(w W i) = w W i'
   -- if i' = $($pow2(w) - i)
 def $un_minus(w S i) = w S i'
@@ -61,7 +61,7 @@ def $un_minus(w S i) = w S i'
 
 dec $bin_plus(val, val) : val
 
-def $bin_plus(i_l PHTM_1, i_r PHTM_1) = $(i_l + i_r) PHTM_1
+def $bin_plus(D i_l, D i_r) = D $(i_l + i_r)
 def $bin_plus(w W i_l, w W i_r) = w W i'
   -- if i_l' = $to_int(w, i_l)
   -- if i_r' = $to_int(w, i_r)
@@ -77,7 +77,7 @@ def $bin_plus(w S i_l, w S i_r) = w S i'
 
 dec $bin_minus(val, val) : val
 
-def $bin_minus(i_l PHTM_1, i_r PHTM_1) = $(i_l - i_r) PHTM_1
+def $bin_minus(D i_l, D i_r) = D $(i_l - i_r)
 def $bin_minus(w W i_l, w W i_r) = w W i'
   -- if i_l' = $to_int(w, i_l)
   -- if i_r' = $to_int(w, i_r)
@@ -93,7 +93,7 @@ def $bin_plus(w S i_l, w S i_r) = w S i'
 
 dec $bin_mul(val, val) : val
 
-def $bin_mul(i_l PHTM_1, i_r PHTM_1) = $(i_l * i_r) PHTM_1
+def $bin_mul(D i_l, D i_r) = D $(i_l * i_r)
 def $bin_minus(w W i_l, w W i_r) = w W i'
   -- if i_l' = $to_int(w, i_l)
   -- if i_r' = $to_int(w, i_r)
@@ -107,24 +107,24 @@ def $bin_plus(w S i_l, w S i_r) = w S i'
 
 dec $bin_div(val, val) : val
 
-def $bin_div(i_l PHTM_1, i_r PHTM_1) = $(i_l / i_r) PHTM_1
+def $bin_div(D i_l, D i_r) = D $(i_l / i_r)
 
 ;;; Binary modulo
 
 dec $bin_mod(val, val) : val
 
-def $bin_mod(i_l PHTM_1, i_r PHTM_1) = $(i_l \ i_r) PHTM_1
+def $bin_mod(D i_l, D i_r) = D $(i_l \ i_r)
 
 ;;; Binary shift left
 
 dec $bin_shl(val, val) : val
 
-def $bin_shl(i_l PHTM_1, i_r PHTM_1) = $shl(i_l, i_r) PHTM_1
-def $bin_shl(i_l PHTM_1, w_r W i_r) = $shl(i_l, i_r) PHTM_1
-def $bin_shl(i_l PHTM_1, w_r S i_r) = $shl(i_l, i_r') PHTM_1
+def $bin_shl(D i_l, D i_r) = D $shl(i_l, i_r)
+def $bin_shl(D i_l, w_r W i_r) = D $shl(i_l, i_r)
+def $bin_shl(D i_l, w_r S i_r) = D $shl(i_l, i_r')
   -- if i_r' = $to_int(w_r, i_r)
 
-def $bin_shl(w_l W i_l, i_r PHTM_1)
+def $bin_shl(w_l W i_l, D i_r)
   = $bin_shl(w_l W i_l, w_l W $to_int(w_l, i_r))
 def $bin_shl(w_l W i_l, w_r W i_r) = w_l W i'
   -- if i' = $to_bitstr(w_l, $shl(i_l, i_r))
@@ -132,7 +132,7 @@ def $bin_shl(w_l W i_l, w_r S i_r) = w_l W i'
   -- if i_r' = $to_int(w_r, i_r)
   -- if i' = $to_bitstr(w_l, $shl(i_l, i_r'))
 
-def $bin_shl(w_l S i_l, i_r PHTM_1)
+def $bin_shl(w_l S i_l, D i_r)
   = $bin_shl(w_l S i_l, w_l S $to_int(w_l, i_r))
 def $bin_shl(w_l S i_l, w_r W i_r) = w_l S i'
   -- if i_l' = $to_int(w_l, i_l)
@@ -146,12 +146,12 @@ def $bin_shl(w_l S i_l, w_r S i_r) = w_l S i'
 
 dec $bin_shr(val, val) : val
 
-def $bin_shr(i_l PHTM_1, i_r PHTM_1) = $shr(i_l, i_r) PHTM_1
-def $bin_shr(i_l PHTM_1, w_r W i_r) = $shr(i_l, i_r) PHTM_1
-def $bin_shr(i_l PHTM_1, w_r S i_r) = $shr(i_l, i_r') PHTM_1
+def $bin_shr(D i_l, D i_r) = D $shr(i_l, i_r)
+def $bin_shr(D i_l, w_r W i_r) = D $shr(i_l, i_r)
+def $bin_shr(D i_l, w_r S i_r) = D $shr(i_l, i_r')
   -- if i_r' = $to_int(w_r, i_r)
 
-def $bin_shr(w_l W i_l, i_r PHTM_1)
+def $bin_shr(w_l W i_l, D i_r)
   = $bin_shr(w_l W i_l, w_l W $to_int(w_l, i_r))
 def $bin_shr(w_l W i_l, w_r W i_r) = w_l W i'
   -- if i' = $to_bitstr(w_l, $shr(i_l, i_r))
@@ -159,12 +159,12 @@ def $bin_shr(w_l W i_l, w_r S i_r) = w_l W i'
   -- if i_r' = $to_int(w_r, i_r)
   -- if i' = $to_bitstr(w_l, $shr(i_l, i_r'))
 
-def $bin_shr(w_l S i_l, i_r PHTM_1) = w_l S i''
+def $bin_shr(w_l S i_l, D i_r) = w_l S i''
   -- if i_l' = $to_int(w_l, i_l)
   -- if $(i_l' < 0)
   -- if i' = $shr_arith(i_l, i_r, $($pow2(w_l) - 1))
   -- if i'' = $to_bitstr(w_l, i')
-def $bin_shr(w_l S i_l, i_r PHTM_1) = w_l S i''
+def $bin_shr(w_l S i_l, D i_r) = w_l S i''
   -- if i_l' = $to_int(w_l, i_l)
   -- if $(i_l' >= 0)
   -- if i' = $shr(i_l, i_r)
@@ -196,7 +196,7 @@ def $bin_shr(w_l S i_l, w_r S i_r) = w_l S i''
 
 dec $bin_le(val, val) : bool
 
-def $bin_le(i_l PHTM_1, i_r PHTM_1) = $(i_l <= i_r)
+def $bin_le(D i_l, D i_r) = $(i_l <= i_r)
 def $bin_le(w W i_l, w W i_r) = $(i_l <= i_r)
 def $bin_le(w S i_l, w S i_r) = $(i_l' <= i_r')
   -- if i_l' = $to_int(w, i_l)
@@ -206,7 +206,7 @@ def $bin_le(w S i_l, w S i_r) = $(i_l' <= i_r')
 
 dec $bin_ge(val, val) : bool
 
-def $bin_ge(i_l PHTM_1, i_r PHTM_1) = $(i_l >= i_r)
+def $bin_ge(D i_l, D i_r) = $(i_l >= i_r)
 def $bin_ge(w W i_l, w W i_r) = $(i_l >= i_r)
 def $bin_ge(w S i_l, w S i_r) = $(i_l' >= i_r')
   -- if i_l' = $to_int(w, i_l)
@@ -216,7 +216,7 @@ def $bin_ge(w S i_l, w S i_r) = $(i_l' >= i_r')
 
 dec $bin_lt(val, val) : bool
 
-def $bin_lt(i_l PHTM_1, i_r PHTM_1) = $(i_l < i_r)
+def $bin_lt(D i_l, D i_r) = $(i_l < i_r)
 def $bin_lt(w W i_l, w W i_r) = $(i_l < i_r)
 def $bin_lt(w S i_l, w S i_r) = $(i_l' < i_r')
   -- if i_l' = $to_int(w, i_l)
@@ -226,7 +226,7 @@ def $bin_lt(w S i_l, w S i_r) = $(i_l' < i_r')
 
 dec $bin_gt(val, val) : bool
 
-def $bin_gt(i_l PHTM_1, i_r PHTM_1) = $(i_l > i_r)
+def $bin_gt(D i_l, D i_r) = $(i_l > i_r)
 def $bin_gt(w W i_l, w W i_r) = $(i_l > i_r)
 def $bin_gt(w S i_l, w S i_r) = $(i_l' > i_r')
   -- if i_l' = $to_int(w, i_l)
@@ -240,7 +240,7 @@ dec $bin_eqs_fields((val, id)*, (val, id)*) : bool
 
 def $bin_eq(primVal_a, primVal_b) = (primVal_a = primVal_b)
 
-def $bin_eq(i_a PHTM_1, i_b PHTM_1) = (i_a = i_b)
+def $bin_eq(D i_a, D i_b) = (i_a = i_b)
 def $bin_eq(w_a W i_a, w_b W i_b) = (w_a = w_b) /\ (i_a = i_b)
 def $bin_eq(w_a S i_a, w_b S i_b) = (w_a = w_b) /\ (i_a = i_b)
 def $bin_eq(w_a V i_a `@ _, w_b V i_b `@ _) = (w_a = w_b) /\ (i_a = i_b)
@@ -350,13 +350,13 @@ def $bin_concat(w_l S i_l, w_r S i_r) = w S i'''
 
 dec $bin_land(val, val) : val
 
-def $bin_land(b_l PHTM_0, b_r PHTM_0) = (b_l /\ b_r) PHTM_0
+def $bin_land(B b_l, B b_r) = B (b_l /\ b_r)
 
 ;;; Binary logical or
 
 dec $bin_lor(val, val) : val
 
-def $bin_lor(b_l PHTM_0, b_r PHTM_0) = (b_l \/ b_r) PHTM_0
+def $bin_lor(B b_l, B b_r) = B (b_l \/ b_r)
 
 ;;
 ;; Type cast operations
@@ -374,12 +374,12 @@ dec $cast_bool'(typeIR, bool) : val
 
 def $cast_bool(typeIR, b) = $cast_bool'($canon(typeIR), b)
 
-def $cast_bool'(BOOL, b) = b PHTM_0
+def $cast_bool'(BOOL, b) = B b
 def $cast_bool'(BIT `< w >, true) = w W 1
 def $cast_bool'(BIT `< w >, false) = w W 0
 def $cast_bool'(TYPE _ typeIR, b) = $cast_bool(typeIR, b)
 
-def $cast_op(typeIR, b PHTM_0) = $cast_bool(typeIR, b)
+def $cast_op(typeIR, B b) = $cast_bool(typeIR, b)
 
 ;;; Cast from integer
 
@@ -388,14 +388,14 @@ dec $cast_arbint'(typeIR, int) : val
 
 def $cast_arbint(typeIR, i) = $cast_arbint'($canon(typeIR), i)
 
-def $cast_arbint'(BOOL, i) = (i = 0) PHTM_0
-def $cast_arbint'(INT, i) = i PHTM_1
+def $cast_arbint'(BOOL, i) = B (i = 0)
+def $cast_arbint'(INT, i) = D i
 def $cast_arbint'(BIT `< w >, i) = w W ($to_bitstr(w, i))
 def $cast_arbint'(INT `< w >, i) = w S ($to_bitstr(w, i))
 def $cast_arbint'(TYPE _ typeIR, i) = $cast_arbint(typeIR, i)
 def $cast_arbint'(SET `< typeIR >, i) = SET `{ $cast_arbint(typeIR, i) }
 
-def $cast_op(typeIR, i PHTM_1) = $cast_arbint(typeIR, i)
+def $cast_op(typeIR, D i) = $cast_arbint(typeIR, i)
 
 ;;; Cast from fixed unsigned integer
 
@@ -404,8 +404,8 @@ dec $cast_fixbit'(typeIR, nat, int) : val
 
 def $cast_fixbit(typeIR, w, i) = $cast_fixbit'($canon(typeIR), w, i)
 
-def $cast_fixbit'(BOOL, w, i) = (i = 1) PHTM_0
-def $cast_fixbit'(INT, _, i) = i PHTM_1
+def $cast_fixbit'(BOOL, w, i) = B (i = 1)
+def $cast_fixbit'(INT, _, i) = D i
 def $cast_fixbit'(BIT `< w_to >, _, i) = w_to W i'
   -- if i' = $to_bitstr(w_to, i)
 def $cast_fixbit'(INT `< w_to >, _, i) = w_to S i'
@@ -422,7 +422,7 @@ dec $cast_fixint'(typeIR, nat, int) : val
 
 def $cast_fixint(typeIR, w, i) = $cast_fixint'($canon(typeIR), w, i)
 
-def $cast_fixint'(INT, w, i) = ($to_int(w, i)) PHTM_1
+def $cast_fixint'(INT, w, i) = D $to_int(w, i)
 def $cast_fixint'(BIT `< w_to >, w_from, i) = w_to W i'
   -- if i' = $to_bitstr(w_to, $to_int(w_from, i))
 def $cast_fixint'(INT `< w_to >, w_from, i) = w_to S i'
@@ -577,11 +577,12 @@ def $cast_op(typeIR, SET `{ val_l `.. val_u })
 
 def $default(typeIR) = $default'($canon(typeIR))
 
-def $default'(BOOL) = false PHTM_0
+def $default'(BOOL) = B false
 def $default'(ERROR) = ERROR `. "NoError"
-def $default'(STRING) = "" PHTM_2
+def $default'(STRING) = `" text_empty `"
+  -- if text_empty = ""
 
-def $default'(INT) = 0 PHTM_1
+def $default'(INT) = D 0
 def $default'(BIT `< w >) = w W 0
 def $default'(INT `< w >) = w S 0
 def $default'(VARBIT `< w >) = w V 0 `@ 0

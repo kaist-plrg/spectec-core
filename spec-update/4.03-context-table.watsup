@@ -4,7 +4,7 @@
 
 syntax matchKey = (typeIR, id)
 
-syntax matchAction = (id, paramTypeIR*, argumentIR*)
+syntax matchAction = (id, paramTypeIR*, argumentListIR)
 
 syntax matchPriority =
   { VALUES int*,
@@ -67,12 +67,12 @@ def $empty_tblctx
 
 ;;; Adder for actions
 
-dec $add_action(tblctx, id, paramTypeIR*, argumentIR*)
+dec $add_action(tblctx, id, paramTypeIR*, argumentListIR)
   : tblctx
 
-def $add_action(tblctx, id, paramTypeIR*, argumentIR*)
+def $add_action(tblctx, id, paramTypeIR*, argumentListIR)
   = tblctx[ .ACTIONS = tblctx.ACTIONS ++ [ matchAction ] ]
-  -- if matchAction = (id, paramTypeIR*, argumentIR*)
+  -- if matchAction = (id, paramTypeIR*, argumentListIR)
 
 ;;
 ;; Finders
@@ -80,16 +80,16 @@ def $add_action(tblctx, id, paramTypeIR*, argumentIR*)
 
 ;;; Finder for actions
 
-dec $find_action(tblctx, id) : (paramTypeIR*, argumentIR*)?
-dec $find_action'(matchAction*, id) : (paramTypeIR*, argumentIR*)?
+dec $find_action(tblctx, id) : (paramTypeIR*, argumentListIR)?
+dec $find_action'(matchAction*, id) : (paramTypeIR*, argumentListIR)?
 
 def $find_action(tblctx, id) = $find_action'(tblctx.ACTIONS, id)
 
 def $find_action'(eps, id) = eps
 
 def $find_action'(matchAction_h :: matchAction_t*, id)
-  = (paramTypeIR*, argumentIR*)
-  -- if (id, paramTypeIR*, argumentIR*) = matchAction_h
+  = (paramTypeIR*, argumentListIR)
+  -- if (id, paramTypeIR*, argumentListIR) = matchAction_h
 
 def $find_action'(matchAction_h :: matchAction_t*, id)
   = $find_action'(matchAction_t*, id)

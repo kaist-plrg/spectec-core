@@ -20,8 +20,19 @@ relation Type_ok:
   hint(input %0 %1 %2)
 
 relation TypeArg_ok:
-  cursor context |- typeArg : typeIR tid*
+  cursor context |- typeArg : typeArgIR tid*
   hint(input %0 %1 %2)
+
+relation TypeArgs_ok:
+  cursor context |- typeArgList : typeArgListIR tid*
+  hint(input %0 %1 %2)
+
+dec $flatten_typeArgListIR(typeArgListIR) : typeArgIR*
+
+def $flatten_typeArgListIR(`EMPTY) = eps
+def $flatten_typeArgListIR(typeArgIR) = typeArgIR
+def $flatten_typeArgListIR(typeArgListIR `, typeArgIR)
+  = $flatten_typeArgListIR(typeArgListIR) ++ [ typeArgIR ]
 
 ;;
 ;;;; Subtyping, explicit and implicit
@@ -52,8 +63,37 @@ relation Expr_ok:
 ;;
 
 relation Arg_ok:
-  cursor context |- argument : argumentIR typeIR
+  cursor context |- argument : typedArgumentIR
   hint(input %0 %1 %2)
+
+relation Args_ok:
+  cursor context |- argumentList : typedArgumentListIR
+  hint(input %0 %1 %2)
+
+dec $flatten_argumentListIR(argumentListIR) : argumentIR*
+
+def $flatten_argumentListIR(`EMPTY) = eps
+def $flatten_argumentListIR(argumentIR) = argumentIR
+def $flatten_argumentListIR(argumentListIR `, argumentIR)
+  = $flatten_argumentListIR(argumentListIR) ++ [ argumentIR ]
+
+;; (TODO) Might want to define SpecTec lists
+;; as left-associative instead of right-associative
+dec $structure_argumentListIR(argumentIR*) : argumentListIR
+
+def $structure_argumentListIR(eps) = `EMPTY
+def $structure_argumentListIR(argumentIR_h :: argumentIR_t*)
+  = $structure_argumentListIR(argumentIR_h''*) `, argumentIR_t'
+  -- if argumentIR_t' :: argumentIR_h'*
+      = $rev_<argumentIR*>(argumentIR_h :: argumentIR_t*)
+  -- if argumentIR_h''* = $rev_<argumentIR*>(argumentIR_h'*)
+
+dec $flatten_typedArgumentListIR(typedArgumentListIR) : typedArgumentIR*
+
+def $flatten_typedArgumentListIR(`EMPTY) = eps
+def $flatten_typedArgumentListIR(typedArgumentIR) = typedArgumentIR
+def $flatten_typedArgumentListIR(typedArgumentListIR `, typedArgumentIR)
+  = $flatten_typedArgumentListIR(typedArgumentListIR) ++ [ typedArgumentIR ]
 
 ;;
 ;;;; Statement typing
@@ -101,11 +141,14 @@ relation Params_ok:
 dec $paramtypes(parameterListIR) : paramTypeIR*
 dec $paramtype(parameterIR) : paramTypeIR
 
-def $paramtypes(parameterIR*) = $paramtype(parameterIR)*
+def $paramtypes(`EMPTY) = eps
+def $paramtypes(parameterIR) = $paramtype(parameterIR)
+def $paramtypes(parameterListIR `, parameterIR)
+  = $paramtypes(parameterListIR) ++ [ $paramtype(parameterIR) ]
 
-def $paramtype(direction typeIR name)
+def $paramtype(_ direction typeIR name)
   = $id(name) direction typeIR eps
-def $paramtype(direction typeIR name (`= val))
+def $paramtype(_ direction typeIR name (`= val))
   = $id(name) direction typeIR val
 
 relation ConsParam_ok:
@@ -128,8 +171,8 @@ def $consParamtypes(`( parameterListIR ))
 ;;
 
 relation Call_action_partial_ok:
-  cursor context |- paramTypeIR* `@ (argumentIR, typeIR)*
-                  : (paramTypeIR*, paramTypeIR*) `@ argumentIR*
+  cursor context |- paramTypeIR* `@ typedArgumentListIR
+                  : (paramTypeIR*, paramTypeIR*) `@ argumentListIR
   hint(input %0 %1 %2 %3)
 
 relation TableAction_ok:
@@ -141,8 +184,8 @@ relation TableActions_ok:
   hint(input %0 %1 %2)
 
 relation Call_action_default_ok:
-  cursor context |- paramTypeIR* `@ argumentIR* `@ (argumentIR, typeIR)*
-                  : argumentIR*
+  cursor context |- paramTypeIR* `@ argumentListIR `@ typedArgumentListIR
+                  : argumentListIR
   hint(input %0 %1 %2 %3 %4)
 
 relation TableDefaultAction_ok:
@@ -188,6 +231,10 @@ relation ControlLocalDecls_ok:
 ;;
 
 relation Prog_ok:
+  context |- p4program : context p4programIR
+  hint(input %0 %1)
+
+relation Prog_ok_entry:
   |- p4program : context p4programIR
   hint(input %0)
 
@@ -203,11 +250,11 @@ relation Prog_ok:
 syntax actctxt = ACT | NOACT
 
 relation Call_convention_ok_:
-  cursor context actctxt |- paramTypeIR `@ (argumentIR, typeIR) : argumentIR
+  cursor context actctxt |- paramTypeIR `@ typedArgumentIR : argumentIR
   hint(input %0 %1 %2 %3 %4)
 
 relation Call_convention_ok:
-  cursor context actctxt |- paramTypeIR* `@ (argumentIR, typeIR)* : argumentIR*
+  cursor context actctxt |- paramTypeIR* `@ typedArgumentIR* : argumentIR*
   hint(input %0 %1 %2 %3 %4)
 
 ;;
@@ -216,12 +263,12 @@ relation Call_convention_ok:
 ;;;; and also identifies the ids of default arguments
 ;;
 
-relation FuncType_ok:
+relation Func_ok:
   cursor context |- name typeArgIR* argumentIR* : funcTypeIR tid* id*
   hint(input %0 %1 %2 %3 %4)
 
 relation Method_ok:
-  cursor context |- lvalue `< typeArgIR* > `( argumentIR* )
+  cursor context |- lvalue `< typeArgListIR > `( typedArgumentListIR )
                   : lvalueIR `< `# tid* > `( `# id* ) `@ funcTypeIR
   hint(input %0 %1 %2 %3 %4)
 
@@ -237,9 +284,9 @@ relation Call_site_ok:
   hint(input %0 %1 %2)
 
 relation Call_ok:
-  cursor context |- funcTypeIR `< typeArgIR* `# tid* >
-                               `( argumentIR* `# id* )
-                  : typeIR `< typeArgIR* > `( argumentIR* )
+  cursor context |- funcTypeIR `< typeArgListIR `# tid* >
+                               `( typedArgumentListIR `# id* )
+                  : typeIR `< typeArgListIR > `( argumentListIR )
   hint(input %0 %1 %2 %3 %4 %5 %6)
 
 ;;
@@ -249,7 +296,7 @@ relation Call_ok:
 ;;
 
 relation Cons_ok:
-  cursor context |- name `< typeArgIR* > `( argument* )
+  cursor context |- name `< typeArgIR* > `( argumentList )
                   : cid `< `# tid* > `( `# id* ) `@ consTypeIR
   hint(input %0 %1 %2 %3 %4)
 
@@ -265,7 +312,7 @@ relation Inst_site_ok:
   hint(input %0 %1 %2)
 
 relation Inst_ok:
-  cursor context |- consTypeIR `< typeArgIR* `# tid* >
-                               `( argument* `# id* )
-                  : typeIR `< typeArgIR* > `( argumentIR* )
+  cursor context |- consTypeIR `< typeArgListIR `# tid* >
+                               `( argumentList `# id* )
+                  : typeIR `< typeArgListIR > `( argumentListIR )
   hint(input %0 %1 %2 %3 %4 %5 %6)

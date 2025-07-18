@@ -4,7 +4,7 @@
 ;;;   | nat S int
 
 rule Eval_static/number-arbint:
-  p C |- (i PHTM_1) _ ~> i PHTM_1
+  p C |- (D i) _ ~> D i
 
 rule Eval_static/number-fixbit:
   p C |- (n W i) _ ~> n W i
@@ -15,13 +15,13 @@ rule Eval_static/number-fixint:
 ;;; stringLiteral
 
 rule Eval_static/stringliteral:
-  p C |- (text PHTM_2) _ ~> text PHTM_2
+  p C |- (`" text `") _ ~> `" text `"
 
 ;;; TRUE
 ;;; FALSE
 
 rule Eval_static/true:
-  p C |- TRUE _ ~> true PHTM_0
+  p C |- TRUE _ ~> B true
 
 rule Eval_static/false:
-  p C |- FALSE _ ~> false PHTM_0
+  p C |- FALSE _ ~> B false

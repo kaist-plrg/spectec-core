@@ -15,17 +15,17 @@ syntax val
 ;;
 
 syntax primVal =
-  | bool PHTM_0
+  | B bool
   | ERROR `. id
   | MATCH_KIND `. id
-  | text PHTM_2
+  | `" text `"
 
 ;;
 ;;;; Numeric values
 ;;
 
 syntax numVal =
-  | int PHTM_1
+  | D int
   | nat W int
   | nat S int
   | nat V int `@ nat

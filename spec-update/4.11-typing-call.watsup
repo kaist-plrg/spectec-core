@@ -3,23 +3,23 @@
 ;;
 
 rule Call_convention_ok_/in:
-  p C actctxt |- (id IN typeIR_param val?) `@ (expressionIR, typeIR_arg)
+  p C actctxt |- (id IN typeIR_param val?) `@ (expressionIR `@ typeIR_arg)
                : expressionIR_cast
   -- if expressionIR_cast = $coerce_unary(expressionIR, typeIR_param)
 
 rule Call_convention_ok_/out-inout:
-  p C actctxt |- (id direction typeIR_param val?) `@ (expressionIR, typeIR_arg)
+  p C actctxt |- (id direction typeIR_param val?) `@ (expressionIR `@ typeIR_arg)
                : expressionIR
   -- if direction = OUT \/ direction = INOUT
   -- Type_alpha: typeIR_param ~~ typeIR_arg
 
 rule Call_convention_ok_/none-action:
-  p C ACT |- (id NONE typeIR_param val?) `@ (expressionIR, typeIR_arg)
+  p C ACT |- (id NONE typeIR_param val?) `@ (expressionIR `@ typeIR_arg)
            : expressionIR_cast
   -- if expressionIR_cast = $coerce_unary(expressionIR, typeIR_param)
 
 rule Call_convention_ok_/none-not-action:
-  p C NOACT |- (id NONE typeIR_param val?) `@ (expressionIR, typeIR_arg)
+  p C NOACT |- (id NONE typeIR_param val?) `@ (expressionIR `@ typeIR_arg)
             : expressionIR
   -- if _ `(_ `; ctk) = expressionIR
   -- if ctk = LCTK \/ ctk = CTK
@@ -30,18 +30,15 @@ rule Call_convention_ok_/none-not-action:
 ;;
 
 rule Call_convention_ok:
-  p C actctxt |- paramTypeIR* `@ (argumentIR, typeIR)*
-               : argumentIR_cast*
-  -- (Call_convention_ok_:
-        p C actctxt |- paramTypeIR `@ (argumentIR, typeIR)
-                     : argumentIR_cast)*
+  p C actctxt |- paramTypeIR* `@ typedArgumentIR* : argumentIR_cast*
+  -- (Call_convention_ok_: p C actctxt |- paramTypeIR `@ typedArgumentIR : argumentIR_cast)*
 
 ;;
 ;; Function and method typing
 ;;
 
 rule Method_ok/table-apply:
-  p C |- (prefixedNonTypeName `. APPLY) `< eps > `( eps )
+  p C |- (prefixedNonTypeName `. APPLY) `< `EMPTY > `( `EMPTY )
        : prefixedNonTypeName `< `# eps > `( `# eps )
          `@ funcTypeIR
   ---- ;; check lvalue
@@ -56,9 +53,8 @@ rule Method_ok/table-apply:
 ;;
 
 rule Call_ok/table-apply-method:
-  p C |- (TABLE_APPLY -> typeIR_table)
-          `< eps `# eps > `( eps `# eps )
-       : typeIR_table `< eps > `( eps )
+  p C |- (TABLE_APPLY -> typeIR_table) `< `EMPTY `# eps > `( `EMPTY `# eps )
+       : typeIR_table `< `EMPTY > `( `EMPTY )
   -- FuncType_wf: $bound(p, C) |- TABLE_APPLY -> typeIR_table
 
 ;;
@@ -66,11 +62,11 @@ rule Call_ok/table-apply-method:
 ;;
 
 rule Cons_ok:
-  p C |- name `< typeArgIR* > `( argument* )
+  p C |- name `< typeArgIR* > `( argumentList )
        : cid `< `# tid_fresh* > `( `# id_default* ) `@ consTypeIR
   -- if id = $id(name)
   -- if (cid, consTypeDefIR, id_default*)
-      = $find_cons_overloaded(C, id, argument*)
+      = $find_cons_overloaded(C, id, argumentList)
   -- if (consTypeIR, tid_fresh*)
       = $specialize_consTypeDef(consTypeDefIR, typeArgIR*)
 

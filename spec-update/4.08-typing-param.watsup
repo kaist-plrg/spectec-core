@@ -4,14 +4,14 @@
 
 rule Param_ok/init-none:
   p C |- optAnnotations direction typeRef name
-       : (direction typeIR name) tid_fresh*
+       : (optAnnotations direction typeIR name) tid_fresh*
   -- Type_ok: p C |- typeRef : typeIR tid_fresh*
   -- if bound = $union_set<tid>($bound(p, C), `{ tid_fresh* })
   -- Type_wf: bound |- typeIR
 
 rule Param_ok/init-some:
   p C |- optAnnotations direction typeRef name initializer
-       : (direction typeIR name initializerIR) tid_fresh*
+       : (optAnnotations direction typeIR name initializerIR) tid_fresh*
   -- Type_ok: p C |- typeRef : typeIR tid_fresh*
   -- if bound = $union_set<tid>($bound(p, C), `{ tid_fresh* })
   -- Type_wf: bound |- typeIR
@@ -22,10 +22,19 @@ rule Param_ok/init-some:
   -- Eval_static: p C |- expressionIR_init ~> val_init
   -- if initializerIR = `= val_init
 
-rule Params_ok:
-  p C |- parameter* : parameterIR* tid_fresh'*
-  -- (Param_ok: p C |- parameter : parameterIR tid_fresh*)*
-  -- if tid_fresh'* = $concat_<tid>(tid_fresh**)
+rule Params_ok/empty:
+  p C |- `EMPTY : `EMPTY eps
+
+rule Params_ok/parameter:
+  p C |- parameter : parameterIR tid_fresh*
+  -- Param_ok: p C |- parameter : parameterIR tid_fresh*
+
+rule Params_ok/parameterList-parameter:
+  p C |- parameterList `, parameter 
+       : (parameterListIR `, parameterIR) tid_fresh*
+  -- Params_ok: p C |- parameterList : parameterListIR tid_fresh_0*
+  -- Param_ok: p C |- parameter : parameterIR tid_fresh_1*
+  -- if tid_fresh* = tid_fresh_0* ++ tid_fresh_1*
 
 ;;
 ;; Constructor parameter typing
@@ -33,14 +42,14 @@ rule Params_ok:
 
 rule ConsParam_ok/init-none:
   C |- optAnnotations direction typeRef name
-     : (direction typeIR name) tid_fresh*
+     : (optAnnotations direction typeIR name) tid_fresh*
   -- Type_ok: BLOCK C |- typeRef : typeIR tid_fresh*
   -- if bound = $union_set<tid>($bound(BLOCK, C), `{ tid_fresh* })
   -- Type_wf: bound |- typeIR
 
 rule ConsParam_ok/init-some:
   C |- optAnnotations direction typeRef name initializer
-     : (direction typeIR name initializerIR) tid_fresh*
+     : (optAnnotations direction typeIR name initializerIR) tid_fresh*
   -- Type_ok: BLOCK C |- typeRef : typeIR tid_fresh*
   -- if bound = $union_set<tid>($bound(BLOCK, C), `{ tid_fresh* })
   -- Type_wf: bound |- typeIR
@@ -51,11 +60,19 @@ rule ConsParam_ok/init-some:
   -- Eval_static: BLOCK C |- expressionIR_init ~> val_init
   -- if initializerIR = `= val_init
 
-rule ConsParams_ok/params-none:
+rule ConsParams_ok/epsilon:
   C |- eps : eps eps
 
-rule ConsParams_ok/params-some:
-  C |- `( parameter* )
-     : `( parameterIR* ) tid_fresh'*
-  -- (ConsParam_ok: C |- parameter : parameterIR tid_fresh*)*
-  -- if tid_fresh'* = $concat_<tid>(tid_fresh**)
+rule ConsParams_ok/empty:
+  C |- `( `EMPTY ) : `( `EMPTY ) eps
+
+rule ConsParams_ok/parameter:
+  C |- `( parameter ) : `( parameterIR ) tid_fresh*
+  -- ConsParam_ok: C |- parameter : parameterIR tid_fresh*
+
+rule ConsParams_ok/parameterList-parameter:
+  C |- `( (parameterList `, parameter) )
+     : (`( (parameterListIR `, parameterIR) )) tid_fresh*
+  -- ConsParams_ok: C |- `( parameterList ) : `( parameterListIR ) tid_fresh_0*
+  -- ConsParam_ok: C |- parameter : parameterIR tid_fresh_1*
+  -- if tid_fresh* = tid_fresh_0* ++ tid_fresh_1*

@@ -5,7 +5,7 @@
 ;;;  | expression
 
 rule Arg_ok/expression:
-  p C |- expression : expressionIR typeIR
+  p C |- expression : expressionIR `@ typeIR
   -- Expr_ok: p C |- expression : expressionIR
   -- if _ `( typeIR `; _) = expressionIR
 

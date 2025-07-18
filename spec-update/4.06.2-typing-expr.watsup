@@ -1,10 +1,10 @@
 ;;; syntax number =
-;;;   | int PHTM_1
+;;;   | D int
 ;;;   | nat W int
 ;;;   | nat S int
 
 rule Expr_ok/number-arbint:
-  p C |- i PHTM_1 : (i PHTM_1) `( INT `; LCTK )
+  p C |- D i : (D i) `( INT `; LCTK )
 
 rule Expr_ok/number-fixbit:
   p C |- n W i : (n W i) `( (BIT `< n >) `; LCTK )
@@ -17,7 +17,7 @@ rule Expr_ok/number-fixbit:
 ;;; stringLiteral
 
 rule Expr_ok/stringliteral:
-  p C |- (text PHTM_2) : (text PHTM_2) `( STRING `; LCTK )
+  p C |- (`" text `") : (`" text `") `( STRING `; LCTK )
 
 ;;; TRUE
 ;;; FALSE

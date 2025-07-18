@@ -16,6 +16,16 @@ let distinct (eq : 'a -> 'a -> bool) (xs : 'a list) : bool =
   in
   distinct' xs
 
+let groupby (eq : 'a -> 'a -> bool) (xs : 'a list) : 'a list list =
+  let rec groupby' acc xs =
+    match xs with
+    | [] -> List.rev acc
+    | x :: xs ->
+        let same, rest = List.partition (eq x) xs in
+        groupby' ((x :: same) :: acc) rest
+  in
+  groupby' [] xs
+
 (* Identifiers *)
 
 let valid_tid (id : id) = id.it = (Var.strip_var_suffix id).it
@@ -305,8 +315,18 @@ and elab_deftyp_variant (ctx : Ctx.t) (at : region) (id : id)
   in
   let typcases = List.concat_map (expand_typcase ctx plaintyp) typcases in
   let typcases_il = typcases |> List.map fst |> List.map (elab_typcase ctx) in
-  (* let mixops = typcases_il |> List.map it |> List.map fst in *)
-  (* check (distinct Mixop.eq mixops) at "variant cases are ambiguous"; *)
+  let mixops = typcases_il |> List.map it |> List.map fst in
+  let mixop_groups = groupby Mixop.eq mixops in
+  let mixop_duplicates =
+    List.filter (fun mixop_group -> List.length mixop_group > 1) mixop_groups
+  in
+  check (List.length mixop_duplicates = 0)
+    at
+      ("variant cases are ambiguous: "
+        ^ String.concat ", "
+            (List.map (fun mixop_group ->
+                 Mixop.string_of_mixop (List.hd mixop_group))
+               mixop_duplicates));
   let deftyp_il = Il.Ast.VariantT typcases_il $ at in
   let td = Typdef.Defined (tparams, `Variant typcases) in
   (td, deftyp_il)

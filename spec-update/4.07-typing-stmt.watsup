@@ -62,16 +62,15 @@ rule Stmt_ok/constantdeclaration:
 
 rule Stmt_ok/assignmentOrMethodCallStatement-lvalue-argumentList:
   p C f |- (lvalue `( argumentList )) `;
-         : C f ((lvalueIR `( argumentIR_cast* )) `;)
+         : C f ((lvalueIR `( argumentListIR_cast )) `;)
   ---- ;; check arguments
-  -- if argument* = argumentList
-  -- (Arg_ok: p C |- argument : argumentIR typeIR_arg)*
+  -- Args_ok: p C |- argumentList : typedArgumentListIR
   ---- ;; check lvalue
-  -- Method_ok: p C |- lvalue `< eps > `( argumentIR* )
+  -- Method_ok: p C |- lvalue `< `EMPTY > `( typedArgumentListIR )
                      : lvalueIR `< `# eps > `( `# id_default* ) `@ funcTypeIR
   ---- ;; check call convention
-  -- Call_ok: p C |- funcTypeIR `< eps `# eps > `( argumentIR* `# id_default* )
-                   : typeIR `< eps > `( argumentIR_cast* )
+  -- Call_ok: p C |- funcTypeIR `< `EMPTY `# eps > `( typedArgumentListIR `# id_default* )
+                   : typeIR `< `EMPTY > `( argumentListIR_cast )
 
 ;;;;;; | lvalue `< typeArgumentList > `( argumentList )
 
@@ -147,13 +146,13 @@ rule Stmt_ok/emptystatement:
 
 rule Block_ok/init:
   C f INIT |- optAnnotations `{ statOrDeclList }
-            : C' f' `{ statOrDeclListIR }
+            : C' f' (optAnnotations `{ statOrDeclListIR })
   -- Stmts_ok: LOCAL C f |- statOrDeclList
                           : C' f' statOrDeclListIR
 
 rule Block_ok/noinit:
   C f NOINIT |- optAnnotations `{ statOrDeclList }
-              : C_exit f_end `{ statOrDeclListIR }
+              : C_exit f_end (optAnnotations `{ statOrDeclListIR })
   -- if C_enter = $enter(C)
   -- Stmts_ok: LOCAL C_enter f |- statOrDeclList
                                 : C_end f_end statOrDeclListIR
@@ -202,16 +201,21 @@ rule Stmt_ok/exit:
 ;; syntax statOrDeclList
 ;;
 
-rule Stmts_ok/nil:
-  p C f |- eps : C f eps
+rule Stmts_ok/empty:
+  p C f |- `EMPTY : C f `EMPTY
 
-rule Stmts_ok/cons:
-  p C f |- statementOrDeclaration_h :: statementOrDeclaration_t*
-         : C'' f'' (statementOrDeclarationIR_h :: statementOrDeclarationIR_t*)
-  -- Stmt_ok: p C f |- statementOrDeclaration_h
-                     : C' f' statementOrDeclarationIR_h
-  -- Stmts_ok: p C' f' |- statementOrDeclaration_t*
-                      : C'' f'' statementOrDeclarationIR_t*
+rule Stmts_ok/statementOrDeclaration:
+  p C f |- statementOrDeclaration
+         : C' f' statementOrDeclarationIR
+  -- Stmt_ok: p C f |- statementOrDeclaration
+                     : C' f' statementOrDeclarationIR
+
+rule Stmts_ok/statOrDeclList-statementOrDeclaration:
+  p C f |- statOrDeclList statementOrDeclaration
+         : C'' f'' (statOrDeclListIR statementOrDeclarationIR)
+  -- Stmts_ok: p C f |- statOrDeclList : C' f' statOrDeclListIR
+  -- Stmt_ok: p C' f' |- statementOrDeclaration
+                     : C'' f'' statementOrDeclarationIR
 
 ;;
 ;; Control body typing

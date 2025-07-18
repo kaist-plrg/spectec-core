@@ -251,38 +251,33 @@ def $find_type(LOCAL, C, tid) = $find_type(BLOCK, C, tid)
 
 ;;; Finder for functions
 
-dec $ids_arguments(argument*) : (id?)*
+dec $ids_arguments(argumentList) : (id?)*
+dec $id_argument(argument) : id?
 
-def $ids_arguments(eps) = eps
-def $ids_arguments((name `= _) :: argument_t*)
-  = id_arg :: $ids_arguments(argument_t*)
-  -- if id_arg = $id(name)
-def $ids_arguments((name `= `_) :: argument_t*)
-  = id_arg :: $ids_arguments(argument_t*)
-  -- if id_arg = $id(name)
-def $ids_arguments(argument_h :: argument_t*)
-  = eps :: $ids_arguments(argument_t*)
-  -- otherwise
+def $ids_arguments(`EMPTY) = eps
+def $ids_arguments(argument) = $id_argument(argument)
+def $ids_arguments(argumentList `, argument)
+  = $ids_arguments(argumentList) ++ [ $id_argument(argument) ]
 
-dec $find_func_overloaded(cursor, context, id, argument*)
+dec $find_func_overloaded(cursor, context, id, argumentList)
   : (fid, funcTypeDefIR, id*)?
 
-def $find_func_overloaded(GLOBAL, C, id, argument*)
+def $find_func_overloaded(GLOBAL, C, id, argumentList)
   = $find_func<funcTypeDefIR>(fdenv, id, (id_arg?)*)
   -- if fdenv = C.GLOBAL.FDENV
-  -- if (id_arg?)* = $ids_arguments(argument*)
-def $find_func_overloaded(BLOCK, C, id, argument*)
+  -- if (id_arg?)* = $ids_arguments(argumentList)
+def $find_func_overloaded(BLOCK, C, id, argumentList)
   = (fid, funcTypeDefIR, id_default*)
   -- if fdenv = C.BLOCK.FDENV
-  -- if (id_arg?)* = $ids_arguments(argument*)
+  -- if (id_arg?)* = $ids_arguments(argumentList)
   -- if (fid, funcTypeDefIR, id_default*) = $find_func<funcTypeDefIR>(fdenv, id, (id_arg?)*)
-def $find_func_overloaded(BLOCK, C, id, argument*)
-  = $find_func_overloaded(GLOBAL, C, id, argument*)
+def $find_func_overloaded(BLOCK, C, id, argumentList)
+  = $find_func_overloaded(GLOBAL, C, id, argumentList)
   -- if fdenv = C.BLOCK.FDENV
-  -- if (id_arg?)* = $ids_arguments(argument*)
+  -- if (id_arg?)* = $ids_arguments(argumentList)
   -- if eps = $find_func<funcTypeDefIR>(fdenv, id, (id_arg?)*)
-def $find_func_overloaded(LOCAL, C, id, argument*)
-  = $find_func_overloaded(BLOCK, C, id, argument*) 
+def $find_func_overloaded(LOCAL, C, id, argumentList)
+  = $find_func_overloaded(BLOCK, C, id, argumentList) 
 
 dec $find_func_non_overloaded(cursor, context, id) : funcTypeDefIR?
 
@@ -295,10 +290,10 @@ def $find_func_non_overloaded(LOCAL, C, id) = $find_func_non_overloaded(BLOCK, C
 
 ;;; Finder for constructors
 
-dec $find_cons_overloaded(context, id, argument*)
+dec $find_cons_overloaded(context, id, argumentList)
   : (fid, consTypeDefIR, id*)?
 
-def $find_cons_overloaded(C, id, argument*)
+def $find_cons_overloaded(C, id, argumentList)
   = $find_func<consTypeDefIR>(cdenv, id, (id_arg?)*)
   -- if cdenv = C.GLOBAL.CDENV
-  -- if (id_arg?)* = $ids_arguments(argument*)
+  -- if (id_arg?)* = $ids_arguments(argumentList)
