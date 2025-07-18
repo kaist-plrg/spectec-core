@@ -14,12 +14,12 @@ rule Call_convention_ok_/out-inout:
   -- Type_alpha: typeIR_param ~~ typeIR_arg
 
 rule Call_convention_ok_/none-action:
-  p C ACT |- (id NONE typeIR_param val?) `@ (expressionIR `@ typeIR_arg)
+  p C ACT |- (id `EMPTY typeIR_param val?) `@ (expressionIR `@ typeIR_arg)
            : expressionIR_cast
   -- if expressionIR_cast = $coerce_unary(expressionIR, typeIR_param)
 
 rule Call_convention_ok_/none-not-action:
-  p C NOACT |- (id NONE typeIR_param val?) `@ (expressionIR `@ typeIR_arg)
+  p C NOACT |- (id `EMPTY typeIR_param val?) `@ (expressionIR `@ typeIR_arg)
             : expressionIR
   -- if _ `(_ `; ctk) = expressionIR
   -- if ctk = LCTK \/ ctk = CTK

@@ -10,10 +10,13 @@ syntax parameterIR =
   | optAnnotations direction typeIR name
   | optAnnotations direction typeIR name initializerIR
 
+syntax nonEmptyParameterListIR =
+  | parameterIR
+  | nonEmptyParameterListIR `, parameterIR
+
 syntax parameterListIR =
   | `EMPTY
-  | parameterIR
-  | parameterListIR `, parameterIR
+  | nonEmptyParameterListIR
 
 ;;
 ;; Constructor parameters
@@ -38,13 +41,8 @@ syntax expressionIR
 syntax kvPairIR = name `= expressionIR
 
 syntax kvListIR =
-  | `EMPTY
   | kvPairIR
   | kvListIR `, kvPairIR
-
-syntax kvListNonEmptyIR =
-  | kvPairIR
-  | kvListNonEmptyIR `, kvPairIR
 
 ;; Forward declarations
 
@@ -158,6 +156,7 @@ syntax expressionInnerIR =
   | callBaseIR `( argumentListIR )
   | `( typeIR ) expressionIR
 
+;;; (TODO) Why allow (EMPTY `, expression)?
 syntax expressionListIR =
   | `EMPTY
   | expressionIR
@@ -175,8 +174,8 @@ syntax callBaseIR =
 syntax kvPairRecordExpressionIR =
   | name `= expressionIR
   | name `= expressionIR `, `...
-  | name `= expressionIR `, kvListNonEmptyIR
-  | name `= expressionIR `, kvListNonEmptyIR `, `...
+  | name `= expressionIR `, kvListIR
+  | name `= expressionIR `, kvListIR `, `...
 
 syntax recordExpressionIR =
   | expressionListIR
@@ -194,7 +193,6 @@ syntax simpleKeysetExpressionIR =
   | `_
 
 syntax simpleExpressionListIR =
-  | `EMPTY
   | simpleKeysetExpressionIR
   | simpleExpressionListIR `, simpleKeysetExpressionIR
 
@@ -215,6 +213,7 @@ syntax keysetExpressionIR =
 
 syntax typeArgIR = typeIR
 
+;;; (TODO) Why allow (EMPTY `, argument)?
 syntax typeArgListIR =
   | `EMPTY
   | typeArgIR
@@ -230,17 +229,23 @@ syntax argumentIR =
   | `_
   | name `= `_
 
+syntax nonEmptyArgumentListIR =
+  | argumentIR
+  | nonEmptyArgumentListIR `, argumentIR
+
 syntax argumentListIR =
   | `EMPTY
-  | argumentIR
-  | argumentListIR `, argumentIR
+  | nonEmptyArgumentListIR
 
 syntax typedArgumentIR = argumentIR `@ typeIR
 
+syntax nonEmptyTypedArgumentListIR =
+  | typedArgumentIR
+  | nonEmptyTypedArgumentListIR `, typedArgumentIR
+
 syntax typedArgumentListIR =
   | `EMPTY
-  | typedArgumentIR
-  | typedArgumentListIR `, typedArgumentIR
+  | nonEmptyTypedArgumentListIR
 
 ;;
 ;; L-values
@@ -309,8 +314,7 @@ syntax assignmentOrMethodCallStatementIR =
 ;;;; Direct application statements
 ;;
 
-syntax directApplicationIR =
-  | namedTypeIR `. APPLY `( argumentListIR ) `;
+syntax directApplicationIR = namedTypeIR `. APPLY `( argumentListIR ) `;
 
 ;;
 ;;;; Conditional statements
@@ -372,7 +376,6 @@ syntax switchCaseIR =
 
 syntax switchCasesIR =
   | `EMPTY
-  | switchCaseIR
   | switchCasesIR switchCaseIR
 
 syntax switchStatementIR = SWITCH `( expressionIR ) `{ switchCasesIR }
@@ -385,15 +388,21 @@ syntax declOrAssignmentOrMethodCallStatementIR =
   | variableDeclarationWithoutSemicolonIR
   | assignmentOrMethodCallStatementWithoutSemicolonIR
 
+syntax forInitStatementsNonEmptyIR =
+  | declOrAssignmentOrMethodCallStatementIR
+  | forInitStatementsNonEmptyIR `, declOrAssignmentOrMethodCallStatementIR
+
 syntax forInitStatementsIR =
   | `EMPTY
-  | declOrAssignmentOrMethodCallStatementIR
-  | forInitStatementsIR `, declOrAssignmentOrMethodCallStatementIR
+  | forInitStatementsNonEmptyIR
+
+syntax forUpdateStatementsNonEmptyIR =
+  | assignmentOrMethodCallStatementWithoutSemicolonIR
+  | forUpdateStatementsNonEmptyIR `, assignmentOrMethodCallStatementWithoutSemicolonIR
 
 syntax forUpdateStatementsIR =
   | `EMPTY
-  | assignmentOrMethodCallStatementWithoutSemicolonIR
-  | forUpdateStatementsIR `, assignmentOrMethodCallStatementWithoutSemicolonIR
+  | forUpdateStatementsNonEmptyIR
 
 syntax forCollectionExprIR =
   | expressionIR
@@ -428,7 +437,6 @@ syntax statementOrDeclarationIR =
 
 syntax statOrDeclListIR =
   | `EMPTY
-  | statementOrDeclarationIR
   | statOrDeclListIR statementOrDeclarationIR
 
 ;;
@@ -454,7 +462,6 @@ syntax methodPrototypeIR =
 
 syntax methodPrototypesIR =
   | `EMPTY
-  | methodPrototypeIR
   | methodPrototypesIR methodPrototypeIR
 
 syntax externDeclarationIR =
@@ -484,7 +491,6 @@ syntax objDeclarationIR =
 
 syntax objDeclarationsIR =
   | `EMPTY
-  | objDeclarationIR
   | objDeclarationsIR objDeclarationIR
 
 ;;
@@ -507,7 +513,6 @@ syntax keyElementIR =
 
 syntax keyElementListIR =
   | `EMPTY
-  | keyElementIR
   | keyElementListIR keyElementIR
 
 ;;
@@ -522,7 +527,6 @@ syntax actionIR = optAnnotations actionRefIR `;
 
 syntax actionListIR =
   | `EMPTY
-  | actionIR
   | actionListIR actionIR
 
 ;;
@@ -539,7 +543,6 @@ syntax entryIR =
 
 syntax entriesListIR =
   | `EMPTY
-  | entryIR
   | entriesListIR entryIR
 
 ;;
@@ -555,7 +558,6 @@ syntax tablePropertyIR =
 
 syntax tablePropertyListIR =
   | `EMPTY
-  | tablePropertyIR
   | tablePropertyListIR tablePropertyIR
 
 syntax tableDeclarationIR =
@@ -576,7 +578,6 @@ syntax controlLocalDeclarationIR =
 
 syntax controlLocalDeclarationsIR =
   | `EMPTY
-  | controlLocalDeclarationIR
   | controlLocalDeclarationsIR controlLocalDeclarationIR
 
 syntax controlTypeDeclarationIR =
@@ -600,7 +601,6 @@ syntax selectCaseIR = keysetExpressionIR `: name `;
 
 syntax selectCaseListIR =
   | `EMPTY
-  | selectCaseIR
   | selectCaseListIR selectCaseIR
 
 syntax selectExpressionIR = SELECT `( expressionListIR ) `{ selectCaseListIR }
@@ -632,7 +632,6 @@ syntax parserStatementIR =
 
 syntax parserStatementsIR =
   | `EMPTY
-  | parserStatementIR
   | parserStatementsIR parserStatementIR
 
 syntax parserStateIR =
@@ -653,7 +652,6 @@ syntax parserLocalElementIR =
 
 syntax parserLocalElementsIR =
   | `EMPTY
-  | parserLocalElementIR
   | parserLocalElementsIR parserLocalElementIR
 
 syntax parserDeclarationIR =
@@ -672,8 +670,9 @@ syntax packageTypeDeclarationIR =
 
 syntax specifiedNameIR = name initializerIR
 
-;; (TODO) Add comma separator as hint?
-syntax specifiedNameListIR = specifiedNameIR*
+syntax specifiedNameListIR =
+  | specifiedNameIR
+  | specifiedNameListIR `, specifiedNameIR
 
 syntax enumDeclarationIR =
   | optAnnotations ENUM name `{ nameList optTrailingComma }
@@ -687,7 +686,6 @@ syntax structFieldIR = optAnnotations typeIR name `;
 
 syntax structFieldListIR =
   | `EMPTY
-  | structFieldIR
   | structFieldListIR structFieldIR
 
 syntax headerUnionDeclarationIR =
@@ -770,7 +768,6 @@ syntax annotationIR =
 
 syntax annotationsIR =
   | `EMPTY
-  | annotationIR
   | annotationsIR annotationIR
 
 syntax optAnnotationsIR = annotationsIR?

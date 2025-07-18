@@ -6,8 +6,8 @@ syntax id = text
 
 dec $id(name) : id
 
-def $id(`$ id) = id
-def $id(`@ id) = id
+def $id(ID t) = t
+def $id(TID t) = t
 def $id(APPLY) = "apply"
 def $id(KEY) = "key"
 def $id(ACTIONS) = "actions"
@@ -25,8 +25,8 @@ syntax tid = id
 
 dec $tid(name) : tid
 
-def $tid(`$ tid) = tid
-def $tid(`@ tid) = tid
+def $tid(ID t) = t
+def $tid(ID t) = t
 def $tid(APPLY) = "apply"
 def $tid(KEY) = "key"
 def $tid(ACTIONS) = "actions"
@@ -55,7 +55,7 @@ def $fid(name, parameterList) = $id(name) `( $pids(parameterList) )
 
 def $pids(`EMPTY) = eps
 def $pids(parameter) = $pid(parameter)
-def $pids(parameterList `, parameter) = $pids(parameterList) ++ [ $pid(parameter) ]
+def $pids(nonEmptyParameterList `, parameter) = $pids(nonEmptyParameterList) ++ [ $pid(parameter) ]
 
 def $pid(_ _ _ name) = false $id(name)
 def $pid(_ _ _ name _) = true $id(name)

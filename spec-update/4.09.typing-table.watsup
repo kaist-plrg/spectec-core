@@ -11,14 +11,14 @@ def $split_directionless_params(eps) = (eps, eps)
 
 def $split_directionless_params(paramTypeIR_h :: paramTypeIR_t*)
   = (paramTypeIR_data*, paramTypeIR_h :: paramTypeIR_control*)
-  -- if _ NONE _ _ = paramTypeIR_h
+  -- if _ `EMPTY _ _ = paramTypeIR_h
   -- if (paramTypeIR_data*, paramTypeIR_control*)
       = $split_directionless_params(paramTypeIR_t*)
 
 def $split_directionless_params(paramTypeIR_h :: paramTypeIR_t*)
   = (paramTypeIR_h :: paramTypeIR_data*, paramTypeIR_control*)
   -- if _ direction _ _ = paramTypeIR_h
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
   -- if (paramTypeIR_data*, paramTypeIR_control*)
       = $split_directionless_params(paramTypeIR_t*)
 
@@ -70,11 +70,7 @@ rule TableAction_ok/nonTypeName-argumentList:
 rule TableActions_ok/empty:
   C tblctx |- `EMPTY : tblctx `EMPTY
 
-rule TableActions_ok/action:
-  C tblctx |- action : tblctx' actionIR
-  -- TableAction_ok: C tblctx |- action : tblctx' actionIR
-
-rule TableActions_ok/cons:
+rule TableActions_ok/actionList-action:
   C tblctx |- actionList action
             : tblctx'' (actionListIR actionIR)
   -- TableActions_ok: C tblctx |- actionList
@@ -149,19 +145,19 @@ rule TableProp_ok/actions:
 
 rule TableProp_ok/nonTableKwName-initializer-default-action-prefixedNonTypeName:
   C tblctx |- optAnnotations optCONST
-                (`$ "default_action") (`= prefixedNonTypeName) `;
+                (ID "default_action") (`= prefixedNonTypeName) `;
             : tblctx
                 (optAnnotations optCONST
-                  (`$ "default_action") `= expressionIR `;)
+                  (ID "default_action") `= expressionIR `;)
   -- TableDefaultAction_ok: C tblctx |- prefixedNonTypeName : prefixedNonTypeName
   -- if expressionIR = prefixedNonTypeName `( VOID `; DYN )
 
 rule TableProp_ok/nonTableKwName-initializer-default-action-prefixedNonTypeName-argumentList:
   C tblctx |- optAnnotations optCONST
-                (`$ "default_action") (`= (prefixedNonTypeName `( argumentList ))) `;
+                (ID "default_action") (`= (prefixedNonTypeName `( argumentList ))) `;
             : tblctx
                 (optAnnotations optCONST
-                  (`$ "default_action") `= expressionIR `;)
+                  (ID "default_action") `= expressionIR `;)
   -- TableDefaultAction_ok: C tblctx |- prefixedNonTypeName `( argumentList )
                                       : (prefixedNonTypeName `( argumentListIR_cast ))
   -- if expressionIR
@@ -175,11 +171,6 @@ rule TableProp_ok/nonTableKwName-initializer-default-action-prefixedNonTypeName-
 
 rule Table_ok/empty:
   C tblctx |- `EMPTY : tblctx `EMPTY
-
-rule Table_ok/tableProperty:
-  C tblctx |- tableProperty : tblctx tablePropertyIR
-  -- TableProp_ok: C tblctx |- tableProperty
-                             : tblctx' tablePropertyIR
 
 rule Table_ok/tablePropertyList-tableProperty:
   C tblctx_0 |- tablePropertyList tableProperty
@@ -204,7 +195,7 @@ rule TableType_ok:
   ---- ;; add enum fields to context
   -- if (val_enum_field = tid_enum `. id_action)*
   -- if (varTypeIR_enum_field
-        = typeIR_enum NONE val_enum_field LCTK)*
+        = typeIR_enum `EMPTY val_enum_field LCTK)*
   -- if (id_enum_field = tid_enum ++ "." ++ id_action)*
   -- if C_1 = $add_vars(BLOCK, C_0, id_enum_field*, varTypeIR_enum_field*)
   ---- ;; create internal table struct type

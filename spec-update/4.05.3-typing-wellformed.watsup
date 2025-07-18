@@ -57,8 +57,8 @@ def $is_externtype'(EXTERN _ _) = true
 def $is_externtype'(_) = false
   -- otherwise
 
-rule ParamType_wf/default-none-extern:
-  bound |- _ NONE typeIR eps
+rule ParamType_wf/default-empty-extern:
+  bound |- _ `EMPTY typeIR eps
   -- Type_wf: bound |- typeIR
   -- if $is_externtype(typeIR)
 
@@ -68,7 +68,7 @@ rule ParamType_wf/default-none-not-extern:
   -- if ~$is_externtype(typeIR)
 
 rule ParamType_wf/default-some-extern:
-  bound |- _ NONE typeIR val
+  bound |- _ `EMPTY typeIR val
   -- Type_wf: bound |- typeIR
   -- if $is_externtype(typeIR)
 
@@ -76,7 +76,7 @@ rule ParamType_wf/default-some-not-extern:
   bound |- _ direction typeIR val
   -- Type_wf: bound |- typeIR
   -- if ~$is_externtype(typeIR)
-  -- if direction = IN \/ direction = NONE
+  -- if direction = IN \/ direction = `EMPTY
 
 rule ParamTypes_wf:
   bound |- paramTypeIR*
@@ -488,12 +488,12 @@ def $directionless_trailing(direction*)
   = $directionless_trailing'(true, $rev_<direction>(direction*))
 
 def $directionless_trailing'(_, eps) = true
-def $directionless_trailing'(true, NONE :: direction_t*)
+def $directionless_trailing'(true, `EMPTY :: direction_t*)
   = $directionless_trailing'(true, direction_t*)
-def $directionless_trailing'(false, NONE :: direction_t*) = false
+def $directionless_trailing'(false, `EMPTY :: direction_t*) = false
 def $directionless_trailing'(_, direction_h :: direction_t*)
   = $directionless_trailing'(false, direction_t*)
-  -- if direction_h =/= NONE
+  -- if direction_h =/= `EMPTY
 
 dec $nestable_action(direction, typeIR) : bool
 dec $nestable_action'(direction, typeIR) : bool
@@ -501,7 +501,7 @@ dec $nestable_action'(direction, typeIR) : bool
 def $nestable_action(direction, typeIR)
   = $nestable_action'(direction, $canon(typeIR))
 def $nestable_action'(direction, STRING) = false
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
 def $nestable_action'(_, INT) = false
 def $nestable_action'(_, objTypeIR) = false
 def $nestable_action'(_, _) = true
@@ -520,9 +520,9 @@ dec $nestable_externfunc'(direction, typeIR) : bool
 def $nestable_externfunc(direction, typeIR)
   = $nestable_externfunc'(direction, $canon(typeIR))
 def $nestable_externfunc'(direction, STRING) = false
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
 def $nestable_externfunc'(direction, INT) = false
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
 def $nestable_externfunc'(direction, PARSER `( _ )) = false
 def $nestable_externfunc'(direction, CONTROL `( _ )) = false
 def $nestable_externfunc'(direction, PACKAGE `< _ >) = false
@@ -543,9 +543,9 @@ dec $nestable_func'(direction, typeIR) : bool
 def $nestable_func(direction, typeIR)
   = $nestable_func'(direction, $canon(typeIR))
 def $nestable_func'(direction, STRING) = false
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
 def $nestable_func'(direction, INT) = false
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
 def $nestable_func'(direction, objTypeIR) = false
 def $nestable_func'(_, _) = true
   -- otherwise
@@ -568,9 +568,9 @@ dec $nestable_externmethod'(direction, typeIR) : bool
 def $nestable_externmethod(direction, typeIR)
   = $nestable_externmethod'(direction, $canon(typeIR))
 def $nestable_externmethod'(direction, STRING) = false
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
 def $nestable_externmethod'(direction, INT) = false
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
 def $nestable_externmethod'(direction, PARSER `( _ )) = false
 def $nestable_externmethod'(direction, CONTROL `( _ )) = false
 def $nestable_externmethod'(direction, PACKAGE `< _ >) = false
@@ -591,9 +591,9 @@ dec $nestable_externabstractmethod'(direction, typeIR) : bool
 def $nestable_externabstractmethod(direction, typeIR)
   = $nestable_externabstractmethod'(direction, $canon(typeIR))
 def $nestable_externabstractmethod'(direction, STRING) = false
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
 def $nestable_externabstractmethod'(direction, INT) = false
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
 def $nestable_externabstractmethod'(direction, PARSER `( _ )) = false
 def $nestable_externabstractmethod'(direction, CONTROL `( _ )) = false
 def $nestable_externabstractmethod'(direction, PACKAGE `< _ >) = false
@@ -614,9 +614,9 @@ dec $nestable_parserapplymethod'(direction, typeIR) : bool
 def $nestable_parserapplymethod(direction, typeIR)
   = $nestable_parserapplymethod'(direction, $canon(typeIR))
 def $nestable_parserapplymethod'(direction, STRING) = false
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
 def $nestable_parserapplymethod'(direction, INT) = false
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
 def $nestable_parserapplymethod'(direction, CONTROL `( _ )) = false
 def $nestable_parserapplymethod'(direction, PACKAGE `< _ >) = false
 def $nestable_parserapplymethod'(direction, TABLE _ `{ _ }) = false
@@ -635,9 +635,9 @@ dec $nestable_controlapplymethod'(direction, typeIR) : bool
 def $nestable_controlapplymethod(direction, typeIR)
   = $nestable_controlapplymethod'(direction, $canon(typeIR))
 def $nestable_controlapplymethod'(direction, STRING) = false
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
 def $nestable_controlapplymethod'(direction, INT) = false
-  -- if direction =/= NONE
+  -- if direction =/= `EMPTY
 def $nestable_controlapplymethod'(direction, PARSER `( _ )) = false
 def $nestable_controlapplymethod'(direction, PACKAGE `< _ >) = false
 def $nestable_controlapplymethod'(direction, TABLE _ `{ _ }) = false
@@ -694,7 +694,7 @@ rule FuncTypeDef_wf/poly:
 ;;
 
 rule CParamType_wf:
-  bound consctxt |- id NONE typeIR val?
+  bound consctxt |- id `EMPTY typeIR val?
   -- Type_wf: bound |- typeIR
 
 rule CParamTypes_wf:

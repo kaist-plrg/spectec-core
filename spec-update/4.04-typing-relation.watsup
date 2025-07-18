@@ -74,26 +74,31 @@ dec $flatten_argumentListIR(argumentListIR) : argumentIR*
 
 def $flatten_argumentListIR(`EMPTY) = eps
 def $flatten_argumentListIR(argumentIR) = argumentIR
-def $flatten_argumentListIR(argumentListIR `, argumentIR)
-  = $flatten_argumentListIR(argumentListIR) ++ [ argumentIR ]
+def $flatten_argumentListIR(nonEmptyArgumentListIR `, argumentIR)
+  = $flatten_argumentListIR(nonEmptyArgumentListIR) ++ [ argumentIR ]
 
 ;; (TODO) Might want to define SpecTec lists
 ;; as left-associative instead of right-associative
 dec $structure_argumentListIR(argumentIR*) : argumentListIR
+dec $structure_argumentListIR'(argumentIR*) : nonEmptyArgumentListIR
 
 def $structure_argumentListIR(eps) = `EMPTY
 def $structure_argumentListIR(argumentIR_h :: argumentIR_t*)
-  = $structure_argumentListIR(argumentIR_h''*) `, argumentIR_t'
+  = argumentIR_t'
+  -- if argumentIR_t' 
+      = $rev_<argumentIR*>(argumentIR_h :: argumentIR_t*)
+def $structure_argumentListIR(argumentIR_h :: argumentIR_t*)
+  = $structure_argumentListIR'(argumentIR_h''*) `, argumentIR_t'
   -- if argumentIR_t' :: argumentIR_h'*
       = $rev_<argumentIR*>(argumentIR_h :: argumentIR_t*)
+  -- if argumentIR_h'* =/= eps
   -- if argumentIR_h''* = $rev_<argumentIR*>(argumentIR_h'*)
 
 dec $flatten_typedArgumentListIR(typedArgumentListIR) : typedArgumentIR*
 
 def $flatten_typedArgumentListIR(`EMPTY) = eps
-def $flatten_typedArgumentListIR(typedArgumentIR) = typedArgumentIR
-def $flatten_typedArgumentListIR(typedArgumentListIR `, typedArgumentIR)
-  = $flatten_typedArgumentListIR(typedArgumentListIR) ++ [ typedArgumentIR ]
+def $flatten_typedArgumentListIR(nonEmptyTypedArgumentListIR `, typedArgumentIR)
+  = $flatten_typedArgumentListIR(nonEmptyTypedArgumentListIR) ++ [ typedArgumentIR ]
 
 ;;
 ;;;; Statement typing
@@ -143,8 +148,8 @@ dec $paramtype(parameterIR) : paramTypeIR
 
 def $paramtypes(`EMPTY) = eps
 def $paramtypes(parameterIR) = $paramtype(parameterIR)
-def $paramtypes(parameterListIR `, parameterIR)
-  = $paramtypes(parameterListIR) ++ [ $paramtype(parameterIR) ]
+def $paramtypes(nonEmptyParameterListIR `, parameterIR)
+  = $paramtypes(nonEmptyParameterListIR) ++ [ $paramtype(parameterIR) ]
 
 def $paramtype(_ direction typeIR name)
   = $id(name) direction typeIR eps

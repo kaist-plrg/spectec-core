@@ -204,12 +204,6 @@ rule Stmt_ok/exit:
 rule Stmts_ok/empty:
   p C f |- `EMPTY : C f `EMPTY
 
-rule Stmts_ok/statementOrDeclaration:
-  p C f |- statementOrDeclaration
-         : C' f' statementOrDeclarationIR
-  -- Stmt_ok: p C f |- statementOrDeclaration
-                     : C' f' statementOrDeclarationIR
-
 rule Stmts_ok/statOrDeclList-statementOrDeclaration:
   p C f |- statOrDeclList statementOrDeclaration
          : C'' f'' (statOrDeclListIR statementOrDeclarationIR)

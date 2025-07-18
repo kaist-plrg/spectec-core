@@ -29,10 +29,10 @@ rule Params_ok/parameter:
   p C |- parameter : parameterIR tid_fresh*
   -- Param_ok: p C |- parameter : parameterIR tid_fresh*
 
-rule Params_ok/parameterList-parameter:
-  p C |- parameterList `, parameter 
-       : (parameterListIR `, parameterIR) tid_fresh*
-  -- Params_ok: p C |- parameterList : parameterListIR tid_fresh_0*
+rule Params_ok/nonEmptyParameterList-parameter:
+  p C |- nonEmptyParameterList `, parameter 
+       : (nonEmptyParameterListIR `, parameterIR) tid_fresh*
+  -- Params_ok: p C |- nonEmptyParameterList : nonEmptyParameterListIR tid_fresh_0*
   -- Param_ok: p C |- parameter : parameterIR tid_fresh_1*
   -- if tid_fresh* = tid_fresh_0* ++ tid_fresh_1*
 
@@ -71,8 +71,8 @@ rule ConsParams_ok/parameter:
   -- ConsParam_ok: C |- parameter : parameterIR tid_fresh*
 
 rule ConsParams_ok/parameterList-parameter:
-  C |- `( (parameterList `, parameter) )
-     : (`( (parameterListIR `, parameterIR) )) tid_fresh*
-  -- ConsParams_ok: C |- `( parameterList ) : `( parameterListIR ) tid_fresh_0*
+  C |- `( (nonEmptyParameterList `, parameter) )
+     : (`( (nonEmptyParameterListIR `, parameterIR) )) tid_fresh*
+  -- ConsParams_ok: C |- `( nonEmptyParameterList ) : `( nonEmptyParameterListIR ) tid_fresh_0*
   -- ConsParam_ok: C |- parameter : parameterIR tid_fresh_1*
   -- if tid_fresh* = tid_fresh_0* ++ tid_fresh_1*

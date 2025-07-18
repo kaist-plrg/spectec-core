@@ -31,10 +31,17 @@ syntax stringLiteral = `" text `"
 
 syntax dotPrefix = `.
 
-;; (TODO) extension of plaintyp
-syntax identifier = `$ text
-;; (TODO) extension of plaintyp
-syntax typeIdentifier = `@ text
+;;; The grammar is actually ambiguous,
+;;; so the lexer and the parser must collaborate for parsing the language.
+;;; In particular, the lexer must be able to distinguish two kinds of identifiers:
+;;;
+;;; * Type names previously introduced (TYPE_IDENTIFIER tokens)
+;;; * Regular identifiers (IDENTIFIER token)
+
+syntax identifier = `ID text
+syntax typeIdentifier = `TID text
+
+;;; Non-type names
 
 syntax nonTypeName =
   | identifier
@@ -45,26 +52,29 @@ syntax prefixedNonTypeName =
   | nonTypeName
   | `. nonTypeName
 
+;;; Type names
+
 syntax typeName = typeIdentifier
 
 syntax prefixedTypeName =
   | typeName 
   | `.. typeName
 
+;;; Names
+
 syntax name =
   | nonTypeName
   | typeName
   | LIST
 
+syntax nameList =
+  | name
+  | nameList `, name
+
 syntax nonTableKwName =
   | identifier
   | typeIdentifier
   | APPLY | STATE | TYPE | PRIORITY
-
-syntax nameList =
-  | `EMPTY
-  | name
-  | nameList `, name
 
 syntax member = name
 
@@ -72,7 +82,7 @@ syntax member = name
 ;; Directions
 ;;
 
-syntax direction = IN | OUT | INOUT | NONE
+syntax direction = `EMPTY | IN | OUT | INOUT
 
 ;;
 ;; Types
@@ -156,7 +166,6 @@ syntax typeOrVoid =
 ;;
 
 syntax typeParameterList =
-  | `EMPTY
   | name 
   | typeParameterList `, name
 
@@ -172,10 +181,13 @@ syntax parameter =
   | optAnnotations direction typeRef name
   | optAnnotations direction typeRef name initializer
 
+syntax nonEmptyParameterList =
+  | parameter
+  | nonEmptyParameterList `, parameter
+
 syntax parameterList =
   | `EMPTY
-  | parameter
-  | parameterList `, parameter
+  | nonEmptyParameterList
 
 ;;
 ;; Constructor parameters
@@ -192,13 +204,8 @@ syntax optConstructorParameters = constructorParameters?
 syntax kvPair = name `= expression
 
 syntax kvList =
-  | `EMPTY
   | kvPair
   | kvList `, kvPair
-
-syntax kvListNonEmpty =
-  | kvPair
-  | kvListNonEmpty `, kvPair
 
 ;;
 ;; Expressions
@@ -206,7 +213,7 @@ syntax kvListNonEmpty =
 
 ;; Forward declarations
 
-syntax realTypeArgumentList
+syntax realTypeArgList
 syntax argumentList
 syntax accessBaseNonBrace, accessBase
 syntax callBaseNonBrace, callBase
@@ -249,7 +256,7 @@ syntax nonBraceExpression =
   | nonBraceExpression `&& expression
   | nonBraceExpression `|| expression
   | nonBraceExpression `? expression `: expression
-  | nonBraceExpression `< realTypeArgumentList > `( argumentList )
+  | nonBraceExpression `< realTypeArgList > `( argumentList )
   | callBaseNonBrace `( argumentList )
   | `( typeRef ) expression
 
@@ -302,10 +309,11 @@ syntax expression =
   | expression `&& expression
   | expression `|| expression
   | expression `? expression `: expression
-  | expression `< realTypeArgumentList > `( argumentList )
+  | expression `< realTypeArgList > `( argumentList )
   | callBase `( argumentList )
   | `( typeRef ) expression
 
+;;; (TODO) Why allow (EMPTY `, expression)?
 syntax expressionList =
   | `EMPTY
   | expression
@@ -323,8 +331,8 @@ syntax callBase =
 syntax kvPairRecordExpression =
   | name `= expression
   | name `= expression `, `...
-  | name `= expression `, kvListNonEmpty
-  | name `= expression `, kvListNonEmpty `, `...
+  | name `= expression `, kvList
+  | name `= expression `, kvList `, `...
 
 syntax recordExpression =
   | expressionList
@@ -342,7 +350,6 @@ syntax simpleKeysetExpression =
   | `_
 
 syntax simpleExpressionList = 
-  | `EMPTY
   | simpleKeysetExpression
   | simpleExpressionList `, simpleKeysetExpression
 
@@ -366,10 +373,9 @@ syntax realTypeArg =
   | VOID
   | `_
 
-syntax realTypeArgumentList =
-  | `EMPTY
+syntax realTypeArgList =
   | realTypeArg
-  | realTypeArgumentList `, realTypeArg
+  | realTypeArgList `, realTypeArg
 
 syntax typeArg =
   | typeRef
@@ -377,6 +383,7 @@ syntax typeArg =
   | VOID
   | `_
 
+;;; (TODO) Why allow (EMPTY `, argument)?
 syntax typeArgList =
   | `EMPTY
   | typeArg
@@ -392,10 +399,13 @@ syntax argument =
   | `_
   | name `= `_
 
+syntax nonEmptyArgumentList =
+  | argument
+  | nonEmptyArgumentList `, argument
+
 syntax argumentList =
   | `EMPTY
-  | argument
-  | argumentList `, argument
+  | nonEmptyArgumentList
 
 ;;
 ;; L-values
@@ -524,8 +534,9 @@ syntax switchCase =
   | switchLabel `: blockStatement
   | switchLabel `: 
 
-;; (TODO) Add whitespace separator as hint?
-syntax switchCases = switchCase*
+syntax switchCases =
+  | `EMPTY
+  | switchCases switchCase
 
 syntax switchStatement = SWITCH `( expression ) `{ switchCases }
 
@@ -586,9 +597,7 @@ syntax statementOrDeclaration =
 
 syntax statOrDeclList =
   | `EMPTY
-  | statementOrDeclaration
   | statOrDeclList statementOrDeclaration
-
 
 ;;
 ;;;; Error and match kind declarations
@@ -613,7 +622,6 @@ syntax methodPrototype =
 
 syntax methodPrototypes =
   | `EMPTY
-  | methodPrototype
   | methodPrototypes methodPrototype
 
 syntax externDeclaration =
@@ -643,7 +651,6 @@ syntax objDeclaration =
 
 syntax objDeclarations =
   | `EMPTY
-  | objDeclaration
   | objDeclarations objDeclaration
 
 ;;
@@ -663,8 +670,9 @@ syntax actionDeclaration =
 
 syntax keyElement = expression `: name optAnnotations `;
 
-;; (TODO) Add whitespace separator as hint?
-syntax keyElementList = keyElement*
+syntax keyElementList =
+  | `EMPTY
+  | keyElementList keyElement
 
 ;;
 ;;;;;; Table actions property
@@ -678,7 +686,6 @@ syntax action = optAnnotations actionRef `;
 
 syntax actionList =
   | `EMPTY
-  | action
   | actionList action
 
 ;;
@@ -695,7 +702,6 @@ syntax entry =
 
 syntax entriesList =
   | `EMPTY
-  | entry
   | entriesList entry
 
 ;;
@@ -710,7 +716,6 @@ syntax tableProperty =
 
 syntax tablePropertyList =
   | `EMPTY
-  | tableProperty
   | tablePropertyList tableProperty
 
 syntax tableDeclaration =
@@ -731,7 +736,6 @@ syntax controlLocalDeclaration =
 
 syntax controlLocalDeclarations =
   | `EMPTY
-  | controlLocalDeclaration
   | controlLocalDeclarations controlLocalDeclaration
 
 syntax controlTypeDeclaration =
@@ -760,7 +764,6 @@ syntax selectCase = keysetExpression `: name `;
 
 syntax selectCaseList =
   | `EMPTY
-  | selectCase
   | selectCaseList selectCase
 
 syntax selectExpression = SELECT `( expressionList ) `{ selectCaseList }
@@ -792,7 +795,6 @@ syntax parserStatement =
 
 syntax parserStatements =
   | `EMPTY
-  | parserStatement
   | parserStatements parserStatement
 
 syntax parserState =
@@ -813,7 +815,6 @@ syntax parserLocalElement =
 
 syntax parserLocalElements =
   | `EMPTY
-  | parserLocalElement
   | parserLocalElements parserLocalElement
 
 syntax parserDeclaration =
@@ -833,7 +834,6 @@ syntax packageTypeDeclaration =
 syntax specifiedName = name initializer
 
 syntax specifiedNameList =
-  | `EMPTY
   | specifiedName
   | specifiedNameList `, specifiedName
 
@@ -849,7 +849,6 @@ syntax structField = optAnnotations typeRef name `;
 
 syntax structFieldList =
   | `EMPTY
-  | structField
   | structFieldList structField
 
 syntax headerUnionDeclaration =
@@ -952,7 +951,6 @@ syntax annotation =
 
 syntax annotations =
   | `EMPTY
-  | annotation
   | annotations annotation
 
 syntax optAnnotations = annotations?

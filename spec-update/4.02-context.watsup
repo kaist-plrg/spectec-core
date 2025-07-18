@@ -256,8 +256,8 @@ dec $id_argument(argument) : id?
 
 def $ids_arguments(`EMPTY) = eps
 def $ids_arguments(argument) = $id_argument(argument)
-def $ids_arguments(argumentList `, argument)
-  = $ids_arguments(argumentList) ++ [ $id_argument(argument) ]
+def $ids_arguments(nonEmptyArgumentList `, argument)
+  = $ids_arguments(nonEmptyArgumentList) ++ [ $id_argument(argument) ]
 
 dec $find_func_overloaded(cursor, context, id, argumentList)
   : (fid, funcTypeDefIR, id*)?
