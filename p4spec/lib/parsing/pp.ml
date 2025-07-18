@@ -10,7 +10,9 @@ module F = Format
 let verbose = ref false
 
 let pp_atom fmt (atom : atom) : unit =
-  F.fprintf fmt "%s" (Atom.string_of_atom atom.it)
+  match atom.it with
+  | Atom.SilentAtom _ -> F.fprintf fmt ""
+  | _ -> F.fprintf fmt "%s" (Atom.string_of_atom atom.it)
 
 let pp_atoms fmt (atoms : atom list) : unit =
   match atoms with
@@ -52,7 +54,7 @@ and pp_value fmt (value : value) : unit =
   | NumV n -> F.fprintf fmt "%a" pp_num n
   | TextV _ -> pp_text_v fmt value
   | StructV _ -> failwith "not implemented"
-  | CaseV _ -> pp_case_v fmt value
+  | CaseV _ -> pp_default_case_v fmt value
   | TupleV values ->
       F.fprintf fmt "(%s)"
         (String.concat ", "
@@ -73,7 +75,7 @@ and pp_text_v fmt (value : value) : unit =
 
 and pp_syntax_id fmt (value : value) : unit =
   match flatten_case_v value with
-  | "identifier", [ [ "$" ]; [] ], [ value_text ] -> pp_text_v fmt value_text
+  | "identifier", [ [ "`ID" ]; [] ], [ value_text ] -> pp_text_v fmt value_text
   | "identifier", _, _ ->
       failwith
         (F.asprintf "@pp_syntax_id: ill-formed identifier:\n%a"
@@ -85,7 +87,7 @@ and pp_syntax_id fmt (value : value) : unit =
 
 and pp_syntax_tid fmt (value : value) : unit =
   match flatten_case_v value with
-  | "typeIdentifier", [ [ "@" ]; [] ], [ value_text ] ->
+  | "typeIdentifier", [ [ "`TID" ]; [] ], [ value_text ] ->
       pp_text_v fmt value_text
   | "typeIdentifier", _, _ ->
       failwith

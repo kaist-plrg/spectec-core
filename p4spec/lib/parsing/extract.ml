@@ -7,14 +7,13 @@
 
 open Il.Ast
 open Ast_utils
-open Util.Source
 module F = Format
 
 (* Identifier extraction *)
 
 let id_of_name (value : value) : string =
   match flatten_case_v' value with
-  | "identifier", [ [ "$" ]; [] ], [ TextV s ] -> s
+  | "identifier", [ [ "`ID" ]; [] ], [ TextV s ] -> s
   | "nonTypeName", [ [ "APPLY" ] ], [] -> "apply"
   | "nonTypeName", [ [ "KEY" ] ], [] -> "key"
   | "nonTypeName", [ [ "ACTIONS" ] ], [] -> "actions"
@@ -23,11 +22,11 @@ let id_of_name (value : value) : string =
   | "nonTypeName", [ [ "TYPE" ] ], [] -> "type"
   | "nonTypeName", [ [ "PRIORITY" ] ], [] -> "priority"
   | "name", [ [ "LIST" ] ], [] -> "list"
-  | "typeIdentifier", [ [ "@" ]; [] ], [ TextV s ] -> s
+  | "typeIdentifier", [ [ "`TID" ]; [] ], [ TextV s ] -> s
   | _ ->
       failwith
         (Printf.sprintf "Invalid name structure %s: %s "
-           (Il.Print_debug.string_of_value value)
+           (Il.Print.string_of_value value)
            (id_of_case_v value))
 
 let id_of_function_prototype (v : value) : string =
@@ -166,17 +165,19 @@ let id_of_parameter (v : value) : string =
 (* Type parameter extraction *)
 
 let has_type_params_opt_type_parameters (v : value) : bool =
-  match v.it with
-  | OptV (Some typeParameters) -> (
-      match flatten_case_v typeParameters with
-      | "typeParameters", [ [ "<" ]; [ ">" ] ], [ typeParameterList ] -> (
-          match typeParameterList.it with
-          | ListV [] -> false
-          | ListV _ -> true
-          | _ -> failwith "@has_type_params_opt_type_parameters: not ListV")
-      | _ -> failwith "@has_type_params_opt_type_parameters: invalid CaseV")
-  | OptV None -> false
-  | _ -> failwith "@has_type_params_opt_type_parameters: not OptV"
+  match flatten_case_v v with
+  | "optTypeParameters", [ [ "`EMPTY" ] ], [ ] -> false
+  | "typeParameters", [ [ "<" ]; [ ">" ] ], [ v_tparams ] -> 
+    id_of_case_v v_tparams == "typeParameterList"
+  | "optTypeParameters", _, _
+  | "typeParameters", _, _ ->
+    failwith
+        (F.asprintf "@has_type_params_opt_type_parameters: ill-formed optTypeParameters:\n%a"
+           Pp.pp_default_case_v v)
+  | _ ->
+      failwith
+        (Printf.sprintf "@has_type_params_opt_type_parameters: expected optTypeParameters, got %s"
+           (id_of_case_v v))
 
 let has_type_params_function_prototype (v : value) : bool =
   match flatten_case_v v with
@@ -222,6 +223,20 @@ let has_type_params_package_type_declaration (v : value) : bool =
         (Printf.sprintf "Invalid packageTypeDeclaration: %s"
            (Il.Print_debug.string_of_value v))
 
+let has_type_params_type_decl (v: value) : bool =
+    match flatten_case_v v with
+    | "typedefDeclaration", _, _ -> false
+    | "parserTypeDeclaration", _, _ ->
+        has_type_params_parser_type_declaration v 
+    | "controlTypeDeclaration", _, _ ->
+        has_type_params_control_type_declaration v
+    | "packageTypeDeclaration", _, _ ->
+        has_type_params_package_type_declaration v
+    | _ ->
+        failwith
+          (Printf.sprintf "@has_type_params_type_decl: unexpected syntax %s"
+            (id_of_case_v v))
+
 let has_type_params_declaration (decl : value) : bool =
   match flatten_case_v decl with
   | "constantDeclaration", _, _
@@ -250,13 +265,8 @@ let has_type_params_declaration (decl : value) : bool =
       [ _; _; optTypeParameters; _ ] ) ->
       has_type_params_opt_type_parameters optTypeParameters
   | "enumDeclaration", _, _ -> false
-  | "typeDeclaration", [ []; [ ";" ] ], [ _typedefDeclaration ] -> false
-  | "typeDeclaration", [ []; [ ";"; "PHTM_13" ] ], [ parserTypeDeclaration ] ->
-      has_type_params_parser_type_declaration parserTypeDeclaration
-  | "typeDeclaration", [ []; [ ";"; "PHTM_14" ] ], [ controlTypeDeclaration ] ->
-      has_type_params_control_type_declaration controlTypeDeclaration
-  | "typeDeclaration", [ []; [ ";"; "PHTM_15" ] ], [ packageTypeDeclaration ] ->
-      has_type_params_package_type_declaration packageTypeDeclaration
+  | "typeDeclaration", [ []; [ ";" ] ], [ typeDeclarationWithoutSemicolon ] ->
+      has_type_params_type_decl typeDeclarationWithoutSemicolon
   | _ ->
       failwith
         (Printf.sprintf "@has_typ_params: Unknown declaration %s"

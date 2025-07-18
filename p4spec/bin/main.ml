@@ -371,7 +371,7 @@ let parse_command =
        try
          let parsed_il = Parsing.Parse.parse_file includes_p4 filename_p4 in
          Format.printf "✓ Parse successful\n";
-         Format.printf "%a\n" Parsing.Pp.pp_value parsed_il
+         Format.printf "%a\n" Parsing.Pp.pp_default_case_v parsed_il;
        with
        | Sys_error msg -> Format.printf "✗ File error: %s\n" msg
        | ParseError (at, msg) ->

@@ -780,7 +780,9 @@ syntax stateExpression =
   | name `;
   | selectExpression
 
-syntax transitionStatement = TRANSITION stateExpression
+syntax transitionStatement = 
+  | `EMPTY
+  | TRANSITION stateExpression
 
 ;;
 ;;;; Parser and parser type declarations

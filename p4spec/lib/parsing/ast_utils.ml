@@ -111,10 +111,8 @@ let wrap_opt_v (s : string) (v : value option) : value =
 let wrap_list_v (s : string) (vs : value list) : value =
   ListV vs |> with_typ (wrap_iter_t List (wrap_var_t s))
 
-let wrap_case_v_with_var_t (vs: symbol list) (s: string) : value =
+let ( #@ ) (vs: symbol list) (s: string) : value =
   vs |> wrap_case_v |> with_typ (wrap_var_t s)
-
-let ( #@ ) = wrap_case_v_with_var_t
 
 let id_of_case_v (v : value) : string =
   match (v.it, v.note.typ) with
