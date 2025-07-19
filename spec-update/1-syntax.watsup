@@ -39,7 +39,9 @@ syntax stringLiteral = `" text `"
 syntax identifier = `ID text
 syntax typeIdentifier = `TID text
 
-;;; Non-type names
+;;
+;;;; Non-type names
+;;
 
 syntax nonTypeName =
   | identifier
@@ -50,7 +52,9 @@ syntax prefixedNonTypeName =
   | nonTypeName
   | `. nonTypeName
 
-;;; Type names
+;;
+;;;; Type names
+;;
 
 syntax typeName = typeIdentifier
 
@@ -58,7 +62,9 @@ syntax prefixedTypeName =
   | typeName 
   | `.. typeName
 
-;;; Names
+;;
+;;;; Names
+;;
 
 syntax name =
   | nonTypeName
@@ -604,20 +610,31 @@ syntax statOrDeclList =
   | statOrDeclList statementOrDeclaration
 
 ;;
-;;;; Error and match kind declarations
+;;;; Error declarations
+;;
+
+syntax errorDeclaration = ERROR `{ nameList }
+
+;;
+;;;; Match kind declarations
 ;;
 
 syntax matchKindDeclaration =
   MATCH_KIND `{ nameList optTrailingComma }
 
-syntax errorDeclaration = ERROR `{ nameList }
-
 ;;
-;;;; Extern declarations
+;;;; Function declarations
 ;;
 
 syntax functionPrototype =
   typeOrVoid name optTypeParameters `( parameterList )
+
+syntax functionDeclaration =
+  optAnnotations functionPrototype blockStatement
+
+;;
+;;;; Extern declarations
+;;
 
 syntax methodPrototype =
   | optAnnotations functionPrototype `;
@@ -631,13 +648,6 @@ syntax methodPrototypes =
 syntax externDeclaration =
   | optAnnotations EXTERN nonTypeName optTypeParameters `{ methodPrototypes }
   | optAnnotations EXTERN functionPrototype `;
-
-;;
-;;;; Function declarations
-;;
-
-syntax functionDeclaration =
-  optAnnotations functionPrototype blockStatement
 
 ;;
 ;;;; Instantiations
@@ -701,7 +711,7 @@ syntax entryPriority =
   | PRIORITY `= `( expression ) `:
 
 syntax entry =
-  | optCONST entryPriority keysetExpression `: actionRef optAnnotations`; 
+  | optCONST entryPriority keysetExpression `: actionRef optAnnotations `; 
   | optCONST keysetExpression `: actionRef optAnnotations `; 
 
 syntax entriesList =
@@ -827,14 +837,14 @@ syntax parserDeclaration =
   parserTypeDeclaration optConstructorParameters `{ parserLocalElements parserStates }
 
 ;;
-;;;; Package type declaration
+;;;; Package type declarations
 ;;
 
 syntax packageTypeDeclaration =
   optAnnotations PACKAGE name optTypeParameters `( parameterList )
 
 ;;
-;;;; Enum type declaration
+;;;; Enum type declarations
 ;;
 
 syntax specifiedName = name initializer

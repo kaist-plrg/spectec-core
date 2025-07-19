@@ -126,7 +126,7 @@ rule Type_ok/headerStackType-typeName-expression:
   -- if _ `( _ `; LCTK) = expressionIR
   -- Eval_static: p C |- expressionIR ~> val
   -- if n_size = $number(val)
-  -- if typeIR_stack = (`@ "T") `[ n_size ]
+  -- if typeIR_stack = (TID "T") `[ n_size ]
   -- if polyTypeDefIR_stack = typeIR_stack `< "T" `, eps >
 
 rule Type_ok/headerStackType-specializedType-expression:
@@ -136,7 +136,7 @@ rule Type_ok/headerStackType-specializedType-expression:
   -- if _ `( _ `; LCTK) = expressionIR
   -- Eval_static: p C |- expressionIR ~> val
   -- if n_size = $number(val)
-  -- if typeIR_stack = (`@ "T") `[ n_size ]
+  -- if typeIR_stack = (TID "T") `[ n_size ]
   -- if polyTypeDefIR_stack = typeIR_stack `< "T" `, eps >
 
 ;;;; syntax listType = LIST `< typeArg >
@@ -144,7 +144,7 @@ rule Type_ok/headerStackType-specializedType-expression:
 rule Type_ok/listType:
   p C |- LIST `< typeArg > : (polyTypeDefIR_list `< typeIR_arg >) tid_fresh*
   -- TypeArg_ok: p C |- typeArg : typeIR_arg tid_fresh*
-  -- if typeIR_list = LIST `< (`@ "T") >
+  -- if typeIR_list = LIST `< (TID "T") >
   -- if polyTypeDefIR_list = typeIR_list `< "T" `, eps >
 
 ;;;; syntax tupleType = TUPLE `< typeArgList >
@@ -158,7 +158,7 @@ rule Type_ok/tupleType:
   -- if i_idx* = $init_(|typeIR_arg*|)
   -- if (tid_tparam = "T" ++ $int_to_text(i_idx))* 
   ---- ;; create tuple type definition, as specialized type definition
-  -- if typeIR_tuple = TUPLE `< (`@ tid_tparam)* >
+  -- if typeIR_tuple = TUPLE `< (TID tid_tparam)* >
   -- if polyTypeDefIR_tuple = typeIR_tuple `< tid_tparam* `, eps >
 
 ;;; VOID

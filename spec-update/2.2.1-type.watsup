@@ -44,7 +44,7 @@ syntax baseTypeIR = primTypeIR | numTypeIR
 ;;
 
 syntax namedTypeIR =
-  | `@ tid 
+  | TID tid 
   | polyTypeDefIR `< typeIR* >
 
 ;;

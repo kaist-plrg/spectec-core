@@ -26,7 +26,7 @@ rule Type_alpha/basetype:
 ;;; Named types
 
 rule Type_alpha/nametype:
-  (`@ tid) ~~  (`@ tid)
+  (TID tid) ~~  (TID tid)
 
 rule Type_alpha/spectype-nominal:
   (polyTypeDefIR_a `< typeIR_a* >) ~~ (polyTypeDefIR_b `< typeIR_b* >)
@@ -258,11 +258,11 @@ rule FuncTypeDef_alpha/poly:
   -- if tid_fresh* = $fresh_tids($(|tid_a*| + |tid_hidden_a*|))
   ----
   -- if tid_a'* = tid_a* ++ tid_hidden_a*
-  -- if theta_a = `{ (tid_a' `: (`@ tid_fresh))* }
+  -- if theta_a = `{ (tid_a' `: (TID tid_fresh))* }
   -- if funcTypeIR_a_subst = $subst_funcType(theta_a, funcTypeIR_a)
   ----
   -- if tid_b'* = tid_b* ++ tid_hidden_b*
-  -- if theta_b = `{ (tid_b' `: (`@ tid_fresh))* }
+  -- if theta_b = `{ (tid_b' `: (TID tid_fresh))* }
   -- if funcTypeIR_b_subst = $subst_funcType(theta_b, funcTypeIR_b)
   ----
   -- FuncType_alpha: funcTypeIR_a_subst ~~ funcTypeIR_b_subst

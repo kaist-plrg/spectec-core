@@ -320,13 +320,14 @@ and elab_deftyp_variant (ctx : Ctx.t) (at : region) (id : id)
   let mixop_duplicates =
     List.filter (fun mixop_group -> List.length mixop_group > 1) mixop_groups
   in
-  check (List.length mixop_duplicates = 0)
+  check
+    (List.length mixop_duplicates = 0)
     at
-      ("variant cases are ambiguous: "
-        ^ String.concat ", "
-            (List.map (fun mixop_group ->
-                 Mixop.string_of_mixop (List.hd mixop_group))
-               mixop_duplicates));
+    ("variant cases are ambiguous: "
+    ^ String.concat ", "
+        (List.map
+           (fun mixop_group -> Mixop.string_of_mixop (List.hd mixop_group))
+           mixop_duplicates));
   let deftyp_il = Il.Ast.VariantT typcases_il $ at in
   let td = Typdef.Defined (tparams, `Variant typcases) in
   (td, deftyp_il)

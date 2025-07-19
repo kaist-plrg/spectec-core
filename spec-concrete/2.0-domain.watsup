@@ -1,0 +1,79 @@
+;;
+;; Variable names
+;;
+
+syntax id = text
+
+dec $id(name) : id
+
+def $id(`ID t) = t
+def $id(`TID t) = t
+def $id(APPLY) = "apply"
+def $id(KEY) = "key"
+def $id(ACTIONS) = "actions"
+def $id(STATE) = "state"
+def $id(ENTRIES) = "entries"
+def $id(TYPE) = "type"
+def $id(PRIORITY) = "priority"
+def $id(LIST) = "list"
+
+;;
+;; Type variable names
+;;
+
+syntax tid = id
+
+dec $tid(name) : tid
+
+def $tid(`ID t) = t
+def $tid(`ID t) = t
+def $tid(APPLY) = "apply"
+def $tid(KEY) = "key"
+def $tid(ACTIONS) = "actions"
+def $tid(STATE) = "state"
+def $tid(ENTRIES) = "entries"
+def $tid(TYPE) = "type"
+def $tid(PRIORITY) = "priority"
+def $tid(LIST) = "list"
+
+dec $fresh_tid() : tid
+dec $fresh_tids(nat) : tid*
+
+def $fresh_tids(0) = eps
+def $fresh_tids(n) = $fresh_tid() :: $fresh_tids($(n - 1))
+  -- otherwise
+
+;;
+;; Routine names
+;;
+;; A pair of function name and a list of parameter names,
+;; with a boolean flag indicating whether the parameter has
+;; a default value
+;;
+
+syntax pid = id `# bool
+syntax rid = id `( pid* )
+
+dec $rid(name, parameterList) : rid
+dec $pids(parameterList) : pid*
+dec $pid(parameter) : pid
+
+def $rid(name, parameterList) = $id(name) `( $pids(parameterList) )
+
+def $pids(`EMPTY) = eps
+def $pids(parameter) = $pid(parameter)
+def $pids(nonEmptyParameterList `, parameter)
+  = $pids(nonEmptyParameterList) ++ [ $pid(parameter) ]
+
+def $pid(_ _ _ name `EMPTY) = $id(name) `# false
+def $pid(_ _ _ name initializer) = $id(name) `# true
+
+;;
+;; Constructor names
+;;
+
+syntax cid = rid
+
+dec $cid(name, constructorParameterListOpt) : cid
+
+def $cid(name, `( parameterList )) = $id(name) `( $pids(parameterList) )

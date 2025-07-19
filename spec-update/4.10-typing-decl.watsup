@@ -172,7 +172,7 @@ rule Decl_ok/packageTypeDeclaration-epsilon:
   -- if C_2 = $add_type(GLOBAL, C_0, tid, polyTypeDefIR_package)
   ---- ;; create package object constructor
   -- if cid = $cid(name, `( parameterList ))
-  -- if typeIR_spec = polyTypeDefIR_package `< (`@ tid_fresh)* >
+  -- if typeIR_spec = polyTypeDefIR_package `< (TID tid_fresh)* >
   -- if consTypeIR = `( consParamTypeIR* ) -> typeIR_spec
   -- if consTypeDefIR = consTypeIR `< eps `, tid_fresh* >
   -- ConsTypeDef_wf: $bound(GLOBAL, C_0) |- consTypeDefIR

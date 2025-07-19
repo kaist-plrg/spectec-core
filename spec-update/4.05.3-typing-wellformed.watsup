@@ -96,7 +96,7 @@ rule Type_wf/basetype:
 ;;; Named types
 
 rule Type_wf/tid:
-  bound |- (`@ tid)
+  bound |- (TID tid)
   -- if $in_set<tid>(tid, bound)
 
 rule Type_wf/spectype:
@@ -114,7 +114,7 @@ def $nestable'_typedef(BOOL) = true
 def $nestable'_typedef(ERROR) = true
 def $nestable'_typedef(STRING) = true
 def $nestable'_typedef(numTypeIR) = true
-def $nestable'_typedef(`@ _) = true
+def $nestable'_typedef(TID _) = true
 def $nestable'_typedef(dataTypeIR) = true
 def $nestable'_typedef(_) = false
   -- otherwise
@@ -131,7 +131,7 @@ def $nestable_new(typeIR) = $nestable'_new($canon(typeIR))
 def $nestable'_new(BOOL) = true
 def $nestable'_new(BIT `< _ >) = true
 def $nestable'_new(INT `< _ >) = true
-def $nestable'_new(`@ _) = true
+def $nestable'_new(TID _) = true
 def $nestable'_new(TYPE _ _) = true
 def $nestable'_new(_) = false
   -- otherwise
@@ -152,7 +152,7 @@ def $nestable'_list(ERROR) = true
 def $nestable'_list(MATCH_KIND) = true
 def $nestable'_list(STRING) = true
 def $nestable'_list(numTypeIR) = true
-def $nestable'_list(`@ _) = true
+def $nestable'_list(TID _) = true
 def $nestable'_list(dataTypeIR) = true
 def $nestable'_list(_) = false
   -- otherwise
@@ -171,7 +171,7 @@ def $nestable'_tuple(ERROR) = true
 def $nestable'_tuple(BIT `< _ >) = true
 def $nestable'_tuple(INT `< _ >) = true
 def $nestable'_tuple(VARBIT `< _ >) = true
-def $nestable'_tuple(`@ _) = true
+def $nestable'_tuple(TID _) = true
 def $nestable'_tuple(TUPLE `< _ >) = true
 def $nestable'_tuple(typeIR `[ _ ]) = true
 def $nestable'_tuple(HEADER _ `{ _ }) = true
@@ -191,7 +191,7 @@ dec $nestable_stack(typeIR) : bool
 dec $nestable'_stack(typeIR) : bool
 
 def $nestable_stack(typeIR) = $nestable'_stack($canon(typeIR))
-def $nestable'_stack(`@ _) = true
+def $nestable'_stack(TID _) = true
 def $nestable'_stack(HEADER _ `{ _ }) = true
 def $nestable'_stack(HEADER_UNION _ `{ _ }) = true
 def $nestable'_stack(_) = false
@@ -212,7 +212,7 @@ def $nestable'_header(BOOL) = true
 def $nestable'_header(BIT `< _ >) = true
 def $nestable'_header(INT `< _ >) = true
 def $nestable'_header(VARBIT `< _ >) = true
-def $nestable'_header(`@ _) = true
+def $nestable'_header(TID _) = true
 def $nestable'_header(TYPE _ _) = true
 def $nestable'_header(STRUCT _ `{ (typeIR, _)* }) = true
   -- if $nestable_struct_in_header(typeIR)*
@@ -225,7 +225,7 @@ def $nestable_struct_in_header(typeIR)
 def $nestable'_struct_in_header(BOOL) = true
 def $nestable'_struct_in_header(BIT `< _ >) = true
 def $nestable'_struct_in_header(INT `< _ >) = true
-def $nestable'_struct_in_header(`@ _) = true
+def $nestable'_struct_in_header(TID _) = true
 def $nestable'_struct_in_header(TYPE _ _) = true
 def $nestable'_struct_in_header(ENUM _ _ `{ _ }) = true
 def $nestable'_struct_in_header(STRUCT _ `{ (typeIR, _)* }) = true
@@ -244,7 +244,7 @@ dec $nestable'_headerunion(typeIR) : bool
 
 def $nestable_headerunion(typeIR)
   = $nestable'_headerunion($canon(typeIR))
-def $nestable'_headerunion(`@ _) = true
+def $nestable'_headerunion(TID _) = true
 def $nestable'_headerunion(TYPE _ _) = true
 def $nestable'_headerunion(HEADER _ `{ _ }) = true
 def $nestable'_headerunion(_) = false
@@ -265,7 +265,7 @@ def $nestable'_struct(ERROR) = true
 def $nestable'_struct(BIT `< _ >) = true
 def $nestable'_struct(INT `< _ >) = true
 def $nestable'_struct(VARBIT `< _ >) = true
-def $nestable'_struct(`@ _) = true
+def $nestable'_struct(TID _) = true
 def $nestable'_struct(TUPLE `< _ >) = true
 def $nestable'_struct(typeIR `[ _ ]) = true
 def $nestable'_struct(HEADER _ `{ _ }) = true
@@ -295,7 +295,7 @@ def $nestable_serenum(typeIR)
   = $nestable'_serenum($canon(typeIR))
 def $nestable'_serenum(BIT `< _ >) = true
 def $nestable'_serenum(INT `< _ >) = true
-def $nestable'_serenum(`@ _) = true
+def $nestable'_serenum(TID _) = true
 def $nestable'_serenum(TYPE _ typeIR)
   = $nestable_new_in_serenum(typeIR)
 def $nestable'_serenum(_) = false
@@ -305,7 +305,7 @@ def $nestable_new_in_serenum(typeIR)
   = $nestable_new_in_serenum'($canon(typeIR))
 def $nestable_new_in_serenum'(BIT `< _ >) = true
 def $nestable_new_in_serenum'(INT `< _ >) = true
-def $nestable_new_in_serenum'(`@ _) = true
+def $nestable_new_in_serenum'(TID _) = true
 def $nestable_new_in_serenum'(TYPE _ _) = true
 def $nestable_new_in_serenum'(_) = false
   -- otherwise
@@ -377,7 +377,7 @@ def $nestable'_set(BOOL) = true
 def $nestable'_set(ERROR) = true
 def $nestable'_set(BIT `< _ >) = true
 def $nestable'_set(INT `< _ >) = true
-def $nestable'_set(`@ _) = true
+def $nestable'_set(TID _) = true
 def $nestable'_set(TYPE _ _) = true
 def $nestable'_set(TUPLE `< typeIR* >) = true
   -- if $nestable_tuple_in_set(typeIR)*
@@ -393,7 +393,7 @@ def $nestable_tuple_in_set(typeIR)
 def $nestable'_tuple_in_set(BOOL) = true
 def $nestable'_tuple_in_set(BIT `< _ >) = true
 def $nestable'_tuple_in_set(INT `< _ >) = true
-def $nestable'_tuple_in_set(`@ _) = true
+def $nestable'_tuple_in_set(TID _) = true
 def $nestable'_tuple_in_set(TYPE _ _) = true
 def $nestable'_tuple_in_set(TUPLE `< typeIR* >) = true
   -- if $nestable_tuple_in_set(typeIR)*
@@ -407,7 +407,7 @@ def $nestable_sequence_in_set(typeIR)
 def $nestable'_sequence_in_set(BOOL) = true
 def $nestable'_sequence_in_set(BIT `< _ >) = true
 def $nestable'_sequence_in_set(INT `< _ >) = true
-def $nestable'_sequence_in_set(`@ _) = true
+def $nestable'_sequence_in_set(TID _) = true
 def $nestable'_sequence_in_set(TYPE _ _) = true
 def $nestable'_sequence_in_set(TUPLE `< typeIR* >) = true
   -- if $nestable_sequence_in_set(typeIR)*
@@ -442,7 +442,7 @@ rule Type_wf/dontcaretype:
 
 dec $definable_type_mono(typeIR) : bool
 
-def $definable_type_mono(`@ _) = true
+def $definable_type_mono(TID _) = true
 def $definable_type_mono(typedefTypeIR) = true
 def $definable_type_mono(ENUM _ `{ _ }) = true
 def $definable_type_mono(ENUM _ _ `{ _ }) = true

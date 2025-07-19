@@ -1,0 +1,725 @@
+;;
+;; Names
+;;
+
+syntax nameIR = `N text
+
+syntax prefixedNameIR =
+  | nameIR
+  | `. nameIR
+
+syntax nameListIR = nameIR*
+
+;;
+;; Type parameters
+;;
+
+syntax typeParameterIR = tid
+
+syntax typeParameterListIR = typeParameter*
+
+;;
+;; Parameters
+;;
+
+syntax initializerOptIR
+
+syntax parameterIR =
+  annotationList direction typeIR nameIR initializerOptIR
+
+syntax parameterListIR = parameterIR*
+
+;;
+;; Constructor parameters
+;;
+
+syntax constructorParameterListIR = parameterIR*
+
+;;
+;; Expression key-value pairs
+;;
+
+syntax typedExpressionIR
+
+syntax namedExpressionIR = nameIR `= typedExpressionIR
+
+syntax namedExpressionListIR = namedExpressionIR*
+
+;;
+;; Expressions
+;;
+
+;;
+;;;; Literal expressions
+;;
+
+syntax literalExpressionIR = literalExpression
+
+;;
+;;;; Reference expressions
+;;
+
+syntax referenceExpressionIR = prefixedNameIR
+
+;;
+;;;; Default expressions
+;;
+
+syntax defaultExpressionIR = defaultExpression
+
+;;
+;;;; Unary, binary, and ternary expressions
+;;
+
+syntax unaryExpressionIR = unop typedExpressionIR
+
+syntax binaryExpressionIR =
+  typedExpressionIR binop typedExpressionIR
+
+syntax ternaryExpressionIR =
+  typedExpressionIR `? typedExpressionIR `: typedExpressionIR
+
+;;
+;;;; Cast expressions
+;;
+
+syntax castExpressionIR = `( typeIR ) typedExpressionIR
+
+;;
+;;;; Data (aggregate) expressions
+;;
+
+syntax typedExpressionListIR
+
+syntax dataExpressionIR =
+  | `{#}
+  | SEQ `{ typedExpressionListIR }
+  | RECORD `{ namedExpressionListIR }
+
+;;
+;;;; Member and index access expressions
+;;
+
+syntax memberAccessBaseIR
+
+syntax errorAccessExpressionIR =
+  ERROR `. nameIR
+
+syntax memberAccessExpressionIR =
+  memberAccessBaseIR `. nameIR
+
+syntax indexAccessExpressionIR =
+  | typedExpressionIR `[ typedExpressionIR ]
+  | typedExpressionIR `[ typedExpressionIR `: typedExpressionIR ]
+
+syntax accessExpressionIR =
+  | errorAccessExpressionIR
+  | memberAccessExpressionIR
+  | indexAccessExpressionIR
+
+;;
+;;;; Call expressions
+;;
+
+syntax typeArgumentListIR
+syntax argumentListIR
+
+syntax functionTargetIR = prefixedNameIR
+syntax methodTargetIR = memberAccessExpressionIR
+
+syntax routineTargetIR =
+  | functionTargetIR
+  | methodTargetIR
+  | `( routineTargetIR )
+
+syntax constructorTargetIR = typeIR
+
+syntax callTargetIR =
+  | routineTargetIR
+  | constructorTargetIR
+
+syntax callExpressionIR =
+  | callTargetIR `( argumentListIR )
+  | routineTargetIR `< typeArgumentListIR > `( argumentListIR )
+
+;;
+;;;; Parenthesized expressions
+;;
+
+syntax parenthesizedExpressionIR = `( typedExpressionIR )
+
+;;
+;;;; Expressions
+;;
+
+syntax expressionIR =
+  | literalExpressionIR
+  | referenceExpressionIR
+  | defaultExpressionIR
+  | unaryExpressionIR
+  | binaryExpressionIR
+  | ternaryExpressionIR
+  | castExpressionIR
+  | dataExpressionIR
+  | accessExpressionIR
+  | callExpressionIR
+  | parenthesizedExpressionIR
+
+syntax typedExpressionIR =
+  expressionIR `# `( typeIR ctk )
+
+syntax typedExpressionListIR = typedExpressionIR*
+
+;;syntax memberAccessBase =
+;;  | prefixedTypeName
+;;  | expression
+
+;;
+;; Keyset expressions
+;;
+
+syntax simpleKeysetExpressionIR =
+  | typedExpressionIR
+  | typedExpressionIR `&&& typedExpressionIR
+  | typedExpressionIR `.. typedExpressionIR
+  | DEFAULT
+  | `_
+
+syntax simpleKeysetExpressionListIR = simpleKeysetExpressionIR*
+
+syntax tupleKeysetExpressionIR = `( simpleKeysetExpressionListIR )
+
+syntax keysetExpressionIR =
+  | simpleKeysetExpressionIR
+  | tupleKeysetExpressionIR
+
+syntax typedKeysetExpressionIR =
+  keysetExpressionIR `# `( typeIR ctk )
+
+;;
+;; Type arguments
+;;
+
+syntax typeArgumentIR = typeIR
+
+syntax typeArgumentListIR = typeArgumentIR*
+
+;;
+;; Arguments
+;;
+
+syntax argumentIR =
+  | expressionIR
+  | nameIR `= typedExpressionIR
+  | nameIR `= `_
+  | `_
+
+syntax argumentListIR = argumentIR*
+
+;;
+;; L-values
+;;
+
+syntax lvalueIR =
+  | referenceExpressionIR
+  | lvalueIR `. nameIR
+  | lvalueIR `[ typedExpressionIR ]
+  | lvalueIR `[ typedExpressionIR `: typedExpressionIR ]
+  | `( lvalueIR )
+
+;;
+;; Statements
+;;
+
+;;
+;;;; Empty statements
+;;
+
+syntax emptyStatementIR = emptyStatement
+
+;;
+;;;; Assignment statements
+;;
+
+syntax assignmentStatementIR =
+  lvalueIR assignop typedExpressionIR `;
+
+;;
+;;;; Call statements
+;;
+
+syntax callStatementIR =
+  | lvalueIR `( argumentListIR ) `;
+  | lvalueIR `< typeArgumentListIR > `( argumentListIR ) `;
+
+;;
+;;;; Direct application statements
+;;
+
+syntax directApplicationStatementIR =
+  typeIR `. APPLY `( argumentListIR ) `;
+
+;;
+;;;; Return statements
+;;
+
+syntax returnStatementIR =
+  | RETURN `;
+  | RETURN typedExpressionIR `;
+
+;;
+;;;; Exit statements
+;;
+
+syntax exitStatementIR = exitStatement
+
+;;
+;;;; Block statements
+;;
+
+syntax blockElementStatementListIR
+
+syntax blockStatementIR =
+  annotationList `{ blockElementStatementListIR }
+
+;;
+;;;; Conditional statements
+;;
+
+syntax statementIR
+
+syntax conditionalStatementIR =
+  | IF `( typedExpressionIR ) statementIR
+  | IF `( typedExpressionIR ) statementIR ELSE statementIR
+
+;;
+;;;; For statements
+;;
+
+syntax forInitStatementIR =
+  | annotationList typeIR nameIR initializerOptIR
+  | lvalueIR `( argumentListIR )
+  | lvalueIR `< typeArgumentListIR > `( argumentListIR )
+  | lvalueIR assignop expressionIR
+
+syntax forInitStatementListIR = forInitStatementIR*
+
+syntax forUpdateStatementIR = forInitStatementIR
+
+syntax forUpdateStatementListIR = forUpdateStatementIR*
+
+syntax forCollectionExpressionIR =
+  | typedExpressionIR
+  | typedExpressionIR `.. typedExpressionIR
+
+syntax forStatementIR =
+  | annotationList FOR
+      `( forInitStatementListIR `; typedExpressionIR `; forUpdateStatementListIR )
+      statementIR
+  | annotationList FOR
+      `( typeIR nameIR IN forCollectionExpressionIR )
+      statementIR
+  | annotationList FOR
+      `( annotationList typeIR nameIR IN forCollectionExpressionIR )
+      statementIR
+
+;;
+;;;; Switch statements
+;;
+
+syntax switchLabelIR =
+  | DEFAULT
+  | typedExpressionIR
+
+syntax switchCaseIR =
+  | switchLabelIR `: blockStatementIR
+  | switchLabelIR `: 
+
+syntax switchCaseListIR = switchCaseIR*
+
+syntax switchStatementIR =
+  SWITCH `( typedExpressionIR ) `{ switchCaseListIR }
+
+;;
+;;;; Break and continue statements
+;;
+
+syntax breakStatementIR = breakStatement
+
+syntax continueStatementIR = continueStatement
+
+;;
+;;;; Statements
+;;
+
+syntax statementIR =
+  | emptyStatementIR
+  | assignmentStatementIR
+  | callStatementIR
+  | directApplicationStatementIR
+  | returnStatementIR
+  | exitStatementIR
+  | blockStatementIR
+  | conditionalStatementIR
+  | forStatementIR
+  | breakStatementIR
+  | continueStatementIR
+  | switchStatementIR
+
+;;
+;; Declarations
+;;
+
+;;
+;;;; Constant and variable declarations
+;;
+
+syntax initializerIR = `= typedExpressionIR
+
+syntax constantDeclarationIR =
+  annotationList CONST typeIR nameIR initializerIR `;
+
+syntax initializerOptIR = initializerIR?
+
+syntax variableDeclarationIR =
+  annotationList typeIR nameIR initializerOptIR `;
+
+syntax blockElementStatementIR =
+  | constantDeclarationIR
+  | variableDeclarationIR
+  | statementIR
+
+syntax blockElementStatementListIR = blockElementStatementIR*
+
+;;
+;;;; Function declarations
+;;
+
+syntax functionPrototypeIR =
+  typeIR nameIR `< typeParameterListIR > `( parameterListIR )
+
+syntax functionDeclarationIR =
+  annotationList functionPrototypeIR blockStatementIR
+
+;;
+;;;; Action declarations
+;;
+
+syntax actionDeclarationIR =
+  annotationList ACTION nameIR `( parameterListIR ) blockStatementIR
+
+;;
+;;;; Instantiations
+;;
+
+syntax objectDeclarationListIR
+
+syntax objectInitializerIR = `= `{ objectDeclarationListIR }
+
+syntax instantiationIR =
+  | annotationList typeIR `( argumentListIR ) nameIR `;
+  | annotationList typeIR `( argumentListIR ) nameIR objectInitializerIR `;
+
+syntax objectDeclarationIR =
+  | functionDeclarationIR
+  | instantiationIR
+
+syntax objectDeclarationListIR = objectDeclarationIR*
+
+;;
+;;;; Error declarations
+;;
+
+syntax errorDeclarationIR = ERROR `{ nameListIR }
+
+;;
+;;;; Match kind declarations
+;;
+
+syntax matchKindDeclarationIR = MATCH_KIND `{ nameListIR }
+
+;;
+;;;; Derived type declarations
+;;
+
+;;
+;;;;;; Enum type declarations
+;;
+
+syntax enumTypeDeclarationIR =
+  | annotationList ENUM nameIR `{ nameListIR }
+  | annotationList ENUM typeIR nameIR `{ namedExpressionListIR }
+
+;;
+;;;;;; Struct, header, and union type declarations
+;;
+
+syntax typeFieldIR = annotationList typeIR nameIR `;
+
+syntax typeFieldListIR = typeFieldIR*
+
+syntax structTypeDeclarationIR =
+  annotationList STRUCT
+    nameIR `< typeParameterListIR > `{ typeFieldListIR }
+
+syntax headerTypeDeclarationIR =
+  annotationList HEADER
+    nameIR `< typeParameterListIR > `{ typeFieldListIR }
+
+syntax headerUnionDeclarationIR =
+  annotationList HEADER_UNION
+    nameIR `< typeParameterListIR > `{ typeFieldListIR }
+
+syntax derivedTypeDeclarationIR =
+  | enumTypeDeclarationIR
+  | structTypeDeclarationIR
+  | headerTypeDeclarationIR
+  | headerUnionDeclarationIR
+
+;;
+;;;; Typedef and newtype declarations
+;;
+
+syntax typedefTypeIR =
+  | typeIR
+  | derivedTypeDeclarationIR
+
+syntax typedefDeclarationIR =
+  | annotationList TYPEDEF typedefTypeIR nameIR `;
+  | annotationList TYPE typeIR nameIR `;
+
+;;
+;;;; Extern declarations
+;;
+
+syntax externFunctionDeclarationIR =
+  annotationList EXTERN functionPrototypeIR `;
+
+syntax methodPrototypeIR =
+  | annotationList nameIR `( parameterListIR ) `;
+  | annotationList functionPrototypeIR `;
+  | annotationList ABSTRACT functionPrototypeIR `;
+
+syntax methodPrototypeListIR = methodPrototypeIR*
+
+syntax externObjectDeclarationIR =
+  annotationList EXTERN
+    nameIR `< typeParameterListIR > `{ methodPrototypeListIR }
+
+syntax externDeclarationIR =
+  | externFunctionDeclarationIR
+  | externObjectDeclarationIR
+
+;;
+;;;; Parser statements and declarations
+;;
+
+;;
+;;;;;; Select expressions
+;;
+
+syntax selectCaseIR = typedKeysetExpressionIR `: nameIR `;
+
+syntax selectCaseListIR = selectCaseIR*
+
+syntax selectExpressionIR =
+  SELECT `( typedExpressionListIR ) `{ selectCaseListIR }
+
+;;
+;;;;;; Transition statements
+;;
+
+syntax stateExpressionIR =
+  | nameIR `;
+  | selectExpressionIR
+
+syntax transitionStatementIR = TRANSITION stateExpressionIR
+
+;;
+;;;;;; Value set declarations
+;;
+
+syntax valueSetDeclarationIR =
+  annotationList VALUESET `< typeIR > `( expressionIR ) nameIR `;
+
+;;
+;;;;;; Parser type declarations
+;;
+
+syntax parserTypeDeclarationIR =
+  annotationList PARSER
+    nameIR `< typeParameterListIR > `( parameterListIR ) `;
+
+;;
+;;;;;; Parser declarations
+;;
+
+syntax parserStatementListIR
+
+syntax parserBlockStatementIR =
+  annotationList `{ parserStatementListIR }
+
+syntax parserStatementIR =
+  | constantDeclarationIR
+  | variableDeclarationIR
+  | emptyStatementIR
+  | assignmentStatementIR
+  | callStatementIR
+  | directApplicationStatementIR
+  | parserBlockStatementIR
+  | conditionalStatementIR
+
+syntax parserStatementListIR = parserStatementIR*
+
+syntax parserStateIR =
+  annotationList STATE nameIR
+    `{ parserStatementListIR transitionStatementIR }
+
+syntax parserStateListIR = parserStateIR*
+
+syntax parserLocalDeclarationIR =
+  | constantDeclarationIR
+  | instantiationIR
+  | variableDeclarationIR
+  | valueSetDeclarationIR
+
+syntax parserLocalDeclarationListIR =
+  parserLocalDeclarationIR*
+
+syntax parserDeclarationIR =
+  annotationList PARSER
+    nameIR `< typeParameterListIR >
+    `( parameterListIR ) `( constructorParameterListIR )
+    `{ parserLocalDeclarationListIR parserStateListIR }
+
+;;
+;;;; Control statements and declarations
+;;
+
+;;
+;;;;;; Table declarations
+;;
+
+syntax constIR = CONST
+
+syntax constOptIR = constIR?
+
+;;
+;;;;;;;; Table key property 
+;;
+
+syntax tableKeyIR = typedExpressionIR `: nameIR annotationList `;
+
+syntax tableKeyListIR = tableKeyIR*
+
+;;
+;;;;;;;; Table actions property
+;;
+
+syntax tableActionReferenceIR = prefixedNameIR `( argumentListIR )
+
+syntax tableActionIR = annotationList tableActionReferenceIR `;
+
+syntax tableActionListIR = tableActionIR*
+
+;;
+;;;;;;;; Table entry property
+;;
+
+syntax tableEntryPriorityIR =
+  | PRIORITY `= number `: 
+  | PRIORITY `= `( typedExpressionIR ) `:
+
+syntax tableEntryPriorityOptIR = tableEntryPriorityIR?
+
+syntax tableEntryIR =
+  constOptIR tableEntryPriorityOptIR
+    typedKeysetExpressionIR `: tableActionReferenceIR annotationList `; 
+
+syntax tableEntryListIR = tableEntryIR*
+
+;;
+;;;;;;;; Table properties
+;;
+
+syntax tablePropertyIR =
+  | KEY `= `{ tableKeyListIR }
+  | ACTIONS `= `{ tableActionListIR }
+  | annotationList constOptIR ENTRIES `= `{ tableEntryListIR }
+  | annotationList constOptIR nameIR initializerIR `;
+
+syntax tablePropertyListIR = tablePropertyIR*
+
+syntax tableDeclarationIR =
+  annotationList TABLE nameIR `{ tablePropertyListIR }
+
+;;
+;;;;;; Control type declarations
+;;
+
+syntax controlTypeDeclarationIR =
+  annotationList CONTROL
+    nameIR `< typeParameterListIR > `( parameterListIR ) `;
+
+;;
+;;;;;; Control declarations
+;;
+
+syntax controlBodyIR = blockStatementIR
+
+syntax controlLocalDeclarationIR =
+  | constantDeclarationIR
+  | instantiationIR
+  | variableDeclarationIR
+  | actionDeclarationIR
+  | tableDeclarationIR
+
+syntax controlLocalDeclarationListIR =
+  controlLocalDeclarationIR*
+
+syntax controlDeclarationIR =
+  annotationList CONTROL
+    nameIR `< typeParameterListIR >
+    `( parameterListIR ) `( constructorParameterListIR )
+    `{ controlLocalDeclarationListIR APPLY controlBodyIR }
+
+;;
+;;;; Package type declarations
+;;
+
+syntax packageTypeDeclarationIR =
+  annotationList PACKAGE
+    nameIR `< typeParameterListIR > `( parameterListIR ) `;
+
+;;
+;;;; Type declarations
+;;
+
+syntax typeDeclarationIR =
+  | derivedTypeDeclarationIR
+  | typedefDeclarationIR
+  | parserTypeDeclarationIR
+  | controlTypeDeclarationIR
+  | packageTypeDeclarationIR
+
+;;
+;;;; Declaration
+;;
+
+syntax declarationIR =
+  | constantDeclarationIR
+  | instantiationIR
+  | functionDeclarationIR
+  | actionDeclarationIR
+  | errorDeclarationIR
+  | matchKindDeclarationIR
+  | externDeclarationIR
+  | parserDeclarationIR
+  | controlDeclarationIR
+  | typeDeclarationIR
+
+;;
+;; P4 program
+;;
+
+syntax p4programIR = declarationIR* `;

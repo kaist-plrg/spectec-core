@@ -33,7 +33,7 @@ def $free_type(baseTypeIR) = `{ eps }
 
 ;;; Named types
 
-def $free_type(`@ tid) = `{ tid }
+def $free_type(TID tid) = `{ tid }
 
 def $free_type(polyTypeDefIR `< typeIR* >)
   = $union_set<tid>(bound_base, bound_args)
@@ -207,7 +207,7 @@ def $free_funcTypeDef(
 ;;;; Type substitutions
 ;;
 
-def $subst_type(theta, `@ tid) = typeIR
+def $subst_type(theta, TID tid) = typeIR
   -- if typeIR = $find_map<tid, typeIR>(theta, tid)
 
 def $subst_type(theta, polyTypeDefIR `< typeIR* >)
@@ -341,9 +341,9 @@ def $subst_typeDef(theta, typeIR_base `< tid* `, tid_hidden* >)
   -- if tid_fresh_spec* = tid_fresh*[0 : |tid*|]
   -- if tid_fresh_hidden* = tid_fresh*[|tid*| : |tid_hidden*|]
   -- if theta' = $adds_map<tid, typeIR>(
-                    theta, tid*, (`@ tid_fresh_spec)*)
+                    theta, tid*, (TID tid_fresh_spec)*)
   -- if theta'' = $adds_map<tid, typeIR>(
-                    theta', tid_hidden*, (`@ tid_fresh_hidden)*)
+                    theta', tid_hidden*, (TID tid_fresh_hidden)*)
   -- if typeIR_base_subst = $subst_type(theta'', typeIR_base)
 
 ;;
@@ -448,9 +448,9 @@ def $subst_funcTypeDef(theta, funcTypeIR `< tid* `, tid_hidden* >)
   -- if tid_fresh_spec* = tid_fresh*[0 : |tid*|]
   -- if tid_fresh_hidden* = tid_fresh*[|tid*| : |tid_hidden*|]
   -- if theta' = $adds_map<tid, typeIR>(
-                    theta, tid*, (`@ tid_fresh_spec)*)
+                    theta, tid*, (TID tid_fresh_spec)*)
   -- if theta'' = $adds_map<tid, typeIR>(
-                    theta', tid_hidden*, (`@ tid_fresh_hidden)*)
+                    theta', tid_hidden*, (TID tid_fresh_hidden)*)
   -- if funcTypeIR_subst = $subst_funcType(theta'', funcTypeIR)
 
 ;;
@@ -507,7 +507,7 @@ def $specialize_funcTypeDef(
   -- if tid_tparam* = tid* ++ tid_hidden*
   -- if $(|tid_tparam*| > 0) /\ $(|typeIR_arg*| = 0)
   -- if tid_fresh* = $fresh_tids(|tid_tparam*|)
-  -- if theta = `{ (tid_tparam `: (`@ tid_fresh))* }
+  -- if theta = `{ (tid_tparam `: (TID tid_fresh))* }
 
 def $specialize_funcTypeDef(
     funcTypeIR `< tid* `, tid_hidden* >,
@@ -519,7 +519,7 @@ def $specialize_funcTypeDef(
         /\ $(|tid*| = |typeIR_arg*|)
         /\ $(|typeIR_arg*| > 0)
   -- if tid_fresh* = $fresh_tids(|tid_hidden*|)
-  -- if typeIR_arg_new* = typeIR_arg* ++ (`@ tid_fresh)*
+  -- if typeIR_arg_new* = typeIR_arg* ++ (TID tid_fresh)*
   -- if theta = `{ (tid_tparam `: typeIR_arg_new)* }
 
 ;;
@@ -545,7 +545,7 @@ def $specialize_consTypeDef(
   -- if tid_tparam* = tid* ++ tid_hidden*
   -- if $(|tid_tparam*| > 0) /\ $(|typeIR_arg*| = 0)
   -- if tid_fresh* = $fresh_tids(|tid_tparam*|)
-  -- if theta = `{ (tid_tparam `: (`@ tid_fresh))* }
+  -- if theta = `{ (tid_tparam `: (TID tid_fresh))* }
 
 def $specialize_consTypeDef(
     consTypeIR `< tid* `, tid_hidden* >,
@@ -557,7 +557,7 @@ def $specialize_consTypeDef(
         /\ $(|tid*| = |typeIR_arg*|)
         /\ $(|typeIR_arg*| > 0)
   -- if tid_fresh* = $fresh_tids(|tid_hidden*|)
-  -- if typeIR_arg_new* = typeIR_arg* ++ (`@ tid_fresh)*
+  -- if typeIR_arg_new* = typeIR_arg* ++ (TID tid_fresh)*
   -- if theta = `{ (tid_tparam `: typeIR_arg_new)* }
 
 ;;

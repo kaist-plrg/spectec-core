@@ -127,9 +127,9 @@ type tdenv = Typdef.t TIdMap.t
 let rec expand_plaintyp (tdenv : tdenv) (plaintyp : plaintyp) : plaintyp =
   match plaintyp.it with
   | VarT (tid, targs) -> (
-      let td = TIdMap.find tid tdenv in
-      match td with
-      | Defined (tparams, typdef) -> (
+      let td_opt = TIdMap.find_opt tid tdenv in
+      match td_opt with
+      | Some (Defined (tparams, typdef)) -> (
           match typdef with
           | `Plain _ when List.length targs <> List.length tparams ->
               error_elab plaintyp.at "type arguments do not match"
@@ -138,7 +138,10 @@ let rec expand_plaintyp (tdenv : tdenv) (plaintyp : plaintyp) : plaintyp =
               let plaintyp = subst_plaintyp theta plaintyp in
               expand_plaintyp tdenv plaintyp
           | _ -> plaintyp)
-      | _ -> plaintyp)
+      | Some _ -> plaintyp
+      | None ->
+          error_elab plaintyp.at ("type variable " ^ tid.it ^ " is not defined")
+      )
   | ParenT plaintyp -> expand_plaintyp tdenv plaintyp
   | _ -> plaintyp
 

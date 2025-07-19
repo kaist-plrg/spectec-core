@@ -1,0 +1,100 @@
+;;
+;; Value
+;;
+
+;;
+;;;; Base values
+;;
+
+;;
+;;;; Primitive values
+;;
+
+syntax primitiveValue =
+  | B bool
+  | ERROR `. id
+  | MATCH_KIND `. id
+  | `" text `"
+
+;;
+;;;; Numeric values
+;;
+
+syntax numberValue =
+  | D int
+  | nat W int
+  | nat S int
+  | nat V int `# nat
+
+syntax baseValue = | primitiveValue | numberValue
+
+;;
+;;;; Composite values
+;;
+
+syntax value
+
+syntax listValue = `[ value* ]
+syntax tupleValue = `( value* )
+syntax headerStackValue = `[ value* `# `( nat; nat ) ]
+
+syntax fieldValue = value id `;
+
+syntax structValue = STRUCT tid `{ fieldValue* }
+syntax headerValue = HEADER tid `{ fieldValue* }
+syntax headerUnionValue = HEADER_UNION tid `{ fieldValue* }
+
+syntax enumValue =
+  | tid `. id
+  | tid `. id `# value
+
+syntax dataValue =
+  | listValue
+  | tupleValue
+  | headerStackValue
+  | structValue
+  | headerValue
+  | headerUnionValue
+  | enumValue
+
+;;
+;;;; Synthesized values
+;;
+
+syntax defaultValue = DEFAULT
+
+syntax invalidHeaderValue = `{#}
+
+syntax sequenceValue =
+  | SEQ `( value* )
+  | SEQ `( value* `, `... )
+
+syntax recordValue =
+  | RECORD `{ fieldValue* }
+  | RECORD `{ fieldValue* `, `... }
+
+syntax setValue =
+  | SET `{ value }
+  | SET `{ value `&&& value }
+  | SET `{ value `.. value }
+
+syntax parserStateValue = PARSERSTATE
+
+syntax tableValue =
+  | TABLE_ENUM tid `. id
+  | TABLE_STRUCT tid `{ fieldValue* }
+
+syntax synthesizedValue =
+  | defaultValue
+  | invalidHeaderValue
+  | sequenceValue
+  | recordValue
+  | setValue
+  | parserStateValue
+  | tableValue
+
+;;
+;;;; Values
+;;
+
+syntax value = | baseValue | dataValue | synthesizedValue
