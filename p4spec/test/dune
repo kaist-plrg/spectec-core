@@ -156,7 +156,9 @@
      -i
      ../../../../p4c/p4include
      -d
-     ../../../../p4c/testdata/p4_16_samples)))))
+     ../../../../p4c/testdata/p4_16_samples
+     -s
+     ../../../../spec-concrete)))))
 
 (rule
  (target parser_p4c_neg.actual)
@@ -171,4 +173,6 @@
      -i
      ../../../../p4c/p4include
      -d
-     ../../../../p4c/testdata/p4_16_errors)))))
+     ../../../../p4c/testdata/p4_16_errors
+     -s
+     ../../../../spec-concrete)))))
