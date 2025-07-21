@@ -78,44 +78,82 @@
 %right PREFIX
 %nonassoc L_PAREN L_BRACKET L_ANGLE_ARGS
 %left DOT
-%start <Il.Ast.value> p4program
-%start <Il.Ast.value> variableDeclaration
-%start <Il.Ast.value> typeDeclaration
+%start  p4program
 
 (**************************** TYPES ******************************)
 %type <Il.Ast.value>
-  int
-  optTrailingComma optCONST
-  number stringLiteral
-  identifier typeIdentifier nonTypeName prefixedNonTypeName typeName prefixedTypeName name nameList nonTableKwName member
-  direction
-  baseType specializedType namedType headerStackBaseType headerStackType listType tupleType
-  typeRef typeOrVoid typeParameterList typeParameters optTypeParameters
-  parameter nonEmptyParameterList parameterList constructorParameters optConstructorParameters
-  kvPair kvList
-  nonBraceExpression accessBaseNonBrace callBaseNonBrace 
-  expression expressionList accessBase callBase kvPairRecordExpression recordExpression
-  simpleKeysetExpression simpleExpressionList tupleKeysetExpression reducedSimpleKeysetExpression keysetExpression
-  realTypeArg realTypeArgList typeArg typeArgList argument nonEmptyArgumentList argumentList
-  lvalue initialValue optInitializer variableDeclarationWithoutSemicolon (*variableDeclaration*) constantDeclaration
-  assignmentOrMethodCallStatementWithoutSemicolon assignmentOrMethodCallStatement directApplication conditionalStatement 
-    emptyStatement blockStatement returnStatement breakStatement continueStatement exitStatement switchLabel switchCase switchCases switchStatement 
-  declOrAssignmentOrMethodCallStatement forInitStatementsNonEmpty forInitStatements forUpdateStatementsNonEmpty forUpdateStatements forCollectionExpr forStatement
-  statement statementOrDeclaration statOrDeclList
-  matchKindDeclaration errorDeclaration functionPrototype methodPrototype methodPrototypes externDeclaration externName 
-  functionDeclaration objInitializer instantiation objDeclaration objDeclarations actionDeclaration 
-  keyElement keyElementList actionRef action actionList entryPriority entry entriesList tableProperty tablePropertyList tableDeclaration
-  controlBody controlLocalDeclaration controlLocalDeclarations controlTypeDeclaration controlDeclaration
-  valueSetType valueSetDeclaration selectCase selectCaseList selectExpression stateExpression transitionStatement
-  parserBlockStatement parserStatement parserStatements parserState parserStates parserTypeDeclaration parserLocalElement parserLocalElements parserDeclaration
-  packageTypeDeclaration
-  specifiedName specifiedNameList enumDeclaration structField structFieldList
-  headerUnionDeclaration structTypeDeclaration headerTypeDeclaration derivedTypeDeclaration
-  typeDefType typedefDeclaration typeDeclarationWithoutSemicolon (*typeDeclaration*) declaration
-  annotationToken annotationBody structuredAnnotationBody annotation annotations optAnnotations 
-  declarationList (*p4program*)
+  (* Aux *) int externName declarationList
+  (* Misc *) trailingCommaOpt (* Numbers *) number (* Strings *) stringLiteral
+  (* Names *)
+  identifier typeIdentifier nonTypeName prefixedNonTypeName typeName prefixedTypeName tableCustomName name nameList member
+  (* Directions *) direction
+  (* Types *)
+  baseType specializedType namedType headerStackType listType tupleType typeRef typeOrVoid
+  (* Type parameters *) typeParameter typeParameterList typeParameterListOpt
+  (* Parameters *) parameter nonEmptyParameterList parameterList 
+  (* Constructor parameters *) constructorParameterListOpt
+  (* Expression key-value pairs *) namedExpression namedExpressionList
+  (* Expressions *)
+  literalExpression referenceExpression defaultExpression 
+  (* >> Unary, binary, and ternary expressions *) 
+  unop unaryExpression binop binaryExpression binaryExpressionNonBrace ternaryExpression ternaryExpressionNonBrace 
+  (* >> Cast expressions *) castExpression 
+  (* >> Data (aggregate) expressions *) dataExpression
+  (* >> Member and index access expressions *)
+  errorAccessExpression memberAccessExpression indexAccessExpression accessExpression
+  memberAccessExpressionNonBrace indexAccessExpressionNonBrace accessExpressionNonBrace
+  (* >> Call expressions *)
+  functionTarget methodTarget routineTarget constructorTarget callTarget callExpression
+  methodTargetNonBrace routineTargetNonBrace callTargetNonBrace callExpressionNonBrace
+  (* >> Parenthesized Expressions *) parenthesizedExpression
+  (* >> Expressions *)
+  expression expressionList memberAccessBase sequenceElementExpression recordElementExpression dataElementExpression
+  (* >> Non-brace Expressions *) expressionNonBrace memberAccessBaseNonBrace
+  (* Keyset Expressions *) simpleKeysetExpression simpleKeysetExpressionList tupleKeysetExpression keysetExpression
+  (* Type arguments *)
+  realTypeArgument realTypeArgumentList typeArgument typeArgumentList argument argumentListNonEmpty argumentList
+  (* L-values *) lvalue
+  (* Statements *)
+  emptyStatement assignop assignmentStatement callStatement directApplicationStatement returnStatement exitStatement blockStatement conditionalStatement 
+  (* >> For statements *)
+  forInitStatement forInitStatementListNonEmpty forInitStatementList forUpdateStatement forUpdateStatementListNonEmpty
+  forUpdateStatementList forCollectionExpression forStatement
+  (* >> Switch statements *) switchLabel switchCase switchCaseList switchStatement
+  breakStatement continueStatement statement
+  (* Declarations *)
+  (* >> Constant and variable declarations *)
+  initialValue constantDeclaration initializerOpt variableDeclaration blockElementStatement blockElementStatementList
+  (* >> Function declarations *) functionPrototype functionDeclaration 
+  (* >> Action declarations *) actionDeclaration
+  (* >> Instantiations *) objectInitializer instantiation objectDeclaration objectDeclarationList
+  (* >> Error declarations *) errorDeclaration
+  (* >> Match kind declarations *) matchKindDeclaration
+  (* >> Derived type declarations *)
+  enumTypeDeclaration typeField typeFieldList structTypeDeclaration headerTypeDeclaration headerUnionDeclaration derivedTypeDeclaration
+  (* >> Typedef and newtype declarations *) typedefType typedefDeclaration
+  (* >> Extern declarations *)
+  externFunctionDeclaration methodPrototype methodPrototypeList externObjectDeclaration externDeclaration
+  (* >> Parser statements and declarations *)
+  (* >>>> Select expressions *) selectCase selectCaseList selectExpression
+  (* >>>> Transition statements *) stateExpression transitionStatement
+  (* >>>> Value set declarations *) valueSetType valueSetDeclaration
+  (* >>>> Parser type declarations *) parserTypeDeclaration
+  (* >>>> Parser Declarations *)
+  parserBlockStatement parserStatement parserStatementList parserState
+  parserStateList parserLocalDeclaration parserLocalDeclarationList parserDeclaration
+  (* >> Control statements and declarations *)
+  (* >>>> Table declarations *) constOpt
+  (* >>>>>> Table key property *) tableKey tableKeyList
+  (* >>>>>> Table actions property *) tableActionReference tableAction tableActionList
+  (* >>>>>> Table entry property *) tableEntryPriority tableEntry tableEntryList
+  (* >>>>>> Table properties *) tableProperty tablePropertyList tableDeclaration
+  (* >>>> Control type declarations *) controlTypeDeclaration
+  (* >>>> Control declarations *) controlBody controlLocalDeclaration controlLocalDeclarationList controlDeclaration
+  (* >> Package type declarations *) packageTypeDeclaration
+  (* >> Type declarations *) typeDeclaration
+  (* >> Declaration *) declaration
+  (* Annotations *) annotationToken annotationBody structuredAnnotationBody annotation annotationListNonEmpty annotationList p4program
 %type <Il.Ast.value> push_name push_externName
-%type <string> binop
 %type <unit> push_scope pop_scope go_toplevel go_local
 %%
 
@@ -129,11 +167,13 @@ push_name:
    { push_scope();
      declare_type_of_il n false;
      n }
+;
 push_externName:
 | n = externName
     { push_scope();
       declare_type_of_il n false;
       n }
+;
 pop_scope:
 | (* empty *)
     { pop_scope() }
@@ -141,21 +181,28 @@ pop_scope:
 go_toplevel:
 | (* empty *)
     { go_toplevel () }
+;
 go_local:
 | (* empty *)
     { go_local () }
+;
 %inline toplevel(X):
 | go_toplevel x = X go_local
     { x }
+;
 
 (**************************** P4-16 GRAMMAR ******************************)
-(******** Built-in ********)
+(* Aux *)
+externName:
+| n = nonTypeName
+  { declare_type_of_il n false;
+    n }
+;
 int:
 | int = NUMBER_INT
     { fst int }
 ;
 
-(********)
 %inline r_angle:
 | info_r = R_ANGLE
     { info_r }
@@ -169,37 +216,30 @@ int:
     { info_r }
 ;
 
-(******** Misc ********)
-optTrailingComma:
+(* Misc *)
+trailingCommaOpt:
 | (* empty *)
-    { [ Term "`EMPTY" ] #@ "optTrailingComma" }
+    { [ Term "`EMPTY" ] #@ "trailingCommaOpt" }
 | COMMA
-    { [ Term "," ] #@ "optTrailingComma" }
+    { [ Term "," ] #@ "trailingCommaOpt" }
 ;
 
-optCONST:
-| (* empty *)
-    { [ Term "`EMPTY" ] #@ "optCONST" }
-| CONST
-    { [ Term "CONST" ] #@ "optCONST" }
-;
-
-(******** Numbers ********)
-(* Processed by lexer *)
+(* Numbers *)
 number:
 | int = int
     { [ Term "D"; NT int ] #@ "number" }
+(* Processed by lexer *)
 | number = NUMBER
     { fst number }
 ;
 
-(******** Strings ********)
+(* Strings *)
 stringLiteral:
 | text = STRING_LITERAL
     { [ Term (Char.escaped '"'); NT text; Term (Char.escaped '"') ] #@ "stringLiteral"}
 ;
 
-(******** Names ********)
+(* Names *)
 identifier:
 | text = NAME IDENTIFIER
     { [ Term "`ID"; NT text ] #@ "identifier" }
@@ -210,6 +250,7 @@ typeIdentifier:
     { [ Term "`TID"; NT text ] #@ "typeIdentifier" }
 ;
 
+(* >> Non-type names *)
 nonTypeName:
 | id = identifier { id }
 | APPLY { [ Term "APPLY" ] #@ "nonTypeName" }
@@ -227,6 +268,7 @@ prefixedNonTypeName:
     { [ Term "."; NT n ] #@ "prefixedNonTypeName" }
 ;
 
+(* >> Type names *)
 typeName:
 | n = typeIdentifier { n }
 ;
@@ -237,6 +279,17 @@ prefixedTypeName:
     { [ Term ".."; NT tid ] #@ "prefixedType" }
 ;
 
+(* >> Table custom property names *)
+tableCustomName:
+| id = identifier { id }
+| tid = typeIdentifier { tid }
+| APPLY { [ Term "APPLY" ] #@ "tableCustomName" }
+| STATE { [ Term "STATE" ] #@ "tableCustomName" }
+| TYPE { [ Term "TYPE" ] #@ "tableCustomName" }
+| PRIORITY { [ Term "PRIORITY" ] #@ "tableCustomName" }
+;
+
+(* >> Names *)
 name:
 | n = nonTypeName
 | n = typeName
@@ -251,21 +304,12 @@ nameList:
        #@ "nameList" }
 ;
 
-nonTableKwName:
-| id = identifier { id }
-| tid = typeIdentifier { tid }
-| APPLY { [ Term "APPLY" ] #@ "nonTypeName" }
-| STATE { [ Term "STATE" ] #@ "nonTypeName" }
-| TYPE { [ Term "TYPE" ] #@ "nonTypeName" }
-| PRIORITY { [ Term "PRIORITY" ] #@ "nonTypeName" }
-;
-
 member:
 | name = name
     { name }
 ;
 
-(******** Directions ********)
+(* Directions *)
 direction:
 | (* empty *) { [ Term "`EMPTY" ] #@ "direction" }
 | IN { [ Term "IN" ] #@ "direction" }
@@ -273,7 +317,8 @@ direction:
 | INOUT { [ Term "INOUT" ] #@ "direction" }
 ;
 
-(******** Types ********)
+(* Types *)
+(* >> Base types *)
 baseType:
 | BOOL { [ Term "BOOL" ] #@ "baseType" }
 | MATCH_KIND { [ Term "MATCH_KIND" ] #@ "baseType" }
@@ -296,11 +341,12 @@ baseType:
     { [ Term "INT"; Term "<"; Term "("; NT e; Term ")"; Term ">" ]
       #@ "baseType" }
 | VARBIT l_angle L_PAREN e = expression R_PAREN r_angle
-    { [ Term "VARBIT"; Term "<"; Term "("; NT e; Term ")"; Term ">" ] #@ "baseType" }
+{ [ Term "VARBIT"; Term "<"; Term "("; NT e; Term ")"; Term ">" ] #@ "baseType" }
 ;
 
+(* >> Named types *)
 specializedType:
-| n = prefixedTypeName l_angle targL = typeArgList r_angle
+| n = prefixedTypeName l_angle targL = typeArgumentList r_angle
     { [ NT n; Term "<"; NT targL; Term ">" ] #@ "specializedType" }
 ;
 
@@ -309,27 +355,25 @@ namedType:
 | t = specializedType { t }
 ;
 
-headerStackBaseType: (*TODO: inline?*)
-| n = prefixedTypeName { n }
-| t = specializedType { t }
-;
-
+(* >> Header stack types *)
 headerStackType:
-| t = headerStackBaseType L_BRACKET e = expression R_BRACKET
+| t = namedType L_BRACKET e = expression R_BRACKET
     { [ NT t; Term "["; NT e; Term "]" ] #@ "headerStackType" }
 ;
 
+(* >> List types *)
 listType:
-| LIST l_angle ta = typeArg r_angle
-    { [ Term "LIST"; Term "<"; NT ta; Term ">" ] #@ "listType" }
+| LIST l_angle targ = typeArgument r_angle
+    { [ Term "LIST"; Term "<"; NT targ; Term ">" ] #@ "listType" }
 ;
 
+(* >> Tuple types *)
 tupleType:
-| TUPLE l_angle tas = typeArgList r_angle
-    { [ Term "TUPLE"; Term "<"; NT tas; Term ">" ] #@ "tupleType" }
+| TUPLE l_angle targs = typeArgumentList r_angle
+    { [ Term "TUPLE"; Term "<"; NT targs; Term ">" ] #@ "tupleType" }
 ;
 
-(******** Type references ********)
+(* >> Types *)
 typeRef:
 | t = baseType
 | t = namedType
@@ -350,30 +394,27 @@ typeOrVoid:
         | _ -> failwith "@typeOrVoid: expected identifier" }
 ;
 
-(******** Type parameters ********)
-typeParameterList:
+(* Type parameters *)
+typeParameter:
 | n = name { n }
-| tps = typeParameterList COMMA n = name
-    { [ NT tps; Term ","; NT n ] #@ "typeParameterList" }
+
+typeParameterList:
+| tp = typeParameter { tp }
+| tps = typeParameterList COMMA tp = typeParameter
+    { [ NT tps; Term ","; NT tp ] #@ "typeParameterList" }
 ;
 
-typeParameters:
+typeParameterListOpt:
+| (* empty *) { [ Term "`EMPTY" ] #@ "typeParameterListOpt" }
 | l_angle tps = typeParameterList r_angle
     { declare_types_of_il tps;
-      [ Term "<"; NT tps; Term ">" ] #@ "typeParameters" }
+      [ Term "<"; NT tps; Term ">" ] #@ "typeParameterListOpt" }
 ;
 
-optTypeParameters:
-| (* empty *) { [ Term "`EMPTY" ] #@ "optTypeParameters" }
-| tps = typeParameters { tps }
-;
-
-(******** Parameters ********)
+(* Parameters *)
 parameter:
-| anno = optAnnotations dir = direction t = typeRef n = name
-    { [ NT anno; NT dir; NT t; NT n ] #@ "parameter" }
-| anno = optAnnotations dir = direction t = typeRef n = name i = initialValue
-    { [ NT anno; NT dir; NT t; NT n; NT i ] #@ "parameter" }
+| al = annotationList dir = direction t = typeRef n = name i = initializerOpt
+  { [ NT al; NT dir; NT t; NT n; NT i ] #@ "parameter" }
 ;
 
 nonEmptyParameterList:
@@ -387,179 +428,298 @@ parameterList:
 | ps = nonEmptyParameterList { ps }
 ;
 
-(******** Constructor parameters ********)
-constructorParameters:
+(* Constructor parameters *)
+constructorParameterListOpt:
+| (* empty *) { [ Term "`EMPTY" ] #@ "constructorParameterListOpt" }
 | L_PAREN ps = parameterList R_PAREN
-    { [ Term "("; NT ps; Term ")" ] #@ "constructorParameters" }
+    { [ Term "("; NT ps; Term ")" ] #@ "constructorParameterListOpt" }
 ;
 
-optConstructorParameters:
-| (* empty *) { [ Term "`EMPTY" ] #@ "optConstructorParameters" }
-| cps = constructorParameters { cps }
+(* Expression key-value pairs *)
+namedExpression:
+| n = name ASSIGN e = expression { [ NT n; Term "="; NT e ] #@ "namedExpression" }
 ;
 
-(******** Expression key-value pairs ********)
-kvPair:
-| n = name ASSIGN e = expression { [ NT n; Term "="; NT e ] #@ "kvPair" }
+namedExpressionList: (* TODO: inline? *)
+| e = namedExpression { e }
+| es = namedExpressionList COMMA e = namedExpression { [ NT es; Term ","; NT e ] #@ "namedExpressionList" }
 ;
 
-kvList: (* TODO: inline? *)
-| kv = kvPair { kv }
-| kvs = kvList COMMA kv = kvPair { [ NT kvs; Term ","; NT kv ] #@ "kvList" }
-;
-
-(******** Expressions ********)
-nonBraceExpression:
+(* Expressions *)
+(* >> Literal expressions *)
+literalExpression:
+| TRUE { [ Term "TRUE" ] #@ "literalExpression" }
+| FALSE { [ Term "FALSE" ] #@ "literalExpression" }
 | num = number { num }
 | str = stringLiteral { str }
-| TRUE { [ Term "TRUE" ] #@ "nonBraceExpression" }
-| FALSE { [ Term "FALSE" ] #@ "nonBraceExpression" }
-| THIS { [ Term "THIS" ] #@ "nonBraceExpression" }
+;
+
+(* >> Reference expressions *)
+referenceExpression:
 | n = prefixedNonTypeName { n }
-| a = nonBraceExpression L_BRACKET i = expression R_BRACKET
-  { [ NT a; Term "["; NT i; Term "]" ] #@ "nonBraceExpression" }
-| b = nonBraceExpression L_BRACKET h = expression COLON l = expression R_BRACKET
-  { [ NT b; Term "["; NT h; Term ":"; NT l; Term "]" ] #@ "nonBraceExpression" }
-| L_PAREN e = expression R_PAREN 
-  { [ Term "("; NT e; Term ")" ] #@ "nonBraceExpression" }
-| NOT e = expression %prec PREFIX 
-  { [ Term "!"; NT e ] #@ "nonBraceExpression" }
-| COMPLEMENT e = expression %prec PREFIX 
-  { [ Term "~"; NT e ] #@ "nonBraceExpression" }
-| MINUS e = expression %prec PREFIX 
-  { [ Term "-"; NT e ] #@ "nonBraceExpression" }
-| PLUS e = expression %prec PREFIX 
-  { [ Term "+"; NT e ] #@ "nonBraceExpression" }
-| b = accessBaseNonBrace DOT m = member 
-  { [ NT b; Term "."; NT m ] #@ "nonBraceExpression" }
-(* TODO: binop *)
-| l = nonBraceExpression op_str = binop r = expression
-  { [ NT l; Term op_str; NT r ] #@ "nonBraceExpression" }
-| c = nonBraceExpression QUESTION t = expression COLON f = expression
-  { [ NT c; Term "?"; NT t; Term ":"; NT f ] #@ "nonBraceExpression" }
-| f = nonBraceExpression l_angle targs = realTypeArgList r_angle
-  L_PAREN args = argumentList R_PAREN
-  { [ NT f; Term "<"; NT targs; Term ">"; Term "("; NT args; Term ")" ]
-    #@ "nonBraceExpression" }
-| b = callBaseNonBrace L_PAREN args = argumentList R_PAREN
-  { [ NT b; Term "("; NT args; Term ")" ]
-    #@ "nonBraceExpression" }
-| L_PAREN t = typeRef R_PAREN e = expression %prec PREFIX
-    { [ Term "("; NT t; Term ")"; NT e ] #@ "nonBraceExpression" }
+| THIS { [ Term "THIS" ] #@ "referenceExpression" }
+;
+
+(* >> Default expressions *)
+defaultExpression:
+| DOTS { [ Term "..." ] #@ "defaultExpression" }
+;
+
+(* >> Unary, binary, and ternary expressions *)
+%inline unop: 
+| NOT { [ Term "!" ] #@ "unop" }
+| COMPLEMENT { [ Term "~" ] #@ "unop" }
+| MINUS { [ Term "-" ] #@ "unop" }
+| PLUS { [ Term "+" ] #@ "unop" }
+;
+
+unaryExpression:
+| o = unop e = expression %prec PREFIX
+  { [ NT o; NT e ] #@ "unaryExpression" }
 ;
 
 %inline binop:
-| MUL { "*" }
-| DIV { "/" }
-| MOD { "%" }
-| PLUS { "+" }
-| PLUS_SAT { "|+|" }
-| MINUS { "-" }
-| MINUS_SAT { "|-|" }
-| SHL { "<<" }
-| r_angle R_ANGLE_SHIFT { ">>" }
-| LE { "<=" }
-| GE { ">=" }
-| l_angle { "<" }
-| r_angle { ">" }
-| NE { "!=" }
-| EQ { "==" }
-| BIT_AND { "&" }
-| BIT_XOR { "^" }
-| BIT_OR { "|" }
-| PLUSPLUS { "++" }
-| AND { "&&" }
-| OR { "||" }
+  | MUL { [ Term "*" ] #@ "binop" }
+  | DIV { [ Term "/" ] #@ "binop" }
+  | MOD { [ Term "%" ] #@ "binop" }
+  | PLUS { [ Term "+" ] #@ "binop" }
+  | PLUS_SAT { [ Term "|+|" ] #@ "binop" }
+  | MINUS { [ Term "-" ] #@ "binop" }
+  | MINUS_SAT { [ Term "|-|" ] #@ "binop" }
+  | SHL { [ Term "<<" ] #@ "binop" }
+  | r_angle R_ANGLE_SHIFT { [ Term ">>" ] #@ "binop" }
+  | LE { [ Term "<=" ] #@ "binop" }
+  | GE { [ Term ">=" ] #@ "binop" }
+  | l_angle { [ Term "<" ] #@ "binop" }
+  | r_angle { [ Term ">" ] #@ "binop" }
+  | NE { [ Term "!=" ] #@ "binop" }
+  | EQ { [ Term "==" ] #@ "binop" }
+  | BIT_AND { [ Term "&" ] #@ "binop" }
+  | BIT_XOR { [ Term "^" ] #@ "binop" }
+  | BIT_OR { [ Term "|" ] #@ "binop" }
+  | PLUSPLUS { [ Term "++" ] #@ "binop" }
+  | AND { [ Term "&&" ] #@ "binop" }
+  | OR { [ Term "||" ] #@ "binop" }
 ;
 
-accessBaseNonBrace: (*TODO: inline?*)
-| n = prefixedTypeName { n }
-| ERROR { [ Term "ERROR" ] #@ "accessBaseNonBrace" }
-| e = nonBraceExpression { e }
+binaryExpression:
+| l = expression o = binop r = expression
+  { [ NT l; NT o; NT r ] #@ "binaryExpression" }
 ;
 
-callBaseNonBrace: (*TODO: inline?*)
-| t = namedType { t }
-| e = nonBraceExpression { e }
+binaryExpressionNonBrace:
+| l = expressionNonBrace o = binop r = expression
+  { [ NT l; NT o; NT r ] #@ "binaryExpressionNonBrace" }
 ;
 
-expression:
-| num = number { num }
-| DOTS { [ Term "..." ] #@ "expression" }
-| str = stringLiteral { str }
-| TRUE { [ Term "TRUE" ] #@ "expression" }
-| FALSE { [ Term "FALSE" ] #@ "expression" }
-| THIS { [ Term "THIS" ] #@ "expression" }
-| n = prefixedNonTypeName { n }
-| a = expression L_BRACKET i = expression R_BRACKET
-  { [ NT a; Term "["; NT i; Term "]" ] #@ "expression" }
-| b = expression L_BRACKET h = expression COLON l = expression R_BRACKET
-  { [ NT b; Term "["; NT h; Term ":"; NT l; Term "]" ] #@ "expression" }
-| INVALID { [ Term "INVALID" ] #@ "expression" }
-| L_BRACE r = recordExpression c = optTrailingComma R_BRACE
-  { [ Term "{"; NT r; NT c; Term "}" ] #@ "expression" }
-| L_PAREN e = expression R_PAREN { [ Term "("; NT e; Term ")" ] #@ "expression" }
-| NOT e = expression %prec PREFIX
-  { [ Term "!"; NT e ] #@ "expression" }
-| COMPLEMENT e = expression %prec PREFIX
-  { [ Term "~"; NT e ] #@ "expression" }
-| MINUS e = expression %prec PREFIX
-  { [ Term "-"; NT e ] #@ "expression" }
-| PLUS e = expression %prec PREFIX
-  { [ Term "+"; NT e ] #@ "expression" }
-| b = accessBase DOT m = member
-  { [ NT b; Term "."; NT m ] #@ "expression" }
-| l = expression op = binop r = expression
-  { [ NT l; Term op; NT r ] #@ "expression" }
+ternaryExpression:
 | c = expression QUESTION t = expression COLON f = expression
-  { [ NT c; Term "?"; NT t; Term ":"; NT f ] #@ "expression" }
-| f = expression l_angle targs = realTypeArgList r_angle
-  L_PAREN args = argumentList R_PAREN
-  { [ NT f; Term "<"; NT targs; Term ">"; Term "("; NT args; Term ")" ] #@ "expression" }
-| b = callBase L_PAREN args = argumentList R_PAREN
-  { [ NT b; Term "("; NT args; Term ")" ] #@ "expression" }
+  { [ NT c; Term "?"; NT t; Term ":"; NT f ] #@ "ternaryExpression" }
+;
+
+ternaryExpressionNonBrace:
+| c = expressionNonBrace QUESTION t = expression COLON f = expression
+  { [ NT c; Term "?"; NT t; Term ":"; NT f ] #@ "ternaryExpressionNonBrace" }
+;
+
+(* >> Cast expressions *)
+castExpression:
 | L_PAREN t = typeRef R_PAREN e = expression %prec PREFIX
-  { [ Term "("; NT t; Term ")"; NT e ] #@ "expression" }
+    { [ Term "("; NT t; Term ")"; NT e ] #@ "expressionNonBrace" }
+;
+
+(* >> Data (aggregate) expressions *)
+dataExpression:
+| INVALID { [ Term "{#}" ] #@ "dataExpression" }
+| L_BRACE e = dataElementExpression c = trailingCommaOpt R_BRACE
+{ [ Term "{"; NT e; NT c; Term "}" ] #@ "dataExpression" }
+;
+
+(* >> Member and index access expressions *)
+errorAccessExpression:
+| ERROR DOT m = member
+  { [ Term "ERROR"; Term "."; NT m ] #@ "errorAccessExpression" }
+;
+
+memberAccessExpression:
+| e = memberAccessBase DOT m = member
+  { [ NT e; Term "."; NT m ] #@ "memberAccessExpression" }
+;
+
+indexAccessExpression:
+| a = expression L_BRACKET i = expression R_BRACKET
+  { [ NT a; Term "["; NT i; Term "]" ] #@ "indexAccessExpression" }
+| a = expression L_BRACKET h = expression COLON l = expression R_BRACKET
+  { [ NT a; Term "["; NT h; Term ":"; NT l; Term "]" ] #@ "indexAccessExpression" }
+;
+
+accessExpression:
+| e = errorAccessExpression
+| e = memberAccessExpression
+| e = indexAccessExpression
+  { e }
+;
+
+memberAccessExpressionNonBrace:
+| e = memberAccessBaseNonBrace DOT m = member
+  { [ NT e; Term "."; NT m ] #@ "memberAccessExpressionNonBrace" }
+;
+
+indexAccessExpressionNonBrace:
+| a = expressionNonBrace L_BRACKET i = expression R_BRACKET
+  { [ NT a; Term "["; NT i; Term "]" ] #@ "indexAccessExpressionNonBrace" }
+| a = expressionNonBrace L_BRACKET h = expression COLON l = expression R_BRACKET
+  { [ NT a; Term "["; NT h; Term ":"; NT l; Term "]" ] #@ "indexAccessExpressionNonBrace" }
+;
+
+accessExpressionNonBrace:
+| e = errorAccessExpression
+| e = memberAccessExpressionNonBrace
+| e = indexAccessExpressionNonBrace
+  { e }
+;
+
+(* >> Call expressions *)
+functionTarget:
+| n = prefixedNonTypeName { n }
+;
+
+methodTarget:
+| e = memberAccessExpression { e }
+;
+
+routineTarget:
+| t = functionTarget
+| t = methodTarget
+  { t }
+| L_PAREN t = routineTarget R_PAREN
+  { [ Term "("; NT t; Term ")" ] #@ "routineTarget" }
+;
+
+constructorTarget:
+| n = namedType { n }
+;
+
+callTarget:
+| t = routineTarget
+| t = constructorTarget
+  { t }
+;
+
+callExpression:
+| t = callTarget L_PAREN args = argumentList R_PAREN
+  { [ NT t; Term "("; NT args; Term ")" ] #@ "callExpression" }
+| t = routineTarget l_angle targs = realTypeArgumentList r_angle L_PAREN args = argumentList R_PAREN
+  { [ NT t; Term "<"; NT targs; Term ">"; Term "("; NT args; Term ")" ]
+    #@ "callExpression" }
+;
+
+methodTargetNonBrace:
+| e = memberAccessExpressionNonBrace { e }
+;
+
+routineTargetNonBrace:
+| t = functionTarget
+| t = methodTargetNonBrace
+  { t }
+| L_PAREN t = routineTargetNonBrace R_PAREN
+  { [ Term "("; NT t; Term ")" ] #@ "routineTargetNonBrace" }
+;
+
+callTargetNonBrace:
+| t = routineTargetNonBrace
+| t = constructorTarget
+  { t }
+;
+
+callExpressionNonBrace:
+| t = callTargetNonBrace L_PAREN args = argumentList R_PAREN
+  { [ NT t; Term "("; NT args; Term ")" ] #@ "callExpressionNonBrace" }
+| t = routineTargetNonBrace l_angle targs = realTypeArgumentList r_angle L_PAREN args = argumentList R_PAREN
+  { [ NT t; Term "<"; NT targs; Term ">"; Term "("; NT args; Term ")" ]
+    #@ "callExpressionNonBrace" }
+
+(* >> Parenthesized Expressions *)
+
+parenthesizedExpression:
+| L_PAREN e = expression R_PAREN
+  { [ Term "("; NT e; Term ")" ] #@ "parenthesizedExpression" }
+;
+
+(* >> Expressions *)
+expression:
+| e = literalExpression
+| e = referenceExpression
+| e = defaultExpression
+| e = unaryExpression
+| e = binaryExpression
+| e = ternaryExpression
+| e = castExpression
+| e = dataExpression
+| e = accessExpression
+| e = callExpression
+| e = parenthesizedExpression
+  { e }
 ;
 
 expressionList:
 | (* empty *) { [ Term "`EMPTY" ] #@ "expressionList" }
 | e = expression { e }
-| es = expressionList COMMA e = expression
-  { [ NT es; Term ","; NT e ] #@ "expressionList" }
+| el = expressionList COMMA e = expression
+  { [ NT el; Term ","; NT e ] #@ "expressionList" }
 ;
 
-accessBase: (*TODO: inline?*)
-| n = prefixedTypeName { n }
-| ERROR { [ Term "ERROR" ] #@ "accessBase" }
-| e = expression { e }
+memberAccessBase: (*TODO: inline?*)
+| e = prefixedTypeName
+| e = expression
+  { e }
 ;
 
-callBase: (*TODO: inline?*)
-| t = namedType { t }
-| e = expression { e }
+sequenceElementExpression:
+| el = expressionList { el }
 ;
 
-kvPairRecordExpression:
+recordElementExpression:
 | n = name ASSIGN e = expression
-  { [ NT n; Term "="; NT e ] #@ "kvPairRecordExpression" }
+  { [ NT n; Term "="; NT e ] #@ "recordElementExpression" }
 | n = name ASSIGN e = expression COMMA DOTS
   { [ NT n; Term "="; NT e; Term ","; Term "..."]
-    #@ "kvPairRecordExpression" }
-| n = name ASSIGN e = expression COMMA kvs = kvList
-  { [ NT n; Term "="; NT e; Term ","; NT kvs ]
-    #@ "kvPairRecordExpression" }
-| n = name ASSIGN e = expression COMMA kvs = kvList COMMA DOTS
-  { [ NT n; Term "="; NT e; Term ","; NT kvs; Term ","; Term "..." ]
-    #@ "kvPairRecordExpression" }
+    #@ "recordElementExpression" }
+| n = name ASSIGN e = expression COMMA el = namedExpressionList
+  { [ NT n; Term "="; NT e; Term ","; NT el ]
+    #@ "recordElementExpression" }
+| n = name ASSIGN e = expression COMMA el = namedExpressionList COMMA DOTS
+  { [ NT n; Term "="; NT e; Term ","; NT el; Term ","; Term "..." ]
+    #@ "recordElementExpression" }
 ;
 
-recordExpression:
-| es = expressionList { es }
-| kvs = kvPairRecordExpression { kvs }
+dataElementExpression:
+| e = sequenceElementExpression
+| e = recordElementExpression 
+  { e }
 ;
 
-(******** Keyset Expressions ********)
+(* >> Non-brace Expressions *)
+expressionNonBrace:
+| e = literalExpression
+| e = referenceExpression
+| e = unaryExpression
+| e = binaryExpressionNonBrace
+| e = ternaryExpressionNonBrace
+| e = castExpression
+| e = accessExpressionNonBrace
+| e = callExpressionNonBrace
+| e = parenthesizedExpression
+  { e }
+;
+
+memberAccessBaseNonBrace: (*TODO: inline?*)
+| e = prefixedTypeName
+| e = expression
+  { e }
+;
+
+(* Keyset Expressions *)
 simpleKeysetExpression:
 | e = expression { e }
 | b = expression MASK m = expression
@@ -572,95 +732,88 @@ simpleKeysetExpression:
     { [ Term "_" ] #@ "simpleKeysetExpression" }
 ;
 
-simpleExpressionList:
+simpleKeysetExpressionList:
 | e = simpleKeysetExpression { e }
-| es = simpleExpressionList COMMA e = simpleKeysetExpression
-    { [ NT es; Term ","; NT e ] #@ "simpleExpressionList" }
+| el = simpleKeysetExpressionList COMMA e = simpleKeysetExpression
+    { [ NT el; Term ","; NT e ] #@ "simpleKeysetExpressionList" }
 ;
 
-tupleKeysetExpression:
-| L_PAREN e = simpleKeysetExpression COMMA es = simpleExpressionList R_PAREN (* TODO: revisit *)
-      { [ Term "("; NT e; Term ","; NT es; Term ")" ]
-       #@ "tupleKeysetExpression" }
-| L_PAREN e = reducedSimpleKeysetExpression R_PAREN
-      { [ Term "("; NT e; Term ")" ]
-           #@ "tupleKeysetExpression" }
-;
-
-reducedSimpleKeysetExpression:
-| b = expression MASK m = expression
-    { [ NT b; Term "&&&"; NT m ] #@ "reducedSimpleKeysetExpression" }
-| l = expression RANGE h = expression
-    { [ NT l; Term ".."; NT h ] #@ "reducedSimpleKeysetExpression" }
-| DEFAULT
-    { [ Term "DEFAULT" ] #@ "reducedSimpleKeysetExpression" }
-| DONTCARE
-    { [ Term "_" ] #@ "reducedSimpleKeysetExpression" }
+tupleKeysetExpression: (* TODO: revisit *)
+| L_PAREN b = expression MASK m = expression R_PAREN
+  { [ Term "("; NT b; Term "&&&"; NT m; Term ")" ] #@ "tupleKeysetExpression" }
+| L_PAREN l = expression RANGE h = expression R_PAREN
+  { [ Term "("; NT l; Term ".."; NT h; Term ")" ] #@ "tupleKeysetExpression" }
+| L_PAREN DEFAULT R_PAREN
+  { [ Term "("; Term "DEFAULT"; Term ")" ] #@ "tupleKeysetExpression" }
+| L_PAREN DONTCARE R_PAREN
+  { [ Term "("; Term "_"; Term ")" ] #@ "tupleKeysetExpression" }
+| L_PAREN e = simpleKeysetExpression COMMA es = simpleKeysetExpressionList R_PAREN
+  { [ Term "("; NT e; Term ","; NT es; Term ")" ] #@ "tupleKeysetExpression" }
 ;
 
 keysetExpression:
-| e = tupleKeysetExpression
 | e = simpleKeysetExpression
+| e = tupleKeysetExpression
     { e }
 ;
 
-(******** Type arguments ********)
-realTypeArg:
+(* Type arguments *)
+realTypeArgument:
 | t = typeRef { t }
 | VOID
-    { [ Term "VOID" ] #@ "realTypeArg" }
+    { [ Term "VOID" ] #@ "realTypeArgument" }
 | DONTCARE
-    { [ Term "_" ] #@ "realTypeArg" }
+    { [ Term "_" ] #@ "realTypeArgument" }
 ;
 
-realTypeArgList:
-| targ = realTypeArg { targ }
-| targs = realTypeArgList COMMA targ = realTypeArg
-    { [ NT targs; Term ","; NT targ ] #@ "realTypeArgList" }
+realTypeArgumentList:
+| targ = realTypeArgument { targ }
+| targs = realTypeArgumentList COMMA targ = realTypeArgument
+    { [ NT targs; Term ","; NT targ ] #@ "realTypeArgumentList" }
 ;
 
-typeArg:
-| t = typeRef { t }
-| n = nonTypeName { n }
+typeArgument:
+| t = typeRef
+| t = nonTypeName 
+  { t }
 | VOID
-    { [ Term "VOID" ] #@ "typeArg" }
+    { [ Term "VOID" ] #@ "typeArgument" }
 | DONTCARE
-    { [ Term "_" ] #@ "typeArg" }
+    { [ Term "_" ] #@ "typeArgument" }
 ;
 
-typeArgList:
-| (* empty *) { [ Term "`EMPTY" ] #@ "typeArgList" }
-| targ = typeArg { targ }
-| targs = typeArgList COMMA targ = typeArg
-    { [ NT targs; Term ","; NT targ ] #@ "typeArgList" }
+typeArgumentList:
+| (* empty *) { [ Term "`EMPTY" ] #@ "typeArgumentList" }
+| targ = typeArgument { targ }
+| targs = typeArgumentList COMMA targ = typeArgument
+    { [ NT targs; Term ","; NT targ ] #@ "typeArgumentList" }
 ;
 
-(******** Arguments ********)
+(* Arguments *)
 argument:
 | e = expression { e }
 | n = name ASSIGN e = expression 
   { [ NT n; Term "="; NT e ] #@ "argument" }
-| DONTCARE
-  { [ Term "_" ] #@ "argument" }
 | name = name ASSIGN DONTCARE
   { [ NT name; Term "="; Term "_" ] #@ "argument" }
+| DONTCARE
+  { [ Term "_" ] #@ "argument" }
 ;
 
-nonEmptyArgumentList:
+argumentListNonEmpty:
 | arg = argument { arg }
-| args = nonEmptyArgumentList COMMA arg = argument
-    { [ NT args; Term ","; NT arg ] #@ "nonEmptyArgumentList" }
+| args = argumentListNonEmpty COMMA arg = argument
+    { [ NT args; Term ","; NT arg ] #@ "argumentListNonEmpty" }
 ;
 
 argumentList:
 | (* empty *) { [ Term "`EMPTY" ] #@ "argumentList" }
-| args = nonEmptyArgumentList { args }
+| args = argumentListNonEmpty { args }
 ;
 
-(******** L-values ********)
+(* L-values *)
 lvalue:
-| n = prefixedNonTypeName { n }
-| THIS { [ Term "THIS" ] #@ "lvalue" }
+| e = referenceExpression { e }
 | lv = lvalue DOT m = member
   { [ NT lv; Term "."; NT m ] #@ "lvalue" }
 | lv = lvalue L_BRACKET i = expression R_BRACKET
@@ -671,83 +824,74 @@ lvalue:
   { [ Term "("; NT lv; Term ")" ] #@ "lvalue" }
 ;
 
-(******** Variable and constant declarations ********)
-(* initializer -> initialValue due to reserved word in OCaml *)
-initialValue:
-| ASSIGN e = expression
-  { [ Term "="; NT e ] #@ "initializer" }
+(* Statements *)
+(* >> Empty statements *)
+emptyStatement:
+| SEMICOLON { [ Term ";" ] #@ "emptyStatement" }
 ;
 
-optInitializer:
-| (* empty *)
-  { [ Term "`EMPTY" ] #@ "optInitializer" }
-| i = initialValue { i }
+(* >> Assignment statements *)
+%inline assignop:
+| ASSIGN { [ Term "=" ] #@ "assignop" }
+| PLUS_ASSIGN { [ Term "+=" ] #@ "assignop" }
+| PLUS_SAT_ASSIGN { [ Term "|+|=" ] #@ "assignop" }
+| MINUS_ASSIGN { [ Term "-=" ] #@ "assignop" }
+| MINUS_SAT_ASSIGN { [ Term "|-|=" ] #@ "assignop" }
+| MUL_ASSIGN { [ Term "*=" ] #@ "assignop" }
+| DIV_ASSIGN { [ Term "/=" ] #@ "assignop" }
+| MOD_ASSIGN { [ Term "%=" ] #@ "assignop" }
+| SHL_ASSIGN { [ Term "<<=" ] #@ "assignop" }
+| SHR_ASSIGN { [ Term ">>=" ] #@ "assignop" }
+| BIT_AND_ASSIGN { [ Term "&=" ] #@ "assignop" }
+| BIT_XOR_ASSIGN { [ Term "^=" ] #@ "assignop" }
+| BIT_OR_ASSIGN { [ Term "|=" ] #@ "assignop" }
 ;
 
-variableDeclarationWithoutSemicolon: (* TODO: inline? *)
-| anno = optAnnotations t = typeRef n = name i = optInitializer
-  { declare_var_of_il n false;
-    [ NT anno; NT t; NT n; NT i ]
-    #@ "variableDeclarationWithoutSemicolon" }
+assignmentStatement:
+| lv = lvalue o = assignop e = expression SEMICOLON
+  { [ NT lv; NT o; NT e; Term ";" ] #@ "assignmentStatement" }
 ;
 
-variableDeclaration: (* TODO: revisit *)
-| d = variableDeclarationWithoutSemicolon SEMICOLON
-  { [ NT d; Term ";" ] #@ "variableDeclaration" }
+(* >> Call statements *)
+callStatement:
+| lv = lvalue L_PAREN args = argumentList R_PAREN SEMICOLON
+  { [ NT lv; Term "("; NT args; Term ")"; Term ";" ] #@ "callStatement" }
+| lv = lvalue l_angle targs = typeArgumentList r_angle L_PAREN args = argumentList R_PAREN SEMICOLON
+  { [ NT lv; Term "<"; NT targs; Term ">"; Term "("; NT args; Term ")"; Term ";" ]
+    #@ "callStatement" }
 ;
 
-constantDeclaration:
-| anno = optAnnotations CONST t = typeRef n = name i = initialValue SEMICOLON
-  { [ NT anno; Term "CONST"; NT t; NT n; NT i; Term ";" ]
-    #@ "constantDeclaration" }
-;
-
-(******** Statements ********)
-assignmentOrMethodCallStatementWithoutSemicolon:
-| f= lvalue L_PAREN args = argumentList R_PAREN
-  { [ NT f; Term "("; NT args; Term ")" ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| f = lvalue l_angle targs = typeArgList r_angle L_PAREN args = argumentList R_PAREN
-  { [ NT f; Term "<"; NT targs; Term ">"; Term "("; NT args; Term ")" ]
-    #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| lv = lvalue ASSIGN r = expression
-  { [ NT lv; Term "="; NT r ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| lv = lvalue PLUS_ASSIGN r = expression
-  { [ NT lv; Term "+="; NT r ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| lv = lvalue PLUS_SAT_ASSIGN r = expression
-  { [ NT lv; Term "|+|="; NT r ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| lv = lvalue MINUS_ASSIGN r = expression
-  { [ NT lv; Term "-="; NT r ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| lv = lvalue MINUS_SAT_ASSIGN r = expression
-  { [ NT lv; Term "|-|="; NT r ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| lv = lvalue MUL_ASSIGN r = expression
-  { [ NT lv; Term "*="; NT r ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| lv = lvalue DIV_ASSIGN r = expression
-  { [ NT lv; Term "/="; NT r ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| lv = lvalue MOD_ASSIGN r = expression
-  { [ NT lv; Term "%="; NT r ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| lv = lvalue SHL_ASSIGN r = expression
-  { [ NT lv; Term "<<="; NT r ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| lv = lvalue SHR_ASSIGN r = expression
-  { [ NT lv; Term ">>="; NT r ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| lv = lvalue BIT_AND_ASSIGN r = expression
-  { [ NT lv; Term "&="; NT r ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| lv = lvalue BIT_XOR_ASSIGN r = expression
-  { [ NT lv; Term "^="; NT r ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-| lv = lvalue BIT_OR_ASSIGN r = expression
-  { [ NT lv; Term "|="; NT r ] #@ "assignmentOrMethodCallStatementWithoutSemicolon" }
-;
-
-assignmentOrMethodCallStatement:
-| s = assignmentOrMethodCallStatementWithoutSemicolon SEMICOLON
-  { [ NT s; Term ";" ] #@ "assignmentOrMethodCallStatement" }
-;
-
-directApplication:
+(* >> Direct application statements *)
+directApplicationStatement:
 | t = namedType DOT APPLY L_PAREN args = argumentList R_PAREN SEMICOLON
     { [ NT t; Term "."; Term "APPLY"; Term "("; NT args; Term ")"; Term ";" ]
-       #@ "directApplication" }
+       #@ "directApplicationStatement" }
 ;
 
+(* >> Return statements *)
+returnStatement:
+| RETURN SEMICOLON
+    { [ Term "RETURN"; Term ";" ] #@ "returnStatement" }
+| RETURN e = expression SEMICOLON
+    { [ Term "RETURN"; NT e; Term ";" ] #@ "returnStatement" }
+;
+
+(* >> Exit statements *)
+exitStatement:
+| EXIT SEMICOLON
+    { [ Term "EXIT"; Term ";" ] #@ "exitStatement" }
+;
+
+(* >> Block statements *)
+blockStatement:
+| al = annotationList L_BRACE
+  push_scope
+  sl = blockElementStatementList R_BRACE
+  pop_scope
+  { [ NT al; Term "{"; NT sl; Term "}" ] #@ "blockStatement" }
+;
+
+(* >> Conditional statements *)
 conditionalStatement:
 | IF L_PAREN c = expression R_PAREN t = statement %prec THEN
     { [ Term "IF"; Term "("; NT c; Term ")"; NT t ]
@@ -757,358 +901,367 @@ conditionalStatement:
        #@ "conditionalStatement" }
 ;
 
-emptyStatement:
-| SEMICOLON { [ Term ";" ] #@ "emptyStatement" }
+(* >> For statements *)
+forInitStatement:
+| al = annotationList t = typeRef n = name i = initializerOpt
+  { [ NT al; NT t; NT n; NT i ] #@ "forInitStatement" }
+| lv = lvalue L_PAREN args = argumentList R_PAREN
+  { [ NT lv; Term "("; NT args; Term ")" ] #@ "forInitStatement" }
+| lv = lvalue l_angle targs = typeArgumentList r_angle L_PAREN args = argumentList R_PAREN
+  { [ NT lv; Term "<"; NT targs; Term ">"; Term "("; NT args; Term ")" ]
+    #@ "forInitStatement" }
+| lv = lvalue o = assignop e = expression
+  { [ NT lv; NT o; NT e ] #@ "forInitStatement" }
 ;
 
-blockStatement:
-| anno = optAnnotations L_BRACE
-  push_scope
-  ss = statOrDeclList R_BRACE
-  pop_scope
-  { [ NT anno; Term "{"; NT ss; Term "}" ] #@ "blockStatement" }
+forInitStatementListNonEmpty:
+| s = forInitStatement { s }
+| sl = forInitStatementListNonEmpty COMMA s = forInitStatement
+    { [ NT sl; Term ","; NT s ] #@ "forInitStatementListNonEmpty" }
 ;
 
-returnStatement:
-| RETURN SEMICOLON
-    { [ Term "RETURN"; Term ";" ] #@ "returnStatement" }
-| RETURN e = expression SEMICOLON
-    { [ Term "RETURN"; NT e; Term ";" ] #@ "returnStatement" }
+forInitStatementList:
+| (* empty *) { [ Term "`EMPTY" ] #@ "forInitStatementList" }
+| sl = forInitStatementListNonEmpty { sl }
 ;
 
-breakStatement:
-| BREAK SEMICOLON
-    { [ Term "BREAK"; Term ";" ] #@ "breakStatement" }
+forUpdateStatement:
+| s = forInitStatement { s }
 ;
 
-continueStatement:
-| CONTINUE SEMICOLON
-    { [ Term "CONTINUE"; Term ";" ] #@ "continueStatement" }
+forUpdateStatementListNonEmpty:
+| s = forUpdateStatement { s }
+| sl = forUpdateStatementListNonEmpty COMMA s = forUpdateStatement
+    { [ NT sl; Term ","; NT s ] #@ "forUpdateStatementListNonEmpty" }
 ;
 
-exitStatement:
-| EXIT SEMICOLON
-    { [ Term "EXIT"; Term ";" ] #@ "exitStatement" }
+forUpdateStatementList:
+| (* empty *) { [ Term "`EMPTY" ] #@ "forUpdateStatementList" }
+| sl = forUpdateStatementListNonEmpty { sl }
 ;
 
-switchLabel:
-| DEFAULT
-    { [ Term "DEFAULT" ] #@ "switchLabel" }
-| e = nonBraceExpression
-    { e }
-;
-
-switchCase:
-| label = switchLabel COLON s = blockStatement
-    { [ NT label; Term ":"; NT s ] #@ "switchCase" }
-| label = switchLabel COLON
-    { [ NT label; Term ":" ] #@ "switchCase" }
-;
-
-switchCases:
-| (* empty *)
-    { [ Term "`EMPTY" ] #@ "switchCases" }
-| cs = switchCases c = switchCase
-    { [ NT cs; NT c ] #@ "switchCases" }
-;
-
-switchStatement:
-| SWITCH L_PAREN e = expression R_PAREN L_BRACE cs = switchCases R_BRACE
-    { [ Term "SWITCH"; Term "("; NT e; Term ")"; Term "{"; NT cs; Term "}" ]
-       #@ "switchStatement" }
-;
-
-declOrAssignmentOrMethodCallStatement:
-| d = variableDeclarationWithoutSemicolon { d }
-| s = assignmentOrMethodCallStatementWithoutSemicolon { s }
-;
-
-forInitStatementsNonEmpty:
-| s = declOrAssignmentOrMethodCallStatement { s }
-| ss = forInitStatementsNonEmpty COMMA s = declOrAssignmentOrMethodCallStatement
-    { [ NT ss; Term ","; NT s ] #@ "forInitStatementsNonEmpty" }
-;
-
-forInitStatements:
-| (* empty *) { [ Term "`EMPTY" ] #@ "forInitStatements" }
-| ss = forInitStatementsNonEmpty { ss }
-;
-
-forUpdateStatementsNonEmpty:
-| s = assignmentOrMethodCallStatementWithoutSemicolon { s }
-| ss = forUpdateStatementsNonEmpty COMMA s = assignmentOrMethodCallStatementWithoutSemicolon
-    { [ NT ss; Term ","; NT s ] #@ "forUpdateStatementsNonEmpty" }
-;
-
-forUpdateStatements:
-| (* empty *) { [ Term "`EMPTY" ] #@ "forUpdateStatements" }
-| ss = forUpdateStatementsNonEmpty { ss }
-;
-
-forCollectionExpr:
+forCollectionExpression:
 | e = expression { e }
 | l = expression RANGE h = expression
     { [ NT l; Term ".."; NT h ] #@ "forCollectionExpr" }
 ;
 
 forStatement:
-| anno = optAnnotations FOR
-  L_PAREN inits = forInitStatements SEMICOLON c = expression SEMICOLON updates = forUpdateStatements R_PAREN
-  b = statement
-    { [ NT anno; Term "FOR"; Term "("; NT inits; Term ";"; NT c; Term ";"; NT updates; Term ")"; NT b ]
+  | al = annotationList FOR L_PAREN il = forInitStatementList SEMICOLON c = expression SEMICOLON ul = forUpdateStatementList R_PAREN b = statement
+  { [ NT al; Term "FOR"; Term "("; NT il; Term ";"; NT c; Term ";"; NT ul; Term ")"; NT b ]
        #@ "forStatement" }
-| anno = optAnnotations FOR L_PAREN
-    t = typeRef n = name IN coll = forCollectionExpr R_PAREN b = statement
-    { [ NT anno; Term "FOR"; Term "("; NT t; NT n; Term "IN"; NT coll; Term ")"; NT b ]
+  | al = annotationList FOR L_PAREN
+    t = typeRef n = name IN e = forCollectionExpression R_PAREN b = statement
+    { [ NT al; Term "FOR"; Term "("; NT t; NT n; Term "IN"; NT e; Term ")"; NT b ]
        #@ "forStatement" }
-| anno = optAnnotations FOR L_PAREN
-    anno_in = annotations t = typeRef n = name IN
-    coll = forCollectionExpr R_PAREN b = statement
-    { [ NT anno; Term "FOR"; Term "("; NT anno_in; NT t; NT n; Term "IN"; NT coll; Term ")"; NT b ]
+  | al = annotationList FOR L_PAREN
+    al_in = annotationList t = typeRef n = name IN e = forCollectionExpression R_PAREN b = statement
+    { [ NT al; Term "FOR"; Term "("; NT al_in; NT t; NT n; Term "IN"; NT e; Term ")"; NT b ]
        #@ "forStatement" }
 ;
 
+(* >> Switch statements *)
+switchLabel:
+  | DEFAULT
+    { [ Term "DEFAULT" ] #@ "switchLabel" }
+  | e = expressionNonBrace
+    { e }
+;
+
+switchCase:
+  | l = switchLabel COLON s = blockStatement
+    { [ NT l; Term ":"; NT s ] #@ "switchCase" }
+  | l = switchLabel COLON
+    { [ NT l; Term ":" ] #@ "switchCase" }
+;
+
+switchCaseList:
+  | (* empty *)
+    { [ Term "`EMPTY" ] #@ "switchCaseList" }
+  | cs = switchCaseList c = switchCase
+    { [ NT cs; NT c ] #@ "switchCaseList" }
+;
+
+switchStatement:
+  | SWITCH L_PAREN e = expression R_PAREN L_BRACE cs = switchCaseList R_BRACE
+    { [ Term "SWITCH"; Term "("; NT e; Term ")"; Term "{"; NT cs; Term "}" ]
+       #@ "switchStatement" }
+
+(* >> Break and continue statements *)
+breakStatement:
+  | BREAK SEMICOLON
+    { [ Term "BREAK"; Term ";" ] #@ "breakStatement" }
+;
+
+continueStatement:
+  | CONTINUE SEMICOLON
+    { [ Term "CONTINUE"; Term ";" ] #@ "continueStatement" }
+;
+
+(* >> Statements *)
 statement:
-| s = assignmentOrMethodCallStatement
-| s = directApplication
-| s = conditionalStatement
-| s = emptyStatement
-| s = blockStatement
-| s = returnStatement
-| s = breakStatement
-| s = continueStatement
-| s = exitStatement
-| s = switchStatement
-| s = forStatement
+  | s = emptyStatement
+  | s = assignmentStatement
+  | s = callStatement
+  | s = directApplicationStatement
+  | s = returnStatement
+  | s = exitStatement
+  | s = blockStatement
+  | s = conditionalStatement
+  | s = forStatement
+  | s = breakStatement
+  | s = continueStatement
+  | s = switchStatement
     { s }
 ;
 
-statementOrDeclaration:
-| d = variableDeclaration
-| d = constantDeclaration
+(* Declarations *)
+(* >> Constant and variable declarations *)
+
+(* initializer -> initialValue due to reserved word in OCaml *)
+initialValue:
+| ASSIGN e = expression
+  { [ Term "="; NT e ] #@ "initializer" }
+;
+
+constantDeclaration:
+  | al = annotationList CONST t = typeRef n = name i = initialValue SEMICOLON
+    { [ NT al; Term "CONST"; NT t; NT n; NT i; Term ";" ] #@ "constantDeclaration" }
+;
+
+initializerOpt:
+| (* empty *)
+  { [ Term "`EMPTY" ] #@ "initializerOpt" }
+| i = initialValue { i }
+;
+
+variableDeclaration: (* TODO: inline? *)
+  | al = annotationList t = typeRef n = name i = initializerOpt SEMICOLON
+    { declare_var_of_il n false;
+      [ NT al; NT t; NT n; NT i; Term ";" ] #@ "variableDeclaration" }
+;
+
+blockElementStatement:
+  | d = constantDeclaration
+  | d = variableDeclaration
+  | d = statement
     { d }
-| s = statement
-    { s }
 ;
 
-statOrDeclList:
-| (* empty *) { [ Term "`EMPTY" ] #@ "statOrDeclList" }
-| ss = statOrDeclList s = statementOrDeclaration
-    { [ NT ss; NT s ] #@ "statOrDeclList" }
+blockElementStatementList:
+  | (* empty *)
+    { [ Term "`EMPTY" ] #@ "blockElementStatementList" }
+  | sl = blockElementStatementList s = blockElementStatement
+    { [ NT sl; NT s ] #@ "blockElementStatementList" }
 ;
 
-(******** Error and match kind declarations ********)
-matchKindDeclaration:
-| MATCH_KIND L_BRACE ns = nameList c = optTrailingComma R_BRACE
-    { declare_vars_of_il ns;
-      [ Term "MATCH_KIND"; Term "{"; NT ns; NT c; Term "}" ] #@ "matchKindDeclaration" }
-;
-
-errorDeclaration:
-| ERROR L_BRACE ns = nameList R_BRACE
-    { declare_vars_of_il ns;
-      [ Term "ERROR"; Term "{"; NT ns; Term "}" ] #@ "errorDeclaration" }
-;
-
-(******** Extern declarations ********)
+(* >> Function declarations *)
 functionPrototype:
 | t = typeOrVoid n = name push_scope
-  tparams = optTypeParameters
-  L_PAREN params = parameterList R_PAREN
-    { [ NT t; NT n; NT tparams; Term "("; NT params; Term ")" ]
+  tpl = typeParameterListOpt
+  L_PAREN pl = parameterList R_PAREN
+    { [ NT t; NT n; NT tpl; Term "("; NT pl; Term ")" ]
        #@ "functionPrototype" }
 ;
 
-methodPrototype:
-| anno = optAnnotations p = functionPrototype pop_scope SEMICOLON
-    { [ NT anno; NT p; Term ";" ] #@ "methodPrototype" }
-| anno = optAnnotations ABSTRACT p = functionPrototype
-    pop_scope SEMICOLON
-    { [ NT anno; Term "ABSTRACT"; NT p; Term ";" ] #@ "methodPrototype" }
-(* Petr4: alias methodName in place of typeIdentifier *)
-| anno = optAnnotations tid = typeIdentifier L_PAREN params = parameterList R_PAREN SEMICOLON
-    { [ NT anno; NT tid; Term "("; NT params; Term ")"; Term ";" ] #@ "methodPrototype" }
-;
-
-methodPrototypes:
-| (* empty *) { [ Term "`EMPTY" ] #@ "methodPrototypes" }
-| ps = methodPrototypes p = methodPrototype
-    { [ NT ps; NT p ] #@ "methodPrototypes" }
-;
-
-externDeclaration:
-| anno = optAnnotations EXTERN n = push_externName tparams = optTypeParameters
-  L_BRACE ps = methodPrototypes R_BRACE pop_scope
-  { let decl =
-      [ NT anno; Term "EXTERN"; NT n; NT tparams; Term "{"; NT ps; Term "}" ]
-        #@ "externDeclaration"
-    in
-    declare_type_of_il n (has_type_params_declaration decl);
-    decl }
-| anno = optAnnotations EXTERN p = functionPrototype pop_scope SEMICOLON
-  { let decl =
-      [ NT anno; Term "EXTERN"; NT p; Term ";" ] #@ "externDeclaration"
-    in
-    declare_var (id_of_declaration decl) (has_type_params_declaration decl);
-    decl }
-;
-
-(* Auxiliary for push_externName, changed from name to nonTypeName *)
-externName:
-| n = nonTypeName
-  { declare_type_of_il n false;
-    n }
-;
-
-(******** Function declarations ********)
 functionDeclaration:
-| anno = optAnnotations p = functionPrototype b = blockStatement pop_scope
-    { [ NT anno; NT p; NT b ] #@ "functionDeclaration" }
+| al = annotationList p = functionPrototype b = blockStatement pop_scope
+    { [ NT al; NT p; NT b ] #@ "functionDeclaration" }
 ;
 
-(******** Instantiations ********)
-objInitializer:
-| ASSIGN L_BRACE ds = objDeclarations R_BRACE
-    { [ Term "="; Term "{"; NT ds; Term "}" ] #@ "objInitializer" }
+(* >> Action declarations *)
+actionDeclaration: 
+  | al = annotationList ACTION n = name L_PAREN pl = parameterList R_PAREN s = blockStatement
+    { [ NT al; Term "ACTION"; NT n; Term "("; NT pl; Term ")"; NT s ]
+       #@ "actionDeclaration" }
+;
+
+(* >> Instantiations *)
+objectInitializer:
+| ASSIGN L_BRACE ds = objectDeclarationList R_BRACE
+    { [ Term "="; Term "{"; NT ds; Term "}" ] #@ "objectInitializer" }
 ;
 
 instantiation:
-| anno = optAnnotations t = typeRef L_PAREN args = argumentList R_PAREN n = name SEMICOLON
-    { [ NT anno; NT t; Term "("; NT args; Term ")"; NT n; Term ";" ]
+| al = annotationList t = typeRef L_PAREN args = argumentList R_PAREN n = name SEMICOLON
+    { [ NT al; NT t; Term "("; NT args; Term ")"; NT n; Term ";" ]
        #@ "instantiation" }
-| anno = optAnnotations t = typeRef L_PAREN args = argumentList R_PAREN n = name i = objInitializer SEMICOLON
-    { [ NT anno; NT t; Term "("; NT args; Term ")"; NT n; NT i; Term ";" ]
+| al = annotationList t = typeRef L_PAREN args = argumentList R_PAREN n = name i = objectInitializer SEMICOLON
+    { [ NT al; NT t; Term "("; NT args; Term ")"; NT n; NT i; Term ";" ]
        #@ "instantiation" }
 ;
 
-objDeclaration:
+objectDeclaration:
 | d = functionDeclaration
 | d = instantiation
     { d }
 ;
 
-objDeclarations:
-| (* empty *) { [ Term "`EMPTY" ] #@ "objDeclarations" }
-| ds = objDeclarations d = objDeclaration
-    { [ NT ds; NT d ] #@ "objDeclarations" }
+objectDeclarationList:
+| (* empty *) { [ Term "`EMPTY" ] #@ "objectDeclarationList" }
+| ds = objectDeclarationList d = objectDeclaration
+    { [ NT ds; NT d ] #@ "objectDeclarationList" }
 ;
 
-(******** Action declarations ********)
-actionDeclaration:
-| anno = optAnnotations ACTION n = name L_PAREN params = parameterList R_PAREN b = blockStatement
-    { [ NT anno; Term "ACTION"; NT n; Term "("; NT params; Term ")"; NT b ]
-       #@ "actionDeclaration" }
+(* >> Error declarations *)
+errorDeclaration:
+| ERROR L_BRACE nl = nameList R_BRACE
+    { declare_vars_of_il nl;
+      [ Term "ERROR"; Term "{"; NT nl; Term "}" ] #@ "errorDeclaration" }
 ;
 
-(******** Table declarations ********)
-keyElement:
-| key = expression COLON match_kind = name anno = optAnnotations SEMICOLON
-    { [ NT key; Term ":"; NT match_kind; NT anno; Term ";" ] #@ "keyElement" }
+(* >> Match kind declarations *)
+matchKindDeclaration:
+| MATCH_KIND L_BRACE nl = nameList c = trailingCommaOpt R_BRACE
+    { declare_vars_of_il nl;
+      [ Term "MATCH_KIND"; Term "{"; NT nl; NT c; Term "}" ] #@ "matchKindDeclaration" }
 ;
 
-keyElementList:
-| (* empty *) { [ Term "`EMPTY" ] #@ "keyElementList" }
-| ks = keyElementList k = keyElement
-    { [ NT ks; NT k ] #@ "keyElementList" }
+(* >> Derived type declarations *)
+(* >>>> Enum type declarations *)
+enumTypeDeclaration:
+  | al = annotationList ENUM n = name L_BRACE
+    nl = nameList c = trailingCommaOpt R_BRACE
+{ [ NT al; Term "ENUM"; NT n; Term "{"; NT nl; NT c; Term "}" ]
+        #@ "enumTypeDeclaration" }
+  | al = annotationList ENUM t = typeRef n = name L_BRACE
+    nl = nameList c = trailingCommaOpt R_BRACE
+    { [ NT al; Term "ENUM"; NT t; NT n; Term "{"; NT nl; NT c; Term "}" ]
+        #@ "enumTypeDeclaration" }
 ;
 
-(* Petr4: contains optAnnotations, name = name *)
-actionRef:
-| n = prefixedNonTypeName
-    { n }
-| n = prefixedNonTypeName L_PAREN args = argumentList R_PAREN
-    { [ NT n; Term "("; NT args; Term ")" ] #@ "actionRef" }
+(* >>>>>> Struct, header, and union type declarations *)
+typeField:
+  | al = annotationList t = typeRef n = name SEMICOLON
+    { [ NT al; NT t; NT n; Term ";" ] #@ "typeField" }
 ;
 
-action:
-| anno = optAnnotations a = actionRef SEMICOLON
-    { [ NT anno; NT a; Term ";" ] #@ "action" }
+typeFieldList:
+  | (* empty *) { [ Term "`EMPTY" ] #@ "typeFieldList" }
+  | fl = typeFieldList f = typeField
+    { [ NT fl; NT f ] #@ "typeFieldList" }
 ;
 
-actionList:
-| (* empty *) { [ Term "`EMPTY" ] #@ "actionList" }
-| acs = actionList a = action
-    { [ NT acs; NT a ] #@ "actionList" }
+structTypeDeclaration:
+  | al = annotationList STRUCT n = name tpl = typeParameterListOpt
+      L_BRACE fl = typeFieldList R_BRACE
+    { [ NT al; Term "STRUCT"; NT n; NT tpl; Term "{"; NT fl; Term "}" ]
+        #@ "structTypeDeclaration" }
 ;
 
-entryPriority:
-| PRIORITY ASSIGN num = number COLON
-    { [ Term "PRIORITY"; Term "="; NT num; Term ":" ] #@ "entryPriority" }
-| PRIORITY ASSIGN L_PAREN e = expression R_PAREN COLON
-    { [ Term "PRIORITY"; Term "="; Term "("; NT e; Term ")"; Term ":" ] #@ "entryPriority" }
+headerTypeDeclaration:
+  | al = annotationList HEADER n = name tpl = typeParameterListOpt
+      L_BRACE fl = typeFieldList R_BRACE
+    { [ NT al; Term "HEADER"; NT n; NT tpl; Term "{"; NT fl; Term "}" ]
+       #@ "headerTypeDeclaration" }
 ;
 
-entry:
-| c = optCONST prio = entryPriority k = keysetExpression COLON a = actionRef anno = optAnnotations SEMICOLON
-    { [ NT c; NT prio; NT k; Term ":"; NT a; NT anno; Term ";" ] #@ "entry" }
-| c = optCONST k = keysetExpression COLON a = actionRef anno = optAnnotations SEMICOLON
-    { [ NT c; NT k; Term ":"; NT a; NT anno; Term ";" ] #@ "entry" }
-;
-entriesList:
-| (* empty *) { [ Term "`EMPTY" ] #@ "entriesList" }
-| es = entriesList e = entry
-    { [ NT es; NT e ] #@ "entriesList" }
+headerUnionDeclaration:
+  | al = annotationList HEADER_UNION n = name tpl = typeParameterListOpt
+      L_BRACE fl = typeFieldList R_BRACE
+    { [ NT al; Term "HEADER_UNION"; NT n; NT tpl; Term "{"; NT fl; Term "}" ]
+      #@ "headerUnionDeclaration" }
 ;
 
-tableProperty:
-| KEY ASSIGN L_BRACE keys = keyElementList R_BRACE
-    { [ Term "KEY"; Term "="; Term "{"; NT keys; Term "}" ] #@ "tableProperty" }
-| ACTIONS ASSIGN L_BRACE actions = actionList R_BRACE
-    { [ Term "ACTIONS"; Term "="; Term "{"; NT actions; Term "}" ] #@ "tableProperty" }
-| anno = optAnnotations optConst = optCONST ENTRIES ASSIGN L_BRACE entries = entriesList R_BRACE
-    { [ NT anno; NT optConst; Term "ENTRIES"; Term "="; Term "{"; NT entries; Term "}" ] #@ "tableProperty" }
-| anno = optAnnotations optConst = optCONST name = nonTableKwName init = initialValue SEMICOLON
-    { [ NT anno; NT optConst; NT name; NT init; Term ";" ] #@ "tableProperty" }
-;
-
-tablePropertyList:
-| (* empty *) { [ Term "`EMPTY" ] #@ "tablePropertyList" }
-| ps = tablePropertyList p = tableProperty
-    { [ NT ps; NT p ] #@ "tablePropertyList" }
-;
-
-tableDeclaration:
-| anno = optAnnotations TABLE n = name L_BRACE ps = tablePropertyList R_BRACE
-    { [ NT anno; Term "TABLE"; NT n; Term "{"; NT ps; Term "}" ] #@ "tableDeclaration" }
-;
-
-(******** Control and control type declarations ********)
-controlBody:
-| b = blockStatement { b }
-;
-
-controlLocalDeclaration:
-| d = constantDeclaration { d }
-| d = actionDeclaration
-| d = tableDeclaration
-    { declare_var (id_of_declaration d) false;
-      d }
-| d = instantiation
-| d = variableDeclaration
+derivedTypeDeclaration:
+  | d = enumTypeDeclaration
+  | d = structTypeDeclaration
+  | d = headerTypeDeclaration
+  | d = headerUnionDeclaration
     { d }
 ;
 
-controlLocalDeclarations:
-| (* empty *) { [ Term "`EMPTY" ] #@ "controlLocalDeclarations" }
-| ds = controlLocalDeclarations d = controlLocalDeclaration
-    { [ NT ds; NT d ] #@ "controlLocalDeclarations" }
+(* >> Typedef and newtype declarations *)
+typedefType: (*TODO: inline? *)
+| t = typeRef
+| t = derivedTypeDeclaration
+  { t }
 ;
 
-controlTypeDeclaration:
-| anno = optAnnotations CONTROL n = push_name tparams = optTypeParameters
-    L_PAREN params = parameterList R_PAREN
-    { [ NT anno; Term "CONTROL"; NT n; NT tparams; Term "("; NT params; Term ")" ]
-       #@ "controlTypeDeclaration" }
+typedefDeclaration:
+| al = annotationList TYPEDEF t = typedefType n = name SEMICOLON
+{ [ NT al; Term "TYPEDEF"; NT t; NT n; Term ";" ] #@ "typedefDeclaration" }
+| al = annotationList TYPE t = typeRef n = name SEMICOLON
+{ [ NT al; Term "TYPE"; NT t; NT n; Term ";" ] #@ "typedefDeclaration" }
 ;
 
-controlDeclaration:
-| d = controlTypeDeclaration cparams = optConstructorParameters
-    L_BRACE locals = controlLocalDeclarations APPLY apply = controlBody R_BRACE pop_scope
-    { [ NT d; NT cparams; Term "{"; NT locals; Term "APPLY"; NT apply; Term "}" ]
-       #@ "controlDeclaration" }
+(* >> Extern declarations *)
+externFunctionDeclaration:
+| al = annotationList EXTERN p = functionPrototype pop_scope SEMICOLON
+  { let decl =
+      [ NT al; Term "EXTERN"; NT p; Term ";" ] #@ "externFunctionDeclaration"
+    in
+    declare_var (id_of_declaration decl) (has_type_params_declaration decl);
+    decl }
 ;
 
-(******** Value set declarations ********)
+methodPrototype:
+| al = annotationList tid = typeIdentifier L_PAREN pl = parameterList R_PAREN SEMICOLON
+    { [ NT al; NT tid; Term "("; NT pl; Term ")"; Term ";" ] #@ "methodPrototype" }
+| al = annotationList p = functionPrototype pop_scope SEMICOLON
+    { [ NT al; NT p; Term ";" ] #@ "methodPrototype" }
+| al = annotationList ABSTRACT p = functionPrototype
+    pop_scope SEMICOLON
+    { [ NT al; Term "ABSTRACT"; NT p; Term ";" ] #@ "methodPrototype" }
+;
+
+methodPrototypeList:
+  | (* empty *) { [ Term "`EMPTY" ] #@ "methodPrototypeList" }
+  | ps = methodPrototypeList p = methodPrototype
+    { [ NT ps; NT p ] #@ "methodPrototypeList" }
+;
+
+externObjectDeclaration:
+  | al = annotationList EXTERN n = push_externName tpl = typeParameterListOpt
+    L_BRACE pl = methodPrototypeList R_BRACE pop_scope
+    { let decl =
+        [ NT al; Term "EXTERN"; NT n; NT tpl; Term "{"; NT pl; Term "}" ]
+          #@ "externObjectDeclaration"
+      in
+      declare_type_of_il n (has_type_params_declaration decl);
+      decl }
+;
+
+externDeclaration:
+  | d = externFunctionDeclaration
+  | d = externObjectDeclaration
+    { d }
+;
+
+(* >> Parser statements and declarations *)
+(* >>>> Select expressions *)
+selectCase:
+  | k = keysetExpression COLON n = name SEMICOLON
+    { [ NT k; Term ":"; NT n; Term ";" ] #@ "selectCase" }
+;
+
+selectCaseList:
+  | (* empty *) { [ Term "`EMPTY" ] #@ "selectCaseList" }
+  | cl = selectCaseList c = selectCase
+    { [ NT cl; NT c ] #@ "selectCaseList" }
+;
+
+selectExpression:
+  | SELECT L_PAREN el = expressionList R_PAREN L_BRACE cl = selectCaseList R_BRACE
+    { [ Term "SELECT"; Term "("; NT el; Term ")"; Term "{"; NT cl; Term "}" ]
+       #@ "selectExpression" }
+;
+
+(* >>>> Transition statements *)
+stateExpression:
+  | n = name SEMICOLON
+    { [ NT n; Term ";" ] #@ "stateExpression" }
+  | e = selectExpression
+    { e }
+;
+
+transitionStatement:
+  | (* empty *) { [ Term "`EMPTY" ] #@ "transitionStatement" }
+  | TRANSITION e = stateExpression
+    { [ Term "TRANSITION"; NT e ] #@ "transitionStatement" }
+;
+
+(* >>>> Value set declarations *)
 valueSetType: (* TODO: inline? *)
 | t = baseType
 | t = tupleType
@@ -1117,222 +1270,241 @@ valueSetType: (* TODO: inline? *)
 ;
 
 valueSetDeclaration:
-| anno = optAnnotations VALUESET l_angle t = valueSetType r_angle
-    L_PAREN size = expression R_PAREN n = name SEMICOLON
-    { [ NT anno; Term "VALUESET"; Term "<"; NT t; Term ">"; Term "("; NT size; Term ")"; NT n; Term ";" ]
+| al = annotationList VALUESET l_angle t = valueSetType r_angle
+    L_PAREN s = expression R_PAREN n = name SEMICOLON
+    { [ NT al; Term "VALUESET"; Term "<"; NT t; Term ">"; Term "("; NT s; Term ")"; NT n; Term ";" ]
        #@ "valueSetDeclaration" }
 ;
 
-(******** Select expressions ********)
-selectCase:
-| key = keysetExpression COLON n = name SEMICOLON
-    { [ NT key; Term ":"; NT n; Term ";" ] #@ "selectCase" }
-;
-
-selectCaseList:
-| (* empty *) { [ Term "`EMPTY" ] #@ "selectCaseList" }
-| cs = selectCaseList c = selectCase
-    { [ NT cs; NT c ] #@ "selectCaseList" }
-;
-
-selectExpression:
-| SELECT L_PAREN es = expressionList R_PAREN L_BRACE cs = selectCaseList R_BRACE
-    { [ Term "SELECT"; Term "("; NT es; Term ")"; Term "{"; NT cs; Term "}" ]
-       #@ "selectExpression" }
-;
-
-(******** Transition statements ********)
-stateExpression:
-| n = name SEMICOLON
-    { [ NT n; Term ";" ] #@ "stateExpression" }
-| e = selectExpression
-    { e }
-;
-
-transitionStatement:
-| (* empty *) { [ Term "`EMPTY" ] #@ "transitionStatement" }
-| TRANSITION e = stateExpression
-    { [ Term "TRANSITION"; NT e ] #@ "transitionStatement" }
-;
-
-(******** Parser and parser type declarations ********)
-parserBlockStatement:
-| anno = optAnnotations L_BRACE ss = parserStatements R_BRACE
-    { [ NT anno; Term "{"; NT ss; Term "}" ] #@ "parserBlockStatement" }
-;
-
-parserStatement:
-| s = assignmentOrMethodCallStatement
-| s = directApplication
-| s = emptyStatement
-| s = variableDeclaration
-| s = constantDeclaration
-| s = parserBlockStatement
-| s = conditionalStatement
-    { s }
-;
-
-parserStatements:
-| (* empty *) { [ Term "`EMPTY" ] #@ "parserStatements" }
-| ss = parserStatements s = parserStatement
-    { [ NT ss; NT s ] #@ "parserStatements" }
-;
-
-parserState:
-| anno = optAnnotations STATE n = push_name L_BRACE ss = parserStatements trans = transitionStatement R_BRACE
-    { [ NT anno; Term "STATE"; NT n; Term "{"; NT ss; NT trans; Term "}" ]
-       #@ "parserState" }
-;
-
-parserStates:
-| s = parserState { s }
-| ss = parserStates s = parserState
-    { [ NT ss; NT s ] #@ "parserStates" }
-;
-
+(* >>>> Parser type declarations *)
 parserTypeDeclaration:
-| anno = optAnnotations PARSER name = push_name tparams = optTypeParameters
-    L_PAREN params = parameterList R_PAREN
-    { [ NT anno; Term "PARSER"; NT name; NT tparams; Term "("; NT params; Term ")" ]
+  | al = annotationList PARSER n = push_name tpl = typeParameterListOpt
+      L_PAREN pl = parameterList R_PAREN SEMICOLON
+    { [ NT al; Term "PARSER"; NT n; NT tpl; Term "("; NT pl; Term ")"; Term ";" ]
        #@ "parserTypeDeclaration" }
 ;
 
-parserLocalElement:
-| d = constantDeclaration
-| d = variableDeclaration
-| d = instantiation
-| d = valueSetDeclaration
-  { d }
+(* >>>> Parser declarations *)
+parserBlockStatement:
+  | al = annotationList L_BRACE sl = parserStatementList R_BRACE
+    { [ NT al; Term "{"; NT sl; Term "}" ] #@ "parserBlockStatement" }
 ;
 
-parserLocalElements:
-| (* empty *) { [ Term "`EMPTY" ] #@ "parserLocalElements" }
-| ls = parserLocalElements l = parserLocalElement
-  { [ NT ls; NT l ] #@ "parserLocalElements" }
+parserStatement:
+  | s = constantDeclaration
+  | s = variableDeclaration
+  | s = emptyStatement
+  | s = assignmentStatement
+  | s = callStatement
+  | s = directApplicationStatement
+  | s = parserBlockStatement
+  | s = conditionalStatement
+    { s }
+;
+
+parserStatementList:
+  | (* empty *) { [ Term "`EMPTY" ] #@ "parserStatementList" }
+  | sl = parserStatementList s = parserStatement
+    { [ NT sl; NT s ] #@ "parserStatementList" }
+;
+
+parserState:
+  | al = annotationList STATE n = push_name L_BRACE sl = parserStatementList t = transitionStatement R_BRACE
+    { [ NT al; Term "STATE"; NT n; Term "{"; NT sl; NT t; Term "}" ]
+      #@ "parserState" }
+;
+
+parserStateList:
+  | s = parserState { s }
+  | sl = parserStateList s = parserState
+    { [ NT sl; NT s ] #@ "parserStateList" }
+;
+
+parserLocalDeclaration:
+  | d = constantDeclaration
+  | d = instantiation
+  | d = variableDeclaration
+  | d = valueSetDeclaration
+    { d }
+;
+
+parserLocalDeclarationList:
+  | (* empty *) { [ Term "`EMPTY" ] #@ "parserLocalDeclarationList" }
+  | dl = parserLocalDeclarationList d = parserLocalDeclaration
+    { [ NT dl; NT d ] #@ "parserLocalDeclarationList" }
 ;
 
 parserDeclaration:
-| d = parserTypeDeclaration params = optConstructorParameters
-    L_BRACE locals = parserLocalElements states = parserStates R_BRACE pop_scope
-    { [ NT d; NT params; Term "{"; NT locals; NT states; Term "}" ]
-       #@ "parserDeclaration" }
+  | al = annotationList PARSER n = push_name tpl = typeParameterListOpt
+    L_PAREN pl = parameterList R_PAREN cpl = constructorParameterListOpt
+    L_BRACE dl = parserLocalDeclarationList sl = parserStateList R_BRACE pop_scope
+  { [ NT al; Term "PARSER"; NT n; NT tpl; Term "("; NT pl; Term ")"; NT cpl;
+      Term "{"; NT dl; NT sl; Term "}" ] #@ "parserDeclaration" }
 ;
 
+(* >> Control statements and declarations *)
+(* >>>> Table declarations *)
+constOpt:
+  | (* empty *) { [ Term "`EMPTY" ] #@ "constOpt" }
+  | CONST { [ Term "CONST" ] #@ "constOpt" }
+;
+
+(* >>>>>> Table key property *)
+tableKey:
+  | e = expression COLON n = name al = annotationList SEMICOLON
+    { [ NT e; Term ":"; NT n; NT al; Term ";" ] #@ "tableKey" }
+;
+
+tableKeyList:
+  | (* empty *) { [ Term "`EMPTY" ] #@ "tableKeyList" }
+  | kl = tableKeyList k = tableKey
+    { [ NT kl; NT k ] #@ "tableKeyList" }
+;
+
+(* >>>>>> Table actions property *)
+tableActionReference:
+  | n = prefixedNonTypeName
+    { n }
+  | n = prefixedNonTypeName L_PAREN al = argumentList R_PAREN
+    { [ NT n; Term "("; NT al; Term ")" ] #@ "tableActionReference" }
+;
+
+tableAction:
+  | al = annotationList ac = tableActionReference SEMICOLON
+    { [ NT al; NT ac; Term ";" ] #@ "action" }
+;
+
+tableActionList:
+  | (* empty *) { [ Term "`EMPTY" ] #@ "tableActionList" }
+  | acl = tableActionList ac = tableAction
+    { [ NT acl; NT ac ] #@ "tableActionList" }
+;
+
+(* >>>>>> Table entry property *)
+tableEntryPriority:
+  | PRIORITY ASSIGN num = number COLON
+    { [ Term "PRIORITY"; Term "="; NT num; Term ":" ] #@ "tableEntryPriority" }
+  | PRIORITY ASSIGN L_PAREN e = expression R_PAREN COLON
+    { [ Term "PRIORITY"; Term "="; Term "("; NT e; Term ")"; Term ":" ] #@ "tableEntryPriority" }
+;
+
+tableEntry:
+  | c = constOpt p = tableEntryPriority k = keysetExpression COLON ac = tableActionReference al = annotationList SEMICOLON
+    { [ NT c; NT p; NT k; Term ":"; NT ac; NT al; Term ";" ] #@ "tableEntry" }
+  | c = constOpt k = keysetExpression COLON ac = tableActionReference al = annotationList SEMICOLON
+    { [ NT c; NT k; Term ":"; NT ac; NT al; Term ";" ] #@ "tableEntry" }
+;
+
+tableEntryList:
+  | (* empty *) { [ Term "`EMPTY" ] #@ "tableEntryList" }
+  | el = tableEntryList e = tableEntry
+    { [ NT el; NT e ] #@ "tableEntryList" }
+;
+
+(* >>>>>> Table properties *)
+tableProperty:
+  | KEY ASSIGN L_BRACE kl = tableKeyList R_BRACE
+    { [ Term "KEY"; Term "="; Term "{"; NT kl; Term "}" ] #@ "tableProperty" }
+  | ACTIONS ASSIGN L_BRACE acl = tableActionList R_BRACE
+    { [ Term "ACTIONS"; Term "="; Term "{"; NT acl; Term "}" ] #@ "tableProperty" }
+  | al = annotationList c = constOpt ENTRIES ASSIGN L_BRACE el = tableEntryList R_BRACE
+    { [ NT al; NT c; Term "ENTRIES"; Term "="; Term "{"; NT el; Term "}" ] #@ "tableProperty" }
+  | al = annotationList c = constOpt n = tableCustomName i = initialValue SEMICOLON
+    { [ NT al; NT c; NT n; NT i; Term ";" ] #@ "tableProperty" }
+;
+
+tablePropertyList:
+  | (* empty *) { [ Term "`EMPTY" ] #@ "tablePropertyList" }
+  | pl = tablePropertyList p = tableProperty
+    { [ NT pl; NT p ] #@ "tablePropertyList" }
+;
+
+tableDeclaration:
+  | al = annotationList TABLE n = name L_BRACE pl = tablePropertyList R_BRACE
+    { [ NT al; Term "TABLE"; NT n; Term "{"; NT pl; Term "}" ] #@ "tableDeclaration" }
+
+(* >>>> Control type declarations *)
+controlTypeDeclaration:
+  | al = annotationList CONTROL n = push_name tpl = typeParameterListOpt
+    L_PAREN pl = parameterList R_PAREN SEMICOLON
+    { [ NT al; Term "CONTROL"; NT n; NT tpl; Term "("; NT pl; Term ")"; Term ";" ]
+       #@ "controlTypeDeclaration" }
+;
+
+(* >>>> Control declarations *)
+controlBody:
+  | b = blockStatement { b }
+;
+
+controlLocalDeclaration:
+  | d = constantDeclaration 
+  | d = instantiation 
+  | d = variableDeclaration
+    { d }
+  | d = actionDeclaration
+  | d = tableDeclaration
+    { declare_var (id_of_declaration d) false;
+      d }
+;
+
+controlLocalDeclarationList:
+  | (* empty *) { [ Term "`EMPTY" ] #@ "controlLocalDeclarationList" }
+  | dl = controlLocalDeclarationList d = controlLocalDeclaration
+    { [ NT dl; NT d ] #@ "controlLocalDeclarationList" }
+;
+
+controlDeclaration:
+  | al = annotationList CONTROL n = push_name tpl = typeParameterListOpt
+    L_PAREN pl = parameterList R_PAREN cpl = constructorParameterListOpt
+    L_BRACE dl = controlLocalDeclarationList APPLY b = controlBody R_BRACE pop_scope
+    { [ NT al; Term "CONTROL"; NT n; NT tpl; Term "("; NT pl; Term ")"; NT cpl;
+      Term "{"; NT dl; Term "APPLY"; NT b; Term "}" ] #@ "controlDeclaration" }
+;
+
+(* >> Package type declarations *)
 packageTypeDeclaration:
-| anno = optAnnotations PACKAGE name = push_name type_params = optTypeParameters
-    L_PAREN params = parameterList R_PAREN
-    { [ NT anno; Term "PACKAGE"; NT name; NT type_params; Term "("; NT params; Term ")" ]
+  | al = annotationList PACKAGE n = push_name tpl = typeParameterListOpt
+    L_PAREN pl = parameterList R_PAREN SEMICOLON
+    { [ NT al; Term "PACKAGE"; NT n; NT tpl; Term "("; NT pl; Term ")"; Term ";" ]
        #@ "packageTypeDeclaration" }
 ;
 
-specifiedName:
-| n = name i = initialValue
-    { [ NT n; NT i ] #@ "specifiedName" }
-;
-
-specifiedNameList:
-| n = specifiedName { n }
-| ns = specifiedNameList COMMA n = specifiedName
-    { [ NT ns; Term ","; NT n ] #@ "specifiedNameList" }
-;
-
-enumDeclaration:
-| anno = optAnnotations ENUM name = name L_BRACE ns = nameList comma = optTrailingComma R_BRACE
-    { [ NT anno; Term "ENUM"; NT name; Term "{"; NT ns; NT comma; Term "}" ]
-       #@ "enumDeclaration" }
-| anno = optAnnotations ENUM typeRef = typeRef name = name L_BRACE ns = specifiedNameList comma = optTrailingComma R_BRACE
-    { [ NT anno; Term "ENUM"; NT typeRef; NT name; Term "{"; NT ns; NT comma; Term "}" ]
-       #@ "enumDeclaration" }
-;
-
-structField:
-| anno = optAnnotations t = typeRef n = name SEMICOLON
-    { [ NT anno; NT t; NT n; Term ";" ] #@ "structField" }
-;
-structFieldList:
-| (* empty *) { [ Term "`EMPTY" ] #@ "structFieldList" }
-| fs = structFieldList f = structField
-    { [ NT fs; NT f ] #@ "structFieldList" }
-;
-
-headerUnionDeclaration:
-| anno = optAnnotations HEADER_UNION name = name type_params = optTypeParameters
-    L_BRACE fields = structFieldList R_BRACE
-    { [ NT anno; Term "HEADER_UNION"; NT name; NT type_params; Term "{"; NT fields; Term "}" ]
-       #@ "headerUnionDeclaration" }
-;
-
-structTypeDeclaration:
-| anno = optAnnotations STRUCT name = name type_params = optTypeParameters
-    L_BRACE fields = structFieldList R_BRACE
-    { [ NT anno; Term "STRUCT"; NT name; NT type_params; Term "{"; NT fields; Term "}" ]
-       #@ "structTypeDeclaration" }
-;
-headerTypeDeclaration:
-| anno = optAnnotations HEADER name = name type_params = optTypeParameters
-    L_BRACE fields = structFieldList R_BRACE
-    { [ NT anno; Term "HEADER"; NT name; NT type_params; Term "{"; NT fields; Term "}" ]
-       #@ "headerTypeDeclaration" }
-;
-
-derivedTypeDeclaration:
-| d = headerTypeDeclaration
-| d = headerUnionDeclaration
-| d = structTypeDeclaration
-| d = enumDeclaration
+(* >> Type declarations *)
+typeDeclaration:
+  | d = derivedTypeDeclaration
+  | d = typedefDeclaration
+  | d = parserTypeDeclaration
+  | d = controlTypeDeclaration
+  | d = packageTypeDeclaration
     { d }
 ;
 
-typeDefType: (*TODO: inline? *)
-| t = typeRef { t }
-| d = derivedTypeDeclaration { d }
-;
-
-typedefDeclaration:
-| anno = optAnnotations TYPEDEF t = typeDefType name = name
-    { [ NT anno; Term "TYPEDEF"; NT t; NT name ] #@ "typedefDeclaration" }
-| anno = optAnnotations TYPE t = typeRef name = name
-    { [ NT anno; Term "TYPE"; NT t; NT name ] #@ "typedefDeclaration" }
-;
-
-typeDeclarationWithoutSemicolon: (* TODO: inline? *)
-| d = typedefDeclaration
-| d = parserTypeDeclaration pop_scope
-| d = controlTypeDeclaration pop_scope
-| d = packageTypeDeclaration pop_scope
-  { d }
-;
-
-typeDeclaration:
-| d = derivedTypeDeclaration { d }
-| d = typeDeclarationWithoutSemicolon SEMICOLON
-    { [ NT d; Term ";" ] #@ "typeDeclaration" }
-;
-
+(* >> Declarations *)
 declaration:
-| const = constantDeclaration
+  | const = constantDeclaration
     { declare_var (id_of_declaration const) (has_type_params_declaration const);
       const }
-| d = errorDeclaration
-| d = matchKindDeclaration
-| d = externDeclaration
-    { d }
-| inst = instantiation
+  | inst = instantiation
     { declare_var (id_of_declaration inst) false;
       inst }
-| func = functionDeclaration
+  | func = functionDeclaration
     { declare_var (id_of_declaration func) (has_type_params_declaration func);
       func }
-| action = actionDeclaration
+  | action = actionDeclaration
     { declare_var (id_of_declaration action) false;
       action }
-| d = parserDeclaration
-| d = controlDeclaration
-| d = typeDeclaration
+  | d = errorDeclaration
+  | d = matchKindDeclaration
+  | d = externDeclaration
+    { d }
+  | d = parserDeclaration
+  | d = controlDeclaration
+  | d = typeDeclaration
     { declare_type (id_of_declaration d) (has_type_params_declaration d);
       d }
 ;
 
+(* Annotations *)
 annotationToken:
 | UNEXPECTED_TOKEN
     { [ Term "UNEXPECTED_TOKEN" ] #@ "annotationToken" }
@@ -1524,8 +1696,8 @@ annotationBody:
 ;
 
 structuredAnnotationBody:
-| r = recordExpression comma = optTrailingComma
-    { [ NT r; NT comma ] #@ "structuredAnnotationBody" }
+| e = dataElementExpression c = trailingCommaOpt
+    { [ NT e; NT c ] #@ "structuredAnnotationBody" }
 ;
 
 annotation:
@@ -1540,15 +1712,15 @@ annotation:
   { [ Term "PRAGMA"; NT name; NT body; Term "PRAGMA_END" ] #@ "annotation" }
 ;
 
-annotations:
-| an = annotation { an }
-| ans = annotations an = annotation
-  { [ NT ans; NT an ] #@ "annotations" }
+annotationListNonEmpty:
+| a = annotation { a }
+| al = annotationListNonEmpty a = annotation
+  { [ NT al; NT a ] #@ "annotationListNonEmpty" }
 ;
 
-optAnnotations: (* TODO: inline? *)
-| (* empty *) { [ Term "`EMPTY" ] #@ "optAnnotations" }
-| anno = annotations { anno }
+annotationList: (* TODO: inline? *)
+| (* empty *) { [ Term "`EMPTY" ] #@ "annotationList" }
+| al = annotationListNonEmpty { al }
 ;
 
 (******** P4 program ********)

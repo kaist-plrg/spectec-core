@@ -116,49 +116,6 @@ let token_name token =
     | _ -> "unknown"
   with _ -> "UNKNOWN_TOKEN"
 
-let state_description state_num =
-  match state_num with
-  | 1 -> "void"
-  | 2 -> "typedef"
-  | 3 -> "tuple"
-  | 4 -> "tuple <"
-  | 12 -> "- @T: NAME ... -> (@13) typeIdentifier or (@14) identifier"
-  | 13 -> "- @R: typeIdentifier -> NAME TYPENAME"
-  | 14 -> "{_id}"
-  | 37 -> "- @R: typeArg -> typeRef"
-  | 38 ->
-      "- @T: typeName ... \n\
-      \      `[ -> @39\n\
-      \      `<(args) -> @61\n\
-      \      `< -> @115\n\
-       - @R: typeRef <<- typeName ... "
-  | 62 -> "- @R: typeIdentifier ... <<- prefixedType"
-  | 63 ->
-      "- @T: typeName `<(args) targList R_ANGLE_SHIFT -> @64\n\
-       - @T: typeName `< targList R_ANGLE -> @65"
-  | 68 -> "- @T: specializedType `[ -> @69"
-  | 69 -> "- @T: specializedType `[ ... -> ... "
-  | 71 -> "- @R: prefixedType ... <- typeName"
-  | 116 ->
-      "- @T: typeName `< targList ... \n      `>(shift) -> @117 / `> ->@118"
-  | 118 -> "- @R: typeName `< targList `> ... <<- specializedType"
-  | 119 ->
-      "- @T: separated_list_aux (COMMA,typeArg) COMMA -> (@120) \
-       separated_list_aux(COMMA,typeArg)\n\
-       - @R: separated_list(COMMA,typeArg) -> separated_list_aux(COMMA,typeArg)"
-  | 120 ->
-      "- @R: separated_list_aux(COMMA,typeArg) -> \
-       separated_list_aux(COMMA,typeArg) COMMA ..."
-  | 121 ->
-      "- @R: separated_list_aux(COMMA,typeArg) -> \
-       separated_list_aux(COMMA,typeArg) COMMA typeArg ..."
-  | 536 -> "list(methodPrototype)"
-  | 545 -> "- @R: methodPrototype -> typeIdentifier ( parameterList )"
-  | 546 ->
-      "- @R: list_aux(methodPrototype) -> list_aux(methodPrototype) \
-       methodPrototype"
-  | _ -> "unknown"
-
 (* Recursively collect stack states using top and pop *)
 let rec collect_stack env acc =
   match Parser.MenhirInterpreter.top env with
