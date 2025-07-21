@@ -78,11 +78,11 @@
 %right PREFIX
 %nonassoc L_PAREN L_BRACKET L_ANGLE_ARGS
 %left DOT
-%start  p4program variableDeclaration typeDeclaration
+%start  p4program
 
 (**************************** TYPES ******************************)
 %type <Il.Ast.value>
-  (* Aux *) int
+  (* Aux *) int externName declarationList
   (* Misc *) trailingCommaOpt (* Numbers *) number (* Strings *) stringLiteral
   (* Names *)
   identifier typeIdentifier nonTypeName prefixedNonTypeName typeName prefixedTypeName tableCustomName name nameList member
@@ -1122,11 +1122,11 @@ matchKindDeclaration:
 enumTypeDeclaration:
   | al = annotationList ENUM n = name L_BRACE
     nl = nameList c = trailingCommaOpt R_BRACE
-    { [ NT al; Term "ENUM"; NT n; Term "{"; NT nl; NT c; Term "}"; Term ";" ]
+{ [ NT al; Term "ENUM"; NT n; Term "{"; NT nl; NT c; Term "}" ]
         #@ "enumTypeDeclaration" }
   | al = annotationList ENUM t = typeRef n = name L_BRACE
     nl = nameList c = trailingCommaOpt R_BRACE
-    { [ NT al; Term "ENUM"; NT t; NT n; Term "{"; NT nl; NT c; Term "}"; Term ";" ]
+    { [ NT al; Term "ENUM"; NT t; NT n; Term "{"; NT nl; NT c; Term "}" ]
         #@ "enumTypeDeclaration" }
 ;
 
@@ -1179,17 +1179,17 @@ typedefType: (*TODO: inline? *)
 ;
 
 typedefDeclaration:
-| al = annotationList TYPEDEF t = typedefType name = name
-    { [ NT al; Term "TYPEDEF"; NT t; NT name ] #@ "typedefDeclaration" }
-| al = annotationList TYPE t = typeRef name = name
-    { [ NT al; Term "TYPE"; NT t; NT name ] #@ "typedefDeclaration" }
+| al = annotationList TYPEDEF t = typedefType n = name SEMICOLON
+{ [ NT al; Term "TYPEDEF"; NT t; NT n; Term ";" ] #@ "typedefDeclaration" }
+| al = annotationList TYPE t = typeRef n = name SEMICOLON
+{ [ NT al; Term "TYPE"; NT t; NT n; Term ";" ] #@ "typedefDeclaration" }
 ;
 
 (* >> Extern declarations *)
 externFunctionDeclaration:
 | al = annotationList EXTERN p = functionPrototype pop_scope SEMICOLON
   { let decl =
-      [ NT al; Term "EXTERN"; NT p; Term ";" ] #@ "externDeclaration"
+      [ NT al; Term "EXTERN"; NT p; Term ";" ] #@ "externFunctionDeclaration"
     in
     declare_var (id_of_declaration decl) (has_type_params_declaration decl);
     decl }
@@ -1335,7 +1335,7 @@ parserLocalDeclarationList:
 ;
 
 parserDeclaration:
-  | al = annotationList PARSER n = name tpl = typeParameterListOpt
+  | al = annotationList PARSER n = push_name tpl = typeParameterListOpt
     L_PAREN pl = parameterList R_PAREN cpl = constructorParameterListOpt
     L_BRACE dl = parserLocalDeclarationList sl = parserStateList R_BRACE pop_scope
   { [ NT al; Term "PARSER"; NT n; NT tpl; Term "("; NT pl; Term ")"; NT cpl;
@@ -1454,7 +1454,7 @@ controlLocalDeclarationList:
 ;
 
 controlDeclaration:
-  | al = annotationList CONTROL n = name tpl = typeParameterListOpt
+  | al = annotationList CONTROL n = push_name tpl = typeParameterListOpt
     L_PAREN pl = parameterList R_PAREN cpl = constructorParameterListOpt
     L_BRACE dl = controlLocalDeclarationList APPLY b = controlBody R_BRACE pop_scope
     { [ NT al; Term "CONTROL"; NT n; NT tpl; Term "("; NT pl; Term ")"; NT cpl;
