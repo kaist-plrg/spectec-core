@@ -380,17 +380,22 @@ let parse_command =
     ~summary:"parse a P4 program with options for printing and roundtrip"
     (let open Core.Command.Let_syntax in
      let open Core.Command.Param in
-     let%map includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
+     let%map filenames_spec = anon (sequence ("spec files" %: string))
+     and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and filename_p4 =
        flag "-p" (required string) ~doc:"p4 file to typecheck"
      in
      fun () ->
        try
+         let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
+         let spec_il = elab_spec spec in
          let parsed_il = Parsing.Parse.parse_file includes_p4 filename_p4 in
          Format.printf "✓ Parse successful\n";
-         Format.printf "%a\n" Parsing.Pp.pp_default_case_v parsed_il
+         Format.printf "%a\n" (Parsing.Pp_gen.pp_program spec_il) parsed_il
        with
        | Sys_error msg -> Format.printf "✗ File error: %s\n" msg
+       | ElabErrList errors ->
+           Format.printf "%s\n" (string_of_elab_errors errors)
        | ParseError (at, msg) ->
            Format.printf "✗ Parse error: %s\n" (string_of_error at msg)
        | Parsing.Lexer.Error msg -> Format.printf "✗ Lexer Error: %s\n" msg
@@ -413,4 +418,3 @@ let command =
     ]
 
 let () = Command_unix.run ~version command
-
