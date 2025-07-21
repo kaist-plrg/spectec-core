@@ -131,8 +131,8 @@ and sub_plaintyp' (ctx : Ctx.t) (plaintyp_a : plaintyp) (plaintyp_b : plaintyp)
       let kind_b = Plaintyp.kind_plaintyp ctx.tdenv plaintyp_b in
       match (kind_a, kind_b) with
       | Variant typcases_a, Variant typcases_b ->
-          let nottyps_a = List.map fst typcases_a in
-          let nottyps_b = List.map fst typcases_b in
+          let nottyps_a = List.map fst typcases_a |> List.map fst in
+          let nottyps_b = List.map fst typcases_b |> List.map fst in
           List.for_all
             (fun nottyp_a -> List.exists (equiv_nottyp ctx nottyp_a) nottyps_b)
             nottyps_a
@@ -290,8 +290,8 @@ and elab_deftyp_struct (ctx : Ctx.t) (at : region) (tparams : tparam list)
 (* Elaboration of variant type definitions *)
 
 and expand_typcase (ctx : Ctx.t) (plaintyp : plaintyp) (typcase : typcase) :
-    (nottyp * plaintyp) list =
-  let typ, _hints = typcase in
+    ((nottyp * hint list) * plaintyp) list =
+  let typ, hints = typcase in
   match typ with
   | PlainT plaintyp -> (
       let kind = Plaintyp.kind_plaintyp ctx.tdenv plaintyp in
@@ -299,10 +299,11 @@ and expand_typcase (ctx : Ctx.t) (plaintyp : plaintyp) (typcase : typcase) :
       | Opaque -> error plaintyp.at "cannot extend an incomplete type"
       | Variant typcases -> typcases
       | _ -> error plaintyp.at "cannot extend a non-variant type")
-  | NotationT nottyp -> [ (nottyp, plaintyp) ]
+  | NotationT nottyp -> [ ((nottyp, hints), plaintyp) ]
 
-and elab_typcase (ctx : Ctx.t) (nottyp : nottyp) : Il.Ast.typcase =
-  elab_nottyp ctx (NotationT nottyp)
+and elab_typcase (ctx : Ctx.t) (typcase : nottyp * hint list) : Il.Ast.typcase =
+  let nottyp, hints = typcase in
+  (elab_nottyp ctx (NotationT nottyp), elab_hints ctx hints)
 
 and elab_deftyp_variant (ctx : Ctx.t) (at : region) (id : id)
     (tparams : tparam list) (typcases : typcase list) : Typdef.t * Il.Ast.deftyp
@@ -315,7 +316,7 @@ and elab_deftyp_variant (ctx : Ctx.t) (at : region) (id : id)
   in
   let typcases = List.concat_map (expand_typcase ctx plaintyp) typcases in
   let typcases_il = typcases |> List.map fst |> List.map (elab_typcase ctx) in
-  let mixops = typcases_il |> List.map it |> List.map fst in
+  let mixops = typcases_il |> List.map fst |> List.map it |> List.map fst in
   let mixop_groups = groupby Mixop.eq mixops in
   let mixop_duplicates =
     List.filter (fun mixop_group -> List.length mixop_group > 1) mixop_groups
@@ -491,7 +492,8 @@ and infer_binop (ctx : Ctx.t) (at : region) (binop : binop)
   in
   List.fold_left
     (fun binop_infer
-         (optyp_il, plaintyp_l_expect, plaintyp_r_expect, plaintyp_res_expect) ->
+         (optyp_il, plaintyp_l_expect, plaintyp_r_expect, plaintyp_res_expect)
+       ->
       match binop_infer with
       | Ok _ -> binop_infer
       | _ -> (
@@ -1129,11 +1131,11 @@ and fail_elab_variant (at : region) (msg : string) :
   fail at ("cannot elaborate variant case because " ^ msg)
 
 and elab_exp_variant (ctx : Ctx.t) (plaintyp_expect : plaintyp)
-    (typcases : (nottyp * plaintyp) list) (exp : exp) :
+    (typcases : ((nottyp * hint list) * plaintyp) list) (exp : exp) :
     (Ctx.t * Il.Ast.exp) attempt =
   let ctx, exps_il =
     List.fold_left
-      (fun (ctx, exps_il) (nottyp, plaintyp) ->
+      (fun (ctx, exps_il) ((nottyp, _), plaintyp) ->
         elab_exp_not ctx (NotationT nottyp) exp |> function
         | Ok (ctx, notexp_il) ->
             let exp_il =
@@ -1377,6 +1379,15 @@ and elab_iter_prem (ctx : Ctx.t) (prem : prem) (iter : iter) :
   let prem_il = Option.get prem_il_opt in
   let prem_il = Il.Ast.IterPr (prem_il, (iter_il, [])) in
   (ctx, prem_il)
+
+(* Elaboration of hints *)
+
+and elab_hint (ctx : Ctx.t) (hint : hint) : Il.Ast.hint =
+  ignore ctx;
+  { hintid = hint.hintid; hintexp = hint.hintexp }
+
+and elab_hints (ctx : Ctx.t) (hints : hint list) : Il.Ast.hint list =
+  List.map (elab_hint ctx) hints
 
 (* Elaboration of definitions *)
 

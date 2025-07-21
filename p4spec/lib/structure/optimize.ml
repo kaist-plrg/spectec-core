@@ -389,7 +389,9 @@ let rec typ_as_variant (tdenv : TDEnv.t) (typ : typ) : mixop list option =
       match deftyp.it with
       | PlainT typ -> typ_as_variant tdenv typ
       | VariantT typcases ->
-          let mixops = typcases |> List.map it |> List.map fst in
+          let mixops =
+            typcases |> List.map fst |> List.map it |> List.map fst
+          in
           Some mixops
       | _ -> None)
   | _ -> None

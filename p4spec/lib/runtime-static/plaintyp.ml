@@ -120,7 +120,7 @@ type kind =
   | Struct of typfield list
   (* Variant type, with the second `plaintyp` field of each case being
      the type of each case, for subtyping purposes *)
-  | Variant of (nottyp * plaintyp) list
+  | Variant of ((nottyp * hint list) * plaintyp) list
 
 type tdenv = Typdef.t TIdMap.t
 
@@ -167,10 +167,12 @@ let kind_plaintyp (tdenv : tdenv) (plaintyp : plaintyp) : kind =
               in
               Struct typfields
           | `Variant typcases ->
-              let nottyps, plaintyps = List.split typcases in
+              let nottyps_and_hints, plaintyps = List.split typcases in
+              let nottyps, hints = List.split nottyps_and_hints in
               let nottyps = subst_nottyps theta nottyps in
+              let nottyps_and_hints = List.combine nottyps hints in
               let plaintyps = subst_plaintyps theta plaintyps in
-              let typcases = List.combine nottyps plaintyps in
+              let typcases = List.combine nottyps_and_hints plaintyps in
               Variant typcases)
       | _ -> Opaque)
   | _ -> Plain plaintyp
