@@ -24,7 +24,8 @@ let pp_num fmt (num : num) : unit =
 let pp_atom fmt (atom : atom) : unit =
   match atom.it with
   | Atom.SilentAtom _ -> F.fprintf fmt ""
-  | _ -> F.fprintf fmt "%s" (Atom.string_of_atom atom.it)
+  | _ ->
+      F.fprintf fmt "%s" (Atom.string_of_atom atom.it |> String.lowercase_ascii)
 
 let pp_atoms fmt (atoms : atom list) : unit =
   match atoms with
@@ -34,7 +35,6 @@ let pp_atoms fmt (atoms : atom list) : unit =
         atoms
         |> List.map (fun atom -> F.asprintf "%a" pp_atom atom)
         |> List.filter (fun str -> str <> String.empty)
-        |> List.map String.lowercase_ascii
       in
       F.fprintf fmt "%s" (String.concat " " atoms)
 
@@ -85,7 +85,7 @@ and pp_hint_case_v hmap exp fmt values : unit =
 and pp_hint_case_v' hmap cur exp values =
   match exp.it with
   | TextE text -> (cur, text)
-  | AtomE atom -> (cur, F.asprintf "%a" pp_atom atom |> String.lowercase_ascii)
+  | AtomE atom -> (cur, F.asprintf "%a" pp_atom atom)
   | SeqE exps ->
       let cur, strs =
         List.fold_left
@@ -94,6 +94,17 @@ and pp_hint_case_v' hmap cur exp values =
             (cur, l @ [ str ]))
           (cur, []) exps
       in
+      (cur, String.concat " " strs)
+  | BrackE (atom_l, exp, atom_r) ->
+      let cur, exp_str = pp_hint_case_v' hmap cur exp values in
+      let strs =
+        [
+          F.asprintf "%a" pp_atom atom_l;
+          exp_str;
+          F.asprintf "%a" pp_atom atom_r;
+        ]
+      in
+      let strs = List.filter (fun s -> s <> String.empty) strs in
       (cur, String.concat " " strs)
   | HoleE (`Num i) -> (i, F.asprintf "%a" (pp_value hmap) (List.nth values i))
   | HoleE `Next ->
