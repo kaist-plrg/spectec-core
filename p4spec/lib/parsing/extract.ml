@@ -1,4 +1,4 @@
-(* 
+(*
  * Helper functions for context management
  *
  * - id_of : extracts identifiers from CaseV values
@@ -58,16 +58,17 @@ let id_of_declaration (decl : value) : string =
       id_of_name name
   | "errorDeclaration", _, _ -> failwith "errorDeclaration: no name"
   | "matchKindDeclaration", _, _ -> failwith "matchKindDeclaration: no name"
-  | "externFunctionDeclaration", [ []; [ "EXTERN" ]; [ ";" ] ], [ _; functionPrototype ]
-    ->
+  | ( "externFunctionDeclaration",
+      [ []; [ "EXTERN" ]; [ ";" ] ],
+      [ _; functionPrototype ] ) ->
       id_of_function_prototype functionPrototype
   | ( "externObjectDeclaration",
       [ []; [ "EXTERN" ]; []; [ "{" ]; [ "}" ] ],
       [ _; nonTypeName; _; _ ] ) ->
       id_of_name nonTypeName
   | ( "parserDeclaration",
-    [ []; [ "PARSER" ]; []; [ "(" ]; [ ")" ]; [ "{" ]; []; [ "}" ] ],
-    [ _; name; _; _; _; _; _ ] )
+      [ []; [ "PARSER" ]; []; [ "(" ]; [ ")" ]; [ "{" ]; []; [ "}" ] ],
+      [ _; name; _; _; _; _; _ ] )
   | ( "controlDeclaration",
       [ []; [ "CONTROL" ]; []; [ "(" ]; [ ")" ]; [ "{" ]; [ "APPLY" ]; [ "}" ] ],
       [ _; name; _; _; _; _; _ ] )
@@ -86,12 +87,8 @@ let id_of_declaration (decl : value) : string =
   | ( "headerUnionDeclaration",
       [ []; [ "HEADER_UNION" ]; []; [ "{" ]; [ "}" ] ],
       [ _; name; _; _ ] )
-  | ( "typedefDeclaration",
-      [ []; [ "TYPEDEF" ]; []; [ ";"] ],
-      [ _; _; name ] )
-  | ( "typedefDeclaration",
-      [ []; [ "TYPE" ]; []; [ ";" ] ],
-      [ _; _; name ] )
+  | "typedefDeclaration", [ []; [ "TYPEDEF" ]; []; [ ";" ] ], [ _; _; name ]
+  | "typedefDeclaration", [ []; [ "TYPE" ]; []; [ ";" ] ], [ _; _; name ]
   | ( "parserTypeDeclaration",
       [ []; [ "PARSER" ]; []; [ "(" ]; [ ")"; ";" ] ],
       [ _; name; _; _ ] )
@@ -108,7 +105,7 @@ let id_of_declaration (decl : value) : string =
   | _ ->
       failwith
         (Printf.sprintf "Invalid declaration structure: %s"
-           (F.asprintf "%a" Pp.pp_default_case_v decl))
+           (F.asprintf "%a" (Pp.pp_value Hint.SMap.empty) decl))
 
 let id_of_parameter (v : value) : string =
   match flatten_case_v v with
@@ -121,16 +118,18 @@ let id_of_parameter (v : value) : string =
 
 let has_type_params (v : value) : bool =
   match flatten_case_v v with
-  | "typeParameterListOpt", [ [ "`EMPTY" ] ], [ ] -> false
-  | "typeParameterListOpt", [ [ "<" ]; [ ">" ] ], [ v_tparams ] -> 
-    id_of_case_v v_tparams == "typeParameterList"
+  | "typeParameterListOpt", [ [ "`EMPTY" ] ], [] -> false
+  | "typeParameterListOpt", [ [ "<" ]; [ ">" ] ], [ v_tparams ] ->
+      id_of_case_v v_tparams == "typeParameterList"
   | "typeParameterListOpt", _, _ ->
-    failwith
+      failwith
         (F.asprintf "@has_type_params: ill-formed typeParameterListOpt:\n%a"
-           Pp.pp_default_case_v v)
+           (Pp.pp_value Hint.SMap.empty)
+           v)
   | _ ->
       failwith
-        (Printf.sprintf "@has_type_params: expected typeParameterListOpt, got %s"
+        (Printf.sprintf
+           "@has_type_params: expected typeParameterListOpt, got %s"
            (id_of_case_v v))
 
 let has_type_params_function_prototype (v : value) : bool =
@@ -146,21 +145,22 @@ let has_type_params_function_prototype (v : value) : bool =
 
 let has_type_params_declaration (decl : value) : bool =
   match flatten_case_v decl with
-  | "constantDeclaration", _, _
-  | "instantiation", _, _ -> false
+  | "constantDeclaration", _, _ | "instantiation", _, _ -> false
   | "functionDeclaration", [ []; []; []; [] ], [ _; functionPrototype; _ ] ->
       has_type_params_function_prototype functionPrototype
   | "actionDeclaration", _, _
   | "errorDeclaration", _, _
   | "matchKindDeclaration", _, _
-  | "externFunctionDeclaration", _, _ -> false
+  | "externFunctionDeclaration", _, _ ->
+      false
   | ( "externObjectDeclaration",
       [ []; [ "EXTERN" ]; []; [ "{" ]; [ "}" ] ],
       [ _; _; typeParameterListOpt; _ ] ) ->
       has_type_params typeParameterListOpt
   | "parserDeclaration", _, _
   | "controlDeclaration", _, _
-  | "enumTypeDeclaration", _, _ -> false
+  | "enumTypeDeclaration", _, _ ->
+      false
   | ( "structTypeDeclaration",
       [ []; [ "STRUCT" ]; []; [ "{" ]; [ "}" ] ],
       [ _; _; typeParameterListOpt; _ ] )
