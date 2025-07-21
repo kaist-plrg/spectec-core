@@ -57,7 +57,7 @@ and deftyp' =
   | VariantT of typcase list
 
 and typfield = atom * typ
-and typcase = nottyp
+and typcase = nottyp * hint list
 
 (* Values *)
 

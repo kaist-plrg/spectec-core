@@ -67,7 +67,8 @@ let load_mixops (mixopenv : MixopEnv.t) (def : def) : MixopEnv.t =
   match def.it with
   | TypD (id, _, deftyp) -> (
       match deftyp.it with
-      | VariantT nottyps ->
+      | VariantT typcases ->
+          let nottyps = List.map fst typcases in
           let insert_into_groups
               (typed_groups : (typ list * Mixops.Group.t) list)
               (nottyp : nottyp) : (typ list * Mixops.Group.t) list =

@@ -79,7 +79,9 @@ and string_of_typfield typfield =
 and string_of_typfields sep typfields =
   String.concat sep (List.map string_of_typfield typfields)
 
-and string_of_typcase typcase = string_of_nottyp typcase
+and string_of_typcase typcase =
+  let nottyp, _hints = typcase in
+  string_of_nottyp nottyp
 
 and string_of_typcases sep typcases =
   String.concat sep (List.map string_of_typcase typcases)
@@ -332,6 +334,13 @@ and string_of_prem prem =
 and string_of_prems prems =
   String.concat ""
     (List.map (fun prem -> "\n      -- " ^ string_of_prem prem) prems)
+
+(* Hints *)
+
+and string_of_hint hint =
+  " hint(" ^ hint.hintid.it ^ " " ^ El.Print.string_of_exp hint.hintexp ^ ")"
+
+and string_of_hints hints = String.concat "" (List.map string_of_hint hints)
 
 (* Definitions *)
 
