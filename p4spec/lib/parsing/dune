@@ -14,7 +14,9 @@
   pp_utils
   parse
   parser_debug
-  debug_config))
+  debug_config
+  hint
+  pp_gen))
 
 (ocamllex
  (modules lexer))
