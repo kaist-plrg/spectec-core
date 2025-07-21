@@ -82,7 +82,7 @@
 
 (**************************** TYPES ******************************)
 %type <Il.Ast.value>
-  (* Aux *) int externName declarationList
+  (* Aux *) int externName declarationList 
   (* Misc *) trailingCommaOpt (* Numbers *) number (* Strings *) stringLiteral
   (* Names *)
   identifier typeIdentifier nonTypeName prefixedNonTypeName typeName prefixedTypeName tableCustomName name nameList member
@@ -586,7 +586,6 @@ functionTarget:
 
 methodTarget:
 | e = memberAccessExpression { e }
-;
 
 routineTarget:
 | t = functionTarget
@@ -609,7 +608,7 @@ callTarget:
 callExpression:
 | t = callTarget L_PAREN args = argumentList R_PAREN
   { [ NT t; Term "("; NT args; Term ")" ] #@ "callExpression" }
-| t = routineTarget l_angle targs = realTypeArgumentList r_angle L_PAREN args = argumentList R_PAREN
+| t = expression l_angle targs = realTypeArgumentList r_angle L_PAREN args = argumentList R_PAREN
   { [ NT t; Term "<"; NT targs; Term ">"; Term "("; NT args; Term ")" ]
     #@ "callExpression" }
 ;
