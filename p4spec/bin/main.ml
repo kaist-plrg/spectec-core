@@ -391,7 +391,7 @@ let parse_command =
          let spec_il = elab_spec spec in
          let parsed_il = Parsing.Parse.parse_file includes_p4 filename_p4 in
          Format.printf "✓ Parse successful\n";
-         Format.printf "%a\n" (Parsing.Pp_gen.pp_program spec_il) parsed_il
+         Format.printf "%a\n" (Parsing.Pp.pp_program spec_il) parsed_il
        with
        | Sys_error msg -> Format.printf "✗ File error: %s\n" msg
        | ElabErrList errors ->

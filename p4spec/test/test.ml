@@ -89,9 +89,7 @@ let run_parser includes filename spec =
   let time_start = start () in
   try
     let program_1 = Parsing.Parse.parse_file includes filename in
-    let file' =
-      Format.asprintf "%a\n" (Parsing.Pp_gen.pp_program spec) program_1
-    in
+    let file' = Format.asprintf "%a\n" (Parsing.Pp.pp_program spec) program_1 in
     let program_2 = Parsing.Parse.parse_string filename file' in
     if not (Il.Eq.eq_value program_1 program_2) then
       raise (TestParseRoundtripErr (file', time_start))
