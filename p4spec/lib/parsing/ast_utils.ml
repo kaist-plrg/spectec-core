@@ -8,6 +8,8 @@ let wrap_atom (s : string) : atom =
   | ":>" -> Sup $ no_region
   | "|-" -> Turnstile $ no_region
   | "-|" -> Tilesturn $ no_region
+  | "\"" -> DoubleQuote $ no_region
+  | "_" -> Underscore $ no_region
   | "->" -> Arrow $ no_region
   | "->_" -> ArrowSub $ no_region
   | "=>" -> DoubleArrow $ no_region
@@ -111,7 +113,7 @@ let wrap_opt_v (s : string) (v : value option) : value =
 let wrap_list_v (s : string) (vs : value list) : value =
   ListV vs |> with_typ (wrap_iter_t List (wrap_var_t s))
 
-let ( #@ ) (vs: symbol list) (s: string) : value =
+let ( #@ ) (vs : symbol list) (s : string) : value =
   vs |> wrap_case_v |> with_typ (wrap_var_t s)
 
 let id_of_case_v (v : value) : string =
