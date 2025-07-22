@@ -352,37 +352,20 @@ syntax accessExpressionNonBrace =
 ;;;; Call expressions
 ;;
 
+syntax callTarget
+syntax routineTarget
 syntax realTypeArgumentList
 syntax argumentList
+syntax callTargetNonBrace
+syntax routineTargetNonBrace
 
 syntax functionTarget = prefixedNonTypeName
 syntax methodTarget = memberAccessExpression
-
-syntax routineTarget =
-  | functionTarget
-  | methodTarget
-  | `( routineTarget )
-
 syntax constructorTarget = namedType
-
-syntax callTarget =
-  | routineTarget
-  | constructorTarget
 
 syntax callExpression =
   | callTarget `( argumentList )
   | routineTarget `< realTypeArgumentList > `( argumentList )
-
-syntax methodTargetNonBrace = memberAccessExpressionNonBrace
-
-syntax routineTargetNonBrace =
-  | functionTarget
-  | methodTargetNonBrace
-  | `( routineTargetNonBrace )
-
-syntax callTargetNonBrace =
-  | routineTargetNonBrace
-  | constructorTarget
 
 syntax callExpressionNonBrace =
   | callTargetNonBrace `( argumentList )
@@ -439,6 +422,12 @@ syntax dataElementExpression =
   | sequenceElementExpression
   | recordElementExpression
 
+syntax routineTarget = expression
+
+syntax callTarget =
+  | routineTarget
+  | constructorTarget
+
 ;;
 ;;;; Non-brace expressions
 ;;
@@ -457,6 +446,12 @@ syntax expressionNonBrace =
 syntax memberAccessBaseNonBrace =
   | prefixedTypeName
   | expressionNonBrace
+
+syntax routineTargetNonBrace = expressionNonBrace
+
+syntax callTargetNonBrace =
+  | routineTargetNonBrace
+  | constructorTarget
 
 ;;
 ;; Keyset expressions

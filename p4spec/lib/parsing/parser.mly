@@ -587,13 +587,10 @@ functionTarget:
 
 methodTarget:
 	| e = memberAccessExpression { e }
+;
 
-routineTarget:
-	| t = functionTarget
-	| t = methodTarget
-		{ t }
-	| L_PAREN t = routineTarget R_PAREN
-		{ [ Term "("; NT t; Term ")" ] #@ "routineTarget" }
+%inline routineTarget:
+  | e = expression { e }
 ;
 
 constructorTarget:
@@ -609,7 +606,7 @@ callTarget:
 callExpression:
 	| t = callTarget L_PAREN args = argumentList R_PAREN
 		{ [ NT t; Term "("; NT args; Term ")" ] #@ "callExpression" }
-	| t = expression l_angle targs = realTypeArgumentList r_angle L_PAREN args = argumentList R_PAREN
+	| t = routineTarget l_angle targs = realTypeArgumentList r_angle L_PAREN args = argumentList R_PAREN
 		{ [ NT t; Term "<"; NT targs; Term ">"; Term "("; NT args; Term ")" ]
       #@ "callExpression" }
 ;
@@ -618,12 +615,8 @@ methodTargetNonBrace:
 	| e = memberAccessExpressionNonBrace { e }
 ;
 
-routineTargetNonBrace:
-	| t = functionTarget
-	| t = methodTargetNonBrace
-		{ t }
-	| L_PAREN t = routineTargetNonBrace R_PAREN
-		{ [ Term "("; NT t; Term ")" ] #@ "routineTargetNonBrace" }
+%inline routineTargetNonBrace:
+  | e = expressionNonBrace { e }
 ;
 
 callTargetNonBrace:
