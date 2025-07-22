@@ -78,8 +78,6 @@ syntax setValue =
   | SET `{ value `&&& value }
   | SET `{ value `.. value }
 
-syntax parserStateValue = PARSERSTATE
-
 syntax tableValue =
   | TABLE_ENUM tid `. id
   | TABLE_STRUCT tid `{ fieldValue* }
@@ -90,7 +88,6 @@ syntax synthesizedValue =
   | sequenceValue
   | recordValue
   | setValue
-  | parserStateValue
   | tableValue
 
 ;;

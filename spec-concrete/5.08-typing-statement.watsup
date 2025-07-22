@@ -1,0 +1,136 @@
+;;
+;; syntax lvalue
+;;
+
+;;; referenceExpression
+;;; syntax referenceExpression =
+
+;;;; prefixedNonTypeName
+
+rule Lvalue_ok/referenceExpression-prefixedNonTypeName:
+  p C |- prefixedNonTypeName : prefixedNameIR `# `( typeIR )
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if direction typeIR DYN eps = $find_var(p, C, prefixedNameIR)
+  -- if direction = OUT \/ direction = INOUT
+
+;;;; THIS
+;;;; THIS `= ... is disallowed
+
+;;; lvalue `. member
+
+;;; lvalue `[ expression ]
+
+;;; lvalue `[ expression `: expression ]
+
+;;; `( lvalue )
+
+;;
+;; syntax statement
+;;
+
+;;; emptyStatement
+;;; syntax emptyStatement = `;
+
+rule Stmt_ok/emptyStatement:
+  p C f |- `; : C f `;
+
+;;; assignmentStatement
+;;; syntax assignmentStatement = lvalue assignop expression `;
+;;;; syntax assignop
+
+;;;;; `=
+
+rule Stmt_ok/assignmentStatement-eq:
+  p C f |- lvalue `= expression `;
+         : C f (typedLvalueIR `= typedExpressionIR `;)
+  ---- ;; check lvalue
+  -- Lvalue_ok: p C |- lvalue : typedLvalueIR
+  ---- ;; check expression
+  -- Expr_ok: p C |- expression : typedExpressionIR
+  ---- ;; fetch annotations
+  -- if _ `# `( typeIR_l ) = typedLvalueIR
+  -- if _ `# `( typeIR_r _ ) = typedExpressionIR
+  ---- ;; check type compatibility
+  ---- ;; while inserting implicit casts if necessary
+  -- if typedExpressionIR_cast = $coerce_unary(typedExpressionIR, typeIR_l)
+
+;;;;; `+= | `-= | `|+|= | `|-|= | `*=
+;;;;; | `/= | `%= | `<<= | `>>= | `&= | `^= | `|=
+
+;;; callStatement
+
+;;; directApplicationStatement
+
+;;; returnStatement
+;;; syntax returnStatement
+
+;;;; RETURN `;
+
+rule Stmt_ok/returnStatement-empty:
+  LOCAL C f |- RETURN `;
+             : C RET (RETURN `;)
+  ---- ;; check that the return type in the context is VOID
+  -- if VOID = $return_type(C.LOCAL)
+
+;;;; RETURN expression `;
+
+rule Stmt_ok/returnStatement-expression:
+  LOCAL C f |- RETURN expression `;
+             : C RET (RETURN typedExpressionIR_cast `;)
+  ---- ;; check expression
+  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
+  ---- ;; fetch annotation
+  -- if _ `# `( typeIR _ ) = typedExpressionIR
+  ---- ;; check the return type in the context
+  -- if typeIR_ret = $return_type(C.LOCAL)
+  ---- ;; check type compatibility
+  ---- ;; while inserting implicit casts if necessary
+  -- if typedExpressionIR_cast = $coerce_unary(typedExpressionIR, typeIR_ret)
+
+;;; exitStatement
+;;; syntax exitStatement = EXIT `;
+
+rule Stmt_ok/exitStatement:
+  p C f |- EXIT `; : C f (EXIT `;)
+
+;;; blockStatement
+
+;;; conditionalStatement
+;;; syntax conditionalStatement =
+
+;;;; IF `( expression ) statement
+
+rule Stmt_ok/conditionalStatement-non-else:
+  p C f |- IF `( expression_cond ) statement_then
+         : C f (IF `( typedExpressionIR_cond ) statementIR_then)
+  ---- ;; check condition expression
+  -- Expr_ok: p C |- expression_cond : typedExpressionIR_cond
+  ---- ;; fetch annotation
+  ---- ;; the condition must be a boolean type
+  -- if _ `# `( BOOL _ ) = typedExpressionIR_cond
+  ---- ;; check then statement
+  -- Stmt_ok: p C f |- statement_then : C_then f_then statementIR_then
+
+;;;; IF `( expression ) statement ELSE statement
+
+rule Stmt_ok/conditionalStatement-else:
+  p C f |- IF `( expression_cond ) statement_then ELSE statement_else
+         : C f_post (IF `( typedExpressionIR_cond ) statementIR_then
+                     ELSE statementIR_else)
+  ---- ;; check condition expression
+  -- Expr_ok: p C |- expression_cond : typedExpressionIR_cond
+  ---- ;; fetch annotation
+  ---- ;; the condition must be a boolean type
+  -- if _ `# `( BOOL _ ) = typedExpressionIR_cond
+  ---- ;; check then and else statements
+  -- Stmt_ok: p C f |- statement_then : C_then f_then statementIR_then
+  -- Stmt_ok: p C f |- statement_else : C_else f_else statementIR_else
+  -- if f_post = $join_flow(f_then, f_else)
+
+;;; forStatement
+
+;;; breakStatement
+
+;;; continueStatement
+
+;;; switchStatement

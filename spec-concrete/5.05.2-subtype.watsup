@@ -1,0 +1,64 @@
+;;
+;; Explicit subtyping
+;;
+
+;;
+;; Implicit subtyping
+;;
+
+rule Sub_impl:
+  typeIR_a <: typeIR_b
+  -- if typeIR_a_canon = $canon(typeIR_a)
+  -- if typeIR_b_canon = $canon(typeIR_b)
+  -- Sub_impl_canon: typeIR_a_canon <: typeIR_b_canon
+
+rule Sub_impl_canon/equals:
+  typeIR_a <: typeIR_b
+  -- Type_alpha: typeIR_a ~~ typeIR_b
+
+rule Sub_impl_canon/not-equals:
+  typeIR_a <: typeIR_b
+  -- Type_alpha:/ typeIR_a ~~ typeIR_b
+  -- Sub_impl_canon_neq: typeIR_a <: typeIR_b
+
+rule Sub_impl_canon_neq/arbint-fixbit:
+  INT <: BIT `< _ >
+
+rule Sub_impl_canon_neq/arbint-fixint:
+  INT <: INT `< _ >
+
+;;
+;; Serializable enum reduction
+;;
+
+dec $reduce_serenum_unary(
+    typedExpressionIR,
+    def $check(typeIR) : bool
+  )
+  : typedExpressionIR
+dec $reduce_serenum_binary(
+    typedExpressionIR,
+    typedExpressionIR,
+    def $check(typeIR, typeIR) : bool
+  )
+  : (typedExpressionIR, typedExpressionIR)
+
+;;
+;; Coercions
+;;
+
+dec $coerce_unary(typedExpressionIR, typeIR) : typedExpressionIR?
+
+def $coerce_unary(typedExpressionIR, typeIR_to) = typedExpressionIR
+  -- if _ `# `( typeIR _ ) = typedExpressionIR
+  -- Type_alpha: typeIR ~~ typeIR_to
+
+def $coerce_unary(typedExpressionIR, typeIR_to) = typedExpressionIR_cast
+  -- if _ `# `( typeIR ctk ) = typedExpressionIR
+  -- Type_alpha:/ typeIR ~~ typeIR_to
+  -- Sub_impl: typeIR <: typeIR_to
+  -- if typedExpressionIR_cast
+      = (`(typeIR_to) typedExpressionIR) `# `( typeIR_to ctk )
+
+dec $coerce_binary(typedExpressionIR, typedExpressionIR)
+  : (typedExpressionIR, typedExpressionIR)

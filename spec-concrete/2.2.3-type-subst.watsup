@@ -87,7 +87,7 @@ def $free_type(TABLE _ `# typeIR) = $free_type(typeIR)
 
 def $free_type(DEFAULT) = `{ eps }
 
-def $free_type(`{#}) = `{ eps }
+def $free_type(HEADER_INVALID) = `{ eps }
 
 def $free_type(SEQ `< typeIR* >)
   = $unions_set<tid>($free_type(typeIR)*)
@@ -103,8 +103,6 @@ def $free_type(RECORD `{ (typeIR _ `;)* `, `... })
 
 def $free_type(SET `< typeIR* >)
   = $unions_set<tid>($free_type(typeIR)*)
-
-def $free_type(PARSERSTATE) = `{ eps }
 
 def $free_type(TABLE_ENUM _ `{ _ }) = `{ eps }
 

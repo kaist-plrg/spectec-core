@@ -1,0 +1,322 @@
+;;
+;; Cursor
+;;
+
+syntax cursor = GLOBAL | BLOCK | LOCAL
+
+var p : cursor
+
+;;
+;; Layered context
+;;
+
+;; Global layer
+
+syntax glayer =
+  { CDENV cdenv,
+    TDENV tdenv,
+    RDENV rdenv,
+    FRAME frame }
+
+;; Block layer
+
+syntax blayer =
+  { ID id,
+    TDENV tdenv,
+    RDENV rdenv,
+    FRAME frame }
+
+;; Local layer
+
+syntax llayer =
+  { ID id,
+    TDENV tdenv,
+    FRAMES frame* }
+
+;;
+;; Typing context
+;;
+
+syntax context =
+  { GLOBAL glayer,
+    BLOCK blayer,
+    LOCAL llayer }
+
+var C : context
+
+;;
+;; Constructor
+;;
+
+dec $empty_context : context
+
+def $empty_context = C
+  -- if glayer =
+      { CDENV $empty_cdenv,
+        TDENV $empty_tdenv,
+        RDENV $empty_rdenv,
+        FRAME $empty_frame }
+  -- if blayer =
+      { ID "",
+        TDENV $empty_tdenv,
+        RDENV $empty_rdenv,
+        FRAME $empty_frame }
+  -- if llayer =
+      { ID "",
+        TDENV $empty_tdenv,
+        FRAMES ([ $empty_frame ]) }
+  -- if C = { GLOBAL glayer, BLOCK blayer, LOCAL llayer }
+
+;;
+;; Bound type variabls
+;;
+
+dec $bound(cursor, context) : bound
+
+def $bound(GLOBAL, C) = `{ eps }
+def $bound(BLOCK, C) = $dom_map<tid, typeDefIR>(C.BLOCK.TDENV)
+def $bound(LOCAL, C) = $union_set<tid>(bound_block, bound_local)
+  -- if bound_block = $bound(BLOCK, C)
+  -- if bound_local = $dom_map<tid, typeDefIR>(C.LOCAL.TDENV)
+
+;;
+;; Frame entry and exit
+;;
+
+dec $enter(context) : context
+
+def $enter(C) = C[ .LOCAL.FRAMES = $empty_frame :: C.LOCAL.FRAMES ]
+
+dec $exit(context) : context
+
+def $exit(C) = C[ .LOCAL.FRAMES = frame_t* ]
+  -- if frame_h :: frame_t* = C.LOCAL.FRAMES
+
+;;
+;; Return type tracking
+;;
+
+dec $return_type(llayer) : typeIR
+
+;;
+;; Adders
+;;
+
+;;; Adder for variables
+
+dec $add_var(cursor, context, id, varTypeIR) : context
+dec $add_vars(cursor, context, id*, varTypeIR*) : context
+
+def $add_var(GLOBAL, C, id, varTypeIR) = C[ .GLOBAL.FRAME = frame ]
+  -- if frame = $add_map<id, varTypeIR>(C.GLOBAL.FRAME, id, varTypeIR)
+def $add_var(BLOCK, C, id, varTypeIR) = C[ .BLOCK.FRAME = frame ]
+  -- if frame = $add_map<id, varTypeIR>(C.BLOCK.FRAME, id, varTypeIR)
+def $add_var(LOCAL, C, id, varTypeIR) = C[ .LOCAL.FRAMES = frame* ]
+  -- if frame_h :: frame_t* = C.LOCAL.FRAMES
+  -- if frame_h_update = $add_map<id, varTypeIR>(frame_h, id, varTypeIR)
+  -- if frame* = frame_h_update :: frame_t*
+
+def $add_vars(p, C, eps, eps) = C
+def $add_vars(p, C, id_h :: id_t*, varTypeIR_h :: varTypeIR_t*) = C''
+  -- if C' = $add_var(p, C, id_h, varTypeIR_h)
+  -- if C'' = $add_vars(p, C', id_t*, varTypeIR_t*)
+
+;;; Adder for parameters
+
+dec $add_parameter(cursor, context, parameterTypeIR) : context
+dec $add_parameters(cursor, context, parameterTypeIR*) : context
+
+def $add_parameter(cursor, C, direction typeIR id eps) = C'
+  -- if varTypeIR = direction typeIR DYN eps
+  -- if C' = $add_var(cursor, C, id, varTypeIR)
+def $add_parameter(cursor, C, direction typeIR id value) = C'
+  -- if varTypeIR = direction typeIR DYN value
+  -- if C' = $add_var(cursor, C, id, varTypeIR)
+
+def $add_parameters(cursor, C, eps) = C
+def $add_parameters(cursor, C, parameterTypeIR_h :: parameterTypeIR_t*) = C''
+  -- if C' = $add_parameter(cursor, C, parameterTypeIR_h)
+  -- if C'' = $add_parameters(cursor, C', parameterTypeIR_t*)
+
+;;; Adder for constructor parameters
+
+dec $add_constructorParameter(context, parameterTypeIR) : context
+dec $add_constructorParameters(context, parameterTypeIR*) : context
+
+def $add_constructorParameter(C, direction typeIR id eps) = C'
+  -- if varTypeIR = direction typeIR CTK eps
+  -- if C' = $add_var(BLOCK, C, id, varTypeIR)
+def $add_constructorParameter(C, direction typeIR id value) = C'
+  -- if varTypeIR = direction typeIR CTK value
+  -- if C' = $add_var(BLOCK, C, id, varTypeIR)
+
+def $add_constructorParameters(C, eps) = C
+def $add_constructorParameters(C, parameterTypeIR_h :: parameterTypeIR_t*) = C''
+  -- if C' = $add_constructorParameter(C, parameterTypeIR_h)
+  -- if C'' = $add_constructorParameters(C', parameterTypeIR_t*)
+
+;;; Adder for types
+
+dec $add_type(cursor, context, tid, typeDefIR) : context
+def $add_type(GLOBAL, C, tid, typeDefIR) = C'
+  -- if tdenv = C.GLOBAL.TDENV
+  -- if tdenv_update
+        = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
+  -- if C' = C [ .GLOBAL.TDENV = tdenv_update ]
+def $add_type(BLOCK, C, tid, typeDefIR) = C'
+  -- if tdenv = C.BLOCK.TDENV
+  -- if tdenv_update
+        = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
+  -- if C' = C [ .BLOCK.TDENV = tdenv_update ]
+
+dec $add_types(cursor, context, tid*, typeDefIR*) : context
+def $add_types(p, C, eps, eps) = C
+def $add_types(p, C, tid_h :: tid_t*, typeDefIR_h :: typeDefIR_t*) = C''
+  -- if C' = $add_type(p, C, tid_h, typeDefIR_h)
+  -- if C'' = $add_types(p, C', tid_t*, typeDefIR_t*)
+
+;;; Adder for routines
+
+dec $add_routine(cursor, context, rid, routineTypeDefIR) : context
+
+def $add_routine(GLOBAL, C, rid, routineTypeDefIR) = C'
+  -- if rdenv = C.GLOBAL.RDENV
+  -- if rdenv_update
+        = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
+  -- if C' = C [ .GLOBAL.RDENV = rdenv_update ]
+def $add_routine(BLOCK, C, rid, routineTypeDefIR) = C'
+  -- if rdenv = C.BLOCK.RDENV
+  -- if rdenv_update
+        = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
+  -- if C' = C [ .BLOCK.RDENV = rdenv_update ]
+
+dec $add_routine_non_overload(cursor, context, rid, routineTypeDefIR) : context
+
+def $add_routine_non_overload(GLOBAL, C, rid, routineTypeDefIR) = C'
+  -- if rdenv = C.GLOBAL.RDENV
+  -- if rdenv_update
+        = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
+  -- if C' = C [ .GLOBAL.RDENV = rdenv_update ]
+def $add_routine_non_overload(BLOCK, C, rid, routineTypeDefIR) = C'
+  -- if rdenv = C.BLOCK.RDENV
+  -- if rdenv_update
+        = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
+  -- if C' = C [ .BLOCK.RDENV = rdenv_update ]
+
+;;; Adder for constructors
+
+dec $add_constructor(context, cid, constructorTypeDefIR) : context
+
+def $add_constructor(C, cid, constructorTypeDefIR) = C'
+  -- if cdenv = C.GLOBAL.CDENV
+  -- if cdenv_update
+        = $add_map<cid, constructorTypeDefIR>(cdenv, cid, constructorTypeDefIR)
+  -- if C' = C [ .GLOBAL.CDENV = cdenv_update ]
+
+;;
+;; Finders
+;;
+
+;;; Finder for variables
+
+dec $find_var(cursor, context, prefixedNameIR) : varTypeIR?
+
+def $find_var(p, C, `. id) = $find_map<id, varTypeIR>(frame, id)
+  -- if frame = C.GLOBAL.FRAME
+def $find_var(GLOBAL, C, `` id) = $find_map<id, varTypeIR>(frame, id)
+  -- if frame = C.GLOBAL.FRAME
+def $find_var(BLOCK, C, `` id) = varTypeIR
+  -- if frame = C.BLOCK.FRAME
+  -- if varTypeIR = $find_map<id, varTypeIR>(frame, id)
+def $find_var(BLOCK, C, `` id) = $find_var(GLOBAL, C, `` id)
+  -- if frame = C.BLOCK.FRAME
+  -- if eps = $find_map<id, varTypeIR>(frame, id)
+def $find_var(LOCAL, C, `` id) = varTypeIR
+  -- if frame* = C.LOCAL.FRAMES
+  -- if varTypeIR = $find_maps<id, varTypeIR>(frame*, id)
+def $find_var(LOCAL, C, `` id) = $find_var(BLOCK, C, `` id)
+  -- if frame* = C.LOCAL.FRAMES
+  -- if eps = $find_maps<id, varTypeIR>(frame*, id)
+
+;;; Finder for values
+
+dec $find_value(cursor, context, id) : value
+
+;;; Finder for types
+
+dec $find_type(cursor, context, prefixedNameIR) : typeDefIR?
+
+def $find_type(p, C, `. tid)
+  = $find_map<tid, typeDefIR>(tdenv, tid)
+  -- if tdenv = C.GLOBAL.TDENV
+def $find_type(GLOBAL, C, `` tid)
+  = $find_map<tid, typeDefIR>(tdenv, tid)
+  -- if tdenv = C.GLOBAL.TDENV
+def $find_type(BLOCK, C, `` tid) = typeDefIR
+  -- if tdenv = C.BLOCK.TDENV
+  -- if typeDefIR = $find_map<tid, typeDefIR>(tdenv, tid)
+def $find_type(BLOCK, C, `` tid) = $find_type(GLOBAL, C, `` tid)
+  -- if tdenv = C.BLOCK.TDENV
+  -- if eps = $find_map<tid, typeDefIR>(tdenv, tid)
+def $find_type(LOCAL, C, `` tid) = typeDefIR
+  -- if tdenv* = C.LOCAL.TDENV
+  -- if typeDefIR = $find_maps<tid, typeDefIR>(tdenv*, tid)
+def $find_type(LOCAL, C, `` tid) = $find_type(BLOCK, C, `` tid)
+  -- if tdenv* = C.LOCAL.TDENV
+  -- if eps = $find_maps<tid, typeDefIR>(tdenv*, tid)
+
+;;; Finder for routines
+
+dec $ids_arguments(argumentList) : (id?)*
+dec $id_argument(argument) : id?
+
+def $ids_arguments(`EMPTY) = eps
+def $ids_arguments(argument) = $id_argument(argument)
+def $ids_arguments(argumentListNonEmpty `, argument)
+  = $ids_arguments(argumentListNonEmpty) ++ [ $id_argument(argument) ]
+
+dec $find_routine_overloaded(cursor, context, id, argumentList)
+  : (rid, routineTypeDefIR, id*)?
+
+def $find_routine_overloaded(GLOBAL, C, id, argumentList)
+  = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
+  -- if rdenv = C.GLOBAL.RDENV
+  -- if (id_arg?)* = $ids_arguments(argumentList)
+def $find_routine_overloaded(BLOCK, C, id, argumentList)
+  = (rid, routineTypeDefIR, id_default*)
+  -- if rdenv = C.BLOCK.RDENV
+  -- if (id_arg?)* = $ids_arguments(argumentList)
+  -- if (rid, routineTypeDefIR, id_default*)
+      = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
+def $find_routine_overloaded(BLOCK, C, id, argumentList)
+  = $find_routine_overloaded(GLOBAL, C, id, argumentList)
+  -- if rdenv = C.BLOCK.RDENV
+  -- if (id_arg?)* = $ids_arguments(argumentList)
+  -- if eps
+      = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
+def $find_routine_overloaded(LOCAL, C, id, argumentList)
+  = $find_routine_overloaded(BLOCK, C, id, argumentList) 
+
+dec $find_routine_non_overloaded(cursor, context, id) : routineTypeDefIR?
+
+def $find_routine_non_overloaded(GLOBAL, C, id)
+  = $find_non_overloaded<routineTypeDefIR>(C.GLOBAL.RDENV, id)
+def $find_routine_non_overloaded(BLOCK, C, id) = routineTypeDefIR
+  -- if routineTypeDefIR
+      = $find_non_overloaded<routineTypeDefIR>(C.BLOCK.RDENV, id)
+def $find_routine_non_overloaded(BLOCK, C, id)
+  = $find_routine_non_overloaded(GLOBAL, C, id)
+  -- if eps 
+      = $find_non_overloaded<routineTypeDefIR>(C.BLOCK.RDENV, id)
+def $find_routine_non_overloaded(LOCAL, C, id)
+  = $find_routine_non_overloaded(BLOCK, C, id)
+
+;;; Finder for constructors
+
+dec $find_constructor_overloaded(context, id, argumentList)
+  : (rid, constructorTypeDefIR, id*)?
+
+def $find_constructor_overloaded(C, id, argumentList)
+  = $find_overloaded<constructorTypeDefIR>(cdenv, id, (id_arg?)*)
+  -- if cdenv = C.GLOBAL.CDENV
+  -- if (id_arg?)* = $ids_arguments(argumentList)

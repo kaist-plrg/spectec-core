@@ -1,0 +1,98 @@
+;;
+;; Table context
+;;
+
+syntax matchKey = (typeIR, id)
+
+syntax matchAction = (id, parameterTypeIR*, argumentListIR)
+
+syntax matchPriority =
+  { VALUES int*,
+    INIT bool,
+    DELTA int,
+    LARGEST_WINS bool }
+
+var prt : matchPriority
+
+syntax matchEntry =
+  { SIZE int,
+    CONST bool }
+
+var ent : matchEntry
+
+syntax matchMode =
+  | NOPRI
+  | NOPRILPM nat
+  | PRI
+  | PRILPM
+
+syntax tblctx =
+  { KEYS matchKey*,
+    ACTIONS matchAction*,
+    PRIORITIES matchPriority,
+    ENTRIES matchEntry,
+    MODE matchMode }
+
+var TC : tblctx
+
+;;
+;; State per table entry
+;;
+
+syntax tblstate =
+  | LPM nat
+  | NOLPM
+
+;;
+;; Constructor
+;;
+
+dec $empty_tblctx: tblctx
+def $empty_tblctx
+    = { KEYS eps,
+        ACTIONS eps,
+        PRIORITIES matchPriority,
+        ENTRIES matchEntry,
+        MODE NOPRI }
+  -- if matchPriority
+        = { VALUES eps,
+            INIT false,
+            DELTA 1,
+            LARGEST_WINS true }
+  -- if matchEntry
+        = { SIZE 0,
+            CONST true }
+
+;;
+;; Adders
+;;
+
+;;; Adder for actions
+
+dec $add_action(tblctx, id, parameterTypeIR*, argumentListIR) : tblctx
+
+def $add_action(TC, id, parameterTypeIR*, argumentListIR)
+  = TC[ .ACTIONS = TC.ACTIONS ++ [ matchAction ] ]
+  -- if matchAction = (id, parameterTypeIR*, argumentListIR)
+
+;;
+;; Finders
+;;
+
+;;; Finder for actions
+
+dec $find_action(tblctx, id) : (parameterTypeIR*, argumentListIR)?
+dec $find_action'(matchAction*, id) : (parameterTypeIR*, argumentListIR)?
+
+def $find_action(TC, id) = $find_action'(TC.ACTIONS, id)
+
+def $find_action'(eps, id) = eps
+
+def $find_action'(matchAction_h :: matchAction_t*, id)
+  = (parameterTypeIR*, argumentListIR)
+  -- if (id, parameterTypeIR*, argumentListIR) = matchAction_h
+
+def $find_action'(matchAction_h :: matchAction_t*, id)
+  = $find_action'(matchAction_t*, id)
+  -- if (id_h, _, _) = matchAction_h
+  -- if id_h =/= id 

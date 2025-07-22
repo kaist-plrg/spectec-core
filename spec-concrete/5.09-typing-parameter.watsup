@@ -1,0 +1,71 @@
+;;
+;; syntax parameter
+;;
+
+;; syntax parameter =
+;;  annotationList direction type name initializerOpt
+;;; syntax initializerOpt
+
+;;;; `EMPTY
+
+rule Parameter_ok/empty:
+  p C |- annotationList direction type name `EMPTY
+       : (annotationList direction typeIR nameIR eps)
+         `# tid_fresh*
+  -- Type_ok: p C |- type : typeIR `# tid_fresh*
+  -- if bound = $union_set<tid>($bound(p, C), `{ tid_fresh* })
+  -- Type_wf: bound |- typeIR
+  -- if nameIR = $name(name)
+
+;;;; initializer
+
+rule Parameter_ok/empty:
+  p C |- annotationList direction type name (`= expression_init)
+       : (annotationList direction typeIR nameIR (`= value_init))
+         `# tid_fresh*
+  ---- ;; check parameter type
+  -- Type_ok: p C |- type : typeIR `# tid_fresh*
+  -- if bound = $union_set<tid>($bound(p, C), `{ tid_fresh* })
+  -- Type_wf: bound |- typeIR
+  ---- ;; check initializer
+  -- Expr_ok: p C |- expression_init : typedExpressionIR_init
+  -- if _ `# `( typeIR_init LCTK ) = typedExpressionIR_init
+  ---- ;; check that the initializer type is
+  ---- ;; compatible with the parameter type
+  ---- ;; while inserting implicit casts if necessary
+  -- if typedExpressionIR_init_cast
+      = $coerce_unary(typedExpressionIR_init, typeIR)
+  -- if nameIR = $name(name)
+  ---- ;; evaluate the initializer
+  -- Eval_static: p C |- typedExpressionIR_init_cast ~> value_init
+
+;;
+;; syntax parameterList
+;;
+
+rule Parameters_ok/nil:
+  p C |- eps : eps `# eps
+
+rule Parameters_ok/cons:
+  p C |- parameter_h :: parameter_t*
+       : (parameterIR_h :: parameterIR_t*) `# (tid_fresh_h* ++ tid_fresh_t*)
+  -- Parameter_ok: p C |- parameter_h : parameterIR_h `# tid_fresh_h*
+  -- Parameters_ok: p C |- parameter_t* : parameterIR_t* `# tid_fresh_t*
+
+;;
+;; syntax constructorParameter
+;;
+
+rule ConstructorParameter_ok:
+  p C |- constructorParameter : constructorParameterIR `# tid_fresh*
+  -- Parameter_ok: p C |- constructorParameter
+                        : constructorParameterIR `# tid_fresh*
+
+;;
+;; syntax constructorParameterList
+;;
+
+rule ConstructorParameters_ok:
+  p C |- constructorParameter* : constructorParameterIR* `# tid_fresh*
+  -- Parameters_ok: p C |- constructorParameter*
+                         : constructorParameterIR* `# tid_fresh*

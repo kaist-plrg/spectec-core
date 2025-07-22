@@ -38,7 +38,8 @@ rule Type_alpha/spectype-nominal:
   -- if typeIR_b_spec = $specialize_typeDef(polyTypeDefIR_b, typeIR_b*)
   -- Type_alpha: typeIR_a_spec ~~ typeIR_b_spec
   ---- ;; for nominal types, the type arguments must also match
-  -- if $is_nominal(typeIR_a_spec) /\ $is_nominal(typeIR_b_spec)
+  -- if $is_nominal_typeIR(typeIR_a_spec)
+        /\ $is_nominal_typeIR(typeIR_b_spec)
   -- (Type_alpha: typeIR_a ~~ typeIR_b)*
 
 rule Type_alpha/spectype-structural:
@@ -47,7 +48,8 @@ rule Type_alpha/spectype-structural:
   -- if typeIR_b_spec = $specialize_typeDef(polyTypeDefIR_b, typeIR_b*)
   -- Type_alpha: typeIR_a_spec ~~ typeIR_b_spec
   ---- ;; for structural types, the type arguments do not need to match
-  -- if ~$is_nominal(typeIR_a_spec) /\ ~$is_nominal(typeIR_b_spec)
+  -- if ~$is_nominal_typeIR(typeIR_a_spec)
+        /\ ~$is_nominal_typeIR(typeIR_b_spec)
 
 ;;; Typedef types
 
@@ -155,14 +157,11 @@ rule Type_alpha/recorddefaulttype:
   -- (Type_alpha: typeIR_a ~~ typeIR_b)*
 
 rule Type_alpha/invalidtype:
-  `{#} ~~ `{#}
+  HEADER_INVALID ~~ HEADER_INVALID
 
 rule Type_alpha/settype:
   (SET `< typeIR_a >) ~~ (SET `< typeIR_b >)
   -- Type_alpha: typeIR_a ~~ typeIR_b
-
-rule Type_alpha/parserstatetype:
-  PARSERSTATE ~~ PARSERSTATE
 
 rule Type_alpha/tableenumtype:
   (TABLE_ENUM tid `{ id_f* }) ~~ (TABLE_ENUM tid `{ id_f* })

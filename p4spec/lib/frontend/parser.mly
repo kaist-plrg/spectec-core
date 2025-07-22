@@ -38,7 +38,7 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 %}
 
 %token<string> TICK_UPID
-%token TICK_DOUBLE_QUOTE TICK_UNDERSCORE TICK_ARROW TICK_DOUBLE_ARROW
+%token TICK_TICK TICK_DOUBLE_QUOTE TICK_UNDERSCORE TICK_ARROW TICK_DOUBLE_ARROW
 %token TICK_DOT TICK_DOT2 TICK_DOT3
 %token TICK_COMMA TICK_SEMICOLON TICK_COLON
 %token TICK_HASH TICK_DOLLAR TICK_AT TICK_QUEST
@@ -195,6 +195,7 @@ atom_ :
   | atom_escape { $1 }
 atom_escape :
   | TICK_UPID { Atom.SilentAtom $1 }
+  | TICK_TICK { Atom.Tick }
   | TICK_DOUBLE_QUOTE { Atom.DoubleQuote }
   | TICK_UNDERSCORE { Atom.Underscore }
   | TICK_ARROW { Atom.Arrow }

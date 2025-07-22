@@ -1,0 +1,174 @@
+;;
+;; Static evaluation
+;; of expressions that are local compile-time known
+;;
+
+relation Eval_static:
+  cursor context |- typedExpressionIR ~> value
+  hint(input %0 %1 %2)
+
+;;
+;;;; Type evaluation
+;;
+
+relation Type_ok:
+  cursor context |- typeOrVoid : typeIR `# tid*
+  hint(input %0 %1 %2)
+
+relation TypeArgument_ok:
+  cursor context |- typeArgument : typeArgumentIR `# tid*
+  hint(input %0 %1 %2)
+
+relation TypeArguments_ok:
+  cursor context |- typeArgument* : typeArgumentListIR `# tid*
+  hint(input %0 %1 %2)
+
+;;
+;;;; Subtyping, explicit and implicit
+;;
+
+relation Sub_expl: typeIR <: typeIR hint(input %0 %1)
+relation Sub_expl_canon: typeIR <: typeIR hint(input %0 %1)
+relation Sub_expl_canon_neq: typeIR <: typeIR hint(input %0 %1)
+
+relation Sub_impl: typeIR <: typeIR hint(input %0 %1)
+relation Sub_impl_canon: typeIR <: typeIR hint(input %0 %1)
+relation Sub_impl_canon_neq: typeIR <: typeIR hint(input %0 %1)
+
+;;
+;;;; Expression typing
+;;
+
+relation Expr_ok:
+  cursor context |- expression : typedExpressionIR
+  hint(input %0 %1 %2)
+
+;;
+;;;; Argument typing
+;;
+
+relation Argument_ok:
+  cursor context |- argument : argumentIR
+  hint(input %0 %1 %2)
+
+;;
+;;;; Statement typing
+;;
+
+relation Lvalue_ok:
+  cursor context |- lvalue : typedLvalueIR
+  hint(input %0 %1 %2)
+
+relation Stmt_ok:
+  cursor context flow |- statement : context flow statementIR
+  hint(input %0 %1 %2 %3)
+
+relation Stmts_ok:
+  cursor context flow |- statement* : context flow statementIR*
+  hint(input %0 %1 %2 %3)
+
+relation Block_ok:
+  cursor context flow |- blockStatement
+                       : context flow blockStatementIR
+  hint(input %0 %1 %2 %3)
+
+relation BlockElement_ok:
+  cursor context flow |- blockElementStatement
+                       : context flow blockElementStatementIR
+  hint(input %0 %1 %2 %3)
+
+;;
+;;;; Parameter typing
+;;;; inserts fresh type variables for parameters with don't care types
+;;
+
+relation Parameter_ok:
+  cursor context |- parameter : parameterIR `# tid*
+  hint(input %0 %1 %2)
+
+relation Parameters_ok:
+  cursor context |- parameter* : parameterListIR `# tid*
+  hint(input %0 %1 %2)
+
+dec $parameterIR(parameterIR) : parameterTypeIR
+def $parameterIR(_ direction typeIR nameIR eps)
+  = direction typeIR nameIR eps
+def $parameterIR(_ direction typeIR nameIR (`= value))
+  = direction typeIR nameIR value
+
+relation ConstructorParameter_ok:
+  cursor context |- constructorParameter
+                  : constructorParameterIR `# tid*
+  hint(input %0 %1 %2)
+
+relation ConstructorParameters_ok:
+  cursor context |- constructorParameter*
+                  : constructorParameterListIR `# tid*
+  hint(input %0 %1 %2)
+
+dec $constructorParameterIR(constructorParameterIR) : constructorParameterTypeIR
+def $constructorParameterIR(constructorParameterIR)
+  = $parameterIR(constructorParameterIR)
+
+;;
+;;;; Declaration typing
+;;
+
+relation Decl_ok:
+  cursor context |- declaration : context declarationIR
+  hint(input %0 %1 %2)
+
+relation Decls_ok:
+  cursor context |- declaration* : context declarationIR*
+  hint(input %0 %1 %2)
+
+relation ControlLocalDecl_ok:
+  context |- controlLocalDeclaration
+           : context controlLocalDeclarationIR
+  hint(input %0 %1)
+
+relation ControlLocalDecls_ok:
+  context |- controlLocalDeclaration*
+           : context controlLocalDeclarationIR*
+  hint(input %0 %1)
+
+relation Program_ok:
+  |- p4program : context p4programIR
+  hint(input %0)
+
+;;
+;;;; Routine typing
+;;
+
+;; Finds the type of a function,
+;; inserts fresh type variables for parameters with don't care types, (tid*)
+;; and also identifies the ids of default arguments (id*)
+
+relation FunctionType_ok:
+  cursor context |- prefixedNameIR `< typeArgumentListIR > `( argument* )
+                  : functionTypeIR `< `# tid* > `( `# id* )
+  hint(input %0 %1 %2 %3 %4)
+
+;; Finds the type of a method,
+;; inserts fresh type variables for parameters with don't care types, (tid*)
+;; and also identifies the ids of default arguments (id*)
+
+relation MethodType_ok:
+  cursor context |- typedExpressionIR `. nameIR `< typeArgumentListIR > `( argument* )
+                  : methodTypeIR `< `# tid* > `( `# id* )
+  hint(input %0 %1 %2 %3 %4 %5)
+
+;;
+;;;; Call typing
+;;
+
+;; Checks that an action/function/method invocation is valid,
+;; gets the return type,
+;; infers the types of missing type arguments,
+;; and inserts implicit casts for arguments, if necessary
+
+relation Call_ok:
+  cursor context |- routineTypeIR `< typeArgumentListIR `# tid* >
+                                  `( argument* `# id* )
+                  : typeIR `< typeArgumentListIR > `( argumentListIR )
+  hint(input %0 %1 %2 %3 %4 %5 %6)

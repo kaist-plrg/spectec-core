@@ -23,8 +23,8 @@ syntax primitiveTypeIR =
 
 syntax numberTypeIR =
   | INT
-  | BIT `< nat >
   | INT `< nat >
+  | BIT `< nat >
   | VARBIT `< nat >
 
 syntax baseTypeIR = primitiveTypeIR | numberTypeIR
@@ -113,7 +113,7 @@ syntax definedTypeIR =
 
 syntax defaultTypeIR = DEFAULT
 
-syntax invalidHeaderTypeIR = `{#}
+syntax invalidHeaderTypeIR = HEADER_INVALID
 
 syntax sequenceTypeIR =
   | SEQ `< typeIR* >
@@ -124,8 +124,6 @@ syntax recordTypeIR =
   | RECORD `{ fieldTypeIR* `, `... }
 
 syntax setTypeIR = SET `< typeIR* >
-
-syntax parserStateTypeIR = PARSERSTATE
 
 syntax tableTypeIR =
   | TABLE_ENUM tid `{ id* }
@@ -139,7 +137,6 @@ syntax synthesizedTypeIR =
   | sequenceTypeIR
   | recordTypeIR
   | setTypeIR
-  | parserStateTypeIR
   | tableTypeIR
   | dontCareTypeIR
 
@@ -204,11 +201,17 @@ syntax routineTypeDefIR =
   | polyRoutineTypeDefIR
 
 ;;
+;;;; Constructor parameter types
+;;
+
+syntax constructorParameterTypeIR = parameterTypeIR
+
+;;
 ;; Constructor types
 ;;
 
 syntax constructorTypeIR =
-  CONSTRUCTOR `( parameterTypeIR* ) `-> typeIR
+  CONSTRUCTOR `( constructorParameterTypeIR* ) `-> typeIR
 
 ;;
 ;; Constructor type definitions
