@@ -13,7 +13,7 @@ module F = Format
 
 let id_of_name (value : value) : string =
   match flatten_case_v' value with
-  | "identifier", [ [ "ID" ]; [] ], [ TextV s ] -> s
+  | "identifier", [ [ "`ID" ]; [] ], [ TextV s ] -> s
   | "nonTypeName", [ [ "APPLY" ] ], [] -> "apply"
   | "nonTypeName", [ [ "KEY" ] ], [] -> "key"
   | "nonTypeName", [ [ "ACTIONS" ] ], [] -> "actions"
@@ -22,7 +22,7 @@ let id_of_name (value : value) : string =
   | "nonTypeName", [ [ "TYPE" ] ], [] -> "type"
   | "nonTypeName", [ [ "PRIORITY" ] ], [] -> "priority"
   | "name", [ [ "LIST" ] ], [] -> "list"
-  | "typeIdentifier", [ [ "TID" ]; [] ], [ TextV s ] -> s
+  | "typeIdentifier", [ [ "`TID" ]; [] ], [ TextV s ] -> s
   | _ ->
       failwith
         (Printf.sprintf "Invalid name structure %s: %s "
@@ -118,7 +118,7 @@ let id_of_parameter (v : value) : string =
 
 let has_type_params (v : value) : bool =
   match flatten_case_v v with
-  | "typeParameterListOpt", [ [ "EMPTY" ] ], [] -> false
+  | "typeParameterListOpt", [ [ "`EMPTY" ] ], [] -> false
   | "typeParameterListOpt", [ [ "<" ]; [ ">" ] ], [ v_tparams ] ->
       id_of_case_v v_tparams == "typeParameterList"
   | "typeParameterListOpt", _, _ ->
