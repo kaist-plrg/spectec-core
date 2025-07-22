@@ -1,0 +1,52 @@
+;; syntax typedExpressionIR =
+;;   expressionIR `# `( typeIR ctk )
+
+;;; syntax expressionIR
+
+;;;; literalExpressionIR
+;;;; syntax literalExpression
+
+;;;;; TRUE
+;;;;; FALSE
+
+rule Eval_static/true:
+  p C |- TRUE `# `( _ _ ) ~> B true
+
+rule Eval_static/false:
+  p C |- FALSE `# `( _ _ ) ~> B false
+
+;;;;; number
+
+rule Eval_static/number-arbint:
+  p C |- (D i) `# `( _ _ ) ~> D i
+
+rule Eval_static/number-fixbit:
+  p C |- (n W i) `# `( _ _ ) ~> n W i
+
+rule Eval_static/number-fixint:
+  p C |- (n S i) `# `( _ _ ) ~> n S i
+
+;;;;; stringLiteral 
+
+rule Eval_static/stringliteral:
+  p C |- (`" text `") `# `( _ _ ) ~> `" text `"
+
+;;;; referenceExpressionIR
+
+;;;; defaultExpressionIR
+
+;;;; unaryExpressionIR
+
+;;;; binaryExpressionIR
+
+;;;; ternaryExpressionIR
+
+;;;; castExpressionIR
+
+;;;; dataExpressionIR
+
+;;;; accessExpressionIR
+
+;;;; callExpressionIR
+
+;;;; parenthesizedExpressionIR

@@ -674,7 +674,8 @@ Error on parser: ../../../../p4c/testdata/p4_16_errors/loop3-err.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/methodArgDontcare.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/minWidth.p4
-Parser success: ../../../../p4c/testdata/p4_16_errors/minWidth.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/minWidth.p4
+../../../../p4c/testdata/p4_16_errors/minWidth.p4:8.36-8.37: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/missing_actions.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/missing_actions.p4
@@ -729,7 +730,8 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/parser-arg.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/persistent_e.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/pr2918.p4
-Parser success: ../../../../p4c/testdata/p4_16_errors/pr2918.p4
+Error on parser: ../../../../p4c/testdata/p4_16_errors/pr2918.p4
+../../../../p4c/testdata/p4_16_errors/pr2918.p4:18.11-18.18: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/psa-meter2.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/psa-meter2.p4
@@ -958,4 +960,4 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/width_e.p4
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
 
-Running parser: [EXCLUDE] 0/310 (0.00%) [PASS] 282/310 (90.97%) [FAIL] 28/310 (9.03%)
+Running parser: [EXCLUDE] 0/310 (0.00%) [PASS] 280/310 (90.32%) [FAIL] 30/310 (9.68%)

@@ -72,7 +72,9 @@ let wrap_atom (s : string) : atom =
   | "|+|=" -> SPlusEq $ no_region
   | "|-|" -> SMinus $ no_region
   | "|-|=" -> SMinusEq $ no_region
-  | s when String.get s 0 = '`' -> SilentAtom s $ no_region
+  | s when String.get s 0 = '`' ->
+      let s = String.sub s 1 (String.length s - 1) in
+      SilentAtom s $ no_region
   | _ -> Atom s $ no_region
 
 let wrap_var_t (s : string) : typ' = VarT (s $ no_region, [])

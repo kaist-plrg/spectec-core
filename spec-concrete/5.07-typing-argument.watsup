@@ -1,0 +1,25 @@
+;; syntax argument
+
+;;; expression
+
+rule Argument_ok/expression:
+  p C |- expression : typedExpressionIR
+  -- Expr_ok: p C |- expression : typedExpressionIR
+
+;;; name `= expression
+
+rule Argument_ok/name-expression:
+  p C |- (name `= expression) : (nameIR `= typedExpressionIR)
+  -- if nameIR = $name(name)
+  -- Expr_ok: p C |- expression : typedExpressionIR
+
+;;; name `= `_
+
+rule Argument_ok/name-dontcare:
+  p C |- (name `= `_) : (nameIR `= `_)
+  -- if nameIR = $name(name)
+
+;;; `_
+
+rule Argument_ok/dontcare:
+  p C |- `_ : `_

@@ -9,7 +9,7 @@ let do_typing (ctx : Ctx.t) (spec : spec) (value_program : value) :
     Ctx.t * value list =
   let ctx = Interp.load_spec ctx spec in
   let+ ctx, values =
-    Interp.invoke_rel ctx ("Prog_ok" $ no_region) [ value_program ]
+    Interp.invoke_rel ctx ("Program_ok" $ no_region) [ value_program ]
   in
   (ctx, values)
 

@@ -7,6 +7,7 @@ type t =
   | Sup                  (* `:>` *)
   | Turnstile            (* `|-` *)
   | Tilesturn            (* `-|` *)
+  | Tick                 (* ```` *)
   | DoubleQuote          (* ``''` *)
   | Underscore           (* ``_` *)
   | Arrow                (* `->` *)
@@ -78,11 +79,12 @@ let eq atom_a atom_b = compare atom_a atom_b = 0
 
 let string_of_atom = function
   | Atom id -> id
-  | SilentAtom id -> id
+  | SilentAtom id -> "`" ^ id
   | Sub -> "<:"
   | Sup -> ":>"
   | Turnstile -> "|-"
   | Tilesturn -> "-|"
+  | Tick -> "`"
   | DoubleQuote -> "\""
   | Underscore -> "_"
   | Arrow -> "->"

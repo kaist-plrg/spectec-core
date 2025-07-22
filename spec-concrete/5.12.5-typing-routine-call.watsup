@@ -1,0 +1,8 @@
+;;
+;; Call
+;;
+
+rule Call_ok/table-apply-method:
+  p C |- (TABLE_APPLY `-> typeIR_table) `< eps `# eps > `( eps `# eps )
+        : typeIR_table `< eps > `( eps )
+  -- RoutineType_wf: $bound(p, C) |- TABLE_APPLY `-> typeIR_table

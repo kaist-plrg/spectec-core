@@ -1,0 +1,213 @@
+;;
+;; syntax tableAction
+;;
+
+dec $split_dataplane_parameters(parameterTypeIR*)
+  : (parameterTypeIR*, parameterTypeIR*)
+
+def $split_dataplane_parameters(eps) = (eps, eps)
+def $split_dataplane_parameters(parameterTypeIR_h :: parameterTypeIR_t*)
+  = (parameterTypeIR_data*, parameterTypeIR_h :: parameterTypeIR_control*)
+  -- if `EMPTY _ _ _ = parameterTypeIR_h
+  -- if (parameterTypeIR_data*, parameterTypeIR_control*)
+      = $split_dataplane_parameters(parameterTypeIR_t*)
+def $split_dataplane_parameters(parameterTypeIR_h :: parameterTypeIR_t*)
+  = (parameterTypeIR_h :: parameterTypeIR_data*, parameterTypeIR_control*)
+  -- if direction _ _ _ = parameterTypeIR_h
+  -- if direction =/= `EMPTY
+  -- if (parameterTypeIR_data*, parameterTypeIR_control*)
+      = $split_dataplane_parameters(parameterTypeIR_t*)
+
+rule Call_action_partial_ok:
+  C |- parameterTypeIR* `@ argumentIR*
+     : parameterTypeIR_data* `, parameterTypeIR_control*
+       `@ argumentIR_cast*
+  ---- ;; split parameters into data- and control-planes
+  -- if (parameterTypeIR_data*, parameterTypeIR_control*)
+      = $split_dataplane_parameters(parameterTypeIR*)
+  ---- ;; check arity 
+  -- if $(|parameterTypeIR_data*| = |argumentIR*|)
+  ---- ;; check calling convention on dataplane parameters
+  -- Call_convention_ok:
+      BLOCK C ACTION |- parameterTypeIR_data* `@ argumentIR*
+                      : argumentIR_cast*
+
+;;; syntax tableAction = annotationList tableActionReference `;
+;;;; syntax tableActionReference
+
+;;;; prefixedNonTypeName
+
+rule TableAction_ok/prefixedNonTypeName:
+  C TC_0 |- annotationList prefixedNonTypeName `;
+          : TC_1 tableActionIR
+  ---- ;; check that the action exists
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if ACTION `( parameterTypeIR* )
+      = $find_routine_non_overloaded(BLOCK, C, prefixedNameIR)
+  ---- ;; check that the action reference is a valid data-plane call
+  -- Call_action_partial_ok: C |- parameterTypeIR* `@ eps
+                                : parameterTypeIR_data* `, parameterTypeIR_control*
+                                  `@ eps
+  ---- ;; update the table context with the action
+  -- if TC_1 = $add_action(TC_0, prefixedNameIR, parameterTypeIR*, eps)
+  ---- ;; create IR
+  -- if tableActionIR = annotationList (prefixedNameIR `( eps )) `;
+
+;;;; prefixedNonTypeName `( argumentList )
+
+rule TableAction_ok/prefixedNonTypeName-argumentList:
+  C TC_0 |- annotationList (prefixedNonTypeName `( argumentList )) `;
+          : TC_1 tableActionIR
+  ---- ;; check that the action exists
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if ACTION `( parameterTypeIR* )
+      = $find_routine_non_overloaded(BLOCK, C, prefixedNameIR)
+  ---- ;; check arguments
+  -- if argument* = $flatten_argumentList(argumentList)
+  -- (Argument_ok: BLOCK C |- argument : argumentIR)*
+  ---- ;; check that the action reference is a valid data-plane call
+  -- Call_action_partial_ok: C |- parameterTypeIR* `@ argumentIR*
+                                : parameterTypeIR_data* `, parameterTypeIR_control*
+                                  `@ argumentIR_cast*
+  ---- ;; update the table context with the action
+  -- if TC_1 = $add_action(TC_0, prefixedNameIR, parameterTypeIR*, argumentIR_cast*)
+  ---- ;; create IR
+  -- if tableActionIR = annotationList (prefixedNameIR `( argumentIR_cast* )) `;
+
+;;
+;; syntax tableActionList
+;;
+
+rule TableActions_ok/nil:
+  C TC |- eps : TC eps
+
+rule TableActions_ok/cons:
+  C TC_0 |- (tableAction_h :: tableAction_t*)
+          : TC_2 (tableActionIR_h :: tableActionIR_t*)
+  -- TableAction_ok: C TC_0 |- tableAction_h : TC_1 tableActionIR_h
+  -- TableActions_ok: C TC_1 |- tableAction_t* : TC_2 tableActionIR_t*
+
+;;
+;; syntax tableDefaultAction (doesn't exist in the grammar)
+;;
+
+rule Call_action_default_ok:
+  C |- parameterTypeIR* `@ argumentIR*
+     : parameterTypeIR_data* `, parameterTypeIR_control*
+       `@ argumentIR_cast*
+  ---- ;; split parameters into data- and control-planes
+  -- if (parameterTypeIR_data*, parameterTypeIR_control*)
+      = $split_dataplane_parameters(parameterTypeIR*)
+  ---- ;; check calling convention
+  -- Call_convention_ok:
+      BLOCK C ACTION |- parameterTypeIR* `@ argumentIR*
+                      : argumentIR_cast*
+
+;;; prefixedNonTypeName
+
+rule TableDefaultAction_ok/prefixedNonTypeName:
+  C TC |- `= prefixedNonTypeName
+        : prefixedNameIR `( eps )
+  ---- ;; find matching action
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if (eps, eps) = $find_action(TC, prefixedNameIR)
+
+;;; prefixedNonTypeName `( argumentList )
+
+rule TableDefaultAction_ok/prefixedNonTypeName-argumentList:
+  C TC |- `= (prefixedNonTypeName `( argumentList ))
+        : prefixedNameIR `( argumentIR_cast* )
+  ---- ;; find matching action
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if (parameterTypeIR_action*, argumentIR_action*)
+      = $find_action(TC, prefixedNameIR)
+  ---- ;; check arguments
+  -- if argument* = $flatten_argumentList(argumentList)
+  -- (Argument_ok: BLOCK C |- argument : argumentIR)*
+  ---- ;; check calling convention
+  -- Call_action_default_ok:
+      C |- parameterTypeIR_action* `@ argumentIR*
+         : parameterTypeIR_action_data* `, parameterTypeIR_action_control*
+           `@ argumentIR_cast*
+  ---- ;; arguments must be syntatcially equivalent to
+  ---- ;; dataplane arguments specified in the actions list property
+  -- if argumentIR_action_data*
+      = argumentIR_action*[0 : |parameterTypeIR_action_data*|] 
+  -- if argumentIR_cast_data*
+      = argumentIR_cast*[0 : |parameterTypeIR_action_data*|]
+  -- if (argumentIR_action_data = argumentIR_cast_data)*
+
+;;
+;; syntax tableProperty
+;;
+
+;;; KEY `= `{ tableKeyList }
+
+;;; ACTIONS `= `{ tableActionList }
+
+rule TableProperty_ok/actions:
+  C TC_0 |- ACTIONS `= `{ tableActionList }
+          : TC_1 (ACTIONS `= `{ tableActionIR* })
+  -- if tableAction* = $flatten_tableActionList(tableActionList)
+  -- TableActions_ok: C TC_0 |- tableAction* : TC_1 tableActionIR*
+
+;;; annotationList constOpt ENTRIES `= `{ tableEntryList }
+
+;;; annotationList constOpt tableCustomName initializer `;
+
+rule TableProperty_ok/custom-default-action:
+  C TC |- annotationList constOpt tableCustomName initializer `;
+        : TC tablePropertyIR
+  ---- ;; check that the custom property is for default action
+  -- if "default_action" = $tableCustomName(tableCustomName)
+  ---- ;; check the initializer
+  -- TableDefaultAction_ok: C TC |- initializer : tableActionReferenceIR
+  ---- ;; create IR
+  -- if constOptIR = $flatten_constOpt(constOpt)
+  -- if tablePropertyIR
+      = annotationList constOptIR DEFAULT_ACTION `= tableActionReferenceIR `;
+
+;;
+;; syntax tablePropertyList
+;;
+
+rule TableProperties_ok/nil:
+  C TC |- eps : TC eps
+
+rule TableProperties_ok/cons:
+  C TC_0 |- (tableProperty_h :: tableProperty_t*)
+          : TC_2 (tablePropertyIR_h :: tablePropertyIR_t*)
+  -- TableProperty_ok: C TC_0 |- tableProperty_h : TC_1 tablePropertyIR_h
+  -- TableProperties_ok: C TC_1 |- tableProperty_t* : TC_2 tablePropertyIR_t*
+
+;;
+;; syntax table
+;;
+
+rule Table_ok:
+  C |- tableProperty* : TC_1 tablePropertyIR*
+  -- if TC_0 = $empty_tblctx
+  -- TableProperties_ok: C TC_0 |- tableProperty* : TC_1 tablePropertyIR*
+
+rule TableType_ok:
+  C_0 TC |- name : C_1 typeIR_table
+  -- if nameIR = $name(name)
+  ---- ;; create table enum type
+  -- if tid_enum = "action_list(" ++ nameIR ++ ")"
+  -- if (prefixedNameIR_action, _, _)* = TC.ACTIONS
+  -- if (id_enum_field = $flatten_prefixedNameIR(prefixedNameIR_action))*
+  -- if typeIR_table_enum = TABLE_ENUM tid_enum `{ id_enum_field* }
+  ---- ;; add enum fields to context
+  -- if (value_enum_field = TABLE_ENUM tid_enum `. id_enum_field)*
+  -- if (varTypeIR_enum_field
+        = `EMPTY typeIR_table_enum LCTK value_enum_field)*
+  -- if C_1 = $add_vars(BLOCK, C_0, id_enum_field*, varTypeIR_enum_field*)
+  ---- ;; create table struct type
+  -- if tid_struct = "apply_result(" ++ nameIR ++ ")"
+  -- if typeIR_table_struct
+      = TABLE_STRUCT tid_struct
+          `{ [ (BOOL "hit" `;),
+               (BOOL "miss" `;),
+               (typeIR_table_enum "action_run" `;) ] }
+  ---- ;; create table type
+  -- if typeIR_table = TABLE nameIR `# typeIR_table_struct

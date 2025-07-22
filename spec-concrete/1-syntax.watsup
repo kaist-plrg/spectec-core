@@ -80,6 +80,11 @@ syntax nameList =
   | name
   | nameList `, name
 
+dec $flatten_nameList(nameList) : name*
+def $flatten_nameList(name) = name
+def $flatten_nameList(nameList `, name) =
+  $flatten_nameList(nameList) ++ [ name ]
+
 syntax member = name
 
 ;;
@@ -100,16 +105,16 @@ syntax expression
 
 syntax baseType =
   | BOOL
-  | MATCH_KIND
   | ERROR
-  | BIT
+  | MATCH_KIND
   | STRING
   | INT
-  | BIT `< int >
   | INT `< int >
-  | VARBIT `< int >
-  | BIT `< `( expression ) >
   | INT `< `( expression ) >
+  | BIT
+  | BIT `< int >
+  | BIT `< `( expression ) >
+  | VARBIT `< int >
   | VARBIT `< `( expression ) >
 
 ;;
@@ -170,9 +175,19 @@ syntax typeParameterList =
   | typeParameter
   | typeParameterList `, typeParameter
 
+dec $flatten_typeParameterList(typeParameterList) : typeParameter*
+def $flatten_typeParameterList(typeParameter) = typeParameter
+def $flatten_typeParameterList(typeParameterList `, typeParameter) =
+  $flatten_typeParameterList(typeParameterList) ++ [ typeParameter ]
+
 syntax typeParameterListOpt =
   | `EMPTY
   | `< typeParameterList >
+
+dec $flatten_typeParameterListOpt(typeParameterListOpt) : typeParameter*
+def $flatten_typeParameterListOpt(`EMPTY) = eps
+def $flatten_typeParameterListOpt(`< typeParameterList >)
+  = $flatten_typeParameterList(typeParameterList)
 
 ;;
 ;; Parameters
@@ -191,13 +206,30 @@ syntax parameterList =
   | `EMPTY
   | nonEmptyParameterList
 
+dec $flatten_parameterList(parameterList) : parameter*
+def $flatten_parameterList(`EMPTY) = eps
+def $flatten_parameterList(parameter) = parameter
+def $flatten_parameterList(nonEmptyParameterList `, parameter) =
+  $flatten_parameterList(nonEmptyParameterList) ++ [ parameter ]
+
 ;;
 ;; Constructor parameters
 ;;
 
+syntax constructorParameter = parameter
+
+syntax constructorParameterList = parameterList
+
 syntax constructorParameterListOpt =
   | `EMPTY
   | `( parameterList )
+
+dec $flatten_constructorParameterListOpt(constructorParameterListOpt)
+  : constructorParameter*
+
+def $flatten_constructorParameterListOpt(`EMPTY) = eps
+def $flatten_constructorParameterListOpt(`( parameterList ))
+  = $flatten_parameterList(parameterList)
 
 ;;
 ;; Expression key-value pairs
@@ -208,6 +240,11 @@ syntax namedExpression = name `= expression
 syntax namedExpressionList =
   | namedExpression
   | namedExpressionList `, namedExpression
+
+dec $flatten_namedExpressionList(namedExpressionList) : namedExpression*
+def $flatten_namedExpressionList(namedExpression) = namedExpression
+def $flatten_namedExpressionList(namedExpressionList `, namedExpression) =
+  $flatten_namedExpressionList(namedExpressionList) ++ [ namedExpression ]
 
 ;;
 ;; Expressions
@@ -220,7 +257,7 @@ syntax namedExpressionList =
 syntax literalExpression =
   | TRUE | FALSE
   | number
-  | stringLiteral 
+  | stringLiteral
 
 ;;
 ;;;; Reference expressions
@@ -380,6 +417,12 @@ syntax expressionList =
   | expression
   | expressionList `, expression
 
+dec $flatten_expressionList(expressionList) : expression*
+def $flatten_expressionList(`EMPTY) = eps
+def $flatten_expressionList(expression) = expression
+def $flatten_expressionList(expressionList `, expression) =
+  $flatten_expressionList(expressionList) ++ [ expression ]
+
 syntax memberAccessBase =
   | prefixedTypeName
   | expression
@@ -413,7 +456,7 @@ syntax expressionNonBrace =
 
 syntax memberAccessBaseNonBrace =
   | prefixedTypeName
-  | expression
+  | expressionNonBrace
 
 ;;
 ;; Keyset expressions
@@ -454,17 +497,26 @@ syntax realTypeArgumentList =
   | realTypeArgument
   | realTypeArgumentList `, realTypeArgument
 
+dec $flatten_realTypeArgumentList(realTypeArgumentList) : realTypeArgument*
+def $flatten_realTypeArgumentList(realTypeArgument) = realTypeArgument
+def $flatten_realTypeArgumentList(realTypeArgumentList `, realTypeArgument) =
+  $flatten_realTypeArgumentList(realTypeArgumentList) ++ [ realTypeArgument ]
+
 syntax typeArgument =
-  | type
+  | realTypeArgument
   | nonTypeName
-  | VOID
-  | `_
 
 ;;; (TODO) Why allow (EMPTY `, argument)?
 syntax typeArgumentList =
   | `EMPTY
   | typeArgument
   | typeArgumentList `, typeArgument
+
+dec $flatten_typeArgumentList(typeArgumentList) : typeArgument*
+def $flatten_typeArgumentList(`EMPTY) = eps
+def $flatten_typeArgumentList(typeArgument) = typeArgument
+def $flatten_typeArgumentList(typeArgumentList `, typeArgument) =
+  $flatten_typeArgumentList(typeArgumentList) ++ [ typeArgument ]
 
 ;;
 ;; Arguments
@@ -483,6 +535,12 @@ syntax argumentListNonEmpty =
 syntax argumentList =
   | `EMPTY
   | argumentListNonEmpty
+
+dec $flatten_argumentList(argumentList) : argument*
+def $flatten_argumentList(`EMPTY) = eps
+def $flatten_argumentList(argument) = argument
+def $flatten_argumentList(argumentListNonEmpty `, argument) =
+  $flatten_argumentList(argumentListNonEmpty) ++ [ argument ]
 
 ;;
 ;; L-values
@@ -677,6 +735,15 @@ syntax blockElementStatementList =
   | `EMPTY
   | blockElementStatementList blockElementStatement
 
+dec $flatten_blockElementStatementList(blockElementStatementList)
+  : blockElementStatement*
+def $flatten_blockElementStatementList(`EMPTY) = eps
+def $flatten_blockElementStatementList(
+    blockElementStatementList blockElementStatement
+  )
+  = $flatten_blockElementStatementList(blockElementStatementList) ++
+    [ blockElementStatement ]
+
 ;;
 ;;;; Function declarations
 ;;
@@ -702,6 +769,7 @@ syntax objectDeclarationList
 
 syntax objectInitializer = `= `{ objectDeclarationList }
 
+;; (TODO) can we refine type as namedType?
 syntax instantiation =
   | annotationList type `( argumentList ) name `;
   | annotationList type `( argumentList ) name objectInitializer `;
@@ -895,9 +963,15 @@ syntax parserDeclaration =
 ;;;;;; Table declarations
 ;;
 
+syntax const = CONST
+
 syntax constOpt =
   | `EMPTY
-  | CONST
+  | const
+
+dec $flatten_constOpt(constOpt) : const?
+def $flatten_constOpt(`EMPTY) = eps
+def $flatten_constOpt(const) = const
 
 ;;
 ;;;;;;;; Table key property 
@@ -922,6 +996,11 @@ syntax tableAction = annotationList tableActionReference `;
 syntax tableActionList =
   | `EMPTY
   | tableActionList tableAction
+
+dec $flatten_tableActionList(tableActionList) : tableAction*
+def $flatten_tableActionList(`EMPTY) = eps
+def $flatten_tableActionList(tableActionList tableAction) =
+  $flatten_tableActionList(tableActionList) ++ [ tableAction ]
 
 ;;
 ;;;;;;;; Table entry property
@@ -953,6 +1032,11 @@ syntax tablePropertyList =
   | `EMPTY
   | tablePropertyList tableProperty
 
+dec $flatten_tablePropertyList(tablePropertyList) : tableProperty*
+def $flatten_tablePropertyList(`EMPTY) = eps
+def $flatten_tablePropertyList(tablePropertyList tableProperty) =
+  $flatten_tablePropertyList(tablePropertyList) ++ [ tableProperty ]
+
 syntax tableDeclaration =
   annotationList TABLE name `{ tablePropertyList }
 
@@ -979,6 +1063,16 @@ syntax controlLocalDeclaration =
 syntax controlLocalDeclarationList =
   | `EMPTY
   | controlLocalDeclarationList controlLocalDeclaration
+
+dec $flatten_controlLocalDeclarationList(controlLocalDeclarationList)
+  : controlLocalDeclaration*
+
+def $flatten_controlLocalDeclarationList(`EMPTY) = eps
+def $flatten_controlLocalDeclarationList(
+    controlLocalDeclarationList controlLocalDeclaration
+  )
+  = $flatten_controlLocalDeclarationList(controlLocalDeclarationList) ++
+    [ controlLocalDeclaration ]
 
 syntax controlDeclaration =
   annotationList CONTROL name typeParameterListOpt
@@ -1072,3 +1166,10 @@ syntax p4program =
   | `EMPTY
   | p4program declaration
   | p4program `;
+
+dec $flatten_p4program(p4program) : declaration*
+def $flatten_p4program(`EMPTY) = eps
+def $flatten_p4program(p4program declaration)
+  = $flatten_p4program(p4program) ++ [ declaration ]
+def $flatten_p4program(p4program `;)
+  = $flatten_p4program(p4program)

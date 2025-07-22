@@ -1,0 +1,93 @@
+;;
+;; Type helpers
+;;
+
+;;; Type constructor checks
+
+;;;; Base types
+
+dec $is_baseTypeIR(typeIR) : bool
+def $is_baseTypeIR(baseTypeIR) = true
+def $is_baseTypeIR(typeIR) = false
+  -- otherwise
+
+;;;;; Primitive types
+
+dec $is_primitiveTypeIR(typeIR) : bool
+def $is_primitiveTypeIR(primitiveTypeIR) = true
+def $is_primitiveTypeIR(typeIR) = false
+  -- otherwise
+
+dec $is_void_typeIR(typeIR) : bool
+def $is_void_typeIR(VOID) = true
+def $is_void_typeIR(typeIR) = false
+  -- otherwise
+
+dec $is_bool_typeIR(typeIR) : bool
+def $is_bool_typeIR(BOOL) = true
+def $is_bool_typeIR(typeIR) = false
+  -- otherwise
+
+dec $is_error_typeIR(typeIR) : bool
+def $is_error_typeIR(ERROR) = true
+def $is_error_typeIR(typeIR) = false
+  -- otherwise
+
+dec $is_matchkind_typeIR(typeIR) : bool
+def $is_matchkind_typeIR(MATCH_KIND) = true
+def $is_matchkind_typeIR(typeIR) = false
+  -- otherwise
+
+dec $is_string_typeIR(typeIR) : bool
+def $is_string_typeIR(STRING) = true
+def $is_string_typeIR(typeIR) = false
+  -- otherwise
+
+;;;;; Numeric types
+
+dec $is_numberTypeIR(typeIR) : bool
+def $is_numberTypeIR(numberTypeIR) = true
+def $is_numberTypeIR(typeIR) = false
+  -- otherwise
+
+dec $is_arbitrary_int_typeIR(typeIR) : bool
+def $is_arbitrary_int_typeIR(INT) = true
+def $is_arbitrary_int_typeIR(typeIR) = false
+  -- otherwise
+
+dec $is_fixed_int_typeIR(typeIR) : bool
+def $is_fixed_int_typeIR(INT `< _ >) = true
+def $is_fixed_int_typeIR(typeIR) = false
+  -- otherwise
+
+dec $is_fixed_bit_typeIR(typeIR) : bool
+def $is_fixed_bit_typeIR(BIT `< _ >) = true
+def $is_fixed_bit_typeIR(typeIR) = false
+  -- otherwise
+
+;;;; Named types
+
+;;;; Defined types
+
+;;;;; Alias types
+
+;;;;; Data types
+
+;;;;; Object types
+
+dec $is_objectTypeIR(typeIR) : bool
+def $is_objectTypeIR(objectTypeIR) = true
+def $is_objectTypeIR(typeIR) = false
+  -- otherwise
+
+dec $is_extern_object_typeIR(typeIR) : bool
+def $is_extern_object_typeIR(EXTERN _ _) = true
+def $is_extern_object_typeIR(typeIR) = false
+  -- otherwise
+
+dec $is_package_object_typeIR(typeIR) : bool
+def $is_package_object_typeIR(PACKAGE `< _ >) = true
+def $is_package_object_typeIR(typeIR) = false
+  -- otherwise
+
+;;;; Synthesized types

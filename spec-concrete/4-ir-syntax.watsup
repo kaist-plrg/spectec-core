@@ -2,11 +2,21 @@
 ;; Names
 ;;
 
-syntax nameIR = `N text
-
 syntax prefixedNameIR =
-  | nameIR
+  | `` nameIR
   | `. nameIR
+
+dec $prefixedNonTypeName(prefixedNonTypeName) : prefixedNameIR
+def $prefixedNonTypeName(nonTypeName) = `` $name(nonTypeName)
+def $prefixedNonTypeName(`ID `. nonTypeName) = `. $name(nonTypeName)
+
+dec $prefixedTypeName(prefixedTypeName) : prefixedNameIR
+def $prefixedTypeName(typeName) = `` $name(typeName)
+def $prefixedTypeName(`TID `. typeName) = `. $name(typeName)
+
+dec $flatten_prefixedNameIR(prefixedNameIR) : nameIR
+def $flatten_prefixedNameIR(`` nameIR) = nameIR
+def $flatten_prefixedNameIR(`. nameIR) = "." ++ nameIR
 
 syntax nameListIR = nameIR*
 
@@ -16,7 +26,7 @@ syntax nameListIR = nameIR*
 
 syntax typeParameterIR = tid
 
-syntax typeParameterListIR = typeParameter*
+syntax typeParameterListIR = typeParameterIR*
 
 ;;
 ;; Parameters
@@ -32,6 +42,8 @@ syntax parameterListIR = parameterIR*
 ;;
 ;; Constructor parameters
 ;;
+
+syntax constructorParameterIR = parameterIR
 
 syntax constructorParameterListIR = parameterIR*
 
@@ -94,7 +106,9 @@ syntax typedExpressionListIR
 syntax dataExpressionIR =
   | `{#}
   | SEQ `{ typedExpressionListIR }
+  | SEQ `{ typedExpressionListIR `, `... }
   | RECORD `{ namedExpressionListIR }
+  | RECORD `{ namedExpressionListIR `, `... }
 
 ;;
 ;;;; Member and index access expressions
@@ -132,14 +146,10 @@ syntax routineTargetIR =
   | methodTargetIR
   | `( routineTargetIR )
 
-syntax constructorTargetIR = typeIR
-
-syntax callTargetIR =
-  | routineTargetIR
-  | constructorTargetIR
+syntax constructorTargetIR = typeIR `< typeArgumentListIR >
 
 syntax callExpressionIR =
-  | callTargetIR `( argumentListIR )
+  | constructorTargetIR `( argumentListIR )
   | routineTargetIR `< typeArgumentListIR > `( argumentListIR )
 
 ;;
@@ -165,14 +175,16 @@ syntax expressionIR =
   | callExpressionIR
   | parenthesizedExpressionIR
 
+syntax expressionNoteIR = `( typeIR ctk )
+
 syntax typedExpressionIR =
-  expressionIR `# `( typeIR ctk )
+  expressionIR `# expressionNoteIR
 
 syntax typedExpressionListIR = typedExpressionIR*
 
-;;syntax memberAccessBase =
-;;  | prefixedTypeName
-;;  | expression
+syntax memberAccessBaseIR =
+  | TYPE prefixedNameIR
+  | typedExpressionIR
 
 ;;
 ;; Keyset expressions
@@ -209,7 +221,7 @@ syntax typeArgumentListIR = typeArgumentIR*
 ;;
 
 syntax argumentIR =
-  | expressionIR
+  | typedExpressionIR
   | nameIR `= typedExpressionIR
   | nameIR `= `_
   | `_
@@ -220,12 +232,20 @@ syntax argumentListIR = argumentIR*
 ;; L-values
 ;;
 
+syntax typedLvalueIR
+
 syntax lvalueIR =
   | referenceExpressionIR
-  | lvalueIR `. nameIR
-  | lvalueIR `[ typedExpressionIR ]
-  | lvalueIR `[ typedExpressionIR `: typedExpressionIR ]
-  | `( lvalueIR )
+  | typedLvalueIR `. nameIR
+  | typedLvalueIR `[ typedExpressionIR ]
+  | typedLvalueIR `[ typedExpressionIR `: typedExpressionIR ]
+  | `( typedLvalueIR )
+
+syntax typedLvalueIR = lvalueIR `# `( typeIR )
+
+syntax methodLvalueIR =
+  | typedLvalueIR `. nameIR
+  | `( methodLvalueIR )
 
 ;;
 ;; Statements
@@ -242,15 +262,14 @@ syntax emptyStatementIR = emptyStatement
 ;;
 
 syntax assignmentStatementIR =
-  lvalueIR assignop typedExpressionIR `;
+  typedLvalueIR assignop typedExpressionIR `;
 
 ;;
 ;;;; Call statements
 ;;
 
 syntax callStatementIR =
-  | lvalueIR `( argumentListIR ) `;
-  | lvalueIR `< typeArgumentListIR > `( argumentListIR ) `;
+  methodLvalueIR `< typeArgumentListIR > `( argumentListIR ) `;
 
 ;;
 ;;;; Direct application statements
@@ -374,7 +393,7 @@ syntax statementIR =
 ;;;; Constant and variable declarations
 ;;
 
-syntax initializerIR = `= typedExpressionIR
+syntax initializerIR = `= value
 
 syntax constantDeclarationIR =
   annotationList CONST typeIR nameIR initializerIR `;
@@ -416,9 +435,12 @@ syntax objectDeclarationListIR
 
 syntax objectInitializerIR = `= `{ objectDeclarationListIR }
 
+syntax objectInitializerOptIR = objectInitializerIR?
+
 syntax instantiationIR =
-  | annotationList typeIR `( argumentListIR ) nameIR `;
-  | annotationList typeIR `( argumentListIR ) nameIR objectInitializerIR `;
+  annotationList typeIR
+    `< typeArgumentListIR > `( argumentListIR ) nameIR
+    objectInitializerOptIR `;
 
 syntax objectDeclarationIR =
   | functionDeclarationIR
@@ -600,7 +622,7 @@ syntax parserDeclarationIR =
 ;;;;;; Table declarations
 ;;
 
-syntax constIR = CONST
+syntax constIR = const
 
 syntax constOptIR = constIR?
 
@@ -646,6 +668,7 @@ syntax tablePropertyIR =
   | KEY `= `{ tableKeyListIR }
   | ACTIONS `= `{ tableActionListIR }
   | annotationList constOptIR ENTRIES `= `{ tableEntryListIR }
+  | annotationList constOptIR DEFAULT_ACTION `= tableActionReferenceIR `;
   | annotationList constOptIR nameIR initializerIR `;
 
 syntax tablePropertyListIR = tablePropertyIR*
@@ -658,8 +681,9 @@ syntax tableDeclarationIR =
 ;;
 
 syntax controlTypeDeclarationIR =
-  annotationList CONTROL
-    nameIR `< typeParameterListIR > `( parameterListIR ) `;
+  annotationList CONTROL nameIR
+    `< typeParameterListIR `, typeParameterListIR >
+    `( parameterListIR ) `;
 
 ;;
 ;;;;;; Control declarations
@@ -688,8 +712,9 @@ syntax controlDeclarationIR =
 ;;
 
 syntax packageTypeDeclarationIR =
-  annotationList PACKAGE
-    nameIR `< typeParameterListIR > `( parameterListIR ) `;
+  annotationList PACKAGE nameIR
+    `< typeParameterListIR `, typeParameterListIR >
+    `( parameterListIR ) `;
 
 ;;
 ;;;; Type declarations

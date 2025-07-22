@@ -151,6 +151,7 @@ and after_nl_nl = parse
 and token = parse
   (* escaped tokens *)
   | "`"(upid as s) { TICK_UPID s }
+  | "``" { TICK_TICK }
   | "`\"" { TICK_DOUBLE_QUOTE }
   | "`_" { TICK_UNDERSCORE }
   | "`->" { TICK_ARROW }

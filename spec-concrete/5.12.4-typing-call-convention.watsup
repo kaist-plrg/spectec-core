@@ -1,0 +1,137 @@
+;;
+;; Helpers
+;;
+
+;;; Filtering out default parameters
+
+dec $filter_default_parameters(parameterTypeIR*, id*) : parameterTypeIR*
+
+def $filter_default_parameters(eps, id_default*) = eps
+def $filter_default_parameters(
+    parameterTypeIR_h :: parameterTypeIR_t*,
+    id_default*
+  )
+  = $filter_default_parameters(parameterTypeIR_t*, id_default*)
+  -- if _ _ id_h _ = parameterTypeIR_h
+  -- if id_h <- id_default*
+def $filter_default_parameters(
+    parameterTypeIR_h :: parameterTypeIR_t*,
+    id_default*
+  )
+  = parameterTypeIR_h :: $filter_default_parameters(parameterTypeIR_t*, id_default*)
+  -- otherwise
+
+;;; Aligning parameters if the arguments are named
+
+dec $align_parameters(parameterTypeIR*, argumentIR*): parameterTypeIR*
+dec $align_parameters'(map<id, parameterTypeIR>, parameterTypeIR*, argumentIR*): parameterTypeIR*
+
+def $align_parameters(parameterTypeIR*, argumentIR*) = parameterTypeIR_aligned*
+  -- if (_ _ id _ = parameterTypeIR)*
+  -- (if parameterTypeIR_aligned
+       = $align_parameters'(`{ (id `: parameterTypeIR)* }, parameterTypeIR, argumentIR))*
+
+def $align_parameters'(_, parameterTypeIR, typedExpressionIR)
+  = parameterTypeIR
+def $align_parameters'(`{ (id_param `: parameterTypeIR)* }, _, nameIR `= _)
+  = $find_map<id, parameterTypeIR>(`{ (id_param `: parameterTypeIR)* }, nameIR)
+def $align_parameters'(`{ (id_param `: parameterTypeIR)* }, _, nameIR `= `_)
+  = $find_map<id, parameterTypeIR>(`{ (id_param `: parameterTypeIR)* }, nameIR)
+def $align_parameters'(_, parameterTypeIR, `_)
+  = parameterTypeIR
+
+;;
+;; Calling convention (single argument)
+;;
+
+;; syntax direction
+
+;;; IN
+
+rule Call_convention_expr_ok/in:
+  p C actctxt |- (IN typeIR_param _ _) `@ typedExpressionIR_arg
+               : typedExpressionIR_arg_cast
+  ---- ;; may insert implicit casts for direction in
+  -- if typedExpressionIR_arg_cast
+      = $coerce_unary(typedExpressionIR_arg, typeIR_param)
+
+;;; OUT | INOUT
+
+rule Call_convention_expr_ok/out-inout:
+  p C actctxt |- (direction typeIR_param _ _) `@ typedExpressionIR_arg
+               : typedExpressionIR_arg
+  -- if direction = OUT \/ direction = INOUT
+  ---- ;; may not insert implicit casts for direction out or inout
+  -- if _ `# `( typeIR_arg _ ) = typedExpressionIR_arg
+  -- Type_alpha: typeIR_param ~~ typeIR_arg
+  ---- ;; for copy-out, the expression must be a l-value
+  ---- ;; (TODO)
+
+;;; `EMPTY
+
+rule Call_convention_expr_ok/empty-action:
+  p C ACTION |- (`EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
+              : typedExpressionIR_arg_cast
+   ---- ;; may insert implicit casts for directionless action argument
+  -- if typedExpressionIR_arg_cast
+      = $coerce_unary(typedExpressionIR_arg, typeIR_param) 
+  
+rule Call_convention_expr_ok/empty-not-action:
+  p C NOACTION |- (`EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
+                : typedExpressionIR_arg
+  ---- ;; may not insert implicit casts for direction out or inout
+  -- if _ `# `( typeIR_arg ctk_arg ) = typedExpressionIR_arg
+  -- Type_alpha: typeIR_param ~~ typeIR_arg
+  ---- ;; the argument must be compile-time known
+  -- if ctk_arg =/= DYN
+
+;; syntax argumentIR
+
+;;; typedExpressionIR
+
+rule Call_convention_argument_ok/typedExpression:
+  p C actctxt |- parameterTypeIR `@ typedExpressionIR
+               : typedExpressionIR_cast
+  -- Call_convention_expr_ok:
+      p C actctxt |- parameterTypeIR `@ typedExpressionIR
+                   : typedExpressionIR_cast
+
+;;; nameIR `= typedExpressionIR
+
+rule Call_convention_argument_ok/nameIR-typedExpression:
+  p C actctxt |- parameterTypeIR `@ (nameIR `= typedExpressionIR)
+               : (nameIR `= typedExpressionIR_cast)
+  -- Call_convention_expr_ok:
+      p C actctxt |- parameterTypeIR `@ typedExpressionIR
+                   : typedExpressionIR_cast
+
+;;; nameIR `= `_
+
+rule Call_convention_argument_ok/nameIR-dontcare:
+  p C actctxt |- parameterTypeIR `@ (nameIR `= `_)
+               : (nameIR `= `_)
+  -- if OUT _ _ _ = parameterTypeIR
+
+;;; `_
+
+rule Call_convention_argument_ok/dontcare:
+  p C actctxt |- parameterTypeIR `@ `_ : `_
+  -- if OUT _ _ _ = parameterTypeIR
+
+;;
+;; Calling convention (multiple arguments)
+;;
+
+rule Call_convention_ok/nil:
+  p C actctxt |- eps `@ eps : eps
+
+rule Call_convention_ok/cons:
+  p C actctxt |- (parameterTypeIR_h :: parameterTypeIR_t*)
+                 `@ (argumentIR_h :: argumentIR_t*)
+               : (argumentIR_h_cast :: argumentIR_t_cast*)
+  -- Call_convention_argument_ok:
+      p C actctxt |- parameterTypeIR_h `@ argumentIR_h
+                   : argumentIR_h_cast
+  -- Call_convention_ok:
+      p C actctxt |- parameterTypeIR_t* `@ argumentIR_t*
+                   : argumentIR_t_cast*
