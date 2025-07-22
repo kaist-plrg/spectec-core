@@ -674,8 +674,7 @@ Error on parser: ../../../../p4c/testdata/p4_16_errors/loop3-err.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/methodArgDontcare.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/minWidth.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/minWidth.p4
-../../../../p4c/testdata/p4_16_errors/minWidth.p4:8.36-8.37: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/minWidth.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/missing_actions.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/missing_actions.p4
@@ -960,4 +959,4 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/width_e.p4
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
 
-Running parser: [EXCLUDE] 0/310 (0.00%) [PASS] 280/310 (90.32%) [FAIL] 30/310 (9.68%)
+Running parser: [EXCLUDE] 0/310 (0.00%) [PASS] 281/310 (90.65%) [FAIL] 29/310 (9.35%)
