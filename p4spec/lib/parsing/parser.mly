@@ -196,7 +196,7 @@ go_local:
 externName:
 	| n = nonTypeName
 		{ declare_type_of_il n false;
-    n }
+      n }
 ;
 int:
 	| int = NUMBER_INT
@@ -301,7 +301,7 @@ nameList:
 	| n = name { n }
 	| ns = nameList COMMA n = name
     { [ NT ns; Term ","; NT n ]
-       #@ "nameList" }
+      #@ "nameList" }
 ;
 
 member:
@@ -341,7 +341,7 @@ baseType:
     { [ Term "INT"; Term "<"; Term "("; NT e; Term ")"; Term ">" ]
       #@ "baseType" }
 	| VARBIT l_angle L_PAREN e = expression R_PAREN r_angle
-{ [ Term "VARBIT"; Term "<"; Term "("; NT e; Term ")"; Term ">" ] #@ "baseType" }
+    { [ Term "VARBIT"; Term "<"; Term "("; NT e; Term ")"; Term ">" ] #@ "baseType" }
 ;
 
 (* >> Named types *)
@@ -387,12 +387,12 @@ typeRef:
 typeOrVoid:
 	| t = typeRef { t }
 	| VOID { [ Term "VOID" ] #@ "typeOrVoid" }
-(* From Petr4: HACK for generic return type *)
+  (* From Petr4: HACK for generic return type *)
 	| id = identifier
     { match flatten_case_v id with
-        | "identifier", [ ["`ID"]; [] ], [ value_text ]  ->
-          [ Term "`TID"; NT value_text ] #@ "typeIdentifier"
-        | _ -> failwith "@typeOrVoid: expected identifier" }
+      | "identifier", [ ["`ID"]; [] ], [ value_text ]  ->
+        [ Term "`TID"; NT value_text ] #@ "typeIdentifier"
+      | _ -> failwith "@typeOrVoid: expected identifier" }
 ;
 
 (* Type parameters *)
@@ -533,7 +533,7 @@ castExpression:
 dataExpression:
 	| INVALID { [ Term "{#}" ] #@ "dataExpression" }
 	| L_BRACE e = dataElementExpression c = trailingCommaOpt R_BRACE
-{ [ Term "{"; NT e; NT c; Term "}" ] #@ "dataExpression" }
+    { [ Term "{"; NT e; NT c; Term "}" ] #@ "dataExpression" }
 ;
 
 (* >> Member and index access expressions *)
@@ -611,7 +611,7 @@ callExpression:
 		{ [ NT t; Term "("; NT args; Term ")" ] #@ "callExpression" }
 	| t = expression l_angle targs = realTypeArgumentList r_angle L_PAREN args = argumentList R_PAREN
 		{ [ NT t; Term "<"; NT targs; Term ">"; Term "("; NT args; Term ")" ]
-    #@ "callExpression" }
+      #@ "callExpression" }
 ;
 
 methodTargetNonBrace:
@@ -637,7 +637,7 @@ callExpressionNonBrace:
 		{ [ NT t; Term "("; NT args; Term ")" ] #@ "callExpressionNonBrace" }
 	| t = routineTargetNonBrace l_angle targs = realTypeArgumentList r_angle L_PAREN args = argumentList R_PAREN
 		{ [ NT t; Term "<"; NT targs; Term ">"; Term "("; NT args; Term ")" ]
-    #@ "callExpressionNonBrace" }
+      #@ "callExpressionNonBrace" }
 
 (* >> Parenthesized Expressions *)
 
@@ -684,13 +684,13 @@ recordElementExpression:
 		{ [ NT n; Term "="; NT e ] #@ "recordElementExpression" }
 	| n = name ASSIGN e = expression COMMA DOTS
 		{ [ NT n; Term "="; NT e; Term ","; Term "..."]
-    #@ "recordElementExpression" }
+      #@ "recordElementExpression" }
 	| n = name ASSIGN e = expression COMMA el = namedExpressionList
 		{ [ NT n; Term "="; NT e; Term ","; NT el ]
-    #@ "recordElementExpression" }
+      #@ "recordElementExpression" }
 	| n = name ASSIGN e = expression COMMA el = namedExpressionList COMMA DOTS
 		{ [ NT n; Term "="; NT e; Term ","; NT el; Term ","; Term "..." ]
-    #@ "recordElementExpression" }
+      #@ "recordElementExpression" }
 ;
 
 dataElementExpression:
@@ -715,7 +715,7 @@ expressionNonBrace:
 
 memberAccessBaseNonBrace: (*TODO: inline?*)
 	| e = prefixedTypeName
-	| e = expression
+	| e = expressionNonBrace
 		{ e }
 ;
 
@@ -858,14 +858,14 @@ callStatement:
 		{ [ NT lv; Term "("; NT args; Term ")"; Term ";" ] #@ "callStatement" }
 	| lv = lvalue l_angle targs = typeArgumentList r_angle L_PAREN args = argumentList R_PAREN SEMICOLON
 		{ [ NT lv; Term "<"; NT targs; Term ">"; Term "("; NT args; Term ")"; Term ";" ]
-    #@ "callStatement" }
+      #@ "callStatement" }
 ;
 
 (* >> Direct application statements *)
 directApplicationStatement:
 	| t = namedType DOT APPLY L_PAREN args = argumentList R_PAREN SEMICOLON
     { [ NT t; Term "."; Term "APPLY"; Term "("; NT args; Term ")"; Term ";" ]
-       #@ "directApplicationStatement" }
+      #@ "directApplicationStatement" }
 ;
 
 (* >> Return statements *)
@@ -895,10 +895,10 @@ blockStatement:
 conditionalStatement:
 	| IF L_PAREN c = expression R_PAREN t = statement %prec THEN
     { [ Term "IF"; Term "("; NT c; Term ")"; NT t ]
-       #@ "conditionalStatement" }
+      #@ "conditionalStatement" }
 	| IF L_PAREN c = expression R_PAREN t = statement ELSE f = statement
     { [ Term "IF"; Term "("; NT c; Term ")"; NT t; Term "ELSE"; NT f ]
-       #@ "conditionalStatement" }
+      #@ "conditionalStatement" }
 ;
 
 (* >> For statements *)
@@ -909,7 +909,7 @@ forInitStatement:
 		{ [ NT lv; Term "("; NT args; Term ")" ] #@ "forInitStatement" }
 	| lv = lvalue l_angle targs = typeArgumentList r_angle L_PAREN args = argumentList R_PAREN
 		{ [ NT lv; Term "<"; NT targs; Term ">"; Term "("; NT args; Term ")" ]
-    #@ "forInitStatement" }
+      #@ "forInitStatement" }
 	| lv = lvalue o = assignop e = expression
 		{ [ NT lv; NT o; NT e ] #@ "forInitStatement" }
 ;
@@ -949,15 +949,15 @@ forCollectionExpression:
 forStatement:
   | al = annotationList FOR L_PAREN il = forInitStatementList SEMICOLON c = expression SEMICOLON ul = forUpdateStatementList R_PAREN b = statement
 		{ [ NT al; Term "FOR"; Term "("; NT il; Term ";"; NT c; Term ";"; NT ul; Term ")"; NT b ]
-       #@ "forStatement" }
+      #@ "forStatement" }
   | al = annotationList FOR L_PAREN
     t = typeRef n = name IN e = forCollectionExpression R_PAREN b = statement
     { [ NT al; Term "FOR"; Term "("; NT t; NT n; Term "IN"; NT e; Term ")"; NT b ]
-       #@ "forStatement" }
+      #@ "forStatement" }
   | al = annotationList FOR L_PAREN
     al_in = annotationList t = typeRef n = name IN e = forCollectionExpression R_PAREN b = statement
     { [ NT al; Term "FOR"; Term "("; NT al_in; NT t; NT n; Term "IN"; NT e; Term ")"; NT b ]
-       #@ "forStatement" }
+      #@ "forStatement" }
 ;
 
 (* >> Switch statements *)
@@ -985,7 +985,7 @@ switchCaseList:
 switchStatement:
   | SWITCH L_PAREN e = expression R_PAREN L_BRACE cs = switchCaseList R_BRACE
     { [ Term "SWITCH"; Term "("; NT e; Term ")"; Term "{"; NT cs; Term "}" ]
-       #@ "switchStatement" }
+      #@ "switchStatement" }
 
 (* >> Break and continue statements *)
 breakStatement:
@@ -1061,7 +1061,7 @@ functionPrototype:
   tpl = typeParameterListOpt
   L_PAREN pl = parameterList R_PAREN
     { [ NT t; NT n; NT tpl; Term "("; NT pl; Term ")" ]
-       #@ "functionPrototype" }
+      #@ "functionPrototype" }
 ;
 
 functionDeclaration:
@@ -1073,7 +1073,7 @@ functionDeclaration:
 actionDeclaration: 
   | al = annotationList ACTION n = name L_PAREN pl = parameterList R_PAREN s = blockStatement
     { [ NT al; Term "ACTION"; NT n; Term "("; NT pl; Term ")"; NT s ]
-       #@ "actionDeclaration" }
+      #@ "actionDeclaration" }
 ;
 
 (* >> Instantiations *)
@@ -1085,10 +1085,10 @@ objectInitializer:
 instantiation:
 	| al = annotationList t = typeRef L_PAREN args = argumentList R_PAREN n = name SEMICOLON
     { [ NT al; NT t; Term "("; NT args; Term ")"; NT n; Term ";" ]
-       #@ "instantiation" }
+      #@ "instantiation" }
 	| al = annotationList t = typeRef L_PAREN args = argumentList R_PAREN n = name i = objectInitializer SEMICOLON
     { [ NT al; NT t; Term "("; NT args; Term ")"; NT n; NT i; Term ";" ]
-       #@ "instantiation" }
+      #@ "instantiation" }
 ;
 
 objectDeclaration:
@@ -1122,12 +1122,12 @@ matchKindDeclaration:
 enumTypeDeclaration:
   | al = annotationList ENUM n = name L_BRACE
     nl = nameList c = trailingCommaOpt R_BRACE
-{ [ NT al; Term "ENUM"; NT n; Term "{"; NT nl; NT c; Term "}" ]
-        #@ "enumTypeDeclaration" }
+    { [ NT al; Term "ENUM"; NT n; Term "{"; NT nl; NT c; Term "}" ]
+      #@ "enumTypeDeclaration" }
   | al = annotationList ENUM t = typeRef n = name L_BRACE
     nl = nameList c = trailingCommaOpt R_BRACE
     { [ NT al; Term "ENUM"; NT t; NT n; Term "{"; NT nl; NT c; Term "}" ]
-        #@ "enumTypeDeclaration" }
+      #@ "enumTypeDeclaration" }
 ;
 
 (* >>>>>> Struct, header, and union type declarations *)
@@ -1146,14 +1146,14 @@ structTypeDeclaration:
   | al = annotationList STRUCT n = name tpl = typeParameterListOpt
       L_BRACE fl = typeFieldList R_BRACE
     { [ NT al; Term "STRUCT"; NT n; NT tpl; Term "{"; NT fl; Term "}" ]
-        #@ "structTypeDeclaration" }
+      #@ "structTypeDeclaration" }
 ;
 
 headerTypeDeclaration:
   | al = annotationList HEADER n = name tpl = typeParameterListOpt
       L_BRACE fl = typeFieldList R_BRACE
     { [ NT al; Term "HEADER"; NT n; NT tpl; Term "{"; NT fl; Term "}" ]
-       #@ "headerTypeDeclaration" }
+      #@ "headerTypeDeclaration" }
 ;
 
 headerUnionDeclaration:
@@ -1180,19 +1180,19 @@ typedefType: (*TODO: inline? *)
 
 typedefDeclaration:
 	| al = annotationList TYPEDEF t = typedefType n = name SEMICOLON
-{ [ NT al; Term "TYPEDEF"; NT t; NT n; Term ";" ] #@ "typedefDeclaration" }
+    { [ NT al; Term "TYPEDEF"; NT t; NT n; Term ";" ] #@ "typedefDeclaration" }
 	| al = annotationList TYPE t = typeRef n = name SEMICOLON
-{ [ NT al; Term "TYPE"; NT t; NT n; Term ";" ] #@ "typedefDeclaration" }
+    { [ NT al; Term "TYPE"; NT t; NT n; Term ";" ] #@ "typedefDeclaration" }
 ;
 
 (* >> Extern declarations *)
 externFunctionDeclaration:
 	| al = annotationList EXTERN p = functionPrototype pop_scope SEMICOLON
 		{ let decl =
-      [ NT al; Term "EXTERN"; NT p; Term ";" ] #@ "externFunctionDeclaration"
-    in
-    declare_var (id_of_declaration decl) (has_type_params_declaration decl);
-    decl }
+        [ NT al; Term "EXTERN"; NT p; Term ";" ] #@ "externFunctionDeclaration"
+      in
+      declare_var (id_of_declaration decl) (has_type_params_declaration decl);
+      decl }
 ;
 
 methodPrototype:
@@ -1244,7 +1244,7 @@ selectCaseList:
 selectExpression:
   | SELECT L_PAREN el = expressionList R_PAREN L_BRACE cl = selectCaseList R_BRACE
     { [ Term "SELECT"; Term "("; NT el; Term ")"; Term "{"; NT cl; Term "}" ]
-       #@ "selectExpression" }
+      #@ "selectExpression" }
 ;
 
 (* >>>> Transition statements *)

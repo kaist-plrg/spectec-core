@@ -84,8 +84,7 @@ Error on parser: ../../../../p4c/testdata/p4_16_errors/default-initializer-err.p
 ../../../../p4c/testdata/p4_16_errors/default-initializer-err.p4:3.26-3.27: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/default-last-switch.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/default-last-switch.p4
-../../../../p4c/testdata/p4_16_errors/default-last-switch.p4:13.18-13.24: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/default-last-switch.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/default-param.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/default-param.p4
@@ -128,8 +127,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/dup-param3.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/dupConst.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/duplicate-label.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/duplicate-label.p4
-../../../../p4c/testdata/p4_16_errors/duplicate-label.p4:25.26-25.27: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/duplicate-label.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/enumCast.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/enumCast.p4
@@ -198,8 +196,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/header3.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/implicit.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/incorrect-label.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/incorrect-label.p4
-../../../../p4c/testdata/p4_16_errors/incorrect-label.p4:74.38-74.39: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/incorrect-label.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/init-entries-error1-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/init-entries-error1-bmv2.p4
@@ -368,8 +365,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/issue2454.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/issue2496.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2525.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/issue2525.p4
-../../../../p4c/testdata/p4_16_errors/issue2525.p4:65.38-65.39: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue2525.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2544_recursive.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/issue2544_recursive.p4
@@ -462,8 +458,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/issue3291.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/issue3293.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3299.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3299.p4
-../../../../p4c/testdata/p4_16_errors/issue3299.p4:19.2-19.3: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3299.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3304.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3304.p4
@@ -518,16 +513,13 @@ Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3534.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/issue3589.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3611.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3611.p4
-../../../../p4c/testdata/p4_16_errors/issue3611.p4:13.7-13.8: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3611.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3613.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3613.p4
-../../../../p4c/testdata/p4_16_errors/issue3613.p4:6.5-6.6: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3613.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3622.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3622.p4
-../../../../p4c/testdata/p4_16_errors/issue3622.p4:10.26-10.27: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3622.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3623-2.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3623-2.p4
@@ -1003,4 +995,4 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/width_e.p4
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
 
-Running parser: [EXCLUDE] 0/310 (0.00%) [PASS] 237/310 (76.45%) [FAIL] 73/310 (23.55%)
+Running parser: [EXCLUDE] 0/310 (0.00%) [PASS] 245/310 (79.03%) [FAIL] 65/310 (20.97%)
