@@ -1,30 +1,4 @@
 ;;
-;; syntax lvalue
-;;
-
-;;; referenceExpression
-;;; syntax referenceExpression =
-
-;;;; prefixedNonTypeName
-
-rule Lvalue_ok/referenceExpression-prefixedNonTypeName:
-  p C |- prefixedNonTypeName : prefixedNameIR `# `( typeIR )
-  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
-  -- if direction typeIR DYN eps = $find_var(p, C, prefixedNameIR)
-  -- if direction = OUT \/ direction = INOUT
-
-;;;; THIS
-;;;; THIS `= ... is disallowed
-
-;;; lvalue `. member
-
-;;; lvalue `[ expression ]
-
-;;; lvalue `[ expression `: expression ]
-
-;;; `( lvalue )
-
-;;
 ;; syntax statement
 ;;
 
@@ -44,7 +18,7 @@ rule Stmt_ok/assignmentStatement-eq:
   p C f |- lvalue `= expression `;
          : C f (typedLvalueIR `= typedExpressionIR `;)
   ---- ;; check lvalue
-  -- Lvalue_ok: p C |- lvalue : typedLvalueIR
+  -- Lvalue_ok: p C ASSIGN |- lvalue : typedLvalueIR
   ---- ;; check expression
   -- Expr_ok: p C |- expression : typedExpressionIR
   ---- ;; fetch annotations
@@ -58,6 +32,30 @@ rule Stmt_ok/assignmentStatement-eq:
 ;;;;; | `/= | `%= | `<<= | `>>= | `&= | `^= | `|=
 
 ;;; callStatement
+;;; syntax callStatement
+
+;;;; lvalue `( argumentList ) `;
+
+rule Stmt_ok/callStatement-no-typeArgumentList:
+  p C f |- lvalue_method `( argumentList ) `;
+         : C f callStatementIR
+  ---- ;; check base lvalue
+  -- Lvalue_method_ok: p C |- lvalue_method : methodLvalueIR
+  ---- ;; check lvalue as method
+  -- if argument* = $flatten_argumentList(argumentList)
+  -- MethodType_Lvalue_ok:
+      p C |- methodLvalueIR `< eps > `( argument* )
+           : methodTypeIR `< `# tid_impl* > `( `# id_default* )
+  ---- ;; check arguments
+  -- (Argument_ok: p C |- argument : argumentIR)*
+  ---- ;; check calling convention
+  -- Call_ok: p C |- methodTypeIR `< eps `# tid_impl* > `( argumentIR* `# id_default* )
+                   : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+  ---- ;; create IR
+  -- if callStatementIR
+      = methodLvalueIR `< typeArgumentIR_inferred* > `( argumentIR_cast* ) `;
+
+;;;; lvalue `< typeArgumentList > `( argumentList ) `;
 
 ;;; directApplicationStatement
 
@@ -94,6 +92,11 @@ rule Stmt_ok/exitStatement:
   p C f |- EXIT `; : C f (EXIT `;)
 
 ;;; blockStatement
+
+rule Stmt_ok/blockStatement:
+  LOCAL C_0 f_0 |- blockStatement : C_1 f_1 blockStatementIR
+  -- Block_ok: C_0 f_0 |- blockStatement
+                        : C_1 f_1 blockStatementIR
 
 ;;; conditionalStatement
 ;;; syntax conditionalStatement =
@@ -134,3 +137,53 @@ rule Stmt_ok/conditionalStatement-else:
 ;;; continueStatement
 
 ;;; switchStatement
+
+;;
+;; syntax blockElementStatement
+;;
+
+;;; constantDeclaration
+
+rule BlockElementStmt_ok/constantDeclaration:
+  C_0 f |- constantDeclaration : C_1 f constantDeclarationIR
+  -- Decl_ok: LOCAL C_0 |- constantDeclaration : C_1 constantDeclarationIR
+
+;;; statement
+
+rule BlockElementStmt_ok/statement:
+  C_0 f |- statement : C_1 f_post statementIR
+  -- Stmt_ok: LOCAL C_0 f |- statement : C_1 f_post statementIR
+
+;;
+;; syntax blockElementStatementList
+;;
+
+rule BlockElementStmts_ok/nil:
+  C f |- eps : C f eps
+
+rule BlockElementStmts_ok/cons:
+  C_0 f_0 |- blockElementStatement_h :: blockElementStatement_t*
+           : C_2 f_2 (blockElementStatementIR_h :: blockElementStatementIR_t*)
+  -- BlockElementStmt_ok: C_0 f_0 |- blockElementStatement_h
+                                   : C_1 f_1 blockElementStatementIR_h
+  -- BlockElementStmts_ok: C_1 f_1 |- blockElementStatement_t*
+                                    : C_2 f_2 blockElementStatementIR_t*
+
+;;
+;; syntax blockStatement
+;;
+
+;;; syntax blockStatement = annotationList `{ blockElementStatementList }
+
+rule Block_ok:
+  C_0 f |- annotationList `{ blockElementStatementList }
+           : C_3 f_post blockStatementIR
+  ---- ;; check block element statements in nested context
+  -- if blockElementStatement*
+      = $flatten_blockElementStatementList(blockElementStatementList)
+  -- if C_1 = $enter(C_0)
+  -- BlockElementStmts_ok: C_1 f |- blockElementStatement*
+                                  : C_2 f_post blockElementStatementIR*
+  -- if C_3 = $exit(C_2)
+  ---- ;; create IR
+  -- if blockStatementIR = annotationList `{ blockElementStatementIR* }

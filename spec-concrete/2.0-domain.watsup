@@ -17,6 +17,15 @@ def $name(TYPE) = "type"
 def $name(PRIORITY) = "priority"
 def $name(LIST) = "list"
 
+dec $tableCustomName(tableCustomName) : nameIR
+
+def $tableCustomName(`ID t) = t
+def $tableCustomName(`TID t) = t
+def $tableCustomName(APPLY) = "apply"
+def $tableCustomName(STATE) = "state"
+def $tableCustomName(TYPE) = "type"
+def $tableCustomName(PRIORITY) = "priority"
+
 ;;
 ;; Variable names
 ;;
@@ -70,5 +79,6 @@ syntax cid = rid
 
 dec $cid(name, constructorParameterListOpt) : cid
 
+def $cid(name, `EMPTY) = $name(name) `( eps )
 def $cid(name, `( parameterList ))
   = $name(name) `( $pids(parameterList) )

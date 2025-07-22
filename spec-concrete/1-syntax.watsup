@@ -735,6 +735,15 @@ syntax blockElementStatementList =
   | `EMPTY
   | blockElementStatementList blockElementStatement
 
+dec $flatten_blockElementStatementList(blockElementStatementList)
+  : blockElementStatement*
+def $flatten_blockElementStatementList(`EMPTY) = eps
+def $flatten_blockElementStatementList(
+    blockElementStatementList blockElementStatement
+  )
+  = $flatten_blockElementStatementList(blockElementStatementList) ++
+    [ blockElementStatement ]
+
 ;;
 ;;;; Function declarations
 ;;
@@ -760,6 +769,7 @@ syntax objectDeclarationList
 
 syntax objectInitializer = `= `{ objectDeclarationList }
 
+;; (TODO) can we refine type as namedType?
 syntax instantiation =
   | annotationList type `( argumentList ) name `;
   | annotationList type `( argumentList ) name objectInitializer `;
@@ -953,9 +963,15 @@ syntax parserDeclaration =
 ;;;;;; Table declarations
 ;;
 
+syntax const = CONST
+
 syntax constOpt =
   | `EMPTY
-  | CONST
+  | const
+
+dec $flatten_constOpt(constOpt) : const?
+def $flatten_constOpt(`EMPTY) = eps
+def $flatten_constOpt(const) = const
 
 ;;
 ;;;;;;;; Table key property 
@@ -980,6 +996,11 @@ syntax tableAction = annotationList tableActionReference `;
 syntax tableActionList =
   | `EMPTY
   | tableActionList tableAction
+
+dec $flatten_tableActionList(tableActionList) : tableAction*
+def $flatten_tableActionList(`EMPTY) = eps
+def $flatten_tableActionList(tableActionList tableAction) =
+  $flatten_tableActionList(tableActionList) ++ [ tableAction ]
 
 ;;
 ;;;;;;;; Table entry property
@@ -1010,6 +1031,11 @@ syntax tableProperty =
 syntax tablePropertyList =
   | `EMPTY
   | tablePropertyList tableProperty
+
+dec $flatten_tablePropertyList(tablePropertyList) : tableProperty*
+def $flatten_tablePropertyList(`EMPTY) = eps
+def $flatten_tablePropertyList(tablePropertyList tableProperty) =
+  $flatten_tablePropertyList(tablePropertyList) ++ [ tableProperty ]
 
 syntax tableDeclaration =
   annotationList TABLE name `{ tablePropertyList }

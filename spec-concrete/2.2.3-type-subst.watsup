@@ -376,6 +376,14 @@ def $subst_typeDef(theta, typeIR_base `< tid* `, tid_hidden* >)
   -- if typeIR_base_subst = $subst_type(theta'', typeIR_base)
 
 ;;
+;;;; Parameter type substitutions
+;;
+
+def $subst_parameterType(theta, direction typeIR id value?)
+  = direction typeIR_subst id value?
+  -- if typeIR_subst = $subst_type(theta, typeIR)
+
+;;
 ;;;; Routine type substitutions
 ;;
 

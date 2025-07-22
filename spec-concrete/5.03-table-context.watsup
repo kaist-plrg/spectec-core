@@ -4,7 +4,7 @@
 
 syntax matchKey = (typeIR, id)
 
-syntax matchAction = (id, parameterTypeIR*, argumentListIR)
+syntax matchAction = (prefixedNameIR, parameterTypeIR*, argumentListIR)
 
 syntax matchPriority =
   { VALUES int*,
@@ -69,11 +69,11 @@ def $empty_tblctx
 
 ;;; Adder for actions
 
-dec $add_action(tblctx, id, parameterTypeIR*, argumentListIR) : tblctx
+dec $add_action(tblctx, prefixedNameIR, parameterTypeIR*, argumentListIR) : tblctx
 
-def $add_action(TC, id, parameterTypeIR*, argumentListIR)
+def $add_action(TC, prefixedNameIR, parameterTypeIR*, argumentListIR)
   = TC[ .ACTIONS = TC.ACTIONS ++ [ matchAction ] ]
-  -- if matchAction = (id, parameterTypeIR*, argumentListIR)
+  -- if matchAction = (prefixedNameIR, parameterTypeIR*, argumentListIR)
 
 ;;
 ;; Finders
@@ -81,18 +81,18 @@ def $add_action(TC, id, parameterTypeIR*, argumentListIR)
 
 ;;; Finder for actions
 
-dec $find_action(tblctx, id) : (parameterTypeIR*, argumentListIR)?
-dec $find_action'(matchAction*, id) : (parameterTypeIR*, argumentListIR)?
+dec $find_action(tblctx, prefixedNameIR) : (parameterTypeIR*, argumentListIR)?
+dec $find_action'(matchAction*, prefixedNameIR) : (parameterTypeIR*, argumentListIR)?
 
-def $find_action(TC, id) = $find_action'(TC.ACTIONS, id)
+def $find_action(TC, prefixedNameIR) = $find_action'(TC.ACTIONS, prefixedNameIR)
 
-def $find_action'(eps, id) = eps
+def $find_action'(eps, prefixedNameIR) = eps
 
-def $find_action'(matchAction_h :: matchAction_t*, id)
+def $find_action'(matchAction_h :: matchAction_t*, prefixedNameIR)
   = (parameterTypeIR*, argumentListIR)
-  -- if (id, parameterTypeIR*, argumentListIR) = matchAction_h
+  -- if (prefixedNameIR, parameterTypeIR*, argumentListIR) = matchAction_h
 
-def $find_action'(matchAction_h :: matchAction_t*, id)
-  = $find_action'(matchAction_t*, id)
-  -- if (id_h, _, _) = matchAction_h
-  -- if id_h =/= id 
+def $find_action'(matchAction_h :: matchAction_t*, prefixedNameIR)
+  = $find_action'(matchAction_t*, prefixedNameIR)
+  -- if (prefixedNameIR_h, _, _) = matchAction_h
+  -- if prefixedNameIR_h =/= prefixedNameIR

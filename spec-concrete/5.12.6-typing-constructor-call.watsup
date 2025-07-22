@@ -1,0 +1,45 @@
+;;
+;; Instantiation
+;;
+
+rule Inst_ok/package-no-infer:
+  GLOBAL C_0 |- constructorTypeIR `< typeArgumentIR* `# eps > 
+                                `( argumentIR* `# id_default* )
+              : typeIR_object `< typeArgumentIR* > `( argumentIR_cast* )
+  ---- ;; if the constructor is for a package object
+  -- if CONSTRUCTOR `( parameterTypeIR* ) `-> typeIR_object = constructorTypeIR
+  -- if PACKAGE `< _ > = $canon(typeIR_object)
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; (TODO) check instantiation site
+  -- Call_convention_ok:
+      BLOCK C_0 NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
+                          : argumentIR_cast*
+
+;; rule Inst_ok/package-infer:
+
+rule Inst_ok/no-package-no-infer:
+  p C |- constructorTypeIR `< typeArgumentIR* `# eps > 
+                                `( argumentIR* `# id_default* )
+       : typeIR_object `< typeArgumentIR* > `( argumentIR_cast* )
+  ---- ;; if the constructor is for a package object
+  -- if CONSTRUCTOR `( parameterTypeIR* ) `-> typeIR_object = constructorTypeIR
+  -- if ~$is_package_object_typeIR($canon(typeIR_object))
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; (TODO) check instantiation site
+  -- Call_convention_ok:
+      p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
+                          : argumentIR_cast*

@@ -267,56 +267,64 @@ def $find_type(LOCAL, C, `` tid) = $find_type(BLOCK, C, `` tid)
 
 ;;; Finder for routines
 
-dec $ids_arguments(argumentList) : (id?)*
+dec $ids_arguments(argument*) : (id?)*
 dec $id_argument(argument) : id?
 
-def $ids_arguments(`EMPTY) = eps
-def $ids_arguments(argument) = $id_argument(argument)
-def $ids_arguments(argumentListNonEmpty `, argument)
-  = $ids_arguments(argumentListNonEmpty) ++ [ $id_argument(argument) ]
+def $ids_arguments(argument*) = ($id_argument(argument))*
+def $id_argument(expression) = eps
+def $id_argument(name `= _) = $name(name)
+def $id_argument(name `= `_) = $name(name)
+def $id_argument(`_) = eps
 
-dec $find_routine_overloaded(cursor, context, id, argumentList)
+dec $find_routine_overloaded(cursor, context, id, argument*)
   : (rid, routineTypeDefIR, id*)?
 
-def $find_routine_overloaded(GLOBAL, C, id, argumentList)
+def $find_routine_overloaded(GLOBAL, C, id, argument*)
   = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
   -- if rdenv = C.GLOBAL.RDENV
-  -- if (id_arg?)* = $ids_arguments(argumentList)
-def $find_routine_overloaded(BLOCK, C, id, argumentList)
+  -- if (id_arg?)* = $ids_arguments(argument*)
+def $find_routine_overloaded(BLOCK, C, id, argument*)
   = (rid, routineTypeDefIR, id_default*)
   -- if rdenv = C.BLOCK.RDENV
-  -- if (id_arg?)* = $ids_arguments(argumentList)
+  -- if (id_arg?)* = $ids_arguments(argument*)
   -- if (rid, routineTypeDefIR, id_default*)
       = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
-def $find_routine_overloaded(BLOCK, C, id, argumentList)
-  = $find_routine_overloaded(GLOBAL, C, id, argumentList)
+def $find_routine_overloaded(BLOCK, C, id, argument*)
+  = $find_routine_overloaded(GLOBAL, C, id, argument*)
   -- if rdenv = C.BLOCK.RDENV
-  -- if (id_arg?)* = $ids_arguments(argumentList)
+  -- if (id_arg?)* = $ids_arguments(argument*)
   -- if eps
       = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
-def $find_routine_overloaded(LOCAL, C, id, argumentList)
-  = $find_routine_overloaded(BLOCK, C, id, argumentList) 
+def $find_routine_overloaded(LOCAL, C, id, argument*)
+  = $find_routine_overloaded(BLOCK, C, id, argument*) 
 
-dec $find_routine_non_overloaded(cursor, context, id) : routineTypeDefIR?
+dec $find_routine_non_overloaded(cursor, context, prefixedNameIR)
+  : routineTypeDefIR?
 
-def $find_routine_non_overloaded(GLOBAL, C, id)
+def $find_routine_non_overloaded(p, C, `. id)
   = $find_non_overloaded<routineTypeDefIR>(C.GLOBAL.RDENV, id)
-def $find_routine_non_overloaded(BLOCK, C, id) = routineTypeDefIR
+def $find_routine_non_overloaded(GLOBAL, C, `` id)
+  = $find_non_overloaded<routineTypeDefIR>(C.GLOBAL.RDENV, id)
+def $find_routine_non_overloaded(BLOCK, C, `` id) = routineTypeDefIR
   -- if routineTypeDefIR
       = $find_non_overloaded<routineTypeDefIR>(C.BLOCK.RDENV, id)
-def $find_routine_non_overloaded(BLOCK, C, id)
-  = $find_routine_non_overloaded(GLOBAL, C, id)
+def $find_routine_non_overloaded(BLOCK, C, `` id)
+  = $find_routine_non_overloaded(GLOBAL, C, `` id)
   -- if eps 
       = $find_non_overloaded<routineTypeDefIR>(C.BLOCK.RDENV, id)
-def $find_routine_non_overloaded(LOCAL, C, id)
-  = $find_routine_non_overloaded(BLOCK, C, id)
+def $find_routine_non_overloaded(LOCAL, C, `` id)
+  = $find_routine_non_overloaded(BLOCK, C, `` id)
 
 ;;; Finder for constructors
 
-dec $find_constructor_overloaded(context, id, argumentList)
+dec $find_constructor_overloaded(context, prefixedNameIR, argument*)
   : (rid, constructorTypeDefIR, id*)?
 
-def $find_constructor_overloaded(C, id, argumentList)
+def $find_constructor_overloaded(C, `. id, argument*)
   = $find_overloaded<constructorTypeDefIR>(cdenv, id, (id_arg?)*)
   -- if cdenv = C.GLOBAL.CDENV
-  -- if (id_arg?)* = $ids_arguments(argumentList)
+  -- if (id_arg?)* = $ids_arguments(argument*)
+def $find_constructor_overloaded(C, `` id, argument*)
+  = $find_overloaded<constructorTypeDefIR>(cdenv, id, (id_arg?)*)
+  -- if cdenv = C.GLOBAL.CDENV
+  -- if (id_arg?)* = $ids_arguments(argument*)

@@ -85,15 +85,9 @@ def $is_extern_object_typeIR(EXTERN _ _) = true
 def $is_extern_object_typeIR(typeIR) = false
   -- otherwise
 
+dec $is_package_object_typeIR(typeIR) : bool
+def $is_package_object_typeIR(PACKAGE `< _ >) = true
+def $is_package_object_typeIR(typeIR) = false
+  -- otherwise
+
 ;;;; Synthesized types
-
-;;; Type property checks
-
-dec $is_nominal_typeIR(typeIR) : bool
-dec $is_nominal_typeIR'(typeIR) : bool
-
-dec $is_defaultable_typeIR(typeIR) : bool
-dec $is_defaultable_typeIR'(typeIR) : bool
-
-dec $is_equalable_typeIR(typeIR) : bool
-dec $is_equalable_typeIR'(typeIR) : bool

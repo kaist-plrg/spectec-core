@@ -14,6 +14,10 @@ dec $prefixedTypeName(prefixedTypeName) : prefixedNameIR
 def $prefixedTypeName(typeName) = `` $name(typeName)
 def $prefixedTypeName(`TID `. typeName) = `. $name(typeName)
 
+dec $flatten_prefixedNameIR(prefixedNameIR) : nameIR
+def $flatten_prefixedNameIR(`` nameIR) = nameIR
+def $flatten_prefixedNameIR(`. nameIR) = "." ++ nameIR
+
 syntax nameListIR = nameIR*
 
 ;;
@@ -142,7 +146,7 @@ syntax routineTargetIR =
   | methodTargetIR
   | `( routineTargetIR )
 
-syntax constructorTargetIR = typeIR
+syntax constructorTargetIR = typeIR `< typeArgumentListIR >
 
 syntax callExpressionIR =
   | constructorTargetIR `( argumentListIR )
@@ -239,6 +243,10 @@ syntax lvalueIR =
 
 syntax typedLvalueIR = lvalueIR `# `( typeIR )
 
+syntax methodLvalueIR =
+  | typedLvalueIR `. nameIR
+  | `( methodLvalueIR )
+
 ;;
 ;; Statements
 ;;
@@ -261,8 +269,7 @@ syntax assignmentStatementIR =
 ;;
 
 syntax callStatementIR =
-  | lvalueIR `( argumentListIR ) `;
-  | lvalueIR `< typeArgumentListIR > `( argumentListIR ) `;
+  methodLvalueIR `< typeArgumentListIR > `( argumentListIR ) `;
 
 ;;
 ;;;; Direct application statements
@@ -428,9 +435,12 @@ syntax objectDeclarationListIR
 
 syntax objectInitializerIR = `= `{ objectDeclarationListIR }
 
+syntax objectInitializerOptIR = objectInitializerIR?
+
 syntax instantiationIR =
-  | annotationList typeIR `( argumentListIR ) nameIR `;
-  | annotationList typeIR `( argumentListIR ) nameIR objectInitializerIR `;
+  annotationList typeIR
+    `< typeArgumentListIR > `( argumentListIR ) nameIR
+    objectInitializerOptIR `;
 
 syntax objectDeclarationIR =
   | functionDeclarationIR
@@ -612,7 +622,7 @@ syntax parserDeclarationIR =
 ;;;;;; Table declarations
 ;;
 
-syntax constIR = CONST
+syntax constIR = const
 
 syntax constOptIR = constIR?
 
@@ -658,6 +668,7 @@ syntax tablePropertyIR =
   | KEY `= `{ tableKeyListIR }
   | ACTIONS `= `{ tableActionListIR }
   | annotationList constOptIR ENTRIES `= `{ tableEntryListIR }
+  | annotationList constOptIR DEFAULT_ACTION `= tableActionReferenceIR `;
   | annotationList constOptIR nameIR initializerIR `;
 
 syntax tablePropertyListIR = tablePropertyIR*

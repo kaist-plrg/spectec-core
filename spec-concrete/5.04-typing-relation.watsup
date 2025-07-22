@@ -55,8 +55,14 @@ relation Argument_ok:
 ;;;; Statement typing
 ;;
 
+syntax lvaluectx = ASSIGN | METHOD 
+
 relation Lvalue_ok:
-  cursor context |- lvalue : typedLvalueIR
+  cursor context lvaluectx |- lvalue : typedLvalueIR
+  hint(input %0 %1 %2 %3)
+
+relation Lvalue_method_ok:
+  cursor context |- lvalue : methodLvalueIR
   hint(input %0 %1 %2)
 
 relation Stmt_ok:
@@ -67,15 +73,20 @@ relation Stmts_ok:
   cursor context flow |- statement* : context flow statementIR*
   hint(input %0 %1 %2 %3)
 
-relation Block_ok:
-  cursor context flow |- blockStatement
-                       : context flow blockStatementIR
-  hint(input %0 %1 %2 %3)
+relation BlockElementStmt_ok:
+  context flow |- blockElementStatement
+                : context flow blockElementStatementIR
+  hint(input %0 %1 %2)
 
-relation BlockElement_ok:
-  cursor context flow |- blockElementStatement
-                       : context flow blockElementStatementIR
-  hint(input %0 %1 %2 %3)
+relation BlockElementStmts_ok:
+  context flow |- blockElementStatement*
+                : context flow blockElementStatementIR*
+  hint(input %0 %1 %2)
+
+relation Block_ok:
+  context flow |- blockStatement
+                : context flow blockStatementIR
+  hint(input %0 %1 %2)
 
 ;;
 ;;;; Parameter typing
@@ -109,6 +120,48 @@ relation ConstructorParameters_ok:
 dec $constructorParameterIR(constructorParameterIR) : constructorParameterTypeIR
 def $constructorParameterIR(constructorParameterIR)
   = $parameterIR(constructorParameterIR)
+
+;;
+;;;; Table typing
+;;
+
+relation Call_action_partial_ok:
+  context |- parameterTypeIR* `@ argumentListIR
+           : parameterTypeIR* `, parameterTypeIR* `@ argumentListIR
+  hint(input %0 %1 %2)
+
+relation TableAction_ok:
+  context tblctx |- tableAction : tblctx tableActionIR
+  hint(input %0 %1 %2)
+
+relation TableActions_ok:
+  context tblctx |- tableAction* : tblctx tableActionListIR
+  hint(input %0 %1 %2)
+
+relation Call_action_default_ok:
+  context |- parameterTypeIR* `@ argumentListIR
+           : parameterTypeIR* `, parameterTypeIR* `@ argumentListIR
+  hint(input %0 %1 %2)
+
+relation TableDefaultAction_ok:
+  context tblctx |- initializer : tableActionReferenceIR
+  hint(input %0 %1 %2)
+
+relation TableProperty_ok:
+  context tblctx |- tableProperty : tblctx tablePropertyIR
+  hint(input %0 %1 %2)
+
+relation TableProperties_ok:
+  context tblctx |- tableProperty* : tblctx tablePropertyListIR
+  hint(input %0 %1 %2)
+
+relation Table_ok:
+  context |- tableProperty* : tblctx tablePropertyListIR
+  hint(input %0 %1)
+
+relation TableType_ok:
+  context tblctx |- name : context typeIR
+  hint(input %0 %1 %2)
 
 ;;
 ;;;; Declaration typing
@@ -158,9 +211,48 @@ relation MethodType_ok:
                   : methodTypeIR `< `# tid* > `( `# id* )
   hint(input %0 %1 %2 %3 %4 %5)
 
+relation MethodType_Lvalue_ok:
+  cursor context |- methodLvalueIR `< typeArgumentListIR > `( argument* )
+                  : methodTypeIR `< `# tid* > `( `# id* )
+  hint(input %0 %1 %2 %3 %4)
+
 ;;
-;;;; Call typing
+;;;; Constructor typing
 ;;
+
+;; Finds the type of a constructor,
+;; inserts fresh type variables for parameters with don't care types, (tid*)
+;; and also identifies the ids of default arguments (id*)
+
+relation ConstructorType_ok:
+  cursor context |- prefixedNameIR `< typeArgumentListIR > `( argument* )
+                  : constructorTypeIR `< `# tid* > `( `# id* )
+  hint(input %0 %1 %2 %3 %4)
+
+;;
+;;;; Call/instantiation typing
+;;
+
+;; Checks the copy-in/out calling convention,
+;; and inserts implicit casts for arguments, if necessary
+;; note that it depends on whether an action is being called or not
+
+syntax actctxt = ACTION | NOACTION
+
+relation Call_convention_expr_ok:
+  cursor context actctxt |- parameterTypeIR `@ typedExpressionIR
+                          : typedExpressionIR
+  hint(input %0 %1 %2 %3 %4)
+
+relation Call_convention_argument_ok:
+  cursor context actctxt |- parameterTypeIR `@ argumentIR
+                          : argumentIR
+  hint(input %0 %1 %2 %3 %4)
+
+relation Call_convention_ok:
+  cursor context actctxt |- parameterTypeIR* `@ argumentListIR
+                          : argumentListIR
+  hint(input %0 %1 %2 %3 %4)
 
 ;; Checks that an action/function/method invocation is valid,
 ;; gets the return type,
@@ -169,6 +261,17 @@ relation MethodType_ok:
 
 relation Call_ok:
   cursor context |- routineTypeIR `< typeArgumentListIR `# tid* >
-                                  `( argument* `# id* )
+                                  `( argumentListIR `# id* )
+                  : typeIR `< typeArgumentListIR > `( argumentListIR )
+  hint(input %0 %1 %2 %3 %4 %5 %6)
+
+;; Checks that a constructor invocation is valid,
+;; gets the return type,
+;; infers the types of missing type arguments,
+;; and inserts implicit casts for arguments, if necessary
+
+relation Inst_ok:
+  cursor context |- constructorTypeIR `< typeArgumentListIR `# tid* >
+                                      `( argumentListIR `# id* )
                   : typeIR `< typeArgumentListIR > `( argumentListIR )
   hint(input %0 %1 %2 %3 %4 %5 %6)

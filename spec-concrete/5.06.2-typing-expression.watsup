@@ -359,7 +359,7 @@ rule Expr_ok/binaryExpression-eq:
   -- if _ `# `( typeIR_cast ctk_l_cast ) = typedExpressionIR_l_cast
   -- if _ `# `( typeIR_cast ctk_r_cast ) = typedExpressionIR_r_cast
   ---- ;; check that the type supports equality
-  -- if $is_equalable(typeIR_cast)
+  -- if $is_equalable_typeIR(typeIR_cast)
   ---- ;; create typed expression
   -- if ctk_cast = $join_ctk(ctk_l_cast, ctk_r_cast)
   -- if expressionNoteIR = `( BOOL ctk_cast )
@@ -1021,9 +1021,11 @@ rule Expr_ok/callExpression-non-generic-functionTarget:
   -- if argument* = $flatten_argumentList(argumentList)
   -- FunctionType_ok: p C |- prefixedNameIR `< eps > `( argument* )
                            : functionTypeIR `< `# tid_fresh* > `( `# id_default* )
+  ---- ;; check arguments
+  -- (Argument_ok: p C |- argument : argumentIR)*
   ---- ;; check calling convention
   -- Call_ok: p C |- functionTypeIR `< eps `# tid_fresh* >
-                                    `( argument* `# id_default* )
+                                    `( argumentIR* `# id_default* )
                    : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; function call must not return void at expression level
   -- if typeIR_ret =/= VOID
@@ -1043,10 +1045,12 @@ rule Expr_ok/callExpression-generic-functionTarget:
   -- if argument* = $flatten_argumentList(argumentList)
   -- FunctionType_ok: p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
                            : functionTypeIR `< `# tid_fresh_func* > `( `# id_default* )
+  ---- ;; check arguments
+  -- (Argument_ok: p C |- argument : argumentIR)*
   ---- ;; check calling convention
   -- if tid_fresh* = tid_fresh_arg* ++ tid_fresh_func*
   -- Call_ok: p C |- functionTypeIR `< typeArgumentIR* `# tid_fresh* >
-                                    `( argument* `# id_default* )
+                                    `( argumentIR* `# id_default* )
                    : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; function call must not return void at expression level
   -- if typeIR_ret =/= VOID
@@ -1087,9 +1091,11 @@ rule Expr_ok/callExpression-non-generic-methodTarget-expression:
   -- if argument* = $flatten_argumentList(argumentList)
   -- MethodType_ok: p C |- typedExpressionIR `. nameIR `< eps > `( argument* )
                          : methodTypeIR `< `# tid_fresh* > `( `# id_default* )
+  ---- ;; check arguments
+  -- (Argument_ok: p C |- argument : argumentIR)*
   ---- ;; check calling convention
   -- Call_ok: p C |- methodTypeIR `< eps `# tid_fresh* >
-                                  `( argument* `# id_default* )
+                                  `( argumentIR* `# id_default* )
                    : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; method call must not return void at expression level
   -- if typeIR_ret =/= VOID
@@ -1111,10 +1117,12 @@ rule Expr_ok/callExpression-generic-methodTarget-expression:
   -- if argument* = $flatten_argumentList(argumentList)
   -- MethodType_ok: p C |- typedExpressionIR `. nameIR `< eps > `( argument* )
                          : methodTypeIR `< `# tid_fresh_method* > `( `# id_default* )
+  ---- ;; check arguments
+  -- (Argument_ok: p C |- argument : argumentIR)*
   ---- ;; check calling convention
   -- if tid_fresh* = tid_fresh_arg* ++ tid_fresh_method*
   -- Call_ok: p C |- methodTypeIR `< eps `# tid_fresh* >
-                                  `( argument* `# id_default* )
+                                  `( argumentIR* `# id_default* )
                    : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; method call must not return void at expression level
   -- if typeIR_ret =/= VOID
@@ -1128,8 +1136,6 @@ rule Expr_ok/callExpression-generic-methodTarget-expression:
 ;;;;;;; constructorTarget
 ;;;;;;; syntax constructorTarget = namedType
 ;;;;;;; syntax namedType
-
-;;;;;;;; prefixedTypeName
 
 dec $is_concrete_extern_object(typeIR) : bool
 dec $is_concrete_extern_object'(typeIR) : bool
@@ -1154,6 +1160,28 @@ def $is_concrete_extern_object''(routineTypeIR `< _ `, _ >) = true
 def $is_concrete_extern_object'''(EXTERN_METHOD ABSTRACT `( _ ) `-> _) = false
 def $is_concrete_extern_object'''(_) = true
   -- otherwise
+
+;;;;;;;; prefixedTypeName
+
+rule Expr_ok/callExpression-constructorTarget-prefixedTypeName:
+  p C |- prefixedTypeName `( argumentList )
+       : callExpressionIR `# expressionNoteIR
+  ---- ;; check constructor type
+  -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
+  -- if argument* = $flatten_argumentList(argumentList)
+  -- ConstructorType_ok: p C |- prefixedNameIR `< eps > `( argument* )
+                              : constructorTypeIR `< `# tid_impl* > `( `# id_default* )
+  ---- ;; check arguments
+  -- (Argument_ok: p C |- argument : argumentIR)*
+  ---- ;; check instantiation convention
+  -- Inst_ok: p C |- constructorTypeIR `< eps `# tid_impl* > `( argumentIR* `# id_default* )
+                   : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+  ---- ;; constructed object may not contain an abstract method
+  -- if $is_concrete_extern_object(typeIR_object)
+  ---- ;; create IR
+  -- if callExpressionIR
+      = (typeIR_object `< typeArgumentIR_inferred* >) `( argumentIR_cast* )
+  -- if expressionNoteIR = `( typeIR_object CTK )
 
 ;;;;;;;; specializedType
 
