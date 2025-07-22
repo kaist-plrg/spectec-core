@@ -70,7 +70,9 @@ let wrap_atom (s : string) : atom =
   | "|+|=" -> SPlusEq $ no_region
   | "|-|" -> SMinus $ no_region
   | "|-|=" -> SMinusEq $ no_region
-  | s when String.get s 0 = '`' -> SilentAtom s $ no_region
+  | s when String.get s 0 = '`' ->
+      let s = String.sub s 1 (String.length s - 1) in
+      SilentAtom s $ no_region
   | _ -> Atom s $ no_region
 
 let wrap_var_t (s : string) : typ' = VarT (s $ no_region, [])
@@ -111,7 +113,7 @@ let wrap_opt_v (s : string) (v : value option) : value =
 let wrap_list_v (s : string) (vs : value list) : value =
   ListV vs |> with_typ (wrap_iter_t List (wrap_var_t s))
 
-let ( #@ ) (vs: symbol list) (s: string) : value =
+let ( #@ ) (vs : symbol list) (s : string) : value =
   vs |> wrap_case_v |> with_typ (wrap_var_t s)
 
 let id_of_case_v (v : value) : string =

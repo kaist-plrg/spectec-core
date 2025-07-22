@@ -1725,11 +1725,11 @@ annotationList: (* TODO: inline? *)
 
 (******** P4 program ********)
 declarationList:
-| (* empty *) { [ Term "`EMPTY" ] #@ "declarationList" }
+| (* empty *) { [ Term "`EMPTY" ] #@ "p4program" }
 | ds = declarationList d = declaration
-  { [ NT ds; NT d ] #@ "declarationList" }
+  { [ NT ds; NT d ] #@ "p4program" }
 | ds = declarationList SEMICOLON
-  { [ NT ds; Term ";" ] #@ "declarationList" }
+  { [ NT ds; Term ";" ] #@ "p4program" }
 ;
 
 p4program:
