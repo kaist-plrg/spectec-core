@@ -1125,8 +1125,8 @@ enumTypeDeclaration:
     { [ NT al; Term "ENUM"; NT n; Term "{"; NT nl; NT c; Term "}" ]
       #@ "enumTypeDeclaration" }
   | al = annotationList ENUM t = typeRef n = name L_BRACE
-    nl = nameList c = trailingCommaOpt R_BRACE
-    { [ NT al; Term "ENUM"; NT t; NT n; Term "{"; NT nl; NT c; Term "}" ]
+    el = namedExpressionList c = trailingCommaOpt R_BRACE
+    { [ NT al; Term "ENUM"; NT t; NT n; Term "{"; NT el; NT c; Term "}" ]
       #@ "enumTypeDeclaration" }
 ;
 

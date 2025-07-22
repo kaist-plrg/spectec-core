@@ -81,7 +81,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/control-verify.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/default-initializer-err.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/default-initializer-err.p4
-../../../../p4c/testdata/p4_16_errors/default-initializer-err.p4:3.26-3.27: syntax error
+../../../../p4c/testdata/p4_16_errors/default-initializer-err.p4:34.11-34.13: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/default-last-switch.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/default-last-switch.p4
@@ -131,7 +131,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/duplicate-label.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/enumCast.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/enumCast.p4
-../../../../p4c/testdata/p4_16_errors/enumCast.p4:4.10-4.11: syntax error
+../../../../p4c/testdata/p4_16_errors/enumCast.p4:26.11-26.12: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/equality-fail.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/equality-fail.p4
@@ -310,7 +310,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/issue2206.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2220.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/issue2220.p4
-../../../../p4c/testdata/p4_16_errors/issue2220.p4:3.26-3.27: syntax error
+../../../../p4c/testdata/p4_16_errors/issue2220.p4:11.4-11.6: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue2230-1-bmv2.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/issue2230-1-bmv2.p4
@@ -506,8 +506,7 @@ Error on parser: ../../../../p4c/testdata/p4_16_errors/issue345.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/issue3522.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3534.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3534.p4
-../../../../p4c/testdata/p4_16_errors/issue3534.p4:1.18-1.19: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3534.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3589.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/issue3589.p4
@@ -522,12 +521,10 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/issue3613.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/issue3622.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3623-2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3623-2.p4
-../../../../p4c/testdata/p4_16_errors/issue3623-2.p4:3.5-3.6: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3623-2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3623-3.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/issue3623-3.p4
-../../../../p4c/testdata/p4_16_errors/issue3623-3.p4:3.5-3.6: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/issue3623-3.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/issue3644-1.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/issue3644-1.p4
@@ -783,16 +780,13 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/select-varbits.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/self-call.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/serEnumImplCast.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/serEnumImplCast.p4
-../../../../p4c/testdata/p4_16_errors/serEnumImplCast.p4:3.23-3.24: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/serEnumImplCast.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/serenum-type.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/serenum-type.p4
-../../../../p4c/testdata/p4_16_errors/serenum-type.p4:9.10-9.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/serenum-type.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/serenum-typedef.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/serenum-typedef.p4
-../../../../p4c/testdata/p4_16_errors/serenum-typedef.p4:9.10-9.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/serenum-typedef.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/shift-int-non-const.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/shift-int-non-const.p4
@@ -949,8 +943,7 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/typecheck1_e.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/typecheck_e.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/typedef-and-type-definitions.p4
-Error on parser: ../../../../p4c/testdata/p4_16_errors/typedef-and-type-definitions.p4
-../../../../p4c/testdata/p4_16_errors/typedef-and-type-definitions.p4:43.7-43.8: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_errors/typedef-and-type-definitions.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/underscore1_e.p4
 Error on parser: ../../../../p4c/testdata/p4_16_errors/underscore1_e.p4
@@ -995,4 +988,4 @@ Parser success: ../../../../p4c/testdata/p4_16_errors/width_e.p4
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
 Parser success: ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
 
-Running parser: [EXCLUDE] 0/310 (0.00%) [PASS] 245/310 (79.03%) [FAIL] 65/310 (20.97%)
+Running parser: [EXCLUDE] 0/310 (0.00%) [PASS] 252/310 (81.29%) [FAIL] 58/310 (18.71%)

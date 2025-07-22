@@ -165,8 +165,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/bool_double_cast.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/bool_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/bool_to_bit_cast.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/bool_to_bit_cast.p4
-../../../../p4c/testdata/p4_16_samples/bool_to_bit_cast.p4:4.8-4.9: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/bool_to_bit_cast.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/bvec-hdr-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/bvec-hdr-bmv2.p4
@@ -324,12 +323,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/csum_ubpf.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/custom-type-restricted-fields.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-pna-dpdk.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-pna-dpdk.p4
-../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-pna-dpdk.p4:118.13-118.14: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-pna-dpdk.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-v1model-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-v1model-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-v1model-bmv2.p4:119.13-119.14: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-v1model-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/decl.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/decl.p4
@@ -349,7 +346,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/default-control-argument.
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/default-initializer.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/default-initializer.p4
-../../../../p4c/testdata/p4_16_samples/default-initializer.p4:10.7-10.8: syntax error
+../../../../p4c/testdata/p4_16_samples/default-initializer.p4:70.11-70.13: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/default-package-argument.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/default-package-argument.p4
@@ -431,7 +428,7 @@ Error on parser: ../../../../p4c/testdata/p4_16_samples/enum.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/enumCast.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/enumCast.p4
-../../../../p4c/testdata/p4_16_samples/enumCast.p4:4.10-4.11: syntax error
+../../../../p4c/testdata/p4_16_samples/enumCast.p4:31.11-31.12: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/equality-bmv2.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/equality-bmv2.p4
@@ -1038,8 +1035,7 @@ Error on parser: ../../../../p4c/testdata/p4_16_samples/invalid-union.p4
 ../../../../p4c/testdata/p4_16_samples/invalid-union.p4:24.11-24.12: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/inverted-range.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/inverted-range.p4
-../../../../p4c/testdata/p4_16_samples/inverted-range.p4:4.7-4.8: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/inverted-range.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/ipv4-actions_ubpf.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/ipv4-actions_ubpf.p4
@@ -1069,8 +1065,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue-4969-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1000-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1001-1-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue1001-1-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/issue1001-1-bmv2.p4:7.11-7.12: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1001-1-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1001-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1001-bmv2.p4
@@ -1249,8 +1244,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1642-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1653-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1653-complex-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue1653-complex-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/issue1653-complex-bmv2.p4:19.10-19.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue1653-complex-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1660-bmv2.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/issue1660-bmv2.p4
@@ -1264,7 +1258,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue1713-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1717.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/issue1717.p4
-../../../../p4c/testdata/p4_16_samples/issue1717.p4:7.7-7.8: syntax error
+../../../../p4c/testdata/p4_16_samples/issue1717.p4:38.11-38.12: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue1724.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue1724.p4
@@ -1461,8 +1455,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2176-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2190.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2201-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue2201-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/issue2201-bmv2.p4:80.11-80.12: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2201-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2205-1-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2205-1-bmv2.p4
@@ -1623,8 +1616,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2375-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2383-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2391.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue2391.p4
-../../../../p4c/testdata/p4_16_samples/issue2391.p4:11.10-11.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2391.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2392-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2392-bmv2.p4
@@ -1713,8 +1705,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2599.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2614-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2617.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue2617.p4
-../../../../p4c/testdata/p4_16_samples/issue2617.p4:4.7-4.8: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2617.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2627.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2627.p4
@@ -1748,7 +1739,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue272-2-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2726-bmv2.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/issue2726-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/issue2726-bmv2.p4:72.10-72.11: syntax error
+../../../../p4c/testdata/p4_16_samples/issue2726-bmv2.p4:84.17-84.18: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2735-bmv2.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/issue2735-bmv2.p4
@@ -1794,8 +1785,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2816-1_ebpf.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2816_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2844-enum.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue2844-enum.p4
-../../../../p4c/testdata/p4_16_samples/issue2844-enum.p4:39.18-39.19: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2844-enum.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2890.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2890.p4
@@ -1804,8 +1794,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue2890.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2900.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2904.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue2904.p4
-../../../../p4c/testdata/p4_16_samples/issue2904.p4:4.13-4.14: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue2904.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue2905-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue2905-bmv2.p4
@@ -1850,7 +1839,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3051.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3056.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3056.p4
-../../../../p4c/testdata/p4_16_samples/issue3056.p4:2.6-2.7: syntax error
+../../../../p4c/testdata/p4_16_samples/issue3056.p4:8.11-8.12: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3057-2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3057-2.p4
@@ -1877,8 +1866,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue313_3.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue314.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3178.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3178.p4
-../../../../p4c/testdata/p4_16_samples/issue3178.p4:1.31-1.32: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3178.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3197.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3197.p4
@@ -1921,8 +1909,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3283.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3287.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3288.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3288.p4
-../../../../p4c/testdata/p4_16_samples/issue3288.p4:2.6-2.7: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3288.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3289.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3289.p4
@@ -1945,19 +1932,16 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3324.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3329-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3333.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3333.p4
-../../../../p4c/testdata/p4_16_samples/issue3333.p4:1.28-1.29: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3333.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3343.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3343.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3364.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3364.p4
-../../../../p4c/testdata/p4_16_samples/issue3364.p4:4.10-4.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3364.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3374.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3374.p4
-../../../../p4c/testdata/p4_16_samples/issue3374.p4:24.10-24.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3374.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3379-1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3379-1.p4
@@ -1981,12 +1965,10 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3483_ubpf.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3486.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3488-1-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3488-1-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/issue3488-1-bmv2.p4:39.13-39.14: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3488-1-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3488-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3488-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/issue3488-bmv2.p4:39.13-39.14: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3488-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3531.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3531.p4
@@ -1995,8 +1977,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3531.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue355-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3550.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3550.p4
-../../../../p4c/testdata/p4_16_samples/issue3550.p4:44.7-44.8: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3550.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue356-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue356-bmv2.p4
@@ -2005,8 +1986,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue356-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue361-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3616.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3616.p4
-../../../../p4c/testdata/p4_16_samples/issue3616.p4:2.7-2.8: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3616.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3619-1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3619-1.p4
@@ -2015,16 +1995,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3619-1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3619.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3623-1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3623-1.p4
-../../../../p4c/testdata/p4_16_samples/issue3623-1.p4:3.5-3.6: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3623-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3623.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3623.p4
-../../../../p4c/testdata/p4_16_samples/issue3623.p4:2.7-2.8: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3623.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3635.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3635.p4
-../../../../p4c/testdata/p4_16_samples/issue3635.p4:3.5-3.6: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/issue3635.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue364-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue364-bmv2.p4
@@ -2046,7 +2023,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/issue3699.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3702-bmv2.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/issue3702-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/issue3702-bmv2.p4:11.12-11.13: syntax error
+../../../../p4c/testdata/p4_16_samples/issue3702-bmv2.p4:67.8-67.12: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/issue3779.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/issue3779.p4
@@ -2571,7 +2548,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/octal.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/omec/up4.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/omec/up4.p4
-../../../../p4c/testdata/p4_16_samples/omec/up4.p4:35.10-35.11: syntax error
+../../../../p4c/testdata/p4_16_samples/omec/up4.p4:263.16-263.20: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/op_bin.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/op_bin.p4
@@ -2714,16 +2691,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/parser-unroll-uninitializ
 Parser success: ../../../../p4c/testdata/p4_16_samples/parser_error-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pins/pins_fabric.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pins/pins_fabric.p4
-../../../../p4c/testdata/p4_16_samples/pins/pins_fabric.p4:131.31-131.32: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/pins/pins_fabric.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pins/pins_middleblock.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pins/pins_middleblock.p4
-../../../../p4c/testdata/p4_16_samples/pins/pins_middleblock.p4:131.31-131.32: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/pins/pins_middleblock.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pins/pins_wbb.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pins/pins_wbb.p4
-../../../../p4c/testdata/p4_16_samples/pins/pins_wbb.p4:131.31-131.32: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/pins/pins_wbb.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pipe.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pipe.p4
@@ -2756,8 +2730,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/pna-direction.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-add_on_miss0.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-add_on_miss1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-add_on_miss1.p4
-../../../../p4c/testdata/p4_16_samples/pna-dpdk-add_on_miss1.p4:109.13-109.14: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-add_on_miss1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-dpdk-bvec_union.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pna-dpdk-bvec_union.p4
@@ -2910,16 +2883,13 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/pna-example-template.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pna-example-tunnel.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-1.p4
-../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-1.p4:24.10-24.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-2.p4
-../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-2.p4:24.10-24.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex-2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex.p4
-../../../../p4c/testdata/p4_16_samples/pna-example-varIndex.p4:24.10-24.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/pna-example-varIndex.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pna-extract-local-header.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pna-extract-local-header.p4
@@ -3223,8 +3193,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/psa-end-of-ingress-test-b
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-counters-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-digest-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-example-digest-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/psa-example-digest-bmv2.p4:29.10-29.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-digest-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-example-dpdk-byte-alignment_1.p4
@@ -3351,8 +3320,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/psa-hash-10.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-hash.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-header-stack.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-header-stack.p4
-../../../../p4c/testdata/p4_16_samples/psa-header-stack.p4:14.10-14.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-header-stack.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-i2e-cloning-basic-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-i2e-cloning-basic-bmv2.p4
@@ -3445,8 +3413,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/psa-unicast-or-drop-bmv2.
 Parser success: ../../../../p4c/testdata/p4_16_samples/psa-unicast-or-drop-corrected-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/psa-variable-index.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/psa-variable-index.p4
-../../../../p4c/testdata/p4_16_samples/psa-variable-index.p4:20.10-20.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/psa-variable-index.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/pvs-bitstring-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/pvs-bitstring-bmv2.p4
@@ -3476,8 +3443,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/rcp1.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/redundant_parsers_dangling_unused_parser_decl.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/register-serenum-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/register-serenum-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/register-serenum-bmv2.p4:5.10-5.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/register-serenum-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/reject.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/reject.p4
@@ -3505,20 +3471,16 @@ Error on parser: ../../../../p4c/testdata/p4_16_samples/select-struct.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/select-type.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/serEnumImplCast.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/serEnumImplCast.p4
-../../../../p4c/testdata/p4_16_samples/serEnumImplCast.p4:5.23-5.24: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/serEnumImplCast.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/serenum-expr.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/serenum-expr.p4
-../../../../p4c/testdata/p4_16_samples/serenum-expr.p4:7.10-7.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/serenum-expr.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/serenum-int.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/serenum-int.p4
-../../../../p4c/testdata/p4_16_samples/serenum-int.p4:4.10-4.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/serenum-int.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/serenum.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/serenum.p4
-../../../../p4c/testdata/p4_16_samples/serenum.p4:4.10-4.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/serenum.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/shadow-after-use.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/shadow-after-use.p4
@@ -3775,8 +3737,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-priority-bm
 Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-range-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/table-entries-ser-enum-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/table-entries-ser-enum-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/table-entries-ser-enum-bmv2.p4:21.10-21.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-ser-enum-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/table-entries-ternary-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-ternary-bmv2.p4
@@ -3785,8 +3746,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-ternary-bmv
 Parser success: ../../../../p4c/testdata/p4_16_samples/table-entries-valid-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/table-key-serenum-bmv2.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/table-key-serenum-bmv2.p4
-../../../../p4c/testdata/p4_16_samples/table-key-serenum-bmv2.p4:5.10-5.11: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/table-key-serenum-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/template.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/template.p4
@@ -3805,7 +3765,7 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/test_ebpf.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/trailing-comma.p4
 Error on parser: ../../../../p4c/testdata/p4_16_samples/trailing-comma.p4
-../../../../p4c/testdata/p4_16_samples/trailing-comma.p4:7.7-7.8: syntax error
+../../../../p4c/testdata/p4_16_samples/trailing-comma.p4:16.20-16.21: syntax error
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/truncate_ubpf.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/truncate_ubpf.p4
@@ -3907,19 +3867,16 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/useless-cast.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/v1model-const-entries-bmv2.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/v1model-digest-containing-ser-enum.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/v1model-digest-containing-ser-enum.p4
-../../../../p4c/testdata/p4_16_samples/v1model-digest-containing-ser-enum.p4:46.9-46.10: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/v1model-digest-containing-ser-enum.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/v1model-digest-custom-type.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/v1model-digest-custom-type.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-enumint-types1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-enumint-types1.p4
-../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-enumint-types1.p4:121.7-121.8: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-enumint-types1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-most-types1.p4
-Error on parser: ../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-most-types1.p4
-../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-most-types1.p4:121.7-121.8: syntax error
+Parser success: ../../../../p4c/testdata/p4_16_samples/v1model-p4runtime-most-types1.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/v1model-special-ops-bmv2.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/v1model-special-ops-bmv2.p4
@@ -3980,4 +3937,4 @@ Parser success: ../../../../p4c/testdata/p4_16_samples/xdp_vlan_push_pop_ebpf-ke
 >>> Running parser test on ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 Parser success: ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 
-Running parser: [EXCLUDE] 0/1278 (0.00%) [PASS] 1133/1278 (88.65%) [FAIL] 145/1278 (11.35%)
+Running parser: [EXCLUDE] 0/1278 (0.00%) [PASS] 1176/1278 (92.02%) [FAIL] 102/1278 (7.98%)
