@@ -264,8 +264,8 @@ nonTypeName:
 
 prefixedNonTypeName:
 	| n = nonTypeName { n }
-	| go_toplevel n = nonTypeName go_local
-    { [ Term "."; NT n ] #@ "prefixedNonTypeName" }
+	| DOT go_toplevel n = nonTypeName go_local
+    { [ Term "`ID"; Term "."; NT n ] #@ "prefixedNonTypeName" }
 ;
 
 (* >> Type names *)
@@ -275,7 +275,7 @@ typeName:
 
 prefixedTypeName:
 	| n = typeName { n }
-	| go_toplevel tid = typeIdentifier go_local
+	| DOT go_toplevel tid = typeName go_local
 		{ [ Term "`TID"; Term "."; NT tid ] #@ "prefixedType" }
 ;
 
@@ -1718,7 +1718,7 @@ annotationListNonEmpty:
 		{ [ NT al; NT a ] #@ "annotationListNonEmpty" }
 ;
 
-annotationList: (* TODO: inline? *)
+%inline annotationList: (* TODO: inline? *)
 	| (* empty *) { [ Term "`EMPTY" ] #@ "annotationList" }
 	| al = annotationListNonEmpty { al }
 ;
