@@ -456,7 +456,7 @@ syntax expressionNonBrace =
 
 syntax memberAccessBaseNonBrace =
   | prefixedTypeName
-  | expression
+  | expressionNonBrace
 
 ;;
 ;; Keyset expressions
