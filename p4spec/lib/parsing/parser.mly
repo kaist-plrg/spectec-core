@@ -1279,7 +1279,7 @@ valueSetDeclaration:
 (* >>>> Parser type declarations *)
 parserTypeDeclaration:
   | al = annotationList PARSER n = push_name tpl = typeParameterListOpt
-      L_PAREN pl = parameterList R_PAREN SEMICOLON
+      L_PAREN pl = parameterList R_PAREN pop_scope SEMICOLON
     { [ NT al; Term "PARSER"; NT n; NT tpl; Term "("; NT pl; Term ")"; Term ";" ]
        #@ "parserTypeDeclaration" }
 ;
@@ -1426,7 +1426,7 @@ tableDeclaration:
 (* >>>> Control type declarations *)
 controlTypeDeclaration:
   | al = annotationList CONTROL n = push_name tpl = typeParameterListOpt
-    L_PAREN pl = parameterList R_PAREN SEMICOLON
+    L_PAREN pl = parameterList R_PAREN pop_scope SEMICOLON
     { [ NT al; Term "CONTROL"; NT n; NT tpl; Term "("; NT pl; Term ")"; Term ";" ]
        #@ "controlTypeDeclaration" }
 ;
@@ -1464,7 +1464,7 @@ controlDeclaration:
 (* >> Package type declarations *)
 packageTypeDeclaration:
   | al = annotationList PACKAGE n = push_name tpl = typeParameterListOpt
-    L_PAREN pl = parameterList R_PAREN SEMICOLON
+    L_PAREN pl = parameterList R_PAREN pop_scope SEMICOLON
     { [ NT al; Term "PACKAGE"; NT n; NT tpl; Term "("; NT pl; Term ")"; Term ";" ]
        #@ "packageTypeDeclaration" }
 ;
