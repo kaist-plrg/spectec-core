@@ -283,6 +283,7 @@ and token = parse
   | "def" { DEF }
   | "if" { IF }
   | "otherwise" { OTHERWISE }
+  | "debug" { DEBUG }
   | "hint(" { HINT_LPAREN }
   | "eps" { EPS }
   | "true" { BOOLLIT true }

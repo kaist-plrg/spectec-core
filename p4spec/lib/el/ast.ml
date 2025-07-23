@@ -149,6 +149,7 @@ and prem' =
   | IfPr of exp                    (* `if` exp *)
   | ElsePr                         (* `otherwise` *)
   | IterPr of prem * iter          (* prem iter *)
+  | DebugPr of exp                 (* `debug` exp *)
 
 (* Hints *)
 

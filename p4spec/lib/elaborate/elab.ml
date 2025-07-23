@@ -491,7 +491,8 @@ and infer_binop (ctx : Ctx.t) (at : region) (binop : binop)
   in
   List.fold_left
     (fun binop_infer
-         (optyp_il, plaintyp_l_expect, plaintyp_r_expect, plaintyp_res_expect) ->
+         (optyp_il, plaintyp_l_expect, plaintyp_r_expect, plaintyp_res_expect)
+       ->
       match binop_infer with
       | Ok _ -> binop_infer
       | _ -> (
@@ -1297,6 +1298,7 @@ and elab_prem' (ctx : Ctx.t) (prem : prem') : Ctx.t * Il.Ast.prem' option =
   | IfPr exp -> elab_if_prem ctx exp |> wrap_some
   | ElsePr -> elab_else_prem () |> wrap_ctx |> wrap_some
   | IterPr (prem, iter) -> elab_iter_prem ctx prem iter |> wrap_some
+  | DebugPr exp -> elab_debug_prem ctx exp |> wrap_some
 
 and elab_prem_with_bind (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.Ast.prem list =
   let ctx, prem_il_opt = elab_prem ctx prem in
@@ -1376,6 +1378,13 @@ and elab_iter_prem (ctx : Ctx.t) (prem : prem) (iter : iter) :
   let ctx, prem_il_opt = elab_prem ctx prem in
   let prem_il = Option.get prem_il_opt in
   let prem_il = Il.Ast.IterPr (prem_il, (iter_il, [])) in
+  (ctx, prem_il)
+
+(* Elaboration of debug premises *)
+
+and elab_debug_prem (ctx : Ctx.t) (exp : exp) : Ctx.t * Il.Ast.prem' =
+  let+ ctx, exp_il, _ = infer_exp ctx exp in
+  let prem_il = Il.Ast.DebugPr exp_il in
   (ctx, prem_il)
 
 (* Elaboration of definitions *)

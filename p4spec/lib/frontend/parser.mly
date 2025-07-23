@@ -74,7 +74,7 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 %token EQ NEQ UP BAR
 %token LATEX BOOL NAT INT TEXT
 %token SYNTAX RELATION RULE VAR DEC DEF
-%token IF OTHERWISE HINT_LPAREN EPS
+%token IF OTHERWISE DEBUG HINT_LPAREN EPS
 %token<bool> BOOLLIT
 %token<Bigint.t> NATLIT HEXLIT
 %token<string> TEXTLIT
@@ -699,6 +699,7 @@ prem_ :
       in
       iterate $2
     }
+  | DEBUG exp { DebugPr $2 }
 
 (* Hints *)
 
