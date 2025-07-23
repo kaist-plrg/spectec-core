@@ -135,6 +135,7 @@ and instr' =
   | RuleI of id * notexp * iterexp list
   | ResultI of exp list
   | ReturnI of exp
+  | DebugI of exp
 
 (* Hints *)
 

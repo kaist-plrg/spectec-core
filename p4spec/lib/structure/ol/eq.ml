@@ -45,6 +45,7 @@ and eq_instr (instr_a : instr) (instr_b : instr) : bool =
       && Sl.Eq.eq_iterexps iterexps_a iterexps_b
   | ResultI exps_a, ResultI exps_b -> Sl.Eq.eq_exps exps_a exps_b
   | ReturnI exp_a, ReturnI exp_b -> Sl.Eq.eq_exp exp_a exp_b
+  | DebugI exp_a, DebugI exp_b -> Sl.Eq.eq_exp exp_a exp_b
   | _ -> false
 
 and eq_instrs (instrs_a : instr list) (instrs_b : instr list) : bool =
