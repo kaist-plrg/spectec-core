@@ -75,6 +75,7 @@ let rec free_prem (prem : prem) : t =
   | LetPr (exp_l, exp_r) -> free_exp exp_l + free_exp exp_r
   | ElsePr -> empty
   | IterPr (prem, _) -> free_prem prem
+  | DebugPr exp -> free_exp exp
 
 and free_prems (prems : prem list) : t =
   prems |> List.map free_prem |> List.fold_left ( + ) empty

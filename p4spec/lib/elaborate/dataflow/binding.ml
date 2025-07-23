@@ -113,6 +113,7 @@ let rec analyze_prem (dctx : Dctx.t) (prem : prem) :
            "iterated premise should initially have no annotations, but got %s"
            (Il.Print.string_of_iterexp iterexp))
   | IterPr (prem, (iter, [])) -> analyze_iter_prem dctx prem.at prem iter
+  | DebugPr exp -> analyze_debug_prem dctx prem.at exp
 
 and analyze_rule_prem (dctx : Dctx.t) (at : region) (id : id) (notexp : notexp)
     : Dctx.t * VEnv.t * prem * prem list =
@@ -189,3 +190,9 @@ and analyze_iter_prem (dctx : Dctx.t) (at : region) (prem : prem) (iter : iter)
   let prems = List.map (fun prem -> IterPr (prem, (iter, [])) $ at) prems in
   let prem = IterPr (prem, (iter, [])) $ at in
   (dctx, venv, prem, prems)
+
+and analyze_debug_prem (dctx : Dctx.t) (at : region) (exp : exp) :
+    Dctx.t * VEnv.t * prem * prem list =
+  analyze_exp_as_bound dctx exp;
+  let prem = DebugPr exp $ at in
+  (dctx, VEnv.empty, prem, [])

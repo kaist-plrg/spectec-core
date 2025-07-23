@@ -819,6 +819,7 @@ and eval_prem' (ctx : Ctx.t) (prem : prem) : Ctx.t attempt =
   | ElsePr -> Ok ctx
   | LetPr (exp_l, exp_r) -> eval_let_prem ctx exp_l exp_r
   | IterPr (prem, iterexp) -> eval_iter_prem ctx prem iterexp
+  | DebugPr exp -> eval_debug_prem ctx exp
 
 and eval_prems (ctx : Ctx.t) (prems : prem list) : Ctx.t attempt =
   List.fold_left
@@ -931,6 +932,15 @@ and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
   match iter with
   | Opt -> error prem.at "(TODO) eval_iter_prem"
   | List -> eval_iter_prem_list ctx prem vars
+
+(* Debug premise evaluation *)
+
+and eval_debug_prem (ctx : Ctx.t) (exp : exp) : Ctx.t attempt =
+  let _ctx, value = eval_exp ctx exp in
+  print_endline
+  @@ F.sprintf "%s: %s" (string_of_region exp.at) (Pp.string_of_exp exp);
+  print_endline @@ Pp.string_of_value value;
+  Ok ctx
 
 (* Invoke a relation *)
 
