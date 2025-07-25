@@ -186,7 +186,7 @@ go_local:
   | (* empty *)
     { go_local () }
 ;
-%inline toplevel(X):
+toplevel(X):
   | go_toplevel x = X go_local
     { x }
 ;
@@ -203,13 +203,13 @@ int:
     { fst int }
 ;
 
-%inline r_angle:
+r_angle:
 	| info_r = R_ANGLE
     { info_r }
 	| info_r = R_ANGLE_SHIFT
     { info_r }
 ;
-%inline l_angle:
+l_angle:
 	| info_r = L_ANGLE
     { info_r }
 	| info_r = L_ANGLE_ARGS
@@ -441,7 +441,7 @@ namedExpression:
 	| n = name ASSIGN e = expression { [ NT n; Term "="; NT e ] #@ "namedExpression" }
 ;
 
-namedExpressionList: (* TODO: inline? *)
+namedExpressionList:
 	| e = namedExpression { e }
 	| es = namedExpressionList COMMA e = namedExpression { [ NT es; Term ","; NT e ] #@ "namedExpressionList" }
 ;
@@ -467,7 +467,7 @@ defaultExpression:
 ;
 
 (* >> Unary, binary, and ternary expressions *)
-%inline unop: 
+unop: 
 	| NOT { [ Term "!" ] #@ "unop" }
 	| COMPLEMENT { [ Term "~" ] #@ "unop" }
 	| MINUS { [ Term "-" ] #@ "unop" }
@@ -615,7 +615,7 @@ methodTargetNonBrace:
 	| e = memberAccessExpressionNonBrace { e }
 ;
 
-%inline routineTargetNonBrace:
+routineTargetNonBrace:
   | e = expressionNonBrace { e }
 ;
 
@@ -662,7 +662,7 @@ expressionList:
 		{ [ NT el; Term ","; NT e ] #@ "expressionList" }
 ;
 
-memberAccessBase: (*TODO: inline?*)
+memberAccessBase:
 	| e = prefixedTypeName
 	| e = expression
 		{ e }
@@ -700,7 +700,7 @@ expressionNonBrace:
 		{ e }
 ;
 
-memberAccessBaseNonBrace: (*TODO: inline?*)
+memberAccessBaseNonBrace:
 	| e = prefixedTypeName
 	| e = expressionNonBrace
 		{ e }
@@ -725,7 +725,7 @@ simpleKeysetExpressionList:
     { [ NT el; Term ","; NT e ] #@ "simpleKeysetExpressionList" }
 ;
 
-tupleKeysetExpression: (* TODO: revisit *)
+tupleKeysetExpression:
 	| L_PAREN b = expression MASK m = expression R_PAREN
 		{ [ Term "("; NT b; Term "&&&"; NT m; Term ")" ] #@ "tupleKeysetExpression" }
 	| L_PAREN l = expression RANGE h = expression R_PAREN
@@ -818,7 +818,7 @@ emptyStatement:
 ;
 
 (* >> Assignment statements *)
-%inline assignop:
+assignop:
 	| ASSIGN { [ Term "=" ] #@ "assignop" }
 	| PLUS_ASSIGN { [ Term "+=" ] #@ "assignop" }
 	| PLUS_SAT_ASSIGN { [ Term "|+|=" ] #@ "assignop" }
@@ -1022,7 +1022,7 @@ initializerOpt:
 	| i = initialValue { i }
 ;
 
-variableDeclaration: (* TODO: inline? *)
+variableDeclaration:
   | al = annotationList t = typeRef n = name i = initializerOpt SEMICOLON
     { declare_var_of_il n false;
       [ NT al; NT t; NT n; NT i; Term ";" ] #@ "variableDeclaration" }
@@ -1159,7 +1159,7 @@ derivedTypeDeclaration:
 ;
 
 (* >> Typedef and newtype declarations *)
-typedefType: (*TODO: inline? *)
+typedefType:
 	| t = typeRef
 	| t = derivedTypeDeclaration
 		{ t }
@@ -1249,7 +1249,7 @@ transitionStatement:
 ;
 
 (* >>>> Value set declarations *)
-valueSetType: (* TODO: inline? *)
+valueSetType:
 	| t = baseType
 	| t = tupleType
 	| t = prefixedTypeName
@@ -1705,7 +1705,7 @@ annotationListNonEmpty:
 		{ [ NT al; NT a ] #@ "annotationListNonEmpty" }
 ;
 
-%inline annotationList: (* TODO: inline? *)
+%inline annotationList:
 	| (* empty *) { [ Term "`EMPTY" ] #@ "annotationList" }
 	| al = annotationListNonEmpty { al }
 ;
