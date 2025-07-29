@@ -58,7 +58,7 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 %token NL_BAR NL2 NL3
 %token SUB SUP TURNSTILE TILESTURN ENTAIL
 %token ARROW ARROW_SUB
-%token DOUBLE_ARROW DOUBLE_ARROW_SUB DOUBLE_ARROW_BOTH
+%token DOUBLE_ARROW DOUBLE_ARROW_SUB DOUBLE_ARROW_BOTH DOUBLE_ARROW_LONG
 %token SQARROW SQARROW_STAR
 %token AND OR
 %token DOT DOT2 DOT3
@@ -82,7 +82,7 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 %token<string> UPID_LPAREN LOID_LPAREN UPID_LANGLE LOID_LANGLE
 %token EOF
 
-%right DOUBLE_ARROW DOUBLE_ARROW_BOTH DOUBLE_ARROW_SUB
+%right DOUBLE_ARROW DOUBLE_ARROW_BOTH DOUBLE_ARROW_SUB DOUBLE_ARROW_LONG
 %left OR
 %left AND
 %nonassoc TURNSTILE
@@ -452,6 +452,7 @@ deftyp_ :
   | ARROW { Atom.Arrow }
   | ARROW_SUB { Atom.ArrowSub }
   | DOUBLE_ARROW_SUB { Atom.DoubleArrowSub }
+  | DOUBLE_ARROW_LONG { Atom.DoubleArrowLong }
 
 %inline relop :
   | relop_ { $1 @@@ $sloc }
@@ -676,7 +677,7 @@ prem_list :
 prem_post_ :
   | OTHERWISE { ElsePr }
   | LPAREN prem RPAREN iter*
-    { 
+    {
       let rec iterate prem = function
         | [] -> prem
         | iter :: iters -> iterate (IterPr (prem, iter) @@@ $sloc) iters
@@ -691,7 +692,7 @@ prem_ :
   | relid COLON_SLASH exp { RuleNotPr ($1, $3) }
   | VAR varid_bind COLON plaintyp { VarPr ($2, $4) }
   | IF exp
-    { 
+    {
       let rec iterate exp =
         match exp.it with
         | IterE (exp, iter) -> IterPr ((iterate exp $ exp.at), iter)

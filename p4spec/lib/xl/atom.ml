@@ -14,6 +14,7 @@ type t =
   | ArrowSub             (* `->_` *)
   | DoubleArrow          (* ``=>` *)
   | DoubleArrowSub       (* ``=>_` *)
+  | DoubleArrowLong      (* ``==>` *)
   | SqArrow              (* `~>` *)
   | SqArrowStar          (* `~>*` *)
   | Dot                  (* ``.` *)
@@ -91,6 +92,7 @@ let string_of_atom = function
   | ArrowSub -> "->_"
   | DoubleArrow -> "=>"
   | DoubleArrowSub -> "=>_"
+  | DoubleArrowLong -> "==>"
   | SqArrow -> "~>"
   | SqArrowStar -> "~>*"
   | Dot -> "."
