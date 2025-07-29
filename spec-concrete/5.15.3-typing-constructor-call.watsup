@@ -2,6 +2,8 @@
 ;; Instantiation
 ;;
 
+;;; Instantiation of a package
+
 rule Inst_ok/package-no-infer:
   GLOBAL C_0 |- constructorTypeIR `< typeArgumentIR* `# eps > 
                                 `( argumentIR* `# id_default* )
@@ -23,10 +25,10 @@ rule Inst_ok/package-no-infer:
                           : argumentIR_cast*
 
 rule Inst_ok/package-infer:
-  GLOBAL C_0 |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > 
-                                  `( argumentIR* `# id_default* )
-              : typeIR_object_inferred `< typeArgumentIR_inferred* >
-                                       `( argumentIR_cast* )
+  GLOBAL C |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > 
+                                `( argumentIR* `# id_default* )
+            : typeIR_object_inferred `< typeArgumentIR_inferred* >
+                                      `( argumentIR_cast* )
   ---- ;; if the constructor is for a package object
   -- if CONSTRUCTOR `( parameterTypeIR* ) `-> typeIR_object = constructorTypeIR
   -- if PACKAGE `< _ > = $canon(typeIR_object)
@@ -47,10 +49,16 @@ rule Inst_ok/package-infer:
       = $subst_parameterType(inference, parameterTypeIR_aligned))*
   -- if typeIR_object_inferred
       = $subst_type(inference, typeIR_object)
+  ---- ;; check that the substituted constructor is still well-formed
+  -- if constructorTypeIR_inferred
+      = CONSTRUCTOR `( parameterTypeIR_aligned_inferred* ) `-> typeIR_object_inferred
+  -- ConstructorType_wf: $bound(GLOBAL, C) |- constructorTypeIR_inferred
   ---- ;; (TODO) check instantiation site
   -- Call_convention_ok:
-      BLOCK C_0 NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
-                          : argumentIR_cast*
+      BLOCK C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
+                        : argumentIR_cast*
+
+;;; Instantiation of a non-package
 
 rule Inst_ok/no-package-no-infer:
   p C |- constructorTypeIR `< typeArgumentIR* `# eps > 
@@ -91,6 +99,15 @@ rule Inst_ok/no-package-infer:
   -- if inference = $infer(tid_infer*, parameterTypeIR_aligned*, argumentIR*)
   -- if (typeIR_inferred = $find_map<tid, typeIR>(inference, tid_infer))*
   -- if typeArgumentIR_inferred* = typeArgumentIR* ++ typeIR_inferred*
+  ---- ;; substitute inferred types
+  -- if (parameterTypeIR_aligned_inferred
+      = $subst_parameterType(inference, parameterTypeIR_aligned))*
+  -- if typeIR_object_inferred
+      = $subst_type(inference, typeIR_object)
+  ---- ;; check that the substituted constructor is still well-formed
+  -- if constructorTypeIR_inferred
+      = CONSTRUCTOR `( parameterTypeIR_aligned_inferred* ) `-> typeIR_object_inferred
+  -- ConstructorType_wf: $bound(p, C) |- constructorTypeIR_inferred
   ---- ;; (TODO) check instantiation site
   -- Call_convention_ok:
       p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*

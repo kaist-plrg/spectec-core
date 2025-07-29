@@ -59,6 +59,29 @@ rule Stmt_ok/callStatement-no-typeArgumentList:
 
 ;;;; lvalue `< typeArgumentList > `( argumentList ) `;
 
+rule Stmt_ok/callStatement-typeArgumentList:
+  p C f |- lvalue_routine `< typeArgumentList > `( argumentList ) `;
+         : C f callStatementIR
+  ---- ;; check base lvalue
+  -- Lvalue_routine_ok: p C |- lvalue_routine : routineLvalueIR
+  ---- ;; check type arguments
+  -- if typeArgument* = $flatten_typeArgumentList(typeArgumentList)
+  -- TypeArguments_ok: p C |- typeArgument* : typeArgumentIR* `# tid_impl*
+  ---- ;; check lvalue as routine
+  -- if argument* = $flatten_argumentList(argumentList)
+  -- RoutineType_Lvalue_ok:
+      p C |- routineLvalueIR `< typeArgumentIR* > `( argument* )
+           : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
+  ---- ;; check arguments
+  -- (Argument_ok: p C |- argument : argumentIR)*
+  ---- ;; check calling convention
+  -- if tid_infer* = tid_impl* ++ tid_inserted*
+  -- Call_ok: p C |- routineTypeIR `< eps `# tid_infer* > `( argumentIR* `# id_default* )
+                   : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+  ---- ;; create IR
+  -- if callStatementIR
+      = routineLvalueIR `< typeArgumentIR_inferred* > `( argumentIR_cast* ) `;
+
 ;;; directApplicationStatement
 
 ;;; returnStatement

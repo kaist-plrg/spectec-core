@@ -70,6 +70,5 @@ def $is_equalable_typeIR'(HEADER_INVALID) = false
 def $is_equalable_typeIR'(SET `< _ >) = false
 def $is_equalable_typeIR'(TABLE_ENUM _ `{ _ }) = false
 def $is_equalable_typeIR'(TABLE_STRUCT _ `{ _ }) = false
-def $is_equalable_typeIR'(`_) = false
 def $is_equalable_typeIR'(typeIR) = true
   -- otherwise

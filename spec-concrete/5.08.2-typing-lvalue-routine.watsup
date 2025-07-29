@@ -38,6 +38,26 @@ rule RoutineType_Lvalue_ok/function:
   -- FunctionType_ok: p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
                            : functionTypeIR `< `# tid_impl* > `( `# id_default* )
 
+rule RoutineType_Lvalue_ok/parser-apply:
+  p C |- (typedLvalueIR_base `. "apply") `< eps > `( argument* )
+       : methodTypeIR `< `# eps > `( `# id_default* )
+  ---- ;; if the base type is a control 
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if PARSER `( parameterTypeIR* ) = $canon(typeIR_base)
+  ---- ;; create method type
+  -- if methodTypeIR = PARSER_APPLY `( parameterTypeIR* )
+  ---- ;; create routine id
+  -- if (_ _ id_param value_param? = parameterTypeIR)*
+  -- if (pid = id_param `# (value_param? =/= eps))*
+  -- if rid = "apply" `( pid* )
+  ---- ;; perform overload resoultion
+  -- if (id_arg?)* = $ids_arguments(argument*)
+  -- if (rid, methodTypeIR, id_default*)
+      = $find_overloaded<routineTypeDefIR>(
+          `{ (rid `: methodTypeIR) },
+          "apply",
+          (id_arg?)*)
+
 rule RoutineType_Lvalue_ok/control-apply:
   p C |- (typedLvalueIR_base `. "apply") `< eps > `( argument* )
        : methodTypeIR `< `# eps > `( `# id_default* )

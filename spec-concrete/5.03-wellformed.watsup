@@ -419,9 +419,6 @@ rule Type_wf/tableenumtype:
 rule Type_wf/tablestructtype:
   bound |- TABLE_STRUCT _ `{ _ }
 
-rule Type_wf/dontcaretype:
-  bound |- `_
-
 ;;
 ;;;; Well-formedness of type definitions
 ;;
