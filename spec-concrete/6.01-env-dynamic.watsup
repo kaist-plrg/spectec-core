@@ -72,11 +72,11 @@ syntax cenv = map<cid, consDyn>
 ;;   | PackageO of Type.t TIdMap.t * Value.t IdMap.t
 ;;   | TableO of L.id' * Value.t IdMap.t * Table.t
 syntax objDyn =
-  | EXTERN tid theta venv renv
-  | PARSER venv parameterListIR parserLocalDeclarationListIR senv
-  | CONTROL venv parameterListIR controlLocalDeclarationListIR renv controlBodyIR
-  | PACKAGE theta venv
-  | TABLE tid venv tablePropertyListIR
+  | EXTERN `{ tid theta venv renv }
+  | PARSER `{ venv parameterListIR parserLocalDeclarationListIR senv }
+  | CONTROL `{ venv parameterListIR controlLocalDeclarationListIR renv controlBodyIR }
+  | PACKAGE `{ theta venv }
+  | TABLE `{ tid venv tablePropertyListIR }
 
 syntax sto = map<oid, objDyn>
 dec $empty_sto() : sto

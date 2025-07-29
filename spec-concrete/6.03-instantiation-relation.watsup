@@ -5,7 +5,7 @@ relation Instantiate:
   hint(input %0)
 
 relation Constructor_inst:
-  cursor contextInst sto |- consDyn typeArgumentListIR argumentListIR name* ==> sto objDyn
+  cursor contextInst sto |- consDyn `< typeArgumentListIR > `( argumentListIR `# id* ) ==> sto objDyn
   hint(input %0 %1 %2 %3 %4 %5 %6)
 
 ;;
