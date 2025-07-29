@@ -209,8 +209,8 @@ syntax parameterList =
 dec $flatten_parameterList(parameterList) : parameter*
 def $flatten_parameterList(`EMPTY) = eps
 def $flatten_parameterList(parameter) = parameter
-def $flatten_parameterList(nonEmptyParameterList `, parameter) =
-  $flatten_parameterList(nonEmptyParameterList) ++ [ parameter ]
+def $flatten_parameterList(nonEmptyParameterList `, parameter)
+  = $flatten_parameterList(nonEmptyParameterList) ++ [ parameter ]
 
 ;;
 ;; Constructor parameters
@@ -811,20 +811,25 @@ syntax typeFieldList =
   | `EMPTY
   | typeFieldList typeField
 
+dec $flatten_typeFieldList(typeFieldList) : typeField*
+def $flatten_typeFieldList(`EMPTY) = eps
+def $flatten_typeFieldList(typeFieldList typeField)
+  = $flatten_typeFieldList(typeFieldList) ++ [ typeField ]
+
 syntax structTypeDeclaration =
   annotationList STRUCT name typeParameterListOpt `{ typeFieldList }
 
 syntax headerTypeDeclaration =
   annotationList HEADER name typeParameterListOpt `{ typeFieldList }
 
-syntax headerUnionDeclaration =
+syntax headerUnionTypeDeclaration =
   annotationList HEADER_UNION name typeParameterListOpt `{ typeFieldList }
 
 syntax derivedTypeDeclaration =
   | enumTypeDeclaration
   | structTypeDeclaration
   | headerTypeDeclaration
-  | headerUnionDeclaration
+  | headerUnionTypeDeclaration
 
 ;;
 ;;;; Typedef and newtype declarations
@@ -853,6 +858,13 @@ syntax methodPrototype =
 syntax methodPrototypeList =
   | `EMPTY
   | methodPrototypeList methodPrototype
+
+dec $flatten_methodPrototypeList(methodPrototypeList) : methodPrototype*
+def $flatten_methodPrototypeList(`EMPTY) = eps
+def $flatten_methodPrototypeList(
+    methodPrototypeList methodPrototype
+  )
+  = $flatten_methodPrototypeList(methodPrototypeList) ++ [ methodPrototype ]
 
 syntax externObjectDeclaration =
   annotationList EXTERN nonTypeName typeParameterListOpt `{ methodPrototypeList }
@@ -928,12 +940,22 @@ syntax parserStatementList =
   | `EMPTY
   | parserStatementList parserStatement
 
+dec $flatten_parserStatementList(parserStatementList) : parserStatement*
+def $flatten_parserStatementList(`EMPTY) = eps
+def $flatten_parserStatementList(parserStatementList parserStatement)
+  = $flatten_parserStatementList(parserStatementList) ++ [ parserStatement ]
+
 syntax parserState =
   annotationList STATE name `{ parserStatementList transitionStatement }
 
 syntax parserStateList =
   | parserState
   | parserStateList parserState
+
+dec $flatten_parserStateList(parserStateList) : parserState*
+def $flatten_parserStateList(parserState) = parserState
+def $flatten_parserStateList(parserStateList parserState)
+  = $flatten_parserStateList(parserStateList) ++ [ parserState ]
 
 syntax parserLocalDeclaration =
   | constantDeclaration
@@ -944,6 +966,15 @@ syntax parserLocalDeclaration =
 syntax parserLocalDeclarationList =
   | `EMPTY
   | parserLocalDeclarationList parserLocalDeclaration
+
+dec $flatten_parserLocalDeclarationList(parserLocalDeclarationList)
+  : parserLocalDeclaration*
+def $flatten_parserLocalDeclarationList(`EMPTY) = eps
+def $flatten_parserLocalDeclarationList(
+    parserLocalDeclarationList parserLocalDeclaration
+  )
+  = $flatten_parserLocalDeclarationList(parserLocalDeclarationList)
+    ++ [ parserLocalDeclaration ]
 
 syntax parserDeclaration =
   annotationList PARSER name typeParameterListOpt

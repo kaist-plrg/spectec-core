@@ -1,0 +1,68 @@
+;;
+;; L-value typing, when used as a method
+;;
+;; syntax lvalue
+;;
+
+;;; referenceExpression
+;;; syntax referenceExpression
+
+;;;;  prefixedNonTypeName
+
+rule Lvalue_routine_ok/prefixedNonTypeName:
+  p C |- prefixedNonTypeName : prefixedNameIR
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+
+;;;;  THIS
+
+;;; lvalue `. member
+
+rule Lvalue_routine_ok/lvalue-member:
+  p C |- lvalue_base `. member : typedLvalueIR_base `. nameIR
+  -- Lvalue_ok: p C ROUTINE |- lvalue_base : typedLvalueIR_base
+  -- if nameIR = $name(member)
+
+;;; `( lvalue )
+
+rule Lvalue_routine_ok/parenthesized:
+  p C |- `( lvalue ) : `( routineLvalueIR )
+  -- Lvalue_routine_ok: p C |- lvalue : routineLvalueIR
+
+;;
+;; Routine l-value typing
+;;
+
+rule RoutineType_Lvalue_ok/function:
+  p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
+       : functionTypeIR `< `# tid_impl* > `( `# id_default* )
+  -- FunctionType_ok: p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
+                           : functionTypeIR `< `# tid_impl* > `( `# id_default* )
+
+rule RoutineType_Lvalue_ok/control-apply:
+  p C |- (typedLvalueIR_base `. "apply") `< eps > `( argument* )
+       : methodTypeIR `< `# eps > `( `# id_default* )
+  ---- ;; if the base type is a control 
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if CONTROL `( parameterTypeIR* ) = $canon(typeIR_base)
+  ---- ;; create method type
+  -- if methodTypeIR = CONTROL_APPLY `( parameterTypeIR* )
+  ---- ;; create routine id
+  -- if (_ _ id_param value_param? = parameterTypeIR)*
+  -- if (pid = id_param `# (value_param? =/= eps))*
+  -- if rid = "apply" `( pid* )
+  ---- ;; perform overload resoultion
+  -- if (id_arg?)* = $ids_arguments(argument*)
+  -- if (rid, methodTypeIR, id_default*)
+      = $find_overloaded<routineTypeDefIR>(
+          `{ (rid `: methodTypeIR) },
+          "apply",
+          (id_arg?)*)
+
+rule RoutineType_Lvalue_ok/table-apply:
+  p C |- (typedLvalueIR_base `. "apply") `< eps > `( eps )
+       : methodTypeIR `< `# eps > `( `# eps )
+  ---- ;; if the base type is a table
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if TABLE _ `# typeIR_table = $canon(typeIR_base)
+  ---- ;; create method type
+  -- if methodTypeIR = TABLE_APPLY `-> typeIR_table

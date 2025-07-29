@@ -84,7 +84,7 @@ let id_of_declaration (decl : value) : string =
   | ( "headerTypeDeclaration",
       [ []; [ "HEADER" ]; []; [ "{" ]; [ "}" ] ],
       [ _; name; _; _ ] )
-  | ( "headerUnionDeclaration",
+  | ( "headerUnionTypeDeclaration",
       [ []; [ "HEADER_UNION" ]; []; [ "{" ]; [ "}" ] ],
       [ _; name; _; _ ] )
   | "typedefDeclaration", [ []; [ "TYPEDEF" ]; []; [ ";" ] ], [ _; _; name ]
@@ -166,7 +166,7 @@ let has_type_params_declaration (decl : value) : bool =
   | ( "headerTypeDeclaration",
       [ []; [ "HEADER" ]; []; [ "{" ]; [ "}" ] ],
       [ _; _; typeParameterListOpt; _ ] )
-  | ( "headerUnionDeclaration",
+  | ( "headerUnionTypeDeclaration",
       [ []; [ "HEADER_UNION" ]; []; [ "{" ]; [ "}" ] ],
       [ _; _; typeParameterListOpt; _ ] ) ->
       has_type_params typeParameterListOpt

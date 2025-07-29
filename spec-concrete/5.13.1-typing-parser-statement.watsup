@@ -1,0 +1,108 @@
+;;
+;; Parser transition statement typing
+;;
+;; syntax transitionStatement = TRANSITION stateExpression
+;;
+
+;;; syntax stateExpression
+
+;;;;  name `;
+
+rule ParserTransition_ok/name:
+  C_0 nameIR_state* |- TRANSITION (name `;)
+                     : transitionStatementIR
+  ---- ;; check that name is a valid state name
+  -- if nameIR = $name(name)
+  -- if nameIR <- nameIR_state*
+  ---- ;; create IR
+  -- if transitionStatementIR = TRANSITION (nameIR `;)
+
+;;;;  selectExpression
+
+;;
+;; Parser statement typing
+;;
+;; syntax parserStatement
+;;
+
+;;; constantDeclaration
+
+rule ParserStmt_ok/constantDeclaration:
+  C_0 |- constantDeclaration
+       : C_1 constantDeclarationIR
+  -- Decl_ok: LOCAL C_0 |- constantDeclaration
+                         : C_1 constantDeclarationIR
+
+;;; variableDeclaration
+
+;;; emptyStatement
+
+rule ParserStmt_ok/emptyStatement:
+  C |- emptyStatement
+     : C emptyStatementIR
+  -- Stmt_ok: LOCAL C CONT |- emptyStatement 
+                            : C CONT emptyStatementIR
+
+;;; assignmentStatement
+
+rule ParserStmt_ok/assignmentStatement:
+  C_0 |- assignmentStatement
+       : C_1 assignmentStatementIR
+  -- Stmt_ok: LOCAL C_0 CONT |- assignmentStatement
+                              : C_1 CONT assignmentStatementIR
+
+;;; callStatement
+
+rule ParserStmt_ok/callStatement:
+  C_0 |- callStatement
+       : C_1 callStatementIR
+  -- Stmt_ok: LOCAL C_0 CONT |- callStatement 
+                              : C_1 CONT callStatementIR
+
+;;; directApplicationStatement
+
+rule ParserStmt_ok/directApplicationStatement:
+  C_0 |- directApplicationStatement
+       : C_1 directApplicationStatementIR
+  -- Stmt_ok: LOCAL C_0 CONT |- directApplicationStatement
+                              : C_1 CONT directApplicationStatementIR
+
+;;; parserBlockStatement
+;;; syntax parserBlockStatement = annotationList `{ parserStatementList }
+
+rule ParserStmt_ok/parserBlockStatement:
+  C_0 |- annotationList `{ parserStatementList }
+       : C_1 parserBlockStatementIR
+  ---- ;; check statements in nested context
+  -- if parserStatement*
+      = $flatten_parserStatementList(parserStatementList)
+  -- if C_1 = $enter(C_0)
+  -- ParserStmts_ok: C_1 |- parserStatement* : C_2 parserStatementIR*
+  -- if C_3 = $exit(C_2)
+  ---- ;; create IR
+  -- if parserBlockStatementIR = annotationList `{ parserStatementIR* }
+
+;;; conditionalStatement
+
+rule ParserStmt_ok/conditionalStatement:
+  C_0 |- conditionalStatement
+       : C_1 conditionalStatementIR
+  -- Stmt_ok: LOCAL C_0 CONT |- conditionalStatement 
+                              : C_1 CONT conditionalStatementIR
+
+;;
+;; Parser statement list typing
+;;
+;; syntax parserStatementList
+;;
+
+rule ParserStmts_ok/nil:
+  C |- eps : C eps
+
+rule ParserStmts_ok/cons:
+  C_0 |- parserStatement_h :: parserStatement_t*
+       : C_2 (parserStatementIR_h :: parserStatementIR_t*)
+  -- ParserStmt_ok: C_0 |- parserStatement_h
+                         : C_1 parserStatementIR_h
+  -- ParserStmts_ok: C_1 |- parserStatement_t*
+                          : C_2 parserStatementIR_t*

@@ -1,5 +1,9 @@
+;;
+;; Static evaluation of expression
+;;
 ;; syntax typedExpressionIR =
 ;;   expressionIR `# `( typeIR ctk )
+;;
 
 ;;; syntax expressionIR
 
@@ -42,6 +46,12 @@ rule Eval_static/stringliteral:
 ;;;; ternaryExpressionIR
 
 ;;;; castExpressionIR
+;;;; syntax castExpressionIR = `( typeIR ) typedExpressionIR
+
+rule Eval_static/castExpression:
+  p C |- (`( typeIR ) typedExpressionIR) `# `( _ _ ) ~> value_cast
+  -- Eval_static: p C |- typedExpressionIR ~> value
+  -- if value_cast = $cast_op(typeIR, value)
 
 ;;;; dataExpressionIR
 

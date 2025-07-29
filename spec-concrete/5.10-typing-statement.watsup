@@ -1,4 +1,6 @@
 ;;
+;; Statement typing
+;;
 ;; syntax statement
 ;;
 
@@ -37,23 +39,23 @@ rule Stmt_ok/assignmentStatement-eq:
 ;;;; lvalue `( argumentList ) `;
 
 rule Stmt_ok/callStatement-no-typeArgumentList:
-  p C f |- lvalue_method `( argumentList ) `;
+  p C f |- lvalue_routine `( argumentList ) `;
          : C f callStatementIR
   ---- ;; check base lvalue
-  -- Lvalue_method_ok: p C |- lvalue_method : methodLvalueIR
-  ---- ;; check lvalue as method
+  -- Lvalue_routine_ok: p C |- lvalue_routine : routineLvalueIR
+  ---- ;; check lvalue as routine
   -- if argument* = $flatten_argumentList(argumentList)
-  -- MethodType_Lvalue_ok:
-      p C |- methodLvalueIR `< eps > `( argument* )
-           : methodTypeIR `< `# tid_impl* > `( `# id_default* )
+  -- RoutineType_Lvalue_ok:
+      p C |- routineLvalueIR `< eps > `( argument* )
+           : routineTypeIR `< `# tid_impl* > `( `# id_default* )
   ---- ;; check arguments
   -- (Argument_ok: p C |- argument : argumentIR)*
   ---- ;; check calling convention
-  -- Call_ok: p C |- methodTypeIR `< eps `# tid_impl* > `( argumentIR* `# id_default* )
+  -- Call_ok: p C |- routineTypeIR `< eps `# tid_impl* > `( argumentIR* `# id_default* )
                    : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; create IR
   -- if callStatementIR
-      = methodLvalueIR `< typeArgumentIR_inferred* > `( argumentIR_cast* ) `;
+      = routineLvalueIR `< typeArgumentIR_inferred* > `( argumentIR_cast* ) `;
 
 ;;;; lvalue `< typeArgumentList > `( argumentList ) `;
 

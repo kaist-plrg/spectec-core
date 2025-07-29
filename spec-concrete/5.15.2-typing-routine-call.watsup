@@ -1,0 +1,56 @@
+;;
+;; Function call
+;;
+
+rule FunctionType_ok/action:
+  p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
+       : functionTypeIR `< `# tid_impl* > `( `# id_default* )
+  -- if (rid, routineTypeDefIR, id_default*)
+      = $find_routine_overloaded(p, C, prefixedNameIR, argument*)
+  -- if (functionTypeIR, tid_impl*)
+      = $specialize_routineTypeDef(routineTypeDefIR, typeArgumentIR*)
+
+;;
+;; Call
+;;
+
+;;; Function call
+
+rule Call_ok/action:
+  p C |- (ACTION `( parameterTypeIR* )) `< eps `# eps > `( argumentIR* `# id_default* )
+        : VOID `< eps > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; (TODO) check call site
+  -- Call_convention_ok:
+      p C ACTION |- parameterTypeIR_aligned* `@ argumentIR*
+                  : argumentIR_cast*
+
+;;; Method call
+
+rule Call_ok/control-apply-method:
+  p C |- (CONTROL_APPLY `( parameterTypeIR* ))
+          `< eps `# eps > `( argumentIR* `# id_default* )
+        : VOID `< eps > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; (TODO) check call site
+  -- Call_convention_ok:
+      p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
+                    : argumentIR_cast*
+
+rule Call_ok/table-apply-method:
+  p C |- (TABLE_APPLY `-> typeIR_table) `< eps `# eps > `( eps `# eps )
+        : typeIR_table `< eps > `( eps )

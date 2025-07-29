@@ -161,13 +161,18 @@ dec $add_type(cursor, context, tid, typeDefIR) : context
 def $add_type(GLOBAL, C, tid, typeDefIR) = C'
   -- if tdenv = C.GLOBAL.TDENV
   -- if tdenv_update
-        = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
+      = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
   -- if C' = C [ .GLOBAL.TDENV = tdenv_update ]
 def $add_type(BLOCK, C, tid, typeDefIR) = C'
   -- if tdenv = C.BLOCK.TDENV
   -- if tdenv_update
-        = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
+      = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
   -- if C' = C [ .BLOCK.TDENV = tdenv_update ]
+def $add_type(LOCAL, C, tid, typeDefIR) = C'
+  -- if tdenv = C.LOCAL.TDENV
+  -- if tdenv_update
+      = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
+  -- if C' = C [ .LOCAL.TDENV = tdenv_update ]
 
 dec $add_types(cursor, context, tid*, typeDefIR*) : context
 def $add_types(p, C, eps, eps) = C
@@ -177,14 +182,14 @@ def $add_types(p, C, tid_h :: tid_t*, typeDefIR_h :: typeDefIR_t*) = C''
 
 ;;; Adder for routines
 
-dec $add_routine(cursor, context, rid, routineTypeDefIR) : context
+dec $add_routine_overload(cursor, context, rid, routineTypeDefIR) : context
 
-def $add_routine(GLOBAL, C, rid, routineTypeDefIR) = C'
+def $add_routine_overload(GLOBAL, C, rid, routineTypeDefIR) = C'
   -- if rdenv = C.GLOBAL.RDENV
   -- if rdenv_update
         = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
   -- if C' = C [ .GLOBAL.RDENV = rdenv_update ]
-def $add_routine(BLOCK, C, rid, routineTypeDefIR) = C'
+def $add_routine_overload(BLOCK, C, rid, routineTypeDefIR) = C'
   -- if rdenv = C.BLOCK.RDENV
   -- if rdenv_update
         = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
@@ -276,27 +281,31 @@ def $id_argument(name `= _) = $name(name)
 def $id_argument(name `= `_) = $name(name)
 def $id_argument(`_) = eps
 
-dec $find_routine_overloaded(cursor, context, id, argument*)
+dec $find_routine_overloaded(cursor, context, prefixedNameIR, argument*)
   : (rid, routineTypeDefIR, id*)?
 
-def $find_routine_overloaded(GLOBAL, C, id, argument*)
+def $find_routine_overloaded(GLOBAL, C, `. id, argument*)
   = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
   -- if rdenv = C.GLOBAL.RDENV
   -- if (id_arg?)* = $ids_arguments(argument*)
-def $find_routine_overloaded(BLOCK, C, id, argument*)
+def $find_routine_overloaded(GLOBAL, C, `` id, argument*)
+  = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
+  -- if rdenv = C.GLOBAL.RDENV
+  -- if (id_arg?)* = $ids_arguments(argument*)
+def $find_routine_overloaded(BLOCK, C, `` id, argument*)
   = (rid, routineTypeDefIR, id_default*)
   -- if rdenv = C.BLOCK.RDENV
   -- if (id_arg?)* = $ids_arguments(argument*)
   -- if (rid, routineTypeDefIR, id_default*)
       = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
-def $find_routine_overloaded(BLOCK, C, id, argument*)
-  = $find_routine_overloaded(GLOBAL, C, id, argument*)
+def $find_routine_overloaded(BLOCK, C, `` id, argument*)
+  = $find_routine_overloaded(GLOBAL, C, `` id, argument*)
   -- if rdenv = C.BLOCK.RDENV
   -- if (id_arg?)* = $ids_arguments(argument*)
   -- if eps
       = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
-def $find_routine_overloaded(LOCAL, C, id, argument*)
-  = $find_routine_overloaded(BLOCK, C, id, argument*) 
+def $find_routine_overloaded(LOCAL, C, `` id, argument*)
+  = $find_routine_overloaded(BLOCK, C, `` id, argument*) 
 
 dec $find_routine_non_overloaded(cursor, context, prefixedNameIR)
   : routineTypeDefIR?

@@ -1,0 +1,42 @@
+;;
+;; Parser local declaration typing
+;;
+;; syntax parserLocalDeclaration
+;;
+
+;;; constantDeclaration
+
+rule ParserLocalDecl_ok/constantDeclaration:
+  C_0 |- constantDeclaration
+       : C_1 constantDeclarationIR
+  -- Decl_ok: BLOCK C_0 |- constantDeclaration
+                         : C_1 constantDeclarationIR
+
+;;; instantiation
+
+rule ParserLocalDecl_ok/instantiation:
+  C_0 |- instantiation
+       : C_1 instantiationIR
+  -- Decl_ok: BLOCK C_0 |- instantiation
+                         : C_1 instantiationIR
+
+;;; variableDeclaration
+
+;;; valueSetDeclaration
+
+;;
+;; Parser local declaration list typing
+;;
+;; syntax parserLocalDeclarationList
+;;
+
+rule ParserLocalDecls_ok/nil:
+  C |- eps : C eps
+
+rule ParserLocalDecls_ok/cons:
+  C_0 |- parserLocalDeclaration_h :: parserLocalDeclaration_t*
+       : C_2 (parserLocalDeclarationIR_h :: parserLocalDeclarationIR_t*)
+  -- ParserLocalDecl_ok: C_0 |- parserLocalDeclaration_h
+                              : C_1 parserLocalDeclarationIR_h
+  -- ParserLocalDecls_ok: C_1 |- parserLocalDeclaration_t*
+                               : C_2 parserLocalDeclarationIR_t*

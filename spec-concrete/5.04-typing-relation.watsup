@@ -52,18 +52,22 @@ relation Argument_ok:
   hint(input %0 %1 %2)
 
 ;;
-;;;; Statement typing
+;;;; L-value typing
 ;;
 
-syntax lvaluectx = ASSIGN | METHOD 
+syntax lvaluectx = ASSIGN | ROUTINE
 
 relation Lvalue_ok:
   cursor context lvaluectx |- lvalue : typedLvalueIR
   hint(input %0 %1 %2 %3)
 
-relation Lvalue_method_ok:
-  cursor context |- lvalue : methodLvalueIR
+relation Lvalue_routine_ok:
+  cursor context |- lvalue : routineLvalueIR
   hint(input %0 %1 %2)
+
+;;
+;;;; Statement typing
+;;
 
 relation Stmt_ok:
   cursor context flow |- statement : context flow statementIR
@@ -122,7 +126,61 @@ def $constructorParameterIR(constructorParameterIR)
   = $parameterIR(constructorParameterIR)
 
 ;;
-;;;; Table typing
+;;;; Extern method/constructor typing
+;;
+
+relation ExternMethod_ok:
+  context tid |- methodPrototype : context methodPrototypeIR
+  hint(input %0 %1 %2)
+
+relation ExternMethods_ok:
+  context tid |- methodPrototype* : context methodPrototypeIR*
+  hint(input %0 %1 %2)
+
+relation ExternConstructor_ok:
+  context tid |- methodPrototype : context methodPrototypeIR
+  hint(input %0 %1 %2)
+
+relation ExternConstructors_ok:
+  context tid |- methodPrototype* : context methodPrototypeIR*
+  hint(input %0 %1 %2)
+
+;;
+;;;; Parser typing
+;;
+
+relation ParserTransition_ok:
+  context nameIR* |- transitionStatement : transitionStatementIR
+  hint(input %0 %1 %2)
+
+relation ParserStmt_ok:
+  context |- parserStatement : context parserStatementIR
+  hint(input %0 %1)
+
+relation ParserStmts_ok:
+  context |- parserStatement* : context parserStatementIR*
+  hint(input %0 %1)
+
+relation ParserState_ok:
+  context nameIR* |- parserState : parserStateIR
+  hint(input %0 %1 %2)
+
+relation ParserStates_ok:
+  context |- parserState* : parserStateIR*
+  hint(input %0 %1)
+
+relation ParserLocalDecl_ok:
+  context |- parserLocalDeclaration
+           : context parserLocalDeclarationIR
+  hint(input %0 %1)
+
+relation ParserLocalDecls_ok:
+  context |- parserLocalDeclaration*
+           : context parserLocalDeclarationIR*
+  hint(input %0 %1)
+
+;;
+;;;; Control typing
 ;;
 
 relation Call_action_partial_ok:
@@ -163,6 +221,16 @@ relation TableType_ok:
   context tblctx |- name : context typeIR
   hint(input %0 %1 %2)
 
+relation ControlLocalDecl_ok:
+  context |- controlLocalDeclaration
+           : context controlLocalDeclarationIR
+  hint(input %0 %1)
+
+relation ControlLocalDecls_ok:
+  context |- controlLocalDeclaration*
+           : context controlLocalDeclarationIR*
+  hint(input %0 %1)
+
 ;;
 ;;;; Declaration typing
 ;;
@@ -174,16 +242,6 @@ relation Decl_ok:
 relation Decls_ok:
   cursor context |- declaration* : context declarationIR*
   hint(input %0 %1 %2)
-
-relation ControlLocalDecl_ok:
-  context |- controlLocalDeclaration
-           : context controlLocalDeclarationIR
-  hint(input %0 %1)
-
-relation ControlLocalDecls_ok:
-  context |- controlLocalDeclaration*
-           : context controlLocalDeclarationIR*
-  hint(input %0 %1)
 
 relation Program_ok:
   |- p4program : context p4programIR
@@ -211,9 +269,13 @@ relation MethodType_ok:
                   : methodTypeIR `< `# tid* > `( `# id* )
   hint(input %0 %1 %2 %3 %4 %5)
 
-relation MethodType_Lvalue_ok:
-  cursor context |- methodLvalueIR `< typeArgumentListIR > `( argument* )
-                  : methodTypeIR `< `# tid* > `( `# id* )
+;; Finds the type of a lvalue routine,
+;; inserts fresh type variables for parameters with don't care types, (tid*)
+;; and also identifies the ids of default arguments (id*)
+
+relation RoutineType_Lvalue_ok:
+  cursor context |- routineLvalueIR `< typeArgumentListIR > `( argument* )
+                  : routineTypeIR `< `# tid* > `( `# id* )
   hint(input %0 %1 %2 %3 %4)
 
 ;;

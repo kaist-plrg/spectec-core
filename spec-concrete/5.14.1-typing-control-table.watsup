@@ -1,4 +1,6 @@
 ;;
+;; Table action property typing
+;;
 ;; syntax tableAction
 ;;
 
@@ -75,6 +77,8 @@ rule TableAction_ok/prefixedNonTypeName-argumentList:
   -- if tableActionIR = annotationList (prefixedNameIR `( argumentIR_cast* )) `;
 
 ;;
+;; Table action property list typing
+;;
 ;; syntax tableActionList
 ;;
 
@@ -87,6 +91,8 @@ rule TableActions_ok/cons:
   -- TableAction_ok: C TC_0 |- tableAction_h : TC_1 tableActionIR_h
   -- TableActions_ok: C TC_1 |- tableAction_t* : TC_2 tableActionIR_t*
 
+;;
+;; Table default action property typing
 ;;
 ;; syntax tableDefaultAction (doesn't exist in the grammar)
 ;;
@@ -138,6 +144,8 @@ rule TableDefaultAction_ok/prefixedNonTypeName-argumentList:
   -- if (argumentIR_action_data = argumentIR_cast_data)*
 
 ;;
+;; Table property typing
+;;
 ;; syntax tableProperty
 ;;
 
@@ -168,6 +176,8 @@ rule TableProperty_ok/custom-default-action:
       = annotationList constOptIR DEFAULT_ACTION `= tableActionReferenceIR `;
 
 ;;
+;; Table property list typing
+;;
 ;; syntax tablePropertyList
 ;;
 
@@ -180,6 +190,8 @@ rule TableProperties_ok/cons:
   -- TableProperty_ok: C TC_0 |- tableProperty_h : TC_1 tablePropertyIR_h
   -- TableProperties_ok: C TC_1 |- tableProperty_t* : TC_2 tablePropertyIR_t*
 
+;;
+;; Table typing
 ;;
 ;; syntax table
 ;;

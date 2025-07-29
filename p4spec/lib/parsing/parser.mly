@@ -129,7 +129,7 @@
   (* >> Error declarations *) errorDeclaration
   (* >> Match kind declarations *) matchKindDeclaration
   (* >> Derived type declarations *)
-  enumTypeDeclaration typeField typeFieldList structTypeDeclaration headerTypeDeclaration headerUnionDeclaration derivedTypeDeclaration
+  enumTypeDeclaration typeField typeFieldList structTypeDeclaration headerTypeDeclaration headerUnionTypeDeclaration derivedTypeDeclaration
   (* >> Typedef and newtype declarations *) typedefType typedefDeclaration
   (* >> Extern declarations *)
   externFunctionDeclaration methodPrototype methodPrototypeList externObjectDeclaration externDeclaration
@@ -1143,18 +1143,18 @@ headerTypeDeclaration:
       #@ "headerTypeDeclaration" }
 ;
 
-headerUnionDeclaration:
+headerUnionTypeDeclaration:
   | al = annotationList HEADER_UNION n = name tpl = typeParameterListOpt
       L_BRACE fl = typeFieldList R_BRACE
     { [ NT al; Term "HEADER_UNION"; NT n; NT tpl; Term "{"; NT fl; Term "}" ]
-      #@ "headerUnionDeclaration" }
+      #@ "headerUnionTypeDeclaration" }
 ;
 
 derivedTypeDeclaration:
   | d = enumTypeDeclaration
   | d = structTypeDeclaration
   | d = headerTypeDeclaration
-  | d = headerUnionDeclaration
+  | d = headerUnionTypeDeclaration
     { d }
 ;
 
