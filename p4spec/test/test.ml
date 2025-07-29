@@ -191,7 +191,9 @@ let run_il negative spec_il includes_p4 filename_p4 =
   let time_start = start () in
   try
     (* Run test *)
-    (match Interp_il.Typing.run_typing spec_il includes_p4 filename_p4 with
+    (match
+       Interp_il.Typing_concrete.run_typing spec_il includes_p4 filename_p4
+     with
     | WellTyped -> if negative then raise (TestCheckNegErr time_start)
     | IllTyped (at, msg) -> raise (TestCheckErr (msg, at, time_start))
     | IllFormed msg -> raise (TestCheckErr (msg, no_region, time_start)));
