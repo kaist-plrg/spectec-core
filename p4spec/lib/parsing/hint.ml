@@ -15,7 +15,7 @@ let hints_of_typcase hmap (id : id) (typcase : typcase) =
       let hint = (nottyp, hint.hintexp) in
       let add = function
         | None -> Some [ hint ]
-        | Some l -> Some (l @ [ hint ])
+        | Some hints -> Some (hints @ [ hint ])
       in
       SMap.update id.it add hmap
   | None -> hmap
