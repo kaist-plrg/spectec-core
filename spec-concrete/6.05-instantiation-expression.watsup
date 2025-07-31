@@ -356,7 +356,7 @@ rule Expr_inst/accessExpressionIR-errorAccessExpressionIR:
 
 ;;;;;;; TYPE prefixedNameIR
 
-rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-enum:
+rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-typeaccess-enum:
   p Ci sto |- ((TYPE prefixedNameIR) `. nameIR) `# _
     ==> sto (tid `. nameIR)
   -- if $flatten_prefixedNameIR(prefixedNameIR) = nameIR_type
@@ -374,11 +374,10 @@ rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-senum:
 ;;;;;;; typedExpressionIR
 
 rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-typedExpressionIR:
-  p Ci sto |- (typedExpressionIR `. nameIR) `# _
+  p Ci sto |- (typedExpressionIR `. "size") `# _
     ==> sto' (D nat_s)
   -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto' value
-  -- if `[ _ `# `( _; nat_s )] = value
-  -- if nameIR = "size"
+  -- if value = `[ _ `# `( _; nat_s )] 
 
 ;;;;; indexAccessExpressionIR
 ;;;;; syntax indexAccessExpressionIR =
@@ -398,14 +397,14 @@ rule Expr_inst/indexAccessExpressionIR-bitslice:
 ;;;; syntax callExpressionIR =
 ;;;;; constructorTargetIR `( argumentListIR )
 
-dec $get_constructor_from_type(typeIR) : tid
-def $get_constructor_from_type(TID tid) = tid
-def $get_constructor_from_type((typeIR `< tid* `, tid* >) `< typeIR_args* >) = $get_constructor_from_type(typeIR)
+dec $get_constructor_id(typeIR) : tid
+def $get_constructor_id(TID tid) = tid
+def $get_constructor_id((typeIR `< tid* `, tid* >) `< typeIR_args* >) = $get_constructor_id(typeIR)
 
 rule Expr_inst/callExpressionIR-instantiation:
   p Ci sto |- ((typeIR `< typeArgumentListIR >) `( argumentListIR )) `# _
     ==> sto'' (`! Ci.PATH)
-  -- if $get_constructor_from_type(typeIR) = tid
+  -- if $get_constructor_id(typeIR) = tid
   -- if $find_cons_inst(p, Ci, tid, argumentListIR) = (consDyn, id_default*)
   -- Constructor_inst: p Ci sto |- consDyn `< typeArgumentListIR > `( argumentListIR `# id_default* ) ==> sto' objDyn
   -- if $add_sto(sto', Ci.PATH, objDyn) = sto''

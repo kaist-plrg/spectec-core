@@ -96,6 +96,4 @@ def $expression_as_lvalue(`( expression )) = `( lvalue )
 ;; Object names
 ;;
 
-syntax oid =
-  | name
-  | oid `. name
+syntax oid = id*

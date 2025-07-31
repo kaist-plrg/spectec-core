@@ -24,7 +24,7 @@ relation Expr_inst:
   cursor contextInst sto |- typedExpressionIR ==> sto value
   hint(input %0 %1 %2 %3)
 
-relation Arg_inst:
+relation Argument_inst:
   cursor contextInst sto |- argumentIR ==> sto value
   hint(input %0 %1 %2 %3)
 
@@ -73,16 +73,24 @@ relation Method_inst:
 ;;
 
 relation Stmts_inst:
-  cursor contextInst sto |- blockElementStatementListIR ==> contextInst sto blockElementStatementListIR
+  cursor contextInst sto |- statementIR* ==> contextInst sto statementIR*
   hint(input %0 %1 %2 %3)
 
 relation Stmt_inst:
-  cursor contextInst sto |- blockElementStatementIR ==> contextInst sto blockElementStatementIR
+  cursor contextInst sto |- statementIR ==> contextInst sto statementIR
+  hint(input %0 %1 %2 %3)
+
+relation BlockElementStmt_inst:
+  cursor contextInst sto |- blockElementStatementIR ==> contextInst sto blockElementStatementIR?
+  hint(input %0 %1 %2 %3)
+
+relation BlockElementStmts_inst:
+  cursor contextInst sto |- blockElementStatementIR* ==> contextInst sto blockElementStatementIR*
   hint(input %0 %1 %2 %3)
 
 relation SwitchCases_inst:
-  cursor contextInst sto |- expressionIR switchCaseIR* ==> contextInst sto switchCaseIR*
-  hint(input %0 %1 %2 %3 %4)
+  cursor contextInst sto |- switchCaseIR* ==> contextInst sto switchCaseIR*
+  hint(input %0 %1 %2 %3)
 
 relation SwitchCase_inst:
   cursor contextInst sto |- switchCaseIR ==> contextInst sto switchCaseIR

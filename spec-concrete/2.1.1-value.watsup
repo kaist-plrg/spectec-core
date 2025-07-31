@@ -90,6 +90,10 @@ syntax synthesizedValue =
   | setValue
   | tableValue
 
+;;
+;;;; Reference values
+;;
+
 syntax objectReferenceValue = `! oid
 
 ;;
