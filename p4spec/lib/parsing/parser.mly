@@ -56,7 +56,7 @@
 %token<Source.info> ABSTRACT ACTION ACTIONS APPLY BOOL BIT BREAK CONST CONTINUE CONTROL DEFAULT
 %token<Source.info> ELSE ENTRIES ENUM ERROR EXIT EXTERN HEADER HEADER_UNION IF IN INOUT FOR
 %token<Source.info> INT KEY LIST SELECT MATCH_KIND OUT PACKAGE PARSER PRIORITY RETURN STATE STRING STRUCT
-%token<Source.info> SWITCH TABLE THIS TRANSITION TUPLE TYPEDEF TYPE VALUESET VARBIT VOID
+%token<Source.info> SWITCH TABLE THIS TRANSITION TUPLE TYPEDEF TYPE VALUE_SET VARBIT VOID
 %token<Source.info> PRAGMA PRAGMA_END
 %token<Source.info> PLUS_ASSIGN PLUS_SAT_ASSIGN MINUS_ASSIGN MINUS_SAT_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN  SHL_ASSIGN SHR_ASSIGN BIT_AND_ASSIGN BIT_XOR_ASSIGN BIT_OR_ASSIGN
 %token<Il.Ast.value> UNEXPECTED_TOKEN
@@ -1264,9 +1264,9 @@ valueSetType: (* TODO: inline? *)
 ;
 
 valueSetDeclaration:
-	| al = annotationList VALUESET l_angle t = valueSetType r_angle
+	| al = annotationList VALUE_SET l_angle t = valueSetType r_angle
     L_PAREN s = expression R_PAREN n = name SEMICOLON
-    { [ NT al; Term "VALUESET"; Term "<"; NT t; Term ">"; Term "("; NT s; Term ")"; NT n; Term ";" ]
+    { [ NT al; Term "VALUE_SET"; Term "<"; NT t; Term ">"; Term "("; NT s; Term ")"; NT n; Term ";" ]
        #@ "valueSetDeclaration" }
 ;
 
@@ -1592,8 +1592,8 @@ annotationToken:
     { [ Term "TYPEDEF" ] #@ "annotationToken" }
 	| VARBIT
     { [ Term "VARBIT" ] #@ "annotationToken" }
-	| VALUESET
-    { [ Term "VALUESET" ] #@ "annotationToken" }
+	| VALUE_SET
+    { [ Term "VALUE_SET" ] #@ "annotationToken" }
 	| LIST
     { [ Term "LIST" ] #@ "annotationToken" }
 	| VOID

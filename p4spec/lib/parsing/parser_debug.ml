@@ -56,7 +56,7 @@ let token_name token =
     | Parser.TUPLE _ -> "tuple"
     | Parser.TYPEDEF _ -> "typedef"
     | Parser.TYPE _ -> "type"
-    | Parser.VALUESET _ -> "valueset"
+    | Parser.VALUE_SET _ -> "value_set"
     | Parser.VARBIT _ -> "varbit"
     | Parser.VOID _ -> "void"
     | Parser.TRUE _ -> "true"
