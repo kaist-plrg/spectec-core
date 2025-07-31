@@ -1350,7 +1350,7 @@ and eval_return_instr (ctx : Ctx.t) (exp : exp) : Ctx.t * Sign.t =
 (* Debug instruction evaluation *)
 
 and eval_debug_instr (ctx : Ctx.t) (exp : exp) : Ctx.t * Sign.t =
-  let _ctx, value = eval_exp ctx exp in
+  let ctx, value = eval_exp ctx exp in
   print_endline
   @@ F.sprintf "%s: %s" (string_of_region exp.at) (Il.Print.string_of_exp exp);
   print_endline @@ Il.Print.string_of_value value;
