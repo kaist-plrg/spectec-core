@@ -17,11 +17,11 @@ relation Constructor_inst:
 ;;
 
 relation Exprs_inst:
-  cursor contextInst sto |- expressionIR* ==> sto value*
+  cursor contextInst sto |- typedExpressionIR* ==> sto value*
   hint(input %0 %1 %2 %3)
 
 relation Expr_inst:
-  cursor contextInst sto |- expressionIR ==> sto value
+  cursor contextInst sto |- typedExpressionIR ==> sto value
   hint(input %0 %1 %2 %3)
 
 relation Arg_inst:

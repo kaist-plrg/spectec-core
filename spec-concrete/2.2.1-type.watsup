@@ -37,7 +37,7 @@ syntax typeIR
 syntax polyTypeDefIR
 
 syntax namedTypeIR =
-  | TID tid 
+  | TID tid
   | polyTypeDefIR `< typeIR* >
 
 ;;

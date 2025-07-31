@@ -45,8 +45,9 @@ dec $copy_ctx_inst(cursor, contextInst) : contextInst
 dec $enter_frame_inst(contextInst) : contextInst
 
 dec $find_value_inst(cursor, contextInst, nameIR) : value?
-dec $find_typedef_inst(cursor, contextInst, typeName) : typeDefIR?
-
+dec $find_typedef_inst(cursor, contextInst, nameIR) : typeDefIR?
+dec $find_cons_inst(cursor, contextInst, tid, argumentListIR) : (consDyn, id*)
+dec $find_type_inst(cursor, contextInst, prefixedNameIR) : typeIR
 dec $add_value_inst(cursor, contextInst, nameIR, value): contextInst
 dec $add_values_inst(cursor, contextInst, nameIR*, value*): contextInst
 dec $add_func_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst

@@ -12,8 +12,6 @@ syntax lvalueDyn =
 
 syntax stateDyn = blockStatementIR
 
-syntax oid = name*
-
 syntax venv = map<name, value>
 syntax senv = map<name, stateDyn>
 
@@ -81,3 +79,4 @@ syntax objDyn =
 syntax sto = map<oid, objDyn>
 dec $empty_sto() : sto
 def $empty_sto() = $empty_map<oid, objDyn>
+dec $add_sto(sto, oid, objDyn) : sto

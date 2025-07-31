@@ -70,6 +70,8 @@ def $bin_plus(w S i_l, w S i_r) = w S i'
 
 ;;; Binary saturating plus
 
+dec $bin_satplus(value, value) : value 
+
 ;;; Binary minus
 
 dec $bin_minus(value, value) : value
@@ -85,6 +87,8 @@ def $bin_plus(w S i_l, w S i_r) = w S i'
   -- if i' = $to_bitstr(w, $(i_l' - i_r'))
 
 ;;; Binary saturating minus
+
+dec $bin_satminus(value, value) : value
 
 ;;; Binary multiplication
 

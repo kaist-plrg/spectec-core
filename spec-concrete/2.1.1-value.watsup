@@ -90,8 +90,15 @@ syntax synthesizedValue =
   | setValue
   | tableValue
 
+syntax objectReferenceValue = `! oid
+
 ;;
 ;;;; Values
 ;;
 
-syntax value = | baseValue | dataValue | synthesizedValue
+syntax value =
+  | baseValue
+  | dataValue
+  | synthesizedValue
+  | objectReferenceValue
+

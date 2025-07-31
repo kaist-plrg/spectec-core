@@ -92,3 +92,10 @@ def $expression_as_lvalue(expression `. member) = lvalue `. member
   -- if lvalue = $expression_as_lvalue(expression)
 def $expression_as_lvalue(`( expression )) = `( lvalue )
   -- if lvalue = $expression_as_lvalue(expression)
+;;
+;; Object names
+;;
+
+syntax oid =
+  | name
+  | oid `. name
