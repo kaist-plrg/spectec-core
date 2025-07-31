@@ -65,17 +65,21 @@ and pp_text_v fmt (value : value) : unit =
 (* CaseV *)
 
 and pp_case_v (hmap : hmap) fmt (value : value) : unit =
-  let var_match (nottyp, _) =
+  let id, _, values = flatten_case_v value in
+  let matches_hint nottyp value =
     match value.it with
     | CaseV (mixop, _) -> eq_mixop (fst nottyp.it) mixop
     | _ -> false
   in
-  let id, _, values = flatten_case_v value in
-  match SMap.find_opt id hmap with
-  | Some typs -> (
-      match List.find_opt var_match typs with
-      | Some (_, hintexp) -> pp_hint_case_v hmap hintexp fmt values
-      | None -> pp_default_case_v hmap fmt value)
+  let find_hint id value =
+    match SMap.find_opt id hmap with
+    | None -> None
+    | Some typs ->
+        List.find_opt (fun (nottyp, _) -> matches_hint nottyp value) typs
+        |> Option.map snd
+  in
+  match find_hint id value with
+  | Some hintexp -> pp_hint_case_v hmap hintexp fmt values
   | None -> pp_default_case_v hmap fmt value
 
 and pp_hint_case_v (hmap : hmap) (exp : El.Ast.exp) fmt (values : value list) :
