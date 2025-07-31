@@ -23,7 +23,7 @@ let over_region = function
 
 let string_of_pos pos =
   if pos.line = -1 then Printf.sprintf "0x%x" pos.column
-  else string_of_int pos.line ^ "." ^ string_of_int (pos.column + 1)
+  else string_of_int pos.line ^ ":" ^ string_of_int (pos.column + 1)
 
 let string_of_range left right =
   string_of_pos left ^ if left = right then "" else "-" ^ string_of_pos right

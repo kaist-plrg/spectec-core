@@ -1651,7 +1651,76 @@ let populate_clause (ctx : Ctx.t) (def_il : Il.Ast.def) : Il.Ast.def =
 let populate_clauses (ctx : Ctx.t) (spec_il : Il.Ast.spec) : Il.Ast.spec =
   List.map (populate_clause ctx) spec_il
 
+(* Error-collecting elaboration functions *)
+
+type elaboration_result = {
+  ctx : Ctx.t;
+  spec : Il.Ast.spec option;
+  errors : (region * string) list;
+}
+
+(* Simple error collection for definitions *)
+let elab_def_with_errors (ctx : Ctx.t) (def : def) :
+    Ctx.t * Il.Ast.def option * (region * string) list =
+  try
+    let ctx', def_opt = elab_def ctx def in
+    (ctx', def_opt, [])
+  with Util.Error.ElabError (at, msg) -> (ctx, None, [ (at, msg) ])
+
+(* Comprehensive error collection for definitions *)
+let elab_defs_with_errors (ctx : Ctx.t) (defs : def list) :
+    Ctx.t * Il.Ast.def list * (region * string) list =
+  let rec elab_defs_aux ctx defs acc_errors acc_defs =
+    match defs with
+    | [] -> (ctx, List.rev acc_defs, acc_errors)
+    | def :: rest ->
+        let ctx', def_opt, errors = elab_def_with_errors ctx def in
+        let acc_defs' =
+          match def_opt with
+          | Some def_il -> def_il :: acc_defs
+          | None -> acc_defs
+        in
+        elab_defs_aux ctx' rest (errors @ acc_errors) acc_defs'
+  in
+  elab_defs_aux ctx defs [] []
+
+(* Main error-collecting elaboration function *)
+let elab_spec_with_errors (spec : spec) :
+    Il.Ast.spec option * (region * string) list =
+  let ctx = Ctx.init () in
+  let ctx, spec_il, errors = elab_defs_with_errors ctx spec in
+
+  (* Try to populate rules and clauses even if there were errors *)
+  let spec_il_with_rules =
+    try populate_rules ctx spec_il
+    with Util.Error.ElabError (_, _) ->
+      (* If population fails, return the spec as-is and add the error *)
+      spec_il
+  in
+
+  let spec_il_final =
+    try populate_clauses ctx spec_il_with_rules
+    with Util.Error.ElabError (_, _) ->
+      (* If population fails, return the spec as-is and add the error *)
+      spec_il_with_rules
+  in
+
+  (Some spec_il_final, errors)
+
 let elab_spec (spec : spec) : Il.Ast.spec =
   let ctx = Ctx.init () in
   let ctx, spec_il = elab_defs ctx spec in
   spec_il |> populate_rules ctx |> populate_clauses ctx
+
+let format_errors (errors : (region * string) list) : string =
+  match errors with
+  | [] -> "No errors found"
+  | errors ->
+      (* let compare_error error_l error_r =  *)
+      (*   let region_l, _ = error_l in *)
+      (*   let region_r, _ = error_r in *)
+      let errors_sorted = List.sort compare errors in
+      let formatted_errors =
+        List.map (fun (at, msg) -> Util.Error.string_of_error at msg) errors_sorted
+      in
+      String.concat "\n" formatted_errors
