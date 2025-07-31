@@ -78,7 +78,8 @@
 %right PREFIX
 %nonassoc L_PAREN L_BRACKET L_ANGLE_ARGS
 %left DOT
-%start  p4program
+
+%start p4program
 
 (**************************** TYPES ******************************)
 %type <Il.Ast.value>
@@ -543,7 +544,7 @@ errorAccessExpression:
 ;
 
 memberAccessExpression:
-	| e = memberAccessBase DOT m = member
+	| e = memberAccessBase DOT m = member %prec DOT
 		{ [ NT e; Term "."; NT m ] #@ "memberAccessExpression" }
 ;
 
@@ -562,7 +563,7 @@ accessExpression:
 ;
 
 memberAccessExpressionNonBrace:
-	| e = memberAccessBaseNonBrace DOT m = member
+	| e = memberAccessBaseNonBrace DOT m = member %prec DOT
 		{ [ NT e; Term "."; NT m ] #@ "memberAccessExpressionNonBrace" }
 ;
 
@@ -662,7 +663,7 @@ expressionList:
 		{ [ NT el; Term ","; NT e ] #@ "expressionList" }
 ;
 
-memberAccessBase:
+%inline memberAccessBase:
 	| e = prefixedTypeName
 	| e = expression
 		{ e }
@@ -700,7 +701,7 @@ expressionNonBrace:
 		{ e }
 ;
 
-memberAccessBaseNonBrace:
+%inline memberAccessBaseNonBrace:
 	| e = prefixedTypeName
 	| e = expressionNonBrace
 		{ e }
@@ -801,7 +802,7 @@ argumentList:
 (* L-values *)
 lvalue:
 	| e = referenceExpression { e }
-	| lv = lvalue DOT m = member
+	| lv = lvalue DOT m = member %prec DOT
 		{ [ NT lv; Term "."; NT m ] #@ "lvalue" }
 	| lv = lvalue L_BRACKET i = expression R_BRACKET
 		{ [ NT lv; Term "["; NT i; Term "]" ] #@ "lvalue" }
