@@ -973,7 +973,7 @@ syntax valueSetType =
   | prefixedTypeName
 
 syntax valueSetDeclaration =
-  annotationList VALUESET `< valueSetType > `( expression ) name `;    hint(print % VALUE_SET `< % > `( % ) % `;)
+  annotationList VALUE_SET `< valueSetType > `( expression ) name `;
 
 ;;
 ;;;;;; Parser type declarations
@@ -1222,7 +1222,7 @@ syntax annotationToken =
   | PARSER | PACKAGE | PRAGMA | RETURN | SELECT
   | STATE | STRING | STRUCT | SWITCH | TABLE
   | THIS | TRANSITION | TRUE | TUPLE | TYPEDEF
-  | VARBIT | VALUESET hint(print VALUE_SET) | LIST | VOID | `_
+  | VARBIT | VALUE_SET | LIST | VOID | `_
   | identifier | typeIdentifier | stringLiteral | number
   | `&&& | `.. | `<< | `&& | `|| 
   | `== | `!= | `>= | `<=  | `++
