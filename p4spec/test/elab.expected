@@ -7221,94 +7221,93 @@ def $add_parameter(cursor, context, parameterTypeIR) : context =
 
    ;; ../../../../spec-concrete/5.02-context.watsup:143.1-145.48
    clause 0(cursor, C, direction typeIR id value?{value <- value?}) = C'
-      -- if value?{value <- value?} matches ()
-      -- let varTypeIR = direction typeIR `DYN` ?()
+      -- if direction matches ``EMPTY`
+      -- let varTypeIR = ``EMPTY` typeIR `CTK` value?{value <- value?}
       -- let C' = $add_var(cursor, C, id, varTypeIR)
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:146.1-148.48
-   clause 1(cursor, C, direction typeIR id value'?{value' <- value'?}) = C'
-      -- if value'?{value' <- value'?} matches (_)
-      -- let ?(value) = value'?{value' <- value'?}
-      -- let varTypeIR = direction typeIR `DYN` ?(value)
+   ;; ../../../../spec-concrete/5.02-context.watsup:146.1-149.48
+   clause 1(cursor, C, direction typeIR id value?{value <- value?}) = C'
+      -- if (((direction = `IN`) \/ (direction = `OUT`)) \/ (direction = `INOUT`))
+      -- let varTypeIR = direction typeIR `DYN` value?{value <- value?}
       -- let C' = $add_var(cursor, C, id, varTypeIR)
 
 ;; ../../../../spec-concrete/5.02-context.watsup:141.1-141.65
 def $add_parameters(cursor, context, parameterTypeIR*) : context =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:150.1-150.40
+   ;; ../../../../spec-concrete/5.02-context.watsup:151.1-151.40
    clause 0(cursor, C, parameterTypeIR*{parameterTypeIR <- parameterTypeIR*}) = C
       -- if parameterTypeIR*{parameterTypeIR <- parameterTypeIR*} matches []
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:151.1-153.62
+   ;; ../../../../spec-concrete/5.02-context.watsup:152.1-154.62
    clause 1(cursor, C, parameterTypeIR*{parameterTypeIR <- parameterTypeIR*}) = C''
       -- if parameterTypeIR*{parameterTypeIR <- parameterTypeIR*} matches _ :: _
       -- let parameterTypeIR_h :: parameterTypeIR_t*{parameterTypeIR_t <- parameterTypeIR_t*} = parameterTypeIR*{parameterTypeIR <- parameterTypeIR*}
       -- let C' = $add_parameter(cursor, C, parameterTypeIR_h)
       -- let C'' = $add_parameters(cursor, C', parameterTypeIR_t*{parameterTypeIR_t <- parameterTypeIR_t*})
 
-;; ../../../../spec-concrete/5.02-context.watsup:157.1-157.66
+;; ../../../../spec-concrete/5.02-context.watsup:158.1-158.66
 def $add_constructorParameter(context, parameterTypeIR) : context =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:160.1-162.47
+   ;; ../../../../spec-concrete/5.02-context.watsup:161.1-163.47
    clause 0(C, direction typeIR id value?{value <- value?}) = C'
       -- if value?{value <- value?} matches ()
       -- let varTypeIR = direction typeIR `CTK` ?()
       -- let C' = $add_var(`BLOCK`, C, id, varTypeIR)
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:163.1-165.47
+   ;; ../../../../spec-concrete/5.02-context.watsup:164.1-166.47
    clause 1(C, direction typeIR id value'?{value' <- value'?}) = C'
       -- if value'?{value' <- value'?} matches (_)
       -- let ?(value) = value'?{value' <- value'?}
       -- let varTypeIR = direction typeIR `CTK` ?(value)
       -- let C' = $add_var(`BLOCK`, C, id, varTypeIR)
 
-;; ../../../../spec-concrete/5.02-context.watsup:158.1-158.68
+;; ../../../../spec-concrete/5.02-context.watsup:159.1-159.68
 def $add_constructorParameters(context, parameterTypeIR*) : context =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:167.1-167.43
+   ;; ../../../../spec-concrete/5.02-context.watsup:168.1-168.43
    clause 0(C, parameterTypeIR*{parameterTypeIR <- parameterTypeIR*}) = C
       -- if parameterTypeIR*{parameterTypeIR <- parameterTypeIR*} matches []
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:168.1-170.65
+   ;; ../../../../spec-concrete/5.02-context.watsup:169.1-171.65
    clause 1(C, parameterTypeIR*{parameterTypeIR <- parameterTypeIR*}) = C''
       -- if parameterTypeIR*{parameterTypeIR <- parameterTypeIR*} matches _ :: _
       -- let parameterTypeIR_h :: parameterTypeIR_t*{parameterTypeIR_t <- parameterTypeIR_t*} = parameterTypeIR*{parameterTypeIR <- parameterTypeIR*}
       -- let C' = $add_constructorParameter(C, parameterTypeIR_h)
       -- let C'' = $add_constructorParameters(C', parameterTypeIR_t*{parameterTypeIR_t <- parameterTypeIR_t*})
 
-;; ../../../../spec-concrete/5.02-context.watsup:174.1-174.57
+;; ../../../../spec-concrete/5.02-context.watsup:175.1-175.57
 def $add_type(cursor, context, tid, typeDefIR) : context =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:175.1-179.48
+   ;; ../../../../spec-concrete/5.02-context.watsup:176.1-180.48
    clause 0(cursor, C, tid, typeDefIR) = C'
       -- if cursor matches `GLOBAL`
       -- let tdenv = C.GLOBAL.TDENV
       -- let tdenv_update = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
       -- let C' = C[GLOBAL.TDENV = tdenv_update]
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:180.1-184.47
+   ;; ../../../../spec-concrete/5.02-context.watsup:181.1-185.47
    clause 1(cursor, C, tid, typeDefIR) = C'
       -- if cursor matches `BLOCK`
       -- let tdenv = C.BLOCK.TDENV
       -- let tdenv_update = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
       -- let C' = C[BLOCK.TDENV = tdenv_update]
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:185.1-189.47
+   ;; ../../../../spec-concrete/5.02-context.watsup:186.1-190.47
    clause 2(cursor, C, tid, typeDefIR) = C'
       -- if cursor matches `LOCAL`
       -- let tdenv = C.LOCAL.TDENV
       -- let tdenv_update = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
       -- let C' = C[LOCAL.TDENV = tdenv_update]
 
-;; ../../../../spec-concrete/5.02-context.watsup:191.1-191.60
+;; ../../../../spec-concrete/5.02-context.watsup:192.1-192.60
 def $add_types(cursor, context, tid*, typeDefIR*) : context =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:192.1-192.35
+   ;; ../../../../spec-concrete/5.02-context.watsup:193.1-193.35
    clause 0(p, C, tid*{tid <- tid*}, typeDefIR*{typeDefIR <- typeDefIR*}) = C
       -- if tid*{tid <- tid*} matches []
       -- if typeDefIR*{typeDefIR <- typeDefIR*} matches []
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:193.1-195.54
+   ;; ../../../../spec-concrete/5.02-context.watsup:194.1-196.54
    clause 1(p, C, tid*{tid <- tid*}, typeDefIR*{typeDefIR <- typeDefIR*}) = C''
       -- if tid*{tid <- tid*} matches _ :: _
       -- let tid_h :: tid_t*{tid_t <- tid_t*} = tid*{tid <- tid*}
@@ -7317,66 +7316,66 @@ def $add_types(cursor, context, tid*, typeDefIR*) : context =
       -- let C' = $add_type(p, C, tid_h, typeDefIR_h)
       -- let C'' = $add_types(p, C', tid_t*{tid_t <- tid_t*}, typeDefIR_t*{typeDefIR_t <- typeDefIR_t*})
 
-;; ../../../../spec-concrete/5.02-context.watsup:199.1-199.76
+;; ../../../../spec-concrete/5.02-context.watsup:200.1-200.76
 def $add_routine_overload(cursor, context, rid, routineTypeDefIR) : context =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:201.1-205.48
+   ;; ../../../../spec-concrete/5.02-context.watsup:202.1-206.48
    clause 0(cursor, C, rid, routineTypeDefIR) = C'
       -- if cursor matches `GLOBAL`
       -- let rdenv = C.GLOBAL.RDENV
       -- let rdenv_update = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
       -- let C' = C[GLOBAL.RDENV = rdenv_update]
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:206.1-210.47
+   ;; ../../../../spec-concrete/5.02-context.watsup:207.1-211.47
    clause 1(cursor, C, rid, routineTypeDefIR) = C'
       -- if cursor matches `BLOCK`
       -- let rdenv = C.BLOCK.RDENV
       -- let rdenv_update = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
       -- let C' = C[BLOCK.RDENV = rdenv_update]
 
-;; ../../../../spec-concrete/5.02-context.watsup:212.1-212.80
+;; ../../../../spec-concrete/5.02-context.watsup:213.1-213.80
 def $add_routine_non_overload(cursor, context, rid, routineTypeDefIR) : context =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:214.1-218.48
+   ;; ../../../../spec-concrete/5.02-context.watsup:215.1-219.48
    clause 0(cursor, C, rid, routineTypeDefIR) = C'
       -- if cursor matches `GLOBAL`
       -- let rdenv = C.GLOBAL.RDENV
       -- let rdenv_update = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
       -- let C' = C[GLOBAL.RDENV = rdenv_update]
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:219.1-223.47
+   ;; ../../../../spec-concrete/5.02-context.watsup:220.1-224.47
    clause 1(cursor, C, rid, routineTypeDefIR) = C'
       -- if cursor matches `BLOCK`
       -- let rdenv = C.BLOCK.RDENV
       -- let rdenv_update = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
       -- let C' = C[BLOCK.RDENV = rdenv_update]
 
-;; ../../../../spec-concrete/5.02-context.watsup:227.1-227.67
+;; ../../../../spec-concrete/5.02-context.watsup:228.1-228.67
 def $add_constructor(context, cid, constructorTypeDefIR) : context =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:229.1-233.48
+   ;; ../../../../spec-concrete/5.02-context.watsup:230.1-234.48
    clause 0(C, cid, constructorTypeDefIR) = C'
       -- let cdenv = C.GLOBAL.CDENV
       -- let cdenv_update = $add_map<cid, constructorTypeDefIR>(cdenv, cid, constructorTypeDefIR)
       -- let C' = C[GLOBAL.CDENV = cdenv_update]
 
-;; ../../../../spec-concrete/5.02-context.watsup:241.1-241.60
+;; ../../../../spec-concrete/5.02-context.watsup:242.1-242.60
 def $find_var(cursor, context, prefixedNameIR) : varTypeIR? =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:243.1-244.31
+   ;; ../../../../spec-concrete/5.02-context.watsup:244.1-245.31
    clause 0(p, C, prefixedNameIR) = $find_map<id, varTypeIR>(frame, id)
       -- if prefixedNameIR matches `.%`
       -- let `.` id = prefixedNameIR
       -- let frame = C.GLOBAL.FRAME
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:245.1-246.31
+   ;; ../../../../spec-concrete/5.02-context.watsup:246.1-247.31
    clause 1(cursor, C, prefixedNameIR) = $find_map<id, varTypeIR>(frame, id)
       -- if cursor matches `GLOBAL`
       -- if prefixedNameIR matches ``%`
       -- let ``` id = prefixedNameIR
       -- let frame = C.GLOBAL.FRAME
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:247.1-249.56
+   ;; ../../../../spec-concrete/5.02-context.watsup:248.1-250.56
    clause 2(cursor, C, prefixedNameIR) = ?(varTypeIR)
       -- if cursor matches `BLOCK`
       -- if prefixedNameIR matches ``%`
@@ -7386,7 +7385,7 @@ def $find_var(cursor, context, prefixedNameIR) : varTypeIR? =
       -- if varTypeIR'?{varTypeIR' <- varTypeIR'?} matches (_)
       -- let ?(varTypeIR) = varTypeIR'?{varTypeIR' <- varTypeIR'?}
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:250.1-252.50
+   ;; ../../../../spec-concrete/5.02-context.watsup:251.1-253.50
    clause 3(cursor, C, prefixedNameIR) = $find_var(`GLOBAL`, C, ``` id)
       -- if cursor matches `BLOCK`
       -- if prefixedNameIR matches ``%`
@@ -7394,7 +7393,7 @@ def $find_var(cursor, context, prefixedNameIR) : varTypeIR? =
       -- let frame = C.BLOCK.FRAME
       -- if (?() = $find_map<id, varTypeIR>(frame, id))
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:253.1-255.58
+   ;; ../../../../spec-concrete/5.02-context.watsup:254.1-256.58
    clause 4(cursor, C, prefixedNameIR) = ?(varTypeIR)
       -- if cursor matches `LOCAL`
       -- if prefixedNameIR matches ``%`
@@ -7404,7 +7403,7 @@ def $find_var(cursor, context, prefixedNameIR) : varTypeIR? =
       -- if varTypeIR'?{varTypeIR' <- varTypeIR'?} matches (_)
       -- let ?(varTypeIR) = varTypeIR'?{varTypeIR' <- varTypeIR'?}
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:256.1-258.52
+   ;; ../../../../spec-concrete/5.02-context.watsup:257.1-259.52
    clause 5(cursor, C, prefixedNameIR) = $find_var(`BLOCK`, C, ``` id)
       -- if cursor matches `LOCAL`
       -- if prefixedNameIR matches ``%`
@@ -7412,10 +7411,10 @@ def $find_var(cursor, context, prefixedNameIR) : varTypeIR? =
       -- let frame*{frame <- frame*} = C.LOCAL.FRAMES
       -- if (?() = $find_maps<id, varTypeIR>(frame*{frame <- frame*}, id))
 
-;; ../../../../spec-concrete/5.02-context.watsup:262.1-262.57
+;; ../../../../spec-concrete/5.02-context.watsup:263.1-263.57
 def $find_value(cursor, context, prefixedNameIR) : value =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:264.1-266.58
+   ;; ../../../../spec-concrete/5.02-context.watsup:265.1-267.58
    clause 0(p, C, prefixedNameIR) = value
       -- if prefixedNameIR matches `.%`
       -- let `.` id = prefixedNameIR
@@ -7426,7 +7425,7 @@ def $find_value(cursor, context, prefixedNameIR) : value =
       -- if value'?{value' <- value'?} matches (_)
       -- let ?(value) = value'?{value' <- value'?}
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:267.1-269.58
+   ;; ../../../../spec-concrete/5.02-context.watsup:268.1-270.58
    clause 1(cursor, C, prefixedNameIR) = value
       -- if cursor matches `GLOBAL`
       -- if prefixedNameIR matches ``%`
@@ -7438,7 +7437,7 @@ def $find_value(cursor, context, prefixedNameIR) : value =
       -- if value'?{value' <- value'?} matches (_)
       -- let ?(value) = value'?{value' <- value'?}
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:270.1-272.58
+   ;; ../../../../spec-concrete/5.02-context.watsup:271.1-273.58
    clause 2(cursor, C, prefixedNameIR) = value
       -- if cursor matches `BLOCK`
       -- if prefixedNameIR matches ``%`
@@ -7450,7 +7449,7 @@ def $find_value(cursor, context, prefixedNameIR) : value =
       -- if value'?{value' <- value'?} matches (_)
       -- let ?(value) = value'?{value' <- value'?}
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:273.1-275.50
+   ;; ../../../../spec-concrete/5.02-context.watsup:274.1-276.50
    clause 3(cursor, C, prefixedNameIR) = $find_value(`GLOBAL`, C, ``` id)
       -- if cursor matches `BLOCK`
       -- if prefixedNameIR matches ``%`
@@ -7458,7 +7457,7 @@ def $find_value(cursor, context, prefixedNameIR) : value =
       -- let frame = C.BLOCK.FRAME
       -- if (?() = $find_map<id, varTypeIR>(frame, id))
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:276.1-278.60
+   ;; ../../../../spec-concrete/5.02-context.watsup:277.1-279.60
    clause 4(cursor, C, prefixedNameIR) = value
       -- if cursor matches `LOCAL`
       -- if prefixedNameIR matches ``%`
@@ -7470,23 +7469,23 @@ def $find_value(cursor, context, prefixedNameIR) : value =
       -- if value'?{value' <- value'?} matches (_)
       -- let ?(value) = value'?{value' <- value'?}
 
-;; ../../../../spec-concrete/5.02-context.watsup:282.1-282.61
+;; ../../../../spec-concrete/5.02-context.watsup:283.1-283.61
 def $find_type(cursor, context, prefixedNameIR) : typeDefIR? =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:284.1-286.31
+   ;; ../../../../spec-concrete/5.02-context.watsup:285.1-287.31
    clause 0(p, C, prefixedNameIR) = $find_map<tid, typeDefIR>(tdenv, tid)
       -- if prefixedNameIR matches `.%`
       -- let `.` tid = prefixedNameIR
       -- let tdenv = C.GLOBAL.TDENV
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:287.1-289.31
+   ;; ../../../../spec-concrete/5.02-context.watsup:288.1-290.31
    clause 1(cursor, C, prefixedNameIR) = $find_map<tid, typeDefIR>(tdenv, tid)
       -- if cursor matches `GLOBAL`
       -- if prefixedNameIR matches ``%`
       -- let ``` tid = prefixedNameIR
       -- let tdenv = C.GLOBAL.TDENV
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:290.1-292.58
+   ;; ../../../../spec-concrete/5.02-context.watsup:291.1-293.58
    clause 2(cursor, C, prefixedNameIR) = ?(typeDefIR)
       -- if cursor matches `BLOCK`
       -- if prefixedNameIR matches ``%`
@@ -7496,7 +7495,7 @@ def $find_type(cursor, context, prefixedNameIR) : typeDefIR? =
       -- if typeDefIR'?{typeDefIR' <- typeDefIR'?} matches (_)
       -- let ?(typeDefIR) = typeDefIR'?{typeDefIR' <- typeDefIR'?}
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:293.1-295.52
+   ;; ../../../../spec-concrete/5.02-context.watsup:294.1-296.52
    clause 3(cursor, C, prefixedNameIR) = $find_type(`GLOBAL`, C, ``` tid)
       -- if cursor matches `BLOCK`
       -- if prefixedNameIR matches ``%`
@@ -7504,7 +7503,7 @@ def $find_type(cursor, context, prefixedNameIR) : typeDefIR? =
       -- let tdenv = C.BLOCK.TDENV
       -- if (?() = $find_map<tid, typeDefIR>(tdenv, tid))
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:296.1-298.60
+   ;; ../../../../spec-concrete/5.02-context.watsup:297.1-299.60
    clause 4(cursor, C, prefixedNameIR) = ?(typeDefIR)
       -- if cursor matches `LOCAL`
       -- if prefixedNameIR matches ``%`
@@ -7514,7 +7513,7 @@ def $find_type(cursor, context, prefixedNameIR) : typeDefIR? =
       -- if typeDefIR'?{typeDefIR' <- typeDefIR'?} matches (_)
       -- let ?(typeDefIR) = typeDefIR'?{typeDefIR' <- typeDefIR'?}
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:299.1-301.54
+   ;; ../../../../spec-concrete/5.02-context.watsup:300.1-302.54
    clause 5(cursor, C, prefixedNameIR) = $find_type(`BLOCK`, C, ``` tid)
       -- if cursor matches `LOCAL`
       -- if prefixedNameIR matches ``%`
@@ -7522,38 +7521,38 @@ def $find_type(cursor, context, prefixedNameIR) : typeDefIR? =
       -- let tdenv*{tdenv <- tdenv*} = [C.LOCAL.TDENV]
       -- if (?() = $find_maps<tid, typeDefIR>(tdenv*{tdenv <- tdenv*}, tid))
 
-;; ../../../../spec-concrete/5.02-context.watsup:305.1-305.39
+;; ../../../../spec-concrete/5.02-context.watsup:306.1-306.39
 def $ids_arguments(argument*) : id?* =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:308.1-308.58
+   ;; ../../../../spec-concrete/5.02-context.watsup:309.1-309.58
    clause 0(argument*{argument <- argument*}) = $id_argument(argument)*{argument <- argument*}
 
-;; ../../../../spec-concrete/5.02-context.watsup:306.1-306.33
+;; ../../../../spec-concrete/5.02-context.watsup:307.1-307.33
 def $id_argument(argument) : id? =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:309.1-309.35
+   ;; ../../../../spec-concrete/5.02-context.watsup:310.1-310.35
    clause 0(argument) = ?()
       -- if argument <: expression
       -- let expression = argument as expression
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:310.1-310.42
+   ;; ../../../../spec-concrete/5.02-context.watsup:311.1-311.42
    clause 1(argument) = ?($name(name))
       -- if argument matches `%=%`
       -- let name `=` _expression = argument
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:311.1-311.43
+   ;; ../../../../spec-concrete/5.02-context.watsup:312.1-312.43
    clause 2(argument) = ?($name(name))
       -- if argument matches `%=_`
       -- let name `=_` = argument
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:312.1-312.27
+   ;; ../../../../spec-concrete/5.02-context.watsup:313.1-313.27
    clause 3(argument) = ?()
       -- if argument matches `_`
 
-;; ../../../../spec-concrete/5.02-context.watsup:314.1-315.34
+;; ../../../../spec-concrete/5.02-context.watsup:315.1-316.34
 def $find_routine_overloaded(cursor, context, prefixedNameIR, argument*) : (rid, routineTypeDefIR, id*)? =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:317.1-320.47
+   ;; ../../../../spec-concrete/5.02-context.watsup:318.1-321.47
    clause 0(cursor, C, prefixedNameIR, argument*{argument <- argument*}) = $find_overloaded<routineTypeDefIR>(rdenv, id, id_arg?{id_arg <- id_arg?}*{id_arg? <- id_arg?*})
       -- if cursor matches `GLOBAL`
       -- if prefixedNameIR matches `.%`
@@ -7561,7 +7560,7 @@ def $find_routine_overloaded(cursor, context, prefixedNameIR, argument*) : (rid,
       -- let rdenv = C.GLOBAL.RDENV
       -- let id_arg?{id_arg <- id_arg?}*{id_arg? <- id_arg?*} = $ids_arguments(argument*{argument <- argument*})
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:321.1-324.47
+   ;; ../../../../spec-concrete/5.02-context.watsup:322.1-325.47
    clause 1(cursor, C, prefixedNameIR, argument*{argument <- argument*}) = $find_overloaded<routineTypeDefIR>(rdenv, id, id_arg?{id_arg <- id_arg?}*{id_arg? <- id_arg?*})
       -- if cursor matches `GLOBAL`
       -- if prefixedNameIR matches ``%`
@@ -7569,7 +7568,7 @@ def $find_routine_overloaded(cursor, context, prefixedNameIR, argument*) : (rid,
       -- let rdenv = C.GLOBAL.RDENV
       -- let id_arg?{id_arg <- id_arg?}*{id_arg? <- id_arg?*} = $ids_arguments(argument*{argument <- argument*})
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:325.1-330.66
+   ;; ../../../../spec-concrete/5.02-context.watsup:326.1-331.66
    clause 2(cursor, C, prefixedNameIR, argument*{argument <- argument*}) = ?((rid, routineTypeDefIR, id_default*{id_default <- id_default*}))
       -- if cursor matches `BLOCK`
       -- if prefixedNameIR matches ``%`
@@ -7580,7 +7579,7 @@ def $find_routine_overloaded(cursor, context, prefixedNameIR, argument*) : (rid,
       -- if (rid, routineTypeDefIR, id*)?{(rid, routineTypeDefIR, id*) <- (rid, routineTypeDefIR, id*)?} matches (_)
       -- let ?((rid, routineTypeDefIR, id_default*{id_default <- id_default*})) = (rid, routineTypeDefIR, id*)?{(rid, routineTypeDefIR, id*) <- (rid, routineTypeDefIR, id*)?}
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:331.1-336.66
+   ;; ../../../../spec-concrete/5.02-context.watsup:332.1-337.66
    clause 3(cursor, C, prefixedNameIR, argument*{argument <- argument*}) = $find_routine_overloaded(`GLOBAL`, C, ``` id, argument*{argument <- argument*})
       -- if cursor matches `BLOCK`
       -- if prefixedNameIR matches ``%`
@@ -7589,27 +7588,27 @@ def $find_routine_overloaded(cursor, context, prefixedNameIR, argument*) : (rid,
       -- let id_arg?{id_arg <- id_arg?}*{id_arg? <- id_arg?*} = $ids_arguments(argument*{argument <- argument*})
       -- if (?() = $find_overloaded<routineTypeDefIR>(rdenv, id, id_arg?{id_arg <- id_arg?}*{id_arg? <- id_arg?*}))
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:337.1-338.57
+   ;; ../../../../spec-concrete/5.02-context.watsup:338.1-339.57
    clause 4(cursor, C, prefixedNameIR, argument*{argument <- argument*}) = $find_routine_overloaded(`BLOCK`, C, ``` id, argument*{argument <- argument*})
       -- if cursor matches `LOCAL`
       -- if prefixedNameIR matches ``%`
       -- let ``` id = prefixedNameIR
 
-;; ../../../../spec-concrete/5.02-context.watsup:340.1-341.22
+;; ../../../../spec-concrete/5.02-context.watsup:341.1-342.22
 def $find_routine_non_overloaded(cursor, context, prefixedNameIR) : routineTypeDefIR? =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:343.1-344.63
+   ;; ../../../../spec-concrete/5.02-context.watsup:344.1-345.63
    clause 0(p, C, prefixedNameIR) = $find_non_overloaded<routineTypeDefIR>(C.GLOBAL.RDENV, id)
       -- if prefixedNameIR matches `.%`
       -- let `.` id = prefixedNameIR
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:345.1-346.63
+   ;; ../../../../spec-concrete/5.02-context.watsup:346.1-347.63
    clause 1(cursor, C, prefixedNameIR) = $find_non_overloaded<routineTypeDefIR>(C.GLOBAL.RDENV, id)
       -- if cursor matches `GLOBAL`
       -- if prefixedNameIR matches ``%`
       -- let ``` id = prefixedNameIR
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:347.1-349.66
+   ;; ../../../../spec-concrete/5.02-context.watsup:348.1-350.66
    clause 2(cursor, C, prefixedNameIR) = ?(routineTypeDefIR)
       -- if cursor matches `BLOCK`
       -- if prefixedNameIR matches ``%`
@@ -7618,30 +7617,30 @@ def $find_routine_non_overloaded(cursor, context, prefixedNameIR) : routineTypeD
       -- if routineTypeDefIR'?{routineTypeDefIR' <- routineTypeDefIR'?} matches (_)
       -- let ?(routineTypeDefIR) = routineTypeDefIR'?{routineTypeDefIR' <- routineTypeDefIR'?}
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:350.1-353.66
+   ;; ../../../../spec-concrete/5.02-context.watsup:351.1-354.66
    clause 3(cursor, C, prefixedNameIR) = $find_routine_non_overloaded(`GLOBAL`, C, ``` id)
       -- if cursor matches `BLOCK`
       -- if prefixedNameIR matches ``%`
       -- let ``` id = prefixedNameIR
       -- if (?() = $find_non_overloaded<routineTypeDefIR>(C.BLOCK.RDENV, id))
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:354.1-355.50
+   ;; ../../../../spec-concrete/5.02-context.watsup:355.1-356.50
    clause 4(cursor, C, prefixedNameIR) = $find_routine_non_overloaded(`BLOCK`, C, ``` id)
       -- if cursor matches `LOCAL`
       -- if prefixedNameIR matches ``%`
       -- let ``` id = prefixedNameIR
 
-;; ../../../../spec-concrete/5.02-context.watsup:359.1-360.38
+;; ../../../../spec-concrete/5.02-context.watsup:360.1-361.38
 def $find_constructor_overloaded(context, prefixedNameIR, argument*) : (rid, constructorTypeDefIR, id*)? =
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:362.1-365.47
+   ;; ../../../../spec-concrete/5.02-context.watsup:363.1-366.47
    clause 0(C, prefixedNameIR, argument*{argument <- argument*}) = $find_overloaded<constructorTypeDefIR>(cdenv, id, id_arg?{id_arg <- id_arg?}*{id_arg? <- id_arg?*})
       -- if prefixedNameIR matches `.%`
       -- let `.` id = prefixedNameIR
       -- let cdenv = C.GLOBAL.CDENV
       -- let id_arg?{id_arg <- id_arg?}*{id_arg? <- id_arg?*} = $ids_arguments(argument*{argument <- argument*})
 
-   ;; ../../../../spec-concrete/5.02-context.watsup:366.1-369.47
+   ;; ../../../../spec-concrete/5.02-context.watsup:367.1-370.47
    clause 1(C, prefixedNameIR, argument*{argument <- argument*}) = $find_overloaded<constructorTypeDefIR>(cdenv, id, id_arg?{id_arg <- id_arg?}*{id_arg? <- id_arg?*})
       -- if prefixedNameIR matches ``%`
       -- let ``` id = prefixedNameIR

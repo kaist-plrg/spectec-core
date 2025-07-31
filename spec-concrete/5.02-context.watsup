@@ -140,11 +140,12 @@ def $add_vars(p, C, id_h :: id_t*, varTypeIR_h :: varTypeIR_t*) = C''
 dec $add_parameter(cursor, context, parameterTypeIR) : context
 dec $add_parameters(cursor, context, parameterTypeIR*) : context
 
-def $add_parameter(cursor, C, direction typeIR id eps) = C'
-  -- if varTypeIR = direction typeIR DYN eps
+def $add_parameter(cursor, C, `EMPTY typeIR id value?) = C'
+  -- if varTypeIR = `EMPTY typeIR CTK value?
   -- if C' = $add_var(cursor, C, id, varTypeIR)
-def $add_parameter(cursor, C, direction typeIR id value) = C'
-  -- if varTypeIR = direction typeIR DYN value
+def $add_parameter(cursor, C, direction typeIR id value?) = C'
+  -- if direction = IN \/ direction = OUT \/ direction = INOUT
+  -- if varTypeIR = direction typeIR DYN value?
   -- if C' = $add_var(cursor, C, id, varTypeIR)
 
 def $add_parameters(cursor, C, eps) = C
