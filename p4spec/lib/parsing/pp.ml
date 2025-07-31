@@ -7,8 +7,6 @@ open Hint
 module Num = Num
 module F = Format
 
-let verbose = ref false
-
 (**** SpecTec IL ****)
 
 (* Numbers *)
@@ -127,9 +125,7 @@ and pp_default_case_v hmap fmt value : unit =
           else idx / 2 |> List.nth values |> F.asprintf "%a" (pp_value hmap))
       |> List.filter (fun str -> str <> "")
       |> String.concat " "
-      |>
-      if !verbose then F.fprintf fmt "@%s_< %s>_@" (id_of_case_v value)
-      else F.fprintf fmt "%s"
+      |> F.fprintf fmt "%s"
   | _ -> failwith "@pp_default_case_v: Expected CaseV value"
 
 (* OptV *)
