@@ -1013,15 +1013,13 @@ rule Expr_ok/indexAccessExpression-bitslice:
 
 ;;;; callTarget `( argumentList )
 ;;;; routineTarget `< realTypeArgumentList > `( argumentList )
-;;;;; syntax callTarget
 
-;;;;;; functionTarget
-;;;;;; syntax functionTarget = prefixedNonTypeName
+;;;;;; prefixedNonTypeName
 
 rule Expr_ok/callExpression-non-generic-functionTarget:
-  p C |- functionTarget `( argumentList ) : callExpressionIR `# expressionNoteIR
+  p C |- prefixedNonTypeName `( argumentList ) : callExpressionIR `# expressionNoteIR
   ---- ;; check function type
-  -- if prefixedNameIR = $prefixedNonTypeName(functionTarget)
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
   -- if argument* = $flatten_argumentList(argumentList)
   -- FunctionType_ok: p C |- prefixedNameIR `< eps > `( argument* )
                            : functionTypeIR `< `# tid_fresh* > `( `# id_default* )
@@ -1039,13 +1037,13 @@ rule Expr_ok/callExpression-non-generic-functionTarget:
   -- if expressionNoteIR = `( typeIR_ret DYN )
 
 rule Expr_ok/callExpression-generic-functionTarget:
-  p C |- functionTarget `< realTypeArgumentList > `( argumentList )
+  p C |- prefixedNonTypeName `< realTypeArgumentList > `( argumentList )
        : callExpressionIR `# expressionNoteIR
   ---- ;; check type arguments
   -- if realTypeArgument* = $flatten_realTypeArgumentList(realTypeArgumentList)
   -- TypeArguments_ok: p C |- realTypeArgument* : typeArgumentIR* `# tid_fresh_arg*
   ---- ;; check function type
-  -- if prefixedNameIR = $prefixedNonTypeName(functionTarget)
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
   -- if argument* = $flatten_argumentList(argumentList)
   -- FunctionType_ok: p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
                            : functionTypeIR `< `# tid_fresh_func* > `( `# id_default* )
@@ -1063,12 +1061,7 @@ rule Expr_ok/callExpression-generic-functionTarget:
       = prefixedNameIR `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   -- if expressionNoteIR = `( typeIR_ret DYN )
 
-;;;;;; methodTarget
-;;;;;; syntax methodTarget = memberAccessExpression
-;;;;;; syntax memberAccessExpression = memberAccessBase `. member
-;;;;;;; syntax memberAccessBase
-
-;;;;;;;; prefixedTypeName
+;;;;;; prefixedTypeName `. member
 
 rule Expr_ok/callExpression-non-generic-methodTarget-prefixedTypeName-builtin:
   p C |- (prefixedTypeName `. member) `( `EMPTY )
@@ -1083,7 +1076,7 @@ rule Expr_ok/callExpression-non-generic-methodTarget-prefixedTypeName-builtin:
   -- if callExpressionIR = ((TYPE prefixedNameIR) `. nameIR) `< eps > `( eps )
   -- if expressionNoteIR = `( INT LCTK )
 
-;;;;;;;; expression
+;;;;;; expression `. member
 
 rule Expr_ok/callExpression-non-generic-methodTarget-expression:
   p C |- (expression `. member) `( argumentList )
@@ -1135,8 +1128,6 @@ rule Expr_ok/callExpression-generic-methodTarget-expression:
       = (typedExpressionIR `. nameIR) `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   -- if expressionNoteIR = `( typeIR_ret DYN )
 
-;;;;;; `( routineTarget )
-
 ;;;;;; constructorTarget
 ;;;;;; syntax constructorTarget = namedType
 ;;;;;; syntax namedType
@@ -1165,7 +1156,7 @@ def $is_concrete_extern_object'''(EXTERN_METHOD ABSTRACT `( _ ) `-> _) = false
 def $is_concrete_extern_object'''(_) = true
   -- otherwise
 
-;;;;;;; prefixedTypeName
+;;;;;;; | prefixedTypeName
 
 rule Expr_ok/callExpression-constructorTarget-prefixedTypeName:
   p C |- prefixedTypeName `( argumentList )
@@ -1187,7 +1178,7 @@ rule Expr_ok/callExpression-constructorTarget-prefixedTypeName:
       = (typeIR_object `< typeArgumentIR_inferred* >) `( argumentIR_cast* )
   -- if expressionNoteIR = `( typeIR_object CTK )
 
-;;;;;;; specializedType
+;;;;;;; | specializedType
 
 ;;; parenthesizedExpression
 ;;; syntax parenthesizedExpression = `( expression )

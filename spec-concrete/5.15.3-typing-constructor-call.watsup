@@ -1,4 +1,16 @@
 ;;
+;; Constructor typing
+;;
+
+rule ConstructorType_ok:
+  p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
+       : constructorTypeIR `< `# tid_impl* > `( `# id_default* )
+  -- if (cid, constructorTypeDefIR, id_default*)
+      = $find_constructor_overloaded(C, prefixedNameIR, argument*)
+  -- if (constructorTypeIR, tid_impl*)
+      = $specialize_constructorTypeDef(constructorTypeDefIR, typeArgumentIR*)
+
+;;
 ;; Instantiation
 ;;
 

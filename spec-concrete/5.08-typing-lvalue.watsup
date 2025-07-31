@@ -75,3 +75,33 @@ rule Lvalue_ok/lvalue-member-union:
 ;;; lvalue `[ expression `: expression ]
 
 ;;; `( lvalue )
+
+;;
+;; L-value typing, when used as a method
+;;
+;; syntax lvalue
+;;
+
+;;; referenceExpression
+;;; syntax referenceExpression
+
+;;;;  prefixedNonTypeName
+
+rule Lvalue_routine_ok/prefixedNonTypeName:
+  p C |- prefixedNonTypeName : prefixedNameIR
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+
+;;;;  THIS
+
+;;; lvalue `. member
+
+rule Lvalue_routine_ok/lvalue-member:
+  p C |- lvalue_base `. member : typedLvalueIR_base `. nameIR
+  -- Lvalue_ok: p C ROUTINE |- lvalue_base : typedLvalueIR_base
+  -- if nameIR = $name(member)
+
+;;; `( lvalue )
+
+rule Lvalue_routine_ok/parenthesized:
+  p C |- `( lvalue ) : `( routineLvalueIR )
+  -- Lvalue_routine_ok: p C |- lvalue : routineLvalueIR

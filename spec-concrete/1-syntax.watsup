@@ -359,10 +359,6 @@ syntax argumentList
 syntax callTargetNonBrace
 syntax routineTargetNonBrace
 
-syntax functionTarget = prefixedNonTypeName
-syntax methodTarget = memberAccessExpression
-syntax constructorTarget = namedType
-
 syntax callExpression =
   | callTarget `( argumentList )
   | routineTarget `< realTypeArgumentList > `( argumentList )
@@ -423,6 +419,7 @@ syntax dataElementExpression =
   | recordElementExpression
 
 syntax routineTarget = expression
+syntax constructorTarget = namedType
 
 syntax callTarget =
   | routineTarget
