@@ -21,6 +21,40 @@ rule ParserLocalDecl_ok/instantiation:
                          : C_1 instantiationIR
 
 ;;; variableDeclaration
+;;; syntax variableDeclaration =
+;;;   annotationList type name initializerOpt `;
+
+rule ParserLocalDecl_ok/variableDeclaration-empty:
+  C_0 |- annotationList type name `EMPTY `;
+       : C_1 variableDeclarationIR
+  ---- ;; check type
+  -- Type_ok: BLOCK C_0 |- type : typeIR `# eps
+  -- Type_wf: $bound(BLOCK, C_0) |- typeIR
+  ---- ;; update the context
+  -- if nameIR = $name(name)
+  -- if C_1 = $add_var(BLOCK, C_0, nameIR, INOUT typeIR DYN eps)
+  ---- ;; create IR
+  -- if variableDeclarationIR
+      = annotationList typeIR nameIR eps `;
+
+rule ParserLocalDecl_ok/variableDeclaration-initializer:
+  C_0 |- annotationList type name (`= expression_init) `;
+       : C_1 variableDeclarationIR
+  ---- ;; check type
+  -- Type_ok: BLOCK C_0 |- type : typeIR `# eps
+  -- Type_wf: $bound(BLOCK, C_0) |- typeIR
+  ---- ;; check expression
+  -- Expr_ok: BLOCK C_0 |- expression_init : typedExpressionIR_init
+  ---- ;; check that the expression matches the type
+  ---- ;; while inserting implicit casts if necessary
+  -- if typedExpressionIR_init_cast
+      = $coerce_unary(typedExpressionIR_init, typeIR)
+  ---- ;; update the context
+  -- if nameIR = $name(name)
+  -- if C_1 = $add_var(BLOCK, C_0, nameIR, INOUT typeIR DYN eps)
+  ---- ;; create IR
+  -- if variableDeclarationIR
+      = annotationList typeIR nameIR (`= typedExpressionIR_init_cast) `;
 
 ;;; valueSetDeclaration
 

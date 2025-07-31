@@ -183,6 +183,14 @@ relation ParserLocalDecls_ok:
 ;;;; Control typing
 ;;
 
+relation TableKey_ok:
+  context tblctx |- tableKey : tblctx tableKeyIR
+  hint(input %0 %1 %2)
+
+relation TableKeys_ok:
+  context tblctx |- tableKey* : tblctx tableKeyListIR
+  hint(input %0 %1 %2)
+
 relation Call_action_partial_ok:
   context |- parameterTypeIR* `@ argumentListIR
            : parameterTypeIR* `, parameterTypeIR* `@ argumentListIR

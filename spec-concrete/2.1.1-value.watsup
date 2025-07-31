@@ -22,8 +22,8 @@ syntax primitiveValue =
 
 syntax numberValue =
   | D int
-  | nat W int
   | nat S int
+  | nat W int
   | nat V int `# nat
 
 syntax baseValue = | primitiveValue | numberValue

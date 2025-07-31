@@ -228,7 +228,7 @@ def $find_non_overloaded'<V>(
     `{ (rid_h `: V_h) :: (rid_t `: V_t)* }, id
   )
   = V_h :: V_t_found*
-  -- if id_h `( _ ) = rid_h
+  -- if id `( _ ) = rid_h
   -- if V_t_found*
       = $find_non_overloaded'<V>(`{ (rid_t `: V_t)* }, id)
 def $find_non_overloaded'<V>(

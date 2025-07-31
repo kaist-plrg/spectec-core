@@ -38,10 +38,27 @@ rule RoutineType_Lvalue_ok/function:
   -- FunctionType_ok: p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
                            : functionTypeIR `< `# tid_impl* > `( `# id_default* )
 
-rule RoutineType_Lvalue_ok/parser-apply:
+rule RoutineType_Lvalue_ok/extern-method:
+  p C |- (typedLvalueIR_base `. nameIR) `< typeArgumentIR* > `( argument* )
+       : routineTypeIR `< `# tid_impl* > `( `# id_default* )
+  ---- ;; if the base type is an extern
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if EXTERN _ `{ (rid_f `: routineTypeDefIR_f)* } = $canon(typeIR_base)
+  ---- ;; find method type
+  -- if (id_arg?)* = $ids_arguments(argument*)
+  -- if (rid, routineTypeDefIR, id_default*)
+      = $find_overloaded<routineTypeDefIR>(
+          `{ (rid_f `: routineTypeDefIR_f)* },
+          nameIR,
+          (id_arg?)*)
+  ---- ;; specialize routine type
+  -- if (routineTypeIR, tid_impl*)
+      = $specialize_routineTypeDef(routineTypeDefIR, typeArgumentIR*)
+
+rule RoutineType_Lvalue_ok/parser-apply-method:
   p C |- (typedLvalueIR_base `. "apply") `< eps > `( argument* )
        : methodTypeIR `< `# eps > `( `# id_default* )
-  ---- ;; if the base type is a control 
+  ---- ;; if the base type is a parser 
   -- if _ `# `( typeIR_base ) = typedLvalueIR_base
   -- if PARSER `( parameterTypeIR* ) = $canon(typeIR_base)
   ---- ;; create method type
@@ -58,7 +75,7 @@ rule RoutineType_Lvalue_ok/parser-apply:
           "apply",
           (id_arg?)*)
 
-rule RoutineType_Lvalue_ok/control-apply:
+rule RoutineType_Lvalue_ok/control-apply-method:
   p C |- (typedLvalueIR_base `. "apply") `< eps > `( argument* )
        : methodTypeIR `< `# eps > `( `# id_default* )
   ---- ;; if the base type is a control 
@@ -78,7 +95,7 @@ rule RoutineType_Lvalue_ok/control-apply:
           "apply",
           (id_arg?)*)
 
-rule RoutineType_Lvalue_ok/table-apply:
+rule RoutineType_Lvalue_ok/table-apply-method:
   p C |- (typedLvalueIR_base `. "apply") `< eps > `( eps )
        : methodTypeIR `< `# eps > `( `# eps )
   ---- ;; if the base type is a table

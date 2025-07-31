@@ -32,10 +32,10 @@ syntax typeParameterListIR = typeParameterIR*
 ;; Parameters
 ;;
 
-syntax initializerOptIR
+syntax constantInitializerOptIR
 
 syntax parameterIR =
-  annotationList direction typeIR nameIR initializerOptIR
+  annotationList direction typeIR nameIR constantInitializerOptIR
 
 syntax parameterListIR = parameterIR*
 
@@ -146,6 +146,7 @@ syntax routineTargetIR =
   | methodTargetIR
   | `( routineTargetIR )
 
+;; (TODO) Would it be better to represent this as (prefixedNameIR `< typeArgumentListIR >)?
 syntax constructorTargetIR = typeIR `< typeArgumentListIR >
 
 syntax callExpressionIR =
@@ -316,6 +317,8 @@ syntax conditionalStatementIR =
 ;;;; For statements
 ;;
 
+syntax initializerOptIR
+
 syntax forInitStatementIR =
   | annotationList typeIR nameIR initializerOptIR
   | lvalueIR `( argumentListIR )
@@ -394,10 +397,14 @@ syntax statementIR =
 ;;;; Constant and variable declarations
 ;;
 
-syntax initializerIR = `= value
+syntax constantInitializerIR = `= value
+
+syntax constantInitializerOptIR = constantInitializerIR?
 
 syntax constantDeclarationIR =
-  annotationList CONST typeIR nameIR initializerIR `;
+  annotationList CONST typeIR nameIR constantInitializerIR `;
+
+syntax initializerIR = `= typedExpressionIR
 
 syntax initializerOptIR = initializerIR?
 

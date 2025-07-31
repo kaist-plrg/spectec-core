@@ -64,7 +64,7 @@ rule Decl_ok/instantiation-no-objectInitializer:
 
 rule Decl_ok/actionDeclaration:
   p C_0 |- annotationList ACTION name `( parameterList ) blockStatement
-         : C_2 actionDeclarationIR
+         : C_3 actionDeclarationIR
   ---- ;; check parameters
   -- if parameter* = $flatten_parameterList(parameterList)
   -- Parameters_ok: p C_0 |- parameter* : parameterIR* `# eps
@@ -72,12 +72,13 @@ rule Decl_ok/actionDeclaration:
   ---- ;; add parameters to the context
   -- if C_1 = $add_parameters(LOCAL, C_0, parameterTypeIR*)
   ---- ;; check body
-  -- Block_ok: C_1 CONT |- blockStatement : _ _ blockStatementIR
+  -- if C_2 = $set_return_type(C_1, VOID)
+  -- Block_ok: C_2 CONT |- blockStatement : _ _ blockStatementIR
   ---- ;; add action to the context
   -- if rid = $rid(name, parameterList)
   -- if functionTypeIR = ACTION `( parameterTypeIR* )
-  -- RoutineTypeDef_wf: $bound(p, C_1) |- functionTypeIR
-  -- if C_2 = $add_routine_non_overload(p, C_1, rid, functionTypeIR)
+  -- RoutineTypeDef_wf: $bound(p, C_0) |- functionTypeIR
+  -- if C_3 = $add_routine_non_overload(p, C_0, rid, functionTypeIR)
   ---- ;; create IR
   -- if nameIR = $name(name)
   -- if actionDeclarationIR
@@ -263,7 +264,7 @@ rule Decl_ok/controlDeclaration:
   GLOBAL C_0 |- annotationList CONTROL name `EMPTY
                  `( parameterList ) constructorParameterListOpt
                  `{ controlLocalDeclarationList APPLY controlBody }
-              : C_4 controlDeclarationIR
+              : C_5 controlDeclarationIR
   ---- ;; check constructor parameters
   -- if constructorParameter*
       = $flatten_constructorParameterListOpt(constructorParameterListOpt)
@@ -283,7 +284,8 @@ rule Decl_ok/controlDeclaration:
   -- ControlLocalDecls_ok: C_2 |- controlLocalDeclaration*
                                 : C_3 controlLocalDeclarationIR*
   ---- ;; check control body
-  -- Block_ok: C_3 CONT |- controlBody : _ _ controlBodyIR
+  -- if C_4 = $set_return_type(C_3, VOID)
+  -- Block_ok: C_4 CONT |- controlBody : _ _ controlBodyIR
   ---- ;; check apply method
   -- if methodTypeIR = CONTROL_APPLY `( parameterTypeIR* )
   -- RoutineTypeDef_wf: $bound(GLOBAL, C_0) |- methodTypeIR
@@ -295,7 +297,7 @@ rule Decl_ok/controlDeclaration:
       = CONSTRUCTOR `( constructorParameterTypeIR* ) `-> typeIR_control_spec
   -- if constructorTypeDefIR = constructorTypeIR `< eps `, eps >
   -- ConstructorTypeDef_wf: $bound(GLOBAL, C_0) |- constructorTypeDefIR
-  -- if C_4 = $add_constructor(C_0, cid, constructorTypeDefIR)
+  -- if C_5 = $add_constructor(C_0, cid, constructorTypeDefIR)
   ---- ;; create IR
   -- if nameIR = $name(name)
   -- if controlDeclarationIR
@@ -422,6 +424,46 @@ rule Decl_ok/typeDeclaration-derivedTypeDeclaration-headerUnionTypeDeclaration:
         `{ (annotationList_f typeIR_f nameIR_f `;)* }
 
 ;;;; typedefDeclaration
+;;;; syntax typedefDeclaration
+
+;;;;; annotationList TYPEDEF typedefType name `;
+;;;;; syntax typedefType
+
+;;;;;; type
+
+rule Decl_ok/typeDeclaration-typedefDeclaration-typedef-type:
+  GLOBAL C_0 |- annotationList TYPEDEF type name `;
+              : C_1 typedefDeclarationIR
+  ---- ;; check type
+  -- Type_ok: GLOBAL C_0 |- type : typeIR `# eps
+  -- Type_wf: $bound(GLOBAL, C_0) |- typeIR
+  ---- ;; create typedef and add to context
+  -- if nameIR = $name(name)
+  -- if typeIR_typedef = TYPEDEF nameIR typeIR
+  -- TypeDef_wf: $bound(GLOBAL, C_0) |- typeIR_typedef
+  -- if C_1 = $add_type(GLOBAL, C_0, nameIR, typeIR_typedef)
+  ---- ;; create IR
+  -- if typedefDeclarationIR
+      = annotationList TYPEDEF typeIR nameIR `;
+
+;;;;;; derivedTypeDeclaration
+
+;;;;; annotationList TYPE type name `;
+
+rule Decl_ok/typeDeclaration-typedefDeclaration-newtype:
+  GLOBAL C_0 |- annotationList TYPE type name `;
+              : C_1 typedefDeclarationIR
+  ---- ;; check type
+  -- Type_ok: GLOBAL C_0 |- type : typeIR `# eps
+  -- Type_wf: $bound(GLOBAL, C_0) |- typeIR
+  ---- ;; create new type and add to context
+  -- if nameIR = $name(name)
+  -- if typeIR_newtype = TYPE nameIR typeIR
+  -- TypeDef_wf: $bound(GLOBAL, C_0) |- typeIR_newtype
+  -- if C_1 = $add_type(GLOBAL, C_0, nameIR, typeIR_newtype)
+  ---- ;; create IR
+  -- if typedefDeclarationIR
+      = annotationList TYPE typeIR nameIR `;
 
 ;;;; parserTypeDeclaration
 ;;;; syntax parserTypeDeclaration =

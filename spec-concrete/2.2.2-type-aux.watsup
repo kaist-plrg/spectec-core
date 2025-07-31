@@ -91,3 +91,13 @@ def $is_package_object_typeIR(typeIR) = false
   -- otherwise
 
 ;;;; Synthesized types
+
+dec $is_synthesizedTypeIR(typeIR) : bool
+def $is_synthesizedTypeIR(synthesizedTypeIR) = true
+def $is_synthesizedTypeIR(typeIR) = false
+  -- otherwise
+
+dec $is_set_typeIR(typeIR) : bool
+def $is_set_typeIR(SET `< _ >) = true
+def $is_set_typeIR(typeIR) = false
+  -- otherwise

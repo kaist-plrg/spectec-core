@@ -2,9 +2,6 @@
 ;; Bitwise operations
 ;;
 
-dec $to_bitstr(int, int) : int
-dec $to_int(int, int) : int
-
 dec $pow2(nat) : int
 
 dec $shl(int, int) : int

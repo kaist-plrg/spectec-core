@@ -25,6 +25,51 @@ rule Lvalue_ok/referenceExpression-prefixedNonTypeName-method:
 
 ;;; lvalue `. member
 
+rule Lvalue_ok/lvalue-member-struct:
+  p C ASSIGN |- lvalue_base `. member : typedLvalueIR
+  ---- ;; check lvaue
+  -- Lvalue_ok: p C ASSIGN |- lvalue_base : typedLvalueIR_base
+  ---- ;; fetch annotation
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a struct
+  -- if STRUCT _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+rule Lvalue_ok/lvalue-member-header:
+  p C ASSIGN |- lvalue_base `. member : typedLvalueIR
+  ---- ;; check lvaue
+  -- Lvalue_ok: p C ASSIGN |- lvalue_base : typedLvalueIR_base
+  ---- ;; fetch annotation
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header
+  -- if HEADER _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+rule Lvalue_ok/lvalue-member-union:
+  p C ASSIGN |- lvalue_base `. member : typedLvalueIR
+  ---- ;; check lvaue
+  -- Lvalue_ok: p C ASSIGN |- lvalue_base : typedLvalueIR_base
+  ---- ;; fetch annotation
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header
+  -- if HEADER_UNION _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
 ;;; lvalue `[ expression ]
 
 ;;; lvalue `[ expression `: expression ]

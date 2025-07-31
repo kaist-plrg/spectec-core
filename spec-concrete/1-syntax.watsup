@@ -1009,6 +1009,11 @@ syntax tableKeyList =
   | `EMPTY
   | tableKeyList tableKey
 
+dec $flatten_tableKeyList(tableKeyList) : tableKey*
+def $flatten_tableKeyList(`EMPTY) = eps
+def $flatten_tableKeyList(tableKeyList tableKey)
+  = $flatten_tableKeyList(tableKeyList) ++ [ tableKey ]
+
 ;;
 ;;;;;;;; Table actions property
 ;;

@@ -111,7 +111,7 @@ def $nestable'_typedef(_) = false
 rule Type_wf/typedeftype:
   bound |- TYPEDEF _ typeIR
   -- if $nestable_typedef(typeIR)
-  -- TypeDef_wf: bound |- typeIR
+  -- Type_wf: bound |- typeIR
 
 dec $nestable_new(typeIR) : bool
 dec $nestable'_new(typeIR) : bool
@@ -128,7 +128,7 @@ def $nestable'_new(_) = false
 rule Type_wf/newtype:
   bound |- TYPE _ typeIR
   -- if $nestable_new(typeIR)
-  -- TypeDef_wf: bound |- typeIR 
+  -- Type_wf: bound |- typeIR 
 
 ;;; Data types
 
