@@ -109,10 +109,10 @@ and pp_hint_case_v' hmap cur exp values =
   | HoleE (`Num i) -> (i, F.asprintf "%a" (pp_value hmap) (List.nth values i))
   | HoleE `Next ->
       (cur + 1, F.asprintf "%a" (pp_value hmap) (List.nth values cur))
-  | FuseE (exp1, exp2) ->
-      let cur1, str1 = pp_hint_case_v' hmap cur exp1 values in
-      let cur2, str2 = pp_hint_case_v' hmap cur1 exp2 values in
-      (cur2, str1 ^ str2)
+  | FuseE (exp_l, exp_r) ->
+      let cur_l, str_l = pp_hint_case_v' hmap cur exp_l values in
+      let cur_r, str_r = pp_hint_case_v' hmap cur_l exp_r values in
+      (cur_r, str_l ^ str_r)
   | _ -> (cur, El.Print.string_of_exp exp)
 
 and pp_default_case_v hmap fmt value : unit =
