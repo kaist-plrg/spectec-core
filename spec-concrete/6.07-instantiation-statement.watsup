@@ -32,10 +32,10 @@ rule Stmt_inst/directApplicationStatementIR:
   -- if $concat_text([ tid, "_", tid_fresh]) = nameIR
   -- if oid = Ci.PATH ++ nameIR
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
-  -- if variableDeclarationIR = `EMPTY typeIR nameIR (`= (`! oid)) `;
+  -- if constantDeclarationIR = `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
   -- if routineLvalueIR = ((`` tid) `# `( typeIR )) `. "apply"
   -- if callStatementIR = routineLvalueIR `< eps > `( argumentListIR ) `;
-  -- if blockStatementIR = `EMPTY `{ [ variableDeclarationIR, callStatementIR ] }
+  -- if blockStatementIR = `EMPTY `{ [ constantDeclarationIR, callStatementIR ] }
 
 ;;; returnStatementIR
 
