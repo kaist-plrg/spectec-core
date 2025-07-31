@@ -936,7 +936,7 @@ and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
 (* Debug premise evaluation *)
 
 and eval_debug_prem (ctx : Ctx.t) (exp : exp) : Ctx.t attempt =
-  let _ctx, value = eval_exp ctx exp in
+  let ctx, value = eval_exp ctx exp in
   print_endline
   @@ F.sprintf "%s: %s" (string_of_region exp.at) (Pp.string_of_exp exp);
   print_endline @@ Pp.string_of_value value;
