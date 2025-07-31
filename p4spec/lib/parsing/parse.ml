@@ -35,13 +35,3 @@ let parse_string (filename : string) (str : string) : Il.Ast.value =
 let parse_file (includes : string list) (filename : string) : Il.Ast.value =
   let program = preprocess includes filename in
   parse_string filename program
-
-let roundtrip_file (includes : string list) (filename : string) : Il.Ast.value =
-  let program = parse_file includes filename in
-  let program_str =
-    Format.asprintf "%a\n" (Pp.pp_value Hint.SMap.empty) program
-  in
-  let program' = parse_string filename program_str in
-  (* if not (Il.Eq.eq_value program program') then *)
-  (*   "roundtrip error" |> error_no_region; *)
-  program'
