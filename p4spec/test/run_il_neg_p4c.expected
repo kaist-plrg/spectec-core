@@ -792,9 +792,7 @@ tracing backtrack logs:
 Error on typecheck: should fail
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/issue394.p4
-Error on typecheck: ../../../../p4c/testdata/p4_16_errors/issue394.p4
-tracing backtrack logs:
-
+Error on typecheck: should fail
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/issue401.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/issue401.p4
@@ -1355,4 +1353,4 @@ Error on typecheck: ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
 tracing backtrack logs:
 
 
-Running typing: [EXCLUDE] 54/310 (17.42%) [PASS] 16/310 (5.16%) [FAIL] 240/310 (77.42%)
+Running typing: [EXCLUDE] 54/310 (17.42%) [PASS] 17/310 (5.48%) [FAIL] 239/310 (77.10%)

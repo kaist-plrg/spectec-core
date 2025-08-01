@@ -55,14 +55,8 @@ relation Argument_ok:
 ;;;; L-value typing
 ;;
 
-syntax lvaluectx = ASSIGN | ROUTINE
-
 relation Lvalue_ok:
-  cursor context lvaluectx |- lvalue : typedLvalueIR
-  hint(input %0 %1 %2 %3)
-
-relation Lvalue_routine_ok:
-  cursor context |- lvalue : routineLvalueIR
+  cursor context |- lvalue : typedLvalueIR
   hint(input %0 %1 %2)
 
 ;;
@@ -277,12 +271,28 @@ relation MethodType_ok:
                   : methodTypeIR `< `# tid* > `( `# id* )
   hint(input %0 %1 %2 %3 %4 %5)
 
-;; Finds the type of a lvalue routine,
+;; Finds the type of a routine target,
 ;; inserts fresh type variables for parameters with don't care types, (tid*)
 ;; and also identifies the ids of default arguments (id*)
 
-relation RoutineType_Lvalue_ok:
-  cursor context |- routineLvalueIR `< typeArgumentListIR > `( argument* )
+relation RoutineBase_ok:
+  cursor context |- expression : typedLvalueIR
+  hint(input %0 %1 %2)
+
+relation RoutineTarget_ok:
+  cursor context |- routineTarget : routineTargetIR
+  hint(input %0 %1 %2)
+
+relation RoutineBase_lvalue_ok:
+  cursor context |- lvalue : typedLvalueIR
+  hint(input %0 %1 %2)
+
+relation RoutineTarget_lvalue_ok:
+  cursor context |- lvalue : routineTargetIR
+  hint(input %0 %1 %2)
+
+relation RoutineType_ok:
+  cursor context |- routineTargetIR `< typeArgumentListIR > `( argument* )
                   : routineTypeIR `< `# tid* > `( `# id* )
   hint(input %0 %1 %2 %3 %4)
 

@@ -135,18 +135,18 @@ syntax accessExpressionIR =
 ;;;; Call expressions
 ;;
 
+syntax typedLvalueIR
 syntax typeArgumentListIR
 syntax argumentListIR
 
-syntax functionTargetIR = prefixedNameIR
-syntax methodTargetIR = memberAccessExpressionIR
-
 syntax routineTargetIR =
-  | functionTargetIR
-  | methodTargetIR
+  | referenceExpressionIR
+  | typedLvalueIR `. nameIR
+  | TYPE prefixedNameIR `. nameIR
   | `( routineTargetIR )
 
-;; (TODO) Would it be better to represent this as (prefixedNameIR `< typeArgumentListIR >)?
+;; (TODO) Would it be better to represent this as
+;; (prefixedNameIR `< typeArgumentListIR >)?
 syntax constructorTargetIR = typeIR `< typeArgumentListIR >
 
 syntax callExpressionIR =
@@ -233,8 +233,6 @@ syntax argumentListIR = argumentIR*
 ;; L-values
 ;;
 
-syntax typedLvalueIR
-
 syntax lvalueIR =
   | referenceExpressionIR
   | typedLvalueIR `. nameIR
@@ -243,11 +241,6 @@ syntax lvalueIR =
   | `( typedLvalueIR )
 
 syntax typedLvalueIR = lvalueIR `# `( typeIR )
-
-syntax routineLvalueIR =
-  | referenceExpressionIR
-  | typedLvalueIR `. nameIR
-  | `( routineLvalueIR )
 
 ;;
 ;; Statements
@@ -271,7 +264,7 @@ syntax assignmentStatementIR =
 ;;
 
 syntax callStatementIR =
-  routineLvalueIR `< typeArgumentListIR > `( argumentListIR ) `;
+  routineTargetIR `< typeArgumentListIR > `( argumentListIR ) `;
 
 ;;
 ;;;; Direct application statements

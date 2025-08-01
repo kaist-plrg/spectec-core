@@ -10,15 +10,10 @@
 ;;;; prefixedNonTypeName
 
 rule Lvalue_ok/referenceExpression-prefixedNonTypeName-assign:
-  p C ASSIGN |- prefixedNonTypeName : prefixedNameIR `# `( typeIR )
+  p C |- prefixedNonTypeName : prefixedNameIR `# `( typeIR )
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
   -- if direction typeIR DYN eps = $find_var(p, C, prefixedNameIR)
   -- if direction = OUT \/ direction = INOUT
-
-rule Lvalue_ok/referenceExpression-prefixedNonTypeName-method:
-  p C ROUTINE |- prefixedNonTypeName : prefixedNameIR `# `( typeIR )
-  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
-  -- if direction typeIR _ eps = $find_var(p, C, prefixedNameIR)
 
 ;;;; THIS
 ;;;; THIS `= ... is disallowed
@@ -26,9 +21,9 @@ rule Lvalue_ok/referenceExpression-prefixedNonTypeName-method:
 ;;; lvalue `. member
 
 rule Lvalue_ok/lvalue-member-struct:
-  p C ASSIGN |- lvalue_base `. member : typedLvalueIR
+  p C |- lvalue_base `. member : typedLvalueIR
   ---- ;; check lvaue
-  -- Lvalue_ok: p C ASSIGN |- lvalue_base : typedLvalueIR_base
+  -- Lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
   ---- ;; fetch annotation
   -- if _ `# `( typeIR_base ) = typedLvalueIR_base
   ---- ;; check that the lvalue is a struct
@@ -41,9 +36,9 @@ rule Lvalue_ok/lvalue-member-struct:
       = (typedLvalueIR_base `. nameIR) `# `( typeIR )
 
 rule Lvalue_ok/lvalue-member-header:
-  p C ASSIGN |- lvalue_base `. member : typedLvalueIR
+  p C |- lvalue_base `. member : typedLvalueIR
   ---- ;; check lvaue
-  -- Lvalue_ok: p C ASSIGN |- lvalue_base : typedLvalueIR_base
+  -- Lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
   ---- ;; fetch annotation
   -- if _ `# `( typeIR_base ) = typedLvalueIR_base
   ---- ;; check that the lvalue is a header
@@ -56,9 +51,9 @@ rule Lvalue_ok/lvalue-member-header:
       = (typedLvalueIR_base `. nameIR) `# `( typeIR )
 
 rule Lvalue_ok/lvalue-member-union:
-  p C ASSIGN |- lvalue_base `. member : typedLvalueIR
+  p C |- lvalue_base `. member : typedLvalueIR
   ---- ;; check lvaue
-  -- Lvalue_ok: p C ASSIGN |- lvalue_base : typedLvalueIR_base
+  -- Lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
   ---- ;; fetch annotation
   -- if _ `# `( typeIR_base ) = typedLvalueIR_base
   ---- ;; check that the lvalue is a header
@@ -75,33 +70,3 @@ rule Lvalue_ok/lvalue-member-union:
 ;;; lvalue `[ expression `: expression ]
 
 ;;; `( lvalue )
-
-;;
-;; L-value typing, when used as a method
-;;
-;; syntax lvalue
-;;
-
-;;; referenceExpression
-;;; syntax referenceExpression
-
-;;;;  prefixedNonTypeName
-
-rule Lvalue_routine_ok/prefixedNonTypeName:
-  p C |- prefixedNonTypeName : prefixedNameIR
-  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
-
-;;;;  THIS
-
-;;; lvalue `. member
-
-rule Lvalue_routine_ok/lvalue-member:
-  p C |- lvalue_base `. member : typedLvalueIR_base `. nameIR
-  -- Lvalue_ok: p C ROUTINE |- lvalue_base : typedLvalueIR_base
-  -- if nameIR = $name(member)
-
-;;; `( lvalue )
-
-rule Lvalue_routine_ok/parenthesized:
-  p C |- `( lvalue ) : `( routineLvalueIR )
-  -- Lvalue_routine_ok: p C |- lvalue : routineLvalueIR

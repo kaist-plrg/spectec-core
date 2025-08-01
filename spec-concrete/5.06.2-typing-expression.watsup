@@ -1014,118 +1014,54 @@ rule Expr_ok/indexAccessExpression-bitslice:
 ;;;; callTarget `( argumentList )
 ;;;; routineTarget `< realTypeArgumentList > `( argumentList )
 
-;;;;;; prefixedNonTypeName
-
-rule Expr_ok/callExpression-non-generic-functionTarget:
-  p C |- prefixedNonTypeName `( argumentList ) : callExpressionIR `# expressionNoteIR
-  ---- ;; check function type
-  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+rule Expr_ok/callExpression-routineTarget-no-typeArgumentList:
+  p C |- routineTarget `( argumentList )
+       : callExpressionIR `# expressionNoteIR
+  ---- ;; check routine target
+  -- RoutineTarget_ok: p C |- routineTarget : routineTargetIR
+  ---- ;; check routine
   -- if argument* = $flatten_argumentList(argumentList)
-  -- FunctionType_ok: p C |- prefixedNameIR `< eps > `( argument* )
-                           : functionTypeIR `< `# tid_fresh* > `( `# id_default* )
+  -- RoutineType_ok:
+      p C |- routineTargetIR `< eps > `( argument* )
+           : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
   ---- ;; check arguments
   -- (Argument_ok: p C |- argument : argumentIR)*
   ---- ;; check calling convention
-  -- Call_ok: p C |- functionTypeIR `< eps `# tid_fresh* >
-                                    `( argumentIR* `# id_default* )
+  -- if tid_infer* = tid_inserted*
+  -- Call_ok: p C |- routineTypeIR `< eps `# tid_infer* > `( argumentIR* `# id_default* )
                    : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
-  ---- ;; function call must not return void at expression level
+  ---- ;; call must not return void on expression level
   -- if typeIR_ret =/= VOID
-  ---- ;; create typed expression
+  ---- ;; create IR
   -- if callExpressionIR
-      = prefixedNameIR `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+      = routineTargetIR `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   -- if expressionNoteIR = `( typeIR_ret DYN )
 
-rule Expr_ok/callExpression-generic-functionTarget:
-  p C |- prefixedNonTypeName `< realTypeArgumentList > `( argumentList )
+rule Expr_ok/callExpression-routineTarget-typeArgumentList:
+  p C |- routineTarget `< realTypeArgumentList > `( argumentList )
        : callExpressionIR `# expressionNoteIR
+  ---- ;; check routine target
+  -- RoutineTarget_ok: p C |- routineTarget : routineTargetIR
   ---- ;; check type arguments
   -- if realTypeArgument* = $flatten_realTypeArgumentList(realTypeArgumentList)
-  -- TypeArguments_ok: p C |- realTypeArgument* : typeArgumentIR* `# tid_fresh_arg*
-  ---- ;; check function type
-  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+  -- TypeArguments_ok: p C |- realTypeArgument* : typeArgumentIR* `# tid_impl*
+  ---- ;; check routine
   -- if argument* = $flatten_argumentList(argumentList)
-  -- FunctionType_ok: p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
-                           : functionTypeIR `< `# tid_fresh_func* > `( `# id_default* )
+  -- RoutineType_ok:
+      p C |- routineTargetIR `< typeArgumentIR* > `( argument* )
+           : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
   ---- ;; check arguments
   -- (Argument_ok: p C |- argument : argumentIR)*
   ---- ;; check calling convention
-  -- if tid_fresh* = tid_fresh_arg* ++ tid_fresh_func*
-  -- Call_ok: p C |- functionTypeIR `< typeArgumentIR* `# tid_fresh* >
-                                    `( argumentIR* `# id_default* )
+  -- if tid_infer* = tid_impl* ++ tid_inserted*
+  -- Call_ok: p C |- routineTypeIR `< eps `# tid_infer* > `( argumentIR* `# id_default* )
                    : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
-  ---- ;; function call must not return void at expression level
+  ---- ;; call must not return void on expression level
   -- if typeIR_ret =/= VOID
-  ---- ;; create typed expression
+  ---- ;; create IR
+  ---- ;; (TODO) should "min/max-SizeIn-Bits/Bytes" be LCTK?
   -- if callExpressionIR
-      = prefixedNameIR `< typeArgumentIR_inferred* > `( argumentIR_cast* )
-  -- if expressionNoteIR = `( typeIR_ret DYN )
-
-;;;;;; prefixedTypeName `. member
-
-rule Expr_ok/callExpression-non-generic-methodTarget-prefixedTypeName-builtin:
-  p C |- (prefixedTypeName `. member) `( `EMPTY )
-       : callExpressionIR `# expressionNoteIR
-  ---- ;; only buitin methods are supported for type names
-  -- if nameIR = $name(member)
-  -- if nameIR <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
-  ---- ;; find type
-  -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
-  -- if typeIR = $find_type(p, C, prefixedNameIR)
-  ---- ;; create typed expression
-  -- if callExpressionIR = ((TYPE prefixedNameIR) `. nameIR) `< eps > `( eps )
-  -- if expressionNoteIR = `( INT LCTK )
-
-;;;;;; expression `. member
-
-rule Expr_ok/callExpression-non-generic-methodTarget-expression:
-  p C |- (expression `. member) `( argumentList )
-       : callExpressionIR `# expressionNoteIR
-  ---- ;; check expression type
-  -- Expr_ok: p C |- expression : typedExpressionIR
-  ---- ;; check method type
-  -- if nameIR = $name(member)
-  -- if argument* = $flatten_argumentList(argumentList)
-  -- MethodType_ok: p C |- typedExpressionIR `. nameIR `< eps > `( argument* )
-                         : methodTypeIR `< `# tid_fresh* > `( `# id_default* )
-  ---- ;; check arguments
-  -- (Argument_ok: p C |- argument : argumentIR)*
-  ---- ;; check calling convention
-  -- Call_ok: p C |- methodTypeIR `< eps `# tid_fresh* >
-                                  `( argumentIR* `# id_default* )
-                   : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
-  ---- ;; method call must not return void at expression level
-  -- if typeIR_ret =/= VOID
-  ---- ;; create typed expression
-  -- if callExpressionIR
-      = (typedExpressionIR `. nameIR) `< typeArgumentIR_inferred* > `( argumentIR_cast* )
-  -- if expressionNoteIR = `( typeIR_ret DYN )
-
-rule Expr_ok/callExpression-generic-methodTarget-expression:
-  p C |- (expression `. member) `< realTypeArgumentList > `( argumentList )
-       : callExpressionIR `# expressionNoteIR
-  ---- ;; check type arguments
-  -- if realTypeArgument* = $flatten_realTypeArgumentList(realTypeArgumentList)
-  -- TypeArguments_ok: p C |- realTypeArgument* : typeArgumentIR* `# tid_fresh_arg*
-  ---- ;; check expression type
-  -- Expr_ok: p C |- expression : typedExpressionIR
-  ---- ;; check method type
-  -- if nameIR = $name(member)
-  -- if argument* = $flatten_argumentList(argumentList)
-  -- MethodType_ok: p C |- typedExpressionIR `. nameIR `< eps > `( argument* )
-                         : methodTypeIR `< `# tid_fresh_method* > `( `# id_default* )
-  ---- ;; check arguments
-  -- (Argument_ok: p C |- argument : argumentIR)*
-  ---- ;; check calling convention
-  -- if tid_fresh* = tid_fresh_arg* ++ tid_fresh_method*
-  -- Call_ok: p C |- methodTypeIR `< eps `# tid_fresh* >
-                                  `( argumentIR* `# id_default* )
-                   : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
-  ---- ;; method call must not return void at expression level
-  -- if typeIR_ret =/= VOID
-  ---- ;; create typed expression
-  -- if callExpressionIR
-      = (typedExpressionIR `. nameIR) `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+      = routineTargetIR `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   -- if expressionNoteIR = `( typeIR_ret DYN )
 
 ;;;;;; constructorTarget

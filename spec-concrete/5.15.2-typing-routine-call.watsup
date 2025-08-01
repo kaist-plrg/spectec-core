@@ -1,8 +1,235 @@
 ;;
-;; Function call typing
+;; Routine base typing
+;;
+;; syntax expression
 ;;
 
-rule FunctionType_ok/action:
+;;; referenceExpression
+;;; syntax referenceExpression
+
+;;;; prefixedNonTypeName
+
+rule RoutineBase_ok/prefixedNonTypeName:
+  p C |- prefixedNonTypeName : prefixedNameIR `# `( typeIR )
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if direction typeIR _ eps = $find_var(p, C, prefixedNameIR)
+
+;;;; THIS
+
+rule RoutineBase_ok/this:
+  p C |- THIS : (`` "this") `# `( typeIR )
+  -- if direction typeIR _ eps = $find_var(p, C, `` "this")
+
+;;; memberAccessExpression
+;;; syntax memberAccessExpression = memberAccessBase `. member
+;;;; syntax memberAccessBase
+
+;;;;; expression
+
+rule RoutineBase_ok/lvalue-member-struct:
+  p C |- expression_base `. member : typedLvalueIR
+  ---- ;; check expression as lvalue
+  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a struct
+  -- if STRUCT _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+rule RoutineBase_ok/lvalue-member-header:
+  p C |- expression_base `. member : typedLvalueIR
+  ---- ;; check expression as lvalue
+  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header
+  -- if HEADER _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+rule RoutineBase_ok/lvalue-member-union:
+  p C |- expression_base `. member : typedLvalueIR
+  ---- ;; check expression as lvalue
+  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header
+  -- if HEADER_UNION _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+;;;;; syntax parenthesizedExpression = `( expression )
+
+rule RoutineBase_ok/parenthesized:
+  p C |- `( expression ) : `( typedLvalueIR ) `# `( typeIR )
+  -- RoutineBase_ok: p C |- expression : typedLvalueIR
+  -- if _ `# `( typeIR ) = typedLvalueIR
+
+;;
+;; Routine target typing
+;;
+;; syntax routineTarget = expression
+;;
+
+;;; referenceExpression
+;;; syntax referenceExpression
+
+;;;; prefixedNonTypeName
+
+rule RoutineTarget_ok/prefixedNonTypeName:
+  p C |- prefixedNonTypeName : prefixedNameIR
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+
+;;;; THIS
+
+rule RoutineTarget_ok/this:
+  p C |- THIS : (`` "this")
+
+;;; memberAccessExpression
+;;; syntax memberAccessExpression = memberAccessBase `. member
+;;;; syntax memberAccessBase
+
+;;;;; prefixedTypeName
+
+rule RoutineTarget_ok/memberAccessExpression-prefixedTypeName:
+  p C |- prefixedTypeName `. member : TYPE prefixedNameIR `. nameIR
+  -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
+  -- if nameIR = $name(member)
+
+;;;;; expression
+
+rule RoutineTarget_ok/memberAccessExpression-expression:
+  p C |- expression_base `. member : typedLvalueIR_base `. nameIR
+  -- if nameIR = $name(member)
+  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
+
+;;;;; syntax parenthesizedExpression = `( expression )
+
+rule RoutineTarget_ok/parenthesizedExpression:
+  p C |- `( expression ) : `( routineTargetIR )
+  -- RoutineTarget_ok: p C |- expression : routineTargetIR
+
+;;
+;; Routine base typing (when used as a lvalue)
+;;
+;; syntax lvalue
+;;
+
+;;; referenceExpression
+;;; syntax referenceExpression
+
+;;;;  prefixedNonTypeName
+
+rule RoutineBase_lvalue_ok/prefixedNonTypeName:
+  p C |- prefixedNonTypeName : prefixedNameIR `# `( typeIR )
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if direction typeIR _ eps = $find_var(p, C, prefixedNameIR)
+
+;;;;  THIS
+
+rule RoutineBase_lvalue_ok/this:
+  p C |- THIS : (`` "this") `# `( typeIR )
+  -- if direction typeIR _ eps = $find_var(p, C, `` "this")
+
+;;; lvalue `. member
+
+rule RoutineBase_lvalue_ok/lvalue-member-struct:
+  p C |- lvalue_base `. member : typedLvalueIR
+  ---- ;; check lvaue
+  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a struct
+  -- if STRUCT _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+rule RoutineBase_lvalue_ok/lvalue-member-header:
+  p C |- lvalue_base `. member : typedLvalueIR
+  ---- ;; check lvaue
+  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header
+  -- if HEADER _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+rule RoutineBase_lvalue_ok/lvalue-member-union:
+  p C |- lvalue_base `. member : typedLvalueIR
+  ---- ;; check lvaue
+  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header
+  -- if HEADER_UNION _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+;;; `( lvalue )
+
+rule RoutineBase_lvalue_ok/parenthesized:
+  p C |- `( lvalue ) : `( typedLvalueIR ) `# `( typeIR )
+  -- RoutineBase_lvalue_ok: p C |- lvalue : typedLvalueIR
+  -- if _ `# `( typeIR ) = typedLvalueIR
+
+;;
+;; Routine target typing (when used as a lvalue)
+;;
+;; syntax lvalue
+;;
+
+;;; referenceExpression
+;;; syntax referenceExpression
+
+;;;;  prefixedNonTypeName
+
+rule RoutineTarget_lvalue_ok/prefixedNonTypeName:
+  p C |- prefixedNonTypeName : prefixedNameIR
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+
+;;;;  THIS
+
+rule RoutineTarget_lvalue_ok/prefixedNonTypeName:
+  p C |- THIS : (`` "this")
+
+;;; lvalue `. member
+
+rule RoutineTarget_lvalue_ok/lvalue-member:
+  p C |- lvalue_base `. member : typedLvalueIR_base `. nameIR
+  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
+  -- if nameIR = $name(member)
+
+;;; `( lvalue )
+
+rule RoutineTarget_lvalue_ok/parenthesized:
+  p C |- `( lvalue ) : `( routineTargetIR )
+  -- RoutineTarget_lvalue_ok: p C |- lvalue : routineTargetIR
+
+;;
+;; Routine call typing
+;;
+
+rule RoutineType_ok/function:
   p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
        : functionTypeIR `< `# tid_impl* > `( `# id_default* )
   -- if (rid, routineTypeDefIR, id_default*)
@@ -10,17 +237,7 @@ rule FunctionType_ok/action:
   -- if (functionTypeIR, tid_impl*)
       = $specialize_routineTypeDef(routineTypeDefIR, typeArgumentIR*)
 
-;;
-;; Routine call typing
-;;
-
-rule RoutineType_Lvalue_ok/function:
-  p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
-       : functionTypeIR `< `# tid_impl* > `( `# id_default* )
-  -- FunctionType_ok: p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
-                           : functionTypeIR `< `# tid_impl* > `( `# id_default* )
-
-rule RoutineType_Lvalue_ok/extern-method:
+rule RoutineType_ok/extern-method:
   p C |- (typedLvalueIR_base `. nameIR) `< typeArgumentIR* > `( argument* )
        : routineTypeIR `< `# tid_impl* > `( `# id_default* )
   ---- ;; if the base type is an extern
@@ -37,7 +254,7 @@ rule RoutineType_Lvalue_ok/extern-method:
   -- if (routineTypeIR, tid_impl*)
       = $specialize_routineTypeDef(routineTypeDefIR, typeArgumentIR*)
 
-rule RoutineType_Lvalue_ok/parser-apply-method:
+rule RoutineType_ok/parser-apply-method:
   p C |- (typedLvalueIR_base `. "apply") `< eps > `( argument* )
        : methodTypeIR `< `# eps > `( `# id_default* )
   ---- ;; if the base type is a parser 
@@ -57,7 +274,7 @@ rule RoutineType_Lvalue_ok/parser-apply-method:
           "apply",
           (id_arg?)*)
 
-rule RoutineType_Lvalue_ok/control-apply-method:
+rule RoutineType_ok/control-apply-method:
   p C |- (typedLvalueIR_base `. "apply") `< eps > `( argument* )
        : methodTypeIR `< `# eps > `( `# id_default* )
   ---- ;; if the base type is a control 
@@ -77,7 +294,7 @@ rule RoutineType_Lvalue_ok/control-apply-method:
           "apply",
           (id_arg?)*)
 
-rule RoutineType_Lvalue_ok/table-apply-method:
+rule RoutineType_ok/table-apply-method:
   p C |- (typedLvalueIR_base `. "apply") `< eps > `( eps )
        : methodTypeIR `< `# eps > `( `# eps )
   ---- ;; if the base type is a table
