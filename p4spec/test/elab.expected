@@ -9916,22 +9916,22 @@ relation Type_ok: cursor context `|-` typeOrVoid `:` typeIR `#` tid*
 relation TypeArgument_ok: cursor context `|-` typeArgument `:` typeArgumentIR `#` tid*
 
    ;; ../../../../spec-concrete/5.07.1-typing-type-argument.watsup:12.1-14.48
-   rule : p C `|-` typeArgument `:` typeIR `#` tid_impl*{tid_impl <- tid_impl*}
+   rule type: p C `|-` typeArgument `:` typeIR `#` tid_impl*{tid_impl <- tid_impl*}
       -- if typeArgument <: type
       -- let type = typeArgument as type
       -- Type_ok: p C `|-` type as typeOrVoid `:` typeIR `#` tid_impl*{tid_impl <- tid_impl*}
 
    ;; ../../../../spec-concrete/5.07.1-typing-type-argument.watsup:18.1-19.28
-   rule : p C `|-` typeArgument `:` `VOID` as typeArgumentIR `#` []
+   rule void: p C `|-` typeArgument `:` `VOID` as typeArgumentIR `#` []
       -- if (typeArgument = `VOID` as typeArgument)
 
    ;; ../../../../spec-concrete/5.07.1-typing-type-argument.watsup:23.1-25.32
-   rule : p C `|-` typeArgument `:` `TID` tid_impl as typeArgumentIR `#` [tid_impl]
+   rule dontcare: p C `|-` typeArgument `:` `TID` tid_impl as typeArgumentIR `#` [tid_impl]
       -- if (typeArgument = `_` as typeArgument)
       -- let tid_impl = $fresh_tid
 
    ;; ../../../../spec-concrete/5.07.1-typing-type-argument.watsup:29.1-31.33
-   rule : p C `|-` typeArgument `:` `TID` tid as typeArgumentIR `#` []
+   rule nonTypeName: p C `|-` typeArgument `:` `TID` tid as typeArgumentIR `#` []
       -- if typeArgument <: nonTypeName
       -- let nonTypeName = typeArgument as nonTypeName
       -- let tid = $name(nonTypeName as name)
@@ -12686,12 +12686,12 @@ relation Decl_ok: cursor context `|-` declaration `:` context declarationIR
       -- let typeIR_package = `PACKAGE<` typeIR_package_inner*{typeIR_package_inner <- typeIR_package_inner*} `>` as typeIR
       -- let typeDefIR_package = typeIR_package `<` tid_expl*{tid_expl <- tid_expl*} `,` tid_impl*{tid_impl <- tid_impl*} `>` as typeDefIR
       -- if TypeDef_wf: $bound(`GLOBAL`, C_0) `|-` typeDefIR_package holds
-      -- let C_2 = $add_type(`GLOBAL`, C_1, nameIR, typeDefIR_package)
+      -- let C_2 = $add_type(`GLOBAL`, C_0, nameIR, typeDefIR_package)
       -- let cid = $cid(name, `(` parameterList `)`)
       -- let constructorTypeIR = `CONSTRUCTOR(` constructorParameterTypeIR*{constructorParameterTypeIR <- constructorParameterTypeIR*} `)->` typeIR_package
       -- let constructorTypeDefIR = constructorTypeIR `<` tid_expl*{tid_expl <- tid_expl*} `,` tid_impl*{tid_impl <- tid_impl*} `>`
       -- if ConstructorTypeDef_wf: $bound(`GLOBAL`, C_0) `|-` constructorTypeDefIR holds
-      -- let C_3 = $add_constructor(C_0, cid, constructorTypeDefIR)
+      -- let C_3 = $add_constructor(C_2, cid, constructorTypeDefIR)
       -- let packageTypeDeclarationIR = annotationList `PACKAGE` nameIR `<` tid_expl*{tid_expl <- tid_expl*} `,` tid_impl*{tid_impl <- tid_impl*} `>(` constructorParameterIR*{constructorParameterIR <- constructorParameterIR*} `);`
 
 ;; ../../../../spec-concrete/5.04-typing-relation.watsup:244.1-246.23

@@ -85,19 +85,13 @@ tracing backtrack logs:
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/apply.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/arch1.p4
-Error on typecheck: ../../../../p4c/testdata/p4_16_samples/arch1.p4
-tracing backtrack logs:
-
+Typecheck success: ../../../../p4c/testdata/p4_16_samples/arch1.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/arch2.p4
-Error on typecheck: ../../../../p4c/testdata/p4_16_samples/arch2.p4
-tracing backtrack logs:
-
+Typecheck success: ../../../../p4c/testdata/p4_16_samples/arch2.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/arch3.p4
-Error on typecheck: ../../../../p4c/testdata/p4_16_samples/arch3.p4
-tracing backtrack logs:
-
+Typecheck success: ../../../../p4c/testdata/p4_16_samples/arch3.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/arith-bmv2.p4
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/arith-bmv2.p4
@@ -2817,9 +2811,7 @@ tracing backtrack logs:
 Excluding file: ../../../../p4c/testdata/p4_16_samples/issue4739.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/issue4760_dontcare_action_out_arg.p4
-Error on typecheck: ../../../../p4c/testdata/p4_16_samples/issue4760_dontcare_action_out_arg.p4
-tracing backtrack logs:
-
+Typecheck success: ../../../../p4c/testdata/p4_16_samples/issue4760_dontcare_action_out_arg.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/issue4775-2.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_samples/issue4775-2.p4
@@ -2986,14 +2978,10 @@ Typecheck success: ../../../../p4c/testdata/p4_16_samples/issue737-bmv2.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/issue754.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/issue774-4-bmv2.p4
-Error on typecheck: ../../../../p4c/testdata/p4_16_samples/issue774-4-bmv2.p4
-tracing backtrack logs:
-
+Typecheck success: ../../../../p4c/testdata/p4_16_samples/issue774-4-bmv2.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/issue774.p4
-Error on typecheck: ../../../../p4c/testdata/p4_16_samples/issue774.p4
-tracing backtrack logs:
-
+Typecheck success: ../../../../p4c/testdata/p4_16_samples/issue774.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/issue793.p4
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/issue793.p4
@@ -3171,9 +3159,7 @@ tracing backtrack logs:
 
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/localize_action_dont_care_args.p4
-Error on typecheck: ../../../../p4c/testdata/p4_16_samples/localize_action_dont_care_args.p4
-tracing backtrack logs:
-
+Typecheck success: ../../../../p4c/testdata/p4_16_samples/localize_action_dont_care_args.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/logging-bmv2.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_samples/logging-bmv2.p4
@@ -4806,9 +4792,7 @@ tracing backtrack logs:
 
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/spec-ex15.p4
-Error on typecheck: ../../../../p4c/testdata/p4_16_samples/spec-ex15.p4
-tracing backtrack logs:
-
+Typecheck success: ../../../../p4c/testdata/p4_16_samples/spec-ex15.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/spec-ex16.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_samples/spec-ex16.p4
@@ -4942,9 +4926,7 @@ tracing backtrack logs:
 
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/string.p4
-Error on typecheck: ../../../../p4c/testdata/p4_16_samples/string.p4
-tracing backtrack logs:
-
+Typecheck success: ../../../../p4c/testdata/p4_16_samples/string.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/string_anno.p4
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/string_anno.p4
@@ -5111,17 +5093,13 @@ tracing backtrack logs:
 
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/twoPipe.p4
-Error on typecheck: ../../../../p4c/testdata/p4_16_samples/twoPipe.p4
-tracing backtrack logs:
-
+Typecheck success: ../../../../p4c/testdata/p4_16_samples/twoPipe.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/two_ebpf.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/two_ebpf.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/type-params.p4
-Error on typecheck: ../../../../p4c/testdata/p4_16_samples/type-params.p4
-tracing backtrack logs:
-
+Typecheck success: ../../../../p4c/testdata/p4_16_samples/type-params.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/type-shadow.p4
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/type-shadow.p4
@@ -5306,4 +5284,4 @@ Error on typecheck: ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 tracing backtrack logs:
 
 
-Running typing: [EXCLUDE] 223/1278 (17.45%) [PASS] 315/1278 (24.65%) [FAIL] 740/1278 (57.90%)
+Running typing: [EXCLUDE] 223/1278 (17.45%) [PASS] 326/1278 (25.51%) [FAIL] 729/1278 (57.04%)

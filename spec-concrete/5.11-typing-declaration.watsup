@@ -538,14 +538,14 @@ rule Decl_ok/typeDeclaration-packageTypeDeclaration:
   -- if typeIR_package = PACKAGE `< typeIR_package_inner* >
   -- if typeDefIR_package = typeIR_package `< tid_expl* `, tid_impl* >
   -- TypeDef_wf: $bound(GLOBAL, C_0) |- typeDefIR_package
-  -- if C_2 = $add_type(GLOBAL, C_1, nameIR, typeDefIR_package)
+  -- if C_2 = $add_type(GLOBAL, C_0, nameIR, typeDefIR_package)
   ---- ;; update the context with package constructor
   -- if cid = $cid(name, `( parameterList ))
   -- if constructorTypeIR
       = CONSTRUCTOR `( constructorParameterTypeIR* ) `-> typeIR_package
   -- if constructorTypeDefIR = constructorTypeIR `< tid_expl* `, tid_impl* >
   -- ConstructorTypeDef_wf: $bound(GLOBAL, C_0) |- constructorTypeDefIR
-  -- if C_3 = $add_constructor(C_0, cid, constructorTypeDefIR)
+  -- if C_3 = $add_constructor(C_2, cid, constructorTypeDefIR)
   ---- ;; create IR
   -- if packageTypeDeclarationIR
       = annotationList PACKAGE nameIR `< tid_expl* `, tid_impl* >
