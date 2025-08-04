@@ -1,5 +1,4 @@
 include Util.Attempt
-open Error
 open Util.Source
 open Util.Print
 
@@ -10,10 +9,11 @@ let ( let* ) (attempt : 'a attempt) (f : 'a -> 'b) : 'b =
 
 let rec string_of_failtrace_noregion ?(level = 0) ~(depth : int)
     ~(bullet : string) (failtrace : failtrace) : string =
-  let (Failtrace (_, msg, subfailtraces)) = failtrace in
+  let (Failtrace (region, msg, subfailtraces)) = failtrace in
+  let len = region |> string_of_region |> String.length in
   let smsg =
     if level < depth then ""
-    else Format.asprintf "  %s%s %s\n" (indent (level - depth)) bullet msg
+    else Format.asprintf "\n%s%s%s %s" (String.make (len+7) ' ') (indent (level - depth)) bullet msg
   in
   Format.asprintf "%s%s" smsg
     (string_of_failtraces_noregion ~level:(level + 1) ~depth subfailtraces)
@@ -34,24 +34,34 @@ and string_of_failtraces_noregion ?(level = 0) ~(depth : int)
       |> String.concat ""
 
 let format_failtraces (failtraces : failtrace list) : string =
+  let compare_trace failtrace_l failtrace_r =
+    let Failtrace (region_l, _, _) = failtrace_l in
+    let Failtrace (region_r, _, _) = failtrace_r in
+    if region_l.left.file = region_r.left.file then
+    (if region_l.left.line = region_r.left.line then
+    compare region_l.left.column region_r.left.column
+    else compare region_l.left.line region_r.left.line)
+    else compare region_l.left.file region_r.left.file
+  in
+  let failtraces_sorted = List.sort compare_trace failtraces in
   let error_of_failtrace (failtrace : failtrace) : region * string =
     let (Failtrace (at, msg, subfailtraces)) = failtrace in
     let string_subfailtraces =
       string_of_failtraces_noregion ~depth:0 subfailtraces
     in
-    (at, msg ^ "\n" ^ string_subfailtraces)
+    (at, msg ^ string_subfailtraces)
   in
-  let all_errors = List.map error_of_failtrace failtraces in
+  let all_errors = List.map error_of_failtrace failtraces_sorted in
   let formatted_errors =
     List.map (fun (at, msg) -> Util.Error.string_of_error at msg) all_errors
   in
   String.concat "\n" formatted_errors
 
+(* Create a special exception type that can carry failtraces *)
+exception Failtraces of failtrace list
+
 let error_with_failtraces (failtraces : failtrace list) =
-  (* Format failtraces in standard error format for neovim quickfix *)
-  let formatted_errors = format_failtraces failtraces in
-  if formatted_errors <> "" then Printf.eprintf "%s\n" formatted_errors;
-  error no_region ""
+  raise (Failtraces failtraces)
 
 let ( let+ ) (attempt : 'a attempt) (f : 'a -> 'b) : 'b =
   match attempt with Ok a -> f a | Fail traces -> error_with_failtraces traces
