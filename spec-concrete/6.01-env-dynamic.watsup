@@ -28,7 +28,7 @@ syntax renv ;; Forward declaration
 ;;   | TableApplyMethodF of Table.t
 syntax funcDyn =
   | BUILTIN_FUNCTION `< typeParameterListIR > `( parameterListIR ) `{ blockElementStatementListIR } ;; ??
-  | FUNCTION `< typeParameterListIR > `( parameterListIR ) `{ blockElementStatementListIR }
+  | FUNCTION `< typeParameterListIR > `( parameterListIR ) blockStatementIR
   | ACTION  `( parameterListIR ) `{ blockStatementIR }
   | EXTERN_FUNCTION `< typeParameterListIR > `( parameterListIR ) `{ blockElementStatementIR? }
 

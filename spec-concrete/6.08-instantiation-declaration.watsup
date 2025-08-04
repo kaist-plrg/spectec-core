@@ -1,0 +1,341 @@
+;;
+;; Declaration instantiation
+;;
+;; syntax declarationIR
+;;
+
+;;; constantDeclarationIR
+;;; syntax constantDeclarationIR =
+;;;   annotationList CONST typeIR nameIR initializerIR `;
+
+rule Decl_inst/constantDeclarationIR-global:
+  GLOBAL Ci_0 sto |- _ CONST typeIR nameIR (`= value) `; ==> Ci_1 sto eps
+  -- if $add_value_inst(GLOBAL, Ci_0, nameIR, value) = Ci_1
+
+rule Decl_inst/constantDeclarationIR-non-global:
+  p Ci_0 sto |- annotationList CONST typeIR nameIR (`= value) `;
+  ==> Ci_1 sto (annotationList CONST typeIR nameIR (`= value) `;)
+  -- if $add_value_inst(p, Ci_0, nameIR, value) = Ci_1
+
+;;; instantiationIR
+;;; syntax instantiationIR
+;;;; annotationList typeIR `< typeArgumentListIR > `( argumentListIR ) nameIR objectInitializerOptIR `;
+
+dec $get_init_decls(objectInitializerOptIR) : objectDeclarationListIR
+dec $to_names(argumentListIR) : id
+rule Decl_inst/instantiationIR-extern:
+  p Ci_0 sto_0 |- annotationList typeIR `< typeArgumentListIR > `( argumentListIR ) nameIR 
+    objectInitializerOptIR `;
+  ==> Ci_0 sto_2 eps
+  -- if $get_constructor_id(typeIR) = tid
+  ;; TODO: to_names?
+  -- if $find_cons_inst(p, Ci_0, tid, argumentListIR) = (consDyn, id_default*)
+  -- if $enter_path(Ci_0, nameIR) = Ci_1
+  -- Constructor_inst: p Ci_1 sto_0 |- consDyn `< typeArgumentListIR > `( argumentListIR `# id_default* ) ==> sto_1 objDyn
+  -- if EXTERN `{ tid theta venv renv } = objDyn
+  -- if Ci_2 = { PATH (Ci_1.PATH ++ nameIR), GLOBAL Ci_1.GLOBAL, BLOCK $empty_block(), LOCAL $empty_local }
+  -- if $get_init_decls(objectInitializerOptIR) = objectDeclarationListIR
+  -- ObjectDecls_inst: BLOCK Ci_2 sto_1 |- objectDeclarationListIR ==> Ci_3 sto_2 _
+
+rule Decl_inst/instantiationIR-non-extern:
+  p Ci_0 sto_0 |- annotationList typeIR `< typeArgumentListIR > `( argumentListIR ) nameIR objectInitializerOptIR `;
+    ==> Ci_0 sto_1 eps
+  -- if $get_constructor_id(typeIR) = tid
+  ;; TODO: to_names?
+  -- if $find_cons_inst(p, Ci_0, tid, argumentListIR) = (consDyn, id_default*)
+  -- if $enter_path(Ci_0, nameIR) = Ci_1
+  -- Constructor_inst: p Ci_1 sto_0 |- consDyn `< typeArgumentListIR > `( argumentListIR `# id_default* ) ==> sto_1 objDyn
+  -- if EXTERN `{ tid theta venv renv } = objDyn
+
+;;; functionDeclarationIR
+;;; syntax functionDeclarationIR
+;;;; annotationList functionPrototypeIR blockStatementIR
+
+dec $rid_IR(nameIR, parameterListIR) : rid
+dec $pid_IR(parameterIR) : pid
+
+def $rid_IR(nameIR, parameterIR*) = nameIR `( $pid_IR(parameterIR)* )
+
+def $pid_IR(_ _ _ nameIR eps) = nameIR `# false
+def $pid_IR(_ _ _ nameIR constantInitializerIR) = nameIR `# true
+
+rule Decl_inst/functionDeclarationIR:
+  p Ci_0 sto |- _ (typeIR nameIR (`< typeParameterListIR `, typeParameterListIR_inferred >)
+    `( parameterListIR )) blockStatementIR
+    ==> Ci_1 sto eps
+  -- if $rid_IR(nameIR, parameterListIR) = rid
+  -- if FUNCTION `< typeParameterListIR ++ typeParameterListIR_inferred >
+      `( parameterListIR ) blockStatementIR
+      = funcDyn
+  -- if $add_routine_overload_inst(p, Ci_0, rid, funcDyn) = Ci_1
+
+;;; actionDeclarationIR
+;;; syntax actionDeclarationIR
+;;;; annotationList ACTION nameIR `( parameterListIR ) blockStatementIR
+
+rule Decl_inst/action:
+  p Ci_0 sto |- _ ACTION nameIR `( parameterListIR ) blockStatementIR ==> Ci_1 sto eps
+  -- if $rid_IR(nameIR, parameterListIR) = rid
+  -- if ACTION `( parameterListIR ) `{ blockStatementIR } = funcDyn
+  -- if $add_routine_non_overload_inst(p, Ci_0, rid, funcDyn) = Ci_1
+
+;;; errorDeclarationIR
+;;; syntax errorDeclarationIR
+;;;; ERROR `{ nameListIR }
+
+rule Decl_inst/errorDeclarationIR:
+  GLOBAL Ci_0 sto |- ERROR `{ nameIR* } ==> Ci_1 sto eps
+  -- (if $concat_text([ "error.", nameIR ]) = nameIR_field)*
+  -- if $add_values_inst(GLOBAL, Ci_0, nameIR_field*, (ERROR `. nameIR)*) = Ci_1
+
+;;; matchKindDeclarationIR
+;;; syntax matchKindDeclarationIR
+;;;; MATCH_KIND `{ nameListIR }
+
+rule Decl_inst/matchKindDeclarationIR:
+  GLOBAL Ci_0 sto |- MATCH_KIND `{ nameIR* } ==> Ci_1 sto eps
+  -- if $add_values_inst(GLOBAL, Ci_0, nameIR*, (MATCH_KIND `. nameIR)*) = Ci_1
+
+;;; externDeclarationIR
+;;; syntax externDeclarationIR
+;;;; externFunctionDeclarationIR
+;;;; syntax externFunctionDeclarationIR
+;;;;; annotationList EXTERN functionPrototypeIR `;
+
+rule Decl_inst/externFunctionDeclarationIR:
+  p Ci_0 sto |- _ EXTERN (typeIR nameIR 
+    `< typeParameterListIR `, typeParameterListIR_inferred >
+    `( parameterListIR )) `;
+    ==> Ci_1 sto eps
+  -- if $rid_IR(nameIR, parameterListIR) = rid
+  -- if EXTERN_FUNCTION 
+      `< typeParameterListIR ++ typeParameterListIR_inferred >
+      `( parameterListIR ) `{ eps }
+      = funcDyn
+  -- if $add_routine_overload_inst(p, Ci_0, rid, funcDyn) = Ci_1
+
+;;;; externObjectDeclarationIR
+
+;; rule Decl_inst/extern-object:
+;;   p Ci_0 sto |- annotationList EXTERN nonTypeName tparamIR* `{ methodPrototypeIR* } ==> Ci_1 sto eps
+
+
+
+;;; parserDeclarationIR
+;;; syntax parserDeclarationIR
+;;;; annotationList PARSER
+;;;;  nameIR `< typeParameterListIR >
+;;;;  `( parameterListIR ) `( constructorParameterListIR )
+;;;;  `{ parserLocalDeclarationListIR parserStateListIR }`
+
+rule Decl_inst/parserDeclarationIR:
+  p Ci_0 sto |- _ PARSER nameIR `< typeParameterListIR >
+    `( parameterListIR ) `( constructorParameterListIR )
+    `{ parserLocalDeclarationListIR parserStateListIR }
+    ==> Ci_1 sto eps
+  -- if $rid_IR(nameIR, constructorParameterListIR) = rid
+  -- if PARSER `< typeParameterListIR >
+      `( parameterListIR ) `( constructorParameterListIR )
+      `{ parserLocalDeclarationListIR parserStateListIR }
+      = consDyn
+  -- if $add_cons_inst(p, Ci_0, rid, consDyn) = Ci_1
+
+;;; controlDeclarationIR
+;;; syntax controlDeclarationIR =
+;;;; annotationList CONTROL
+;;;;  nameIR `< typeParameterListIR >
+;;;;  `( parameterListIR ) `( constructorParameterListIR )
+;;;;  `{ controlLocalDeclarationListIR APPLY controlBodyIR }
+
+rule Decl_inst/controlDeclarationIR:
+  p Ci_0 sto |- _ CONTROL nameIR `< typeParameterListIR >
+    `( parameterListIR ) `( constructorParameterListIR )
+    `{ controlLocalDeclarationListIR APPLY controlBodyIR }
+    ==> Ci_1 sto eps
+  -- if $rid_IR(nameIR, constructorParameterListIR) = rid
+  -- if CONTROL `< typeParameterListIR >
+      `( parameterListIR ) `( constructorParameterListIR )
+      `{ controlLocalDeclarationListIR APPLY controlBodyIR }
+      = consDyn
+  -- if $add_cons_inst(p, Ci_0, rid, consDyn) = Ci_1
+
+;;; typeDeclarationIR
+;;; syntax typeDeclarationIR
+
+;;;; derivedTypeDeclarationIR
+;;;; syntax derivedTypeDeclarationIR
+
+;;;;; enumTypeDeclarationIR
+;;;;; syntax enumTypeDeclarationIR =
+
+;;;;;; annotationList ENUM nameIR `{ nameListIR }
+
+rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-enumTypeDeclarationIR-enum:
+  GLOBAL Ci_0 sto |- _ ENUM nameIR `{ nameIR_mem* } ==> Ci_2 sto eps
+  -- if ($concat_text([nameIR, ".", nameIR_mem]) = nameIR_path)*
+  -- if $add_values_inst(GLOBAL, Ci_0, nameIR_path*, (nameIR `. nameIR_mem)*) = Ci_1
+  -- if $add_typdef_inst(GLOBAL, Ci_1, nameIR, ENUM nameIR `{ nameIR_mem* }) = Ci_2
+
+;;;;;; annotationList ENUM typeIR nameIR `{ namedExpressionListIR }
+;; TODO: need to be value instead of typedExpressionIR?
+
+rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-enumTypeDeclarationIR-serializableEnum:
+  GLOBAL Ci_0 sto_0 |- _ ENUM typeIR nameIR `{ (nameIR_mem `= typedExpressionIR)* } ==> Ci_2 sto_1 eps
+  -- if ($concat_text([nameIR, ".", nameIR_mem]) = nameIR_path)*
+  -- Exprs_inst: GLOBAL Ci_0 sto_0 |- typedExpressionIR* ==> sto_1 value_mem*
+  -- if $add_values_inst(GLOBAL, Ci_0, nameIR_path*, (nameIR `. nameIR_mem `# value_mem)*) = Ci_1
+  -- if $add_typdef_inst(GLOBAL, Ci_1, nameIR, ENUM nameIR `# typeIR `{ (nameIR_mem `= value_mem `;)* }) = Ci_2
+
+;;;;; structTypeDeclarationIR
+;;;;; syntax structTypeDeclarationIR =
+;;;;;   annotationList STRUCT nameIR
+;;;;;     `< typeParameterListIR `, typeParameterListIR >
+;;;;;     `{ typeFieldListIR }
+
+rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-structTypeDeclarationIR:
+  GLOBAL Ci_0 sto |- _ STRUCT nameIR
+    `< typeParameterListIR `, typeParameterListIR_inferred >
+    `{ typeFieldIR* }
+    ==> Ci_1 sto eps
+  -- if (typeFieldIR = _ typeIR nameIR_field `;)*
+  -- if (STRUCT nameIR `{ (typeIR nameIR_field `;)* }) 
+      `< typeParameterListIR `, typeParameterListIR_inferred >
+      = typeDefIR
+  -- if $add_typdef_inst(GLOBAL, Ci_0, nameIR, typeDefIR) = Ci_1
+
+;;;;; headerTypeDeclarationIR
+;;;;; syntax headerTypeDeclarationIR =
+;;;;;   annotationList HEADER nameIR
+;;;;;     `< typeParameterListIR `, typeParameterListIR >
+;;;;;     `{ typeFieldListIR }
+
+rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-headerTypeDeclarationIR:
+  GLOBAL Ci_0 sto |- _ HEADER nameIR
+    `< typeParameterListIR `, typeParameterListIR_inferred >
+    `{ typeFieldIR* }
+    ==> Ci_1 sto eps
+  -- if (typeFieldIR = _ typeIR nameIR_field `;)*
+  -- if (HEADER nameIR `{ (typeIR nameIR_field `;)* }) 
+      `< typeParameterListIR `, typeParameterListIR_inferred >
+      = typeDefIR
+  -- if $add_typdef_inst(GLOBAL, Ci_0, nameIR, typeDefIR) = Ci_1
+
+;;;;; headerUnionTypeDeclarationIR
+;;;;; syntax headerUnionTypeDeclarationIR =
+;;;;;   annotationList HEADER_UNION nameIR
+;;;;;     `< typeParameterListIR `, typeParameterListIR >
+;;;;;     `{ typeFieldListIR }
+
+rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-headerTypeDeclarationIR:
+  GLOBAL Ci_0 sto |- _ HEADER_UNION nameIR
+    `< typeParameterListIR `, typeParameterListIR_inferred >
+    `{ typeFieldIR* }
+    ==> Ci_1 sto eps
+  -- if (typeFieldIR = _ typeIR nameIR_field `;)*
+  -- if (HEADER_UNION nameIR `{ (typeIR nameIR_field `;)* }) 
+      `< typeParameterListIR `, typeParameterListIR_inferred >
+      = typeDefIR
+  -- if $add_typdef_inst(GLOBAL, Ci_0, nameIR, typeDefIR) = Ci_1
+
+;;;; typedefDeclarationIR
+;;;; syntax typedefDeclarationIR
+
+;;;;; annotationList TYPEDEF typedefTypeIR nameIR `;
+;;;;; syntax typedefTypeIR
+
+;;;;;; typeIR
+
+rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-typedef-typeIR:
+  GLOBAL Ci_0 sto |- _ TYPEDEF typeIR nameIR `;
+    ==> Ci_1 sto eps
+  -- if TYPEDEF nameIR typeIR = typeIR_typedef
+  -- if $add_typdef_inst(GLOBAL, Ci_0, nameIR, typeIR_typedef) = Ci_1
+
+;;;;;; derivedTypeDeclarationIR
+
+rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-typedef-derivedTypeDeclarationIR-monoTypeDefIR:
+  GLOBAL Ci_0 sto |- _ TYPEDEF derivedTypeDeclarationIR nameIR `;
+    ==> Ci_1 sto eps
+  -- Decl_inst: GLOBAL Ci_0 $empty_sto() |- derivedTypeDeclarationIR ==> Ci_local _ _
+  -- if $diff_set<tid>($dom_map<tid, typeDefIR>(Ci_0.GLOBAL.TDENV), $dom_map<tid, typeDefIR>(Ci_local.GLOBAL.TDENV))
+    = `{ tid_newtype }
+  -- if $find_typedef_inst(GLOBAL, Ci_local, tid_newtype) = typeDefIR
+  -- if typeDefIR = monoTypeDefIR
+  -- if TYPEDEF nameIR monoTypeDefIR = typeIR_typedef
+  -- if $add_typdef_inst(GLOBAL, Ci_0, nameIR, typeIR_typedef) = Ci_1
+
+rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-typedef-derivedTypeDeclaration-polyTypeDefIR:
+  GLOBAL Ci_0 sto |- _ TYPEDEF derivedTypeDeclarationIR nameIR `;
+    ==> Ci_1 sto eps
+  -- Decl_inst: GLOBAL Ci_0 $empty_sto() |- derivedTypeDeclarationIR ==> Ci_local _ _
+  -- if $diff_set<tid>($dom_map<tid, typeDefIR>(Ci_0.GLOBAL.TDENV), $dom_map<tid, typeDefIR>(Ci_local.GLOBAL.TDENV))
+    = `{ tid_newtype }
+  -- if $find_typedef_inst(GLOBAL, Ci_local, tid_newtype) = typeDefIR
+  -- if typeDefIR = polyTypeDefIR
+  -- if TYPEDEF nameIR (polyTypeDefIR `< eps >) = typeIR_typedef
+  -- if $add_typdef_inst(GLOBAL, Ci_0, nameIR, typeIR_typedef) = Ci_1
+
+;;;;; annotationList TYPE typeIR nameIR `;
+
+rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-newtype:
+  GLOBAL Ci_0 sto |- _ TYPE typeIR nameIR `;
+    ==> Ci_1 sto eps
+  -- if TYPE nameIR typeIR = typeIR_newtype
+  -- if $add_typdef_inst(GLOBAL, Ci_0, nameIR, typeIR_newtype) = Ci_1
+
+;;;; parserTypeDeclarationIR
+;;;; syntax parserTypeDeclarationIR =
+;;;;   annotationList PARSER nameIR
+;;;;     `< typeParameterListIR `, typeParameterListIR >
+;;;;     `( parameterListIR ) `;
+
+rule Decl_inst/typeDeclarationIR-parserTypeDeclarationIR:
+  GLOBAL Ci_0 sto |- _ PARSER nameIR
+    `< typeParameterListIR `, typeParameterListIR_inferred >
+    `( parameterIR* ) `;
+    ==> Ci_1 sto eps
+  -- if ($parameterIR(parameterIR) = parameterTypeIR)*
+  -- if PARSER `( parameterTypeIR* ) = typeIR_parser
+  -- if typeIR_parser `< typeParameterListIR `, typeParameterListIR_inferred >
+    = typeDefIR_parser
+  -- if $add_typdef_inst(GLOBAL, Ci_0, nameIR, typeDefIR_parser) = Ci_1
+
+;;;; controlTypeDeclarationIR
+;;;; syntax controlTypeDeclarationIR =
+;;;;   annotationList CONTROL nameIR
+;;;;     `< typeParameterListIR `, typeParameterListIR >
+;;;;     `( parameterListIR ) `;
+
+rule Decl_inst/typeDeclarationIR-controlTypeDeclarationIR:
+  GLOBAL Ci_0 sto |- _ CONTROL nameIR
+    `< typeParameterListIR `, typeParameterListIR_inferred >
+    `( parameterIR* ) `;
+    ==> Ci_1 sto eps
+  -- if ($parameterIR(parameterIR) = parameterTypeIR)*
+  -- if CONTROL `( parameterTypeIR* ) = typeIR_parser
+  -- if typeIR_parser `< typeParameterListIR `, typeParameterListIR_inferred >
+    = typeDefIR_parser
+  -- if $add_typdef_inst(GLOBAL, Ci_0, nameIR, typeDefIR_parser) = Ci_1
+
+;;;; packageTypeDeclarationIR
+;;;; syntax packageTypeDeclarationIR =
+;;;;   annotationList PACKAGE nameIR
+;;;;     `< typeParameterListIR `, typeParameterListIR >
+;;;;     `( parameterListIR ) `;
+
+;;TODO: params to cparams?
+dec $cid_IR(nameIR, parameterListIR) : cid
+rule Decl_inst/typeDeclarationIR-packageTypeDeclarationIR:
+  p Ci_0 sto |- _ PACKAGE nameIR
+    `< typeParameterListIR `, typeParameterListIR_inferred >
+    `( parameterIR* ) `;
+    ==> Ci_2 sto eps
+  -- if (parameterIR = _ _ typeIR _ _)*
+  -- if PACKAGE `< typeIR* > = typeIR_package
+  -- if typeIR_package `< typeParameterListIR `, typeParameterListIR_inferred >
+    = typeDefIR_package
+  -- if $add_typdef_inst(p, Ci_0, nameIR, typeDefIR_package) = Ci_1 
+  -- if $cid_IR(nameIR, parameterIR*) = cid
+  -- if PACKAGE `< typeParameterListIR ++ typeParameterListIR_inferred > `( parameterIR* )
+    = consDyn_package
+  -- if $add_cons_inst(GLOBAL, Ci_1, cid, consDyn_package) = Ci_2
