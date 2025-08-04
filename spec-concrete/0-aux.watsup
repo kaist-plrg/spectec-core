@@ -31,6 +31,9 @@ dec $concat_text(text*) : text
 def $concat_text(eps) = ""
 def $concat_text(t_h :: t_t*) = t_h ++ $concat_text(t_t*)
 
+dec $strip_prefix(text, text) : text
+dec $strip_suffix(text, text) : text
+
 ;;
 ;; General sequence functions
 ;;

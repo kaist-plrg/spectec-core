@@ -450,6 +450,53 @@ syntax callTargetNonBrace =
   | routineTargetNonBrace
   | constructorTarget
 
+dec $expressionNonBrace(expressionNonBrace) : expression
+def $expressionNonBrace(literalExpression) = literalExpression
+def $expressionNonBrace(referenceExpression) = referenceExpression
+def $expressionNonBrace(unaryExpression) = unaryExpression
+def $expressionNonBrace(
+    expressionNonBrace_l binop expression_r
+  )
+  = expression_l binop expression_r
+  -- if expression_l = $expressionNonBrace(expressionNonBrace_l)
+def $expressionNonBrace(
+    expressionNonBrace_cond `? expression_true `: expression_false
+  )
+  = expression_cond `? expression_true `: expression_false
+  -- if expression_cond = $expressionNonBrace(expressionNonBrace_cond)
+def $expressionNonBrace(castExpression) = castExpression
+def $expressionNonBrace(errorAccessExpression) = errorAccessExpression
+def $expressionNonBrace(prefixedTypeName `. member)
+  = prefixedTypeName `. member
+def $expressionNonBrace(expressionNonBrace_base `. member)
+  = expression_base `. member
+  -- if expression_base = $expressionNonBrace(expressionNonBrace_base)
+def $expressionNonBrace(
+    expressionNonBrace_base `[ expression_index ]
+  )
+  = expression_base `[ expression_index ]
+  -- if expression_base = $expressionNonBrace(expressionNonBrace_base)
+def $expressionNonBrace(
+    expressionNonBrace_base `[ expression_hi `: expression_lo ]
+  )
+  = expression_base `[ expression_hi `: expression_lo ]
+  -- if expression_base = $expressionNonBrace(expressionNonBrace_base)
+def $expressionNonBrace(
+    expressionNonBrace `( argumentList )
+  )
+  = expression `( argumentList )
+  -- if expression = $expressionNonBrace(expressionNonBrace)
+def $expressionNonBrace(
+    constructorTarget `( argumentList )
+  )
+  = constructorTarget `( argumentList )
+def $expressionNonBrace(
+    expressionNonBrace `< realTypeArgumentList > `( argumentList )
+  )
+  = expression `< realTypeArgumentList > `( argumentList )
+  -- if expression = $expressionNonBrace(expressionNonBrace)
+def $expressionNonBrace(parenthesizedExpression) = parenthesizedExpression
+
 ;;
 ;; Keyset expressions
 ;;
@@ -464,6 +511,16 @@ syntax simpleKeysetExpression =
 syntax simpleKeysetExpressionList = 
   | simpleKeysetExpression
   | simpleKeysetExpressionList `, simpleKeysetExpression
+
+dec $flatten_simpleKeysetExpressionList(simpleKeysetExpressionList)
+  : simpleKeysetExpression*
+def $flatten_simpleKeysetExpressionList(simpleKeysetExpression)
+  = simpleKeysetExpression
+def $flatten_simpleKeysetExpressionList(
+    simpleKeysetExpressionList `, simpleKeysetExpression
+  )
+  = $flatten_simpleKeysetExpressionList(simpleKeysetExpressionList)
+    ++ [ simpleKeysetExpression ]
 
 syntax tupleKeysetExpression =
   | `( expression `&&& expression )
@@ -669,6 +726,11 @@ syntax switchCase =
 syntax switchCaseList =
   | `EMPTY
   | switchCaseList switchCase
+
+dec $flatten_switchCaseList(switchCaseList) : switchCase*
+def $flatten_switchCaseList(`EMPTY) = eps
+def $flatten_switchCaseList(switchCaseList switchCase)
+  = $flatten_switchCaseList(switchCaseList) ++ [ switchCase ]
 
 syntax switchStatement = SWITCH `( expression ) `{ switchCaseList }
 
@@ -883,6 +945,11 @@ syntax selectCase = keysetExpression `: name `;
 syntax selectCaseList =
   | `EMPTY
   | selectCaseList selectCase
+
+dec $flatten_selectCaseList(selectCaseList) : selectCase*
+def $flatten_selectCaseList(`EMPTY) = eps
+def $flatten_selectCaseList(selectCaseList selectCase)
+  = $flatten_selectCaseList(selectCaseList) ++ [ selectCase ]
 
 syntax selectExpression = SELECT `( expressionList ) `{ selectCaseList }
 

@@ -165,7 +165,7 @@ rule Expr_ok/binaryExpression-plusminusmult:
           )
   ---- ;; fetch annotations
   -- if _ `# `( typeIR_reduced ctk_l_reduced ) = typedExpressionIR_l_reduced
-  -- if _ `# `( typeIR_reduced ctk_r_reduced ) = typedExpressionIR_r_reduced
+  -- if _ `# `( _ ctk_r_reduced ) = typedExpressionIR_r_reduced
   ---- ;; create typed expression
   -- if ctk_reduced = $join_ctk(ctk_l_reduced, ctk_r_reduced)
   -- if expressionNoteIR = `( typeIR_reduced ctk_reduced )
@@ -201,7 +201,7 @@ rule Expr_ok/binaryExpression-satplusminus:
           )
   ---- ;; fetch annotations
   -- if _ `# `( typeIR_reduced ctk_l_reduced ) = typedExpressionIR_l_reduced
-  -- if _ `# `( typeIR_reduced ctk_r_reduced ) = typedExpressionIR_r_reduced
+  -- if _ `# `( _ ctk_r_reduced ) = typedExpressionIR_r_reduced
   ---- ;; create typed expression
   -- if ctk_reduced = $join_ctk(ctk_l_reduced, ctk_r_reduced)
   -- if expressionNoteIR = `( typeIR_reduced ctk_reduced )
@@ -236,7 +236,7 @@ rule Expr_ok/binaryExpression-divmod-lctk:
           )
   ---- ;; fetch annotations
   -- if _ `# `( typeIR_reduced ctk_l_reduced ) = typedExpressionIR_l_reduced
-  -- if _ `# `( typeIR_reduced ctk_r_reduced ) = typedExpressionIR_r_reduced
+  -- if _ `# `( _ ctk_r_reduced ) = typedExpressionIR_r_reduced
   ---- ;; check that the divisor is local compile-time known and is positive
   -- if ctk_r_reduced = LCTK
   -- Eval_static: p C |- typedExpressionIR_r_reduced ~> value_r
@@ -265,7 +265,7 @@ rule Expr_ok/binaryExpression-divmod-non-lctk:
           )
   ---- ;; fetch annotations
   -- if _ `# `( typeIR_reduced ctk_l_reduced ) = typedExpressionIR_l_reduced
-  -- if _ `# `( typeIR_reduced ctk_r_reduced ) = typedExpressionIR_r_reduced
+  -- if _ `# `( _ ctk_r_reduced ) = typedExpressionIR_r_reduced
   ---- ;; check that the divisor is not local compile-time known
   ---- ;; may be target-specific, but let it slide
   -- if ctk_r_reduced =/= LCTK
@@ -301,12 +301,10 @@ rule Expr_ok/binaryExpression-shift-fixbit:
   -- Expr_ok: p C |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
-  -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
-        = $coerce_binary(typedExpressionIR_l, typedExpressionIR_r)
   -- if (typedExpressionIR_l_reduced, typedExpressionIR_r_reduced)
         = $reduce_serenum_binary(
-            typedExpressionIR_l_cast,
-            typedExpressionIR_r_cast,
+            typedExpressionIR_l,
+            typedExpressionIR_r,
             def $compat_shift
           )
   ---- ;; fetch annotations
@@ -327,12 +325,10 @@ rule Expr_ok/binaryExpression-shift-integer:
   -- Expr_ok: p C |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
-  -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
-        = $coerce_binary(typedExpressionIR_l, typedExpressionIR_r)
   -- if (typedExpressionIR_l_reduced, typedExpressionIR_r_reduced)
         = $reduce_serenum_binary(
-            typedExpressionIR_l_cast,
-            typedExpressionIR_r_cast,
+            typedExpressionIR_l,
+            typedExpressionIR_r,
             def $compat_shift
           )
   ---- ;; fetch annotations
@@ -361,7 +357,7 @@ rule Expr_ok/binaryExpression-eq:
         = $coerce_binary(typedExpressionIR_l, typedExpressionIR_r)
   ---- ;; fetch annotations
   -- if _ `# `( typeIR_cast ctk_l_cast ) = typedExpressionIR_l_cast
-  -- if _ `# `( typeIR_cast ctk_r_cast ) = typedExpressionIR_r_cast
+  -- if _ `# `( _ ctk_r_cast ) = typedExpressionIR_r_cast
   ---- ;; check that the type supports equality
   -- if $is_equalable_typeIR(typeIR_cast)
   ---- ;; create typed expression
@@ -400,10 +396,10 @@ rule Expr_ok/binaryExpression-compare:
           )
   ---- ;; fetch annotations
   -- if _ `# `( typeIR_reduced ctk_l_reduced ) = typedExpressionIR_l_reduced
-  -- if _ `# `( typeIR_reduced ctk_r_reduced ) = typedExpressionIR_r_reduced
+  -- if _ `# `( _ ctk_r_reduced ) = typedExpressionIR_r_reduced
   ---- ;; create typed expression
   -- if ctk_reduced = $join_ctk(ctk_l_reduced, ctk_r_reduced)
-  -- if expressionNoteIR = `( typeIR_reduced ctk_reduced )
+  -- if expressionNoteIR = `( BOOL ctk_reduced )
 
 ;;;; `& | `^ | `|
 
@@ -436,7 +432,7 @@ rule Expr_ok/binaryExpression-bitwise:
           )
   ---- ;; fetch annotations
   -- if _ `# `( typeIR_reduced ctk_l_reduced ) = typedExpressionIR_l_reduced
-  -- if _ `# `( typeIR_reduced ctk_r_reduced ) = typedExpressionIR_r_reduced
+  -- if _ `# `( _ ctk_r_reduced ) = typedExpressionIR_r_reduced
   ---- ;; create typed expression
   -- if ctk_reduced = $join_ctk(ctk_l_reduced, ctk_r_reduced)
   -- if expressionNoteIR = `( typeIR_reduced ctk_reduced )
@@ -473,7 +469,7 @@ rule Expr_ok/binaryExpression-concat:
           )
   ---- ;; fetch annotations
   -- if _ `# `( typeIR_reduced ctk_l_reduced ) = typedExpressionIR_l_reduced
-  -- if _ `# `( typeIR_reduced ctk_r_reduced ) = typedExpressionIR_r_reduced
+  -- if _ `# `( _ ctk_r_reduced ) = typedExpressionIR_r_reduced
   ---- ;; create typed expression
   -- if ctk_reduced = $join_ctk(ctk_l_reduced, ctk_r_reduced)
   -- if expressionNoteIR = `( typeIR_reduced ctk_reduced )
@@ -508,7 +504,7 @@ rule Expr_ok/binaryExpression-logical:
           )
   ---- ;; fetch annotations
   -- if _ `# `( typeIR_reduced ctk_l_reduced ) = typedExpressionIR_l_reduced
-  -- if _ `# `( typeIR_reduced ctk_r_reduced ) = typedExpressionIR_r_reduced
+  -- if _ `# `( _ ctk_r_reduced ) = typedExpressionIR_r_reduced
   ---- ;; create typed expression
   -- if ctk_reduced = $join_ctk(ctk_l_reduced, ctk_r_reduced)
   -- if expressionNoteIR = `( typeIR_reduced ctk_reduced )
@@ -532,7 +528,7 @@ rule Expr_ok/ternaryExpression:
         = $coerce_binary(typedExpressionIR_true, typedExpressionIR_false)
   ---- ;; fetch annotations
   -- if _ `# `( typeIR_cast ctk_true_cast ) = typedExpressionIR_true_cast
-  -- if _ `# `( typeIR_cast ctk_false_cast ) = typedExpressionIR_false_cast
+  -- if _ `# `( _ ctk_false_cast ) = typedExpressionIR_false_cast
   ---- ;; if both branches are arbitrary integer types,
   ---- ;; then the condition must be compile-time known
   -- if $is_arbitrary_int_typeIR(typeIR_cast) => (ctk_cond =/= DYN)

@@ -367,7 +367,12 @@ rule TableType_ok:
   -- if (value_enum_field = TABLE_ENUM tid_enum `. id_enum_field)*
   -- if (varTypeIR_enum_field
         = `EMPTY typeIR_table_enum LCTK value_enum_field)*
-  -- if C_1 = $add_vars(BLOCK, C_0, id_enum_field*, varTypeIR_enum_field*)
+  -- if C_1
+      = $add_vars(
+          BLOCK, C_0,
+          (tid_enum ++ "." ++ id_enum_field)*,
+          varTypeIR_enum_field*
+        )
   ---- ;; create table struct type
   -- if tid_struct = "apply_result(" ++ nameIR ++ ")"
   -- if typeIR_table_struct

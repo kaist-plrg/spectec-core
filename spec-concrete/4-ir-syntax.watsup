@@ -206,9 +206,6 @@ syntax keysetExpressionIR =
   | simpleKeysetExpressionIR
   | tupleKeysetExpressionIR
 
-syntax typedKeysetExpressionIR =
-  keysetExpressionIR `# `( typeIR ctk )
-
 ;;
 ;; Type arguments
 ;;
@@ -543,7 +540,7 @@ syntax externDeclarationIR =
 ;;;;;; Select expressions
 ;;
 
-syntax selectCaseIR = typedKeysetExpressionIR `: nameIR `;
+syntax selectCaseIR = keysetExpressionIR `: nameIR `;
 
 syntax selectCaseListIR = selectCaseIR*
 
@@ -659,7 +656,7 @@ syntax tableEntryPriorityOptIR = tableEntryPriorityIR?
 
 syntax tableEntryIR =
   constOptIR tableEntryPriorityOptIR
-    typedKeysetExpressionIR `: tableActionReferenceIR annotationList `; 
+    keysetExpressionIR `: tableActionReferenceIR annotationList `; 
 
 syntax tableEntryListIR = tableEntryIR*
 

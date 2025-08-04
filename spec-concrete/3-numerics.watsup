@@ -628,3 +628,73 @@ def $bitacc_op(value_b, value_h, value_l) = w W i
   -- if i_l = $to_number(value_l)
   -- if w = $(i_h + 1 - i_l)
   -- if i = $bitacc(i_b, i_h, i_l)
+
+;;
+;; Size
+;;
+
+dec $sizeof(typeIR, id) : value
+
+dec $sizeof_minSizeInBits(typeIR) : value
+dec $sizeof_minSizeInBits'(typeIR) : nat
+dec $sizeof_minSizeInBits''(typeIR) : nat
+
+dec $sizeof_minSizeInBytes(typeIR) : value
+
+dec $sizeof_maxSizeInBits(typeIR) : value
+dec $sizeof_maxSizeInBits'(typeIR) : nat
+dec $sizeof_maxSizeInBits''(typeIR) : nat
+
+dec $sizeof_maxSizeInBytes(typeIR) : value
+
+;;; Minimum size in bits
+
+def $sizeof_minSizeInBits(typeIR) = D $sizeof_minSizeInBits'(typeIR)
+def $sizeof_minSizeInBits'(typeIR) = $sizeof_minSizeInBits''($canon(typeIR))
+
+def $sizeof_minSizeInBits''(BOOL) = 1
+def $sizeof_minSizeInBits''(INT `< w >) = w
+def $sizeof_minSizeInBits''(BIT `< w >) = w
+def $sizeof_minSizeInBits''(VARBIT `< _ >) = 0
+def $sizeof_minSizeInBits''(TYPE _ typeIR) = $sizeof_minSizeInBits'(typeIR)
+def $sizeof_minSizeInBits''(ENUM _ `# typeIR `{ _ }) = $sizeof_minSizeInBits'(typeIR)
+def $sizeof_minSizeInBits''(TUPLE `< typeIR* >) = $sum($sizeof_minSizeInBits'(typeIR)*)
+def $sizeof_minSizeInBits''(typeIR `[ n_size ]) = $($sizeof_minSizeInBits'(typeIR) * n_size)
+def $sizeof_minSizeInBits''(STRUCT _ `{ (typeIR _ `;)* }) = $sum($sizeof_minSizeInBits'(typeIR)*)
+def $sizeof_minSizeInBits''(HEADER _ `{ (typeIR _ `;)* }) = $sum($sizeof_minSizeInBits'(typeIR)*)
+def $sizeof_minSizeInBits''(HEADER_UNION _ `{ (typeIR _ `;)* }) = $min($sizeof_minSizeInBits'(typeIR)*)
+
+def $sizeof(typeIR, "minSizeInBits") = $sizeof_minSizeInBits(typeIR)
+
+;;; Minimum size in bytes
+
+def $sizeof_minSizeInBytes(typeIR) = D $(n_size / 8)
+  -- if n_size = $sizeof_minSizeInBits'(typeIR)
+
+def $sizeof(typeIR, "minSizeInBytes") = $sizeof_minSizeInBytes(typeIR)
+
+;; Maximum size in bits
+
+def $sizeof_maxSizeInBits(typeIR) = D $sizeof_maxSizeInBits'(typeIR)
+def $sizeof_maxSizeInBits'(typeIR) = $sizeof_maxSizeInBits''($canon(typeIR))
+
+def $sizeof_maxSizeInBits''(BOOL) = 1
+def $sizeof_maxSizeInBits''(INT `< w >) = w
+def $sizeof_maxSizeInBits''(BIT `< w >) = w
+def $sizeof_maxSizeInBits''(VARBIT `< w >) = w
+def $sizeof_maxSizeInBits''(TYPE _ typeIR) = $sizeof_maxSizeInBits'(typeIR)
+def $sizeof_maxSizeInBits''(ENUM _ `# typeIR `{ _ }) = $sizeof_maxSizeInBits'(typeIR)
+def $sizeof_maxSizeInBits''(TUPLE `< typeIR* >) = $sum($sizeof_maxSizeInBits'(typeIR)*)
+def $sizeof_maxSizeInBits''(typeIR `[ n_size ]) = $($sizeof_maxSizeInBits'(typeIR) * n_size)
+def $sizeof_maxSizeInBits''(STRUCT _ `{ (typeIR _ `;)* }) = $sum($sizeof_maxSizeInBits'(typeIR)*)
+def $sizeof_maxSizeInBits''(HEADER _ `{ (typeIR _ `;)* }) = $sum($sizeof_maxSizeInBits'(typeIR)*)
+def $sizeof_maxSizeInBits''(HEADER_UNION _ `{ (typeIR _ `;)* }) = $max($sizeof_maxSizeInBits'(typeIR)*)
+
+def $sizeof(typeIR, "maxSizeInBits") = $sizeof_maxSizeInBits(typeIR)
+
+;;; Maximum size in bytes
+
+def $sizeof_maxSizeInBytes(typeIR) = D $(n_size / 8)
+  -- if n_size = $sizeof_maxSizeInBits'(typeIR)
+
+def $sizeof(typeIR, "maxSizeInBytes") = $sizeof_maxSizeInBytes(typeIR)

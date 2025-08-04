@@ -195,6 +195,205 @@ rule Stmt_ok/conditionalStatement-else:
 ;;; continueStatement
 
 ;;; switchStatement
+;;; syntax switchStatement = SWITCH `( expression ) `{ switchCaseList }
+
+;;;; Switch on table apply method result
+
+;;;;; syntax switchLabel
+
+relation SwitchLabel_table_ok:
+  context tid bool |- switchLabel : switchLabelIR
+  hint(input %0 %1 %2 %3)
+
+;;;;;;  DEFAULT
+
+rule SwitchLabel_table_ok/default:
+  C tid_table true |- DEFAULT : DEFAULT
+
+;;;;;; expressionNonBrace
+
+rule SwitchLabel_table_ok/expressionNonBrace-prefixedNonTypeName:
+  C tid_table _ |- prefixedNonTypeName : typedExpressionIR_label
+  ---- ;; check that the label is a valid table action reference
+  -- if `` nameIR_label = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if tid_table_enum = "action_list(" ++ tid_table ++ ")" 
+  -- if id_label = tid_table_enum ++ "." ++ nameIR_label
+  -- if _ typeIR_label ctk_label value_label
+      = $find_var(LOCAL, C, `` id_label)
+  -- if value_label
+      = TABLE_ENUM tid_table_enum `. nameIR_label
+  ---- ;; create typed switch label
+  -- if typedExpressionIR_label
+      = (`` nameIR_label) `# `( typeIR_label ctk_label )
+
+;;;;;;; (TODO) handle parenthesizedExpression
+
+;;;;; syntax switchCase
+
+relation SwitchCase_table_ok:
+  context flow tid bool |- switchCase : flow switchCaseIR `# switchLabel
+  hint(input %0 %1 %2 %3 %4)
+
+;;;;;; switchLabel `: blockStatement
+
+rule SwitchCase_table_ok/switchLabel-blockStatement:
+  C f tid_table b_last |- switchLabel `: blockStatement
+                        : f_post switchCaseIR `# switchLabel
+  ---- ;; check switch label
+  -- SwitchLabel_table_ok: C tid_table b_last |- switchLabel : switchLabelIR
+  ---- ;; check block statement
+  -- Block_ok: C f |- blockStatement : C_post f_post blockStatementIR
+  ---- ;; create IR
+  -- if switchCaseIR = switchLabelIR `: blockStatementIR
+
+;;;;;; switchLabel `: 
+
+rule SwitchCase_table_ok/switchLabel:
+  C f tid_table b_last |- switchLabel `: blockStatement
+                        : f switchCaseIR `# switchLabel
+  ---- ;; check switch label
+  -- SwitchLabel_table_ok: C tid_table b_last |- switchLabel : switchLabelIR
+  ---- ;; create IR
+  -- if switchCaseIR = switchLabelIR `:
+
+;;;;; syntax switchCaseList
+
+relation SwitchCases_table_ok:
+  context flow tid |- switchCase* : flow switchCaseListIR `# switchLabel*
+  hint(input %0 %1 %2 %3)
+
+rule SwitchCases_table_ok/nil:
+  C f tid_table |- eps : f eps `# eps
+
+rule SwitchCases_table_ok/cons:
+  C f tid_table |- switchCase_h :: switchCase_t*
+                : f_t (switchCaseIR_h :: switchCaseIR_t*) `# (switchLabel_h :: switchLabel_t*)
+  -- if b_last = (switchCase_t* = eps)
+  -- SwitchCase_table_ok:
+      C f tid_table b_last |- switchCase_h : f_h switchCaseIR_h `# switchLabel_h
+  -- SwitchCases_table_ok:
+      C f_h tid_table |- switchCase_t* : f_t switchCaseIR_t* `# switchLabel_t*
+
+rule Stmt_ok/switch-table-apply:
+  LOCAL C f |- SWITCH `( expression_switch ) `{ switchCaseList }
+             : C f_post switchStatementIR
+  ---- ;; check expression
+  -- Expr_ok: LOCAL C |- expression_switch : typedExpressionIR_switch
+  -- if _ `# `( typeIR_switch _ ) = typedExpressionIR_switch
+  ---- ;; if the expression is the result of table apply method
+  -- if TABLE_ENUM tid_table_enum `{ _ } = $canon(typeIR_switch)
+  -- if tid_table = $strip_prefix($strip_suffix(tid_table_enum, ")"), "action_list(")
+  ---- ;; check switch cases
+  -- if switchCase* = $flatten_switchCaseList(switchCaseList)
+  -- SwitchCases_table_ok:
+      C f tid_table |- switchCase* : f_post switchCaseIR* `# switchLabel*
+  ---- ;; switch labels must be unique
+  -- if $distinct_<switchLabel>(switchLabel*)
+  ---- ;; create typed statement
+  -- if switchStatementIR
+      = SWITCH `( typedExpressionIR_switch ) `{ switchCaseIR* }
+
+;;;; Switch on error, numeric or enumerated type expression
+
+;;;;; syntax switchLabel
+
+relation SwitchLabel_general_ok:
+  context typeIR bool |- switchLabel : switchLabelIR
+  hint(input %0 %1 %2 %3)
+
+;;;;;;  DEFAULT
+
+rule SwitchLabel_general_ok/default:
+  C _ true |- DEFAULT : DEFAULT
+
+;;;;;; expressionNonBrace
+
+rule SwitchLabel_general_ok/expressionNonBrace:
+  C typeIR_switch _ |- expressionNonBrace_label : typedExpressionIR_label_cast
+  ---- ;; check that the label is of switch key type
+  -- if expression_label = $expressionNonBrace(expressionNonBrace_label)
+  -- Expr_ok: LOCAL C |- expression_label : typedExpressionIR_label
+  -- if typedExpressionIR_label_cast
+      = $coerce_unary(typedExpressionIR_label, typeIR_switch)
+  ---- ;; switch label must be compile-time known
+  -- if _ `# `( _ LCTK ) = typedExpressionIR_label_cast
+
+;;;;; syntax switchCase
+
+relation SwitchCase_general_ok:
+  context flow typeIR bool |- switchCase : flow switchCaseIR `# switchLabel
+  hint(input %0 %1 %2 %3 %4)
+
+;;;;;; switchLabel `: blockStatement
+
+rule SwitchCase_general_ok/switchLabel-blockStatement:
+  C f typeIR_switch b_last |- switchLabel `: blockStatement
+                            : f_post switchCaseIR `# switchLabel
+  ---- ;; check switch label
+  -- SwitchLabel_general_ok: C typeIR_switch b_last |- switchLabel : switchLabelIR
+  ---- ;; check block statement
+  -- Block_ok: C f |- blockStatement : C_post f_post blockStatementIR
+  ---- ;; create IR
+  -- if switchCaseIR = switchLabelIR `: blockStatementIR
+
+;;;;;; switchLabel `: 
+
+rule SwitchCase_general_ok/switchLabel:
+  C f typeIR_switch b_last |- switchLabel `: blockStatement
+                            : f switchCaseIR `# switchLabel
+  ---- ;; check switch label
+  -- SwitchLabel_general_ok: C typeIR_switch b_last |- switchLabel : switchLabelIR
+  ---- ;; create IR
+  -- if switchCaseIR = switchLabelIR `:
+
+;;;;; syntax switchCaseList
+
+relation SwitchCases_general_ok:
+  context flow typeIR |- switchCase* : flow switchCaseListIR `# switchLabel*
+  hint(input %0 %1 %2 %3)
+
+rule SwitchCases_general_ok/nil:
+  C f typeIR_switch |- eps : f eps `# eps
+
+rule SwitchCases_general_ok/cons:
+  C f typeIR_switch |- switchCase_h :: switchCase_t*
+       : f_t (switchCaseIR_h :: switchCaseIR_t*) `# (switchLabel_h :: switchLabel_t*)
+  -- if b_last = (switchCase_t* = eps)
+  -- SwitchCase_general_ok:
+      C f typeIR_switch b_last |- switchCase_h : f_h switchCaseIR_h `# switchLabel_h
+  -- SwitchCases_general_ok:
+      C f_h typeIR_switch |- switchCase_t* : f_t switchCaseIR_t* `# switchLabel_t*
+
+dec $compat_switch(typeIR) : bool
+dec $compat'_switch(typeIR) : bool
+
+def $compat_switch(typeIR)
+  = $compat'_switch($canon(typeIR))
+def $compat'_switch(ERROR) = true
+def $compat'_switch(INT `< _ >) = true
+def $compat'_switch(BIT `< _ >) = true
+def $compat'_switch(ENUM _ `{ _ }) = true
+def $compat'_switch(ENUM _ `# _ `{ _ }) = true
+def $compat'_switch(typeIR) = false
+  -- otherwise
+
+rule Stmt_ok/switch-general:
+  LOCAL C f |- SWITCH `( expression_switch ) `{ switchCaseList }
+             : C f_post switchStatementIR
+  ---- ;; check expression
+  -- Expr_ok: LOCAL C |- expression_switch : typedExpressionIR_switch
+  -- if _ `# `( typeIR_switch _ ) = typedExpressionIR_switch
+  ---- ;; if the expression is error, numeric or enumerated type
+  -- if $compat_switch(typeIR_switch)
+  ---- ;; check switch cases
+  -- if switchCase* = $flatten_switchCaseList(switchCaseList)
+  -- SwitchCases_general_ok:
+      C f typeIR_switch |- switchCase* : f_post switchCaseIR* `# switchLabel*
+  ---- ;; switch labels must be unique
+  -- if $distinct_<switchLabel>(switchLabel*)
+  ---- ;; create typed statement
+  -- if switchStatementIR
+      = SWITCH `( typedExpressionIR_switch ) `{ switchCaseIR* }
 
 ;;
 ;; syntax blockElementStatement

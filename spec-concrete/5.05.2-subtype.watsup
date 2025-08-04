@@ -23,6 +23,9 @@ rule Sub_expl_canon_neq/fixbit-boolean:
 rule Sub_expl_canon_neq/boolean-fixbit:
   BOOL <: BIT `< 1 >
 
+rule Sub_expl_canon_neq/arbint-boolean:
+  INT <: BOOL
+
 rule Sub_expl_canon_neq/arbint-fixint:
   INT <: INT `< _ >
 
