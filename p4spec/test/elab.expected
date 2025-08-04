@@ -16163,7 +16163,7 @@ syntax senv = map<name, stateDyn>
 ;; ../../../../spec-concrete/6.01-env-dynamic.watsup:30.1-33.96
 syntax funcDyn = 
    | `BUILTIN_FUNCTION<` typeParameterListIR `>(` parameterListIR `){` blockElementStatementListIR `}`
-   | `FUNCTION<` typeParameterListIR `>(` parameterListIR `){` blockElementStatementListIR `}`
+   | `FUNCTION<` typeParameterListIR `>(` parameterListIR `)` blockStatementIR
    | `ACTION(` parameterListIR `){` blockStatementIR `}`
    | `EXTERN_FUNCTION<` typeParameterListIR `>(` parameterListIR `){` blockElementStatementIR? `}`
 
@@ -16179,7 +16179,7 @@ syntax methodDyn =
 ;; ../../../../spec-concrete/6.01-env-dynamic.watsup:44.1-45.14
 syntax routineDyn = 
    | `BUILTIN_FUNCTION<` typeParameterListIR `>(` parameterListIR `){` blockElementStatementListIR `}`
-   | `FUNCTION<` typeParameterListIR `>(` parameterListIR `){` blockElementStatementListIR `}`
+   | `FUNCTION<` typeParameterListIR `>(` parameterListIR `)` blockStatementIR
    | `ACTION(` parameterListIR `){` blockStatementIR `}`
    | `EXTERN_FUNCTION<` typeParameterListIR `>(` parameterListIR `){` blockElementStatementIR? `}`
    | `BUILTIN_METHOD(` parameterListIR `)#` lvalueDyn
@@ -16238,44 +16238,53 @@ syntax contextInst = {`PATH` oid, `GLOBAL` glayerDyn, `BLOCK` blayerDyn, `LOCAL`
 ;; ../../../../spec-concrete/6.02-context-instantiation.watsup:39.1-39.36
 def $empty_ctx_inst : contextInst =
 
-;; ../../../../spec-concrete/6.02-context-instantiation.watsup:41.1-41.44
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:40.1-40.31
+def $empty_block : blayerDyn =
+
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:41.1-41.31
+def $empty_local : llayerDyn =
+
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:43.1-43.44
 def $refresh_ctx_inst_empty : contextInst =
 
-;; ../../../../spec-concrete/6.02-context-instantiation.watsup:43.1-43.54
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:45.1-45.54
 def $copy_ctx_inst(cursor, contextInst) : contextInst =
 
-;; ../../../../spec-concrete/6.02-context-instantiation.watsup:45.1-45.49
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:47.1-47.49
 def $enter_frame_inst(contextInst) : contextInst =
 
-;; ../../../../spec-concrete/6.02-context-instantiation.watsup:47.1-47.59
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:48.1-48.51
+def $enter_path(contextInst, nameIR) : contextInst =
+
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:49.1-49.59
 def $find_value_inst(cursor, contextInst, nameIR) : value? =
 
-;; ../../../../spec-concrete/6.02-context-instantiation.watsup:48.1-48.65
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:50.1-50.65
 def $find_typedef_inst(cursor, contextInst, nameIR) : typeDefIR? =
 
-;; ../../../../spec-concrete/6.02-context-instantiation.watsup:49.1-49.79
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:51.1-51.79
 def $find_cons_inst(cursor, contextInst, tid, argumentListIR) : (consDyn, id*) =
 
-;; ../../../../spec-concrete/6.02-context-instantiation.watsup:50.1-50.66
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:52.1-52.66
 def $find_type_inst(cursor, contextInst, prefixedNameIR) : typeIR =
 
-;; ../../../../spec-concrete/6.02-context-instantiation.watsup:51.1-51.69
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:53.1-53.69
 def $add_value_inst(cursor, contextInst, nameIR, value) : contextInst =
 
-;; ../../../../spec-concrete/6.02-context-instantiation.watsup:52.1-52.72
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:54.1-54.72
 def $add_values_inst(cursor, contextInst, nameIR*, value*) : contextInst =
 
-;; ../../../../spec-concrete/6.02-context-instantiation.watsup:53.1-53.80
-def $add_func_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst =
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:55.1-55.83
+def $add_routine_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst =
 
-;; ../../../../spec-concrete/6.02-context-instantiation.watsup:54.1-54.84
-def $add_func_non_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst =
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:56.1-56.87
+def $add_routine_non_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst =
 
-;; ../../../../spec-concrete/6.02-context-instantiation.watsup:55.1-55.68
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:57.1-57.68
 def $add_cons_inst(cursor, contextInst, cid, consDyn) : contextInst =
 
-;; ../../../../spec-concrete/6.02-context-instantiation.watsup:56.1-56.73
-def $add_typdef_inst(cursor, contextInst, name, typeDefIR) : contextInst =
+;; ../../../../spec-concrete/6.02-context-instantiation.watsup:58.1-58.75
+def $add_typdef_inst(cursor, contextInst, nameIR, typeDefIR) : contextInst =
 
 ;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:3.1-5.17
 relation Instantiate: `|-` p4programIR `==>` cenv tdenv renv venv sto
@@ -16811,6 +16820,251 @@ relation Decls_inst: cursor contextInst sto `|-` declarationIR* `==>` contextIns
 ;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:39.1-41.26
 relation Decl_inst: cursor contextInst sto `|-` declarationIR `==>` contextInst sto declarationIR?
 
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:11.1-13.60
+   rule constantDeclarationIR-global: cursor Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: constantDeclarationIR
+      -- let _annotationList `CONST` typeIR nameIR `=` value `;` = declarationIR as constantDeclarationIR
+      -- let Ci_1 = $add_value_inst(`GLOBAL`, Ci_0, nameIR, value)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:15.1-18.55
+   rule constantDeclarationIR-non-global: p Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?(annotationList `CONST` typeIR nameIR `=` value `;` as declarationIR)
+      -- if declarationIR <: constantDeclarationIR
+      -- let annotationList `CONST` typeIR nameIR `=` value `;` = declarationIR as constantDeclarationIR
+      -- let Ci_1 = $add_value_inst(p, Ci_0, nameIR, value)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:26.1-38.84
+   rule instantiationIR-extern: p Ci_0 sto_0 `|-` declarationIR `==>` Ci_0 sto_2 ?()
+      -- if declarationIR <: instantiationIR
+      -- let annotationList typeIR `<` typeArgumentListIR `>(` argumentListIR `)` nameIR objectInitializerOptIR `;` = declarationIR as instantiationIR
+      -- let tid = $get_constructor_id(typeIR)
+      -- let (consDyn, id_default*{id_default <- id_default*}) = $find_cons_inst(p, Ci_0, tid, argumentListIR)
+      -- let Ci_1 = $enter_path(Ci_0, nameIR)
+      -- Constructor_inst: p Ci_1 sto_0 `|-` consDyn `<` typeArgumentListIR `>(` argumentListIR `#` id_default*{id_default <- id_default*} `)==>` sto_1 objDyn
+      -- let objDyn' = objDyn
+      -- if objDyn' matches `EXTERN{%%%%}`
+      -- let `EXTERN{` tid' theta venv renv `}` = objDyn'
+      -- if (tid' = tid)
+      -- let Ci_2 = {PATH Ci_1.PATH ++ [nameIR], GLOBAL Ci_1.GLOBAL, BLOCK $empty_block, LOCAL $empty_local}
+      -- let objectDeclarationListIR = $get_init_decls(objectInitializerOptIR)
+      -- ObjectDecls_inst: `BLOCK` Ci_2 sto_1 `|-` objectDeclarationListIR `==>` Ci_3 sto_2 _objectDeclarationListIR
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:40.1-48.49
+   rule instantiationIR-non-extern: p Ci_0 sto_0 `|-` declarationIR `==>` Ci_0 sto_1 ?()
+      -- if declarationIR <: instantiationIR
+      -- let annotationList typeIR `<` typeArgumentListIR `>(` argumentListIR `)` nameIR objectInitializerOptIR `;` = declarationIR as instantiationIR
+      -- let tid = $get_constructor_id(typeIR)
+      -- let (consDyn, id_default*{id_default <- id_default*}) = $find_cons_inst(p, Ci_0, tid, argumentListIR)
+      -- let Ci_1 = $enter_path(Ci_0, nameIR)
+      -- Constructor_inst: p Ci_1 sto_0 `|-` consDyn `<` typeArgumentListIR `>(` argumentListIR `#` id_default*{id_default <- id_default*} `)==>` sto_1 objDyn
+      -- let objDyn' = objDyn
+      -- if objDyn' matches `EXTERN{%%%%}`
+      -- let `EXTERN{` tid' theta venv renv `}` = objDyn'
+      -- if (tid' = tid)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:62.1-70.65
+   rule functionDeclarationIR: p Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if declarationIR <: functionDeclarationIR
+      -- let _annotationList typeIR nameIR `<` typeParameterListIR `,` typeParameterListIR_inferred `>(` parameterListIR `)` blockStatementIR = declarationIR as functionDeclarationIR
+      -- let rid = $rid_IR(nameIR, parameterListIR)
+      -- let funcDyn = `FUNCTION<` typeParameterListIR ++ typeParameterListIR_inferred `>(` parameterListIR `)` blockStatementIR
+      -- let Ci_1 = $add_routine_overload_inst(p, Ci_0, rid, funcDyn as routineDyn)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:76.1-80.69
+   rule action: p Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if declarationIR <: actionDeclarationIR
+      -- let _annotationList `ACTION` nameIR `(` parameterListIR `)` blockStatementIR = declarationIR as actionDeclarationIR
+      -- let rid = $rid_IR(nameIR, parameterListIR)
+      -- let funcDyn = `ACTION(` parameterListIR `){` blockStatementIR `}`
+      -- let Ci_1 = $add_routine_non_overload_inst(p, Ci_0, rid, funcDyn as routineDyn)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:86.1-89.81
+   rule errorDeclarationIR: cursor Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: errorDeclarationIR
+      -- let `ERROR{` nameIR*{nameIR <- nameIR*} `}` = declarationIR as errorDeclarationIR
+      -- (let nameIR_field = $concat_text(["error.", nameIR]))*{nameIR <- nameIR*, nameIR_field <- nameIR_field*}
+      -- let Ci_1 = $add_values_inst(`GLOBAL`, Ci_0, nameIR_field*{nameIR_field <- nameIR_field*}, `ERROR.` nameIR as value*{nameIR <- nameIR*})
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:95.1-97.80
+   rule matchKindDeclarationIR: cursor Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: matchKindDeclarationIR
+      -- let `MATCH_KIND{` nameIR*{nameIR <- nameIR*} `}` = declarationIR as matchKindDeclarationIR
+      -- let Ci_1 = $add_values_inst(`GLOBAL`, Ci_0, nameIR*{nameIR <- nameIR*}, `MATCH_KIND.` nameIR as value*{nameIR <- nameIR*})
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:105.1-115.65
+   rule externFunctionDeclarationIR: p Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if declarationIR <: externFunctionDeclarationIR
+      -- let _annotationList `EXTERN` typeIR nameIR `<` typeParameterListIR `,` typeParameterListIR_inferred `>(` parameterListIR `)` `;` = declarationIR as externFunctionDeclarationIR
+      -- let rid = $rid_IR(nameIR, parameterListIR)
+      -- let funcDyn = `EXTERN_FUNCTION<` typeParameterListIR ++ typeParameterListIR_inferred `>(` parameterListIR `){` ?() `}`
+      -- let Ci_1 = $add_routine_overload_inst(p, Ci_0, rid, funcDyn as routineDyn)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:131.1-141.53
+   rule parserDeclarationIR: p Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if declarationIR <: parserDeclarationIR
+      -- let _annotationList `PARSER` nameIR `<` typeParameterListIR `>(` parameterListIR `)(` constructorParameterListIR `){` parserLocalDeclarationListIR parserStateListIR `}` = declarationIR as parserDeclarationIR
+      -- let rid = $rid_IR(nameIR, constructorParameterListIR)
+      -- let consDyn = `PARSER<` typeParameterListIR `>(` parameterListIR `)(` constructorParameterListIR `){` parserLocalDeclarationListIR parserStateListIR `}`
+      -- let Ci_1 = $add_cons_inst(p, Ci_0, rid, consDyn)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:150.1-160.53
+   rule controlDeclarationIR: p Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if declarationIR <: controlDeclarationIR
+      -- let _annotationList `CONTROL` nameIR `<` typeParameterListIR `>(` parameterListIR `)(` constructorParameterListIR `){` controlLocalDeclarationListIR `APPLY` controlBodyIR `}` = declarationIR as controlDeclarationIR
+      -- let rid = $rid_IR(nameIR, constructorParameterListIR)
+      -- let consDyn = `CONTROL<` typeParameterListIR `>(` parameterListIR `)(` constructorParameterListIR `){` controlLocalDeclarationListIR `APPLY` controlBodyIR `}`
+      -- let Ci_1 = $add_cons_inst(p, Ci_0, rid, consDyn)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:173.1-177.84
+   rule typeDeclarationIR-derivedTypeDeclarationIR-enumTypeDeclarationIR-enum: cursor Ci_0 sto `|-` declarationIR `==>` Ci_2 sto ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: enumTypeDeclarationIR
+      -- let enumTypeDeclarationIR = declarationIR as enumTypeDeclarationIR
+      -- if enumTypeDeclarationIR matches `%ENUM%{%}`
+      -- let _annotationList `ENUM` nameIR `{` nameIR_mem*{nameIR_mem <- nameIR_mem*} `}` = enumTypeDeclarationIR
+      -- (let nameIR_path = $concat_text([nameIR, ".", nameIR_mem]))*{nameIR_mem <- nameIR_mem*, nameIR_path <- nameIR_path*}
+      -- let Ci_1 = $add_values_inst(`GLOBAL`, Ci_0, nameIR_path*{nameIR_path <- nameIR_path*}, nameIR `.` nameIR_mem as value*{nameIR_mem <- nameIR_mem*})
+      -- let Ci_2 = $add_typdef_inst(`GLOBAL`, Ci_1, nameIR, `ENUM` nameIR `{` nameIR_mem*{nameIR_mem <- nameIR_mem*} `}` as typeDefIR)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:182.1-187.112
+   rule typeDeclarationIR-derivedTypeDeclarationIR-enumTypeDeclarationIR-serializableEnum: cursor Ci_0 sto_0 `|-` declarationIR `==>` Ci_2 sto_1 ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: enumTypeDeclarationIR
+      -- let enumTypeDeclarationIR = declarationIR as enumTypeDeclarationIR
+      -- if enumTypeDeclarationIR matches `%ENUM%%{%}`
+      -- let _annotationList `ENUM` typeIR nameIR `{` nameIR_mem `=` typedExpressionIR*{nameIR_mem <- nameIR_mem*, typedExpressionIR <- typedExpressionIR*} `}` = enumTypeDeclarationIR
+      -- (let nameIR_path = $concat_text([nameIR, ".", nameIR_mem]))*{nameIR_mem <- nameIR_mem*, nameIR_path <- nameIR_path*}
+      -- Exprs_inst: `GLOBAL` Ci_0 sto_0 `|-` typedExpressionIR*{typedExpressionIR <- typedExpressionIR*} `==>` sto_1 value_mem*{value_mem <- value_mem*}
+      -- let Ci_1 = $add_values_inst(`GLOBAL`, Ci_0, nameIR_path*{nameIR_path <- nameIR_path*}, nameIR `.` nameIR_mem `#` value_mem as value*{nameIR_mem <- nameIR_mem*, value_mem <- value_mem*})
+      -- let Ci_2 = $add_typdef_inst(`GLOBAL`, Ci_1, nameIR, `ENUM` nameIR `#` typeIR `{` nameIR_mem `=` value_mem `;`*{nameIR_mem <- nameIR_mem*, value_mem <- value_mem*} `}` as typeDefIR)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:195.1-204.65
+   rule typeDeclarationIR-derivedTypeDeclarationIR-structTypeDeclarationIR: cursor Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: structTypeDeclarationIR
+      -- let _annotationList `STRUCT` nameIR `<` typeParameterListIR `,` typeParameterListIR_inferred `>{` typeFieldIR*{typeFieldIR <- typeFieldIR*} `}` = declarationIR as structTypeDeclarationIR
+      -- (let _annotationList' typeIR nameIR_field `;` = typeFieldIR)*{_annotationList' <- _annotationList'*, nameIR_field <- nameIR_field*, typeFieldIR <- typeFieldIR*, typeIR <- typeIR*}
+      -- let typeDefIR = `STRUCT` nameIR `{` typeIR nameIR_field `;`*{nameIR_field <- nameIR_field*, typeIR <- typeIR*} `}` as typeIR `<` typeParameterListIR `,` typeParameterListIR_inferred `>` as typeDefIR
+      -- let Ci_1 = $add_typdef_inst(`GLOBAL`, Ci_0, nameIR, typeDefIR)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:212.1-221.65
+   rule typeDeclarationIR-derivedTypeDeclarationIR-headerTypeDeclarationIR: cursor Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: headerTypeDeclarationIR
+      -- let _annotationList `HEADER` nameIR `<` typeParameterListIR `,` typeParameterListIR_inferred `>{` typeFieldIR*{typeFieldIR <- typeFieldIR*} `}` = declarationIR as headerTypeDeclarationIR
+      -- (let _annotationList' typeIR nameIR_field `;` = typeFieldIR)*{_annotationList' <- _annotationList'*, nameIR_field <- nameIR_field*, typeFieldIR <- typeFieldIR*, typeIR <- typeIR*}
+      -- let typeDefIR = `HEADER` nameIR `{` typeIR nameIR_field `;`*{nameIR_field <- nameIR_field*, typeIR <- typeIR*} `}` as typeIR `<` typeParameterListIR `,` typeParameterListIR_inferred `>` as typeDefIR
+      -- let Ci_1 = $add_typdef_inst(`GLOBAL`, Ci_0, nameIR, typeDefIR)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:229.1-238.65
+   rule typeDeclarationIR-derivedTypeDeclarationIR-headerTypeDeclarationIR: cursor Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: headerUnionTypeDeclarationIR
+      -- let _annotationList `HEADER_UNION` nameIR `<` typeParameterListIR `,` typeParameterListIR_inferred `>{` typeFieldIR*{typeFieldIR <- typeFieldIR*} `}` = declarationIR as headerUnionTypeDeclarationIR
+      -- (let _annotationList' typeIR nameIR_field `;` = typeFieldIR)*{_annotationList' <- _annotationList'*, nameIR_field <- nameIR_field*, typeFieldIR <- typeFieldIR*, typeIR <- typeIR*}
+      -- let typeDefIR = `HEADER_UNION` nameIR `{` typeIR nameIR_field `;`*{nameIR_field <- nameIR_field*, typeIR <- typeIR*} `}` as typeIR `<` typeParameterListIR `,` typeParameterListIR_inferred `>` as typeDefIR
+      -- let Ci_1 = $add_typdef_inst(`GLOBAL`, Ci_0, nameIR, typeDefIR)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:248.1-252.70
+   rule typeDeclarationIR-typedefDeclarationIR-typedef-typeIR: cursor Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: typedefDeclarationIR
+      -- let typedefDeclarationIR = declarationIR as typedefDeclarationIR
+      -- if typedefDeclarationIR matches `%TYPEDEF%%;`
+      -- let _annotationList `TYPEDEF` typedefTypeIR nameIR `;` = typedefDeclarationIR
+      -- if typedefTypeIR <: typeIR
+      -- let typeIR = typedefTypeIR as typeIR
+      -- let typeIR_typedef = `TYPEDEF` nameIR typeIR as typeIR
+      -- let Ci_1 = $add_typdef_inst(`GLOBAL`, Ci_0, nameIR, typeIR_typedef as typeDefIR)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:256.1-265.70
+   rule typeDeclarationIR-typedefDeclarationIR-typedef-derivedTypeDeclarationIR-monoTypeDefIR: cursor Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: typedefDeclarationIR
+      -- let typedefDeclarationIR = declarationIR as typedefDeclarationIR
+      -- if typedefDeclarationIR matches `%TYPEDEF%%;`
+      -- let _annotationList `TYPEDEF` typedefTypeIR nameIR `;` = typedefDeclarationIR
+      -- if typedefTypeIR <: derivedTypeDeclarationIR
+      -- let derivedTypeDeclarationIR = typedefTypeIR as derivedTypeDeclarationIR
+      -- Decl_inst: `GLOBAL` Ci_0 $empty_sto `|-` derivedTypeDeclarationIR as declarationIR `==>` Ci_local _sto _declarationIR?{_declarationIR <- _declarationIR?}
+      -- let `{` tid*{tid <- tid*} `}` = $diff_set<tid>($dom_map<tid, typeDefIR>(Ci_0.GLOBAL.TDENV), $dom_map<tid, typeDefIR>(Ci_local.GLOBAL.TDENV))
+      -- if tid*{tid <- tid*} matches [ _/1 ]
+      -- let [tid_newtype] = tid*{tid <- tid*}
+      -- let typeDefIR'?{typeDefIR' <- typeDefIR'?} = $find_typedef_inst(`GLOBAL`, Ci_local, tid_newtype)
+      -- if typeDefIR'?{typeDefIR' <- typeDefIR'?} matches (_)
+      -- let ?(typeDefIR) = typeDefIR'?{typeDefIR' <- typeDefIR'?}
+      -- let typeDefIR'' = typeDefIR
+      -- if typeDefIR'' <: monoTypeDefIR
+      -- let monoTypeDefIR = typeDefIR'' as monoTypeDefIR
+      -- let typeIR_typedef = `TYPEDEF` nameIR monoTypeDefIR as typeIR
+      -- let Ci_1 = $add_typdef_inst(`GLOBAL`, Ci_0, nameIR, typeIR_typedef as typeDefIR)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:267.1-276.70
+   rule typeDeclarationIR-typedefDeclarationIR-typedef-derivedTypeDeclaration-polyTypeDefIR: cursor Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: typedefDeclarationIR
+      -- let typedefDeclarationIR = declarationIR as typedefDeclarationIR
+      -- if typedefDeclarationIR matches `%TYPEDEF%%;`
+      -- let _annotationList `TYPEDEF` typedefTypeIR nameIR `;` = typedefDeclarationIR
+      -- if typedefTypeIR <: derivedTypeDeclarationIR
+      -- let derivedTypeDeclarationIR = typedefTypeIR as derivedTypeDeclarationIR
+      -- Decl_inst: `GLOBAL` Ci_0 $empty_sto `|-` derivedTypeDeclarationIR as declarationIR `==>` Ci_local _sto _declarationIR?{_declarationIR <- _declarationIR?}
+      -- let `{` tid*{tid <- tid*} `}` = $diff_set<tid>($dom_map<tid, typeDefIR>(Ci_0.GLOBAL.TDENV), $dom_map<tid, typeDefIR>(Ci_local.GLOBAL.TDENV))
+      -- if tid*{tid <- tid*} matches [ _/1 ]
+      -- let [tid_newtype] = tid*{tid <- tid*}
+      -- let typeDefIR'?{typeDefIR' <- typeDefIR'?} = $find_typedef_inst(`GLOBAL`, Ci_local, tid_newtype)
+      -- if typeDefIR'?{typeDefIR' <- typeDefIR'?} matches (_)
+      -- let ?(typeDefIR) = typeDefIR'?{typeDefIR' <- typeDefIR'?}
+      -- let typeDefIR'' = typeDefIR
+      -- if typeDefIR'' <: polyTypeDefIR
+      -- let polyTypeDefIR = typeDefIR'' as polyTypeDefIR
+      -- let typeIR_typedef = `TYPEDEF` nameIR polyTypeDefIR `<` [] `>` as typeIR as typeIR
+      -- let Ci_1 = $add_typdef_inst(`GLOBAL`, Ci_0, nameIR, typeIR_typedef as typeDefIR)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:280.1-284.70
+   rule typeDeclarationIR-typedefDeclarationIR-newtype: cursor Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: typedefDeclarationIR
+      -- let typedefDeclarationIR = declarationIR as typedefDeclarationIR
+      -- if typedefDeclarationIR matches `%TYPE%%;`
+      -- let _annotationList `TYPE` typeIR nameIR `;` = typedefDeclarationIR
+      -- let typeIR_newtype = `TYPE` nameIR typeIR as typeIR
+      -- let Ci_1 = $add_typdef_inst(`GLOBAL`, Ci_0, nameIR, typeIR_newtype as typeDefIR)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:292.1-301.72
+   rule typeDeclarationIR-parserTypeDeclarationIR: cursor Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: parserTypeDeclarationIR
+      -- let _annotationList `PARSER` nameIR `<` typeParameterListIR `,` typeParameterListIR_inferred `>(` parameterIR*{parameterIR <- parameterIR*} `);` = declarationIR as parserTypeDeclarationIR
+      -- (let parameterTypeIR = $parameterIR(parameterIR))*{parameterIR <- parameterIR*, parameterTypeIR <- parameterTypeIR*}
+      -- let typeIR_parser = `PARSER(` parameterTypeIR*{parameterTypeIR <- parameterTypeIR*} `)` as typeIR
+      -- let typeDefIR_parser = typeIR_parser `<` typeParameterListIR `,` typeParameterListIR_inferred `>` as typeDefIR
+      -- let Ci_1 = $add_typdef_inst(`GLOBAL`, Ci_0, nameIR, typeDefIR_parser)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:309.1-318.72
+   rule typeDeclarationIR-controlTypeDeclarationIR: cursor Ci_0 sto `|-` declarationIR `==>` Ci_1 sto ?()
+      -- if cursor matches `GLOBAL`
+      -- if declarationIR <: controlTypeDeclarationIR
+      -- let _annotationList `CONTROL` nameIR `<` typeParameterListIR `,` typeParameterListIR_inferred `>(` parameterIR*{parameterIR <- parameterIR*} `);` = declarationIR as controlTypeDeclarationIR
+      -- (let parameterTypeIR = $parameterIR(parameterIR))*{parameterIR <- parameterIR*, parameterTypeIR <- parameterTypeIR*}
+      -- let typeIR_parser = `CONTROL(` parameterTypeIR*{parameterTypeIR <- parameterTypeIR*} `)` as typeIR
+      -- let typeDefIR_parser = typeIR_parser `<` typeParameterListIR `,` typeParameterListIR_inferred `>` as typeDefIR
+      -- let Ci_1 = $add_typdef_inst(`GLOBAL`, Ci_0, nameIR, typeDefIR_parser)
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:328.1-341.66
+   rule typeDeclarationIR-packageTypeDeclarationIR: p Ci_0 sto `|-` declarationIR `==>` Ci_2 sto ?()
+      -- if declarationIR <: packageTypeDeclarationIR
+      -- let _annotationList `PACKAGE` nameIR `<` typeParameterListIR `,` typeParameterListIR_inferred `>(` parameterIR*{parameterIR <- parameterIR*} `);` = declarationIR as packageTypeDeclarationIR
+      -- (let _annotationList' _direction typeIR _nameIR _constantInitializerOptIR = parameterIR)*{_annotationList' <- _annotationList'*, _constantInitializerOptIR <- _constantInitializerOptIR*, _direction <- _direction*, _nameIR <- _nameIR*, parameterIR <- parameterIR*, typeIR <- typeIR*}
+      -- let typeIR_package = `PACKAGE<` typeIR*{typeIR <- typeIR*} `>` as typeIR
+      -- let typeDefIR_package = typeIR_package `<` typeParameterListIR `,` typeParameterListIR_inferred `>` as typeDefIR
+      -- let Ci_1 = $add_typdef_inst(p, Ci_0, nameIR, typeDefIR_package)
+      -- let cid = $cid_IR(nameIR, parameterIR*{parameterIR <- parameterIR*})
+      -- let consDyn_package = `PACKAGE<` typeParameterListIR ++ typeParameterListIR_inferred `>(` parameterIR*{parameterIR <- parameterIR*} `)`
+      -- let Ci_2 = $add_cons_inst(`GLOBAL`, Ci_1, cid, consDyn_package)
+
 ;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:43.1-45.26
 relation ParserLocalDecl_inst: cursor contextInst sto `|-` parserLocalDeclarationIR `==>` contextInst sto parserLocalDeclarationIR
 
@@ -16823,16 +17077,19 @@ relation ControlLocalDecl_inst: cursor contextInst sto `|-` controlLocalDeclarat
 ;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:55.1-57.26
 relation ControlLocalDecls_inst: cursor contextInst sto `|-` controlLocalDeclarationListIR `==>` contextInst sto controlLocalDeclarationListIR
 
-;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:63.1-65.23
+;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:59.1-61.26
+relation ObjectDecls_inst: cursor contextInst sto `|-` objectDeclarationListIR `==>` contextInst sto objectDeclarationListIR
+
+;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:66.1-68.23
 relation Methods_inst: cursor contextInst `|-` methodPrototypeIR* `==>` contextInst
 
-;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:67.1-69.23
+;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:70.1-72.23
 relation Method_inst: cursor contextInst `|-` methodPrototypeIR `==>` contextInst
 
-;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:75.1-77.26
+;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:78.1-80.26
 relation Stmts_inst: cursor contextInst sto `|-` statementIR* `==>` contextInst sto statementIR*
 
-;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:79.1-81.26
+;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:82.1-84.26
 relation Stmt_inst: cursor contextInst sto `|-` statementIR `==>` contextInst sto statementIR
 
    ;; ../../../../spec-concrete/6.07-instantiation-statement.watsup:9.1-10.59
@@ -16910,7 +17167,7 @@ relation Stmt_inst: cursor contextInst sto `|-` statementIR `==>` contextInst st
       -- let `SWITCH(` typedExpressionIR `){` switchCaseListIR `}` = statementIR as switchStatementIR
       -- SwitchCases_inst: p Ci sto `|-` switchCaseListIR `==>` Ci' sto' switchCaseListIR'
 
-;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:83.1-85.26
+;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:86.1-88.26
 relation BlockElementStmt_inst: cursor contextInst sto `|-` blockElementStatementIR `==>` contextInst sto blockElementStatementIR?
 
    ;; ../../../../spec-concrete/6.07-instantiation-statement.watsup:109.1-111.86
@@ -16940,13 +17197,13 @@ relation BlockElementStmt_inst: cursor contextInst sto `|-` blockElementStatemen
       -- let statementIR = blockElementStatementIR as statementIR
       -- Stmt_inst: p Ci sto `|-` statementIR `==>` Ci' sto' statementIR'
 
-;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:87.1-89.26
+;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:90.1-92.26
 relation BlockElementStmts_inst: cursor contextInst sto `|-` blockElementStatementIR* `==>` contextInst sto blockElementStatementIR*
 
-;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:91.1-93.26
+;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:94.1-96.26
 relation SwitchCases_inst: cursor contextInst sto `|-` switchCaseIR* `==>` contextInst sto switchCaseIR*
 
-;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:95.1-97.26
+;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:98.1-100.26
 relation SwitchCase_inst: cursor contextInst sto `|-` switchCaseIR `==>` contextInst sto switchCaseIR
 
    ;; ../../../../spec-concrete/6.07-instantiation-statement.watsup:96.1-98.76
@@ -16962,16 +17219,16 @@ relation SwitchCase_inst: cursor contextInst sto `|-` switchCaseIR `==>` context
       -- if switchCaseIR matches `%:`
       -- let switchLabelIR `:` = switchCaseIR
 
-;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:103.1-105.26
+;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:106.1-108.26
 relation ParserState_inst: cursor contextInst sto `|-` parserStateIR `==>` contextInst sto
 
-;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:107.1-109.26
+;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:110.1-112.26
 relation ParserStates_inst: cursor contextInst sto `|-` parserStateIR* `==>` contextInst sto
 
-;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:112.1-114.29
+;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:115.1-117.29
 relation Block_inst: cursor contextInst sto bool `|-` blockStatementIR `==>` contextInst sto blockStatementIR
 
-;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:116.1-118.26
+;; ../../../../spec-concrete/6.03-instantiation-relation.watsup:119.1-121.26
 relation Table_inst: cursor contextInst sto `|-` tablePropertyListIR `==>` contextInst sto tablePropertyListIR
 
 ;; ../../../../spec-concrete/6.04-instantiation-constructor.watsup:8.1-8.91
@@ -17039,3 +17296,30 @@ def $get_constructor_id(typeIR) : tid =
 
 ;; ../../../../spec-concrete/6.05-instantiation-expression.watsup:413.1-413.34
 def $size(typeIR, nameIR) : value =
+
+;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:24.1-24.70
+def $get_init_decls(objectInitializerOptIR) : objectDeclarationListIR =
+
+;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:25.1-25.35
+def $to_names(argumentListIR) : id =
+
+;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:54.1-54.43
+def $rid_IR(nameIR, parameterListIR) : rid =
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:57.1-57.70
+   clause 0(nameIR, parameterIR*{parameterIR <- parameterIR*}) = nameIR `(` $pid_IR(parameterIR)*{parameterIR <- parameterIR*} `)`
+
+;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:55.1-55.31
+def $pid_IR(parameterIR) : pid =
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:59.1-59.48
+   clause 0(_annotationList _direction _typeIR nameIR constantInitializerIR?{constantInitializerIR <- constantInitializerIR?}) = nameIR `#` false
+      -- if constantInitializerIR?{constantInitializerIR <- constantInitializerIR?} matches ()
+
+   ;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:60.1-60.65
+   clause 1(_annotationList _direction _typeIR nameIR constantInitializerOptIR) = nameIR `#` true
+      -- if constantInitializerOptIR matches (_)
+      -- let ?(constantInitializerIR) = constantInitializerOptIR
+
+;; ../../../../spec-concrete/6.08-instantiation-declaration.watsup:327.1-327.43
+def $cid_IR(nameIR, parameterListIR) : cid =

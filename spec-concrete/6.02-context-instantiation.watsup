@@ -37,20 +37,22 @@ var Ci : contextInst
 ;;
 
 dec $empty_ctx_inst() : contextInst
+dec $empty_block() : blayerDyn
+dec $empty_local() : llayerDyn
 
 dec $refresh_ctx_inst_empty() : contextInst
 
 dec $copy_ctx_inst(cursor, contextInst) : contextInst
 
 dec $enter_frame_inst(contextInst) : contextInst
-
+dec $enter_path(contextInst, nameIR) : contextInst
 dec $find_value_inst(cursor, contextInst, nameIR) : value?
 dec $find_typedef_inst(cursor, contextInst, nameIR) : typeDefIR?
 dec $find_cons_inst(cursor, contextInst, tid, argumentListIR) : (consDyn, id*)
 dec $find_type_inst(cursor, contextInst, prefixedNameIR) : typeIR
 dec $add_value_inst(cursor, contextInst, nameIR, value): contextInst
 dec $add_values_inst(cursor, contextInst, nameIR*, value*): contextInst
-dec $add_func_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
-dec $add_func_non_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
+dec $add_routine_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
+dec $add_routine_non_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
 dec $add_cons_inst(cursor, contextInst, cid, consDyn) : contextInst
-dec $add_typdef_inst(cursor, contextInst, name, typeDefIR) : contextInst
+dec $add_typdef_inst(cursor, contextInst, nameIR, typeDefIR) : contextInst

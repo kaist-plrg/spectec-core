@@ -56,6 +56,9 @@ relation ControlLocalDecls_inst:
   cursor contextInst sto |- controlLocalDeclarationListIR ==> contextInst sto controlLocalDeclarationListIR
   hint(input %0 %1 %2 %3)
 
+relation ObjectDecls_inst:
+  cursor contextInst sto |- objectDeclarationListIR ==> contextInst sto objectDeclarationListIR
+  hint(input %0 %1 %2 %3)
 ;;
 ;;;; Method instantiation
 ;;
