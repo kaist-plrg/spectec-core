@@ -9,11 +9,10 @@ let ( let* ) (attempt : 'a attempt) (f : 'a -> 'b) : 'b =
 
 let rec string_of_failtrace_noregion ?(level = 0) ~(depth : int)
     ~(bullet : string) (failtrace : failtrace) : string =
-  let (Failtrace (region, msg, subfailtraces)) = failtrace in
-  let len = region |> string_of_region |> String.length in
+  let (Failtrace (_region, msg, subfailtraces)) = failtrace in
   let smsg =
     if level < depth then ""
-    else Format.asprintf "\n%s%s%s %s" (String.make (len+7) ' ') (indent (level - depth)) bullet msg
+    else Format.asprintf "\n%s%s%s %s" (String.make 7 ' ') (indent (level - depth)) bullet msg
   in
   Format.asprintf "%s%s" smsg
     (string_of_failtraces_noregion ~level:(level + 1) ~depth subfailtraces)
@@ -55,7 +54,7 @@ let format_failtraces (failtraces : failtrace list) : string =
   let formatted_errors =
     List.map (fun (at, msg) -> Util.Error.string_of_error at msg) all_errors
   in
-  String.concat "\n" formatted_errors
+  String.concat "\n\n" formatted_errors
 
 (* Create a special exception type that can carry failtraces *)
 exception Failtraces of failtrace list
