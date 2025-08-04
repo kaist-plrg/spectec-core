@@ -47,8 +47,10 @@ let elab_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames in
-         let _spec_il_opt, errors = Elaborate.Elab.elab_spec_with_errors spec in
-         Format.printf "%s\n" (Elaborate.Elab.format_errors errors)
+         let spec_il_opt, errors = Elaborate.Elab.elab_spec_with_errors spec in
+         if List.length errors = 0 && Option.is_some spec_il_opt then (
+         Format.printf "%s\n" (Il.Print.string_of_spec (Option.get spec_il_opt)))
+         else (Format.printf "%s\n" (Elaborate.Elab.format_errors errors))
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
        | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
