@@ -8,15 +8,12 @@ open Util.Print
 let ( let* ) (attempt : 'a attempt) (f : 'a -> 'b) : 'b =
   match attempt with Ok a -> f a | Fail _ as fail -> fail
 
-let rec string_of_failtrace_noregion ?(level = 0) ~(depth : int) ~(bullet : string)
-    (failtrace : failtrace) : string =
+let rec string_of_failtrace_noregion ?(level = 0) ~(depth : int)
+    ~(bullet : string) (failtrace : failtrace) : string =
   let (Failtrace (_, msg, subfailtraces)) = failtrace in
   let smsg =
     if level < depth then ""
-    else
-      Format.asprintf "  %s%s %s\n"
-        (indent (level - depth))
-        bullet msg
+    else Format.asprintf "  %s%s %s\n" (indent (level - depth)) bullet msg
   in
   Format.asprintf "%s%s" smsg
     (string_of_failtraces_noregion ~level:(level + 1) ~depth subfailtraces)
@@ -25,7 +22,8 @@ and string_of_failtraces_noregion ?(level = 0) ~(depth : int)
     (failtraces : failtrace list) : string =
   match failtraces with
   | [] -> ""
-  | [ failtrace ] -> string_of_failtrace_noregion ~level ~depth ~bullet:"└─" failtrace
+  | [ failtrace ] ->
+      string_of_failtrace_noregion ~level ~depth ~bullet:"└─" failtrace
   | failtraces ->
       List.mapi
         (fun idx failtrace ->
@@ -36,10 +34,10 @@ and string_of_failtraces_noregion ?(level = 0) ~(depth : int)
       |> String.concat ""
 
 let format_failtraces (failtraces : failtrace list) : string =
-  let error_of_failtrace (failtrace : failtrace) :
-      (region * string) =
+  let error_of_failtrace (failtrace : failtrace) : region * string =
     let (Failtrace (at, msg, subfailtraces)) = failtrace in
-    let string_subfailtraces = string_of_failtraces_noregion ~depth:0 subfailtraces
+    let string_subfailtraces =
+      string_of_failtraces_noregion ~depth:0 subfailtraces
     in
     (at, msg ^ "\n" ^ string_subfailtraces)
   in

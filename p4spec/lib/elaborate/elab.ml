@@ -1721,6 +1721,8 @@ let format_errors (errors : (region * string) list) : string =
       (*   let region_r, _ = error_r in *)
       let errors_sorted = List.sort compare errors in
       let formatted_errors =
-        List.map (fun (at, msg) -> Util.Error.string_of_error at msg) errors_sorted
+        List.map
+          (fun (at, msg) -> Util.Error.string_of_error at msg)
+          errors_sorted
       in
       String.concat "\n" formatted_errors
