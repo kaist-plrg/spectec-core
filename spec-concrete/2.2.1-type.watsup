@@ -37,7 +37,7 @@ syntax typeIR
 syntax polyTypeDefIR
 
 syntax namedTypeIR =
-  | TID tid 
+  | TID tid
   | polyTypeDefIR `< typeIR* >
 
 ;;
@@ -129,8 +129,6 @@ syntax tableTypeIR =
   | TABLE_ENUM tid `{ id* }
   | TABLE_STRUCT tid `{ fieldTypeIR* }
 
-syntax dontCareTypeIR = `_
-
 syntax synthesizedTypeIR =
   | defaultTypeIR
   | invalidHeaderTypeIR
@@ -138,7 +136,6 @@ syntax synthesizedTypeIR =
   | recordTypeIR
   | setTypeIR
   | tableTypeIR
-  | dontCareTypeIR
 
 ;;
 ;;;; Types

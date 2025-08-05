@@ -1,0 +1,435 @@
+;;; syntax expressionIR
+
+;;;; literalExpressionIR
+;;;; syntax literalExpression
+
+;;;;; TRUE | FALSE
+
+rule Expr_inst/literalExpressionIR-true:
+  p Ci sto |- TRUE `# _ ==> sto (B true)
+
+rule Expr_inst/literalExpressionIR-false:
+  p Ci sto |- FALSE `# _ ==> sto (B false)
+
+;;;;; number
+rule Expr_inst/literalExpressionIR-number-arbint:
+  p Ci sto |- (D i) `# _ ==> sto (D i)
+
+rule Expr_inst/literalExpressionIR-number-fixint:
+  p Ci sto |- (n S i) `# _ ==> sto (n S i)
+
+rule Expr_inst/literalExpressionIR-number-fixbit:
+  p Ci sto |- (n W i) `# _ ==> sto (n W i)
+
+;;;;; stringLiteral
+
+rule Expr_inst/literalExpressionIR-stringLiteral:
+  p Ci sto |- (`" text `") `# _ ==> sto (`" text `")
+
+;;;; referenceExpressionIR
+;;;; syntax referenceExpressionIR
+
+;;;;; `` nameIR
+
+rule Expr_inst/referenceExpressionIR-id:
+  p Ci sto |- (`` nameIR) `# _ ==> sto value
+  -- if $find_value_inst(p, Ci, nameIR) = value
+
+;;;;; `. nameIR
+
+rule Expr_inst/referenceExpressionIR-dotName:
+p Ci sto |- (`. nameIR) `# _ ==> sto value
+  -- if $find_value_inst(p, Ci, nameIR) = value
+
+;;;; defaultExpressionIR
+
+rule Expr_inst/defaultExpressionIR:
+  p Ci sto |- `... `# _ ==> sto DEFAULT
+
+;;;; unaryExpressionIR = unop typedExpressionIR
+
+;;;;; `!
+
+rule Expr_inst/unaryExpressionIR-lnot:
+  p Ci sto |- (`! typedExpressionIR) `# _ ==> sto' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto' value
+  -- if $un_lnot(value) = value
+
+;;;;; `~
+
+rule Expr_inst/unaryExpressionIR-bnot:
+  p Ci sto |- (`~ typedExpressionIR) `# _ ==> sto' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto' value
+  -- if $un_bnot(value) = value
+
+;;;;; `+
+
+rule Expr_inst/unaryExpressionIR-plus:
+  p Ci sto |- (`+ typedExpressionIR) `# _ ==> sto' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto' value
+
+;;;;; `-
+
+rule Expr_inst/unaryExpressionIR-minus:
+  p Ci sto |- (`- typedExpressionIR) `# _ ==> sto' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto' value
+  -- if $un_minus(value) = value
+
+
+;;;; binaryExpressionIR = typedExpressionIR binop typedExpressionIR
+
+;;;;; `*
+
+rule Expr_inst/binaryExpressionIR-mul:
+  p Ci sto |- (typedExpressionIR_l `* typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_mul(value_l, value_r) = value
+
+;;;;; `/
+
+rule Expr_inst/binaryExpressionIR-div:
+  p Ci sto |- (typedExpressionIR_l `/ typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_div(value_l, value_r) = value
+
+;;;;; `%
+
+rule Expr_inst/binaryExpressionIR-mod:
+  p Ci sto |- (typedExpressionIR_l `% typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_mod(value_l, value_r) = value
+
+;;;;; `+
+
+rule Expr_inst/binaryExpressionIR-plus:
+  p Ci sto |- (typedExpressionIR_l `+ typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_plus(value_l, value_r) = value
+
+;;;;; `-
+
+rule Expr_inst/binaryExpressionIR-minus:
+  p Ci sto |- (typedExpressionIR_l `- typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_minus(value_l, value_r) = value
+
+;;;;; `|+|
+
+rule Expr_inst/binaryExpressionIR-satplus:
+  p Ci sto |- (typedExpressionIR_l `|+| typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_satplus(value_l, value_r) = value
+
+;;;;; `|-|
+
+rule Expr_inst/binaryExpressionIR-satminus:
+  p Ci sto |- (typedExpressionIR_l `|-| typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_satminus(value_l, value_r) = value
+
+;;;;; `<<
+
+rule Expr_inst/binaryExpressionIR-shl:
+  p Ci sto |- (typedExpressionIR_l `<< typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_shl(value_l, value_r) = value
+
+;;;;; `>>
+
+rule Expr_inst/binaryExpressionIR-shr:
+  p Ci sto |- (typedExpressionIR_l `>> typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_shr(value_l, value_r) = value
+
+;;;;; `<=
+
+rule Expr_inst/binaryExpressionIR-le:
+  p Ci sto |- (typedExpressionIR_l `<= typedExpressionIR_r) `# _
+    ==> sto'' (B bool)
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_le(value_l, value_r) = bool
+
+;;;;; `>=
+
+rule Expr_inst/binaryExpressionIR-ge:
+  p Ci sto |- (typedExpressionIR_l `>= typedExpressionIR_r) `# _
+    ==> sto'' (B bool)
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_ge(value_l, value_r) = bool
+
+;;;;; ``<
+
+rule Expr_inst/binaryExpressionIR-lt:
+  p Ci sto |- (typedExpressionIR_l ``< typedExpressionIR_r) `# _
+    ==> sto'' (B bool)
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_lt(value_l, value_r) = bool
+
+;;;;; ``>
+
+rule Expr_inst/binaryExpressionIR-gt:
+  p Ci sto |- (typedExpressionIR_l ``> typedExpressionIR_r) `# _
+    ==> sto'' (B bool)
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_gt(value_l, value_r) = bool
+
+;;;;; `!=
+
+rule Expr_inst/binaryExpressionIR-ne:
+  p Ci sto |- (typedExpressionIR_l `!= typedExpressionIR_r) `# _
+    ==> sto'' (B bool)
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_ne(value_l, value_r) = bool
+
+;;;;; `==
+
+rule Expr_inst/binaryExpressionIR-eq:
+  p Ci sto |- (typedExpressionIR_l `== typedExpressionIR_r) `# _
+    ==> sto'' (B bool)
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_eq(value_l, value_r) = bool
+
+;;;;; `&
+
+rule Expr_inst/binaryExpressionIR-band:
+  p Ci sto |- (typedExpressionIR_l `& typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_band(value_l, value_r) = value
+
+;;;;; `^
+
+rule Expr_inst/binaryExpressionIR-bxor:
+  p Ci sto |- (typedExpressionIR_l `^ typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_bxor(value_l, value_r) = value
+
+;;;;; `|
+
+rule Expr_inst/binaryExpressionIR-bor:
+  p Ci sto |- (typedExpressionIR_l `| typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_bor(value_l, value_r) = value
+
+;;;;; `++
+
+rule Expr_inst/binaryExpressionIR-concat:
+  p Ci sto |- (typedExpressionIR_l `++ typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_concat(value_l, value_r) = value
+
+;;;;; `&&
+
+rule Expr_inst/binaryExpressionIR-land:
+  p Ci sto |- (typedExpressionIR_l `&& typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_land(value_l, value_r) = value
+
+;;;;; `||
+rule Expr_inst/binaryExpressionIR-lor:
+  p Ci sto |- (typedExpressionIR_l `|| typedExpressionIR_r) `# _
+    ==> sto'' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_l ==> sto' value_l
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_r ==> sto'' value_r
+  -- if $bin_lor(value_l, value_r) = value
+
+;;;; ternaryExpressionIR
+
+;;;; syntax ternaryExpressionIR =
+;;;;   typedExpressionIR `? typedExpressionIR `: typedExpressionIR
+
+rule Expr_inst/ternaryExpressionIR-then:
+  p Ci sto |- (typedExpressionIR_c `? typedExpressionIR_t `: typedExpressionIR_e) `# _
+    ==> sto'' value_t
+  -- Expr_inst: p Ci sto |- typedExpressionIR_c ==> sto' value_c
+  -- if value_c = (B true)
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_t ==> sto'' value_t
+
+rule Expr_inst/ternaryExpressionIR-else:
+  p Ci sto |- (typedExpressionIR_c `? typedExpressionIR_t `: typedExpressionIR_e) `# _
+    ==> sto'' value_e
+  -- Expr_inst: p Ci sto |- typedExpressionIR_c ==> sto' value_c
+  -- if value_c = (B false)
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_e ==> sto'' value_e
+
+;;;; castExpressionIR
+
+;;;; syntax castExpressionIR =
+;;;;   `( typeIR ) typedExpressionIR
+
+rule Expr_inst/castExpressionIR:
+  p Ci sto |- (`( typeIR ) typedExpressionIR) `# _
+    ==> sto' value_c
+  -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto' value
+  -- if $cast_op(typeIR, value) = value_c
+
+;;;; dataExpressionIR
+
+;;;; syntax dataExpressionIR =
+
+;;;;; `{#}
+
+rule Expr_inst/dataExpressionIR-invalid:
+  p Ci sto |- `{#} `# _
+    ==> sto `{#}
+
+;;;;; SEQ `{ typedExpressionListIR }
+
+rule Expr_inst/dataExpressionIR-sequence:
+  p Ci sto |- (SEQ `{ typedExpressionListIR }) `# _
+    ==> sto' (SEQ `( value* ))
+  -- Exprs_inst: p Ci sto |- typedExpressionListIR ==> sto' value*
+
+;;;;; SEQ `{ typedExpressionListIR `, `... }
+
+rule Expr_inst/dataExpressionIR-sequencedefault:
+  p Ci sto |- (SEQ `{ typedExpressionListIR `, `... }) `# _
+    ==> sto' (SEQ `( value* `, `... ))
+  -- Exprs_inst: p Ci sto |- typedExpressionListIR ==> sto' value*
+
+;;;;; RECORD `{ namedExpressionListIR }
+
+rule Expr_inst/dataExpressionIR-record:
+  p Ci sto |- (RECORD `{ (nameIR `= typedExpressionIR)* }) `# _
+    ==> sto' (RECORD `{ (value nameIR `;)* })
+  -- Exprs_inst: p Ci sto |- typedExpressionIR* ==> sto' value*
+
+;;;;; RECORD `{ namedExpressionListIR `, `... }
+
+rule Expr_inst/dataExpressionIR-recorddefault:
+  p Ci sto |- (RECORD `{ (nameIR `= typedExpressionIR)* `, `... }) `# _
+    ==> sto' (RECORD `{ (value nameIR `;)* `, `... })
+  -- Exprs_inst: p Ci sto |- typedExpressionIR* ==> sto' value*
+
+
+;;;; accessExpressionIR
+
+;;;; syntax accessExpressionIR =
+;;;;; errorAccessExpressionIR
+
+;;;;; syntax errorAccessExpressionIR =
+;;;;;   ERROR `. nameIR
+
+rule Expr_inst/accessExpressionIR-errorAccessExpressionIR:
+  p Ci sto |- (ERROR `. nameIR) `# _
+    ==> sto value
+  -- if $concat_text([ "error.", nameIR ]) = nameIR'
+  -- if $find_value_inst(p, Ci, nameIR') = value
+
+;;;;; memberAccessExpressionIR
+;;;;; syntax memberAccessExpressionIR =
+;;;;;  memberAccessBaseIR `. nameIR
+;;;;;; syntax memberAccessBaseIR =
+
+;;;;;;; TYPE prefixedNameIR
+
+rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-typeaccess-enum:
+  p Ci sto |- ((TYPE prefixedNameIR) `. nameIR) `# _
+    ==> sto (tid `. nameIR)
+  -- if $flatten_prefixedNameIR(prefixedNameIR) = nameIR_type
+  -- if $find_typedef_inst(p, Ci, nameIR_type) = typeIR
+  -- if $canon(typeIR) = ENUM tid `{ _ }
+
+rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-senum:
+  p Ci sto |- ((TYPE prefixedNameIR) `. nameIR) `# _
+    ==> sto (tid `. nameIR `# value)
+  -- if $flatten_prefixedNameIR(prefixedNameIR) = nameIR_type
+  -- if $find_typedef_inst(p, Ci, nameIR_type) = typeIR
+  -- if $canon(typeIR) = ENUM tid `# _ `{ (id_f `= value_f `;)* }
+  -- if $assoc_<nameIR, value>(nameIR, (id_f, value_f)*) = value
+
+;;;;;;; typedExpressionIR
+
+rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-typedExpressionIR:
+  p Ci sto |- (typedExpressionIR `. "size") `# _
+    ==> sto' (D nat_s)
+  -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto' value
+  -- if value = `[ _ `# `( _; nat_s )] 
+
+;;;;; indexAccessExpressionIR
+;;;;; syntax indexAccessExpressionIR =
+;;;;;; typedExpressionIR `[ typedExpressionIR ] 
+;;;;;; not CTK
+
+;;;;;; typedExpressionIR `[ typedExpressionIR `: typedExpressionIR ]
+rule Expr_inst/indexAccessExpressionIR-bitslice:
+  p Ci sto |- (typedExpressionIR_b `[ typedExpressionIR_l `: typedExpressionIR_h ]) `# _
+    ==> sto''' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR_b ==> sto' value_b
+  -- Expr_inst: p Ci sto' |- typedExpressionIR_l ==> sto'' value_l ;; Should be static-eval'd
+  -- Expr_inst: p Ci sto'' |- typedExpressionIR_h ==> sto''' value_h ;; Should be static-eval'd
+  -- if $bitacc_op(value_b, value_l, value_h) = value
+
+;;;; callExpressionIR
+;;;; syntax callExpressionIR =
+;;;;; constructorTargetIR `( argumentListIR )
+
+dec $get_constructor_id(typeIR) : tid
+def $get_constructor_id(TID tid) = tid
+def $get_constructor_id((typeIR `< tid* `, tid* >) `< typeIR_args* >) = $get_constructor_id(typeIR)
+
+rule Expr_inst/callExpressionIR-instantiation:
+  p Ci sto |- ((typeIR `< typeArgumentListIR >) `( argumentListIR )) `# _
+    ==> sto'' (`! Ci.PATH)
+  -- if $get_constructor_id(typeIR) = tid
+  -- if $find_cons_inst(p, Ci, tid, argumentListIR) = (consDyn, id_default*)
+  -- Constructor_inst: p Ci sto |- consDyn `< typeArgumentListIR > `( argumentListIR `# id_default* ) ==> sto' objDyn
+  -- if $add_sto(sto', Ci.PATH, objDyn) = sto''
+
+;;;;; routineTargetIR `< typeArgumentListIR > `( argumentListIR )
+dec $size(typeIR, nameIR) : value
+
+rule Expr_inst/callExpressionIR-methodTarget-generic:
+  p Ci sto |- ((typedLvalueIR `. nameIR ) `< eps > `( eps )) `# _
+    ==> sto value
+  -- if _ `# `( typeIR ) = typedLvalueIR
+  -- if nameIR <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
+  -- if $size(typeIR, nameIR) = value
+
+rule Expr_inst/callExpressionIR-methodTarget-non-generic:
+  p Ci sto |- ((TYPE prefixedNameIR `. nameIR ) `< eps > `( eps )) `# _
+    ==> sto value
+  -- if nameIR <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
+  -- if $find_type_inst(p, Ci, prefixedNameIR) = typeIR
+  -- if $size(typeIR, nameIR) = value
+
+;;;; parenthesizedExpressionIR
+;;;; syntax parenthesizedExpressionIR =
+;;;;   `( typedExpressionIR )
+rule Expr_inst/parenthesizedExpressionIR:
+  p Ci sto |- (`( typedExpressionIR )) `# _
+    ==> sto' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto' value

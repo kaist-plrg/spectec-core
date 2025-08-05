@@ -171,9 +171,6 @@ rule Type_alpha/tablestructtype:
   ~~ (TABLE_STRUCT tid `{ (typeIR_f_b id_f `;)* })
   -- (Type_alpha: typeIR_f_a ~~ typeIR_f_b)*
 
-rule Type_alpha/dontcaretype:
-  `_ ~~ `_
-
 ;;
 ;;;; Alpha-equivalence of parameter types
 ;;

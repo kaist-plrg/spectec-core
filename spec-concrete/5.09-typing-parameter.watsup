@@ -1,9 +1,10 @@
 ;;
-;; syntax parameter
+;; Parameter typing
 ;;
-
 ;; syntax parameter =
 ;;  annotationList direction type name initializerOpt
+;;
+
 ;;; syntax initializerOpt
 
 ;;;; `EMPTY
@@ -40,6 +41,8 @@ rule Parameter_ok/empty:
   -- Eval_static: p C |- typedExpressionIR_init_cast ~> value_init
 
 ;;
+;; Parameter list typing
+;;
 ;; syntax parameterList
 ;;
 
@@ -53,6 +56,8 @@ rule Parameters_ok/cons:
   -- Parameters_ok: p C |- parameter_t* : parameterIR_t* `# tid_fresh_t*
 
 ;;
+;; Constructor typing
+;;
 ;; syntax constructorParameter
 ;;
 
@@ -61,6 +66,8 @@ rule ConstructorParameter_ok:
   -- Parameter_ok: p C |- constructorParameter
                         : constructorParameterIR `# tid_fresh*
 
+;;
+;; Constructor list typing
 ;;
 ;; syntax constructorParameterList
 ;;

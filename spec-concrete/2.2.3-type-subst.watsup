@@ -108,8 +108,6 @@ def $free_type(TABLE_ENUM _ `{ _ }) = `{ eps }
 
 def $free_type(TABLE_STRUCT _ `{ _ }) = `{ eps }
 
-def $free_type(`_) = `{ eps }
-
 ;;
 ;;;; Free type variables in type definitions
 ;;

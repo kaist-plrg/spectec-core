@@ -1,0 +1,19 @@
+;;
+;; syntax argumentIR
+;;
+
+;;; typedExpressionIR
+
+rule Argument_inst/expression:
+  p Ci sto |- typedExpressionIR ==> sto' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto' value
+
+;;; nameIR `= typedExpressionIR
+
+rule Argument_inst/namedexpression:
+  p Ci sto |- nameIR `= typedExpressionIR ==> sto' value
+  -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto' value
+
+;;; nameIR `= `_
+
+;;; `_

@@ -8,6 +8,7 @@ let wrap_atom (s : string) : atom =
   | ":>" -> Sup $ no_region
   | "|-" -> Turnstile $ no_region
   | "-|" -> Tilesturn $ no_region
+  | "`" -> Tick $ no_region
   | "\"" -> DoubleQuote $ no_region
   | "_" -> Underscore $ no_region
   | "->" -> Arrow $ no_region

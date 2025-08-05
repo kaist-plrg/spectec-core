@@ -1,0 +1,646 @@
+;;
+;; Routine base typing
+;;
+;; syntax expression
+;;
+
+;;; referenceExpression
+;;; syntax referenceExpression
+
+;;;; prefixedNonTypeName
+
+rule RoutineBase_ok/prefixedNonTypeName:
+  p C |- prefixedNonTypeName : prefixedNameIR `# `( typeIR )
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if direction typeIR _ eps = $find_var(p, C, prefixedNameIR)
+
+;;;; THIS
+
+rule RoutineBase_ok/this:
+  p C |- THIS : (`` "this") `# `( typeIR )
+  -- if direction typeIR _ eps = $find_var(p, C, `` "this")
+
+;;; memberAccessExpression
+;;; syntax memberAccessExpression = memberAccessBase `. member
+;;;; syntax memberAccessBase
+
+;;;;; expression
+
+rule RoutineBase_ok/lvalue-member-struct:
+  p C |- expression_base `. member : typedLvalueIR
+  ---- ;; check expression as lvalue
+  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a struct
+  -- if STRUCT _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+rule RoutineBase_ok/lvalue-member-header:
+  p C |- expression_base `. member : typedLvalueIR
+  ---- ;; check expression as lvalue
+  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header
+  -- if HEADER _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+rule RoutineBase_ok/lvalue-member-union:
+  p C |- expression_base `. member : typedLvalueIR
+  ---- ;; check expression as lvalue
+  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header
+  -- if HEADER_UNION _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+;;;;; syntax parenthesizedExpression = `( expression )
+
+rule RoutineBase_ok/parenthesized:
+  p C |- `( expression ) : `( typedLvalueIR ) `# `( typeIR )
+  -- RoutineBase_ok: p C |- expression : typedLvalueIR
+  -- if _ `# `( typeIR ) = typedLvalueIR
+
+;;
+;; Routine target typing
+;;
+;; syntax routineTarget = expression
+;;
+
+;;; referenceExpression
+;;; syntax referenceExpression
+
+;;;; prefixedNonTypeName
+
+rule RoutineTarget_ok/prefixedNonTypeName:
+  p C |- prefixedNonTypeName : prefixedNameIR
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+
+;;;; THIS
+
+rule RoutineTarget_ok/this:
+  p C |- THIS : (`` "this")
+
+;;; memberAccessExpression
+;;; syntax memberAccessExpression = memberAccessBase `. member
+;;;; syntax memberAccessBase
+
+;;;;; prefixedTypeName
+
+rule RoutineTarget_ok/memberAccessExpression-prefixedTypeName:
+  p C |- prefixedTypeName `. member : TYPE prefixedNameIR `. nameIR
+  -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
+  -- if nameIR = $name(member)
+
+;;;;; expression
+
+rule RoutineTarget_ok/memberAccessExpression-expression:
+  p C |- expression_base `. member : typedLvalueIR_base `. nameIR
+  -- if nameIR = $name(member)
+  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
+
+;;;;; syntax parenthesizedExpression = `( expression )
+
+rule RoutineTarget_ok/parenthesizedExpression:
+  p C |- `( expression ) : `( routineTargetIR )
+  -- RoutineTarget_ok: p C |- expression : routineTargetIR
+
+;;
+;; Routine base typing (when used as a lvalue)
+;;
+;; syntax lvalue
+;;
+
+;;; referenceExpression
+;;; syntax referenceExpression
+
+;;;;  prefixedNonTypeName
+
+rule RoutineBase_lvalue_ok/prefixedNonTypeName:
+  p C |- prefixedNonTypeName : prefixedNameIR `# `( typeIR )
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if direction typeIR _ eps = $find_var(p, C, prefixedNameIR)
+
+;;;;  THIS
+
+rule RoutineBase_lvalue_ok/this:
+  p C |- THIS : (`` "this") `# `( typeIR )
+  -- if direction typeIR _ eps = $find_var(p, C, `` "this")
+
+;;; lvalue `. member
+
+rule RoutineBase_lvalue_ok/lvalue-member-struct:
+  p C |- lvalue_base `. member : typedLvalueIR
+  ---- ;; check lvaue
+  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a struct
+  -- if STRUCT _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+rule RoutineBase_lvalue_ok/lvalue-member-header:
+  p C |- lvalue_base `. member : typedLvalueIR
+  ---- ;; check lvaue
+  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header
+  -- if HEADER _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+rule RoutineBase_lvalue_ok/lvalue-member-union:
+  p C |- lvalue_base `. member : typedLvalueIR
+  ---- ;; check lvaue
+  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header
+  -- if HEADER_UNION _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
+  ---- ;; find the field
+  -- if nameIR = $name(member)
+  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
+
+;;; `( lvalue )
+
+rule RoutineBase_lvalue_ok/parenthesized:
+  p C |- `( lvalue ) : `( typedLvalueIR ) `# `( typeIR )
+  -- RoutineBase_lvalue_ok: p C |- lvalue : typedLvalueIR
+  -- if _ `# `( typeIR ) = typedLvalueIR
+
+;;
+;; Routine target typing (when used as a lvalue)
+;;
+;; syntax lvalue
+;;
+
+;;; referenceExpression
+;;; syntax referenceExpression
+
+;;;;  prefixedNonTypeName
+
+rule RoutineTarget_lvalue_ok/prefixedNonTypeName:
+  p C |- prefixedNonTypeName : prefixedNameIR
+  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+
+;;;;  THIS
+
+rule RoutineTarget_lvalue_ok/prefixedNonTypeName:
+  p C |- THIS : (`` "this")
+
+;;; lvalue `. member
+
+rule RoutineTarget_lvalue_ok/lvalue-member:
+  p C |- lvalue_base `. member : typedLvalueIR_base `. nameIR
+  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
+  -- if nameIR = $name(member)
+
+;;; `( lvalue )
+
+rule RoutineTarget_lvalue_ok/parenthesized:
+  p C |- `( lvalue ) : `( routineTargetIR )
+  -- RoutineTarget_lvalue_ok: p C |- lvalue : routineTargetIR
+
+;;
+;; Routine call typing
+;; 
+;; syntax routineTargetIR
+;;
+
+;;; referenceExpressionIR
+;;; syntax referenceExpressionIR = prefixedNameIR
+
+rule RoutineType_ok/referenceExpressionIR:
+  p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
+       : functionTypeIR `< `# tid_impl* > `( `# id_default* )
+  -- if (rid, routineTypeDefIR, id_default*)
+      = $find_routine_overloaded(p, C, prefixedNameIR, argument*)
+  -- if (functionTypeIR, tid_impl*)
+      = $specialize_routineTypeDef(routineTypeDefIR, typeArgumentIR*)
+
+;;; typedLvalueIR `. nameIR
+
+rule RoutineType_ok/typedLvalueIR-nameIR-builtin-method-minmax-SizeIn-BitsBytes:
+  p C |- (typedLvalueIR_base `. nameIR) `< eps > `( eps )
+       : methodTypeIR `< `# eps > `( `# eps )
+  ---- ;; if the method is min/maxSizeInBits/Bytes builtin
+  -- if nameIR <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
+  ---- ;; create routine type
+  -- if methodTypeIR = BUILTIN_METHOD `( eps ) `-> INT
+
+rule RoutineType_ok/typedLvalueIR-nameIR-builtin-method-stack-push-pop-front:
+  p C |- (typedLvalueIR_base `. nameIR) `< eps > `( eps )
+       : methodTypeIR `< `# eps > `( `# eps )
+  ---- ;; if the method is push/pop_front builtin
+  -- if nameIR <- [ "push_front", "pop_front" ]
+  ---- ;; check that the base type is a stack
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if typeIR `[ _ ] = $canon(typeIR_base)
+  ---- ;; create routine type
+  -- if parameterTypeIR = `EMPTY INT "count" eps
+  -- if methodTypeIR = BUILTIN_METHOD `( parameterTypeIR ) `-> INT
+
+rule RoutineType_ok/typedLvalueIR-nameIR-builtin-method-header-isValid:
+  p C |- (typedLvalueIR_base `. nameIR) `< eps > `( eps )
+       : methodTypeIR `< `# eps > `( `# eps )
+  ---- ;; if the method is isValid builtin
+  -- if nameIR <- [ "isValid" ]
+  ---- ;; check that the base type is a header
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if HEADER _ `{ _ } = $canon(typeIR_base)
+  ---- ;; create routine type
+  -- if methodTypeIR = BUILTIN_METHOD `( eps ) `-> BOOL
+
+rule RoutineType_ok/typedLvalueIR-nameIR-builtin-method-union-isValid:
+  p C |- (typedLvalueIR_base `. nameIR) `< eps > `( eps )
+       : methodTypeIR `< `# eps > `( `# eps )
+  ---- ;; if the method is isValid builtin
+  -- if nameIR <- [ "isValid" ]
+  ---- ;; check that the base type is a header
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if HEADER_UNION _ `{ _ } = $canon(typeIR_base)
+  ---- ;; create routine type
+  -- if methodTypeIR = BUILTIN_METHOD `( eps ) `-> BOOL
+
+rule RoutineType_ok/typedLvalueIR-nameIR-builtin-method-header-set-ValidInvalid:
+  p C |- (typedLvalueIR_base `. nameIR) `< eps > `( eps )
+       : methodTypeIR `< `# eps > `( `# eps )
+  ---- ;; if the method is setValid/Invalid builtin
+  -- if nameIR <- [ "setValid", "setInvalid" ]
+  ---- ;; check that the base type is a header
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if HEADER _ `{ _ } = $canon(typeIR_base)
+  ---- ;; create routine type
+  -- if methodTypeIR = BUILTIN_METHOD `( eps ) `-> VOID
+
+rule RoutineType_ok/typedLvalueIR-nameIR-extern-method:
+  p C |- (typedLvalueIR_base `. nameIR) `< typeArgumentIR* > `( argument* )
+       : routineTypeIR `< `# tid_impl* > `( `# id_default* )
+  ---- ;; if the base type is an extern
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if EXTERN _ `{ (rid_f `: routineTypeDefIR_f)* } = $canon(typeIR_base)
+  ---- ;; find method type
+  -- if (id_arg?)* = $ids_arguments(argument*)
+  -- if (rid, routineTypeDefIR, id_default*)
+      = $find_overloaded<routineTypeDefIR>(
+          `{ (rid_f `: routineTypeDefIR_f)* },
+          nameIR,
+          (id_arg?)*)
+  ---- ;; specialize routine type
+  -- if (routineTypeIR, tid_impl*)
+      = $specialize_routineTypeDef(routineTypeDefIR, typeArgumentIR*)
+
+rule RoutineType_ok/typedLvalueIR-nameIR-parser-apply-method:
+  p C |- (typedLvalueIR_base `. "apply") `< eps > `( argument* )
+       : methodTypeIR `< `# eps > `( `# id_default* )
+  ---- ;; if the base type is a parser 
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if PARSER `( parameterTypeIR* ) = $canon(typeIR_base)
+  ---- ;; create method type
+  -- if methodTypeIR = PARSER_APPLY `( parameterTypeIR* )
+  ---- ;; create routine id
+  -- if (_ _ id_param value_param? = parameterTypeIR)*
+  -- if (pid = id_param `# (value_param? =/= eps))*
+  -- if rid = "apply" `( pid* )
+  ---- ;; perform overload resoultion
+  -- if (id_arg?)* = $ids_arguments(argument*)
+  -- if (rid, methodTypeIR, id_default*)
+      = $find_overloaded<routineTypeDefIR>(
+          `{ (rid `: methodTypeIR) },
+          "apply",
+          (id_arg?)*)
+
+rule RoutineType_ok/typedLvalueIR-nameIR-control-apply-method:
+  p C |- (typedLvalueIR_base `. "apply") `< eps > `( argument* )
+       : methodTypeIR `< `# eps > `( `# id_default* )
+  ---- ;; if the base type is a control 
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if CONTROL `( parameterTypeIR* ) = $canon(typeIR_base)
+  ---- ;; create method type
+  -- if methodTypeIR = CONTROL_APPLY `( parameterTypeIR* )
+  ---- ;; create routine id
+  -- if (_ _ id_param value_param? = parameterTypeIR)*
+  -- if (pid = id_param `# (value_param? =/= eps))*
+  -- if rid = "apply" `( pid* )
+  ---- ;; perform overload resoultion
+  -- if (id_arg?)* = $ids_arguments(argument*)
+  -- if (rid, methodTypeIR, id_default*)
+      = $find_overloaded<routineTypeDefIR>(
+          `{ (rid `: methodTypeIR) },
+          "apply",
+          (id_arg?)*)
+
+rule RoutineType_ok/typedLvalueIR-nameIR-table-apply-method:
+  p C |- (typedLvalueIR_base `. "apply") `< eps > `( eps )
+       : methodTypeIR `< `# eps > `( `# eps )
+  ---- ;; if the base type is a table
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if TABLE _ `# typeIR_table = $canon(typeIR_base)
+  ---- ;; create method type
+  -- if methodTypeIR = TABLE_APPLY `-> typeIR_table
+
+;;; TYPE prefixedNameIR `. nameIR
+
+;;; `( routineTargetIR )
+
+rule RoutineType_ok/parenthesized:
+  p C |- (`( routineTargetIR )) `< typeArgumentIR* > `( argument* )
+       : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
+  -- RoutineType_ok: p C |- routineTargetIR `< typeArgumentIR* > `( argument* )
+                          : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
+
+;;
+;; Call
+;;
+
+;;; Function call
+;;; syntax functionTypeIR
+
+;;;; BUILTIN_FUNCTION `( parameterTypeIR* ) `-> typeIR
+
+rule Call_ok/builtin-function:
+  p C |- (BUILTIN_FUNCTION `( parameterTypeIR* ) `-> typeIR_ret)
+          `< typeArgumentIR* `# eps > `( argumentIR* `# id_default* )
+        : typeIR_ret `< typeArgumentIR* > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; (TODO) check call site
+  -- Call_convention_ok:
+      p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
+                    : argumentIR_cast*
+
+;;;; FUNCTION `( parameterTypeIR* ) `-> typeIR
+
+rule Call_ok/function-noinfer:
+  p C |- (FUNCTION `( parameterTypeIR* ) `-> typeIR_ret)
+          `< typeArgumentIR* `# eps > `( argumentIR* `# id_default* )
+        : typeIR_ret `< typeArgumentIR* > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; (TODO) check call site
+  -- Call_convention_ok:
+      p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
+                    : argumentIR_cast*
+
+rule Call_ok/function-infer:
+  p C |- (FUNCTION `( parameterTypeIR* ) `-> typeIR_ret)
+          `< typeArgumentIR* `# tid_infer* > `( argumentIR* `# id_default* )
+        : typeIR_ret_inferred `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; perform type inference
+  -- if inference = $infer(tid_infer*, parameterTypeIR_aligned*, argumentIR*)
+  -- if (typeIR_inferred = $find_map<tid, typeIR>(inference, tid_infer))*
+  -- if typeArgumentIR_inferred* = typeArgumentIR* ++ typeIR_inferred*
+  ---- ;; substitute inferred types
+  -- if (parameterTypeIR_aligned_inferred
+        = $subst_parameterType(inference, parameterTypeIR_aligned))*
+  -- if typeIR_ret_inferred
+      = $subst_type(inference, typeIR_ret)
+  ---- ;; check that the substituted function is still well-formed
+  -- if functionTypeIR_inferred
+      = FUNCTION `( parameterTypeIR_aligned_inferred* ) `-> typeIR_ret_inferred
+  -- RoutineType_wf: $bound(p, C) |- functionTypeIR_inferred
+  ---- ;; (TODO) check call site
+  -- Call_convention_ok:
+      p C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
+                    : argumentIR_cast*
+
+;;;; ACTION `( parameterTypeIR* )
+
+rule Call_ok/action:
+  p C |- (ACTION `( parameterTypeIR* )) `< eps `# eps > `( argumentIR* `# id_default* )
+        : VOID `< eps > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; (TODO) check call site
+  -- Call_convention_ok:
+      p C ACTION |- parameterTypeIR_aligned* `@ argumentIR*
+                  : argumentIR_cast*
+
+;;;; EXTERN_FUNCTION `( parameterTypeIR* ) `-> typeIR
+
+rule Call_ok/externfunction-noinfer:
+  p C |- (EXTERN_FUNCTION `( parameterTypeIR* ) `-> typeIR_ret)
+          `< typeArgumentIR* `# eps > `( argumentIR* `# id_default* )
+        : typeIR_ret `< typeArgumentIR* > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; (TODO) check call site
+  -- Call_convention_ok:
+      p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
+                    : argumentIR_cast*
+
+rule Call_ok/externfunction-infer:
+  p C |- (EXTERN_FUNCTION `( parameterTypeIR* ) `-> typeIR_ret)
+          `< typeArgumentIR* `# tid_infer* > `( argumentIR* `# id_default* )
+        : typeIR_ret_inferred `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; perform type inference
+  -- if inference = $infer(tid_infer*, parameterTypeIR_aligned*, argumentIR*)
+  -- if (typeIR_inferred = $find_map<tid, typeIR>(inference, tid_infer))*
+  -- if typeArgumentIR_inferred* = typeArgumentIR* ++ typeIR_inferred*
+  ---- ;; substitute inferred types
+  -- if (parameterTypeIR_aligned_inferred
+        = $subst_parameterType(inference, parameterTypeIR_aligned))*
+  -- if typeIR_ret_inferred
+      = $subst_type(inference, typeIR_ret)
+  ---- ;; check that the substituted function is still well-formed
+  -- if functionTypeIR_inferred
+      = EXTERN_FUNCTION `( parameterTypeIR_aligned_inferred* ) `-> typeIR_ret_inferred
+  -- RoutineType_wf: $bound(p, C) |- functionTypeIR_inferred
+  ---- ;; (TODO) check call site
+  -- Call_convention_ok:
+      p C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
+                    : argumentIR_cast*
+
+;;; Method call
+;;; syntax methodTypeIR
+
+;;;; BUILTIN_METHOD `( parameterTypeIR* ) `-> typeIR
+
+rule Call_ok/builtin-method:
+  p C |- (BUILTIN_METHOD `( parameterTypeIR* ) `-> typeIR_ret)
+          `< typeArgumentIR* `# eps > `( argumentIR* `# id_default* )
+        : typeIR_ret `< typeArgumentIR* > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; (TODO) check call site
+  -- Call_convention_ok:
+      p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
+                    : argumentIR_cast*
+
+;;;; EXTERN_METHOD `( parameterTypeIR* ) `-> typeIR
+
+rule Call_ok/extern-method-infer:
+  p C |- (EXTERN_METHOD `( parameterTypeIR* ) `-> typeIR_ret)
+          `< typeArgumentIR* `# tid_infer* > `( argumentIR* `# id_default* )
+        : typeIR_ret_inferred `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; perform type inference
+  -- if inference = $infer(tid_infer*, parameterTypeIR_aligned*, argumentIR*)
+  -- if (typeIR_inferred = $find_map<tid, typeIR>(inference, tid_infer))*
+  -- if typeArgumentIR_inferred* = typeArgumentIR* ++ typeIR_inferred*
+  ---- ;; substitute inferred types
+  -- if (parameterTypeIR_aligned_inferred
+        = $subst_parameterType(inference, parameterTypeIR_aligned))*
+  -- if typeIR_ret_inferred
+      = $subst_type(inference, typeIR_ret)
+  ---- ;; check that the substituted method is still well-formed
+  -- if methodTypeIR_inferred
+      = EXTERN_METHOD `( parameterTypeIR_aligned_inferred* ) `-> typeIR_ret_inferred
+  -- RoutineType_wf: $bound(p, C) |- methodTypeIR_inferred
+  ---- ;; (TODO) check call site
+  -- Call_convention_ok:
+      p C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
+                    : argumentIR_cast*
+
+;;;; EXTERN_METHOD ABSTRACT `( parameterTypeIR* ) `-> typeIR
+
+rule Call_ok/extern-abstract-method-infer:
+  p C |- (EXTERN_METHOD ABSTRACT `( parameterTypeIR* ) `-> typeIR_ret)
+          `< typeArgumentIR* `# tid_infer* > `( argumentIR* `# id_default* )
+        : typeIR_ret_inferred `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; perform type inference
+  -- if inference = $infer(tid_infer*, parameterTypeIR_aligned*, argumentIR*)
+  -- if (typeIR_inferred = $find_map<tid, typeIR>(inference, tid_infer))*
+  -- if typeArgumentIR_inferred* = typeArgumentIR* ++ typeIR_inferred*
+  ---- ;; substitute inferred types
+  -- if (parameterTypeIR_aligned_inferred
+        = $subst_parameterType(inference, parameterTypeIR_aligned))*
+  -- if typeIR_ret_inferred
+      = $subst_type(inference, typeIR_ret)
+  ---- ;; check that the substituted method is still well-formed
+  -- if methodTypeIR_inferred
+      = EXTERN_METHOD ABSTRACT `( parameterTypeIR_aligned_inferred* ) `-> typeIR_ret_inferred
+  -- RoutineType_wf: $bound(p, C) |- methodTypeIR_inferred
+  ---- ;; (TODO) check call site
+  -- Call_convention_ok:
+      p C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
+                    : argumentIR_cast*
+
+;;;; PARSER_APPLY `( parameterTypeIR* )
+
+rule Call_ok/parser-apply-method:
+  p C |- (PARSER_APPLY `( parameterTypeIR* ))
+          `< eps `# eps > `( argumentIR* `# id_default* )
+        : VOID `< eps > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; (TODO) check call site
+  -- Call_convention_ok:
+      p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
+                    : argumentIR_cast*
+
+;;;; CONTROL_APPLY `( parameterTypeIR* )
+
+rule Call_ok/control-apply-method:
+  p C |- (CONTROL_APPLY `( parameterTypeIR* ))
+          `< eps `# eps > `( argumentIR* `# id_default* )
+        : VOID `< eps > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; (TODO) check call site
+  -- Call_convention_ok:
+      p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
+                    : argumentIR_cast*
+
+;;;; TABLE_APPLY `-> typeIR
+
+rule Call_ok/table-apply-method:
+  p C |- (TABLE_APPLY `-> typeIR_table) `< eps `# eps > `( eps `# eps )
+        : typeIR_table `< eps > `( eps )

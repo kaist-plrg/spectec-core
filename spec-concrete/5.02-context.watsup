@@ -28,8 +28,11 @@ syntax blayer =
 
 ;; Local layer
 
+syntax lret = `EMPTY | typeIR
+
 syntax llayer =
   { ID id,
+    RET lret,
     TDENV tdenv,
     FRAMES frame* }
 
@@ -63,6 +66,7 @@ def $empty_context = C
         FRAME $empty_frame }
   -- if llayer =
       { ID "",
+        RET `EMPTY,
         TDENV $empty_tdenv,
         FRAMES ([ $empty_frame ]) }
   -- if C = { GLOBAL glayer, BLOCK blayer, LOCAL llayer }
@@ -96,7 +100,17 @@ def $exit(C) = C[ .LOCAL.FRAMES = frame_t* ]
 ;; Return type tracking
 ;;
 
-dec $return_type(llayer) : typeIR
+dec $set_return_type(context, typeIR) : context
+
+def $set_return_type(C, typeIR_ret)
+  = C[ .LOCAL.RET = typeIR_ret ]
+
+dec $get_return_type(context) : typeIR?
+
+def $get_return_type(C) = typeIR_ret
+  -- if typeIR_ret = C.LOCAL.RET
+def $get_return_type(C) = eps
+  -- otherwise
 
 ;;
 ;; Adders
@@ -126,11 +140,12 @@ def $add_vars(p, C, id_h :: id_t*, varTypeIR_h :: varTypeIR_t*) = C''
 dec $add_parameter(cursor, context, parameterTypeIR) : context
 dec $add_parameters(cursor, context, parameterTypeIR*) : context
 
-def $add_parameter(cursor, C, direction typeIR id eps) = C'
-  -- if varTypeIR = direction typeIR DYN eps
+def $add_parameter(cursor, C, `EMPTY typeIR id value?) = C'
+  -- if varTypeIR = `EMPTY typeIR CTK value?
   -- if C' = $add_var(cursor, C, id, varTypeIR)
-def $add_parameter(cursor, C, direction typeIR id value) = C'
-  -- if varTypeIR = direction typeIR DYN value
+def $add_parameter(cursor, C, direction typeIR id value?) = C'
+  -- if direction = IN \/ direction = OUT \/ direction = INOUT
+  -- if varTypeIR = direction typeIR DYN value?
   -- if C' = $add_var(cursor, C, id, varTypeIR)
 
 def $add_parameters(cursor, C, eps) = C
@@ -161,13 +176,18 @@ dec $add_type(cursor, context, tid, typeDefIR) : context
 def $add_type(GLOBAL, C, tid, typeDefIR) = C'
   -- if tdenv = C.GLOBAL.TDENV
   -- if tdenv_update
-        = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
+      = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
   -- if C' = C [ .GLOBAL.TDENV = tdenv_update ]
 def $add_type(BLOCK, C, tid, typeDefIR) = C'
   -- if tdenv = C.BLOCK.TDENV
   -- if tdenv_update
-        = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
+      = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
   -- if C' = C [ .BLOCK.TDENV = tdenv_update ]
+def $add_type(LOCAL, C, tid, typeDefIR) = C'
+  -- if tdenv = C.LOCAL.TDENV
+  -- if tdenv_update
+      = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
+  -- if C' = C [ .LOCAL.TDENV = tdenv_update ]
 
 dec $add_types(cursor, context, tid*, typeDefIR*) : context
 def $add_types(p, C, eps, eps) = C
@@ -177,14 +197,14 @@ def $add_types(p, C, tid_h :: tid_t*, typeDefIR_h :: typeDefIR_t*) = C''
 
 ;;; Adder for routines
 
-dec $add_routine(cursor, context, rid, routineTypeDefIR) : context
+dec $add_routine_overload(cursor, context, rid, routineTypeDefIR) : context
 
-def $add_routine(GLOBAL, C, rid, routineTypeDefIR) = C'
+def $add_routine_overload(GLOBAL, C, rid, routineTypeDefIR) = C'
   -- if rdenv = C.GLOBAL.RDENV
   -- if rdenv_update
         = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
   -- if C' = C [ .GLOBAL.RDENV = rdenv_update ]
-def $add_routine(BLOCK, C, rid, routineTypeDefIR) = C'
+def $add_routine_overload(BLOCK, C, rid, routineTypeDefIR) = C'
   -- if rdenv = C.BLOCK.RDENV
   -- if rdenv_update
         = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
@@ -240,7 +260,23 @@ def $find_var(LOCAL, C, `` id) = $find_var(BLOCK, C, `` id)
 
 ;;; Finder for values
 
-dec $find_value(cursor, context, id) : value
+dec $find_value(cursor, context, prefixedNameIR) : value
+
+def $find_value(p, C, `. id) = value
+  -- if frame = C.GLOBAL.FRAME
+  -- if _ _ _ value = $find_map<id, varTypeIR>(frame, id)
+def $find_value(GLOBAL, C, `` id) = value
+  -- if frame = C.GLOBAL.FRAME
+  -- if _ _ _ value = $find_map<id, varTypeIR>(frame, id)
+def $find_value(BLOCK, C, `` id) = value
+  -- if frame = C.BLOCK.FRAME
+  -- if _ _ _ value = $find_map<id, varTypeIR>(frame, id)
+def $find_value(BLOCK, C, `` id) = $find_value(GLOBAL, C, `` id)
+  -- if frame = C.BLOCK.FRAME
+  -- if eps = $find_map<id, varTypeIR>(frame, id)
+def $find_value(LOCAL, C, `` id) = value
+  -- if frame* = C.LOCAL.FRAMES
+  -- if _ _ _ value = $find_maps<id, varTypeIR>(frame*, id)
 
 ;;; Finder for types
 
@@ -276,27 +312,31 @@ def $id_argument(name `= _) = $name(name)
 def $id_argument(name `= `_) = $name(name)
 def $id_argument(`_) = eps
 
-dec $find_routine_overloaded(cursor, context, id, argument*)
+dec $find_routine_overloaded(cursor, context, prefixedNameIR, argument*)
   : (rid, routineTypeDefIR, id*)?
 
-def $find_routine_overloaded(GLOBAL, C, id, argument*)
+def $find_routine_overloaded(GLOBAL, C, `. id, argument*)
   = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
   -- if rdenv = C.GLOBAL.RDENV
   -- if (id_arg?)* = $ids_arguments(argument*)
-def $find_routine_overloaded(BLOCK, C, id, argument*)
+def $find_routine_overloaded(GLOBAL, C, `` id, argument*)
+  = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
+  -- if rdenv = C.GLOBAL.RDENV
+  -- if (id_arg?)* = $ids_arguments(argument*)
+def $find_routine_overloaded(BLOCK, C, `` id, argument*)
   = (rid, routineTypeDefIR, id_default*)
   -- if rdenv = C.BLOCK.RDENV
   -- if (id_arg?)* = $ids_arguments(argument*)
   -- if (rid, routineTypeDefIR, id_default*)
       = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
-def $find_routine_overloaded(BLOCK, C, id, argument*)
-  = $find_routine_overloaded(GLOBAL, C, id, argument*)
+def $find_routine_overloaded(BLOCK, C, `` id, argument*)
+  = $find_routine_overloaded(GLOBAL, C, `` id, argument*)
   -- if rdenv = C.BLOCK.RDENV
   -- if (id_arg?)* = $ids_arguments(argument*)
   -- if eps
       = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
-def $find_routine_overloaded(LOCAL, C, id, argument*)
-  = $find_routine_overloaded(BLOCK, C, id, argument*) 
+def $find_routine_overloaded(LOCAL, C, `` id, argument*)
+  = $find_routine_overloaded(BLOCK, C, `` id, argument*) 
 
 dec $find_routine_non_overloaded(cursor, context, prefixedNameIR)
   : routineTypeDefIR?

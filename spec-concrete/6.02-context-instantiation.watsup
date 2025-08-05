@@ -1,0 +1,56 @@
+;; Global layer
+
+syntax glayerDyn =
+  { CENV cenv,
+    TDENV tdenv,
+    RENV renv,
+    VENV venv }
+
+;; Block Layer
+
+syntax blayerDyn =
+  { THETA theta,
+    RENV renv,
+    SENV senv,
+    VENV venv }
+
+;; Local layer
+
+syntax llayerDyn =
+  { THETA theta,
+    VENVS venv* }
+
+;;
+;; Typing context
+;;
+
+syntax contextInst =
+  { PATH oid,
+    GLOBAL glayerDyn,
+    BLOCK blayerDyn,
+    LOCAL llayerDyn }
+
+var Ci : contextInst
+
+;;
+;; Constructor
+;;
+
+dec $empty_ctx_inst() : contextInst
+
+dec $refresh_ctx_inst_empty() : contextInst
+
+dec $copy_ctx_inst(cursor, contextInst) : contextInst
+
+dec $enter_frame_inst(contextInst) : contextInst
+
+dec $find_value_inst(cursor, contextInst, nameIR) : value?
+dec $find_typedef_inst(cursor, contextInst, nameIR) : typeDefIR?
+dec $find_cons_inst(cursor, contextInst, tid, argumentListIR) : (consDyn, id*)
+dec $find_type_inst(cursor, contextInst, prefixedNameIR) : typeIR
+dec $add_value_inst(cursor, contextInst, nameIR, value): contextInst
+dec $add_values_inst(cursor, contextInst, nameIR*, value*): contextInst
+dec $add_func_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
+dec $add_func_non_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
+dec $add_cons_inst(cursor, contextInst, cid, consDyn) : contextInst
+dec $add_typdef_inst(cursor, contextInst, name, typeDefIR) : contextInst

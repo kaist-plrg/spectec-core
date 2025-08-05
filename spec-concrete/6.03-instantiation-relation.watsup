@@ -1,0 +1,118 @@
+;; Instantiation
+
+relation Instantiate:
+  |- p4programIR ==> cenv tdenv renv venv sto
+  hint(input %0)
+
+relation Constructor_inst:
+  cursor contextInst sto |- consDyn `< typeArgumentListIR > `( argumentListIR `# id* ) ==> sto objDyn
+  hint(input %0 %1 %2 %3 %4 %5 %6)
+
+;;
+;; Expression, Statement, and Declaration instantiation
+;;
+
+;;
+;;;; Expression instantiation
+;;
+
+relation Exprs_inst:
+  cursor contextInst sto |- typedExpressionIR* ==> sto value*
+  hint(input %0 %1 %2 %3)
+
+relation Expr_inst:
+  cursor contextInst sto |- typedExpressionIR ==> sto value
+  hint(input %0 %1 %2 %3)
+
+relation Argument_inst:
+  cursor contextInst sto |- argumentIR ==> sto value
+  hint(input %0 %1 %2 %3)
+
+;;
+;;;; Declaration instantiation
+;;
+
+relation Decls_inst:
+  cursor contextInst sto |- declarationIR* ==> contextInst sto declarationIR*
+  hint(input %0 %1 %2 %3)
+
+relation Decl_inst:
+  cursor contextInst sto |- declarationIR ==> contextInst sto declarationIR?
+  hint(input %0 %1 %2 %3)
+
+relation ParserLocalDecl_inst:
+  cursor contextInst sto |- parserLocalDeclarationIR ==> contextInst sto parserLocalDeclarationIR
+  hint(input %0 %1 %2 %3)
+
+relation ParserLocalDecls_inst:
+  cursor contextInst sto |- parserLocalDeclarationListIR ==> contextInst sto parserLocalDeclarationListIR
+  hint(input %0 %1 %2 %3)
+
+relation ControlLocalDecl_inst:
+  cursor contextInst sto |- controlLocalDeclarationIR ==> contextInst sto controlLocalDeclarationIR
+  hint(input %0 %1 %2 %3)
+
+relation ControlLocalDecls_inst:
+  cursor contextInst sto |- controlLocalDeclarationListIR ==> contextInst sto controlLocalDeclarationListIR
+  hint(input %0 %1 %2 %3)
+
+;;
+;;;; Method instantiation
+;;
+
+relation Methods_inst:
+  cursor contextInst |- methodPrototypeIR* ==> contextInst
+  hint(input %0 %1 %2)
+
+relation Method_inst:
+  cursor contextInst |- methodPrototypeIR ==> contextInst
+  hint(input %0 %1 %2)
+
+;;
+;;;; Statement instantiation
+;;
+
+relation Stmts_inst:
+  cursor contextInst sto |- statementIR* ==> contextInst sto statementIR*
+  hint(input %0 %1 %2 %3)
+
+relation Stmt_inst:
+  cursor contextInst sto |- statementIR ==> contextInst sto statementIR
+  hint(input %0 %1 %2 %3)
+
+relation BlockElementStmt_inst:
+  cursor contextInst sto |- blockElementStatementIR ==> contextInst sto blockElementStatementIR?
+  hint(input %0 %1 %2 %3)
+
+relation BlockElementStmts_inst:
+  cursor contextInst sto |- blockElementStatementIR* ==> contextInst sto blockElementStatementIR*
+  hint(input %0 %1 %2 %3)
+
+relation SwitchCases_inst:
+  cursor contextInst sto |- switchCaseIR* ==> contextInst sto switchCaseIR*
+  hint(input %0 %1 %2 %3)
+
+relation SwitchCase_inst:
+  cursor contextInst sto |- switchCaseIR ==> contextInst sto switchCaseIR
+  hint(input %0 %1 %2 %3)
+
+;;
+;;;; Parser state instantiation
+;;
+
+relation ParserState_inst:
+  cursor contextInst sto |- parserStateIR ==> contextInst sto
+  hint(input %0 %1 %2 %3)
+
+relation ParserStates_inst:
+  cursor contextInst sto |- parserStateIR* ==> contextInst sto
+  hint(input %0 %1 %2 %3)
+
+
+relation Block_inst:
+  cursor contextInst sto bool |- blockStatementIR ==> contextInst sto blockStatementIR
+  hint(input %0 %1 %2 %3 %4)
+
+relation Table_inst:
+  cursor contextInst sto |- tablePropertyListIR ==> contextInst sto tablePropertyListIR
+  hint(input %0 %1 %2 %3)
