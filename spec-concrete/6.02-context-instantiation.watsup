@@ -36,13 +36,13 @@ var Ci : contextInst
 ;; Constructor
 ;;
 
-dec $empty_ctx_inst() : contextInst
+dec $empty_context_inst() : contextInst
 dec $empty_block() : blayerDyn
 dec $empty_local() : llayerDyn
 
-dec $refresh_ctx_inst_empty() : contextInst
+dec $refresh_context_inst_empty() : contextInst
 
-dec $copy_ctx_inst(cursor, contextInst) : contextInst
+dec $copy_context_inst(cursor, contextInst) : contextInst
 
 dec $enter_frame_inst(contextInst) : contextInst
 dec $enter_path(contextInst, nameIR) : contextInst

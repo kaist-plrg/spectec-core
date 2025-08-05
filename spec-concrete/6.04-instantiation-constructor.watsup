@@ -1,6 +1,6 @@
-rule Instantiate/program:
+rule Program_inst/program:
   |- declarationIR* `; ==> Ci'.GLOBAL.CENV Ci'.GLOBAL.TDENV Ci'.GLOBAL.RENV Ci'.GLOBAL.VENV sto'
-  -- if $refresh_ctx_inst_empty() = Ci
+  -- if $refresh_context_inst_empty() = Ci
   -- if $empty_sto() = sto
   -- Decls_inst: GLOBAL Ci sto |- declarationIR* ==> Ci' sto' declarationIR'*
   -- if declarationIR'* = eps ;;check all declarations were instantiated
@@ -12,21 +12,21 @@ dec $add_default_values_to_ctx(contextInst, constructorParameterIR*, id*) : cont
 
 dec $add_params_and_args_to_ctx(cursor, contextInst, typeParameterIR*, constructorParameterIR*, typeArgumentIR*, argumentIR*, id*, sto) : (contextInst, sto)
 def $add_params_and_args_to_ctx(GLOBAL, Ci, typeParameterIR*, constructorParameterIR*, typeArgumentIR*, argumentIR*, id_default*, sto) = (Ci_callee''', sto')
-  -- if $empty_ctx_inst() = Ci_callee
+  -- if $empty_context_inst() = Ci_callee
   -- if $add_params_inst(GLOBAL, typeParameterIR*, typeArgumentIR*, Ci_callee) = Ci_callee'
   -- if $align_cparams_with_args(constructorParameterIR*, argumentIR*, id_default*) = (constructorParameterIR'*, argumentIR'*, constructorParameterIR_default*)
   -- if $add_eval_args_to_ctx(Ci_callee', sto, constructorParameterIR'*, argumentIR'*) = (Ci_callee'', sto')
   -- if $add_default_values_to_ctx(Ci_callee'', constructorParameterIR_default*, id_default*) = Ci_callee'''
 
 def $add_params_and_args_to_ctx(BLOCK, Ci, typeParameterIR*, constructorParameterIR*, typeArgumentIR*, argumentIR*, id_default*, sto) = (Ci_callee''', sto')
-  -- if $copy_ctx_inst(GLOBAL, Ci) = Ci_callee
+  -- if $copy_context_inst(GLOBAL, Ci) = Ci_callee
   -- if $add_params_inst(BLOCK, typeParameterIR*, typeArgumentIR*, Ci_callee) = Ci_callee'
   -- if $align_cparams_with_args(constructorParameterIR*, argumentIR*, id_default*) = (constructorParameterIR'*, argumentIR'*, constructorParameterIR_default*)
   -- if $add_eval_args_to_ctx(Ci_callee', sto, constructorParameterIR'*, argumentIR'*) = (Ci_callee'', sto')
   -- if $add_default_values_to_ctx(Ci_callee'', constructorParameterIR_default*, id_default*) = Ci_callee'''
 
 def $add_params_and_args_to_ctx(LOCAL, Ci, typeParameterIR*, constructorParameterIR*, typeArgumentIR*, argumentIR*, id_default*, sto) = (Ci_callee''', sto')
-  -- if $copy_ctx_inst(BLOCK, Ci) = Ci_callee
+  -- if $copy_context_inst(BLOCK, Ci) = Ci_callee
   -- if $add_params_inst(LOCAL, typeParameterIR*, typeArgumentIR*, Ci_callee) = Ci_callee'
   -- if $align_cparams_with_args(constructorParameterIR*, argumentIR*, id_default*) = (constructorParameterIR'*, argumentIR'*, constructorParameterIR_default*)
   -- if $add_eval_args_to_ctx(Ci_callee', sto, constructorParameterIR'*, argumentIR'*) = (Ci_callee'', sto')

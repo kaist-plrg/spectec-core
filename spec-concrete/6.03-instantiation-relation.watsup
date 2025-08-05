@@ -1,6 +1,6 @@
 ;; Instantiation
 
-relation Instantiate:
+relation Program_inst:
   |- p4programIR ==> cenv tdenv renv venv sto
   hint(input %0)
 
