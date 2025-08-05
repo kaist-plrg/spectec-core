@@ -1663,9 +1663,10 @@ let elab_def_with_failtraces (ctx : Ctx.t) (def : def) :
   try
     let ctx', def_opt = elab_def ctx def in
     (ctx', def_opt, [])
-  with Util.Error.ElabError (at, msg) -> 
-    (* Convert simple error to failtrace *)
-    (ctx, None, [ Failtrace (at, msg, []) ])
+  with
+  | Util.Error.ElabError (at, msg) ->
+      (* Convert simple error to failtrace *)
+      (ctx, None, [ Failtrace (at, msg, []) ])
   | Attempt.Failtraces failtraces ->
       (* Catch failtraces from monadic functions *)
       (ctx, None, failtraces)

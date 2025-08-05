@@ -47,13 +47,16 @@ let elab_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames in
-         let spec_il_opt, failtraces = Elaborate.Elab.elab_spec_with_failtraces spec in
+         let spec_il_opt, failtraces =
+           Elaborate.Elab.elab_spec_with_failtraces spec
+         in
          if List.length failtraces = 0 && Option.is_some spec_il_opt then (
            Format.printf "%s\n"
              (Il.Print.string_of_spec (Option.get spec_il_opt));
            exit 0)
          else (
-           Format.eprintf "%s\n" (Elaborate.Attempt.format_failtraces failtraces);
+           Format.eprintf "%s\n"
+             (Elaborate.Attempt.format_failtraces failtraces);
            exit 1)
        with
        | ParseError (at, msg) -> Format.eprintf "%s\n" (string_of_error at msg)

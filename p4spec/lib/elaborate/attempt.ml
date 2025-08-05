@@ -12,7 +12,7 @@ let rec string_of_failtrace_noregion ?(level = 0) ~(depth : int)
   let (Failtrace (_region, msg, subfailtraces)) = failtrace in
   let smsg =
     if level < depth then ""
-    else Format.asprintf "\n%s%s%s %s" (String.make 7 ' ') (indent (level - depth)) bullet msg
+    else Format.asprintf "\n       %s%s %s" (indent (level - depth)) bullet msg
   in
   Format.asprintf "%s%s" smsg
     (string_of_failtraces_noregion ~level:(level + 1) ~depth subfailtraces)
@@ -34,12 +34,12 @@ and string_of_failtraces_noregion ?(level = 0) ~(depth : int)
 
 let format_failtraces (failtraces : failtrace list) : string =
   let compare_trace failtrace_l failtrace_r =
-    let Failtrace (region_l, _, _) = failtrace_l in
-    let Failtrace (region_r, _, _) = failtrace_r in
+    let (Failtrace (region_l, _, _)) = failtrace_l in
+    let (Failtrace (region_r, _, _)) = failtrace_r in
     if region_l.left.file = region_r.left.file then
-    (if region_l.left.line = region_r.left.line then
-    compare region_l.left.column region_r.left.column
-    else compare region_l.left.line region_r.left.line)
+      if region_l.left.line = region_r.left.line then
+        compare region_l.left.column region_r.left.column
+      else compare region_l.left.line region_r.left.line
     else compare region_l.left.file region_r.left.file
   in
   let failtraces_sorted = List.sort compare_trace failtraces in
