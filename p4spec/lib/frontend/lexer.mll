@@ -223,6 +223,7 @@ and token = parse
   | "=>" { DOUBLE_ARROW }
   | "=>_" { DOUBLE_ARROW_SUB }
   | "<=>" { DOUBLE_ARROW_BOTH }
+  | "==>" { DOUBLE_ARROW_LONG }
   | "~>" { SQARROW }
   | "~>*" { SQARROW_STAR }
   | "/\\" { AND }

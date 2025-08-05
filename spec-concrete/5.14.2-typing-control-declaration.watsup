@@ -1,0 +1,94 @@
+;;
+;; Control local declaration typing
+;;
+;; syntax controlLocalDeclaration
+;;
+
+;;; constantDeclaration
+
+rule ControlLocalDecl_ok/constantDeclaration:
+  C_0 |- constantDeclaration : C_1 constantDeclarationIR
+  -- Decl_ok: BLOCK C_0 |- constantDeclaration : C_1 constantDeclarationIR
+
+;;; instantiation
+
+rule ControlLocalDecl_ok/instantiation:
+  C_0 |- instantiation : C_1 instantiationIR
+  -- Decl_ok: BLOCK C_0 |- instantiation : C_1 instantiationIR
+
+;;; variableDeclaration
+;;; syntax variableDeclaration =
+;;;   annotationList type name initializerOpt `;
+
+rule ControlLocalDecl_ok/variableDeclaration-empty:
+  C_0 |- annotationList type name `EMPTY `;
+       : C_1 variableDeclarationIR
+  ---- ;; check type
+  -- Type_ok: BLOCK C_0 |- type : typeIR `# eps
+  -- Type_wf: $bound(BLOCK, C_0) |- typeIR
+  ---- ;; update the context
+  -- if nameIR = $name(name)
+  -- if C_1 = $add_var(BLOCK, C_0, nameIR, INOUT typeIR DYN eps)
+  ---- ;; create IR
+  -- if variableDeclarationIR
+      = annotationList typeIR nameIR eps `;
+
+rule ControlLocalDecl_ok/variableDeclaration-initializer:
+  C_0 |- annotationList type name (`= expression_init) `;
+       : C_1 variableDeclarationIR
+  ---- ;; check type
+  -- Type_ok: BLOCK C_0 |- type : typeIR `# eps
+  -- Type_wf: $bound(BLOCK, C_0) |- typeIR
+  ---- ;; check expression
+  -- Expr_ok: BLOCK C_0 |- expression_init : typedExpressionIR_init
+  ---- ;; check that the expression matches the type
+  ---- ;; while inserting implicit casts if necessary
+  -- if typedExpressionIR_init_cast
+      = $coerce_unary(typedExpressionIR_init, typeIR)
+  ---- ;; update the context
+  -- if nameIR = $name(name)
+  -- if C_1 = $add_var(BLOCK, C_0, nameIR, INOUT typeIR DYN eps)
+  ---- ;; create IR
+  -- if variableDeclarationIR
+      = annotationList typeIR nameIR (`= typedExpressionIR_init_cast) `;
+
+;;; actionDeclaration
+
+rule ControlLocalDecl_ok/actionDeclaration:
+  C_0 |- actionDeclaration : C_1 actionDeclarationIR
+  -- Decl_ok: BLOCK C_0 |- actionDeclaration : C_1 actionDeclarationIR
+
+;;; tableDeclaration
+;;; syntax tableDeclaration =
+;;;   annotationList TABLE name `{ tablePropertyList }
+
+rule ControlLocalDecl_ok/tableDeclaration:
+  C_0 |- annotationList TABLE name `{ tablePropertyList }
+       : C_2 tableDeclarationIR
+  ---- ;; check table properties
+  -- if tableProperty* = $flatten_tablePropertyList(tablePropertyList)
+  -- Table_ok: C_0 |- tableProperty* : TC tablePropertyIR*
+  ---- ;; update the context with synthesized table
+  -- if nameIR = $name(name)
+  -- TableType_ok: C_0 TC |- name : C_1 typeIR_table
+  -- if C_2 = $add_var(BLOCK, C_1, nameIR, `EMPTY typeIR_table DYN eps)
+  ---- ;; create IR
+  -- if tableDeclarationIR
+      = annotationList TABLE nameIR `{ tablePropertyIR* }
+
+;;
+;; Control local declaration list typing
+;;
+;; syntax controlLocalDeclarationList
+;;
+
+rule ControlLocalDecls_ok/nil:
+  C |- eps : C eps
+
+rule ControlLocalDecls_ok/cons:
+  C_0 |- controlLocalDeclaration_h :: controlLocalDeclaration_t*
+       : C_2 (controlLocalDeclarationIR_h :: controlLocalDeclarationIR_t*)
+  -- ControlLocalDecl_ok: C_0 |- controlLocalDeclaration_h
+                        : C_1 controlLocalDeclarationIR_h
+  -- ControlLocalDecls_ok: C_1 |- controlLocalDeclaration_t*
+                        : C_2 controlLocalDeclarationIR_t*

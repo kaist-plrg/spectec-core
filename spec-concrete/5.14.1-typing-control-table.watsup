@@ -1,4 +1,86 @@
 ;;
+;; Table key property typing
+;;
+;; syntax tableKey = expression `: name annotationList `;
+;;
+
+dec $compat_table_exact_optional_key(typeIR) : bool
+dec $compat'_table_exact_optional_key(typeIR) : bool
+
+def $compat_table_exact_optional_key(typeIR)
+  = $compat'_table_exact_optional_key($canon(typeIR))
+def $compat'_table_exact_optional_key(BOOL) = true
+def $compat'_table_exact_optional_key(ERROR) = true
+def $compat'_table_exact_optional_key(numberTypeIR) = true
+def $compat'_table_exact_optional_key(TYPE _ typeIR)
+  = $compat_table_exact_optional_key(typeIR)
+def $compat'_table_exact_optional_key(ENUM _ `{ _ }) = true
+def $compat'_table_exact_optional_key(ENUM _ `# typeIR `{ _ })
+  = $compat_table_exact_optional_key(typeIR)
+
+dec $compat_table_lpm_ternary_range_key(typeIR) : bool
+dec $compat'_table_lpm_ternary_range_key(typeIR) : bool
+
+def $compat_table_lpm_ternary_range_key(typeIR)
+  = $compat'_table_lpm_ternary_range_key($canon(typeIR))
+def $compat'_table_lpm_ternary_range_key(INT) = true
+def $compat'_table_lpm_ternary_range_key(INT `< _ >) = true
+def $compat'_table_lpm_ternary_range_key(BIT `< _ >) = true
+def $compat'_table_lpm_ternary_range_key(TYPE _ typeIR)
+  = $compat_table_lpm_ternary_range_key(typeIR)
+def $compat'_table_lpm_ternary_range_key(ENUM _ `# typeIR `{ _ })
+  = $compat_table_lpm_ternary_range_key(typeIR)
+
+dec $compat_table_key(nameIR, typeIR) : bool
+
+def $compat_table_key(nameIR, typeIR) = true
+  -- if nameIR = "exact" \/ nameIR = "optional"
+  -- if $compat_table_exact_optional_key(typeIR)
+
+def $compat_table_key(nameIR, typeIR) = true
+  -- if nameIR = "lpm" \/ nameIR = "ternary" \/ nameIR = "range"
+  -- if $compat_table_lpm_ternary_range_key(typeIR)
+
+def $compat_table_key(nameIR, typeIR) = false
+  -- otherwise
+
+rule TableKey_ok:
+  C TC_0 |- expression `: name annotationList `;
+          : TC_2 tableKeyIR
+  ---- ;; check expression
+  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  -- if _ `# `( typeIR _ ) = typedExpressionIR
+  ---- ;; check that the expression can be embedded in a set
+  -- Type_wf: $bound(BLOCK, C) |- SET `< typeIR >
+  ---- ;; check match kind
+  -- if nameIR = $name(name)
+  -- if MATCH_KIND `. nameIR = $find_value(BLOCK, C, `` nameIR)
+  ---- ;; check compatibility with the match kind
+  -- if $compat_table_key(nameIR, typeIR)
+  ---- ;; update table context
+  -- if TC_1 = $update_mode(TC_0, nameIR, typeIR)
+  -- if TC_2 = $add_key(TC_1, nameIR, typeIR)
+  ---- ;; create IR
+  -- if tableKeyIR = typedExpressionIR `: nameIR annotationList `;
+
+;;
+;; Table key property list typing
+;;
+;; syntax tableKeyList
+;;
+
+rule TableKeys_ok/nil:
+  C TC |- eps : TC eps
+
+rule TableKeys_ok/cons:
+  C TC_0 |- (tableKey_h :: tableKey_t*)
+          : TC_2 (tableKeyIR_h :: tableKeyIR_t*)
+  -- TableKey_ok: C TC_0 |- tableKey_h : TC_1 tableKeyIR_h
+  -- TableKeys_ok: C TC_1 |- tableKey_t* : TC_2 tableKeyIR_t*
+
+;;
+;; Table action property typing
+;;
 ;; syntax tableAction
 ;;
 
@@ -75,6 +157,8 @@ rule TableAction_ok/prefixedNonTypeName-argumentList:
   -- if tableActionIR = annotationList (prefixedNameIR `( argumentIR_cast* )) `;
 
 ;;
+;; Table action property list typing
+;;
 ;; syntax tableActionList
 ;;
 
@@ -87,6 +171,8 @@ rule TableActions_ok/cons:
   -- TableAction_ok: C TC_0 |- tableAction_h : TC_1 tableActionIR_h
   -- TableActions_ok: C TC_1 |- tableAction_t* : TC_2 tableActionIR_t*
 
+;;
+;; Table default action property typing
 ;;
 ;; syntax tableDefaultAction (doesn't exist in the grammar)
 ;;
@@ -138,10 +224,18 @@ rule TableDefaultAction_ok/prefixedNonTypeName-argumentList:
   -- if (argumentIR_action_data = argumentIR_cast_data)*
 
 ;;
+;; Table property typing
+;;
 ;; syntax tableProperty
 ;;
 
 ;;; KEY `= `{ tableKeyList }
+
+rule TableProperty_ok/key:
+  C TC_0 |- KEY `= `{ tableKeyList }
+          : TC_1 (KEY `= `{ tableKeyIR* })
+  -- if tableKey* = $flatten_tableKeyList(tableKeyList)
+  -- TableKeys_ok: C TC_0 |- tableKey* : TC_1 tableKeyIR*
 
 ;;; ACTIONS `= `{ tableActionList }
 
@@ -167,6 +261,76 @@ rule TableProperty_ok/custom-default-action:
   -- if tablePropertyIR
       = annotationList constOptIR DEFAULT_ACTION `= tableActionReferenceIR `;
 
+rule TableProperty_ok/custom-size:
+  C TC |- annotationList constOpt tableCustomName (`= expression) `;
+        : TC tablePropertyIR
+  ---- ;; check that the custom property is for size
+  -- if "size" = $tableCustomName(tableCustomName)
+  ---- ;; check initializer
+  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  -- if _ `# `( typeIR _ ) = typedExpressionIR
+  -- if $is_arbitrary_int_typeIR(typeIR)
+        \/ $is_fixed_int_typeIR(typeIR)
+        \/ $is_fixed_bit_typeIR(typeIR)
+  ---- ;; create IR
+  -- if constOptIR = $flatten_constOpt(constOpt)
+  -- if tablePropertyIR
+      = annotationList constOptIR "size" (`= typedExpressionIR) `;
+
+rule TableProperty_ok/custom-largest-priority-wins:
+  C TC_0 |- annotationList constOpt tableCustomName (`= expression) `;
+          : TC_1 tablePropertyIR
+  ---- ;; check that the custom property is for largest_priority_wins
+  -- if "largest_priority_wins" = $tableCustomName(tableCustomName)
+  ---- ;; check initializer
+  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  -- if _ `# `( BOOL _ ) = typedExpressionIR
+  -- Eval_static: BLOCK C |- typedExpressionIR ~> B b_largest_priority_wins
+  ---- ;; update table context
+  -- if TC_1 = TC_0[ .PRIORITIES.LARGEST_WINS = b_largest_priority_wins ]
+  ---- ;; create IR
+  -- if constOptIR = $flatten_constOpt(constOpt)
+  -- if tablePropertyIR
+      = annotationList constOptIR "largest_priority_wins" (`= typedExpressionIR) `;
+
+rule TableProperty_ok/custom-priority-delta:
+  C TC_0 |- annotationList constOpt tableCustomName (`= expression) `;
+          : TC_1 tablePropertyIR
+  ---- ;; check that the custom property is for priority_delta
+  -- if "priority_delta" = $tableCustomName(tableCustomName)
+  ---- ;; check initializer
+  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  -- if _ `# `( typeIR _ ) = typedExpressionIR
+  -- if $is_arbitrary_int_typeIR(typeIR)
+        \/ $is_fixed_int_typeIR(typeIR)
+        \/ $is_fixed_bit_typeIR(typeIR)
+  -- Eval_static: BLOCK C |- typedExpressionIR ~> value
+  -- if n_delta = $to_number(value)
+  -- if $(n_delta > 0)
+  ---- ;; update table context
+  -- if TC_1 = TC_0[ .PRIORITIES.DELTA = n_delta ]
+  ---- ;; create IR
+  -- if constOptIR = $flatten_constOpt(constOpt)
+  -- if tablePropertyIR
+      = annotationList constOptIR "priority_delta" (`= typedExpressionIR) `;
+
+rule TableProperty_ok/custom:
+  C TC |- annotationList constOpt tableCustomName (`= expression) `;
+        : TC tablePropertyIR
+  ---- ;; check that the custom property is not one of the predefined ones
+  -- if nameIR = $tableCustomName(tableCustomName)
+  -- if nameIR =/= "size"
+        /\ nameIR =/= "largest_priority_wins"
+        /\ nameIR =/= "priority_delta"
+  ---- ;; check initializer
+  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  ---- ;; create IR
+  -- if constOptIR = $flatten_constOpt(constOpt)
+  -- if tablePropertyIR
+      = annotationList constOptIR nameIR (`= typedExpressionIR) `;
+
+;;
+;; Table property list typing
 ;;
 ;; syntax tablePropertyList
 ;;
@@ -180,6 +344,8 @@ rule TableProperties_ok/cons:
   -- TableProperty_ok: C TC_0 |- tableProperty_h : TC_1 tablePropertyIR_h
   -- TableProperties_ok: C TC_1 |- tableProperty_t* : TC_2 tablePropertyIR_t*
 
+;;
+;; Table typing
 ;;
 ;; syntax table
 ;;
@@ -201,7 +367,12 @@ rule TableType_ok:
   -- if (value_enum_field = TABLE_ENUM tid_enum `. id_enum_field)*
   -- if (varTypeIR_enum_field
         = `EMPTY typeIR_table_enum LCTK value_enum_field)*
-  -- if C_1 = $add_vars(BLOCK, C_0, id_enum_field*, varTypeIR_enum_field*)
+  -- if C_1
+      = $add_vars(
+          BLOCK, C_0,
+          (tid_enum ++ "." ++ id_enum_field)*,
+          varTypeIR_enum_field*
+        )
   ---- ;; create table struct type
   -- if tid_struct = "apply_result(" ++ nameIR ++ ")"
   -- if typeIR_table_struct

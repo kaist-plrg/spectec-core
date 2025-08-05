@@ -1,4 +1,4 @@
-(* 
+(*
  * Helper functions for context management
  *
  * - id_of : extracts identifiers from CaseV values
@@ -84,7 +84,7 @@ let id_of_declaration (decl : value) : string =
   | ( "headerTypeDeclaration",
       [ []; [ "HEADER" ]; []; [ "{" ]; [ "}" ] ],
       [ _; name; _; _ ] )
-  | ( "headerUnionDeclaration",
+  | ( "headerUnionTypeDeclaration",
       [ []; [ "HEADER_UNION" ]; []; [ "{" ]; [ "}" ] ],
       [ _; name; _; _ ] )
   | "typedefDeclaration", [ []; [ "TYPEDEF" ]; []; [ ";" ] ], [ _; _; name ]
@@ -105,7 +105,7 @@ let id_of_declaration (decl : value) : string =
   | _ ->
       failwith
         (Printf.sprintf "Invalid declaration structure: %s"
-           (F.asprintf "%a" Pp.pp_default_case_v decl))
+           (F.asprintf "%a" (Pp.pp_value Hint.SMap.empty) decl))
 
 let id_of_parameter (v : value) : string =
   match flatten_case_v v with
@@ -124,7 +124,8 @@ let has_type_params (v : value) : bool =
   | "typeParameterListOpt", _, _ ->
       failwith
         (F.asprintf "@has_type_params: ill-formed typeParameterListOpt:\n%a"
-           Pp.pp_default_case_v v)
+           (Pp.pp_value Hint.SMap.empty)
+           v)
   | _ ->
       failwith
         (Printf.sprintf
@@ -166,7 +167,7 @@ let has_type_params_declaration (decl : value) : bool =
   | ( "headerTypeDeclaration",
       [ []; [ "HEADER" ]; []; [ "{" ]; [ "}" ] ],
       [ _; _; typeParameterListOpt; _ ] )
-  | ( "headerUnionDeclaration",
+  | ( "headerUnionTypeDeclaration",
       [ []; [ "HEADER_UNION" ]; []; [ "{" ]; [ "}" ] ],
       [ _; _; typeParameterListOpt; _ ] ) ->
       has_type_params typeParameterListOpt

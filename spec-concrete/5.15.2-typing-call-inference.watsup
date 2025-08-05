@@ -1,0 +1,359 @@
+;;
+;; Type constraint
+;;
+
+syntax infer =
+  | KNOWN AS typeIR
+  | UNKNOWN
+
+syntax constraint = map<tid, infer>
+
+dec $empty_constraint(tid*) : constraint
+def $empty_constraint(tid*) = `{ (tid `: UNKNOWN)* }
+
+syntax inference = map<tid, typeIR>
+
+;;
+;; Type inference operations
+;;
+
+dec $infer(tid*, parameterTypeIR*, argumentIR*) : inference
+dec $infer'(constraint, parameterTypeIR, argumentIR) : constraint
+
+dec $gen_constraint_type(constraint, typeIR, typeIR) : constraint
+dec $gen_constraint_types(constraint, typeIR*, typeIR*) : constraint
+dec $gen_constraint_routine(
+    constraint, routineTypeDefIR, routineTypeDefIR
+  )
+  : constraint
+dec $gen_constraint_routines(
+    constraint, routineTypeDefIR*, routineTypeDefIR*
+  )
+  : constraint
+
+dec $merge_constraint(constraint, constraint) : constraint
+dec $merge_constraint'(constraint, constraint, tid*, constraint) : constraint
+dec $merge_constraints(constraint, constraint*) : constraint
+
+dec $resolve_constraint(constraint) : inference
+
+;;
+;;;; Type inference
+;;
+
+def $infer(tid_infer*, parameterTypeIR*, argumentIR*)
+  = inference
+  ---- ;; create constraints
+  -- if constraint_init = $empty_constraint(tid_infer*)
+  -- if (constraint_pair
+      = $infer'(constraint_init, parameterTypeIR, argumentIR))*
+  ---- ;; merge and resolve generated constraints
+  -- if constraint_inferred = $merge_constraints(constraint_init, constraint_pair*)
+  -- if inference = $resolve_constraint(constraint_inferred)
+
+def $infer'(constraint, parameterTypeIR, typedExpressionIR)
+  = $gen_constraint_type(constraint, typeIR_param, typeIR_arg)
+  -- if _ typeIR_param _ _ = parameterTypeIR
+  -- if _ `# `( typeIR_arg _ ) = typedExpressionIR
+
+def $infer'(constraint, parameterTypeIR, nameIR `= typedExpressionIR)
+  = $gen_constraint_type(constraint, typeIR_param, typeIR_arg)
+  -- if _ typeIR_param _ _ = parameterTypeIR
+  -- if _ `# `( typeIR_arg _ ) = typedExpressionIR
+
+def $infer'(constraint, parameterTypeIR, nameIR `= `_) = constraint
+
+def $infer'(constraint, parameterTypeIR, `_) = constraint
+
+;;
+;;;; Constraint generation
+;;
+
+;;; Named types
+
+def $gen_constraint_type(constraint, TID tid_param, typeIR_arg)
+  = $update_map<tid, infer>(constraint, tid_param, KNOWN AS typeIR_arg)
+  -- if $in_set<tid>(tid_param, $dom_map<tid, infer>(constraint))
+
+def $gen_constraint_type(
+    constraint_0,
+    polyTypeDefIR_param `< typeIR_param* >,
+    polyTypeDefIR_arg `< typeIR_arg* >
+  )
+  = constraint_2
+  -- if typeIR_specialized_param
+      = $specialize_typeDef(polyTypeDefIR_param, typeIR_param*)
+  -- if typeIR_specialized_arg
+      = $specialize_typeDef(polyTypeDefIR_arg, typeIR_arg*)
+  -- if $is_nominal_typeIR(typeIR_specialized_param)
+        /\ $is_nominal_typeIR(typeIR_specialized_arg)
+  -- if constraint_1 = $gen_constraint_type(
+                          constraint_0,
+                          typeIR_specialized_param,
+                          typeIR_specialized_arg
+                        )
+  -- if constraint_2 = $gen_constraint_types(
+                          constraint_1,
+                          typeIR_param*,
+                          typeIR_arg*
+                        )
+
+def $gen_constraint_type(
+    constraint_0,
+    polyTypeDefIR_param `< typeIR_param* >,
+    polyTypeDefIR_arg `< typeIR_arg* >
+  )
+  = constraint_1
+  -- if typeIR_specialized_param
+      = $specialize_typeDef(polyTypeDefIR_param, typeIR_param*)
+  -- if typeIR_specialized_arg
+      = $specialize_typeDef(polyTypeDefIR_arg, typeIR_arg*)
+  -- if ~$is_nominal_typeIR(typeIR_specialized_param)
+        /\ ~$is_nominal_typeIR(typeIR_specialized_arg)
+  -- if constraint_1 = $gen_constraint_type(
+                          constraint_0,
+                          typeIR_specialized_param,
+                          typeIR_specialized_arg
+                        )
+
+;;; Alias types
+
+def $gen_constraint_type(constraint, TYPEDEF _ typeIR_param, typeIR_arg)
+  = $gen_constraint_type(constraint, typeIR_param, typeIR_arg)
+
+def $gen_constraint_type(constraint, typeIR_param, TYPEDEF _ typeIR_arg)
+  = $gen_constraint_type(constraint, typeIR_param, typeIR_arg)
+
+def $gen_constraint_type(constraint, TYPE tid typeIR_param, TYPE tid typeIR_arg)
+  = $gen_constraint_type(constraint, typeIR_param, typeIR_arg)
+
+;;; Data types
+
+def $gen_constraint_type(
+    constraint,
+    LIST `< typeIR_param >,
+    LIST `< typeIR_arg >
+  )
+  = $gen_constraint_type(constraint, typeIR_param, typeIR_arg)
+
+def $gen_constraint_type(
+    constraint,
+    TUPLE `< typeIR_param* >,
+    TUPLE `< typeIR_arg* >
+  )
+  = $gen_constraint_types(constraint, typeIR_param*, typeIR_arg*)
+
+def $gen_constraint_type(
+    constraint,
+    typeIR_param `[ n_size ],
+    typeIR_arg `[ n_size ]
+  )
+  = $gen_constraint_type(constraint, typeIR_param, typeIR_arg)
+
+def $gen_constraint_type(
+    constraint,
+    STRUCT tid `{ (typeIR_param id_field `;)* },
+    STRUCT tid `{ (typeIR_arg id_field `;)* }
+  )
+  = $gen_constraint_types(constraint, typeIR_param*, typeIR_arg*)
+
+def $gen_constraint_type(
+    constraint,
+    HEADER tid `{ (typeIR_param id_field `;)* },
+    HEADER tid `{ (typeIR_arg id_field `;)* }
+  )
+  = $gen_constraint_types(constraint, typeIR_param*, typeIR_arg*)
+
+def $gen_constraint_type(
+    constraint,
+    HEADER_UNION tid `{ (typeIR_param id_field `;)* },
+    HEADER_UNION tid `{ (typeIR_arg id_field `;)* }
+  )
+  = $gen_constraint_types(constraint, typeIR_param*, typeIR_arg*)
+
+;;; Object types
+
+def $gen_constraint_type(
+    constraint,
+    EXTERN tid `{ (rid `: routineTypeDefIR_param)* },
+    EXTERN tid `{ (rid `: routineTypeDefIR_arg)* }
+  )
+  = $gen_constraint_routines(
+      constraint,
+      routineTypeDefIR_param*,
+      routineTypeDefIR_arg*
+    )
+
+def $gen_constraint_type(
+    constraint,
+    PARSER `( parameterTypeIR_param* ),
+    PARSER `( parameterTypeIR_arg* )
+  )
+  = $gen_constraint_types(constraint, typeIR_param*, typeIR_arg*)
+  -- if (direction typeIR_param _ _ = parameterTypeIR_param)*
+  -- if (direction typeIR_arg _ _ = parameterTypeIR_arg)*
+
+def $gen_constraint_type(
+    constraint,
+    CONTROL `( parameterTypeIR_param* ),
+    CONTROL `( parameterTypeIR_arg* )
+  )
+  = $gen_constraint_types(constraint, typeIR_param*, typeIR_arg*)
+  -- if (direction typeIR_param _ _ = parameterTypeIR_param)*
+  -- if (direction typeIR_arg _ _ = parameterTypeIR_arg)*
+
+def $gen_constraint_type(
+    constraint,
+    PACKAGE `< typeIR_param* >,
+    PACKAGE `< typeIR_arg* >
+  )
+  = $gen_constraint_types(constraint, typeIR_param*, typeIR_arg*)
+
+;;; Synthesized types
+
+def $gen_constraint_type(constraint, typeIR_param, typeIR_arg)
+  = constraint
+  -- otherwise
+
+;;; Multiple types
+
+def $gen_constraint_types(constraint, typeIR_param*, typeIR_arg*)
+  = $merge_constraints(constraint, constraint_pair*)
+  -- if (constraint_pair
+      = $gen_constraint_type(constraint, typeIR_param, typeIR_arg))*
+
+;;; Routines
+
+def $gen_constraint_routine(
+    constraint_0,
+    (EXTERN_METHOD `( parameterTypeIR_param* ) `-> typeIR_ret_param) `< _ `, _ >,
+    (EXTERN_METHOD `( parameterTypeIR_arg* ) `-> typeIR_ret_arg) `< _ `, _ >
+  )
+  = constraint_2
+  -- if (direction typeIR_param _ _ = parameterTypeIR_param)*
+  -- if (direction typeIR_arg _ _ = parameterTypeIR_arg)*
+  -- if constraint_1
+      = $gen_constraint_types(constraint_0, typeIR_param*, typeIR_arg*)
+  -- if constraint_2
+      = $gen_constraint_type(constraint_1, typeIR_ret_param, typeIR_ret_arg)
+
+def $gen_constraint_routine(
+    constraint_0,
+    (EXTERN_METHOD ABSTRACT `( parameterTypeIR_param* ) `-> typeIR_ret_param) `< _ `, _ >,
+    (EXTERN_METHOD ABSTRACT `( parameterTypeIR_arg* ) `-> typeIR_ret_arg) `< _ `, _ >
+  )
+  = constraint_2
+  -- if (direction typeIR_param _ _ = parameterTypeIR_param)*
+  -- if (direction typeIR_arg _ _ = parameterTypeIR_arg)*
+  -- if constraint_1
+      = $gen_constraint_types(constraint_0, typeIR_param*, typeIR_arg*)
+  -- if constraint_2
+      = $gen_constraint_type(constraint_1, typeIR_ret_param, typeIR_ret_arg)
+
+;;; Multiple routines
+
+def $gen_constraint_routines(
+    constraint,
+    routineTypeDefIR_param*,
+    routineTypeDefIR_arg*
+  )
+  = $merge_constraints(constraint, constraint_pair*)
+  -- if (constraint_pair
+      = $gen_constraint_routine(
+          constraint,
+          routineTypeDefIR_param,
+          routineTypeDefIR_arg
+        ))*
+
+;;
+;;;; Constraint merging
+;;
+
+def $merge_constraint(constraint_pre, constraint_post)
+  = $merge_constraint'(constraint_pre, constraint_post, tid_pre*, `{ eps })
+  -- if `{ tid_pre* } = $dom_map<tid, infer>(constraint_pre)
+  -- if `{ tid_post* } = $dom_map<tid, infer>(constraint_post)
+  -- if $eq_set<tid>(`{ tid_pre* }, `{ tid_post* })
+
+def $merge_constraint'(
+    constraint_pre, constraint_post, eps, constraint
+  )
+  = constraint
+
+def $merge_constraint'(
+    constraint_pre, constraint_post,
+    tid_h :: tid_t*,
+    constraint
+  )
+  = $merge_constraint'(constraint_pre, constraint_post, tid_t*, constraint_updated)
+  -- if UNKNOWN = $find_map<tid, infer>(constraint_pre, tid_h)
+  -- if UNKNOWN = $find_map<tid, infer>(constraint_post, tid_h)
+  -- if constraint_updated
+      = $update_map<tid, infer>(constraint, tid_h, UNKNOWN)
+
+def $merge_constraint'(
+    constraint_pre, constraint_post,
+    tid_h :: tid_t*,
+    constraint
+  )
+  = $merge_constraint'(constraint_pre, constraint_post, tid_t*, constraint_updated)
+  -- if UNKNOWN = $find_map<tid, infer>(constraint_pre, tid_h)
+  -- if KNOWN AS typeIR_post = $find_map<tid, infer>(constraint_post, tid_h)
+  -- if constraint_updated
+      = $update_map<tid, infer>(constraint, tid_h, KNOWN AS typeIR_post)
+
+def $merge_constraint'(
+    constraint_pre, constraint_post,
+    tid_h :: tid_t*,
+    constraint
+  )
+  = $merge_constraint'(constraint_pre, constraint_post, tid_t*, constraint_updated)
+  -- if KNOWN AS typeIR_pre = $find_map<tid, infer>(constraint_pre, tid_h)
+  -- if UNKNOWN = $find_map<tid, infer>(constraint_post, tid_h)
+  -- if constraint_updated
+      = $update_map<tid, infer>(constraint, tid_h, KNOWN AS typeIR_pre)
+
+def $merge_constraint'(
+    constraint_pre, constraint_post,
+    tid_h :: tid_t*,
+    constraint
+  )
+  = $merge_constraint'(constraint_pre, constraint_post, tid_t*, constraint_updated)
+  -- if KNOWN AS typeIR_pre = $find_map<tid, infer>(constraint_pre, tid_h)
+  -- if KNOWN AS typeIR_post = $find_map<tid, infer>(constraint_post, tid_h)
+  -- Sub_impl: typeIR_pre <: typeIR_post
+  -- if constraint_updated
+      = $update_map<tid, infer>(constraint, tid_h, KNOWN AS typeIR_post)
+
+def $merge_constraint'(
+    constraint_pre, constraint_post,
+    tid_h :: tid_t*,
+    constraint
+  )
+  = $merge_constraint'(constraint_pre, constraint_post, tid_t*, constraint_updated)
+  -- if KNOWN AS typeIR_pre = $find_map<tid, infer>(constraint_pre, tid_h)
+  -- if KNOWN AS typeIR_post = $find_map<tid, infer>(constraint_post, tid_h)
+  -- Sub_impl:/ typeIR_pre <: typeIR_post
+  -- Sub_impl: typeIR_post <: typeIR_pre
+  -- if constraint_updated
+      = $update_map<tid, infer>(constraint, tid_h, KNOWN AS typeIR_pre)
+
+def $merge_constraints(constraint_pre, eps) = constraint_pre
+
+def $merge_constraints(
+    constraint_pre_0,
+    constraint_post_h :: constraint_post_t*
+  )
+  = constraint_pre_2
+  -- if constraint_pre_1
+      = $merge_constraint(constraint_pre_0, constraint_post_h)
+  -- if constraint_pre_2
+      = $merge_constraints(constraint_pre_1, constraint_post_t*)
+
+;;
+;;;; Constraint resolution
+;;
+
+def $resolve_constraint(`{ (tid `: infer)* })
+  = `{ (tid `: typeIR)* }
+  -- if (KNOWN AS typeIR = infer)*

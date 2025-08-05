@@ -46,34 +46,25 @@ relation ConstructorTypeDef_wf:
 ;;;; Well-formedness of parameter types
 ;;
 
-dec $is_externtype(typeIR) : bool
-dec $is_externtype'(typeIR) : bool
-
-def $is_externtype(typeIR)
-  = $is_externtype'($canon(typeIR))
-def $is_externtype'(EXTERN _ _) = true
-def $is_externtype'(_) = false
-  -- otherwise
-
 rule ParameterType_wf/default-empty-extern:
   bound |- `EMPTY typeIR _ eps
   -- Type_wf: bound |- typeIR
-  -- if $is_externtype(typeIR)
+  -- if $is_extern_object_typeIR(typeIR)
 
 rule ParameterType_wf/default-none-not-extern:
   bound |- direction typeIR _ eps
   -- Type_wf: bound |- typeIR
-  -- if ~$is_externtype(typeIR)
+  -- if ~$is_extern_object_typeIR(typeIR)
 
 rule ParameterType_wf/default-some-extern:
   bound |- `EMPTY typeIR _ value
   -- Type_wf: bound |- typeIR
-  -- if $is_externtype(typeIR)
+  -- if $is_extern_object_typeIR(typeIR)
 
 rule ParameterType_wf/default-some-not-extern:
   bound |- direction typeIR _ value
   -- Type_wf: bound |- typeIR
-  -- if ~$is_externtype(typeIR)
+  -- if ~$is_extern_object_typeIR(typeIR)
   -- if direction = IN \/ direction = `EMPTY
 
 rule ParameterTypes_wf:
@@ -120,7 +111,7 @@ def $nestable'_typedef(_) = false
 rule Type_wf/typedeftype:
   bound |- TYPEDEF _ typeIR
   -- if $nestable_typedef(typeIR)
-  -- TypeDef_wf: bound |- typeIR
+  -- Type_wf: bound |- typeIR
 
 dec $nestable_new(typeIR) : bool
 dec $nestable'_new(typeIR) : bool
@@ -137,7 +128,7 @@ def $nestable'_new(_) = false
 rule Type_wf/newtype:
   bound |- TYPE _ typeIR
   -- if $nestable_new(typeIR)
-  -- TypeDef_wf: bound |- typeIR 
+  -- Type_wf: bound |- typeIR 
 
 ;;; Data types
 
@@ -428,9 +419,6 @@ rule Type_wf/tableenumtype:
 rule Type_wf/tablestructtype:
   bound |- TABLE_STRUCT _ `{ _ }
 
-rule Type_wf/dontcaretype:
-  bound |- `_
-
 ;;
 ;;;; Well-formedness of type definitions
 ;;
@@ -631,7 +619,7 @@ rule RoutineType_wf/parserapplymethod:
   bound |- PARSER_APPLY `( parameterTypeIR* )
   -- ParameterTypes_wf: bound |- parameterTypeIR*
   -- if (direction typeIR _ _ = parameterTypeIR)* 
-  -- if $nestable_externabstractmethod(direction, typeIR)*
+  -- if $nestable_parserapplymethod(direction, typeIR)*
 
 dec $nestable_controlapplymethod(direction, typeIR) : bool
 dec $nestable_controlapplymethod'(direction, typeIR) : bool
@@ -652,7 +640,7 @@ rule RoutineType_wf/controlapplymethod:
   bound |- CONTROL_APPLY `( parameterTypeIR* )
   -- ParameterTypes_wf: bound |- parameterTypeIR*
   -- if (direction typeIR _ _ = parameterTypeIR)* 
-  -- if $nestable_externabstractmethod(direction, typeIR)*
+  -- if $nestable_controlapplymethod(direction, typeIR)*
 
 rule RoutineType_wf/tableapplymethod:
   bound |- TABLE_APPLY `-> (TABLE_STRUCT _ `{ _ })

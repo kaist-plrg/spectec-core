@@ -22,8 +22,8 @@ syntax primitiveValue =
 
 syntax numberValue =
   | D int
-  | nat W int
   | nat S int
+  | nat W int
   | nat V int `# nat
 
 syntax baseValue = | primitiveValue | numberValue
@@ -91,7 +91,18 @@ syntax synthesizedValue =
   | tableValue
 
 ;;
+;;;; Reference values
+;;
+
+syntax objectReferenceValue = `! oid
+
+;;
 ;;;; Values
 ;;
 
-syntax value = | baseValue | dataValue | synthesizedValue
+syntax value =
+  | baseValue
+  | dataValue
+  | synthesizedValue
+  | objectReferenceValue
+

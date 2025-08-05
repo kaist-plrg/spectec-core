@@ -56,7 +56,7 @@
 %token<Source.info> ABSTRACT ACTION ACTIONS APPLY BOOL BIT BREAK CONST CONTINUE CONTROL DEFAULT
 %token<Source.info> ELSE ENTRIES ENUM ERROR EXIT EXTERN HEADER HEADER_UNION IF IN INOUT FOR
 %token<Source.info> INT KEY LIST SELECT MATCH_KIND OUT PACKAGE PARSER PRIORITY RETURN STATE STRING STRUCT
-%token<Source.info> SWITCH TABLE THIS TRANSITION TUPLE TYPEDEF TYPE VALUESET VARBIT VOID
+%token<Source.info> SWITCH TABLE THIS TRANSITION TUPLE TYPEDEF TYPE VALUE_SET VARBIT VOID
 %token<Source.info> PRAGMA PRAGMA_END
 %token<Source.info> PLUS_ASSIGN PLUS_SAT_ASSIGN MINUS_ASSIGN MINUS_SAT_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN  SHL_ASSIGN SHR_ASSIGN BIT_AND_ASSIGN BIT_XOR_ASSIGN BIT_OR_ASSIGN
 %token<Il.Ast.value> UNEXPECTED_TOKEN
@@ -78,7 +78,8 @@
 %right PREFIX
 %nonassoc L_PAREN L_BRACKET L_ANGLE_ARGS
 %left DOT
-%start  p4program
+
+%start p4program
 
 (**************************** TYPES ******************************)
 %type <Il.Ast.value>
@@ -129,7 +130,7 @@
   (* >> Error declarations *) errorDeclaration
   (* >> Match kind declarations *) matchKindDeclaration
   (* >> Derived type declarations *)
-  enumTypeDeclaration typeField typeFieldList structTypeDeclaration headerTypeDeclaration headerUnionDeclaration derivedTypeDeclaration
+  enumTypeDeclaration typeField typeFieldList structTypeDeclaration headerTypeDeclaration headerUnionTypeDeclaration derivedTypeDeclaration
   (* >> Typedef and newtype declarations *) typedefType typedefDeclaration
   (* >> Extern declarations *)
   externFunctionDeclaration methodPrototype methodPrototypeList externObjectDeclaration externDeclaration
@@ -186,7 +187,7 @@ go_local:
   | (* empty *)
     { go_local () }
 ;
-%inline toplevel(X):
+toplevel(X):
   | go_toplevel x = X go_local
     { x }
 ;
@@ -203,13 +204,13 @@ int:
     { fst int }
 ;
 
-%inline r_angle:
+r_angle:
 	| info_r = R_ANGLE
     { info_r }
 	| info_r = R_ANGLE_SHIFT
     { info_r }
 ;
-%inline l_angle:
+l_angle:
 	| info_r = L_ANGLE
     { info_r }
 	| info_r = L_ANGLE_ARGS
@@ -441,7 +442,7 @@ namedExpression:
 	| n = name ASSIGN e = expression { [ NT n; Term "="; NT e ] #@ "namedExpression" }
 ;
 
-namedExpressionList: (* TODO: inline? *)
+namedExpressionList:
 	| e = namedExpression { e }
 	| es = namedExpressionList COMMA e = namedExpression { [ NT es; Term ","; NT e ] #@ "namedExpressionList" }
 ;
@@ -467,7 +468,7 @@ defaultExpression:
 ;
 
 (* >> Unary, binary, and ternary expressions *)
-%inline unop: 
+unop: 
 	| NOT { [ Term "!" ] #@ "unop" }
 	| COMPLEMENT { [ Term "~" ] #@ "unop" }
 	| MINUS { [ Term "-" ] #@ "unop" }
@@ -543,7 +544,7 @@ errorAccessExpression:
 ;
 
 memberAccessExpression:
-	| e = memberAccessBase DOT m = member
+	| e = memberAccessBase DOT m = member %prec DOT
 		{ [ NT e; Term "."; NT m ] #@ "memberAccessExpression" }
 ;
 
@@ -562,7 +563,7 @@ accessExpression:
 ;
 
 memberAccessExpressionNonBrace:
-	| e = memberAccessBaseNonBrace DOT m = member
+	| e = memberAccessBaseNonBrace DOT m = member %prec DOT
 		{ [ NT e; Term "."; NT m ] #@ "memberAccessExpressionNonBrace" }
 ;
 
@@ -615,7 +616,7 @@ methodTargetNonBrace:
 	| e = memberAccessExpressionNonBrace { e }
 ;
 
-%inline routineTargetNonBrace:
+routineTargetNonBrace:
   | e = expressionNonBrace { e }
 ;
 
@@ -662,7 +663,7 @@ expressionList:
 		{ [ NT el; Term ","; NT e ] #@ "expressionList" }
 ;
 
-memberAccessBase: (*TODO: inline?*)
+%inline memberAccessBase:
 	| e = prefixedTypeName
 	| e = expression
 		{ e }
@@ -700,7 +701,7 @@ expressionNonBrace:
 		{ e }
 ;
 
-memberAccessBaseNonBrace: (*TODO: inline?*)
+%inline memberAccessBaseNonBrace:
 	| e = prefixedTypeName
 	| e = expressionNonBrace
 		{ e }
@@ -725,7 +726,7 @@ simpleKeysetExpressionList:
     { [ NT el; Term ","; NT e ] #@ "simpleKeysetExpressionList" }
 ;
 
-tupleKeysetExpression: (* TODO: revisit *)
+tupleKeysetExpression:
 	| L_PAREN b = expression MASK m = expression R_PAREN
 		{ [ Term "("; NT b; Term "&&&"; NT m; Term ")" ] #@ "tupleKeysetExpression" }
 	| L_PAREN l = expression RANGE h = expression R_PAREN
@@ -801,7 +802,7 @@ argumentList:
 (* L-values *)
 lvalue:
 	| e = referenceExpression { e }
-	| lv = lvalue DOT m = member
+	| lv = lvalue DOT m = member %prec DOT
 		{ [ NT lv; Term "."; NT m ] #@ "lvalue" }
 	| lv = lvalue L_BRACKET i = expression R_BRACKET
 		{ [ NT lv; Term "["; NT i; Term "]" ] #@ "lvalue" }
@@ -818,7 +819,7 @@ emptyStatement:
 ;
 
 (* >> Assignment statements *)
-%inline assignop:
+assignop:
 	| ASSIGN { [ Term "=" ] #@ "assignop" }
 	| PLUS_ASSIGN { [ Term "+=" ] #@ "assignop" }
 	| PLUS_SAT_ASSIGN { [ Term "|+|=" ] #@ "assignop" }
@@ -1022,7 +1023,7 @@ initializerOpt:
 	| i = initialValue { i }
 ;
 
-variableDeclaration: (* TODO: inline? *)
+variableDeclaration:
   | al = annotationList t = typeRef n = name i = initializerOpt SEMICOLON
     { declare_var_of_il n false;
       [ NT al; NT t; NT n; NT i; Term ";" ] #@ "variableDeclaration" }
@@ -1143,23 +1144,23 @@ headerTypeDeclaration:
       #@ "headerTypeDeclaration" }
 ;
 
-headerUnionDeclaration:
+headerUnionTypeDeclaration:
   | al = annotationList HEADER_UNION n = name tpl = typeParameterListOpt
       L_BRACE fl = typeFieldList R_BRACE
     { [ NT al; Term "HEADER_UNION"; NT n; NT tpl; Term "{"; NT fl; Term "}" ]
-      #@ "headerUnionDeclaration" }
+      #@ "headerUnionTypeDeclaration" }
 ;
 
 derivedTypeDeclaration:
   | d = enumTypeDeclaration
   | d = structTypeDeclaration
   | d = headerTypeDeclaration
-  | d = headerUnionDeclaration
+  | d = headerUnionTypeDeclaration
     { d }
 ;
 
 (* >> Typedef and newtype declarations *)
-typedefType: (*TODO: inline? *)
+typedefType:
 	| t = typeRef
 	| t = derivedTypeDeclaration
 		{ t }
@@ -1249,7 +1250,7 @@ transitionStatement:
 ;
 
 (* >>>> Value set declarations *)
-valueSetType: (* TODO: inline? *)
+valueSetType:
 	| t = baseType
 	| t = tupleType
 	| t = prefixedTypeName
@@ -1257,9 +1258,9 @@ valueSetType: (* TODO: inline? *)
 ;
 
 valueSetDeclaration:
-	| al = annotationList VALUESET l_angle t = valueSetType r_angle
+	| al = annotationList VALUE_SET l_angle t = valueSetType r_angle
     L_PAREN s = expression R_PAREN n = name SEMICOLON
-    { [ NT al; Term "VALUESET"; Term "<"; NT t; Term ">"; Term "("; NT s; Term ")"; NT n; Term ";" ]
+    { [ NT al; Term "VALUE_SET"; Term "<"; NT t; Term ">"; Term "("; NT s; Term ")"; NT n; Term ";" ]
        #@ "valueSetDeclaration" }
 ;
 
@@ -1585,8 +1586,8 @@ annotationToken:
     { [ Term "TYPEDEF" ] #@ "annotationToken" }
 	| VARBIT
     { [ Term "VARBIT" ] #@ "annotationToken" }
-	| VALUESET
-    { [ Term "VALUESET" ] #@ "annotationToken" }
+	| VALUE_SET
+    { [ Term "VALUE_SET" ] #@ "annotationToken" }
 	| LIST
     { [ Term "LIST" ] #@ "annotationToken" }
 	| VOID
@@ -1705,7 +1706,7 @@ annotationListNonEmpty:
 		{ [ NT al; NT a ] #@ "annotationListNonEmpty" }
 ;
 
-%inline annotationList: (* TODO: inline? *)
+%inline annotationList:
 	| (* empty *) { [ Term "`EMPTY" ] #@ "annotationList" }
 	| al = annotationListNonEmpty { al }
 ;

@@ -67,6 +67,14 @@ def $empty_tblctx
 ;; Adders
 ;;
 
+;;; Adder for keys
+
+dec $add_key(tblctx, id, typeIR) : tblctx
+
+def $add_key(TC, id, typeIR)
+  = TC[ .KEYS = TC.KEYS ++ [ matchKey ] ]
+  -- if matchKey = (typeIR, id)
+
 ;;; Adder for actions
 
 dec $add_action(tblctx, prefixedNameIR, parameterTypeIR*, argumentListIR) : tblctx
@@ -74,6 +82,39 @@ dec $add_action(tblctx, prefixedNameIR, parameterTypeIR*, argumentListIR) : tblc
 def $add_action(TC, prefixedNameIR, parameterTypeIR*, argumentListIR)
   = TC[ .ACTIONS = TC.ACTIONS ++ [ matchAction ] ]
   -- if matchAction = (prefixedNameIR, parameterTypeIR*, argumentListIR)
+
+;;
+;; Updaters
+;;
+
+;;; Updater for modes
+
+dec $update_mode(tblctx, id, typeIR) : tblctx
+
+def $update_mode(TC, "lpm", INT `< n >) = TC[ .MODE = NOPRILPM n ]
+  -- if TC.MODE = NOPRI
+def $update_mode(TC, "lpm", BIT `< n >) = TC[ .MODE = NOPRILPM n ]
+  -- if TC.MODE = NOPRI
+def $update_mode(TC, "lpm", VARBIT `< n >) = TC[ .MODE = NOPRILPM n ]
+  -- if TC.MODE = NOPRI
+def $update_mode(TC, "lpm", TYPE _ typeIR)
+  = $update_mode(TC, "lpm", typeIR)
+def $update_mode(TC, "lpm", _) = TC[ .MODE = PRILPM ]
+  -- if TC.MODE = PRI
+def $update_mode(TC, "range", _) = TC[ .MODE = PRI ]
+  -- if TC.MODE = NOPRI
+def $update_mode(TC, "ternary", _) = TC[ .MODE = PRI ]
+  -- if TC.MODE = NOPRI
+def $update_mode(TC, "optional", _) = TC[ .MODE = PRI ]
+  -- if TC.MODE = NOPRI
+def $update_mode(TC, "range", _) = TC[ .MODE = PRILPM ]
+  -- if TC.MODE = NOPRILPM _
+def $update_mode(TC, "ternary", _) = TC[ .MODE = PRILPM ]
+  -- if TC.MODE = NOPRILPM _
+def $update_mode(TC, "optional", _) = TC[ .MODE = PRILPM ]
+  -- if TC.MODE = NOPRILPM _
+def $update_mode(TC, _, _) = TC
+  -- otherwise
 
 ;;
 ;; Finders

@@ -1,0 +1,125 @@
+;;
+;; Statement instantiation
+;;
+;; syntax statementIR
+;;
+
+;;; emptyStatementIR
+
+rule Stmt_inst/emptyStatementIR:
+  p Ci sto |- emptyStatementIR ==> Ci sto emptyStatementIR
+
+;;; assignmentStatementIR
+
+rule Stmt_inst/assignmentStatementIR:
+  p Ci sto |- assignmentStatementIR ==> Ci sto assignmentStatementIR
+
+;;; callStatementIR
+;;; syntax callStatementIR =
+;;;   routineLvalueIR `< typeArgumentListIR > `( argumentListIR ) `;
+
+;;; directApplicationStatementIR
+;;; syntax directApplicationStatementIR =
+;;;   typeIR `. APPLY `( argumentListIR ) `;
+
+rule Stmt_inst/directApplicationStatementIR:
+  p Ci sto_0 |- typeIR `. APPLY `( argumentListIR ) `;
+    ==> Ci sto_2 blockStatementIR 
+  -- if $get_constructor_id(typeIR) = tid
+  -- if $find_cons_inst(p, Ci, tid, eps) = (consDyn, _)
+  -- Constructor_inst: p Ci sto_0 |- consDyn `< eps > `( eps `# eps ) ==> sto_1 objDyn
+  -- if $fresh_tid() = tid_fresh
+  -- if $concat_text([ tid, "_", tid_fresh]) = nameIR
+  -- if oid = Ci.PATH ++ nameIR
+  -- if $add_sto(sto_1, oid, objDyn) = sto_2
+  -- if constantDeclarationIR = `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
+  -- if routineTargetIR = ((`` tid) `# `( typeIR )) `. "apply"
+  -- if callStatementIR = routineTargetIR `< eps > `( argumentListIR ) `;
+  -- if blockStatementIR = `EMPTY `{ [ constantDeclarationIR, callStatementIR ] }
+
+;;; returnStatementIR
+
+rule Stmt_inst/returnStatementIR:
+  p Ci sto |- returnStatementIR ==> Ci sto returnStatementIR
+
+;;; exitStatementIR
+
+rule Stmt_inst/exitStatementIR:
+  p Ci sto |- exitStatementIR ==> Ci sto exitStatementIR
+
+;;; blockStatementIR
+;;; syntax blockStatementIR = annotationList `{ blockElementStatementListIR }
+
+rule Stmt_inst/blockStatementIR:
+  p Ci sto |- annotationList `{ blockElementStatementListIR }
+    ==> Ci' sto' (annotationList `{ blockElementStatementListIR' })
+  -- BlockElementStmts_inst: p Ci sto |- blockElementStatementListIR ==> Ci' sto' blockElementStatementListIR'
+
+;;; conditionalStatementIR
+;;; syntax conditionalStatementIR =
+
+;;;; IF `( typedExpressionIR ) statementIR
+
+rule Stmt_inst/conditionalStatementIR-non-else:
+  p Ci sto |- IF `( typedExpressionIR ) statementIR
+       ==> Ci sto' (IF `( typedExpressionIR ) statementIR')
+  -- Stmt_inst: p Ci sto |- statementIR ==> _ sto' statementIR'
+
+;;;; IF `( typedExpressionIR ) statementIR ELSE statementIR
+
+rule Stmt_inst/conditionalStatementIR-else:
+  p Ci sto |- IF `( typedExpressionIR ) statementIR_then ELSE statementIR_else
+       ==> Ci sto'' (IF `( typedExpressionIR ) statementIR_then' ELSE statementIR_else')
+  -- Stmt_inst: p Ci sto |- statementIR_then ==> _ sto' statementIR_then'
+  -- Stmt_inst: p Ci sto' |- statementIR_else ==> _ sto'' statementIR_else'
+
+;;; forStatementIR : TODO
+
+;;; breakStatementIR
+
+rule Stmt_inst/breakStatementIR:
+  p Ci sto |- breakStatementIR ==> Ci sto breakStatementIR
+
+;;; continueStatementIR
+
+rule Stmt_inst/continueStatementIR:
+  p Ci sto |- continueStatementIR ==> Ci sto continueStatementIR
+
+;;; switchStatementIR
+;;; syntax switchStatementIR = SWITCH `( typedExpressionIR ) `{ switchCaseListIR }
+
+rule Stmt_inst/switchStatementIR:
+  p Ci sto |- SWITCH `( typedExpressionIR ) `{ switchCaseListIR } 
+  ==> Ci' sto' (SWITCH `( typedExpressionIR ) `{ switchCaseListIR' })
+  -- SwitchCases_inst: p Ci sto |- switchCaseListIR ==> Ci' sto' switchCaseListIR'
+
+rule SwitchCase_inst/match:
+  p Ci sto |- switchLabelIR `: blockStatementIR ==> Ci' sto' (switchLabelIR `: blockStatementIR')
+  -- Stmt_inst: p Ci sto |- blockStatementIR ==> Ci' sto' blockStatementIR' ;; TODO:start false
+
+rule SwitchCase_inst/fallthrough:
+  p Ci sto |- switchLabelIR `: ==> Ci sto (switchLabelIR `:)
+
+;;
+;; syntax blockElementStatementIR
+;;
+
+;;; constantDeclarationIR
+
+rule BlockElementStmt_inst/constantDeclarationIR:
+  p Ci sto |- constantDeclarationIR ==> Ci' sto' constantDeclarationIR'
+  -- Decl_inst: p Ci sto |- constantDeclarationIR ==> Ci' sto' constantDeclarationIR'
+
+;;; variableDeclarationIR
+
+rule BlockElementStmt_inst/variableDeclarationIR-global:
+  GLOBAL Ci sto |- variableDeclarationIR ==> Ci sto eps
+
+rule BlockElementStmt_inst/variableDeclarationIR-non-global:
+  p Ci sto |- variableDeclarationIR ==> Ci sto variableDeclarationIR
+
+;;; statementIR
+
+rule BlockElementStmt_inst/statementIR:
+  p Ci sto |- statementIR ==> Ci' sto' statementIR'
+  -- Stmt_inst: p Ci sto |- statementIR ==> Ci' sto' statementIR'

@@ -1,0 +1,69 @@
+rule Instantiate/program:
+  |- declarationIR* `; ==> Ci'.GLOBAL.CENV Ci'.GLOBAL.TDENV Ci'.GLOBAL.RENV Ci'.GLOBAL.VENV sto'
+  -- if $refresh_ctx_inst_empty() = Ci
+  -- if $empty_sto() = sto
+  -- Decls_inst: GLOBAL Ci sto |- declarationIR* ==> Ci' sto' declarationIR'*
+  -- if declarationIR'* = eps ;;check all declarations were instantiated
+
+dec $add_params_inst(cursor, typeParameterIR*, typeArgumentIR*, contextInst) : contextInst
+dec $align_cparams_with_args(constructorParameterIR*, argumentIR*, id*) : (constructorParameterIR*, argumentIR*, constructorParameterIR*)
+dec $add_eval_args_to_ctx(contextInst, sto, constructorParameterIR*, argumentIR*) : (contextInst, sto)
+dec $add_default_values_to_ctx(contextInst, constructorParameterIR*, id*) : contextInst
+
+dec $add_params_and_args_to_ctx(cursor, contextInst, typeParameterIR*, constructorParameterIR*, typeArgumentIR*, argumentIR*, id*, sto) : (contextInst, sto)
+def $add_params_and_args_to_ctx(GLOBAL, Ci, typeParameterIR*, constructorParameterIR*, typeArgumentIR*, argumentIR*, id_default*, sto) = (Ci_callee''', sto')
+  -- if $empty_ctx_inst() = Ci_callee
+  -- if $add_params_inst(GLOBAL, typeParameterIR*, typeArgumentIR*, Ci_callee) = Ci_callee'
+  -- if $align_cparams_with_args(constructorParameterIR*, argumentIR*, id_default*) = (constructorParameterIR'*, argumentIR'*, constructorParameterIR_default*)
+  -- if $add_eval_args_to_ctx(Ci_callee', sto, constructorParameterIR'*, argumentIR'*) = (Ci_callee'', sto')
+  -- if $add_default_values_to_ctx(Ci_callee'', constructorParameterIR_default*, id_default*) = Ci_callee'''
+
+def $add_params_and_args_to_ctx(BLOCK, Ci, typeParameterIR*, constructorParameterIR*, typeArgumentIR*, argumentIR*, id_default*, sto) = (Ci_callee''', sto')
+  -- if $copy_ctx_inst(GLOBAL, Ci) = Ci_callee
+  -- if $add_params_inst(BLOCK, typeParameterIR*, typeArgumentIR*, Ci_callee) = Ci_callee'
+  -- if $align_cparams_with_args(constructorParameterIR*, argumentIR*, id_default*) = (constructorParameterIR'*, argumentIR'*, constructorParameterIR_default*)
+  -- if $add_eval_args_to_ctx(Ci_callee', sto, constructorParameterIR'*, argumentIR'*) = (Ci_callee'', sto')
+  -- if $add_default_values_to_ctx(Ci_callee'', constructorParameterIR_default*, id_default*) = Ci_callee'''
+
+def $add_params_and_args_to_ctx(LOCAL, Ci, typeParameterIR*, constructorParameterIR*, typeArgumentIR*, argumentIR*, id_default*, sto) = (Ci_callee''', sto')
+  -- if $copy_ctx_inst(BLOCK, Ci) = Ci_callee
+  -- if $add_params_inst(LOCAL, typeParameterIR*, typeArgumentIR*, Ci_callee) = Ci_callee'
+  -- if $align_cparams_with_args(constructorParameterIR*, argumentIR*, id_default*) = (constructorParameterIR'*, argumentIR'*, constructorParameterIR_default*)
+  -- if $add_eval_args_to_ctx(Ci_callee', sto, constructorParameterIR'*, argumentIR'*) = (Ci_callee'', sto')
+  -- if $add_default_values_to_ctx(Ci_callee'', constructorParameterIR_default*, id_default*) = Ci_callee'''
+
+rule Constructor_inst/extern:
+  p Ci sto |- (EXTERN nameIR `< typeParameterIR* > `( constructorParameterIR* ) `{ methodPrototypeIR* }) `< typeArgumentIR* > `( argumentIR* `# id_default* )
+    ==> sto' (EXTERN `{ nameIR Ci'.BLOCK.THETA Ci'.BLOCK.VENV Ci'.BLOCK.RENV })
+    -- if $add_params_and_args_to_ctx(BLOCK, Ci, typeParameterIR*, constructorParameterIR*, typeArgumentIR*, argumentIR*, id_default*, sto) = (Ci_callee, sto')
+    -- Methods_inst: BLOCK Ci_callee |- methodPrototypeIR* ==> Ci'
+
+rule Constructor_inst/parser:
+  p Ci sto |- (PARSER `< typeParameterIR* > `( parameterIR* )`( constructorParameterIR* ) `{ parserLocalDeclarationIR* parserStateIR* }) `< typeArgumentIR* > `( argumentIR* `# id_default* )
+    ==> sto''' (PARSER `{ Ci_callee.BLOCK.VENV parameterIR* parserLocalDeclarationIR'* Ci_state.BLOCK.SENV })
+    -- if $add_params_and_args_to_ctx(BLOCK, Ci, typeParameterIR*, constructorParameterIR*, typeArgumentIR*, argumentIR*, id_default*, sto) = (Ci_callee, sto')
+    -- ParserLocalDecls_inst: BLOCK Ci_callee sto' |- parserLocalDeclarationIR* ==> Ci_local sto'' parserLocalDeclarationIR'*
+    -- ParserStates_inst: BLOCK Ci_local sto'' |- parserStateIR* ==> Ci_state sto'''
+
+rule Constructor_inst/control:
+  p Ci sto |- (CONTROL `< typeParameterIR* > `( parameterIR* ) `( constructorParameterIR* ) `{ controlLocalDeclarationIR* APPLY controlBodyIR }) `< typeArgumentIR* > `( argumentIR* `# id_default* )
+    ==> sto''' (CONTROL `{ Ci_callee.BLOCK.VENV parameterIR* controlLocalDeclarationIR'* Ci_local.BLOCK.RENV controlBodyIR' })
+    -- if $add_params_and_args_to_ctx(BLOCK, Ci, typeParameterIR*, constructorParameterIR*, typeArgumentIR*, argumentIR*, id_default*, sto) = (Ci_callee, sto')
+    -- ControlLocalDecls_inst: BLOCK Ci_callee sto' |- controlLocalDeclarationIR* ==> Ci_local sto'' controlLocalDeclarationIR'*
+    -- Block_inst: LOCAL Ci_local sto'' true |- controlBodyIR ==> Ci_block sto''' controlBodyIR'
+
+rule Constructor_inst/package:
+  p Ci sto |- (PACKAGE `< typeParameterIR* > `( constructorParameterIR*)) `< typeArgumentIR* > `( argumentIR* `# id_default* )
+    ==> sto' (PACKAGE `{ Ci_callee.BLOCK.THETA Ci_callee.BLOCK.VENV })
+    -- if $add_params_and_args_to_ctx(BLOCK, Ci, typeParameterIR*, constructorParameterIR*, typeArgumentIR*, argumentIR*, id_default*, sto) = (Ci_callee, sto')
+
+dec $init_table(tablePropertyListIR) : tablePropertyListIR
+
+rule Constructor_inst/table:
+  p Ci sto |- (TABLE nameIR `{ tablePropertyListIR }) `< typeArgumentIR* > `( argumentIR* `# id_default* )
+    ==> sto' (TABLE `{ nameIR venv tablePropertyListIR'' })
+    -- if $add_params_and_args_to_ctx(LOCAL, Ci, eps, eps, typeArgumentIR*, argumentIR*, id_default*, sto) = (Ci_callee, sto') 
+    -- if $enter_frame_inst(Ci_callee) = Ci_frame
+    -- Table_inst: LOCAL Ci_frame sto' |- tablePropertyListIR ==> Ci_table sto'' tablePropertyListIR'
+    -- if $init_table(tablePropertyListIR') = tablePropertyListIR''
+    -- if $partition_<venv>(Ci_table.LOCAL.VENVS, 1) = (venv, _) ;;List.head

@@ -504,7 +504,7 @@ and subtyp (ctx : Ctx.t) (typ : typ) (value : value) : bool =
           subtyp ctx typ value
       | VariantT typcases, CaseV (mixop_v, _) ->
           List.exists
-            (fun nottyp ->
+            (fun (nottyp, _) ->
               let mixop_t, _ = nottyp.it in
               Mixop.eq mixop_t mixop_v)
             typcases

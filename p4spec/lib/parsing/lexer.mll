@@ -285,7 +285,7 @@ rule tokenize = parse
   | "type"
       { debug_token "type"; TYPE (info lexbuf) }
   | "value_set"
-      { debug_token "value_set"; VALUESET (info lexbuf) }
+      { debug_token "value_set"; VALUE_SET (info lexbuf) }
   | "varbit"
       { debug_token "varbit"; VARBIT (info lexbuf) }
   | "void"

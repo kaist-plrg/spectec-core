@@ -1,18 +1,31 @@
 open Il.Ast
+open Il.Eq
 open Xl
 open Util.Source
-open El.Ast
 open Ast_utils
-open Pp_utils
+open Hint
 module Num = Num
 module F = Format
 
-let verbose = ref false
+(**** SpecTec IL ****)
+
+(* Numbers *)
+
+let pp_num fmt (num : num) : unit =
+  match num with
+  | `Nat n -> F.fprintf fmt "%s" (Bigint.to_string n)
+  | `Int i ->
+      F.fprintf fmt "%s"
+        ((if i >= Bigint.zero then "" else "-")
+        ^ Bigint.to_string (Bigint.abs i))
+
+(* Atoms *)
 
 let pp_atom fmt (atom : atom) : unit =
   match atom.it with
   | Atom.SilentAtom _ -> F.fprintf fmt ""
-  | _ -> F.fprintf fmt "%s" (Atom.string_of_atom atom.it)
+  | _ ->
+      F.fprintf fmt "%s" (Atom.string_of_atom atom.it |> String.lowercase_ascii)
 
 let pp_atoms fmt (atoms : atom list) : unit =
   match atoms with
@@ -21,199 +34,128 @@ let pp_atoms fmt (atoms : atom list) : unit =
       let atoms =
         atoms
         |> List.map (fun atom -> F.asprintf "%a" pp_atom atom)
-        |> List.map String.lowercase_ascii
+        |> List.filter (fun str -> str <> String.empty)
       in
-      F.fprintf fmt "%s" (String.concat "" atoms)
+      F.fprintf fmt "%s" (String.concat " " atoms)
 
-let rec pp_default_case_v fmt value : unit =
+(* Values *)
+
+let rec pp_value (hmap : hmap) fmt (value : value) : unit =
+  match value.it with
+  | BoolV b -> F.fprintf fmt "%b" b
+  | NumV n -> F.fprintf fmt "%a" pp_num n
+  | TextV _ -> pp_text_v fmt value
+  | StructV _ -> failwith "@pp_value: StructV not implemented"
+  | CaseV _ -> pp_case_v hmap fmt value
+  | TupleV values ->
+      F.fprintf fmt "(%s)"
+        (String.concat ", "
+           (List.map (fun v -> F.asprintf "%a" (pp_value hmap) v) values))
+  | OptV _ -> pp_opt_v hmap fmt value
+  | ListV _ -> pp_list_v hmap fmt value
+  | _ -> failwith "@pp_value: TODO"
+
+(* TextV *)
+
+and pp_text_v fmt (value : value) : unit =
+  match value.it with
+  | TextV text -> F.fprintf fmt "%s" (String.escaped text)
+  | _ -> failwith "@pp_text_v: expected TextV value"
+
+(* CaseV *)
+
+and pp_case_v (hmap : hmap) fmt (value : value) : unit =
+  let id, _, values = flatten_case_v value in
+  let matches_hint nottyp value =
+    match value.it with
+    | CaseV (mixop, _) -> eq_mixop (fst nottyp.it) mixop
+    | _ -> false
+  in
+  let find_hint id value =
+    match SMap.find_opt id hmap with
+    | None -> None
+    | Some typs ->
+        List.find_opt (fun (nottyp, _) -> matches_hint nottyp value) typs
+        |> Option.map snd
+  in
+  match find_hint id value with
+  | Some hintexp -> pp_hint_case_v hmap hintexp fmt values
+  | None -> pp_default_case_v hmap fmt value
+
+and pp_hint_case_v (hmap : hmap) (exp : El.Ast.exp) fmt (values : value list) :
+    unit =
+  let _, str = pp_hint_case_v' hmap 0 exp values in
+  F.fprintf fmt "%s" str
+
+and pp_hint_case_v' (hmap : hmap) (cur : int) (exp : El.Ast.exp)
+    (values : value list) : int * string =
+  match exp.it with
+  | TextE text -> (cur, text)
+  | AtomE atom -> (cur, F.asprintf "%a" pp_atom atom)
+  | SeqE exps ->
+      let cur, strs =
+        List.fold_left
+          (fun (cur, l) exp ->
+            let cur, str = pp_hint_case_v' hmap cur exp values in
+            (cur, l @ [ str ]))
+          (cur, []) exps
+      in
+      (cur, String.concat " " strs)
+  | BrackE (atom_l, exp, atom_r) ->
+      let cur, exp_str = pp_hint_case_v' hmap cur exp values in
+      let strs =
+        [
+          F.asprintf "%a" pp_atom atom_l;
+          exp_str;
+          F.asprintf "%a" pp_atom atom_r;
+        ]
+      in
+      let strs = List.filter (fun s -> s <> String.empty) strs in
+      (cur, String.concat " " strs)
+  | HoleE (`Num i) -> (i, F.asprintf "%a" (pp_value hmap) (List.nth values i))
+  | HoleE `Next ->
+      (cur + 1, F.asprintf "%a" (pp_value hmap) (List.nth values cur))
+  | FuseE (exp_l, exp_r) ->
+      let cur_l, str_l = pp_hint_case_v' hmap cur exp_l values in
+      let cur_r, str_r = pp_hint_case_v' hmap cur_l exp_r values in
+      (cur_r, str_l ^ str_r)
+  | _ -> (cur, El.Print.string_of_exp exp)
+
+and pp_default_case_v (hmap : hmap) fmt (value : value) : unit =
   match value.it with
   | CaseV (mixop, values) ->
       let len = List.length mixop + List.length values in
       List.init len (fun idx ->
           if idx mod 2 = 0 then
             idx / 2 |> List.nth mixop |> F.asprintf "%a" pp_atoms
-          else idx / 2 |> List.nth values |> F.asprintf "%a" pp_value)
+          else idx / 2 |> List.nth values |> F.asprintf "%a" (pp_value hmap))
       |> List.filter (fun str -> str <> "")
-      |> String.concat " "
-      |>
-      if !verbose then F.fprintf fmt "@%s_< %s>_@" (id_of_case_v value)
-      else F.fprintf fmt "%s"
+      |> String.concat " " |> F.fprintf fmt "%s"
   | _ -> failwith "@pp_default_case_v: Expected CaseV value"
 
-and pp_num fmt (num : num) : unit =
-  match num with
-  | `Nat n -> F.fprintf fmt "%s" (Bigint.to_string n)
-  | `Int i ->
-      F.fprintf fmt "%s"
-        ((if i >= Bigint.zero then "" else "-")
-        ^ Bigint.to_string (Bigint.abs i))
+(* OptV *)
 
-and pp_value fmt (value : value) : unit =
+and pp_opt_v (hmap : hmap) fmt (value : value) : unit =
   match value.it with
-  | BoolV b -> F.fprintf fmt "%b" b
-  | NumV n -> F.fprintf fmt "%a" pp_num n
-  | TextV _ -> pp_text_v fmt value
-  | StructV _ -> failwith "not implemented"
-  | CaseV _ -> pp_default_case_v fmt value
-  | TupleV values ->
-      F.fprintf fmt "(%s)"
-        (String.concat ", "
-           (List.map (fun v -> F.asprintf "%a" pp_value v) values))
-  | OptV (Some v) -> F.fprintf fmt "%a" pp_value v
-  | OptV None -> F.fprintf fmt ""
-  | ListV [] -> F.fprintf fmt ""
-  | ListV values ->
-      F.fprintf fmt "%s"
-        (String.concat "; "
-           (List.map (fun v -> F.asprintf "%a" pp_value v) values))
-  | _ -> failwith "@pp_value: TODO"
+  | OptV (Some v) -> F.fprintf fmt "%a" (pp_value hmap) v
+  | OptV None -> ()
+  | _ -> failwith "@pp_opt_v: expected OptV value"
 
-and pp_text_v fmt (value : value) : unit =
-  match value.it with
-  | TextV text -> F.fprintf fmt "%s" text
-  | _ -> failwith "@pp_text_v: expected TextV value"
+(* ListV *)
 
-and pp_syntax_id fmt (value : value) : unit =
-  match flatten_case_v value with
-  | "identifier", [ [ "`ID" ]; [] ], [ value_text ] -> pp_text_v fmt value_text
-  | "identifier", _, _ ->
-      failwith
-        (F.asprintf "@pp_syntax_id: ill-formed identifier:\n%a"
-           pp_default_case_v value)
-  | _ ->
-      failwith
-        (Printf.sprintf "@pp_syntax_id: expected identifier, got %s"
-           (id_of_case_v value))
+and pp_list_v (hmap : hmap) fmt (value : value) : unit =
+  let values =
+    match value.it with
+    | ListV values -> values
+    | _ ->
+        failwith
+          (F.asprintf "@pp_list_v: expected ListV, got %a" (pp_value hmap) value)
+  in
+  let ss = List.map (F.asprintf "%a" (pp_value hmap)) values in
+  F.fprintf fmt "%s" (String.concat " " ss)
 
-and pp_syntax_tid fmt (value : value) : unit =
-  match flatten_case_v value with
-  | "typeIdentifier", [ [ "`TID" ]; [] ], [ value_text ] ->
-      pp_text_v fmt value_text
-  | "typeIdentifier", _, _ ->
-      failwith
-        (F.asprintf "@pp_syntax_tid: ill-formed typeIdentifier:\n%a"
-           pp_default_case_v value)
-  | _ ->
-      failwith
-        (Printf.sprintf "@pp_syntax_tid: expected typeIdentifier, got %s"
-           (id_of_case_v value))
+(* P4 program *)
 
-and pp_syntax_name fmt (value : value) : unit =
-  match flatten_case_v value with
-  | "nonTypeName", [ [ "APPLY" ] ], [] -> F.fprintf fmt "apply"
-  | "nonTypeName", [ [ "KEY" ] ], [] -> F.fprintf fmt "key"
-  | "nonTypeName", [ [ "ACTIONS" ] ], [] -> F.fprintf fmt "actions"
-  | "nonTypeName", [ [ "STATE" ] ], [] -> F.fprintf fmt "state"
-  | "nonTypeName", [ [ "ENTRIES" ] ], [] -> F.fprintf fmt "entries"
-  | "nonTypeName", [ [ "TYPE" ] ], [] -> F.fprintf fmt "type"
-  | "nonTypeName", [ [ "PRIORITY" ] ], [] -> F.fprintf fmt "priority"
-  | "name", [ [ "LIST" ] ], [] -> F.fprintf fmt "list"
-  | _ ->
-      failwith
-        (Printf.sprintf "@pp_syntax_name: expected name, got %s"
-           (id_of_case_v value))
-
-and pp_syntax_mthd fmt (value : value) : unit =
-  match flatten_case_v value with
-  | "methodPrototype", [ []; []; [ ";" ] ], [ _anno; _func ]
-  | "methodPrototype", [ []; [ "ABSTRACT" ]; [ ";" ] ], [ _anno; _func ]
-  | "methodPrototype", [ []; []; [ "(" ]; [ ")"; ";" ] ], [ _anno; _; _func ] ->
-      pp_default_case_v fmt value
-  | "methodPrototype", _, _ ->
-      failwith
-        (F.asprintf "@pp_syntax_method: ill-formed methodPrototype:\n%a"
-           pp_default_case_v value)
-  | _ ->
-      failwith
-        (Printf.sprintf "@pp_syntax_method: expected methodPrototype, got %s"
-           (id_of_case_v value))
-
-and pp_syntax_block fmt (value : value) : unit =
-  match flatten_case_v value with
-  | "blockStatement", [ []; [ "{" ]; [ "}" ] ], [ _; _ ] ->
-      F.fprintf fmt "%a" pp_default_case_v value
-  | "blockStatement", _, _ ->
-      failwith
-        (F.asprintf "@pp_syntax_block: ill-formed blockStatement:\n%a"
-           pp_default_case_v value)
-  | _ ->
-      failwith
-        (Printf.sprintf "@pp_syntax_block: expected block, got %s"
-           (id_of_case_v value))
-
-and pp_syntax_decls ~level fmt (value : value) : unit =
-  match value.it with
-  | ListV values ->
-      pp_list ~level (pp_syntax_decl ~level) ~sep:SemicolonNl fmt values
-  | _ ->
-      failwith
-        (F.asprintf "@pp_syntax_decls: expected ListV, got %a" pp_value value)
-
-and pp_syntax_decl ~level fmt (value : value) : unit =
-  match flatten_case_v value with
-  | "constantDeclaration", _, _
-  | "errorDeclaration", _, _
-  | "matchKindDeclaration", _, _
-  | ( "externDeclaration",
-      [ []; [ "EXTERN" ]; []; [ "{" ]; [ "}" ] ],
-      [ _; _; _; _ ] )
-  | "externDeclaration", _, _
-  | "instantiation", _, _
-  | "functionDeclaration", [ []; []; []; [] ], [ _; _; _ ]
-  | "actionDeclaration", _, _
-  | "parserDeclaration", _, _ ->
-      pp_default_case_v fmt value
-  | ( "controlDeclaration",
-      [ []; []; [ "{" ]; [ "APPLY" ]; [ "}" ] ],
-      [ control_type_decl; opt_constructor_params; control_local_decls; body ] )
-    ->
-      F.fprintf fmt "%a%a {\n%a\n%sapply %a\n%s}" pp_default_case_v
-        control_type_decl pp_value opt_constructor_params
-        (pp_syntax_decls ~level:(level + 1))
-        control_local_decls
-        (indent (level + 1))
-        pp_syntax_block body (indent level)
-  | ( "headerTypeDeclaration",
-      [ []; [ "HEADER" ]; []; [ "{" ]; [ "}" ] ],
-      [ _; _; _; _ ] )
-  | ( "headerUnionDeclaration",
-      [ []; [ "HEADER_UNION" ]; []; [ "{" ]; [ "}" ] ],
-      [ _; _; _; _ ] )
-  | ( "structTypeDeclaration",
-      [ []; [ "STRUCT" ]; []; [ "{" ]; [ "}" ] ],
-      [ _; _; _; _ ] )
-  | "enumDeclaration", _, _
-  | "typeDeclaration", [ []; [ ";" ] ], [ _ ]
-  | "typeDeclaration", [ []; [ ";"; "PHTM_13" ] ], [ _ ]
-  | "typeDeclaration", [ []; [ ";"; "PHTM_14" ] ], [ _ ]
-  | "typeDeclaration", [ []; [ ";"; "PHTM_15" ] ], [ _ ]
-  | "tableDeclaration", _, _ ->
-      pp_default_case_v fmt value
-  | _ ->
-      failwith
-        (Printf.sprintf "@pp_syntax_decl: expected declaration, got %s"
-           (id_of_case_v value))
-
-and pp_case_v' fmt (value : value) : unit =
-  match flatten_case_v value with
-  | "number", [ []; [ "PHTM_1" ] ], [ value_int ] ->
-      F.fprintf fmt "%a" pp_value value_int
-  | "stringLiteral", [ []; [ "PHTM_2" ] ], [ value_text ] ->
-      pp_value fmt value_text
-  | "direction", [ [ "NONE" ] ], [] -> F.fprintf fmt ""
-  | "baseType", [ [ "INT"; "<" ]; [ ">" ] ], [ value_int ] ->
-      F.fprintf fmt "%a" pp_value value_int
-  | _ -> pp_default_case_v fmt value
-
-and pp_case_v fmt (value : value) : unit =
-  match id_of_case_v value with
-  | "constantDeclaration" | "errorDeclaration" | "matchKindDeclaration"
-  | "externDeclaration" | "instantiation" | "functionDeclaration"
-  | "actionDeclaration" | "parserDeclaration" | "controlDeclaration"
-  | "headerTypeDeclaration" | "headerUnionDeclaration" | "structTypeDeclaration"
-  | "enumDeclaration" | "typeDeclaration" ->
-      pp_syntax_decl ~level:0 fmt value
-  | "nonTypeName" | "name" -> pp_syntax_name fmt value
-  | "typeIdentifier" -> pp_syntax_tid fmt value
-  | "identifier" -> pp_syntax_id fmt value
-  | _ -> pp_case_v' fmt value
+let pp_program (spec : spec) fmt (value : value) : unit =
+  let hmap = hints_of_spec spec in
+  pp_value hmap fmt value
