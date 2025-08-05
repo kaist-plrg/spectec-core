@@ -339,3 +339,25 @@ rule Decl_inst/typeDeclarationIR-packageTypeDeclarationIR:
   -- if PACKAGE `< typeParameterListIR ++ typeParameterListIR_inferred > `( parameterIR* )
     = consDyn_package
   -- if $add_cons_inst(GLOBAL, Ci_1, cid, consDyn_package) = Ci_2
+
+rule Program_inst:
+  |- declarationIR* `; ==> Ci_1.GLOBAL.CENV Ci_1.GLOBAL.TDENV Ci_1.GLOBAL.RENV Ci_1.GLOBAL.VENV sto_1
+  -- if Ci_0 = $empty_context_inst()
+  -- if sto_0 = $empty_sto()
+  -- Decls_inst: GLOBAL Ci_0 sto_0 |- declarationIR* ==> Ci_1 sto_1 eps
+
+rule Decls_inst/nil:
+  p Ci sto |- eps ==> Ci sto eps
+
+rule Decls_inst/cons-none:
+  p Ci_0 sto_0 |- declarationIR_h :: declarationIR_t*
+    ==> Ci_2 sto_2 declarationIR_t'*
+  -- Decl_inst: p Ci_0 sto_0 |- declarationIR_h ==> Ci_1 sto_1 eps
+  -- Decls_inst: p Ci_1 sto_1 |- declarationIR_t* ==> Ci_2 sto_2 declarationIR_t'*
+
+rule Decls_inst/cons-some:
+  p Ci_0 sto_0 |- declarationIR_h :: declarationIR_t*
+    ==> Ci_2 sto_2 (declarationIR_h' :: declarationIR_t'*)
+  -- Decl_inst: p Ci_0 sto_0 |- declarationIR_h ==> Ci_1 sto_1 declarationIR_h'
+  -- Decls_inst: p Ci_1 sto_1 |- declarationIR_t* ==> Ci_2 sto_2 declarationIR_t'*
+

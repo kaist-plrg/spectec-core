@@ -1,31 +1,29 @@
-
-;; type t =
-;;   | VarLV of L.var'
-;;   | ExprAccLV of t * L.member'
-;;   | ArrAccLV of t * Value.t
-;;   | BitAccLV of t * Value.t * Value.t
-syntax lvalueDyn =
-  | referenceExpressionIR
-  | lvalueDyn `. nameIR
-  | lvalueDyn `[ value ]
-  | lvalueDyn `[ value `: value ]
+;;
+;; Environments
+;;
 
 syntax stateDyn = blockStatementIR
 
 syntax venv = map<name, value>
 syntax senv = map<name, stateDyn>
 
+
+;;
+;; L-values
+;;
+
+syntax lvalueDyn =
+  | referenceExpressionIR
+  | lvalueDyn `. nameIR
+  | lvalueDyn `[ value ]
+  | lvalueDyn `[ value `: value ]
+
+;;
+;; Routines
+;;
+
 syntax renv ;; Forward declaration
-;; type t =
-;;   | BuiltinMethodF of param list * LValue.t
-;;   | ActionF of param list * block
-;;   | FuncF of tparam list * param list * block
-;;   | ExternFuncF of tparam list * param list
-;;   | ExternMethodF of tparam list * param list * block option
-;;   | ExternAbstractMethodF of tparam list * param list
-;;   | ParserApplyMethodF of param list * decl list * State.t IdMap.t
-;;   | ControlApplyMethodF of param list * decl list * t FIdMap.t * block
-;;   | TableApplyMethodF of Table.t
+
 syntax funcDyn =
   | BUILTIN_FUNCTION `< typeParameterListIR > `( parameterListIR ) `{ blockElementStatementListIR } ;; ??
   | FUNCTION `< typeParameterListIR > `( parameterListIR ) blockStatementIR
@@ -46,13 +44,10 @@ syntax routineDyn =
 
 syntax renv = map<rid, routineDyn>
 
-;; type t =
-;;   | ExternC of L.id' * tparam list * cparam list * mthd list
-;;   | ParserC of
-;;       tparam list * cparam list * param list * decl list * parser_state list
-;;   | ControlC of tparam list * cparam list * param list * decl list * block
-;;   | PackageC of tparam list * cparam list
-;;   | TableC of L.id' * table
+;;
+;; Constructors
+;;
+
 syntax consDyn =
   | EXTERN nameIR `< typeParameterListIR > `( constructorParameterListIR ) `{ methodPrototypeListIR }
   | PARSER `< typeParameterListIR > `( parameterListIR ) `( constructorParameterListIR ) `{ parserLocalDeclarationListIR parserStateListIR }
@@ -62,13 +57,10 @@ syntax consDyn =
 
 syntax cenv = map<cid, consDyn>
 
-;; type t =
-;;   | ExternO of L.id' * Type.t TIdMap.t * Value.t IdMap.t * Func.t FIdMap.t
-;;   | ParserO of Value.t IdMap.t * L.param list * L.decl list * State.t IdMap.t
-;;   | ControlO of
-;;       Value.t IdMap.t * L.param list * L.decl list * Func.t FIdMap.t * L.block
-;;   | PackageO of Type.t TIdMap.t * Value.t IdMap.t
-;;   | TableO of L.id' * Value.t IdMap.t * Table.t
+;;
+;; Objects
+;;
+
 syntax objDyn =
   | EXTERN `{ tid theta venv renv }
   | PARSER `{ venv parameterListIR parserLocalDeclarationListIR senv }
