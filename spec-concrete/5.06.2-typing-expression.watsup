@@ -569,9 +569,12 @@ rule Expr_ok/dataExpression-invalid:
 ;;;;; sequenceElementExpression
 ;;;;; syntax sequenceElementExpression = expressionList
 
-rule Expr_ok/dataExpression-sequenceElementExpression:
+rule Expr_ok/dataExpression-sequenceElementExpression-non-default:
   p C |- `{ expressionList _ }
        : (SEQ `{ typedExpressionIR_e* }) `# expressionNoteIR
+  ---- ;; if ... is not used
+  -- if expression_e* = $flatten_expressionList(expressionList)
+  -- if ~(`... <- expression_e*)
   ---- ;; check each expression
   -- if expression_e* = $flatten_expressionList(expressionList)
   -- (Expr_ok: p C |- expression_e : typedExpressionIR_e)*
@@ -580,6 +583,24 @@ rule Expr_ok/dataExpression-sequenceElementExpression:
   ---- ;; create typed expression
   -- if typeIR = SEQ `< typeIR_e* > 
   -- if ctk = $joins_ctk(ctk_e*)
+  -- if expressionNoteIR = `( typeIR ctk )
+
+rule Expr_ok/dataExpression-sequenceElementExpression-default:
+  p C |- `{ expressionList _ }
+       : (SEQ `{ typedExpressionIR_e_h* `, `... }) `# expressionNoteIR
+  ---- ;; if ... is used, it must be the last element
+  -- if expression_e* = $flatten_expressionList(expressionList)
+  -- if `... <- expression_e*
+  -- if `... :: expression_e_h_rev* = $rev_<expression>(expression_e*)
+  -- if expression_e_h* = $rev_<expression>(expression_e_h_rev*)
+  -- if ~(`... <- expression_e_h*)
+  ---- ;; check each expression
+  -- (Expr_ok: p C |- expression_e_h : typedExpressionIR_e_h)*
+  ---- ;; fetch annotations
+  -- if (_ `# `( typeIR_e_h ctk_e_h ) = typedExpressionIR_e_h)*
+  ---- ;; create typed expression
+  -- if typeIR = SEQ `< typeIR_e_h* `, `... > 
+  -- if ctk = $joins_ctk(ctk_e_h*)
   -- if expressionNoteIR = `( typeIR ctk )
 
 ;;;;; recordElementExpression
@@ -602,7 +623,7 @@ rule Expr_ok/dataExpression-recordElementExpression-single:
 
 ;;;;;; name `= expression `, `...
 
-rule Expr_ok/dataExpression-recordElementExpression-single_default:
+rule Expr_ok/dataExpression-recordElementExpression-single-default:
   p C |- `{ (name_f `= expression_f `, `...) _ }
        : (RECORD `{ (nameIR_f `= typedExpressionIR_f) `, `... })
          `# expressionNoteIR
@@ -1050,8 +1071,9 @@ rule Expr_ok/callExpression-routineTarget-typeArgumentList:
   -- (Argument_ok: p C |- argument : argumentIR)*
   ---- ;; check calling convention
   -- if tid_infer* = tid_impl* ++ tid_inserted*
-  -- Call_ok: p C |- routineTypeIR `< eps `# tid_infer* > `( argumentIR* `# id_default* )
-                   : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+  -- Call_ok:
+      p C |- routineTypeIR `< typeArgumentIR* `# tid_infer* > `( argumentIR* `# id_default* )
+           : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; call must not return void on expression level
   -- if typeIR_ret =/= VOID
   ---- ;; create IR
@@ -1088,7 +1110,7 @@ def $is_concrete_extern_object'''(EXTERN_METHOD ABSTRACT `( _ ) `-> _) = false
 def $is_concrete_extern_object'''(_) = true
   -- otherwise
 
-;;;;;;; | prefixedTypeName
+;;;;;;; prefixedTypeName
 
 rule Expr_ok/callExpression-constructorTarget-prefixedTypeName:
   p C |- prefixedTypeName `( argumentList )
@@ -1110,7 +1132,33 @@ rule Expr_ok/callExpression-constructorTarget-prefixedTypeName:
       = (typeIR_object `< typeArgumentIR_inferred* >) `( argumentIR_cast* )
   -- if expressionNoteIR = `( typeIR_object CTK )
 
-;;;;;;; | specializedType
+;;;;;;; specializedType
+
+rule Expr_ok/callExpression-constructorTarget-specializedType:
+  p C |- (prefixedTypeName `< typeArgumentList >) `( argumentList )
+       : callExpressionIR `# expressionNoteIR
+  ---- ;; check type arguments
+  -- if typeArgument* = $flatten_typeArgumentList(typeArgumentList)
+  -- TypeArguments_ok: p C |- typeArgument* : typeArgumentIR* `# tid_impl*
+  ---- ;; check constructor type
+  -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
+  -- if argument* = $flatten_argumentList(argumentList)
+  -- ConstructorType_ok:
+      p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
+           : constructorTypeIR `< `# tid_inserted* > `( `# id_default* )
+  ---- ;; check arguments
+  -- (Argument_ok: p C |- argument : argumentIR)*
+  ---- ;; check instantiation convention
+  -- if tid_infer* = tid_impl* ++ tid_inserted*
+  -- Inst_ok:
+      p C |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > `( argumentIR* `# id_default* )
+           : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+  ---- ;; constructed object may not contain an abstract method
+  -- if $is_concrete_extern_object(typeIR_object)
+  ---- ;; create IR
+  -- if callExpressionIR
+      = (typeIR_object `< typeArgumentIR_inferred* >) `( argumentIR_cast* )
+  -- if expressionNoteIR = `( typeIR_object CTK )
 
 ;;; parenthesizedExpression
 ;;; syntax parenthesizedExpression = `( expression )

@@ -18,13 +18,13 @@ let error_with_failtraces (failtraces : failtrace list) =
     | [] -> ""
     | [ failtrace ] ->
         let depth = depth failtrace in
-        let depth = max 0 depth in
+        let depth = max 0 (depth - 3) in
         string_of_failtrace ~depth ~bullet:"-" failtrace
     | failtraces ->
         List.mapi
           (fun idx failtrace ->
             let depth = depth failtrace in
-            let depth = max 0 depth in
+            let depth = max 0 (depth - 3) in
             string_of_failtrace ~depth
               ~bullet:(string_of_int (idx + 1) ^ ".")
               failtrace)

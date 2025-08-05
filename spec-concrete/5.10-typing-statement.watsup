@@ -249,7 +249,7 @@ rule SwitchCase_table_ok/switchLabel-blockStatement:
 ;;;;;; switchLabel `: 
 
 rule SwitchCase_table_ok/switchLabel:
-  C f tid_table b_last |- switchLabel `: blockStatement
+  C f tid_table b_last |- switchLabel `:
                         : f switchCaseIR `# switchLabel
   ---- ;; check switch label
   -- SwitchLabel_table_ok: C tid_table b_last |- switchLabel : switchLabelIR
