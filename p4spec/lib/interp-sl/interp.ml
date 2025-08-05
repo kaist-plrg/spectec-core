@@ -942,6 +942,7 @@ and eval_instr (ctx : Ctx.t) (instr : instr) : Ctx.t * Sign.t =
   | RuleI (id, notexp, iterexps) -> eval_rule_instr ctx id notexp iterexps
   | ResultI exps -> eval_result_instr ctx exps
   | ReturnI exp -> eval_return_instr ctx exp
+  | DebugI exp -> eval_debug_instr ctx exp
 
 and eval_instrs (ctx : Ctx.t) (sign : Sign.t) (instrs : instr list) :
     Ctx.t * Sign.t =
@@ -1345,6 +1346,15 @@ and eval_result_instr (ctx : Ctx.t) (exps : exp list) : Ctx.t * Sign.t =
 and eval_return_instr (ctx : Ctx.t) (exp : exp) : Ctx.t * Sign.t =
   let ctx, value = eval_exp ctx exp in
   (ctx, Ret value)
+
+(* Debug instruction evaluation *)
+
+and eval_debug_instr (ctx : Ctx.t) (exp : exp) : Ctx.t * Sign.t =
+  let ctx, value = eval_exp ctx exp in
+  print_endline
+  @@ F.sprintf "%s: %s" (string_of_region exp.at) (Il.Print.string_of_exp exp);
+  print_endline @@ Il.Print.string_of_value value;
+  (ctx, Cont)
 
 (* Invoke a relation *)
 

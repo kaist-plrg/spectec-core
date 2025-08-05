@@ -329,6 +329,7 @@ and string_of_prem prem =
       string_of_prem prem ^ string_of_iterexp iterexp
   | IterPr (prem, iterexp) ->
       "(" ^ string_of_prem prem ^ ")" ^ string_of_iterexp iterexp
+  | DebugPr exp -> "debug " ^ string_of_exp exp
 
 and string_of_prems prems =
   String.concat ""

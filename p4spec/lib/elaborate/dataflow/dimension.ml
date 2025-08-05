@@ -287,6 +287,10 @@ and annotate_prem (binds : VEnv.t) (bounds : VEnv.t) (prem : prem) :
               occurs itervars
           in
           (occurs, prem))
+  | DebugPr exp ->
+      let occurs, exp = annotate_exp bounds exp in
+      let prem = DebugPr exp $ at in
+      (occurs, prem)
 
 and annotate_prems (binds : VEnv.t) (bounds : VEnv.t) (prems : prem list) :
     VEnv.t * prem list =

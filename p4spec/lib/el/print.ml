@@ -229,6 +229,7 @@ and string_of_prem prem =
   | IterPr (({ it = IterPr _; _ } as prem), iter) ->
       string_of_prem prem ^ string_of_iter iter
   | IterPr (prem, iter) -> "(" ^ string_of_prem prem ^ ")" ^ string_of_iter iter
+  | DebugPr exp -> "debug " ^ string_of_exp exp
 
 and string_of_prems prems =
   String.concat "" (List.map (fun prem -> "\n -- " ^ string_of_prem prem) prems)
