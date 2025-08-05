@@ -76,7 +76,7 @@ and gen_from_typ' (depth : int) (tdenv : TDEnv.t) (texts : value' list)
               let valuefields = List.combine atoms values in
               StructV valuefields |> Option.some |> wrap_value_opt typ.it
           | VariantT typcases ->
-              let nottyps' = List.map it typcases in
+              let nottyps' = List.map fst typcases |> List.map it in
               let nottyps' =
                 List.map
                   (fun (mixop, typs) ->

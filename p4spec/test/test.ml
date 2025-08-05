@@ -35,6 +35,7 @@ exception TestCheckErr of string * region * float
 exception TestCheckNegErr of float
 exception TestUnknownErr of float
 exception TestParseErr of string * region * float
+exception TestParseRoundtripErr of float
 
 (* Timer *)
 
@@ -78,16 +79,27 @@ let collect_excludes (paths_exclude : string list) =
 
 (* Parser test *)
 
-let run_parser includes filename =
+let elab specdir =
+  specdir
+  |> collect_files ~suffix:".watsup"
+  |> List.concat_map Frontend.Parse.parse_file
+  |> Elaborate.Elab.elab_spec
+
+let run_parser includes filename spec =
   let time_start = start () in
   try
-    let _program = Parsing.Parse.parse_file includes filename in
-    time_start
+    let program = Parsing.Parse.parse_file includes filename in
+    let file' = Format.asprintf "%a\n" (Parsing.Pp.pp_program spec) program in
+    let program_roundtrip = Parsing.Parse.parse_string filename file' in
+    if not (Il.Eq.eq_value ~dbg:true program program_roundtrip) then
+      raise (TestParseRoundtripErr time_start)
+    else time_start
   with
   | ParseError (at, msg) -> raise (TestParseErr (msg, at, time_start))
+  | TestParseRoundtripErr _ as err -> raise err
   | _ -> raise (TestUnknownErr time_start)
 
-let run_parser_test stat includes excludes filename =
+let run_parser_test stat includes excludes filename spec =
   if List.exists (String.equal filename) excludes then (
     let log = Format.asprintf "Excluding file: %s" filename in
     log |> print_endline;
@@ -98,7 +110,7 @@ let run_parser_test stat includes excludes filename =
     })
   else
     try
-      let time_start = run_parser includes filename in
+      let time_start = run_parser includes filename spec in
       let duration = stop time_start in
       let log = Format.asprintf "Parser success: %s" filename in
       log |> print_endline;
@@ -111,6 +123,19 @@ let run_parser_test stat includes excludes filename =
         let log =
           Format.asprintf "Error on parser: %s\n%s" filename
             (string_of_error at msg)
+        in
+        log |> print_endline;
+        Format.eprintf "%s\n" log;
+        Format.eprintf ">>> took %.6f seconds\n" duration;
+        {
+          stat with
+          durations = duration :: stat.durations;
+          fail_run = stat.fail_run + 1;
+        }
+    | TestParseRoundtripErr time_start ->
+        let duration = stop time_start in
+        let log =
+          Format.asprintf "Error on parser: roundtrip fail in %s" filename
         in
         log |> print_endline;
         Format.eprintf "%s\n" log;
@@ -134,13 +159,14 @@ let run_parser_test stat includes excludes filename =
           fail_run = stat.fail_run + 1;
         }
 
-let run_parser_test_driver includes excludes testdir =
+let run_parser_test_driver includes excludes testdir specdir =
   (* Force all debug levels to Quiet for testing *)
   Unix.putenv "P4SPEC_LEXER_DEBUG" "quiet";
   Unix.putenv "P4SPEC_PARSER_DEBUG" "quiet";
   Unix.putenv "P4SPEC_CONTEXT_DEBUG" "quiet";
   let excludes = collect_excludes excludes in
   let filenames = collect_files ~suffix:".p4" testdir in
+  let spec = elab specdir in
   let total = List.length filenames in
   let stat = empty_stat in
   Format.asprintf "Running parser tests on %d files\n" total |> print_endline;
@@ -149,7 +175,7 @@ let run_parser_test_driver includes excludes testdir =
       (fun stat filename ->
         Format.asprintf "\n>>> Running parser test on %s" filename
         |> print_endline;
-        run_parser_test stat includes excludes filename)
+        run_parser_test stat includes excludes filename spec)
       stat filenames
   in
   log_stat "\nRunning parser" stat total
@@ -160,16 +186,11 @@ let run_parser_command =
      let open Core.Command.Param in
      let%map includes = flag "-i" (listed string) ~doc:"p4 include paths"
      and excludes = flag "-e" (listed string) ~doc:"p4 test exclude paths"
-     and testdir = flag "-d" (required string) ~doc:"p4 test directory" in
-     fun () -> run_parser_test_driver includes excludes testdir)
+     and testdir = flag "-d" (required string) ~doc:"p4 test directory"
+     and specdir = flag "-s" (required string) ~doc:"p4 spec directory" in
+     fun () -> run_parser_test_driver includes excludes testdir specdir)
 
 (* Elaboration test *)
-
-let elab specdir =
-  specdir
-  |> collect_files ~suffix:".watsup"
-  |> List.concat_map Frontend.Parse.parse_file
-  |> Elaborate.Elab.elab_spec
 
 let elab_test specdir =
   let spec_il = elab specdir in
