@@ -138,7 +138,8 @@ Typecheck success: ../../../../p4c/testdata/p4_16_samples/basic2-bmv2.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/basic_routing-bmv2.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_samples/basic_routing-bmv2.p4
-../../../../spec-concrete/5.15.1-typing-call-convention.watsup:31.10-31.33: (TODO) match failed parameterTypeIR'*{parameterTypeIR' <- parameterTypeIR'*} <- Some(`%%%%`)
+../../../../spec-concrete/5.15.1-typing-call-convention.watsup:31:10-31:33:
+Error: (TODO) match failed parameterTypeIR'*{parameterTypeIR' <- parameterTypeIR'*} <- Some(`%%%%`)
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/bfd_offload.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/bfd_offload.p4
@@ -1184,7 +1185,8 @@ Typecheck success: ../../../../p4c/testdata/p4_16_samples/issue-2123-3-bmv2.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/issue-2123.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_samples/issue-2123.p4
-../../../../spec-concrete/5.15.1-typing-call-convention.watsup:31.10-31.33: (TODO) match failed parameterTypeIR'*{parameterTypeIR' <- parameterTypeIR'*} <- Some(`%%%%`)
+../../../../spec-concrete/5.15.1-typing-call-convention.watsup:31:10-31:33:
+Error: (TODO) match failed parameterTypeIR'*{parameterTypeIR' <- parameterTypeIR'*} <- Some(`%%%%`)
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/issue-3312-graph-bmv2.p4
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/issue-3312-graph-bmv2.p4
@@ -1285,7 +1287,8 @@ tracing backtrack logs:
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/issue1333.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_samples/issue1333.p4
-../../../../spec-concrete/5.15.1-typing-call-convention.watsup:31.10-31.33: (TODO) match failed parameterTypeIR'*{parameterTypeIR' <- parameterTypeIR'*} <- Some(`%%%%`)
+../../../../spec-concrete/5.15.1-typing-call-convention.watsup:31:10-31:33:
+Error: (TODO) match failed parameterTypeIR'*{parameterTypeIR' <- parameterTypeIR'*} <- Some(`%%%%`)
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/issue1334.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1334.p4
@@ -1901,7 +1904,8 @@ Typecheck success: ../../../../p4c/testdata/p4_16_samples/issue2465-bmv2.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/issue2480.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_samples/issue2480.p4
-../../../../spec-concrete/5.15.1-typing-call-convention.watsup:31.10-31.33: (TODO) match failed parameterTypeIR'*{parameterTypeIR' <- parameterTypeIR'*} <- Some(`%%%%`)
+../../../../spec-concrete/5.15.1-typing-call-convention.watsup:31:10-31:33:
+Error: (TODO) match failed parameterTypeIR'*{parameterTypeIR' <- parameterTypeIR'*} <- Some(`%%%%`)
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/issue2485.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_samples/issue2485.p4
@@ -2896,11 +2900,15 @@ Typecheck success: ../../../../p4c/testdata/p4_16_samples/multicast-bmv2.p4
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/mux-bmv2.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/name_annotations_to_p4info-bmv2.p4
+negative inner acc: -0.065447
+negative inner acc: -0.063155
+negative inner acc: -0.056966
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/name_annotations_to_p4info-bmv2.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/named-arg.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_samples/named-arg.p4
-../../../../spec-concrete/5.15.1-typing-call-convention.watsup:31.10-31.33: (TODO) match failed parameterTypeIR'*{parameterTypeIR' <- parameterTypeIR'*} <- Some(`%%%%`)
+../../../../spec-concrete/5.15.1-typing-call-convention.watsup:31:10-31:33:
+Error: (TODO) match failed parameterTypeIR'*{parameterTypeIR' <- parameterTypeIR'*} <- Some(`%%%%`)
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/named-arg1.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/named-arg1.p4
