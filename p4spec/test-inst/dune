@@ -1,0 +1,29 @@
+(test
+ (name test_inst)
+ (preprocess
+  (pps ppx_let))
+ (modules test_inst)
+ (libraries p4spec core core_kernel core_unix core_unix.command_unix)
+ (action
+  (progn
+   (ignore-outputs
+    (diff inst_il_p4c.expected inst_il_p4c.actual)))))
+
+(rule
+ (target inst_il_p4c.actual)
+ (action
+  (with-stdout-to
+   inst_il_p4c.actual
+   (with-stderr-to
+    inst_il_p4c.err
+    (run
+     ./test_inst.exe
+     inst-il
+     -s
+     ../../../../spec-concrete
+     -i
+     ../../../../p4c/p4include
+     -e
+     ../../../../excludes
+     -d
+     ../../../../p4c/testdata/p4_16_samples))))) 
