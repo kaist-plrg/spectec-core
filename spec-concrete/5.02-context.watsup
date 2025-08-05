@@ -277,6 +277,9 @@ def $find_value(BLOCK, C, `` id) = $find_value(GLOBAL, C, `` id)
 def $find_value(LOCAL, C, `` id) = value
   -- if frame* = C.LOCAL.FRAMES
   -- if _ _ _ value = $find_maps<id, varTypeIR>(frame*, id)
+def $find_value(LOCAL, C, `` id) = $find_value(BLOCK, C, `` id)
+  -- if frame* = C.LOCAL.FRAMES
+  -- if eps = $find_maps<id, varTypeIR>(frame*, id)
 
 ;;; Finder for types
 

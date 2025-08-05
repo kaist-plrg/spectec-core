@@ -674,17 +674,24 @@ expressionList:
 ;
 
 %inline recordElementExpression:
-	| el = namedExpressionList
-		{ el }
-	| el = namedExpressionList COMMA DOTS
-		{ [ NT el; Term ","; Term "..." ]
+  | n = name ASSIGN e = expression
+    { [ NT n; Term "="; NT e ]
+      #@ "recordElementExpression" }
+  | n = name ASSIGN e = expression COMMA DOTS
+    { [ NT n; Term "="; NT e; Term ","; Term "..." ]
+      #@ "recordElementExpression" }
+	| n = name ASSIGN e = expression COMMA el = namedExpressionList
+    { [ NT n; Term "="; NT e; Term ","; NT el ]
+      #@ "recordElementExpression" }
+  | n = name ASSIGN e = expression COMMA el = namedExpressionList COMMA DOTS
+    { [ NT n; Term "="; NT e; Term ","; NT el; Term ","; Term "..." ]
       #@ "recordElementExpression" }
 ;
 
 %inline dataElementExpression:
 	| e = sequenceElementExpression
 	| e = recordElementExpression 
-		{ e }
+    { e }
 ;
 
 (* >> Non-brace Expressions *)
