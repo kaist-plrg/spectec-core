@@ -41,7 +41,7 @@ fmt:
 
 # Tests
 
-.PHONY: test-p4 promote-p4 coverage-p4 test-spec
+.PHONY: test-p4 promote-p4 coverage-p4 test-spec test-spec-inst promote-spec
 
 test-p4:
 	echo "#### Running (dune runtest)"
@@ -62,6 +62,11 @@ test-spec:
 	echo "#### Running (dune runtest)"
 	opam switch 4.14.0
 	cd p4spec && opam exec -- dune runtest --profile=release && echo OK || (echo "####>" Failure running dune test. && echo "####>" Run \`make promote-spec\` to accept changes in test expectations. && false)
+
+test-spec-inst:
+	echo "#### Running inst-il tests"
+	opam switch 4.14.0
+	cd p4spec && opam exec -- dune runtest test-inst --profile=release && echo OK || (echo "####>" Failure running inst-il tests. && echo "####>" Run \`make promote-spec\` to accept changes in test expectations. && false)
 
 promote-spec:
 	opam switch 4.14.0
