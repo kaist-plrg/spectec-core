@@ -1,18 +1,18 @@
 include Util.Attempt
 open Util.Source
-open Util.Print
 
 (* Monadic interface *)
 
 let ( let* ) (attempt : 'a attempt) (f : 'a -> 'b) : 'b =
   match attempt with Ok a -> f a | Fail _ as fail -> fail
 
+let indent_3 level = String.make (level * 3) ' '
 let rec string_of_failtrace_noregion ?(level = 0) ~(depth : int)
     ~(bullet : string) (failtrace : failtrace) : string =
   let (Failtrace (_region, msg, subfailtraces)) = failtrace in
   let smsg =
     if level < depth then ""
-    else Format.asprintf "\n       %s%s %s" (indent (level - depth)) bullet msg
+    else Format.asprintf "\n       %s%s %s" (indent_3 (level - depth)) bullet msg
   in
   Format.asprintf "%s%s" smsg
     (string_of_failtraces_noregion ~level:(level + 1) ~depth subfailtraces)
