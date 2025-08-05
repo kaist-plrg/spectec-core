@@ -59,8 +59,12 @@ let elab_command =
              (Elaborate.Attempt.format_failtraces failtraces);
            exit 1)
        with
-       | ParseError (at, msg) -> Format.eprintf "%s\n" (string_of_error at msg)
-       | ElabError (at, msg) -> Format.eprintf "%s\n" (string_of_error at msg))
+       | ParseError (at, msg) ->
+           Format.eprintf "%s\n" (string_of_error at msg);
+           exit 2
+       | ElabError (at, msg) ->
+           Format.eprintf "%s\n" (string_of_error at msg);
+           exit 1)
 
 let struct_command =
   Core.Command.basic ~summary:"insert structured control flow to a p4_16 spec"
