@@ -424,9 +424,9 @@ rule Expr_inst/callExpressionIR-instantiation:
 dec $size(typeIR, nameIR) : value
 
 rule Expr_inst/callExpressionIR-methodTarget-generic:
-  p Ci sto |- ((typedLvalueIR `. nameIR ) `< eps > `( eps )) `# _
+  p Ci sto |- ((typedExpressionIR `. nameIR ) `< eps > `( eps )) `# _
     ==> sto value
-  -- if _ `# `( typeIR ) = typedLvalueIR
+  -- if _ `# `( typeIR _ ) = typedExpressionIR
   -- if nameIR <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
   -- if $size(typeIR, nameIR) = value
 

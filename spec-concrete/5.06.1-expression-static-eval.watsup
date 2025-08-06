@@ -321,9 +321,9 @@ rule Eval_static/indexAccessExpressionIR-bitslice:
 ;;;;;;; typedLvalueIR `. nameIR
 
 rule Eval_static/callExpressionIR-typedLvalueIR-size:
-  p C |- ((typedLvalueIR_base `. nameIR) `< eps > `( eps )) `# `( _ _ )
+  p C |- ((typedExpressionIR_base `. nameIR) `< eps > `( eps )) `# `( _ _ )
       ~> $sizeof(typeIR_base, nameIR)
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   -- if nameIR <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
 
 ;;;;;;; TYPE prefixedNameIR `. nameIR

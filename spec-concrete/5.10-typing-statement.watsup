@@ -110,7 +110,7 @@ rule Stmt_ok/directApplicationStatement-prefixedTypeName:
   ---- ;; check apply method
   -- if lvalue = (`ID nameIR_object) `. (`ID "apply")
   -- Stmt_ok: p C_1 f |- lvalue `( argumentList ) `; : _ _ callStatementIR
-  -- if (((`` nameIR_object) `# `( typeIR_object )) `. "apply")
+  -- if (((`` nameIR_object) `# `( typeIR_object CTK )) `. "apply")
           `< eps > `( argumentIR_cast* ) `;
       = callStatementIR
   ---- ;; create IR

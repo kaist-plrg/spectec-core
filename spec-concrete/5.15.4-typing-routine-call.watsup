@@ -1,139 +1,4 @@
 ;;
-;; Routine base typing
-;;
-;; syntax expression
-;;
-
-;;; referenceExpression
-;;; syntax referenceExpression
-
-;;;; prefixedNonTypeName
-
-rule RoutineBase_ok/prefixedNonTypeName:
-  p C |- prefixedNonTypeName : prefixedNameIR `# `( typeIR )
-  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
-  -- if direction typeIR _ eps = $find_var(p, C, prefixedNameIR)
-
-;;;; THIS
-
-rule RoutineBase_ok/this:
-  p C |- THIS : (`` "this") `# `( typeIR )
-  -- if direction typeIR _ eps = $find_var(p, C, `` "this")
-
-;;; memberAccessExpression
-;;; syntax memberAccessExpression = memberAccessBase `. member
-;;;; syntax memberAccessBase
-
-;;;;; expression
-
-rule RoutineBase_ok/lvalue-member-struct:
-  p C |- expression_base `. member : typedLvalueIR
-  ---- ;; check expression as lvalue
-  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
-  ---- ;; check that the lvalue is a struct
-  -- if STRUCT _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
-  ---- ;; find the field
-  -- if nameIR = $name(member)
-  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
-  ---- ;; create typed lvalue
-  -- if typedLvalueIR
-      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
-
-rule RoutineBase_ok/lvalue-member-header:
-  p C |- expression_base `. member : typedLvalueIR
-  ---- ;; check expression as lvalue
-  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
-  ---- ;; check that the lvalue is a header
-  -- if HEADER _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
-  ---- ;; find the field
-  -- if nameIR = $name(member)
-  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
-  ---- ;; create typed lvalue
-  -- if typedLvalueIR
-      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
-
-rule RoutineBase_ok/lvalue-member-union:
-  p C |- expression_base `. member : typedLvalueIR
-  ---- ;; check expression as lvalue
-  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
-  ---- ;; check that the lvalue is a header
-  -- if HEADER_UNION _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
-  ---- ;; find the field
-  -- if nameIR = $name(member)
-  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
-  ---- ;; create typed lvalue
-  -- if typedLvalueIR
-      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
-
-;;;;; syntax accessExpression
-
-;;;;;; indexAccessExpression
-;;;;;; syntax indexAccessExpression
-
-;;;;;;; expression `[ expression ]
-
-rule RoutineBase_ok/expression-expression-lctk:
-  p C |- expression_base `[ expression_index ] : typedLvalueIR
-  ---- ;; check base expression
-  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
-  ---- ;; check that the lvalue is a header stack
-  -- if typeIR `[ n_size ] = $canon(typeIR_base)
-  ---- ;; check index expression
-  -- Expr_ok: p C |- expression_index : typedExpressionIR_index
-  -- if _ `# `( typeIR_index ctk_index ) = typedExpressionIR_index
-  ---- ;; check that the index is compatible
-  ---- ;; while inserting implicit casts if necessary
-  -- if typedExpressionIR_index_reduced
-      = $reduce_serenum_unary(
-          typedExpressionIR_index,
-          def $compat_array_index
-        )
-  ---- ;; if the index is local compile-time known, then it must be in range
-  -- if ctk_index = LCTK
-  -- Eval_static: p C |- typedExpressionIR_index_reduced ~> value_index
-  -- if n_index = $to_number(value_index)
-  -- if $(n_index < n_size)
-  ---- ;; create typed lvalue
-  -- if typedLvalueIR
-      = (typedLvalueIR_base `[ typedExpressionIR_index_reduced ])
-          `# `( typeIR )
-
-rule RoutineBase_ok/expression-expression-non-lctk:
-  p C |- expression_base `[ expression_index ] : typedLvalueIR
-  ---- ;; check base lvalue
-  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
-  ---- ;; check that the lvalue is a header stack
-  -- if typeIR `[ n_size ] = $canon(typeIR_base)
-  ---- ;; check index expression
-  -- Expr_ok: p C |- expression_index : typedExpressionIR_index
-  -- if _ `# `( typeIR_index ctk_index ) = typedExpressionIR_index
-  ---- ;; check that the index is compatible
-  ---- ;; while inserting implicit casts if necessary
-  -- if typedExpressionIR_index_reduced
-      = $reduce_serenum_unary(
-          typedExpressionIR_index,
-          def $compat_array_index
-        )
-  ---- ;; if the index is not local compile-time known, no range check is done
-  -- if ctk_index =/= LCTK
-  ---- ;; create typed lvalue
-  -- if typedLvalueIR
-      = (typedLvalueIR_base `[ typedExpressionIR_index_reduced ])
-          `# `( typeIR )
-
-;;;;; syntax parenthesizedExpression = `( expression )
-
-rule RoutineBase_ok/parenthesized:
-  p C |- `( expression ) : `( typedLvalueIR ) `# `( typeIR )
-  -- RoutineBase_ok: p C |- expression : typedLvalueIR
-  -- if _ `# `( typeIR ) = typedLvalueIR
-
-;;
 ;; Routine target typing
 ;;
 ;; syntax routineTarget = expression
@@ -167,9 +32,9 @@ rule RoutineTarget_ok/memberAccessExpression-prefixedTypeName:
 ;;;;; expression
 
 rule RoutineTarget_ok/memberAccessExpression-expression:
-  p C |- expression_base `. member : typedLvalueIR_base `. nameIR
+  p C |- expression_base `. member : typedExpressionIR_base `. nameIR
   -- if nameIR = $name(member)
-  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
+  -- Expr_ok: p C |- expression_base : typedExpressionIR_base
 
 ;;;;; syntax parenthesizedExpression = `( expression )
 
@@ -178,163 +43,29 @@ rule RoutineTarget_ok/parenthesizedExpression:
   -- RoutineTarget_ok: p C |- expression : routineTargetIR
 
 ;;
-;; Routine base typing (when used as a lvalue)
-;;
-;; syntax lvalue
-;;
-
-;;; referenceExpression
-;;; syntax referenceExpression
-
-;;;;  prefixedNonTypeName
-
-rule RoutineBase_lvalue_ok/prefixedNonTypeName:
-  p C |- prefixedNonTypeName : prefixedNameIR `# `( typeIR )
-  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
-  -- if direction typeIR _ eps = $find_var(p, C, prefixedNameIR)
-
-;;;;  THIS
-
-rule RoutineBase_lvalue_ok/this:
-  p C |- THIS : (`` "this") `# `( typeIR )
-  -- if direction typeIR _ eps = $find_var(p, C, `` "this")
-
-;;; lvalue `. member
-
-rule RoutineBase_lvalue_ok/lvalue-member-struct:
-  p C |- lvalue_base `. member : typedLvalueIR
-  ---- ;; check lvaue
-  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
-  ---- ;; check that the lvalue is a struct
-  -- if STRUCT _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
-  ---- ;; find the field
-  -- if nameIR = $name(member)
-  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
-  ---- ;; create typed lvalue
-  -- if typedLvalueIR
-      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
-
-rule RoutineBase_lvalue_ok/lvalue-member-header:
-  p C |- lvalue_base `. member : typedLvalueIR
-  ---- ;; check lvaue
-  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
-  ---- ;; check that the lvalue is a header
-  -- if HEADER _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
-  ---- ;; find the field
-  -- if nameIR = $name(member)
-  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
-  ---- ;; create typed lvalue
-  -- if typedLvalueIR
-      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
-
-rule RoutineBase_lvalue_ok/lvalue-member-union:
-  p C |- lvalue_base `. member : typedLvalueIR
-  ---- ;; check lvaue
-  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
-  ---- ;; check that the lvalue is a header
-  -- if HEADER_UNION _ `{ (typeIR_f nameIR_f `;)* } = $canon(typeIR_base)
-  ---- ;; find the field
-  -- if nameIR = $name(member)
-  -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
-  ---- ;; create typed lvalue
-  -- if typedLvalueIR
-      = (typedLvalueIR_base `. nameIR) `# `( typeIR )
-
-;;; lvalue `[ expression ]
-
-rule RoutineBase_lvalue_ok/lvalue-expression-lctk:
-  p C |- lvalue_base `[ expression_index ] : typedLvalueIR
-  ---- ;; check base lvalue
-  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
-  ---- ;; check that the lvalue is a header stack
-  -- if typeIR `[ n_size ] = $canon(typeIR_base)
-  ---- ;; check index expression
-  -- Expr_ok: p C |- expression_index : typedExpressionIR_index
-  -- if _ `# `( typeIR_index ctk_index ) = typedExpressionIR_index
-  ---- ;; check that the index is compatible
-  ---- ;; while inserting implicit casts if necessary
-  -- if typedExpressionIR_index_reduced
-      = $reduce_serenum_unary(
-          typedExpressionIR_index,
-          def $compat_array_index
-        )
-  ---- ;; if the index is local compile-time known, then it must be in range
-  -- if ctk_index = LCTK
-  -- Eval_static: p C |- typedExpressionIR_index_reduced ~> value_index
-  -- if n_index = $to_number(value_index)
-  -- if $(n_index < n_size)
-  ---- ;; create typed lvalue
-  -- if typedLvalueIR
-      = (typedLvalueIR_base `[ typedExpressionIR_index_reduced ])
-          `# `( typeIR )
-
-rule RoutineBase_lvalue_ok/lvalue-expression-non-lctk:
-  p C |- lvalue_base `[ expression_index ] : typedLvalueIR
-  ---- ;; check base lvalue
-  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
-  ---- ;; check that the lvalue is a header stack
-  -- if typeIR `[ n_size ] = $canon(typeIR_base)
-  ---- ;; check index expression
-  -- Expr_ok: p C |- expression_index : typedExpressionIR_index
-  -- if _ `# `( typeIR_index ctk_index ) = typedExpressionIR_index
-  ---- ;; check that the index is compatible
-  ---- ;; while inserting implicit casts if necessary
-  -- if typedExpressionIR_index_reduced
-      = $reduce_serenum_unary(
-          typedExpressionIR_index,
-          def $compat_array_index
-        )
-  ---- ;; if the index is not local compile-time known, no range check is done
-  -- if ctk_index =/= LCTK
-  ---- ;; create typed lvalue
-  -- if typedLvalueIR
-      = (typedLvalueIR_base `[ typedExpressionIR_index_reduced ])
-          `# `( typeIR )
-
-;;; `( lvalue )
-
-rule RoutineBase_lvalue_ok/parenthesized:
-  p C |- `( lvalue ) : `( typedLvalueIR ) `# `( typeIR )
-  -- RoutineBase_lvalue_ok: p C |- lvalue : typedLvalueIR
-  -- if _ `# `( typeIR ) = typedLvalueIR
-
-;;
 ;; Routine target typing (when used as a lvalue)
 ;;
 ;; syntax lvalue
 ;;
 
-;;; referenceExpression
-;;; syntax referenceExpression
+dec $lvalue(lvalue) : expression
+def $lvalue(referenceExpression) = referenceExpression
+def $lvalue(lvalue_base `. member)
+  = expression_base `. member
+  -- if expression_base = $lvalue(lvalue_base)
+def $lvalue(lvalue_base `[ expression_index ])
+  = expression_base `[ expression_index ]
+  -- if expression_base = $lvalue(lvalue_base)
+def $lvalue(lvalue_base `[ expression_hi `: expression_lo ])
+  = expression_base `[ expression_hi `: expression_lo ]
+  -- if expression_base = $lvalue(lvalue_base)
+def $lvalue(`( lvalue )) = `( expression )
+  -- if expression = $lvalue(lvalue)
 
-;;;;  prefixedNonTypeName
-
-rule RoutineTarget_lvalue_ok/prefixedNonTypeName:
-  p C |- prefixedNonTypeName : prefixedNameIR
-  -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
-
-;;;;  THIS
-
-rule RoutineTarget_lvalue_ok/prefixedNonTypeName:
-  p C |- THIS : (`` "this")
-
-;;; lvalue `. member
-
-rule RoutineTarget_lvalue_ok/lvalue-member:
-  p C |- lvalue_base `. member : typedLvalueIR_base `. nameIR
-  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
-  -- if nameIR = $name(member)
-
-;;; `( lvalue )
-
-rule RoutineTarget_lvalue_ok/parenthesized:
-  p C |- `( lvalue ) : `( routineTargetIR )
-  -- RoutineTarget_lvalue_ok: p C |- lvalue : routineTargetIR
+rule RoutineTarget_lvalue_ok:
+  p C |- lvalue : routineTargetIR
+  -- if expression = $lvalue(lvalue)
+  -- RoutineTarget_ok: p C |- expression : routineTargetIR
 
 ;;
 ;; Routine call typing
@@ -355,65 +86,65 @@ rule RoutineType_ok/referenceExpressionIR:
 
 ;;; typedLvalueIR `. nameIR
 
-rule RoutineType_ok/typedLvalueIR-nameIR-builtin-method-minmax-SizeIn-BitsBytes:
-  p C |- (typedLvalueIR_base `. nameIR) `< eps > `( eps )
+rule RoutineType_ok/typedExpressionIR-nameIR-builtin-method-minmax-SizeIn-BitsBytes:
+  p C |- (typedExpressionIR_base `. nameIR) `< eps > `( eps )
        : methodTypeIR `< `# eps > `( `# eps )
   ---- ;; if the method is min/maxSizeInBits/Bytes builtin
   -- if nameIR <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
   ---- ;; create routine type
   -- if methodTypeIR = BUILTIN_METHOD `( eps ) `-> INT
 
-rule RoutineType_ok/typedLvalueIR-nameIR-builtin-method-stack-push-pop-front:
-  p C |- (typedLvalueIR_base `. nameIR) `< eps > `( argument )
+rule RoutineType_ok/typedExpressionIR-nameIR-builtin-method-stack-push-pop-front:
+  p C |- (typedExpressionIR_base `. nameIR) `< eps > `( argument )
        : methodTypeIR `< `# eps > `( `# eps )
   ---- ;; if the method is push/pop_front builtin
   -- if nameIR <- [ "push_front", "pop_front" ]
   ---- ;; check that the base type is a stack
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   -- if typeIR `[ _ ] = $canon(typeIR_base)
   ---- ;; (TODO) check if the argument is named
   ---- ;; create routine type
   -- if parameterTypeIR = `EMPTY INT "count" eps
   -- if methodTypeIR = BUILTIN_METHOD `( parameterTypeIR ) `-> INT
 
-rule RoutineType_ok/typedLvalueIR-nameIR-builtin-method-header-isValid:
-  p C |- (typedLvalueIR_base `. nameIR) `< eps > `( eps )
+rule RoutineType_ok/typedExpressionIR-nameIR-builtin-method-header-isValid:
+  p C |- (typedExpressionIR_base `. nameIR) `< eps > `( eps )
        : methodTypeIR `< `# eps > `( `# eps )
   ---- ;; if the method is isValid builtin
   -- if nameIR <- [ "isValid" ]
   ---- ;; check that the base type is a header
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   -- if HEADER _ `{ _ } = $canon(typeIR_base)
   ---- ;; create routine type
   -- if methodTypeIR = BUILTIN_METHOD `( eps ) `-> BOOL
 
-rule RoutineType_ok/typedLvalueIR-nameIR-builtin-method-union-isValid:
-  p C |- (typedLvalueIR_base `. nameIR) `< eps > `( eps )
+rule RoutineType_ok/typedExpressionIR-nameIR-builtin-method-union-isValid:
+  p C |- (typedExpressionIR_base `. nameIR) `< eps > `( eps )
        : methodTypeIR `< `# eps > `( `# eps )
   ---- ;; if the method is isValid builtin
   -- if nameIR <- [ "isValid" ]
   ---- ;; check that the base type is a header
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   -- if HEADER_UNION _ `{ _ } = $canon(typeIR_base)
   ---- ;; create routine type
   -- if methodTypeIR = BUILTIN_METHOD `( eps ) `-> BOOL
 
-rule RoutineType_ok/typedLvalueIR-nameIR-builtin-method-header-set-ValidInvalid:
-  p C |- (typedLvalueIR_base `. nameIR) `< eps > `( eps )
+rule RoutineType_ok/typedExpressionIR-nameIR-builtin-method-header-set-ValidInvalid:
+  p C |- (typedExpressionIR_base `. nameIR) `< eps > `( eps )
        : methodTypeIR `< `# eps > `( `# eps )
   ---- ;; if the method is setValid/Invalid builtin
   -- if nameIR <- [ "setValid", "setInvalid" ]
   ---- ;; check that the base type is a header
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   -- if HEADER _ `{ _ } = $canon(typeIR_base)
   ---- ;; create routine type
   -- if methodTypeIR = BUILTIN_METHOD `( eps ) `-> VOID
 
-rule RoutineType_ok/typedLvalueIR-nameIR-extern-method:
-  p C |- (typedLvalueIR_base `. nameIR) `< typeArgumentIR* > `( argument* )
+rule RoutineType_ok/typedExpressionIR-nameIR-extern-method:
+  p C |- (typedExpressionIR_base `. nameIR) `< typeArgumentIR* > `( argument* )
        : routineTypeIR `< `# tid_impl* > `( `# id_default* )
   ---- ;; if the base type is an extern
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   -- if EXTERN _ `{ (rid_f `: routineTypeDefIR_f)* } = $canon(typeIR_base)
   ---- ;; find method type
   -- if (id_arg?)* = $ids_arguments(argument*)
@@ -426,11 +157,11 @@ rule RoutineType_ok/typedLvalueIR-nameIR-extern-method:
   -- if (routineTypeIR, tid_impl*)
       = $specialize_routineTypeDef(routineTypeDefIR, typeArgumentIR*)
 
-rule RoutineType_ok/typedLvalueIR-nameIR-parser-apply-method:
-  p C |- (typedLvalueIR_base `. "apply") `< eps > `( argument* )
+rule RoutineType_ok/typedExpressionIR-nameIR-parser-apply-method:
+  p C |- (typedExpressionIR_base `. "apply") `< eps > `( argument* )
        : methodTypeIR `< `# eps > `( `# id_default* )
   ---- ;; if the base type is a parser 
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   -- if PARSER `( parameterTypeIR* ) = $canon(typeIR_base)
   ---- ;; create method type
   -- if methodTypeIR = PARSER_APPLY `( parameterTypeIR* )
@@ -446,11 +177,11 @@ rule RoutineType_ok/typedLvalueIR-nameIR-parser-apply-method:
           "apply",
           (id_arg?)*)
 
-rule RoutineType_ok/typedLvalueIR-nameIR-control-apply-method:
-  p C |- (typedLvalueIR_base `. "apply") `< eps > `( argument* )
+rule RoutineType_ok/typedExpressionIR-nameIR-control-apply-method:
+  p C |- (typedExpressionIR_base `. "apply") `< eps > `( argument* )
        : methodTypeIR `< `# eps > `( `# id_default* )
   ---- ;; if the base type is a control 
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   -- if CONTROL `( parameterTypeIR* ) = $canon(typeIR_base)
   ---- ;; create method type
   -- if methodTypeIR = CONTROL_APPLY `( parameterTypeIR* )
@@ -466,11 +197,11 @@ rule RoutineType_ok/typedLvalueIR-nameIR-control-apply-method:
           "apply",
           (id_arg?)*)
 
-rule RoutineType_ok/typedLvalueIR-nameIR-table-apply-method:
-  p C |- (typedLvalueIR_base `. "apply") `< eps > `( eps )
+rule RoutineType_ok/typedExpressionIR-nameIR-table-apply-method:
+  p C |- (typedExpressionIR_base `. "apply") `< eps > `( eps )
        : methodTypeIR `< `# eps > `( `# eps )
   ---- ;; if the base type is a table
-  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   -- if TABLE _ `# typeIR_table = $canon(typeIR_base)
   ---- ;; create method type
   -- if methodTypeIR = TABLE_APPLY `-> typeIR_table

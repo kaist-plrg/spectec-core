@@ -141,7 +141,7 @@ syntax argumentListIR
 
 syntax routineTargetIR =
   | referenceExpressionIR
-  | typedLvalueIR `. nameIR
+  | typedExpressionIR `. nameIR
   | TYPE prefixedNameIR `. nameIR
   | `( routineTargetIR )
 
