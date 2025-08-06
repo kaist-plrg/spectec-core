@@ -401,11 +401,22 @@ dec $get_constructor_id(typeIR) : tid
 def $get_constructor_id(TID tid) = tid
 def $get_constructor_id((typeIR `< tid* `, tid* >) `< typeIR_args* >) = $get_constructor_id(typeIR)
 
+dec $to_name(argumentIR) : id?
+
+def $to_name(typedExpressionIR) = eps
+def $to_name(`_) = eps
+def $to_name(nameIR `= _) = nameIR
+
+dec $to_names(argumentListIR) : (id?)*
+
+def $to_names(eps) = eps
+def $to_names(argumentIR_h :: argumentIR_t*) = nameIR_h :: $to_names(argumentIR_t*)
+  -- if $to_name(argumentIR_h) = nameIR_h
+
 rule Expr_inst/callExpressionIR-instantiation:
-  p Ci sto |- ((typeIR `< typeArgumentListIR >) `( argumentListIR )) `# _
+  p Ci sto |- ((prefixedNameIR `< typeArgumentListIR >) `( argumentListIR )) `# _
     ==> sto'' (`! Ci.PATH)
-  -- if $get_constructor_id(typeIR) = tid
-  -- if $find_cons_inst(p, Ci, tid, argumentListIR) = (consDyn, id_default*)
+  -- if $find_constructor_overloaded_inst(Ci, prefixedNameIR, argumentListIR) = (_, consDyn, id_default*)
   -- Constructor_inst: p Ci sto |- consDyn `< typeArgumentListIR > `( argumentListIR `# id_default* ) ==> sto' objDyn
   -- if $add_sto(sto', Ci.PATH, objDyn) = sto''
 

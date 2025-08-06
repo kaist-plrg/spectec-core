@@ -1,10 +1,3 @@
-rule Program_inst/program:
-  |- declarationIR* `; ==> Ci'.GLOBAL.CENV Ci'.GLOBAL.TDENV Ci'.GLOBAL.RENV Ci'.GLOBAL.VENV sto'
-  -- if $refresh_context_inst_empty() = Ci
-  -- if $empty_sto() = sto
-  -- Decls_inst: GLOBAL Ci sto |- declarationIR* ==> Ci' sto' declarationIR'*
-  -- if declarationIR'* = eps ;;check all declarations were instantiated
-
 dec $add_params_inst(cursor, typeParameterIR*, typeArgumentIR*, contextInst) : contextInst
 dec $align_cparams_with_args(constructorParameterIR*, argumentIR*, id*) : (constructorParameterIR*, argumentIR*, constructorParameterIR*)
 dec $add_eval_args_to_ctx(contextInst, sto, constructorParameterIR*, argumentIR*) : (contextInst, sto)
