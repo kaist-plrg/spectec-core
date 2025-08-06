@@ -24,7 +24,7 @@ def $filter_default_parameters(
 ;;; Aligning parameters if the arguments are named
 
 dec $align_parameters(parameterTypeIR*, argumentIR*): parameterTypeIR*
-dec $align_parameters'(map<id, parameterTypeIR>, parameterTypeIR*, argumentIR*): parameterTypeIR*
+dec $align_parameters'(map<id, parameterTypeIR>, parameterTypeIR, argumentIR): parameterTypeIR?
 
 def $align_parameters(parameterTypeIR*, argumentIR*) = parameterTypeIR_aligned*
   -- if (_ _ id _ = parameterTypeIR)*

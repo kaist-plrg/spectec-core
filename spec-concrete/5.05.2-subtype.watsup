@@ -33,10 +33,16 @@ rule Sub_expl_canon_neq/arbint-fixbit:
   INT <: BIT `< _ >
 
 rule Sub_expl_canon_neq/fixint-fixint:
+  INT `< _ > <: INT
+
+rule Sub_expl_canon_neq/fixint-fixint:
   INT `< w_a > <: INT `< w_b >
 
 rule Sub_expl_canon_neq/fixint-fixbit:
   INT `< w > <: BIT `< w >
+
+rule Sub_expl_canon_neq/fixbit-arbint:
+  BIT `< _ > <: INT
 
 rule Sub_expl_canon_neq/fixbit-fixint:
   BIT `< w > <: INT `< w >

@@ -275,8 +275,22 @@ def $bin_eq(tid_a `. id_f_a, tid_b `. id_f_b)
   = (tid_a = tid_b) /\ (id_f_a = id_f_b)
 def $bin_eq(tid_a `. id_f_a `# value_f_a, tid_b `. id_f_b `# value_f_b)
   = (tid_a = tid_b) /\ (id_f_a = id_f_b) /\ $bin_eq(value_f_a, value_f_b)
-
 def $bin_eq(`{#}, `{#}) = true
+
+def $bin_eqs(eps, eps) = true
+def $bin_eqs(eps, _ :: _) = false
+def $bin_eqs(_ :: _, eps) = false
+def $bin_eqs(value_a_h :: value_a_t*, value_b_h :: value_b_t*)
+  = $bin_eq(value_a_h, value_b_h) /\ $bin_eqs(value_a_t*, value_b_t*)
+
+def $bin_eqs_fields(eps, eps) = true
+def $bin_eqs_fields(eps, _ :: _) = false
+def $bin_eqs_fields(_ :: _, eps) = false
+def $bin_eqs_fields(
+    (value_a_h, id_a_h) :: (value_a_t, id_a_t)*,
+    (value_b_h, id_b_h) :: (value_b_t, id_b_t)*)
+  = (id_a_h = id_b_h) /\ $bin_eq(value_a_h, value_b_h)
+    /\ $bin_eqs_fields((value_a_t, id_a_t)*, (value_b_t, id_b_t)*)
 
 ;;; Binary not equals
 

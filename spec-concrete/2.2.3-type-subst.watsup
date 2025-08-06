@@ -353,7 +353,7 @@ def $subst_type(theta, typeIR) = typeIR
 def $subst_typeDef(theta, typeIR) = $subst_type(theta, typeIR)
 
 def $subst_typeDef(theta, typeIR_base `< tid* `, tid_hidden* >)
-  = typeIR_base_subst `< tid_fresh* `, tid_fresh_hidden* >
+  = typeIR_base_subst `< tid_fresh_spec* `, tid_fresh_hidden* >
   ---- ;; collect free type variables in type definition
   -- if `{ tid_free* } = $diff_set<tid>(
                             $free_type(typeIR_base),
@@ -478,7 +478,7 @@ def $subst_routineTypeDef(theta, routineTypeIR)
   = $subst_routineType(theta, routineTypeIR)
 
 def $subst_routineTypeDef(theta, routineTypeIR `< tid* `, tid_hidden* >)
-  = routineTypeIR_subst `< tid_fresh* `, tid_fresh_hidden* >
+  = routineTypeIR_subst `< tid_fresh_spec* `, tid_fresh_hidden* >
   ---- ;; collect free type variables in routine type definition
   -- if `{ tid_free* } = $diff_set<tid>(
                             $free_routineType(routineTypeIR),
@@ -581,26 +581,30 @@ def $specialize_constructorTypeDef(
     constructorTypeIR `< tid* `, tid_hidden* >,
     typeIR_arg*
   )
-  = ($subst_constructorType(theta, constructorTypeIR), eps)
+  = (constructorTypeIR_subst, eps)
   -- if tid_tparam* = tid* ++ tid_hidden*
   -- if |tid_tparam*| = |typeIR_arg*|
   -- if theta = `{ (tid_tparam `: typeIR_arg)* }
+  -- if constructorTypeIR_subst 
+      = $subst_constructorType(theta, constructorTypeIR)
 
 def $specialize_constructorTypeDef(
     constructorTypeIR `< tid* `, tid_hidden* >,
     typeIR_arg*
   )
-  = ($subst_constructorType(theta, constructorTypeIR), tid_fresh*)
+  = (constructorTypeIR_subst, tid_fresh*)
   -- if tid_tparam* = tid* ++ tid_hidden*
   -- if $(|tid_tparam*| > 0) /\ $(|typeIR_arg*| = 0)
   -- if tid_fresh* = $fresh_tids(|tid_tparam*|)
   -- if theta = `{ (tid_tparam `: (TID tid_fresh))* }
+  -- if constructorTypeIR_subst 
+      = $subst_constructorType(theta, constructorTypeIR)
 
 def $specialize_constructorTypeDef(
     constructorTypeIR `< tid* `, tid_hidden* >,
     typeIR_arg*
   )
-  = ($subst_constructorType(theta, constructorTypeIR), tid_fresh*)
+  = (constructorTypeIR_subst, tid_fresh*)
   -- if tid_tparam* = tid* ++ tid_hidden*
   -- if $(|tid_hidden*| > 0)
         /\ $(|tid*| = |typeIR_arg*|)
@@ -608,6 +612,8 @@ def $specialize_constructorTypeDef(
   -- if tid_fresh* = $fresh_tids(|tid_hidden*|)
   -- if typeIR_arg_new* = typeIR_arg* ++ (TID tid_fresh)*
   -- if theta = `{ (tid_tparam `: typeIR_arg_new)* }
+  -- if constructorTypeIR_subst 
+      = $subst_constructorType(theta, constructorTypeIR)
 
 ;;
 ;; Canonicalization

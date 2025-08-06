@@ -68,6 +68,64 @@ rule RoutineBase_ok/lvalue-member-union:
   -- if typedLvalueIR
       = (typedLvalueIR_base `. nameIR) `# `( typeIR )
 
+;;;;; syntax accessExpression
+
+;;;;;; indexAccessExpression
+;;;;;; syntax indexAccessExpression
+
+;;;;;;; expression `[ expression ]
+
+rule RoutineBase_ok/expression-expression-lctk:
+  p C |- expression_base `[ expression_index ] : typedLvalueIR
+  ---- ;; check base expression
+  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header stack
+  -- if typeIR `[ n_size ] = $canon(typeIR_base)
+  ---- ;; check index expression
+  -- Expr_ok: p C |- expression_index : typedExpressionIR_index
+  -- if _ `# `( typeIR_index ctk_index ) = typedExpressionIR_index
+  ---- ;; check that the index is compatible
+  ---- ;; while inserting implicit casts if necessary
+  -- if typedExpressionIR_index_reduced
+      = $reduce_serenum_unary(
+          typedExpressionIR_index,
+          def $compat_array_index
+        )
+  ---- ;; if the index is local compile-time known, then it must be in range
+  -- if ctk_index = LCTK
+  -- Eval_static: p C |- typedExpressionIR_index_reduced ~> value_index
+  -- if n_index = $to_number(value_index)
+  -- if $(n_index < n_size)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `[ typedExpressionIR_index_reduced ])
+          `# `( typeIR )
+
+rule RoutineBase_ok/expression-expression-non-lctk:
+  p C |- expression_base `[ expression_index ] : typedLvalueIR
+  ---- ;; check base lvalue
+  -- RoutineBase_ok: p C |- expression_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header stack
+  -- if typeIR `[ n_size ] = $canon(typeIR_base)
+  ---- ;; check index expression
+  -- Expr_ok: p C |- expression_index : typedExpressionIR_index
+  -- if _ `# `( typeIR_index ctk_index ) = typedExpressionIR_index
+  ---- ;; check that the index is compatible
+  ---- ;; while inserting implicit casts if necessary
+  -- if typedExpressionIR_index_reduced
+      = $reduce_serenum_unary(
+          typedExpressionIR_index,
+          def $compat_array_index
+        )
+  ---- ;; if the index is not local compile-time known, no range check is done
+  -- if ctk_index =/= LCTK
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `[ typedExpressionIR_index_reduced ])
+          `# `( typeIR )
+
 ;;;;; syntax parenthesizedExpression = `( expression )
 
 rule RoutineBase_ok/parenthesized:
@@ -185,6 +243,59 @@ rule RoutineBase_lvalue_ok/lvalue-member-union:
   -- if typedLvalueIR
       = (typedLvalueIR_base `. nameIR) `# `( typeIR )
 
+;;; lvalue `[ expression ]
+
+rule RoutineBase_lvalue_ok/lvalue-expression-lctk:
+  p C |- lvalue_base `[ expression_index ] : typedLvalueIR
+  ---- ;; check base lvalue
+  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header stack
+  -- if typeIR `[ n_size ] = $canon(typeIR_base)
+  ---- ;; check index expression
+  -- Expr_ok: p C |- expression_index : typedExpressionIR_index
+  -- if _ `# `( typeIR_index ctk_index ) = typedExpressionIR_index
+  ---- ;; check that the index is compatible
+  ---- ;; while inserting implicit casts if necessary
+  -- if typedExpressionIR_index_reduced
+      = $reduce_serenum_unary(
+          typedExpressionIR_index,
+          def $compat_array_index
+        )
+  ---- ;; if the index is local compile-time known, then it must be in range
+  -- if ctk_index = LCTK
+  -- Eval_static: p C |- typedExpressionIR_index_reduced ~> value_index
+  -- if n_index = $to_number(value_index)
+  -- if $(n_index < n_size)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `[ typedExpressionIR_index_reduced ])
+          `# `( typeIR )
+
+rule RoutineBase_lvalue_ok/lvalue-expression-non-lctk:
+  p C |- lvalue_base `[ expression_index ] : typedLvalueIR
+  ---- ;; check base lvalue
+  -- RoutineBase_lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a header stack
+  -- if typeIR `[ n_size ] = $canon(typeIR_base)
+  ---- ;; check index expression
+  -- Expr_ok: p C |- expression_index : typedExpressionIR_index
+  -- if _ `# `( typeIR_index ctk_index ) = typedExpressionIR_index
+  ---- ;; check that the index is compatible
+  ---- ;; while inserting implicit casts if necessary
+  -- if typedExpressionIR_index_reduced
+      = $reduce_serenum_unary(
+          typedExpressionIR_index,
+          def $compat_array_index
+        )
+  ---- ;; if the index is not local compile-time known, no range check is done
+  -- if ctk_index =/= LCTK
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `[ typedExpressionIR_index_reduced ])
+          `# `( typeIR )
+
 ;;; `( lvalue )
 
 rule RoutineBase_lvalue_ok/parenthesized:
@@ -253,13 +364,14 @@ rule RoutineType_ok/typedLvalueIR-nameIR-builtin-method-minmax-SizeIn-BitsBytes:
   -- if methodTypeIR = BUILTIN_METHOD `( eps ) `-> INT
 
 rule RoutineType_ok/typedLvalueIR-nameIR-builtin-method-stack-push-pop-front:
-  p C |- (typedLvalueIR_base `. nameIR) `< eps > `( eps )
+  p C |- (typedLvalueIR_base `. nameIR) `< eps > `( argument )
        : methodTypeIR `< `# eps > `( `# eps )
   ---- ;; if the method is push/pop_front builtin
   -- if nameIR <- [ "push_front", "pop_front" ]
   ---- ;; check that the base type is a stack
   -- if _ `# `( typeIR_base ) = typedLvalueIR_base
   -- if typeIR `[ _ ] = $canon(typeIR_base)
+  ---- ;; (TODO) check if the argument is named
   ---- ;; create routine type
   -- if parameterTypeIR = `EMPTY INT "count" eps
   -- if methodTypeIR = BUILTIN_METHOD `( parameterTypeIR ) `-> INT
