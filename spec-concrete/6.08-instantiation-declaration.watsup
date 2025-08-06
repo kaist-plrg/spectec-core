@@ -55,6 +55,12 @@ def $rid_IR(nameIR, parameterIR*) = nameIR `( $pid_IR(parameterIR)* )
 def $pid_IR(_ _ _ nameIR eps) = nameIR `# false
 def $pid_IR(_ _ _ nameIR constantInitializerIR) = nameIR `# true
 
+dec $cid_IR(nameIR, constructorParameterListIR) : cid
+
+def $cid_IR(nameIR, constructorParameterListIR) = $rid_IR(nameIR, constructorParameterListIR)
+
+
+
 rule Decl_inst/functionDeclarationIR:
   p Ci_0 sto |- _ (typeIR nameIR (`< typeParameterListIR `, typeParameterListIR_inferred >)
     `( parameterListIR )) blockStatementIR
@@ -129,7 +135,7 @@ rule Decl_inst/parserDeclarationIR:
     `( parameterListIR ) `( constructorParameterListIR )
     `{ parserLocalDeclarationListIR parserStateListIR }
     ==> Ci_1 sto eps
-  -- if $rid_IR(nameIR, constructorParameterListIR) = cid
+  -- if $cid_IR(nameIR, constructorParameterListIR) = cid
   -- if PARSER `< typeParameterListIR >
       `( parameterListIR ) `( constructorParameterListIR )
       `{ parserLocalDeclarationListIR parserStateListIR }
@@ -148,7 +154,7 @@ rule Decl_inst/controlDeclarationIR:
     `( parameterListIR ) `( constructorParameterListIR )
     `{ controlLocalDeclarationListIR APPLY controlBodyIR }
     ==> Ci_1 sto eps
-  -- if $rid_IR(nameIR, constructorParameterListIR) = cid
+  -- if $cid_IR(nameIR, constructorParameterListIR) = cid
   -- if CONTROL `< typeParameterListIR >
       `( parameterListIR ) `( constructorParameterListIR )
       `{ controlLocalDeclarationListIR APPLY controlBodyIR }
@@ -330,7 +336,7 @@ rule Decl_inst/typeDeclarationIR-packageTypeDeclarationIR:
   -- if typeIR_package `< typeParameterListIR `, typeParameterListIR_inferred >
     = typeDefIR_package
   -- if $add_typedef_inst(p, Ci_0, nameIR, typeDefIR_package) = Ci_1 
-  -- if $rid_IR(nameIR, parameterIR*) = cid
+  -- if $cid_IR(nameIR, parameterIR*) = cid
   -- if PACKAGE `< typeParameterListIR ++ typeParameterListIR_inferred > `( parameterIR* )
     = consDyn_package
   -- if $add_constructor_inst(GLOBAL, Ci_1, cid, consDyn_package) = Ci_2
