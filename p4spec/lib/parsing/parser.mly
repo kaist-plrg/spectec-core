@@ -68,7 +68,7 @@
 %left OR
 %left AND
 %left EQ NE
-%left L_ANGLE R_ANGLE LE GE
+%left R_ANGLE LE GE
 %left BIT_OR
 %left BIT_XOR
 %left BIT_AND
@@ -527,7 +527,7 @@ ternaryExpressionNonBrace:
 (* >> Cast expressions *)
 castExpression:
 	| L_PAREN t = typeRef R_PAREN e = expression %prec PREFIX
-    { [ Term "("; NT t; Term ")"; NT e ] #@ "expressionNonBrace" }
+    { [ Term "("; NT t; Term ")"; NT e ] #@ "castExpression" }
 ;
 
 (* >> Data (aggregate) expressions *)
