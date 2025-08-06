@@ -23,12 +23,13 @@ rule Stmt_inst/assignmentStatementIR:
 ;;;   typeIR `. APPLY `( argumentListIR ) `;
 
 rule Stmt_inst/directApplicationStatementIR:
-  p Ci sto_0 |- typeIR `. APPLY `( argumentListIR ) `;
+  p Ci sto_0 |- prefixedNameIR `. APPLY `( argumentListIR ) `;
     ==> Ci sto_2 blockStatementIR 
-  -- if $get_constructor_id(typeIR) = tid
-  -- if $find_cons_inst(p, Ci, tid, eps) = (consDyn, _)
+  -- if $find_constructor_overloaded_inst(Ci, prefixedNameIR, eps) = (_, consDyn, _)
   -- Constructor_inst: p Ci sto_0 |- consDyn `< eps > `( eps `# eps ) ==> sto_1 objDyn
   -- if $fresh_tid() = tid_fresh
+  -- if $flatten_prefixedNameIR(prefixedNameIR) = tid
+  -- if TID tid = typeIR
   -- if $concat_text([ tid, "_", tid_fresh]) = nameIR
   -- if oid = Ci.PATH ++ nameIR
   -- if $add_sto(sto_1, oid, objDyn) = sto_2

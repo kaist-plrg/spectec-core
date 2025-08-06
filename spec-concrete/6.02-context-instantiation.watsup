@@ -1,6 +1,9 @@
+;;
+;; Layered context
+;;
 ;; Global layer
 
-syntax glayerDyn =
+syntax glayerInst =
   { CENV cenv,
     TDENV tdenv,
     RENV renv,
@@ -8,7 +11,7 @@ syntax glayerDyn =
 
 ;; Block Layer
 
-syntax blayerDyn =
+syntax blayerInst =
   { THETA theta,
     RENV renv,
     SENV senv,
@@ -16,19 +19,19 @@ syntax blayerDyn =
 
 ;; Local layer
 
-syntax llayerDyn =
+syntax llayerInst =
   { THETA theta,
     VENVS venv* }
 
 ;;
-;; Typing context
+;; Instantiation context
 ;;
 
 syntax contextInst =
   { PATH oid,
-    GLOBAL glayerDyn,
-    BLOCK blayerDyn,
-    LOCAL llayerDyn }
+    GLOBAL glayerInst,
+    BLOCK blayerInst,
+    LOCAL llayerInst }
 
 var Ci : contextInst
 
@@ -37,8 +40,25 @@ var Ci : contextInst
 ;;
 
 dec $empty_context_inst() : contextInst
-dec $empty_block() : blayerDyn
-dec $empty_local() : llayerDyn
+
+def $empty_context_inst() = Ci
+  -- if glayerInst =
+      { CENV $empty_cenv,
+        TDENV $empty_tdenv,
+        RENV $empty_renv,
+        VENV $empty_venv }
+  -- if blayerInst =
+      { THETA $empty_theta,
+        RENV $empty_renv,
+        SENV $empty_senv,
+        VENV $empty_venv }
+  -- if llayerInst =
+      { THETA $empty_theta,
+        VENVS ([]) }
+  -- if Ci = { PATH ([]), GLOBAL glayerInst, BLOCK blayerInst, LOCAL llayerInst }
+
+dec $empty_block() : blayerInst
+dec $empty_local() : llayerInst
 
 dec $refresh_context_inst_empty() : contextInst
 
@@ -48,11 +68,40 @@ dec $enter_frame_inst(contextInst) : contextInst
 dec $enter_path(contextInst, nameIR) : contextInst
 dec $find_value_inst(cursor, contextInst, nameIR) : value?
 dec $find_typedef_inst(cursor, contextInst, nameIR) : typeDefIR?
-dec $find_cons_inst(cursor, contextInst, tid, argumentListIR) : (consDyn, id*)
+
+dec $ids_arguments_IR(argumentIR*) : (id?)*
+dec $id_argument_IR(argumentIR) : id?
+
+def $ids_arguments_IR(argumentIR*) = ($id_argument_IR(argumentIR))*
+def $id_argument_IR(typedExpressionIR) = eps
+def $id_argument_IR(nameIR `= _) = nameIR
+def $id_argument_IR(nameIR `= `_) = nameIR
+def $id_argument_IR(`_) = eps
+
+dec $find_constructor_overloaded_inst(contextInst, prefixedNameIR, argumentIR*) : (rid, consDyn, id*)?
+def $find_constructor_overloaded_inst(Ci, `` id, argumentIR*)
+  = $find_overloaded<consDyn>(Ci.GLOBAL.CENV, id, (id_arg?)*)
+  -- if $ids_arguments_IR(argumentIR*) = (id_arg?)*
+
 dec $find_type_inst(cursor, contextInst, prefixedNameIR) : typeIR
+
+;;
+;; Adders
+;;
+
 dec $add_value_inst(cursor, contextInst, nameIR, value): contextInst
 dec $add_values_inst(cursor, contextInst, nameIR*, value*): contextInst
 dec $add_routine_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
 dec $add_routine_non_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
-dec $add_cons_inst(cursor, contextInst, cid, consDyn) : contextInst
-dec $add_typdef_inst(cursor, contextInst, nameIR, typeDefIR) : contextInst
+
+;;; Adder for constructors
+dec $add_constructor_inst(cursor, contextInst, cid, consDyn) : contextInst
+
+def $add_constructor_inst(GLOBAL, Ci, cid, consDyn) = Ci[ .GLOBAL.CENV = cenv ] 
+  -- if cenv = $add_map<cid, consDyn>(Ci.GLOBAL.CENV, cid, consDyn)
+
+;;; Adder for types
+dec $add_typedef_inst(cursor, contextInst, tid, typeDefIR) : contextInst
+
+def $add_typedef_inst(GLOBAL, Ci, tid, typeDefIR) = Ci[ .GLOBAL.TDENV = tdenv ]
+  -- if tdenv = $add_map<tid, typeDefIR>(Ci.GLOBAL.TDENV, tid, typeDefIR)

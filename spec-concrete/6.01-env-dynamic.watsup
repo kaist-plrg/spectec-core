@@ -2,11 +2,20 @@
 ;; Environments
 ;;
 
-syntax stateDyn = blockStatementIR
+dec $empty_theta() : theta
+def $empty_theta() = $empty_map<tid, typeIR>()
 
 syntax venv = map<name, value>
+
+dec $empty_venv() : venv
+def $empty_venv() = $empty_map<name, value>
+
+syntax stateDyn = blockStatementIR
+;; Map from names to parser states
 syntax senv = map<name, stateDyn>
 
+dec $empty_senv() : senv
+def $empty_senv() = $empty_map<name, stateDyn>
 
 ;;
 ;; L-values
@@ -42,7 +51,11 @@ syntax routineDyn =
   | funcDyn
   | methodDyn
 
+;; Map from routine identifiers to routines
 syntax renv = map<rid, routineDyn>
+
+dec $empty_renv() : renv
+def $empty_renv() = $empty_map<rid, routineDyn>
 
 ;;
 ;; Constructors
@@ -55,7 +68,11 @@ syntax consDyn =
   | PACKAGE `< typeParameterListIR > `( constructorParameterListIR )
   | TABLE nameIR `{ tablePropertyListIR }
 
+;; Map from constructor identifiers to constructors
 syntax cenv = map<cid, consDyn>
+
+dec $empty_cenv() : cenv
+def $empty_cenv() = $empty_map<cid, consDyn>
 
 ;;
 ;; Objects
@@ -68,7 +85,9 @@ syntax objDyn =
   | PACKAGE `{ theta venv }
   | TABLE `{ tid venv tablePropertyListIR }
 
+;; Map from object identifiers to objects
 syntax sto = map<oid, objDyn>
+
 dec $empty_sto() : sto
 def $empty_sto() = $empty_map<oid, objDyn>
 dec $add_sto(sto, oid, objDyn) : sto
