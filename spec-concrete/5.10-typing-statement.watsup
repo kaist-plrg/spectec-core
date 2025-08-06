@@ -339,7 +339,7 @@ rule SwitchCase_general_ok/switchLabel-blockStatement:
 ;;;;;; switchLabel `: 
 
 rule SwitchCase_general_ok/switchLabel:
-  C f typeIR_switch b_last |- switchLabel `: blockStatement
+  C f typeIR_switch b_last |- switchLabel `:
                             : f switchCaseIR `# switchLabel
   ---- ;; check switch label
   -- SwitchLabel_general_ok: C typeIR_switch b_last |- switchLabel : switchLabelIR

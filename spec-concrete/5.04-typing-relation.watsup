@@ -178,11 +178,11 @@ relation ParserLocalDecls_ok:
 ;;
 
 relation TableKey_ok:
-  context tblctx |- tableKey : tblctx tableKeyIR
+  context tablecontext |- tableKey : tablecontext tableKeyIR
   hint(input %0 %1 %2)
 
 relation TableKeys_ok:
-  context tblctx |- tableKey* : tblctx tableKeyListIR
+  context tablecontext |- tableKey* : tablecontext tableKeyListIR
   hint(input %0 %1 %2)
 
 relation Call_action_partial_ok:
@@ -191,11 +191,11 @@ relation Call_action_partial_ok:
   hint(input %0 %1 %2)
 
 relation TableAction_ok:
-  context tblctx |- tableAction : tblctx tableActionIR
+  context tablecontext |- tableAction : tablecontext tableActionIR
   hint(input %0 %1 %2)
 
 relation TableActions_ok:
-  context tblctx |- tableAction* : tblctx tableActionListIR
+  context tablecontext |- tableAction* : tablecontext tableActionListIR
   hint(input %0 %1 %2)
 
 relation Call_action_default_ok:
@@ -204,23 +204,44 @@ relation Call_action_default_ok:
   hint(input %0 %1 %2)
 
 relation TableDefaultAction_ok:
-  context tblctx |- initializer : tableActionReferenceIR
+  context tablecontext |- initializer : tableActionReferenceIR
+  hint(input %0 %1 %2)
+
+relation TableEntry_keyset_ok:
+  context tablecontext |- keysetExpression : tableEntryState keysetExpressionIR
+  hint(input %0 %1 %2)
+
+relation TableEntry_action_ok:
+  context tablecontext |- tableActionReference : tableActionReferenceIR
+  hint(input %0 %1 %2)
+
+relation TableEntry_priority_ok:
+  context tablecontext tableEntryState |- tableEntryPriority?
+                                        : tablecontext tableEntryPriorityOptIR
+  hint(input %0 %1 %2 %3)
+
+relation TableEntry_ok:
+  context tablecontext |- tableEntry : tablecontext tableEntryIR
+  hint(input %0 %1 %2)
+
+relation TableEntries_ok:
+  context tablecontext |- tableEntry* : tablecontext tableEntryListIR
   hint(input %0 %1 %2)
 
 relation TableProperty_ok:
-  context tblctx |- tableProperty : tblctx tablePropertyIR
+  context tablecontext |- tableProperty : tablecontext tablePropertyIR
   hint(input %0 %1 %2)
 
 relation TableProperties_ok:
-  context tblctx |- tableProperty* : tblctx tablePropertyListIR
+  context tablecontext |- tableProperty* : tablecontext tablePropertyListIR
   hint(input %0 %1 %2)
 
 relation Table_ok:
-  context |- tableProperty* : tblctx tablePropertyListIR
+  context |- tableProperty* : tablecontext tablePropertyListIR
   hint(input %0 %1)
 
 relation TableType_ok:
-  context tblctx |- name : context typeIR
+  context tablecontext |- name : context typeIR
   hint(input %0 %1 %2)
 
 relation ControlLocalDecl_ok:

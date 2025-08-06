@@ -110,10 +110,10 @@ rule ExternConstructor_ok:
   ---- ;; add implicit type parameters to the constructor
   ---- ;; and add it to the context
   -- if cid = $cid(typeIdentifier, `( parameterList ))
-  -- if typeIR_extern_constructed
+  -- if typeIR_extern_spec
       = (typeIR_extern `< tid_expl* `, eps >) `< (TID tid_expl)* >
   -- if constructorTypeIR
-      = CONSTRUCTOR `( constructorParameterTypeIR* ) `-> typeIR_extern_constructed
+      = CONSTRUCTOR `( constructorParameterTypeIR* ) `-> typeIR_extern_spec
   -- if constructorTypeDefIR = constructorTypeIR `< tid_expl* `, tid_impl* >
   -- ConstructorTypeDef_wf: $bound(BLOCK, C_0) |- constructorTypeDefIR
   -- if C_1 = $add_constructor(C_0, cid, constructorTypeDefIR)

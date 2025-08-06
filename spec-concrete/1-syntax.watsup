@@ -836,6 +836,14 @@ syntax objectDeclarationList =
   | `EMPTY
   | objectDeclarationList objectDeclaration
 
+dec $flatten_objectDeclarationList(objectDeclarationList) : objectDeclaration*
+def $flatten_objectDeclarationList(`EMPTY) = eps
+def $flatten_objectDeclarationList(
+    objectDeclarationList objectDeclaration
+  )
+  = $flatten_objectDeclarationList(objectDeclarationList)
+    ++ [ objectDeclaration ]
+
 ;;
 ;;;; Error declarations
 ;;
@@ -961,7 +969,9 @@ syntax stateExpression =
   | name `;
   | selectExpression
 
-syntax transitionStatement = TRANSITION stateExpression
+syntax transitionStatement =
+  | `EMPTY
+  | TRANSITION stateExpression
 
 ;;
 ;;;;;; Value set declarations
@@ -1112,6 +1122,11 @@ syntax tableEntry =
 syntax tableEntryList =
   | `EMPTY
   | tableEntryList tableEntry
+
+dec $flatten_tableEntryList(tableEntryList) : tableEntry*
+def $flatten_tableEntryList(`EMPTY) = eps
+def $flatten_tableEntryList(tableEntryList tableEntry)
+  = $flatten_tableEntryList(tableEntryList) ++ [ tableEntry ]
 
 ;;
 ;;;;;;;; Table properties

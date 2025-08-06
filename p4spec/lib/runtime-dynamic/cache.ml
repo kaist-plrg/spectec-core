@@ -15,10 +15,10 @@ module Cache = Hashtbl.Make (Entry)
 (* Cache targets *)
 
 let is_cached_func = function
-  | "subst_typ" | "subst_typdef_poly" | "specialize_typdef" | "canon_typ"
-  | "free_typ" | "is_nominal" | "find_map" | "update_map" | "dom_map"
-  | "bound_tids" | "in_set" | "merge_cstr'" | "merge_cstr"
-  | "find_matching_funcs" | "nestable_structt" | "nestable_structt_in_headert"
+  | "subst_type" | "subst_typeDef" | "specialize_typeDef" | "canon"
+  | "free_type" | "is_nominal_typeIR" | "find_map" | "update_map" | "dom_map"
+  | "bound_tids" | "in_set" | "merge_constraint" | "merge_constraint'"
+  | "find_matchings" | "nestable_struct" | "nestable_struct_in_header"
     ->
       true
   | _ -> false

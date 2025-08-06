@@ -560,7 +560,7 @@ syntax transitionStatementIR = TRANSITION stateExpressionIR
 ;;
 
 syntax valueSetDeclarationIR =
-  annotationList VALUESET `< typeIR > `( expressionIR ) nameIR `;
+  annotationList VALUE_SET `< typeIR > `( typedExpressionIR ) nameIR `;
 
 ;;
 ;;;;;; Parser type declarations

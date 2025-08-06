@@ -122,5 +122,5 @@ rule Inst_ok/no-package-infer:
   -- ConstructorType_wf: $bound(p, C) |- constructorTypeIR_inferred
   ---- ;; (TODO) check instantiation site
   -- Call_convention_ok:
-      p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
+      p C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
                     : argumentIR_cast*

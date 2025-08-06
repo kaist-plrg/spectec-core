@@ -225,9 +225,9 @@ rule tokenize = parse
   | "exit"
       { debug_token "exit"; EXIT (info lexbuf) }
   | "extern"
-{ debug_token "extern"; EXTERN (info lexbuf) }
+      { debug_token "extern"; EXTERN (info lexbuf) }
   | "header"
-{ debug_token "header"; HEADER (info lexbuf) }
+      { debug_token "header"; HEADER (info lexbuf) }
   | "header_union"
       { debug_token "header_union"; HEADER_UNION (info lexbuf) }
   | "true"
@@ -269,7 +269,7 @@ rule tokenize = parse
   | "string"
       { debug_token "string"; STRING (info lexbuf) }
   | "struct"
-{ debug_token "struct"; STRUCT (info lexbuf) }
+      { debug_token "struct"; STRUCT (info lexbuf) }
   | "switch"
       { debug_token "switch"; SWITCH (info lexbuf) }
   | "table"
@@ -279,9 +279,9 @@ rule tokenize = parse
   | "transition"
       { debug_token "transition"; TRANSITION (info lexbuf) }
   | "tuple"
-{ debug_token "tuple"; TUPLE (info lexbuf) }
+      { debug_token "tuple"; TUPLE (info lexbuf) }
   | "typedef"
-{ debug_token "typedef"; TYPEDEF (info lexbuf) }
+      { debug_token "typedef"; TYPEDEF (info lexbuf) }
   | "type"
       { debug_token "type"; TYPE (info lexbuf) }
   | "value_set"

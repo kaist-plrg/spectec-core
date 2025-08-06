@@ -148,7 +148,7 @@ def $compat'_plusminusmult(typeIR_l, typeIR_r) = false
 
 rule Expr_ok/binaryExpression-plusminusmult:
   p C |- expression_l binop expression_r
-       : (typedExpressionIR_l binop typedExpressionIR_r) `# expressionNoteIR
+       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `+ , `- , `* ]
   ---- ;; check both sides
   -- Expr_ok: p C |- expression_l : typedExpressionIR_l
@@ -184,7 +184,7 @@ def $compat'_satplusminus(typeIR_l, typeIR_r) = false
 
 rule Expr_ok/binaryExpression-satplusminus:
   p C |- expression_l binop expression_r
-       : (typedExpressionIR_l binop typedExpressionIR_r) `# expressionNoteIR
+       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `|+| , `|-| ]
   ---- ;; check both sides
   -- Expr_ok: p C |- expression_l : typedExpressionIR_l
@@ -219,7 +219,7 @@ def $compat'_divmod(typeIR_l, typeIR_r) = false
 
 rule Expr_ok/binaryExpression-divmod-lctk:
   p C |- expression_l binop expression_r
-       : (typedExpressionIR_l binop typedExpressionIR_r) `# expressionNoteIR
+       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `/ , `% ]
   ---- ;; check both sides
   -- Expr_ok: p C |- expression_l : typedExpressionIR_l
@@ -248,7 +248,7 @@ rule Expr_ok/binaryExpression-divmod-lctk:
 
 rule Expr_ok/binaryExpression-divmod-non-lctk:
   p C |- expression_l binop expression_r
-       : (typedExpressionIR_l binop typedExpressionIR_r) `# expressionNoteIR
+       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `/ , `% ]
   ---- ;; check both sides
   -- Expr_ok: p C |- expression_l : typedExpressionIR_l
@@ -294,7 +294,7 @@ def $compat'_shift(typeIR_l, typeIR_r) = false
 
 rule Expr_ok/binaryExpression-shift-fixbit:
   p C |- expression_l binop expression_r
-       : (typedExpressionIR_l binop typedExpressionIR_r) `# expressionNoteIR
+       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `<< , `>> ]
   ---- ;; check both sides
   -- Expr_ok: p C |- expression_l : typedExpressionIR_l
@@ -318,7 +318,7 @@ rule Expr_ok/binaryExpression-shift-fixbit:
 
 rule Expr_ok/binaryExpression-shift-integer:
   p C |- expression_l binop expression_r
-       : (typedExpressionIR_l binop typedExpressionIR_r) `# expressionNoteIR
+       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `<< , `>> ]
   ---- ;; check both sides
   -- Expr_ok: p C |- expression_l : typedExpressionIR_l
@@ -346,7 +346,7 @@ rule Expr_ok/binaryExpression-shift-integer:
 
 rule Expr_ok/binaryExpression-eq:
   p C |- expression_l binop expression_r
-       : (typedExpressionIR_l binop typedExpressionIR_r) `# expressionNoteIR
+       : (typedExpressionIR_l_cast binop typedExpressionIR_r_cast) `# expressionNoteIR
   -- if binop <- [ `== , `!= ]
   ---- ;; check both sides
   -- Expr_ok: p C |- expression_l : typedExpressionIR_l
@@ -379,7 +379,7 @@ def $compat'_compare(typeIR_l, typeIR_r) = false
 
 rule Expr_ok/binaryExpression-compare:
   p C |- expression_l binop expression_r
-       : (typedExpressionIR_l binop typedExpressionIR_r) `# expressionNoteIR
+       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `<= , `>= , ``< , ``> ]
   ---- ;; check both sides
   -- Expr_ok: p C |- expression_l : typedExpressionIR_l
@@ -415,7 +415,7 @@ def $compat'_bitwise(typeIR_l, typeIR_r) = false
 
 rule Expr_ok/binaryExpression-bitwise:
   p C |- expression_l binop expression_r
-       : (typedExpressionIR_l binop typedExpressionIR_r) `# expressionNoteIR
+       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `& , `^ , `| ]
   ---- ;; check both sides
   -- Expr_ok: p C |- expression_l : typedExpressionIR_l
@@ -451,25 +451,38 @@ def $compat'_concat(BIT `< _ >, BIT `< _ >) = true
 def $compat'_concat(typeIR_l, typeIR_r) = false
   -- otherwise
 
+dec $result_concat(typeIR, typeIR) : typeIR?
+dec $result'_concat(typeIR, typeIR) : typeIR?
+
+def $result_concat(typeIR_l, typeIR_r)
+  = $result'_concat($canon(typeIR_l), $canon(typeIR_r))
+def $result'_concat(INT `< w_a >, INT `< w_b >) = INT `< $(w_a + w_b) >
+def $result'_concat(INT `< w_a >, BIT `< w_b >) = INT `< $(w_a + w_b) >
+def $result'_concat(BIT `< w_a >, INT `< w_b >) = BIT `< $(w_a + w_b) >
+def $result'_concat(BIT `< w_a >, BIT `< w_b >) = BIT `< $(w_a + w_b) >
+def $result'_concat(typeIR_l, typeIR_r) = eps
+  -- otherwise
+
 rule Expr_ok/binaryExpression-concat:
   p C |- expression_l `++ expression_r
-       : (typedExpressionIR_l `++ typedExpressionIR_r) `# expressionNoteIR
+       : (typedExpressionIR_l_reduced `++ typedExpressionIR_r_reduced) `# expressionNoteIR
   ---- ;; check both sides
   -- Expr_ok: p C |- expression_l : typedExpressionIR_l
   -- Expr_ok: p C |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
-  -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
-        = $coerce_binary(typedExpressionIR_l, typedExpressionIR_r)
   -- if (typedExpressionIR_l_reduced, typedExpressionIR_r_reduced)
         = $reduce_serenum_binary(
-            typedExpressionIR_l_cast,
-            typedExpressionIR_r_cast,
+            typedExpressionIR_l,
+            typedExpressionIR_r,
             def $compat_concat
           )
   ---- ;; fetch annotations
-  -- if _ `# `( typeIR_reduced ctk_l_reduced ) = typedExpressionIR_l_reduced
-  -- if _ `# `( _ ctk_r_reduced ) = typedExpressionIR_r_reduced
+  -- if _ `# `( typeIR_l_reduced ctk_l_reduced ) = typedExpressionIR_l_reduced
+  -- if _ `# `( typeIR_r_reduced ctk_r_reduced ) = typedExpressionIR_r_reduced
+  ---- ;; compute the result type
+  -- if typeIR_reduced
+      = $result_concat(typeIR_l_reduced, typeIR_r_reduced)
   ---- ;; create typed expression
   -- if ctk_reduced = $join_ctk(ctk_l_reduced, ctk_r_reduced)
   -- if expressionNoteIR = `( typeIR_reduced ctk_reduced )
@@ -487,7 +500,7 @@ def $compat'_logical(typeIR_l, typeIR_r) = false
 
 rule Expr_ok/binaryExpression-logical:
   p C |- expression_l binop expression_r
-       : (typedExpressionIR_l binop typedExpressionIR_r) `# expressionNoteIR
+       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `&&, `|| ]
   ---- ;; check both sides
   -- Expr_ok: p C |- expression_l : typedExpressionIR_l
