@@ -1129,7 +1129,7 @@ rule Expr_ok/callExpression-constructorTarget-prefixedTypeName:
   -- if $is_concrete_extern_object(typeIR_object)
   ---- ;; create IR
   -- if callExpressionIR
-      = (typeIR_object `< typeArgumentIR_inferred* >) `( argumentIR_cast* )
+      = (prefixedNameIR `< typeArgumentIR_inferred* >) `( argumentIR_cast* )
   -- if expressionNoteIR = `( typeIR_object CTK )
 
 ;;;;;;; specializedType
@@ -1157,7 +1157,7 @@ rule Expr_ok/callExpression-constructorTarget-specializedType:
   -- if $is_concrete_extern_object(typeIR_object)
   ---- ;; create IR
   -- if callExpressionIR
-      = (typeIR_object `< typeArgumentIR_inferred* >) `( argumentIR_cast* )
+      = (prefixedNameIR `< typeArgumentIR_inferred* >) `( argumentIR_cast* )
   -- if expressionNoteIR = `( typeIR_object CTK )
 
 ;;; parenthesizedExpression

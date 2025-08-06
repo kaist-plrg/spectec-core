@@ -45,9 +45,6 @@ rule Lvalue_ok/lvalue-member-header:
   -- if nameIR = $name(member)
   -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_f, typeIR_f)*)
   ---- ;; create typed lvalue
-  -- if lvalue = lvalue_base `. nameIR
-  -- debug lvalue
-  -- debug typeIR
   -- if typedLvalueIR
       = (typedLvalueIR_base `. nameIR) `# `( typeIR )
 

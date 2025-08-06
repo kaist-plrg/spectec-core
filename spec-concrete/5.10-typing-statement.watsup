@@ -100,8 +100,8 @@ rule Stmt_ok/directApplicationStatement-prefixedTypeName:
            : C_0 f directApplicationStatementIR
   ---- ;; check instantiation
   -- Expr_ok: p C_0 |- namedType `( `EMPTY )
-                     : ((typeIR_object `< eps >) `( eps )) 
-                       `# `( _ _ )
+                     : ((prefixedNameIR `< eps >) `( eps )) 
+                       `# `( typeIR_object _ )
   ---- ;; only parser and controls can be direclty invoked
   -- if $compat_direct_application(typeIR_object)
   ---- ;; insert temporary variable for the constructed type
@@ -115,7 +115,7 @@ rule Stmt_ok/directApplicationStatement-prefixedTypeName:
       = callStatementIR
   ---- ;; create IR
   -- if directApplicationStatementIR
-      = typeIR_object `. APPLY `( argumentIR_cast* ) `;
+      = prefixedNameIR `. APPLY `( argumentIR_cast* ) `;
 
 ;;; returnStatement
 ;;; syntax returnStatement

@@ -145,9 +145,7 @@ syntax routineTargetIR =
   | TYPE prefixedNameIR `. nameIR
   | `( routineTargetIR )
 
-;; (TODO) Would it be better to represent this as
-;; (prefixedNameIR `< typeArgumentListIR >)?
-syntax constructorTargetIR = typeIR `< typeArgumentListIR >
+syntax constructorTargetIR = prefixedNameIR `< typeArgumentListIR >
 
 syntax callExpressionIR =
   | constructorTargetIR `( argumentListIR )
@@ -268,7 +266,7 @@ syntax callStatementIR =
 ;;
 
 syntax directApplicationStatementIR =
-  typeIR `. APPLY `( argumentListIR ) `;
+  prefixedNameIR `. APPLY `( argumentListIR ) `;
 
 ;;
 ;;;; Return statements
@@ -437,7 +435,7 @@ syntax objectInitializerIR = `= `{ objectDeclarationListIR }
 syntax objectInitializerOptIR = objectInitializerIR?
 
 syntax instantiationIR =
-  annotationList typeIR
+  annotationList prefixedNameIR
     `< typeArgumentListIR > `( argumentListIR ) nameIR
     objectInitializerOptIR `;
 
