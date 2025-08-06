@@ -296,16 +296,8 @@ relation MethodType_ok:
 ;; inserts fresh type variables for parameters with don't care types, (tid*)
 ;; and also identifies the ids of default arguments (id*)
 
-relation RoutineBase_ok:
-  cursor context |- expression : typedLvalueIR
-  hint(input %0 %1 %2)
-
 relation RoutineTarget_ok:
   cursor context |- routineTarget : routineTargetIR
-  hint(input %0 %1 %2)
-
-relation RoutineBase_lvalue_ok:
-  cursor context |- lvalue : typedLvalueIR
   hint(input %0 %1 %2)
 
 relation RoutineTarget_lvalue_ok:

@@ -34,7 +34,7 @@ rule Stmt_inst/directApplicationStatementIR:
   -- if oid = Ci.PATH ++ nameIR
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
   -- if constantDeclarationIR = `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
-  -- if routineTargetIR = ((`` tid) `# `( typeIR )) `. "apply"
+  -- if routineTargetIR = ((`` tid) `# `( typeIR CTK )) `. "apply"
   -- if callStatementIR = routineTargetIR `< eps > `( argumentListIR ) `;
   -- if blockStatementIR = `EMPTY `{ [ constantDeclarationIR, callStatementIR ] }
 
