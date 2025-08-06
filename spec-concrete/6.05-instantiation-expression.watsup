@@ -397,22 +397,6 @@ rule Expr_inst/indexAccessExpressionIR-bitslice:
 ;;;; syntax callExpressionIR =
 ;;;;; constructorTargetIR `( argumentListIR )
 
-dec $get_constructor_id(typeIR) : tid
-def $get_constructor_id(TID tid) = tid
-def $get_constructor_id((typeIR `< tid* `, tid* >) `< typeIR_args* >) = $get_constructor_id(typeIR)
-
-dec $to_name(argumentIR) : id?
-
-def $to_name(typedExpressionIR) = eps
-def $to_name(`_) = eps
-def $to_name(nameIR `= _) = nameIR
-
-dec $to_names(argumentListIR) : (id?)*
-
-def $to_names(eps) = eps
-def $to_names(argumentIR_h :: argumentIR_t*) = nameIR_h :: $to_names(argumentIR_t*)
-  -- if $to_name(argumentIR_h) = nameIR_h
-
 rule Expr_inst/callExpressionIR-instantiation:
   p Ci sto |- ((prefixedNameIR `< typeArgumentListIR >) `( argumentListIR )) `# _
     ==> sto'' (`! Ci.PATH)
