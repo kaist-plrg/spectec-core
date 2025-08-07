@@ -274,27 +274,20 @@ relation Program_ok:
 ;;;; Routine typing
 ;;
 
-;; Finds the type of a function,
-;; inserts fresh type variables for parameters with don't care types, (tid*)
-;; and also identifies the ids of default arguments (id*)
-
-relation FunctionType_ok:
-  cursor context |- prefixedNameIR `< typeArgumentListIR > `( argument* )
-                  : functionTypeIR `< `# tid* > `( `# id* )
-  hint(input %0 %1 %2 %3 %4)
-
-;; Finds the type of a method,
-;; inserts fresh type variables for parameters with don't care types, (tid*)
-;; and also identifies the ids of default arguments (id*)
-
-relation MethodType_ok:
-  cursor context |- typedExpressionIR `. nameIR `< typeArgumentListIR > `( argument* )
-                  : methodTypeIR `< `# tid* > `( `# id* )
-  hint(input %0 %1 %2 %3 %4 %5)
-
 ;; Finds the type of a routine target,
 ;; inserts fresh type variables for parameters with don't care types, (tid*)
 ;; and also identifies the ids of default arguments (id*)
+
+dec $is_static_routineTarget(routineTargetIR) : ctk
+
+def $is_static_routineTarget(_ `. nameIR) = LCTK
+  -- if nameIR <- [ "minSizeInBits", "minSizeInBytes",
+                    "maxSizeInBits", "maxSizeInBytes" ]
+def $is_static_routineTarget(TYPE _ `. nameIR) = LCTK
+  -- if nameIR <- [ "minSizeInBits", "minSizeInBytes",
+                    "maxSizeInBits", "maxSizeInBytes" ]
+def $is_static_routineTarget(_) = DYN
+  -- otherwise
 
 relation RoutineTarget_ok:
   cursor context |- routineTarget : routineTargetIR
