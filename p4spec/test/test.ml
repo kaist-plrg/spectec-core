@@ -33,9 +33,10 @@ let log_stat name stat total : unit =
 
 exception TestCheckErr of string * region * float
 exception TestCheckNegErr of float
-exception TestUnknownErr of float
-exception TestParseErr of string * region * float
+exception TestParseFileErr of string * region * float
+exception TestParseStringErr of string * region * float
 exception TestParseRoundtripErr of float
+exception TestUnknownErr of float
 
 (* Timer *)
 
@@ -77,7 +78,7 @@ let collect_excludes (paths_exclude : string list) =
   in
   List.concat_map collect_exclude filenames_exclude
 
-(* Parser test *)
+(* Spec Elaboration test *)
 
 let elab specdir =
   specdir
@@ -85,17 +86,46 @@ let elab specdir =
   |> List.concat_map Frontend.Parse.parse_file
   |> Elaborate.Elab.elab_spec
 
+let elab_test specdir =
+  let spec_il = elab specdir in
+  Il.Print.string_of_spec spec_il |> print_endline
+
+let elab_command =
+  Core.Command.basic ~summary:"run elaboration test"
+    (let open Core.Command.Let_syntax in
+     let open Core.Command.Param in
+     let%map specdir = flag "-s" (required string) ~doc:"p4 spec directory" in
+     fun () ->
+       try elab_test specdir
+       with ParseError (at, msg) | ElabError (at, msg) ->
+         Format.printf "Error on elaboration: %s\n" (string_of_error at msg))
+
+(* P4 Parser test *)
+
+let parse_file time_start includes filename =
+  try Parsing.Parse.parse_file includes filename
+  with ParseError (at, msg) -> raise (TestParseFileErr (msg, at, time_start))
+
+let parse_string time_start filename program_dump =
+  try Parsing.Parse.parse_string filename program_dump
+  with ParseError (at, msg) ->
+    raise (TestParseStringErr (msg, at, time_start))
+
+let parse_roundtrip time_start includes filename spec =
+  let program = parse_file time_start includes filename in
+  let program_dump =
+    Format.asprintf "%a\n" (Parsing.Pp.pp_program spec) program
+  in
+  let program_roundtrip = parse_string time_start filename program_dump in
+  if not (Il.Eq.eq_value ~dbg:true program program_roundtrip) then
+    raise (TestParseRoundtripErr time_start)
+  else time_start
+
 let run_parser includes filename spec =
   let time_start = start () in
-  try
-    let program = Parsing.Parse.parse_file includes filename in
-    let file' = Format.asprintf "%a\n" (Parsing.Pp.pp_program spec) program in
-    let program_roundtrip = Parsing.Parse.parse_string filename file' in
-    if not (Il.Eq.eq_value ~dbg:true program program_roundtrip) then
-      raise (TestParseRoundtripErr time_start)
-    else time_start
-  with
-  | ParseError (at, msg) -> raise (TestParseErr (msg, at, time_start))
+  try parse_roundtrip time_start includes filename spec with
+  | TestParseFileErr _ as err -> raise err
+  | TestParseStringErr _ as err -> raise err
   | TestParseRoundtripErr _ as err -> raise err
   | _ -> raise (TestUnknownErr time_start)
 
@@ -112,16 +142,30 @@ let run_parser_test stat includes excludes filename spec =
     try
       let time_start = run_parser includes filename spec in
       let duration = stop time_start in
-      let log = Format.asprintf "Parser success: %s" filename in
+      let log = Format.asprintf "Parser roundtrip success: %s" filename in
       log |> print_endline;
       Format.eprintf "%s\n" log;
       Format.eprintf ">>> took %.6f seconds\n" duration;
       { stat with durations = duration :: stat.durations }
     with
-    | TestParseErr (msg, at, time_start) ->
+    | TestParseFileErr (msg, at, time_start) ->
         let duration = stop time_start in
         let log =
-          Format.asprintf "Error on parser: %s\n%s" filename
+          Format.asprintf "Error parsing file: %s\n%s" filename
+            (string_of_error at msg)
+        in
+        log |> print_endline;
+        Format.eprintf "%s\n" log;
+        Format.eprintf ">>> took %.6f seconds\n" duration;
+        {
+          stat with
+          durations = duration :: stat.durations;
+          fail_run = stat.fail_run + 1;
+        }
+    | TestParseStringErr (msg, at, time_start) ->
+        let duration = stop time_start in
+        let log =
+          Format.asprintf "Error parsing string: %s\n%s" filename
             (string_of_error at msg)
         in
         log |> print_endline;
@@ -134,9 +178,7 @@ let run_parser_test stat includes excludes filename spec =
         }
     | TestParseRoundtripErr time_start ->
         let duration = stop time_start in
-        let log =
-          Format.asprintf "Error on parser: roundtrip fail in %s" filename
-        in
+        let log = Format.asprintf "Error roundtripping parser: %s" filename in
         log |> print_endline;
         Format.eprintf "%s\n" log;
         Format.eprintf ">>> took %.6f seconds\n" duration;
@@ -147,9 +189,7 @@ let run_parser_test stat includes excludes filename spec =
         }
     | TestUnknownErr time_start ->
         let duration = stop time_start in
-        let log =
-          Format.asprintf "Error on parser: unknown error in %s" filename
-        in
+        let log = Format.asprintf "Unknown error on parser: %s" filename in
         log |> print_endline;
         Format.eprintf "%s\n" log;
         Format.eprintf ">>> took %.6f seconds\n" duration;
@@ -190,23 +230,7 @@ let run_parser_command =
      and specdir = flag "-s" (required string) ~doc:"p4 spec directory" in
      fun () -> run_parser_test_driver includes excludes testdir specdir)
 
-(* Elaboration test *)
-
-let elab_test specdir =
-  let spec_il = elab specdir in
-  Il.Print.string_of_spec spec_il |> print_endline
-
-let elab_command =
-  Core.Command.basic ~summary:"run elaboration test"
-    (let open Core.Command.Let_syntax in
-     let open Core.Command.Param in
-     let%map specdir = flag "-s" (required string) ~doc:"p4 spec directory" in
-     fun () ->
-       try elab_test specdir
-       with ParseError (at, msg) | ElabError (at, msg) ->
-         Format.printf "Error on elaboration: %s\n" (string_of_error at msg))
-
-(* IL test *)
+(* IL interpreter test *)
 
 let run_il negative spec_il includes_p4 filename_p4 =
   let time_start = start () in
@@ -305,7 +329,7 @@ let run_il_command =
      fun () ->
        run_il_test_driver negative specdir includes_p4 excludes_p4 testdir_p4)
 
-(* Structuring test *)
+(* Spec Structuring test *)
 
 let structure specdir = specdir |> elab |> Structure.Struct.struct_spec
 
@@ -323,7 +347,7 @@ let structure_command =
        with ParseError (at, msg) | ElabError (at, msg) ->
          Format.printf "%s\n" (string_of_error at msg))
 
-(* SL test *)
+(* SL Interpreter test *)
 
 let run_sl negative spec_sl includes_p4 filename_p4 =
   let time_start = start () in

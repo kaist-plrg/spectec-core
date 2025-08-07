@@ -765,6 +765,46 @@ rule Decl_ok/typeDeclaration-typedefDeclaration-typedef-type:
 
 ;;;;;; derivedTypeDeclaration
 
+rule Decl_ok/typeDeclaration-typedefDeclaration-typedef-derivedTypeDeclaration-mono:
+  GLOBAL C_0 |- annotationList TYPEDEF derivedTypeDeclaration name `;
+              : C_1 typedefDeclarationIR
+  ---- ;; check type
+  -- Decl_ok: GLOBAL C_0 |- derivedTypeDeclaration
+                          : C_1 derivedTypeDeclarationIR
+  ---- ;; find the created type
+  -- if `{ tid }
+      = $diff_set<tid>($dom_map<tid, typeDefIR>(C_1.GLOBAL.TDENV),
+                       $dom_map<tid, typeDefIR>(C_0.GLOBAL.TDENV))
+  -- if typeIR = $find_type(GLOBAL, C_1, `` tid)
+  ---- ;; create typedef and add to context
+  -- if nameIR = $name(name)
+  -- if typeIR_typedef = TYPEDEF nameIR typeIR
+  -- TypeDef_wf: $bound(GLOBAL, C_0) |- typeIR_typedef
+  -- if C_2 = $add_type(GLOBAL, C_0, nameIR, typeIR_typedef)
+  ---- ;; create IR
+  -- if typedefDeclarationIR
+      = annotationList TYPEDEF derivedTypeDeclarationIR nameIR `;
+
+rule Decl_ok/typeDeclaration-typedefDeclaration-typedef-derivedTypeDeclaration-poly:
+  GLOBAL C_0 |- annotationList TYPEDEF derivedTypeDeclaration name `;
+              : C_1 typedefDeclarationIR
+  ---- ;; check type
+  -- Decl_ok: GLOBAL C_0 |- derivedTypeDeclaration
+                          : C_1 derivedTypeDeclarationIR
+  ---- ;; find the created type
+  -- if `{ tid }
+      = $diff_set<tid>($dom_map<tid, typeDefIR>(C_1.GLOBAL.TDENV),
+                       $dom_map<tid, typeDefIR>(C_0.GLOBAL.TDENV))
+  -- if typeIR `< eps `, eps > = $find_type(GLOBAL, C_1, `` tid)
+  ---- ;; create typedef and add to context
+  -- if nameIR = $name(name)
+  -- if typeIR_typedef = TYPEDEF nameIR ((typeIR `< eps `, eps >) `< eps >)
+  -- TypeDef_wf: $bound(GLOBAL, C_0) |- typeIR_typedef
+  -- if C_2 = $add_type(GLOBAL, C_0, nameIR, typeIR_typedef)
+  ---- ;; create IR
+  -- if typedefDeclarationIR
+      = annotationList TYPEDEF derivedTypeDeclarationIR nameIR `;
+
 ;;;;; annotationList TYPE type name `;
 
 rule Decl_ok/typeDeclaration-typedefDeclaration-newtype:

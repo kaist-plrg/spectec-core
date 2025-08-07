@@ -29,7 +29,7 @@ let run_typing' ?(debug : bool = false) (spec : spec)
     let _ = do_typing ctx spec value_program in
     WellTyped
   with
-  | Util.Error.ConvertInError msg -> IllFormed msg
+  | Util.Error.ParseError (_, msg) -> IllFormed msg
   | Util.Error.InterpError (at, msg) -> IllTyped (at, msg)
 
 let run_typing ?(debug : bool = false) (spec : spec) (includes_p4 : string list)

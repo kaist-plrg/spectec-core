@@ -20,6 +20,19 @@ rule Lvalue_ok/referenceExpression-prefixedNonTypeName-assign:
 
 ;;; lvalue `. member
 
+rule Lvalue_ok/lvalue-member-stack-next:
+  p C |- lvalue_base `. member : typedLvalueIR
+  ---- ;; check base lvaue
+  -- Lvalue_ok: p C |- lvalue_base : typedLvalueIR_base
+  -- if _ `# `( typeIR_base ) = typedLvalueIR_base
+  ---- ;; check that the lvalue is a struct
+  -- if typeIR `[ _ ] = $canon(typeIR_base)
+  ---- ;; check that the field is "next"
+  -- if "next" = $name(member)
+  ---- ;; create typed lvalue
+  -- if typedLvalueIR
+      = (typedLvalueIR_base `. "next") `# `( typeIR )
+
 rule Lvalue_ok/lvalue-member-struct:
   p C |- lvalue_base `. member : typedLvalueIR
   ---- ;; check base lvaue

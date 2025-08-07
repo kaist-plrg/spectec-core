@@ -104,8 +104,8 @@
   errorAccessExpression memberAccessExpression indexAccessExpression accessExpression
   memberAccessExpressionNonBrace indexAccessExpressionNonBrace accessExpressionNonBrace
   (* >> Call expressions *)
-  functionTarget methodTarget routineTarget constructorTarget callTarget callExpression
-  methodTargetNonBrace routineTargetNonBrace callTargetNonBrace callExpressionNonBrace
+  routineTarget constructorTarget callTarget callExpression
+  routineTargetNonBrace callTargetNonBrace callExpressionNonBrace
   (* >> Parenthesized Expressions *) parenthesizedExpression
   (* >> Expressions *)
   expression expressionList memberAccessBase sequenceElementExpression recordElementExpression dataElementExpression
@@ -204,13 +204,13 @@ int:
     { fst int }
 ;
 
-r_angle:
+%inline r_angle:
 	| info_r = R_ANGLE
     { info_r }
 	| info_r = R_ANGLE_SHIFT
     { info_r }
 ;
-l_angle:
+%inline l_angle:
 	| info_r = L_ANGLE
     { info_r }
 	| info_r = L_ANGLE_ARGS
@@ -449,7 +449,7 @@ namedExpressionList:
 
 (* Expressions *)
 (* >> Literal expressions *)
-literalExpression:
+%inline literalExpression:
 	| TRUE { [ Term "TRUE" ] #@ "literalExpression" }
 	| FALSE { [ Term "FALSE" ] #@ "literalExpression" }
 	| num = number { num }
@@ -457,25 +457,25 @@ literalExpression:
 ;
 
 (* >> Reference expressions *)
-referenceExpression:
+%inline referenceExpression:
 	| n = prefixedNonTypeName { n }
 	| THIS { [ Term "THIS" ] #@ "referenceExpression" }
 ;
 
 (* >> Default expressions *)
-defaultExpression:
+%inline defaultExpression:
 	| DOTS { [ Term "..." ] #@ "defaultExpression" }
 ;
 
 (* >> Unary, binary, and ternary expressions *)
-unop: 
+%inline unop: 
 	| NOT { [ Term "!" ] #@ "unop" }
 	| COMPLEMENT { [ Term "~" ] #@ "unop" }
 	| MINUS { [ Term "-" ] #@ "unop" }
 	| PLUS { [ Term "+" ] #@ "unop" }
 ;
 
-unaryExpression:
+%inline unaryExpression:
 	| o = unop e = expression %prec PREFIX
 		{ [ NT o; NT e ] #@ "unaryExpression" }
 ;
@@ -504,77 +504,77 @@ unaryExpression:
   | OR { [ Term "||" ] #@ "binop" }
 ;
 
-binaryExpression:
+%inline binaryExpression:
 	| l = expression o = binop r = expression
 		{ [ NT l; NT o; NT r ] #@ "binaryExpression" }
 ;
 
-binaryExpressionNonBrace:
+%inline binaryExpressionNonBrace:
 	| l = expressionNonBrace o = binop r = expression
 		{ [ NT l; NT o; NT r ] #@ "binaryExpressionNonBrace" }
 ;
 
-ternaryExpression:
+%inline ternaryExpression:
 	| c = expression QUESTION t = expression COLON f = expression
 		{ [ NT c; Term "?"; NT t; Term ":"; NT f ] #@ "ternaryExpression" }
 ;
 
-ternaryExpressionNonBrace:
+%inline ternaryExpressionNonBrace:
 	| c = expressionNonBrace QUESTION t = expression COLON f = expression
 		{ [ NT c; Term "?"; NT t; Term ":"; NT f ] #@ "ternaryExpressionNonBrace" }
 ;
 
 (* >> Cast expressions *)
-castExpression:
+%inline castExpression:
 	| L_PAREN t = typeRef R_PAREN e = expression %prec PREFIX
     { [ Term "("; NT t; Term ")"; NT e ] #@ "castExpression" }
 ;
 
 (* >> Data (aggregate) expressions *)
-dataExpression:
+%inline dataExpression:
 	| INVALID { [ Term "{#}" ] #@ "dataExpression" }
 	| L_BRACE e = dataElementExpression c = trailingCommaOpt R_BRACE
     { [ Term "{"; NT e; NT c; Term "}" ] #@ "dataExpression" }
 ;
 
 (* >> Member and index access expressions *)
-errorAccessExpression:
+%inline errorAccessExpression:
 	| ERROR DOT m = member
 		{ [ Term "ERROR"; Term "."; NT m ] #@ "errorAccessExpression" }
 ;
 
-memberAccessExpression:
+%inline memberAccessExpression:
 	| e = memberAccessBase DOT m = member %prec DOT
 		{ [ NT e; Term "."; NT m ] #@ "memberAccessExpression" }
 ;
 
-indexAccessExpression:
+%inline indexAccessExpression:
 	| a = expression L_BRACKET i = expression R_BRACKET
 		{ [ NT a; Term "["; NT i; Term "]" ] #@ "indexAccessExpression" }
 	| a = expression L_BRACKET h = expression COLON l = expression R_BRACKET
 		{ [ NT a; Term "["; NT h; Term ":"; NT l; Term "]" ] #@ "indexAccessExpression" }
 ;
 
-accessExpression:
+%inline accessExpression:
 	| e = errorAccessExpression
 	| e = memberAccessExpression
 	| e = indexAccessExpression
 		{ e }
 ;
 
-memberAccessExpressionNonBrace:
+%inline memberAccessExpressionNonBrace:
 	| e = memberAccessBaseNonBrace DOT m = member %prec DOT
 		{ [ NT e; Term "."; NT m ] #@ "memberAccessExpressionNonBrace" }
 ;
 
-indexAccessExpressionNonBrace:
+%inline indexAccessExpressionNonBrace:
 	| a = expressionNonBrace L_BRACKET i = expression R_BRACKET
 		{ [ NT a; Term "["; NT i; Term "]" ] #@ "indexAccessExpressionNonBrace" }
 	| a = expressionNonBrace L_BRACKET h = expression COLON l = expression R_BRACKET
 		{ [ NT a; Term "["; NT h; Term ":"; NT l; Term "]" ] #@ "indexAccessExpressionNonBrace" }
 ;
 
-accessExpressionNonBrace:
+%inline accessExpressionNonBrace:
 	| e = errorAccessExpression
 	| e = memberAccessExpressionNonBrace
 	| e = indexAccessExpressionNonBrace
@@ -582,29 +582,21 @@ accessExpressionNonBrace:
 ;
 
 (* >> Call expressions *)
-functionTarget:
-	| n = prefixedNonTypeName { n }
-;
-
-methodTarget:
-	| e = memberAccessExpression { e }
-;
-
 %inline routineTarget:
   | e = expression { e }
 ;
 
-constructorTarget:
+%inline constructorTarget:
 	| n = namedType { n }
 ;
 
-callTarget:
+%inline callTarget:
 	| t = routineTarget
 	| t = constructorTarget
 		{ t }
 ;
 
-callExpression:
+%inline callExpression:
 	| t = callTarget L_PAREN args = argumentList R_PAREN
 		{ [ NT t; Term "("; NT args; Term ")" ] #@ "callExpression" }
 	| t = routineTarget l_angle targs = realTypeArgumentList r_angle L_PAREN args = argumentList R_PAREN
@@ -612,21 +604,17 @@ callExpression:
       #@ "callExpression" }
 ;
 
-methodTargetNonBrace:
-	| e = memberAccessExpressionNonBrace { e }
-;
-
-routineTargetNonBrace:
+%inline routineTargetNonBrace:
   | e = expressionNonBrace { e }
 ;
 
-callTargetNonBrace:
+%inline callTargetNonBrace:
 	| t = routineTargetNonBrace
 	| t = constructorTarget
 		{ t }
 ;
 
-callExpressionNonBrace:
+%inline callExpressionNonBrace:
 	| t = callTargetNonBrace L_PAREN args = argumentList R_PAREN
 		{ [ NT t; Term "("; NT args; Term ")" ] #@ "callExpressionNonBrace" }
 	| t = routineTargetNonBrace l_angle targs = realTypeArgumentList r_angle L_PAREN args = argumentList R_PAREN
@@ -635,7 +623,7 @@ callExpressionNonBrace:
 
 (* >> Parenthesized Expressions *)
 
-parenthesizedExpression:
+%inline parenthesizedExpression:
 	| L_PAREN e = expression R_PAREN
 		{ [ Term "("; NT e; Term ")" ] #@ "parenthesizedExpression" }
 ;

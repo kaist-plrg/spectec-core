@@ -104,6 +104,7 @@ def $nestable'_typedef(ERROR) = true
 def $nestable'_typedef(STRING) = true
 def $nestable'_typedef(numberTypeIR) = true
 def $nestable'_typedef(TID _) = true
+def $nestable'_typedef(TYPE _ _) = true
 def $nestable'_typedef(dataTypeIR) = true
 def $nestable'_typedef(_) = false
   -- otherwise
