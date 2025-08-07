@@ -416,7 +416,8 @@ typeParameterListOpt:
 (* Parameters *)
 parameter:
 	| al = annotationList dir = direction t = typeRef n = name i = initializerOpt
-		{ [ NT al; NT dir; NT t; NT n; NT i ] #@ "parameter" }
+		{ declare_var_of_il n false;
+      [ NT al; NT dir; NT t; NT n; NT i ] #@ "parameter" }
 ;
 
 nonEmptyParameterList:
