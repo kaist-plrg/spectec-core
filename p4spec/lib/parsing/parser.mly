@@ -68,7 +68,7 @@
 %left OR
 %left AND
 %left EQ NE
-%left R_ANGLE LE GE
+%left L_ANGLE R_ANGLE LE GE
 %left BIT_OR
 %left BIT_XOR
 %left BIT_AND
@@ -1174,7 +1174,7 @@ externFunctionDeclaration:
 		{ let decl =
         [ NT al; Term "EXTERN"; NT p; Term ";" ] #@ "externFunctionDeclaration"
       in
-      declare_var (id_of_declaration decl) (has_type_params_declaration decl);
+      declare_var (id_of_function_prototype p) (has_type_params_function_prototype p);
       decl }
 ;
 
@@ -1354,7 +1354,7 @@ tableActionReference:
 
 tableAction:
   | al = annotationList ac = tableActionReference SEMICOLON
-    { [ NT al; NT ac; Term ";" ] #@ "action" }
+    { [ NT al; NT ac; Term ";" ] #@ "tableAction" }
 ;
 
 tableActionList:
