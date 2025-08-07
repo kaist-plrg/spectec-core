@@ -1,4 +1,3 @@
-p4c/testdata/p4_16_samples/dash/dash-pipeline-pna-dpdk.p4
 p4c/testdata/p4_16_samples/dash/dash-pipeline-v1model-bmv2.p4
 p4c/testdata/p4_16_samples/omec/up4.p4
 p4c/testdata/p4_16_samples/bfd_offload.p4
