@@ -235,7 +235,7 @@ rule Decl_ok/instantiation-specializedType-objectInitializer:
   ---- ;; check constructor type
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
   -- if argument* = $flatten_argumentList(argumentList)
-  -- ConstructorType_ok: p C_0 |- prefixedNameIR `< eps > `( argument* )
+  -- ConstructorType_ok: p C_0 |- prefixedNameIR `< typeArgumentIR* > `( argument* )
                                 : constructorTypeIR `< `# tid_inserted* > `( `# id_default* )
   ---- ;; check arguments
   -- (Argument_ok: p C_0 |- argument : argumentIR)*

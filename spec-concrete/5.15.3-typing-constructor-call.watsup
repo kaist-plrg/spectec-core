@@ -95,7 +95,7 @@ rule Inst_ok/no-package-no-infer:
 rule Inst_ok/no-package-infer:
   p C |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > 
                            `( argumentIR* `# id_default* )
-       : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+       : typeIR_object_inferred `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; if the constructor is not for a package object
   -- if CONSTRUCTOR `( parameterTypeIR* ) `-> typeIR_object = constructorTypeIR
   -- if ~$is_package_object_typeIR($canon(typeIR_object))

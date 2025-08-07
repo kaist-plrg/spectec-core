@@ -1062,10 +1062,12 @@ rule Expr_ok/callExpression-routineTarget-no-typeArgumentList:
                    : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; call must not return void on expression level
   -- if typeIR_ret =/= VOID
+  ---- ;; check whether the call is static
+  -- if ctk = $is_static_routineTarget(routineTargetIR)
   ---- ;; create IR
   -- if callExpressionIR
       = routineTargetIR `< typeArgumentIR_inferred* > `( argumentIR_cast* )
-  -- if expressionNoteIR = `( typeIR_ret DYN )
+  -- if expressionNoteIR = `( typeIR_ret ctk )
 
 rule Expr_ok/callExpression-routineTarget-typeArgumentList:
   p C |- routineTarget `< realTypeArgumentList > `( argumentList )
@@ -1089,11 +1091,12 @@ rule Expr_ok/callExpression-routineTarget-typeArgumentList:
            : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; call must not return void on expression level
   -- if typeIR_ret =/= VOID
+  ---- ;; check whether the call is static
+  -- if ctk = $is_static_routineTarget(routineTargetIR)
   ---- ;; create IR
-  ---- ;; (TODO) should "min/max-SizeIn-Bits/Bytes" be LCTK?
   -- if callExpressionIR
       = routineTargetIR `< typeArgumentIR_inferred* > `( argumentIR_cast* )
-  -- if expressionNoteIR = `( typeIR_ret DYN )
+  -- if expressionNoteIR = `( typeIR_ret ctk )
 
 ;;;;;; constructorTarget
 ;;;;;; syntax constructorTarget = namedType

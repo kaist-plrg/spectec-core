@@ -12223,7 +12223,7 @@ relation Expr_ok: cursor context `|-` expression `:` typedExpressionIR
       -- let typeIR = `BIT<` ((n_hi - n_lo) + 1) `>` as typeIR
       -- let expressionNoteIR = `(` typeIR ctk_base_reduced `)`
 
-   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1047.1-1068.47
+   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1047.1-1070.47
    rule callExpression-routineTarget-no-typeArgumentList: p C `|-` expression `:` callExpressionIR as expressionIR `#` expressionNoteIR
       -- if expression <: callExpression
       -- let callExpression = expression as callExpression
@@ -12238,10 +12238,11 @@ relation Expr_ok: cursor context `|-` expression `:` typedExpressionIR
       -- let tid_infer*{tid_infer <- tid_infer*} = tid_inserted*{tid_inserted <- tid_inserted*}
       -- Call_ok: p C `|-` routineTypeIR `<` [] `#` tid_infer*{tid_infer <- tid_infer*} `>(` argumentIR*{argumentIR <- argumentIR*} `#` id_default*{id_default <- id_default*} `):` typeIR_ret `<` typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} `>(` argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} `)`
       -- if (typeIR_ret =/= `VOID` as typeIR)
+      -- let ctk = $is_static_routineTarget(routineTargetIR)
       -- let callExpressionIR = routineTargetIR `<` typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} `>(` argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} `)`
-      -- let expressionNoteIR = `(` typeIR_ret `DYN` `)`
+      -- let expressionNoteIR = `(` typeIR_ret ctk `)`
 
-   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1070.1-1096.47
+   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1072.1-1099.47
    rule callExpression-routineTarget-typeArgumentList: p C `|-` expression `:` callExpressionIR as expressionIR `#` expressionNoteIR
       -- if expression <: callExpression
       -- let callExpression = expression as callExpression
@@ -12256,10 +12257,11 @@ relation Expr_ok: cursor context `|-` expression `:` typedExpressionIR
       -- let tid_infer*{tid_infer <- tid_infer*} = tid_impl*{tid_impl <- tid_impl*} ++ tid_inserted*{tid_inserted <- tid_inserted*}
       -- Call_ok: p C `|-` routineTypeIR `<` typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} `#` tid_infer*{tid_infer <- tid_infer*} `>(` argumentIR*{argumentIR <- argumentIR*} `#` id_default*{id_default <- id_default*} `):` typeIR_ret `<` typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} `>(` argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} `)`
       -- if (typeIR_ret =/= `VOID` as typeIR)
+      -- let ctk = $is_static_routineTarget(routineTargetIR)
       -- let callExpressionIR = routineTargetIR `<` typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} `>(` argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} `)`
-      -- let expressionNoteIR = `(` typeIR_ret `DYN` `)`
+      -- let expressionNoteIR = `(` typeIR_ret ctk `)`
 
-   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1128.1-1146.50
+   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1131.1-1149.50
    rule callExpression-constructorTarget-prefixedTypeName: p C `|-` expression `:` callExpressionIR as expressionIR `#` expressionNoteIR
       -- if expression <: callExpression
       -- let callExpression = expression as callExpression
@@ -12276,7 +12278,7 @@ relation Expr_ok: cursor context `|-` expression `:` typedExpressionIR
       -- let callExpressionIR = prefixedNameIR `<` typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} `>` `(` argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} `)`
       -- let expressionNoteIR = `(` typeIR_object `CTK` `)`
 
-   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1150.1-1174.50
+   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1153.1-1177.50
    rule callExpression-constructorTarget-specializedType: p C `|-` expression `:` callExpressionIR as expressionIR `#` expressionNoteIR
       -- if expression <: callExpression
       -- let callExpression = expression as callExpression
@@ -12296,7 +12298,7 @@ relation Expr_ok: cursor context `|-` expression `:` typedExpressionIR
       -- let callExpressionIR = prefixedNameIR `<` typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} `>` `(` argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} `)`
       -- let expressionNoteIR = `(` typeIR_object `CTK` `)`
 
-   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1179.1-1182.50
+   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1182.1-1185.50
    rule parenthesizedExpression: p C `|-` expression' `:` `(` typedExpressionIR `)` as expressionIR `#` expressionNoteIR
       -- if expression' <: parenthesizedExpression
       -- let `(` expression `)` = expression' as parenthesizedExpression
@@ -12344,8 +12346,8 @@ relation Lvalue_ok: cursor context `|-` lvalue `:` typedLvalueIR
       -- if value?{value <- value?} matches ()
       -- if ((direction = `OUT`) \/ (direction = `INOUT`))
 
-   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:23.1-34.54
-   rule lvalue-member-stack-next: p C `|-` lvalue `:` typedLvalueIR
+   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:23.1-35.54
+   rule lvalue-member-stack-next-last: p C `|-` lvalue `:` typedLvalueIR
       -- if lvalue matches `%.%`
       -- let lvalue_base `.` member = lvalue
       -- Lvalue_ok: p C `|-` lvalue_base `:` typedLvalueIR_base
@@ -12353,10 +12355,11 @@ relation Lvalue_ok: cursor context `|-` lvalue `:` typedLvalueIR
       -- let typeIR' = $canon(typeIR_base)
       -- if typeIR' <: headerStackTypeIR
       -- let typeIR `[` _nat `]` = typeIR' as headerStackTypeIR
-      -- if ("next" = $name(member))
-      -- let typedLvalueIR = typedLvalueIR_base `.` "next" `#(` typeIR `)`
+      -- let nameIR = $name(member)
+      -- if ((nameIR = "next") \/ (nameIR = "last"))
+      -- let typedLvalueIR = typedLvalueIR_base `.` nameIR `#(` typeIR `)`
 
-   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:36.1-48.54
+   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:37.1-49.54
    rule lvalue-member-struct: p C `|-` lvalue `:` typedLvalueIR
       -- if lvalue matches `%.%`
       -- let lvalue_base `.` member = lvalue
@@ -12371,7 +12374,7 @@ relation Lvalue_ok: cursor context `|-` lvalue `:` typedLvalueIR
       -- let ?(typeIR) = typeIR''?{typeIR'' <- typeIR''?}
       -- let typedLvalueIR = typedLvalueIR_base `.` nameIR `#(` typeIR `)`
 
-   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:50.1-62.54
+   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:51.1-63.54
    rule lvalue-member-header: p C `|-` lvalue `:` typedLvalueIR
       -- if lvalue matches `%.%`
       -- let lvalue_base `.` member = lvalue
@@ -12386,7 +12389,7 @@ relation Lvalue_ok: cursor context `|-` lvalue `:` typedLvalueIR
       -- let ?(typeIR) = typeIR''?{typeIR'' <- typeIR''?}
       -- let typedLvalueIR = typedLvalueIR_base `.` nameIR `#(` typeIR `)`
 
-   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:64.1-76.54
+   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:65.1-77.54
    rule lvalue-member-union: p C `|-` lvalue `:` typedLvalueIR
       -- if lvalue matches `%.%`
       -- let lvalue_base `.` member = lvalue
@@ -12401,7 +12404,7 @@ relation Lvalue_ok: cursor context `|-` lvalue `:` typedLvalueIR
       -- let ?(typeIR) = typeIR''?{typeIR'' <- typeIR''?}
       -- let typedLvalueIR = typedLvalueIR_base `.` nameIR `#(` typeIR `)`
 
-   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:80.1-105.25
+   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:81.1-106.25
    rule lvalue-expression-lctk: p C `|-` lvalue `:` typedLvalueIR
       -- if lvalue matches `%[%]`
       -- let lvalue_base `[` expression_index `]` = lvalue
@@ -12423,7 +12426,7 @@ relation Lvalue_ok: cursor context `|-` lvalue `:` typedLvalueIR
       -- if (n_index < n_size)
       -- let typedLvalueIR = typedLvalueIR_base `[` typedExpressionIR_index_reduced `]` `#(` typeIR `)`
 
-   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:107.1-129.25
+   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:108.1-130.25
    rule lvalue-expression-non-lctk: p C `|-` lvalue `:` typedLvalueIR
       -- if lvalue matches `%[%]`
       -- let lvalue_base `[` expression_index `]` = lvalue
@@ -12440,7 +12443,7 @@ relation Lvalue_ok: cursor context `|-` lvalue `:` typedLvalueIR
       -- if (ctk_index =/= `LCTK`)
       -- let typedLvalueIR = typedLvalueIR_base `[` typedExpressionIR_index_reduced `]` `#(` typeIR `)`
 
-   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:133.1-174.25
+   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:134.1-175.25
    rule lvalue-expression-expression: p C `|-` lvalue `:` typedLvalueIR
       -- if lvalue matches `%[%:%]`
       -- let lvalue_base `[` expression_hi `:` expression_lo `]` = lvalue
@@ -12471,7 +12474,7 @@ relation Lvalue_ok: cursor context `|-` lvalue `:` typedLvalueIR
       -- let typeIR = `BIT<` ((n_hi - n_lo) + 1) `>` as typeIR
       -- let typedLvalueIR = typedLvalueIR_base `[` typedExpressionIR_hi_reduced `:` typedExpressionIR_lo_reduced `]` `#(` typeIR `)`
 
-   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:178.1-185.54
+   ;; ../../../../spec-concrete/5.08-typing-lvalue.watsup:179.1-186.54
    rule parenthesized: p C `|-` lvalue `:` typedLvalueIR
       -- if lvalue matches `(%)`
       -- let `(` lvalue_base `)` = lvalue
@@ -13885,7 +13888,7 @@ relation Decl_ok: cursor context `|-` declaration `:` context declarationIR
       -- TypeArguments_ok: p C_0 `|-` typeArgument*{typeArgument <- typeArgument*} `:` typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} `#` tid_impl*{tid_impl <- tid_impl*}
       -- let prefixedNameIR = $prefixedTypeName(prefixedTypeName)
       -- let argument*{argument <- argument*} = $flatten_argumentList(argumentList)
-      -- ConstructorType_ok: p C_0 `|-` prefixedNameIR `<` [] `>(` argument*{argument <- argument*} `):` constructorTypeIR `<#` tid_inserted*{tid_inserted <- tid_inserted*} `>(#` id_default*{id_default <- id_default*} `)`
+      -- ConstructorType_ok: p C_0 `|-` prefixedNameIR `<` typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} `>(` argument*{argument <- argument*} `):` constructorTypeIR `<#` tid_inserted*{tid_inserted <- tid_inserted*} `>(#` id_default*{id_default <- id_default*} `)`
       -- (Argument_ok: p C_0 `|-` argument `:` argumentIR)*{argument <- argument*, argumentIR <- argumentIR*}
       -- let tid_infer*{tid_infer <- tid_infer*} = tid_impl*{tid_impl <- tid_impl*} ++ tid_inserted*{tid_inserted <- tid_inserted*}
       -- Inst_ok: p C_0 `|-` constructorTypeIR `<` typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} `#` tid_infer*{tid_infer <- tid_infer*} `>(` argumentIR*{argumentIR <- argumentIR*} `#` id_default*{id_default <- id_default*} `):` typeIR_object `<` typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} `>(` argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} `)`
@@ -14348,13 +14351,26 @@ relation Program_ok: `|-` p4program `:` context p4programIR
       -- let C_0 = $empty_context
       -- Decls_ok: `GLOBAL` C_0 `|-` declaration*{declaration <- declaration*} `:` C_1 declarationIR*{declarationIR <- declarationIR*}
 
-;; ../../../../spec-concrete/5.04-typing-relation.watsup:281.1-284.29
-relation FunctionType_ok: cursor context `|-` prefixedNameIR `<` typeArgumentListIR `>(` argument* `):` functionTypeIR `<#` tid* `>(#` id* `)`
+;; ../../../../spec-concrete/5.04-typing-relation.watsup:281.1-281.52
+def $is_static_routineTarget(routineTargetIR) : ctk =
 
-;; ../../../../spec-concrete/5.04-typing-relation.watsup:290.1-293.32
-relation MethodType_ok: cursor context `|-` typedExpressionIR `.` nameIR `<` typeArgumentListIR `>(` argument* `):` methodTypeIR `<#` tid* `>(#` id* `)`
+   ;; ../../../../spec-concrete/5.04-typing-relation.watsup:283.1-285.56
+   clause 0(routineTargetIR) = `LCTK`
+      -- if routineTargetIR matches `%.%`
+      -- let _typedExpressionIR `.` nameIR = routineTargetIR
+      -- if nameIR <- ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]
 
-;; ../../../../spec-concrete/5.04-typing-relation.watsup:299.1-301.23
+   ;; ../../../../spec-concrete/5.04-typing-relation.watsup:286.1-288.56
+   clause 1(routineTargetIR) = `LCTK`
+      -- if routineTargetIR matches `TYPE%.%`
+      -- let `TYPE` _prefixedNameIR `.` nameIR = routineTargetIR
+      -- if nameIR <- ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]
+
+   ;; ../../../../spec-concrete/5.04-typing-relation.watsup:289.1-290.15
+   clause 2(_routineTargetIR) = `DYN`
+      -- otherwise
+
+;; ../../../../spec-concrete/5.04-typing-relation.watsup:292.1-294.23
 relation RoutineTarget_ok: cursor context `|-` routineTarget `:` routineTargetIR
 
    ;; ../../../../spec-concrete/5.15.4-typing-routine-call.watsup:12.1-14.67
@@ -14391,7 +14407,7 @@ relation RoutineTarget_ok: cursor context `|-` routineTarget `:` routineTargetIR
       -- let `(` expression `)` = routineTarget as parenthesizedExpression
       -- RoutineTarget_ok: p C `|-` expression `:` routineTargetIR
 
-;; ../../../../spec-concrete/5.04-typing-relation.watsup:303.1-305.23
+;; ../../../../spec-concrete/5.04-typing-relation.watsup:296.1-298.23
 relation RoutineTarget_lvalue_ok: cursor context `|-` lvalue `:` routineTargetIR
 
    ;; ../../../../spec-concrete/5.15.4-typing-routine-call.watsup:65.1-68.59
@@ -14399,7 +14415,7 @@ relation RoutineTarget_lvalue_ok: cursor context `|-` lvalue `:` routineTargetIR
       -- let expression = $lvalue(lvalue)
       -- RoutineTarget_ok: p C `|-` expression `:` routineTargetIR
 
-;; ../../../../spec-concrete/5.04-typing-relation.watsup:307.1-310.29
+;; ../../../../spec-concrete/5.04-typing-relation.watsup:300.1-303.29
 relation RoutineType_ok: cursor context `|-` routineTargetIR `<` typeArgumentListIR `>(` argument* `):` routineTypeIR `<#` tid* `>(#` id* `)`
 
    ;; ../../../../spec-concrete/5.15.4-typing-routine-call.watsup:79.1-85.70
@@ -14557,7 +14573,7 @@ relation RoutineType_ok: cursor context `|-` routineTargetIR `<` typeArgumentLis
       -- let `(` routineTargetIR `)` = routineTargetIR'
       -- RoutineType_ok: p C `|-` routineTargetIR `<` typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} `>(` argument*{argument <- argument*} `):` routineTypeIR `<#` tid_inserted*{tid_inserted <- tid_inserted*} `>(#` id_default*{id_default <- id_default*} `)`
 
-;; ../../../../spec-concrete/5.04-typing-relation.watsup:320.1-323.29
+;; ../../../../spec-concrete/5.04-typing-relation.watsup:313.1-316.29
 relation ConstructorType_ok: cursor context `|-` prefixedNameIR `<` typeArgumentListIR `>(` argument* `):` constructorTypeIR `<#` tid* `>(#` id* `)`
 
    ;; ../../../../spec-concrete/5.15.3-typing-constructor-call.watsup:5.1-11.78
@@ -14567,12 +14583,12 @@ relation ConstructorType_ok: cursor context `|-` prefixedNameIR `<` typeArgument
       -- let ?((cid, constructorTypeDefIR, id_default*{id_default <- id_default*})) = (rid, constructorTypeDefIR, id*)?{(rid, constructorTypeDefIR, id*) <- (rid, constructorTypeDefIR, id*)?}
       -- let (constructorTypeIR, tid_impl*{tid_impl <- tid_impl*}) = $specialize_constructorTypeDef(constructorTypeDefIR, typeArgumentIR*{typeArgumentIR <- typeArgumentIR*})
 
-;; ../../../../spec-concrete/5.04-typing-relation.watsup:333.18-333.35
+;; ../../../../spec-concrete/5.04-typing-relation.watsup:326.18-326.35
 syntax actctxt = 
    | `ACTION`
    | `NOACTION`
 
-;; ../../../../spec-concrete/5.04-typing-relation.watsup:335.1-338.29
+;; ../../../../spec-concrete/5.04-typing-relation.watsup:328.1-331.29
 relation Call_convention_expr_ok: cursor context actctxt `|-` parameterTypeIR `@` typedExpressionIR `:` typedExpressionIR
 
    ;; ../../../../spec-concrete/5.15.1-typing-call-convention.watsup:51.1-56.59
@@ -14604,7 +14620,7 @@ relation Call_convention_expr_ok: cursor context actctxt `|-` parameterTypeIR `@
       -- if Type_alpha: typeIR_param `~~` typeIR_arg holds
       -- if (ctk_arg =/= `DYN`)
 
-;; ../../../../spec-concrete/5.04-typing-relation.watsup:340.1-343.29
+;; ../../../../spec-concrete/5.04-typing-relation.watsup:333.1-336.29
 relation Call_convention_argument_ok: cursor context actctxt `|-` parameterTypeIR `@` argumentIR `:` argumentIR
 
    ;; ../../../../spec-concrete/5.15.1-typing-call-convention.watsup:92.1-97.44
@@ -14632,7 +14648,7 @@ relation Call_convention_argument_ok: cursor context actctxt `|-` parameterTypeI
       -- let direction _typeIR _id _value?{_value <- _value?} = parameterTypeIR
       -- if direction matches `OUT`
 
-;; ../../../../spec-concrete/5.04-typing-relation.watsup:345.1-348.29
+;; ../../../../spec-concrete/5.04-typing-relation.watsup:338.1-341.29
 relation Call_convention_ok: cursor context actctxt `|-` parameterTypeIR* `@` argumentListIR `:` argumentListIR
 
    ;; ../../../../spec-concrete/5.15.1-typing-call-convention.watsup:125.1-126.34
@@ -14649,7 +14665,7 @@ relation Call_convention_ok: cursor context actctxt `|-` parameterTypeIR* `@` ar
       -- Call_convention_argument_ok: p C actctxt `|-` parameterTypeIR_h `@` argumentIR_h `:` argumentIR_h_cast
       -- Call_convention_ok: p C actctxt `|-` parameterTypeIR_t*{parameterTypeIR_t <- parameterTypeIR_t*} `@` argumentIR_t*{argumentIR_t <- argumentIR_t*} `:` argumentIR_t_cast*{argumentIR_t_cast <- argumentIR_t_cast*}
 
-;; ../../../../spec-concrete/5.04-typing-relation.watsup:355.1-359.35
+;; ../../../../spec-concrete/5.04-typing-relation.watsup:348.1-352.35
 relation Call_ok: cursor context `|-` routineTypeIR `<` typeArgumentListIR `#` tid* `>(` argumentListIR `#` id* `):` typeIR `<` typeArgumentListIR `>(` argumentListIR `)`
 
    ;; ../../../../spec-concrete/5.15.4-typing-routine-call.watsup:228.1-243.39
@@ -14830,7 +14846,7 @@ relation Call_ok: cursor context `|-` routineTypeIR `<` typeArgumentListIR `#` t
       -- if argumentIR*{argumentIR <- argumentIR*} matches []
       -- if id*{id <- id*} matches []
 
-;; ../../../../spec-concrete/5.04-typing-relation.watsup:366.1-370.35
+;; ../../../../spec-concrete/5.04-typing-relation.watsup:359.1-363.35
 relation Inst_ok: cursor context `|-` constructorTypeIR `<` typeArgumentListIR `#` tid* `>(` argumentListIR `#` id* `):` typeIR `<` typeArgumentListIR `>(` argumentListIR `)`
 
    ;; ../../../../spec-concrete/5.15.3-typing-constructor-call.watsup:19.1-37.45
@@ -14878,7 +14894,7 @@ relation Inst_ok: cursor context `|-` constructorTypeIR `<` typeArgumentListIR `
       -- Call_convention_ok: p C `NOACTION` `|-` parameterTypeIR_aligned*{parameterTypeIR_aligned <- parameterTypeIR_aligned*} `@` argumentIR*{argumentIR <- argumentIR*} `:` argumentIR_cast*{argumentIR_cast <- argumentIR_cast*}
 
    ;; ../../../../spec-concrete/5.15.3-typing-constructor-call.watsup:95.1-126.39
-   rule no-package-infer: p C `|-` constructorTypeIR `<` typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} `#` tid_infer*{tid_infer <- tid_infer*} `>(` argumentIR*{argumentIR <- argumentIR*} `#` id_default*{id_default <- id_default*} `):` typeIR_object `<` typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} `>(` argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} `)`
+   rule no-package-infer: p C `|-` constructorTypeIR `<` typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} `#` tid_infer*{tid_infer <- tid_infer*} `>(` argumentIR*{argumentIR <- argumentIR*} `#` id_default*{id_default <- id_default*} `):` typeIR_object_inferred `<` typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} `>(` argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} `)`
       -- let `CONSTRUCTOR(` parameterTypeIR*{parameterTypeIR <- parameterTypeIR*} `)->` typeIR_object = constructorTypeIR
       -- if ~$is_package_object_typeIR($canon(typeIR_object))
       -- let parameterTypeIR_non_default*{parameterTypeIR_non_default <- parameterTypeIR_non_default*} = $filter_default_parameters(parameterTypeIR*{parameterTypeIR <- parameterTypeIR*}, id_default*{id_default <- id_default*})
@@ -15603,53 +15619,53 @@ def $is_valid_bitslice'(typeIR, nat, nat) : bool =
    clause 3(_typeIR, _nat, _nat') = false
       -- otherwise
 
-;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1102.1-1102.46
+;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1105.1-1105.46
 def $is_concrete_extern_object(typeIR) : bool =
 
-   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1107.1-1108.50
+   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1110.1-1111.50
    clause 0(typeIR) = $is_concrete_extern_object'($canon(typeIR))
 
-;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1103.1-1103.47
+;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1106.1-1106.47
 def $is_concrete_extern_object'(typeIR) : bool =
 
-   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1110.1-1111.42
+   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1113.1-1114.42
    clause 0(typeIR) = true
       -- if ~$is_extern_object_typeIR(typeIR)
 
-   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1112.1-1113.58
+   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1115.1-1116.58
    clause 1(typeIR) = true
       -- if typeIR <: externObjectTypeIR
       -- let `EXTERN` _tid `{` _rid `:` routineTypeDefIR*{_rid <- _rid*, routineTypeDefIR <- routineTypeDefIR*} `}` = typeIR as externObjectTypeIR
       -- (if $is_concrete_extern_object''(routineTypeDefIR))*{routineTypeDefIR <- routineTypeDefIR*}
 
-   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1114.1-1115.15
+   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1117.1-1118.15
    clause 2(typeIR) = false
       -- otherwise
 
-;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1104.1-1104.58
+;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1107.1-1107.58
 def $is_concrete_extern_object''(routineTypeDefIR) : bool =
 
-   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1117.1-1118.49
+   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1120.1-1121.49
    clause 0(routineTypeDefIR) = $is_concrete_extern_object'''(routineTypeIR)
       -- if routineTypeDefIR <: routineTypeIR
       -- let routineTypeIR = routineTypeDefIR as routineTypeIR
 
-   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1119.1-1120.50
+   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1122.1-1123.50
    clause 1(routineTypeDefIR) = (true = $is_concrete_extern_object'''(routineTypeIR))
       -- if routineTypeDefIR <: polyRoutineTypeDefIR
       -- let routineTypeIR `<` _tid*{_tid <- _tid*} `,` _tid'*{_tid' <- _tid'*} `>` = routineTypeDefIR as polyRoutineTypeDefIR
 
-;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1105.1-1105.56
+;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1108.1-1108.56
 def $is_concrete_extern_object'''(routineTypeIR) : bool =
 
-   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1122.1-1122.79
+   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1125.1-1125.79
    clause 0(routineTypeIR) = false
       -- if routineTypeIR <: methodTypeIR
       -- let methodTypeIR = routineTypeIR as methodTypeIR
       -- if methodTypeIR matches `EXTERN_METHODABSTRACT(%)->%`
       -- let `EXTERN_METHODABSTRACT(` _parameterTypeIR*{_parameterTypeIR <- _parameterTypeIR*} `)->` _typeIR = methodTypeIR
 
-   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1123.1-1124.15
+   ;; ../../../../spec-concrete/5.06.2-typing-expression.watsup:1126.1-1127.15
    clause 1(_routineTypeIR) = true
       -- otherwise
 
