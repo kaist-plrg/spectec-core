@@ -17,7 +17,7 @@ let do_typing (ctx : Ctx.t) (spec : spec) (value_program : value) :
 
 type res = WellTyped | IllTyped of region * string | IllFormed of string
 
-let run_typing' ?(debug : bool = false) (spec : spec)
+let run_typing' ?(debug : bool = false) ?(profile : bool = false) (spec : spec)
     (includes_p4 : string list) (filename_p4 : string) : res =
   Builtin.init ();
   Value.refresh ();
@@ -25,13 +25,13 @@ let run_typing' ?(debug : bool = false) (spec : spec)
   Cache.reset !Interp.rule_cache;
   try
     let value_program = Convert.In.in_program includes_p4 filename_p4 in
-    let ctx = Ctx.empty ~debug filename_p4 in
+    let ctx = Ctx.empty ~debug ~profile filename_p4 in
     let _ = do_typing ctx spec value_program in
     WellTyped
   with
   | Util.Error.ConvertInError msg -> IllFormed msg
   | Util.Error.InterpError (at, msg) -> IllTyped (at, msg)
 
-let run_typing ?(debug : bool = false) (spec : spec) (includes_p4 : string list)
+let run_typing ?(debug : bool = false) ?(profile : bool = false) (spec : spec) (includes_p4 : string list)
     (filename_p4 : string) : res =
-  run_typing' ~debug spec includes_p4 filename_p4
+  run_typing' ~debug ~profile spec includes_p4 filename_p4
