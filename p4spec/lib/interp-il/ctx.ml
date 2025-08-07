@@ -23,7 +23,7 @@ type cursor = Global | Local
 
 (* Config *)
 
-type config = { debug : bool }
+type config = { debug : bool; profile : bool }
 
 (* Global layer *)
 
@@ -59,6 +59,11 @@ type t = {
   (* Local layer *)
   local : local;
 }
+
+(* Profiling *)
+
+let profile (ctx : t) : unit =
+  if ctx.config.profile then Trace.profile ctx.trace
 
 (* Tracing *)
 
@@ -242,8 +247,8 @@ let empty_global () : global =
 let empty_local () : local =
   { tdenv = TDEnv.empty; fenv = FEnv.empty; venv = VEnv.empty }
 
-let empty ~(debug : bool) (filename : string) : t =
-  let config = { debug } in
+let empty ~(debug : bool) ~(profile : bool) (filename : string) : t =
+  let config = { debug; profile } in
   let trace = Trace.Empty in
   let global = empty_global () in
   let local = empty_local () in

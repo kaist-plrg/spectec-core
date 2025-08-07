@@ -101,13 +101,14 @@ let run_il_concrete_command =
      let%map filenames_spec = anon (sequence ("filename" %: string))
      and includes_p4 = flag "-i" (listed string) ~doc:"p4 include paths"
      and filename_p4 = flag "-p" (required string) ~doc:"p4 file to typecheck"
-     and debug = flag "-dbg" no_arg ~doc:"print debug traces" in
+     and debug = flag "-dbg" no_arg ~doc:"print debug traces"
+     and profile = flag "-profile" no_arg ~doc:"profiling" in
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
          let spec_il = Elaborate.Elab.elab_spec spec in
          match
-           Interp_il.Typing_concrete.run_typing ~debug spec_il includes_p4
+           Interp_il.Typing_concrete.run_typing ~debug ~profile spec_il includes_p4
              filename_p4
          with
          | WellTyped -> Format.printf "well-typed\n"
