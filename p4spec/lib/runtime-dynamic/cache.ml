@@ -18,8 +18,7 @@ let is_cached_func = function
   | "subst_type" | "subst_typeDef" | "specialize_typeDef" | "canon"
   | "free_type" | "is_nominal_typeIR" | "find_map" | "update_map" | "dom_map"
   | "bound_tids" | "in_set" | "merge_constraint" | "merge_constraint'"
-  | "find_matchings" | "nestable_struct" | "nestable_struct_in_header"
-    ->
+  | "find_matchings" | "nestable_struct" | "nestable_struct_in_header" ->
       true
   | _ -> false
 

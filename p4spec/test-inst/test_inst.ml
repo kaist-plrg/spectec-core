@@ -207,8 +207,6 @@ let inst_il_command =
 
 let command =
   Core.Command.group ~summary:"p4spec-test-inst"
-    [
-      ("inst-il", inst_il_command);
-    ]
+    [ ("inst-il", inst_il_command) ]
 
-let () = Command_unix.run ~version command 
+let () = Command_unix.run ~version command
