@@ -119,8 +119,7 @@ let id_of_parameter (v : value) : string =
 let has_type_params (v : value) : bool =
   match flatten_case_v v with
   | "typeParameterListOpt", [ [ "`EMPTY" ] ], [] -> false
-  | "typeParameterListOpt", [ [ "<" ]; [ ">" ] ], [ v_tparams ] ->
-      id_of_case_v v_tparams == "typeParameterList"
+  | "typeParameterListOpt", [ [ "<" ]; [ ">" ] ], [ _ ] -> true
   | "typeParameterListOpt", _, _ ->
       failwith
         (F.asprintf "@has_type_params: ill-formed typeParameterListOpt:\n%a"
@@ -150,9 +149,12 @@ let has_type_params_declaration (decl : value) : bool =
       has_type_params_function_prototype functionPrototype
   | "actionDeclaration", _, _
   | "errorDeclaration", _, _
-  | "matchKindDeclaration", _, _
-  | "externFunctionDeclaration", _, _ ->
+  | "matchKindDeclaration", _, _ ->
       false
+  | ( "externFunctionDeclaration",
+      [ []; [ "EXTERN" ]; [ ";" ] ],
+      [ _; functionPrototype ] ) ->
+      has_type_params_function_prototype functionPrototype
   | ( "externObjectDeclaration",
       [ []; [ "EXTERN" ]; []; [ "{" ]; [ "}" ] ],
       [ _; _; typeParameterListOpt; _ ] ) ->
