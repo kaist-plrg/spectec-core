@@ -7859,7 +7859,15 @@ tracing backtrack logs:
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/pr2918.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/pr2918.p4
-syntax error
+tracing backtrack logs:
+- because invocation of relation ParserTransition_ok failed (../../../../spec-concrete/5.13.2-typing-parser-state.watsup:20.6-20.25)
+  1. because application of rule ParserTransition_ok/empty failed (../../../../spec-concrete/5.13.2-typing-parser-state.watsup:20.6-20.25)
+    - because condition transitionStatement matches ``EMPTY` was not met ()
+  2. because application of rule ParserTransition_ok/name failed (../../../../spec-concrete/5.13.2-typing-parser-state.watsup:20.6-20.25)
+    - because condition stateExpression matches `%;` was not met ()
+  3. because application of rule ParserTransition_ok/switch failed (../../../../spec-concrete/5.13.2-typing-parser-state.watsup:20.6-20.25)
+    - because condition Type_wf: $bound(`LOCAL`, C_0) `|-` `SET<` [typeIR_key] `>` as typeIR holds was not met (../../../../spec-concrete/5.13.1-typing-parser-statement.watsup:300.16-300.57)
+
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/psa-meter2.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/psa-meter2.p4

@@ -729,8 +729,7 @@ Parser roundtrip success: ../../../../p4c/testdata/p4_16_errors/parser-arg.p4
 Parser roundtrip success: ../../../../p4c/testdata/p4_16_errors/persistent_e.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/pr2918.p4
-Error parsing file: ../../../../p4c/testdata/p4_16_errors/pr2918.p4
-../../../../p4c/testdata/p4_16_errors/pr2918.p4:18.11-18.18: syntax error
+Parser roundtrip success: ../../../../p4c/testdata/p4_16_errors/pr2918.p4
 
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/psa-meter2.p4
 Parser roundtrip success: ../../../../p4c/testdata/p4_16_errors/psa-meter2.p4
@@ -959,4 +958,4 @@ Parser roundtrip success: ../../../../p4c/testdata/p4_16_errors/width_e.p4
 >>> Running parser test on ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
 Parser roundtrip success: ../../../../p4c/testdata/p4_16_errors/wrong-cast.p4
 
-Running parser: [EXCLUDE] 0/310 (0.00%) [PASS] 281/310 (90.65%) [FAIL] 29/310 (9.35%)
+Running parser: [EXCLUDE] 0/310 (0.00%) [PASS] 282/310 (90.97%) [FAIL] 28/310 (9.03%)
