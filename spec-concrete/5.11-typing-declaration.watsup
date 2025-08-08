@@ -36,13 +36,13 @@ rule Decl_ok/constantDeclaration:
 rule Decl_ok/instantiation-prefixedTypeName-non-objectInitializer:
   p C_0 |- annotationList prefixedTypeName `( argumentList ) name `;
          : C_1 instantiationIR
+  ---- ;; check arguments
+  -- if argument* = $flatten_argumentList(argumentList)
+  -- (Argument_ok: p C_0 |- argument : argumentIR)*
   ---- ;; check constructor type
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
-  -- if argument* = $flatten_argumentList(argumentList)
-  -- ConstructorType_ok: p C_0 |- prefixedNameIR `< eps > `( argument* )
+  -- ConstructorType_ok: p C_0 |- prefixedNameIR `< eps > `( argumentIR* )
                                 : constructorTypeIR `< `# tid_impl* > `( `# id_default* )
-  ---- ;; check arguments
-  -- (Argument_ok: p C_0 |- argument : argumentIR)*
   ---- ;; check instantiation convention
   -- Inst_ok: p C_0 |- constructorTypeIR `< eps `# tid_impl* > `( argumentIR* `# id_default* )
                      : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
@@ -61,14 +61,14 @@ rule Decl_ok/instantiation-specializedType-non-objectInitializer:
   ---- ;; check type arguments
   -- if typeArgument* = $flatten_typeArgumentList(typeArgumentList)
   -- TypeArguments_ok: p C_0 |- typeArgument* : typeArgumentIR* `# tid_impl*
+  ---- ;; check arguments
+  -- if argument* = $flatten_argumentList(argumentList)
+  -- (Argument_ok: p C_0 |- argument : argumentIR)*
   ---- ;; check constructor type
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
-  -- if argument* = $flatten_argumentList(argumentList)
   -- ConstructorType_ok:
-      p C_0 |- prefixedNameIR `< typeArgumentIR* > `( argument* )
+      p C_0 |- prefixedNameIR `< typeArgumentIR* > `( argumentIR* )
              : constructorTypeIR `< `# tid_inserted* > `( `# id_default* )
-  ---- ;; check arguments
-  -- (Argument_ok: p C_0 |- argument : argumentIR)*
   ---- ;; check instantiation convention
   -- if tid_infer* = tid_impl* ++ tid_inserted*
   -- Inst_ok:
@@ -187,13 +187,13 @@ rule Decl_ok/instantiation-prefixedTypeName-objectInitializer:
   p C_0 |- annotationList
             prefixedTypeName `( argumentList ) name (`= `{ objectDeclarationList }) `;
          : C_2 instantiationIR
+  ---- ;; check arguments
+  -- if argument* = $flatten_argumentList(argumentList)
+  -- (Argument_ok: p C_0 |- argument : argumentIR)*
   ---- ;; check constructor type
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
-  -- if argument* = $flatten_argumentList(argumentList)
-  -- ConstructorType_ok: p C_0 |- prefixedNameIR `< eps > `( argument* )
+  -- ConstructorType_ok: p C_0 |- prefixedNameIR `< eps > `( argumentIR* )
                                 : constructorTypeIR `< `# tid_impl* > `( `# id_default* )
-  ---- ;; check arguments
-  -- (Argument_ok: p C_0 |- argument : argumentIR)*
   ---- ;; check instantiation convention
   -- Inst_ok: p C_0 |- constructorTypeIR `< eps `# tid_impl* > `( argumentIR* `# id_default* )
                      : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
@@ -234,13 +234,13 @@ rule Decl_ok/instantiation-specializedType-objectInitializer:
   ---- ;; check type arguments
   -- if typeArgument* = $flatten_typeArgumentList(typeArgumentList)
   -- TypeArguments_ok: p C_0 |- typeArgument* : typeArgumentIR* `# tid_impl*
+  ---- ;; check arguments
+  -- if argument* = $flatten_argumentList(argumentList)
+  -- (Argument_ok: p C_0 |- argument : argumentIR)*
   ---- ;; check constructor type
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
-  -- if argument* = $flatten_argumentList(argumentList)
-  -- ConstructorType_ok: p C_0 |- prefixedNameIR `< typeArgumentIR* > `( argument* )
+  -- ConstructorType_ok: p C_0 |- prefixedNameIR `< typeArgumentIR* > `( argumentIR* )
                                 : constructorTypeIR `< `# tid_inserted* > `( `# id_default* )
-  ---- ;; check arguments
-  -- (Argument_ok: p C_0 |- argument : argumentIR)*
   ---- ;; check instantiation convention
   -- if tid_infer* = tid_impl* ++ tid_inserted*
   -- Inst_ok:

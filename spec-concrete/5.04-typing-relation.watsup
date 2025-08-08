@@ -298,7 +298,7 @@ relation RoutineTarget_lvalue_ok:
   hint(input %0 %1 %2)
 
 relation RoutineType_ok:
-  cursor context |- routineTargetIR `< typeArgumentListIR > `( argument* )
+  cursor context |- routineTargetIR `< typeArgumentListIR > `( argumentIR* )
                   : routineTypeIR `< `# tid* > `( `# id* )
   hint(input %0 %1 %2 %3 %4)
 
@@ -311,7 +311,7 @@ relation RoutineType_ok:
 ;; and also identifies the ids of default arguments (id*)
 
 relation ConstructorType_ok:
-  cursor context |- prefixedNameIR `< typeArgumentListIR > `( argument* )
+  cursor context |- prefixedNameIR `< typeArgumentListIR > `( argumentIR* )
                   : constructorTypeIR `< `# tid* > `( `# id* )
   hint(input %0 %1 %2 %3 %4)
 
