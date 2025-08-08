@@ -1049,13 +1049,13 @@ rule Expr_ok/callExpression-routineTarget-no-typeArgumentList:
        : callExpressionIR `# expressionNoteIR
   ---- ;; check routine target
   -- RoutineTarget_ok: p C |- routineTarget : routineTargetIR
-  ---- ;; check routine
-  -- if argument* = $flatten_argumentList(argumentList)
-  -- RoutineType_ok:
-      p C |- routineTargetIR `< eps > `( argument* )
-           : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
   ---- ;; check arguments
+  -- if argument* = $flatten_argumentList(argumentList)
   -- (Argument_ok: p C |- argument : argumentIR)*
+  ---- ;; check routine
+  -- RoutineType_ok:
+      p C |- routineTargetIR `< eps > `( argumentIR* )
+           : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
   ---- ;; check calling convention
   -- if tid_infer* = tid_inserted*
   -- Call_ok: p C |- routineTypeIR `< eps `# tid_infer* > `( argumentIR* `# id_default* )
@@ -1077,13 +1077,13 @@ rule Expr_ok/callExpression-routineTarget-typeArgumentList:
   ---- ;; check type arguments
   -- if realTypeArgument* = $flatten_realTypeArgumentList(realTypeArgumentList)
   -- TypeArguments_ok: p C |- realTypeArgument* : typeArgumentIR* `# tid_impl*
-  ---- ;; check routine
-  -- if argument* = $flatten_argumentList(argumentList)
-  -- RoutineType_ok:
-      p C |- routineTargetIR `< typeArgumentIR* > `( argument* )
-           : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
   ---- ;; check arguments
+  -- if argument* = $flatten_argumentList(argumentList)
   -- (Argument_ok: p C |- argument : argumentIR)*
+  ---- ;; check routine
+  -- RoutineType_ok:
+      p C |- routineTargetIR `< typeArgumentIR* > `( argumentIR* )
+           : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
   ---- ;; check calling convention
   -- if tid_infer* = tid_impl* ++ tid_inserted*
   -- Call_ok:
@@ -1131,13 +1131,13 @@ def $is_concrete_extern_object'''(_) = true
 rule Expr_ok/callExpression-constructorTarget-prefixedTypeName:
   p C |- prefixedTypeName `( argumentList )
        : callExpressionIR `# expressionNoteIR
+  ---- ;; check arguments
+  -- if argument* = $flatten_argumentList(argumentList)
+  -- (Argument_ok: p C |- argument : argumentIR)*
   ---- ;; check constructor type
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
-  -- if argument* = $flatten_argumentList(argumentList)
-  -- ConstructorType_ok: p C |- prefixedNameIR `< eps > `( argument* )
+  -- ConstructorType_ok: p C |- prefixedNameIR `< eps > `( argumentIR* )
                               : constructorTypeIR `< `# tid_impl* > `( `# id_default* )
-  ---- ;; check arguments
-  -- (Argument_ok: p C |- argument : argumentIR)*
   ---- ;; check instantiation convention
   -- Inst_ok: p C |- constructorTypeIR `< eps `# tid_impl* > `( argumentIR* `# id_default* )
                    : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
@@ -1156,14 +1156,14 @@ rule Expr_ok/callExpression-constructorTarget-specializedType:
   ---- ;; check type arguments
   -- if typeArgument* = $flatten_typeArgumentList(typeArgumentList)
   -- TypeArguments_ok: p C |- typeArgument* : typeArgumentIR* `# tid_impl*
+  ---- ;; check arguments
+  -- if argument* = $flatten_argumentList(argumentList)
+  -- (Argument_ok: p C |- argument : argumentIR)*
   ---- ;; check constructor type
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
-  -- if argument* = $flatten_argumentList(argumentList)
   -- ConstructorType_ok:
-      p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
+      p C |- prefixedNameIR `< typeArgumentIR* > `( argumentIR* )
            : constructorTypeIR `< `# tid_inserted* > `( `# id_default* )
-  ---- ;; check arguments
-  -- (Argument_ok: p C |- argument : argumentIR)*
   ---- ;; check instantiation convention
   -- if tid_infer* = tid_impl* ++ tid_inserted*
   -- Inst_ok:

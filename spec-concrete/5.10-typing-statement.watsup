@@ -43,13 +43,13 @@ rule Stmt_ok/callStatement-no-typeArgumentList:
          : C f callStatementIR
   ---- ;; check base lvalue
   -- RoutineTarget_lvalue_ok: p C |- lvalue_routine : routineTargetIR
-  ---- ;; check lvalue as routine
-  -- if argument* = $flatten_argumentList(argumentList)
-  -- RoutineType_ok:
-      p C |- routineTargetIR `< eps > `( argument* )
-           : routineTypeIR `< `# tid_impl* > `( `# id_default* )
   ---- ;; check arguments
+  -- if argument* = $flatten_argumentList(argumentList)
   -- (Argument_ok: p C |- argument : argumentIR)*
+  ---- ;; check lvalue as routine
+  -- RoutineType_ok:
+      p C |- routineTargetIR `< eps > `( argumentIR* )
+           : routineTypeIR `< `# tid_impl* > `( `# id_default* )
   ---- ;; check calling convention
   -- Call_ok: p C |- routineTypeIR `< eps `# tid_impl* > `( argumentIR* `# id_default* )
                    : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
@@ -67,13 +67,13 @@ rule Stmt_ok/callStatement-typeArgumentList:
   ---- ;; check type arguments
   -- if typeArgument* = $flatten_typeArgumentList(typeArgumentList)
   -- TypeArguments_ok: p C |- typeArgument* : typeArgumentIR* `# tid_impl*
-  ---- ;; check lvalue as routine
-  -- if argument* = $flatten_argumentList(argumentList)
-  -- RoutineType_ok:
-      p C |- routineTargetIR `< typeArgumentIR* > `( argument* )
-           : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
   ---- ;; check arguments
+  -- if argument* = $flatten_argumentList(argumentList)
   -- (Argument_ok: p C |- argument : argumentIR)*
+  ---- ;; check lvalue as routine
+  -- RoutineType_ok:
+      p C |- routineTargetIR `< typeArgumentIR* > `( argumentIR* )
+           : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
   ---- ;; check calling convention
   -- if tid_infer* = tid_impl* ++ tid_inserted*
   -- Call_ok: p C |- routineTypeIR `< eps `# tid_infer* > `( argumentIR* `# id_default* )
