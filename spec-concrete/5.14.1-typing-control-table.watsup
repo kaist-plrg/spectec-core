@@ -894,8 +894,39 @@ rule TableProperties_ok/cons:
 ;; syntax table
 ;;
 
+dec $count_table_keys(tableProperty*) : nat
+
+def $count_table_keys(eps) = 0
+def $count_table_keys(
+    (KEY `= `{ _ }) :: tableProperty_t*
+  )
+  = $(1 + $count_table_keys(tableProperty_t*))
+def $count_table_keys(
+    tableProperty_h :: tableProperty_t*
+  )
+  = $count_table_keys(tableProperty_t*)
+  -- otherwise
+
+dec $count_table_actions(tableProperty*) : nat
+
+def $count_table_actions(eps) = 0
+def $count_table_actions(
+    (ACTIONS `= `{ _ }) :: tableProperty_t*
+  )
+  = $(1 + $count_table_actions(tableProperty_t*))
+def $count_table_actions(
+    tableProperty_h :: tableProperty_t*
+  )
+  = $count_table_actions(tableProperty_t*)
+  -- otherwise
+
 rule Table_ok:
   C |- tableProperty* : TC_1 tablePropertyIR*
+  ---- ;; check that the table has at most one key property
+  -- if $($count_table_keys(tableProperty*) <= 1)
+  ---- ;; check that the table has exactly one action property
+  -- if $($count_table_actions(tableProperty*) = 1)
+  ---- ;; check table properties
   -- if TC_0 = $empty_tablecontext
   -- TableProperties_ok: C TC_0 |- tableProperty* : TC_1 tablePropertyIR*
 

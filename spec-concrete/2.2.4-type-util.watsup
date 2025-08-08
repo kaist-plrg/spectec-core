@@ -72,3 +72,18 @@ def $is_equalable_typeIR'(TABLE_ENUM _ `{ _ }) = false
 def $is_equalable_typeIR'(TABLE_STRUCT _ `{ _ }) = false
 def $is_equalable_typeIR'(typeIR) = true
   -- otherwise
+
+;; Assignable
+
+dec $is_assignable_typeIR(typeIR) : bool
+dec $is_assignable_typeIR'(typeIR) : bool
+
+def $is_assignable_typeIR(typeIR)
+  = $is_assignable_typeIR'($canon(typeIR))
+def $is_assignable_typeIR'(VOID) = false
+def $is_assignable_typeIR'(STRING) = false
+def $is_assignable_typeIR'(INT) = false
+def $is_assignable_typeIR'(objectTypeIR) = false
+def $is_assignable_typeIR'(synthesizedTypeIR) = false
+def $is_assignable_typeIR'(typeIR) = true
+  -- otherwise

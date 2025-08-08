@@ -121,14 +121,22 @@ def $get_return_type(C) = eps
 dec $add_var(cursor, context, id, varTypeIR) : context
 dec $add_vars(cursor, context, id*, varTypeIR*) : context
 
-def $add_var(GLOBAL, C, id, varTypeIR) = C[ .GLOBAL.FRAME = frame ]
-  -- if frame = $add_map<id, varTypeIR>(C.GLOBAL.FRAME, id, varTypeIR)
-def $add_var(BLOCK, C, id, varTypeIR) = C[ .BLOCK.FRAME = frame ]
-  -- if frame = $add_map<id, varTypeIR>(C.BLOCK.FRAME, id, varTypeIR)
-def $add_var(LOCAL, C, id, varTypeIR) = C[ .LOCAL.FRAMES = frame* ]
+def $add_var(GLOBAL, C, id, varTypeIR) = C'
+  -- if frame = C.GLOBAL.FRAME
+  -- if ~$in_set<id>(id, $dom_map<id, varTypeIR>(frame))
+  -- if frame_update = $add_map<id, varTypeIR>(frame, id, varTypeIR)
+  -- if C' = C [ .GLOBAL.FRAME = frame_update ]
+def $add_var(BLOCK, C, id, varTypeIR) = C'
+  -- if frame = C.BLOCK.FRAME
+  -- if ~$in_set<id>(id, $dom_map<id, varTypeIR>(frame))
+  -- if frame_update = $add_map<id, varTypeIR>(C.BLOCK.FRAME, id, varTypeIR)
+  -- if C' = C [ .BLOCK.FRAME = frame_update ]
+def $add_var(LOCAL, C, id, varTypeIR) = C'
   -- if frame_h :: frame_t* = C.LOCAL.FRAMES
+  -- if ~$in_set<id>(id, $dom_map<id, varTypeIR>(frame_h))
   -- if frame_h_update = $add_map<id, varTypeIR>(frame_h, id, varTypeIR)
   -- if frame* = frame_h_update :: frame_t*
+  -- if C' = C [ .LOCAL.FRAMES = frame* ]
 
 def $add_vars(p, C, eps, eps) = C
 def $add_vars(p, C, id_h :: id_t*, varTypeIR_h :: varTypeIR_t*) = C''
@@ -175,16 +183,19 @@ def $add_constructorParameters(C, parameterTypeIR_h :: parameterTypeIR_t*) = C''
 dec $add_type(cursor, context, tid, typeDefIR) : context
 def $add_type(GLOBAL, C, tid, typeDefIR) = C'
   -- if tdenv = C.GLOBAL.TDENV
+  -- if ~$in_set<tid>(tid, $dom_map<tid, typeDefIR>(tdenv))
   -- if tdenv_update
       = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
   -- if C' = C [ .GLOBAL.TDENV = tdenv_update ]
 def $add_type(BLOCK, C, tid, typeDefIR) = C'
   -- if tdenv = C.BLOCK.TDENV
+  -- if ~$in_set<tid>(tid, $dom_map<tid, typeDefIR>(tdenv))
   -- if tdenv_update
       = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
   -- if C' = C [ .BLOCK.TDENV = tdenv_update ]
 def $add_type(LOCAL, C, tid, typeDefIR) = C'
   -- if tdenv = C.LOCAL.TDENV
+  -- if ~$in_set<tid>(tid, $dom_map<tid, typeDefIR>(tdenv))
   -- if tdenv_update
       = $add_map<tid, typeDefIR>(tdenv, tid, typeDefIR)
   -- if C' = C [ .LOCAL.TDENV = tdenv_update ]
@@ -201,11 +212,13 @@ dec $add_routine_overload(cursor, context, rid, routineTypeDefIR) : context
 
 def $add_routine_overload(GLOBAL, C, rid, routineTypeDefIR) = C'
   -- if rdenv = C.GLOBAL.RDENV
+  -- if ~$in_set<rid>(rid, $dom_map<rid, routineTypeDefIR>(rdenv))
   -- if rdenv_update
         = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
   -- if C' = C [ .GLOBAL.RDENV = rdenv_update ]
 def $add_routine_overload(BLOCK, C, rid, routineTypeDefIR) = C'
   -- if rdenv = C.BLOCK.RDENV
+  -- if ~$in_set<rid>(rid, $dom_map<rid, routineTypeDefIR>(rdenv))
   -- if rdenv_update
         = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
   -- if C' = C [ .BLOCK.RDENV = rdenv_update ]
@@ -214,11 +227,17 @@ dec $add_routine_non_overload(cursor, context, rid, routineTypeDefIR) : context
 
 def $add_routine_non_overload(GLOBAL, C, rid, routineTypeDefIR) = C'
   -- if rdenv = C.GLOBAL.RDENV
+  -- if id `( _ ) = rid
+  -- if `{ (id_k `( _ ))* } = $dom_map<rid, routineTypeDefIR>(rdenv)
+  -- if ~$in_set<id>(id, `{ id_k* })
   -- if rdenv_update
         = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
   -- if C' = C [ .GLOBAL.RDENV = rdenv_update ]
 def $add_routine_non_overload(BLOCK, C, rid, routineTypeDefIR) = C'
   -- if rdenv = C.BLOCK.RDENV
+  -- if id `( _ ) = rid
+  -- if `{ (id_k `( _ ))* } = $dom_map<rid, routineTypeDefIR>(rdenv)
+  -- if ~$in_set<id>(id, `{ id_k* })
   -- if rdenv_update
         = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
   -- if C' = C [ .BLOCK.RDENV = rdenv_update ]
@@ -229,6 +248,7 @@ dec $add_constructor(context, cid, constructorTypeDefIR) : context
 
 def $add_constructor(C, cid, constructorTypeDefIR) = C'
   -- if cdenv = C.GLOBAL.CDENV
+  -- if ~$in_set<cid>(cid, $dom_map<cid, constructorTypeDefIR>(cdenv))
   -- if cdenv_update
         = $add_map<cid, constructorTypeDefIR>(cdenv, cid, constructorTypeDefIR)
   -- if C' = C [ .GLOBAL.CDENV = cdenv_update ]

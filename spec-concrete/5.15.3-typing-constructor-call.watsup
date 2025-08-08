@@ -5,10 +5,14 @@
 rule ConstructorType_ok:
   p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
        : constructorTypeIR `< `# tid_impl* > `( `# id_default* )
+  ---- ;; find and specialize the constructor type definition
   -- if (cid, constructorTypeDefIR, id_default*)
       = $find_constructor_overloaded(C, prefixedNameIR, argument*)
   -- if (constructorTypeIR, tid_impl*)
       = $specialize_constructorTypeDef(constructorTypeDefIR, typeArgumentIR*)
+  ---- ;; check that the constructor type is well-formed
+  -- if bound = $union_set<tid>($bound(p, C), `{ tid_impl* })
+  -- ConstructorType_wf: bound |- constructorTypeIR
 
 ;;
 ;; Instantiation

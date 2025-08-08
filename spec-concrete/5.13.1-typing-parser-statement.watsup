@@ -329,6 +329,8 @@ rule ParserStmt_ok/variableDeclaration-empty:
   ---- ;; check type
   -- Type_ok: LOCAL C_0 |- type : typeIR `# eps
   -- Type_wf: $bound(LOCAL, C_0) |- typeIR
+  ---- ;; check that the type is assignable
+  -- if $is_assignable_typeIR(typeIR)
   ---- ;; update the context
   -- if nameIR = $name(name)
   -- if C_1 = $add_var(LOCAL, C_0, nameIR, INOUT typeIR DYN eps)
@@ -342,6 +344,8 @@ rule ParserStmt_ok/variableDeclaration-initializer:
   ---- ;; check type
   -- Type_ok: LOCAL C_0 |- type : typeIR `# eps
   -- Type_wf: $bound(LOCAL, C_0) |- typeIR
+  ---- ;; check that the type is assignable
+  -- if $is_assignable_typeIR(typeIR)
   ---- ;; check expression
   -- Expr_ok: LOCAL C_0 |- expression_init : typedExpressionIR_init
   ---- ;; check that the expression matches the type
