@@ -3,6 +3,13 @@
 type pos = { file : string; line : int; column : int }
 type region = { left : pos; right : pos }
 
+let compare_region region_l region_r =
+  if region_l.left.file = region_r.left.file then
+    if region_l.left.line = region_r.left.line then
+      compare region_l.left.column region_r.left.column
+    else compare region_l.left.line region_r.left.line
+  else compare region_l.left.file region_r.left.file
+
 let no_pos = { file = ""; line = 0; column = 0 }
 let no_region = { left = no_pos; right = no_pos }
 let pos_of_file file = { no_pos with file }

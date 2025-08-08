@@ -47,24 +47,14 @@ let elab_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames in
-         let spec_il_opt, failtraces =
-           Elaborate.Elab.elab_spec_with_failtraces spec
-         in
-         if List.length failtraces = 0 && Option.is_some spec_il_opt then (
-           Format.printf "%s\n"
-             (Il.Print.string_of_spec (Option.get spec_il_opt));
-           exit 0)
-         else (
-           Format.eprintf "%s\n"
-             (Elaborate.Attempt.format_failtraces failtraces);
-           exit 1)
-       with
-       | ParseError (at, msg) ->
-           Format.eprintf "%s\n" (string_of_error at msg);
-           exit 2
-       | ElabError (at, msg) ->
-           Format.eprintf "%s\n" (string_of_error at msg);
-           exit 1)
+         let elab_result = Elaborate.Elab.elab_spec' spec in
+         match elab_result with
+         | Elaborate.Elab.Spec spec_il ->
+             Format.printf "%s\n" (Il.Print.string_of_spec spec_il)
+         | Elaborate.Elab.Errors errors ->
+             Format.printf "%s\n" (string_of_elab_errors errors)
+       with ParseError (at, msg) ->
+         Format.eprintf "%s\n" (string_of_error at msg))
 
 let struct_command =
   Core.Command.basic ~summary:"insert structured control flow to a p4_16 spec"
@@ -80,7 +70,8 @@ let struct_command =
          ()
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       | ElabError (at, failtraces) ->
+           Format.printf "%s\n" (string_of_elab_error at failtraces))
 
 let run_il_command =
   Core.Command.basic
@@ -103,7 +94,8 @@ let run_il_command =
          | IllFormed msg -> Format.printf "ill-formed: %s\n" msg
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       | ElabError (at, failtraces) ->
+           Format.printf "%s\n" (string_of_elab_error at failtraces))
 
 let run_il_concrete_command =
   Core.Command.basic
@@ -127,7 +119,8 @@ let run_il_concrete_command =
          | IllFormed msg -> Format.printf "ill-formed: %s\n" msg
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       | ElabError (at, failtraces) ->
+           Format.printf "%s\n" (string_of_elab_error at failtraces))
 
 let run_sl_command =
   Core.Command.basic
@@ -156,7 +149,8 @@ let run_sl_command =
          | IllFormed (msg, _) -> Format.printf "ill-formed: %s\n" msg
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       | ElabError (at, failtraces) ->
+           Format.printf "%s\n" (string_of_elab_error at failtraces))
 
 let cover_sl_command =
   Core.Command.basic ~summary:"measure phantom coverage of SL"
@@ -196,7 +190,8 @@ let cover_sl_command =
            cover
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       | ElabError (at, failtraces) ->
+           Format.printf "%s\n" (string_of_elab_error at failtraces))
 
 let run_testgen_command =
   Core.Command.basic
@@ -264,7 +259,8 @@ let run_testgen_command =
            covermode
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       | ElabError (at, failtraces) ->
+           Format.printf "%s\n" (string_of_elab_error at failtraces))
 
 let run_testgen_debug_command =
   Core.Command.basic
@@ -289,7 +285,8 @@ let run_testgen_debug_command =
            filenames_ignore dirname_debug pid
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       | ElabError (at, failtraces) ->
+           Format.printf "%s\n" (string_of_elab_error at failtraces))
 
 let interesting_command =
   Core.Command.basic ~summary:"interestingness test for reducing p4_16 programs"
@@ -368,7 +365,8 @@ let interesting_command =
              exit 12
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       | ElabError (at, failtraces) ->
+           Format.printf "%s\n" (string_of_elab_error at failtraces))
 
 let parse_command =
   Core.Command.basic

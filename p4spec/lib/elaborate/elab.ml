@@ -1657,51 +1657,25 @@ let elab_spec (spec : spec) : Il.Ast.spec =
   spec_il |> populate_rules ctx |> populate_clauses ctx
 
 (* Elaboration with failtrace collection *)
+let elab_defs_with_errors (ctx : Ctx.t) (defs : def list) :
+    Ctx.t * Il.Ast.def list * Util.Error.elaboration_error list =
+  List.fold_left
+    (fun (ctx, defs_il, errors) def ->
+      try
+        let ctx, def_il_opt = elab_def ctx def in
+        match def_il_opt with
+        | Some def_il -> (ctx, defs_il @ [ def_il ], errors)
+        | None -> (ctx, defs_il, errors)
+      with Util.Error.ElabError (at, failtraces) ->
+        (ctx, defs_il, (at, failtraces) :: errors))
+    (ctx, [], []) defs
 
-let elab_def_with_failtraces (ctx : Ctx.t) (def : def) :
-    Ctx.t * Il.Ast.def option * failtrace list =
-  try
-    let ctx', def_opt = elab_def ctx def in
-    (ctx', def_opt, [])
-  with
-  | Util.Error.ElabError (at, msg) ->
-      (* Convert simple error to failtrace *)
-      (ctx, None, [ Failtrace (at, msg, []) ])
-  | Attempt.Failtraces failtraces ->
-      (* Catch failtraces from monadic functions *)
-      (ctx, None, failtraces)
+type elab_result =
+  | Spec of Il.Ast.spec
+  | Errors of Util.Error.elaboration_error list
 
-let elab_defs_with_failtraces (ctx : Ctx.t) (defs : def list) :
-    Ctx.t * Il.Ast.def list * failtrace list =
-  let rec elab_defs_aux ctx defs acc_failtraces acc_defs =
-    match defs with
-    | [] -> (ctx, List.rev acc_defs, acc_failtraces)
-    | def :: rest ->
-        let ctx', def_opt, failtraces = elab_def_with_failtraces ctx def in
-        let acc_defs' =
-          match def_opt with
-          | Some def_il -> def_il :: acc_defs
-          | None -> acc_defs
-        in
-        elab_defs_aux ctx' rest (failtraces @ acc_failtraces) acc_defs'
-  in
-  elab_defs_aux ctx defs [] []
-
-let elab_spec_with_failtraces (spec : spec) :
-    Il.Ast.spec option * failtrace list =
+let elab_spec' (spec : spec) : elab_result =
   let ctx = Ctx.init () in
-  let ctx, spec_il, failtraces = elab_defs_with_failtraces ctx spec in
-  (* Try to populate rules and clauses even if there were errors *)
-  let spec_il_with_rules =
-    try populate_rules ctx spec_il
-    with Util.Error.ElabError (_at, _msg) ->
-      (* If population fails, return the spec as-is and add the error *)
-      spec_il
-  in
-  let spec_il_final =
-    try populate_clauses ctx spec_il_with_rules
-    with Util.Error.ElabError (_at, _msg) ->
-      (* If population fails, return the spec as-is and add the error *)
-      spec_il_with_rules
-  in
-  (Some spec_il_final, failtraces)
+  let ctx, spec_il, errors = elab_defs_with_errors ctx spec in
+  let spec_il = spec_il |> populate_rules ctx |> populate_clauses ctx in
+  if errors = [] then Spec spec_il else Errors errors
