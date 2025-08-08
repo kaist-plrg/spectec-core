@@ -213,10 +213,6 @@ rule Sub_impl_canon_neq/serenum-left:
   ENUM _ `# typeIR_a `{ _ } <: typeIR_b
   -- Sub_impl: typeIR_a <: typeIR_b
 
-rule Sub_impl_canon_neq/serenum-right:
-  typeIR_a <: ENUM _ `# typeIR_b `{ _ }
-  -- Sub_impl: typeIR_a <: typeIR_b
-
 rule Sub_impl_canon_neq/default:
   DEFAULT <: typeIR_b
   -- if $is_defaultable_typeIR(typeIR_b)

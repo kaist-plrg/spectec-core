@@ -116,7 +116,9 @@ rule Decl_object_ok/functionDeclaration:
   -- if C_3 = $add_parameters(LOCAL, C_2, parameterTypeIR*)
   ---- ;; check body
   -- if C_4 = $set_return_type(C_3, typeIR_ret)
-  -- Block_ok: C_4 CONT |- blockStatement : _ _ blockStatementIR
+  -- Block_ok: C_4 CONT |- blockStatement : _ f blockStatementIR
+  ---- ;; check that the function returns on all paths, if it is not void
+  -- if f = RET \/ typeIR_ret = VOID
   ---- ;; add function
   -- if rid = $rid(name, parameterList)
   -- if methodTypeIR = EXTERN_METHOD `( parameterTypeIR* ) `-> typeIR_ret
@@ -296,7 +298,9 @@ rule Decl_ok/functionDeclaration:
   -- if C_2 = $add_parameters(LOCAL, C_1, parameterTypeIR*)
   ---- ;; check body
   -- if C_3 = $set_return_type(C_2, typeIR_ret)
-  -- Block_ok: C_3 CONT |- blockStatement : _ _ blockStatementIR
+  -- Block_ok: C_3 CONT |- blockStatement : _ f blockStatementIR
+  ---- ;; check that the function returns on all paths, if it is not void
+  -- if f = RET \/ typeIR_ret = VOID
   ---- ;; add function to the context
   -- if rid = $rid(name, parameterList)
   -- if functionTypeIR = FUNCTION `( parameterTypeIR* ) `-> typeIR_ret

@@ -79,10 +79,14 @@ rule RoutineTarget_lvalue_ok:
 rule RoutineType_ok/referenceExpressionIR:
   p C |- prefixedNameIR `< typeArgumentIR* > `( argument* )
        : functionTypeIR `< `# tid_impl* > `( `# id_default* )
+  ---- ;; find and specialize the function type definition
   -- if (rid, routineTypeDefIR, id_default*)
       = $find_routine_overloaded(p, C, prefixedNameIR, argument*)
   -- if (functionTypeIR, tid_impl*)
       = $specialize_routineTypeDef(routineTypeDefIR, typeArgumentIR*)
+  ---- ;; check that the function type is well-formed
+  -- if bound = $union_set<tid>($bound(p, C), `{ tid_impl* })
+  -- RoutineType_wf: bound |- functionTypeIR
 
 ;;; typedLvalueIR `. nameIR
 
@@ -156,6 +160,9 @@ rule RoutineType_ok/typedExpressionIR-nameIR-extern-method:
   ---- ;; specialize routine type
   -- if (routineTypeIR, tid_impl*)
       = $specialize_routineTypeDef(routineTypeDefIR, typeArgumentIR*)
+  ---- ;; check that the routine type is well-formed
+  -- if bound = $union_set<tid>($bound(p, C), `{ tid_impl* })
+  -- RoutineType_wf: bound |- routineTypeIR
 
 rule RoutineType_ok/typedExpressionIR-nameIR-parser-apply-method:
   p C |- (typedExpressionIR_base `. "apply") `< eps > `( argument* )
