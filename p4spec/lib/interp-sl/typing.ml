@@ -1,7 +1,7 @@
 open Domain.Lib
 open Sl.Ast
 module Value = Runtime_dynamic.Value
-module Cache = Runtime_dynamic.Cache.Cache
+module Cache = Runtime_dynamic.Cache
 module Dep = Runtime_testgen.Dep
 module Ignore = Runtime_testgen.Cov.Ignore
 module SCov = Runtime_testgen.Cov.Single
@@ -28,8 +28,8 @@ let run_typing_internal (spec : spec) (filename_p4 : string)
     (value_program : value) (ignores : IdSet.t) : res =
   Builtin.init ();
   Value.refresh ();
-  Cache.reset !Interp.func_cache;
-  Cache.reset !Interp.rule_cache;
+  Cache.LFU.clear !Interp.func_cache;
+  Cache.LFU.clear !Interp.rule_cache;
   let graph = Dep.Graph.empty () in
   let cover = ref (SCov.init ignores spec) in
   try
@@ -45,8 +45,8 @@ let run_typing' ?(derive : bool = false) (spec : spec)
     =
   Builtin.init ();
   Value.refresh ();
-  Cache.reset !Interp.func_cache;
-  Cache.reset !Interp.rule_cache;
+  Cache.LFU.clear !Interp.func_cache;
+  Cache.LFU.clear !Interp.rule_cache;
   let graph = Dep.Graph.init () in
   let cover = ref (SCov.init ignores spec) in
   try

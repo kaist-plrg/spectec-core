@@ -15,8 +15,8 @@ module Pp = Il.Print
 
 (* Cache *)
 
-let func_cache = ref (Cache.Cache.create 1000)
-let rule_cache = ref (Cache.Cache.create 50)
+let func_cache = ref (Cache.LFU.create ~capacity:10000)
+let rule_cache = ref (Cache.LFU.create ~capacity:10000)
 
 (* Assignments *)
 
@@ -1003,7 +1003,7 @@ and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
     choice attempt_rules'
   in
   if Cache.is_cached_rule id.it then (
-    let cache_result = Cache.Cache.find_opt !rule_cache (id.it, values_input) in
+    let cache_result = Cache.LFU.find !rule_cache (id.it, values_input) in
     match cache_result with
     | Some (subtraces, values_output) ->
         let ctx = Ctx.trace_replace ctx subtraces in
@@ -1011,7 +1011,7 @@ and invoke_rel' (ctx : Ctx.t) (id : id) (values_input : value list) :
     | None ->
         let* ctx, values_output = attempt_rules () in
         let subtraces = Trace.wipe_subtraces ctx.trace in
-        Cache.Cache.add !rule_cache (id.it, values_input)
+        Cache.LFU.add !rule_cache (id.it, values_input)
           (subtraces, values_output);
         Ok (ctx, values_output))
   else
@@ -1116,7 +1116,7 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
     choice attempt_clauses'
   in
   if Cache.is_cached_func id.it then (
-    let cache_result = Cache.Cache.find_opt !func_cache (id.it, values_input) in
+    let cache_result = Cache.LFU.find !func_cache (id.it, values_input) in
     match cache_result with
     | Some (subtraces, value_output) ->
         let ctx = Ctx.trace_replace ctx subtraces in
@@ -1124,8 +1124,7 @@ and invoke_func_def (ctx : Ctx.t) (id : id) (targs : targ list)
     | None ->
         let* ctx, value_output = attempt_clauses () in
         let subtraces = Trace.wipe_subtraces ctx.trace in
-        Cache.Cache.add !func_cache (id.it, values_input)
-          (subtraces, value_output);
+        Cache.LFU.add !func_cache (id.it, values_input) (subtraces, value_output);
         Ok (ctx, value_output))
   else
     let* ctx, value_output = attempt_clauses () in
