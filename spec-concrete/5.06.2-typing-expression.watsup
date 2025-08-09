@@ -1139,8 +1139,9 @@ rule Expr_ok/callExpression-constructorTarget-prefixedTypeName:
   -- ConstructorType_ok: p C |- prefixedNameIR `< eps > `( argumentIR* )
                               : constructorTypeIR `< `# tid_impl* > `( `# id_default* )
   ---- ;; check instantiation convention
-  -- Inst_ok: p C |- constructorTypeIR `< eps `# tid_impl* > `( argumentIR* `# id_default* )
-                   : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+  -- Inst_ok:
+      p C ANON |- constructorTypeIR `< eps `# tid_impl* > `( argumentIR* `# id_default* )
+                : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; constructed object may not contain an abstract method
   -- if $is_concrete_extern_object(typeIR_object)
   ---- ;; create IR
@@ -1167,8 +1168,8 @@ rule Expr_ok/callExpression-constructorTarget-specializedType:
   ---- ;; check instantiation convention
   -- if tid_infer* = tid_impl* ++ tid_inserted*
   -- Inst_ok:
-      p C |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > `( argumentIR* `# id_default* )
-           : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+      p C ANON |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > `( argumentIR* `# id_default* )
+                : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; constructed object may not contain an abstract method
   -- if $is_concrete_extern_object(typeIR_object)
   ---- ;; create IR

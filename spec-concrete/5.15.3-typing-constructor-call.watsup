@@ -18,13 +18,69 @@ rule ConstructorType_ok:
 ;; Instantiation
 ;;
 
+dec $instantiable_extern(cursor, context, instctxt) : bool
+
+def $instantiable_extern(GLOBAL, C, instctxt) = true
+def $instantiable_extern(BLOCK, C, instctxt) = true
+def $instantiable_extern(LOCAL, C, instctxt) = true
+
+dec $instantiable_parser(cursor, context, instctxt) : bool
+
+def $instantiable_parser(GLOBAL, C, instctxt)
+  = instctxt = ANON
+def $instantiable_parser(BLOCK, C, instctxt)
+  = C.BLOCK.KIND = PARSER
+def $instantiable_parser(LOCAL, C, instctxt)
+  = $is_parser_state_localKind(C.LOCAL.KIND)
+
+dec $instantiable_control(cursor, context, instctxt) : bool
+
+def $instantiable_control(GLOBAL, C, instctxt)
+  = instctxt = ANON
+def $instantiable_control(BLOCK, C, instctxt)
+  = C.BLOCK.KIND = CONTROL
+def $instantiable_control(LOCAL, C, instctxt)
+  = $is_control_apply_method_localKind(C.LOCAL.KIND)
+
+dec $instantiable_package(cursor, context, instctxt) : bool
+
+def $instantiable_package(GLOBAL, C, instctxt) = true
+def $instantiable_package(BLOCK, C, instctxt)
+  = C.BLOCK.KIND = PACKAGE
+def $instantiable_package(LOCAL, C, instctxt) = false
+
+dec $instantiable_table(cursor, context, instctxt) : bool
+
+def $instantiable_table(GLOBAL, C, instctxt) = false
+def $instantiable_table(BLOCK, C, instctxt)
+  = C.BLOCK.KIND = CONTROL
+def $instantiable_table(LOCAL, C, instctxt) = false
+
+dec $instantiable(cursor, context, instctxt, typeIR) : bool
+
+def $instantiable(p, C, instctxt, typeIR)
+  = $instantiable_extern(p, C, instctxt)
+  -- if $is_extern_object_typeIR($canon(typeIR))
+def $instantiable(p, C, instctxt, typeIR)
+  = $instantiable_parser(p, C, instctxt)
+  -- if $is_parser_object_typeIR($canon(typeIR))
+def $instantiable(p, C, instctxt, typeIR)
+  = $instantiable_control(p, C, instctxt)
+  -- if $is_control_object_typeIR($canon(typeIR))
+def $instantiable(p, C, instctxt, typeIR)
+  = $instantiable_package(p, C, instctxt)
+  -- if $is_package_object_typeIR($canon(typeIR))
+def $instantiable(p, C, instctxt, typeIR)
+  = $instantiable_table(p, C, instctxt)
+  -- if $is_table_object_typeIR($canon(typeIR))
+
 ;;; Instantiation of a package
 
 rule Inst_ok/package:
-  GLOBAL C |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > 
-                                `( argumentIR* `# id_default* )
-            : typeIR_object_inferred `< typeArgumentIR_inferred* >
-                                      `( argumentIR_cast* )
+  GLOBAL C instctxt |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > 
+                                         `( argumentIR* `# id_default* )
+                     : typeIR_object_inferred `< typeArgumentIR_inferred* >
+                                              `( argumentIR_cast* )
   ---- ;; if the constructor is for a package object
   -- if CONSTRUCTOR `( parameterTypeIR* ) `-> typeIR_object = constructorTypeIR
   -- if PACKAGE `< _ > = $canon(typeIR_object)
@@ -49,7 +105,9 @@ rule Inst_ok/package:
   -- if constructorTypeIR_inferred
       = CONSTRUCTOR `( parameterTypeIR_aligned_inferred* ) `-> typeIR_object_inferred
   -- ConstructorType_wf: $bound(GLOBAL, C) |- constructorTypeIR_inferred
-  ---- ;; (TODO) check instantiation site
+  ---- ;; check instantiation site
+  -- if $instantiable(GLOBAL, C, instctxt, typeIR_object_inferred)
+  ---- ;; check call convention
   -- Call_convention_ok:
       BLOCK C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
                         : argumentIR_cast*
@@ -57,9 +115,10 @@ rule Inst_ok/package:
 ;;; Instantiation of a non-package
 
 rule Inst_ok/non-package:
-  p C |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > 
-                           `( argumentIR* `# id_default* )
-       : typeIR_object_inferred `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+  p C instctxt |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > 
+                                    `( argumentIR* `# id_default* )
+                : typeIR_object_inferred `< typeArgumentIR_inferred* >
+                                         `( argumentIR_cast* )
   ---- ;; if the constructor is not for a package object
   -- if CONSTRUCTOR `( parameterTypeIR* ) `-> typeIR_object = constructorTypeIR
   -- if ~$is_package_object_typeIR($canon(typeIR_object))
@@ -84,7 +143,9 @@ rule Inst_ok/non-package:
   -- if constructorTypeIR_inferred
       = CONSTRUCTOR `( parameterTypeIR_aligned_inferred* ) `-> typeIR_object_inferred
   -- ConstructorType_wf: $bound(p, C) |- constructorTypeIR_inferred
-  ---- ;; (TODO) check instantiation site
+  ---- ;; check instantiation site
+  -- if $instantiable(p, C, instctxt, typeIR_object_inferred)
+  ---- ;; check call convention
   -- Call_convention_ok:
       p C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
                     : argumentIR_cast*

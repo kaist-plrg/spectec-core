@@ -224,13 +224,19 @@ rule RoutineType_ok/parenthesized:
                           : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
 
 ;;
-;; Call
+;; Call typing
 ;;
 
 ;;; Function call
 ;;; syntax functionTypeIR
 
 ;;;; BUILTIN_FUNCTION `( parameterTypeIR* ) `-> typeIR
+
+dec $callable_builtin_function(cursor, context) : bool
+
+def $callable_builtin_function(GLOBAL, C) = true
+def $callable_builtin_function(BLOCK, C) = true
+def $callable_builtin_function(LOCAL, C) = true
 
 rule Call_ok/builtin-function:
   p C |- (BUILTIN_FUNCTION `( parameterTypeIR* ) `-> typeIR_ret)
@@ -244,12 +250,23 @@ rule Call_ok/builtin-function:
   ---- ;; align parameters and arguments if named
   -- if parameterTypeIR_aligned*
       = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
-  ---- ;; (TODO) check call site
+  ---- ;; check call site
+  -- if $callable_builtin_function(p, C)
+  ---- ;; check call convention
   -- Call_convention_ok:
       p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
                     : argumentIR_cast*
 
 ;;;; FUNCTION `( parameterTypeIR* ) `-> typeIR
+
+dec $callable_function(cursor, context) : bool
+
+def $callable_function(GLOBAL, C) = false
+def $callable_function(BLOCK, C)
+  = C.BLOCK.KIND = PARSER \/ C.BLOCK.KIND = CONTROL
+def $callable_function(LOCAL, C)
+  = ~$is_extern_method_localKind(C.LOCAL.KIND)
+    /\ ~$is_extern_abstract_method_localKind(C.LOCAL.KIND)
 
 rule Call_ok/function:
   p C |- (FUNCTION `( parameterTypeIR* ) `-> typeIR_ret)
@@ -276,30 +293,21 @@ rule Call_ok/function:
   -- if functionTypeIR_inferred
       = FUNCTION `( parameterTypeIR_aligned_inferred* ) `-> typeIR_ret_inferred
   -- RoutineType_wf: $bound(p, C) |- functionTypeIR_inferred
-  ---- ;; (TODO) check call site
+  ---- ;; check call site
+  -- if $callable_function(p, C)
+  ---- ;; check call convention
   -- Call_convention_ok:
       p C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
                     : argumentIR_cast*
 
-;;;; ACTION `( parameterTypeIR* )
-
-rule Call_ok/action:
-  p C |- (ACTION `( parameterTypeIR* )) `< eps `# eps > `( argumentIR* `# id_default* )
-        : VOID `< eps > `( argumentIR_cast* )
-  ---- ;; filter default arguments
-  -- if parameterTypeIR_non_default*
-      = $filter_default_parameters(parameterTypeIR*, id_default*)
-  ---- ;; check arity
-  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
-  ---- ;; align parameters and arguments if named
-  -- if parameterTypeIR_aligned*
-      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
-  ---- ;; (TODO) check call site
-  -- Call_convention_ok:
-      p C ACTION |- parameterTypeIR_aligned* `@ argumentIR*
-                  : argumentIR_cast*
-
 ;;;; EXTERN_FUNCTION `( parameterTypeIR* ) `-> typeIR
+
+dec $callable_extern_function(cursor, context) : bool
+
+def $callable_extern_function(GLOBAL, C) = false
+def $callable_extern_function(BLOCK, C)
+  = C.BLOCK.KIND = PARSER \/ C.BLOCK.KIND = CONTROL
+def $callable_extern_function(LOCAL, C) = true
 
 rule Call_ok/externfunction:
   p C |- (EXTERN_FUNCTION `( parameterTypeIR* ) `-> typeIR_ret)
@@ -326,15 +334,51 @@ rule Call_ok/externfunction:
   -- if functionTypeIR_inferred
       = EXTERN_FUNCTION `( parameterTypeIR_aligned_inferred* ) `-> typeIR_ret_inferred
   -- RoutineType_wf: $bound(p, C) |- functionTypeIR_inferred
-  ---- ;; (TODO) check call site
+  ---- ;; check call site
+  -- if $callable_extern_function(p, C)
+  ---- ;; check call convention
   -- Call_convention_ok:
       p C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
                     : argumentIR_cast*
+
+;;;; ACTION `( parameterTypeIR* )
+
+dec $callable_action(cursor, context) : bool
+
+def $callable_action(GLOBAL, C) = false
+def $callable_action(BLOCK, C) = false
+def $callable_action(LOCAL, C)
+  = $is_action_localKind(C.LOCAL.KIND)
+    \/ $is_control_apply_method_localKind(C.LOCAL.KIND)
+
+rule Call_ok/action:
+  p C |- (ACTION `( parameterTypeIR* )) `< eps `# eps > `( argumentIR* `# id_default* )
+        : VOID `< eps > `( argumentIR_cast* )
+  ---- ;; filter default arguments
+  -- if parameterTypeIR_non_default*
+      = $filter_default_parameters(parameterTypeIR*, id_default*)
+  ---- ;; check arity
+  -- if $(|parameterTypeIR_non_default*| = |argumentIR*|)
+  ---- ;; align parameters and arguments if named
+  -- if parameterTypeIR_aligned*
+      = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
+  ---- ;; check call site
+  -- if $callable_action(p, C)
+  ---- ;; check call convention
+  -- Call_convention_ok:
+      p C ACTION |- parameterTypeIR_aligned* `@ argumentIR*
+                  : argumentIR_cast*
 
 ;;; Method call
 ;;; syntax methodTypeIR
 
 ;;;; BUILTIN_METHOD `( parameterTypeIR* ) `-> typeIR
+
+dec $callable_builtin_method(cursor, context) : bool
+
+def $callable_builtin_method(GLOBAL, C) = true
+def $callable_builtin_method(BLOCK, C) = true
+def $callable_builtin_method(LOCAL, C) = true
 
 rule Call_ok/builtin-method:
   p C |- (BUILTIN_METHOD `( parameterTypeIR* ) `-> typeIR_ret)
@@ -348,12 +392,21 @@ rule Call_ok/builtin-method:
   ---- ;; align parameters and arguments if named
   -- if parameterTypeIR_aligned*
       = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
-  ---- ;; (TODO) check call site
+  ---- ;; check call site
+  -- if $callable_builtin_method(p, C)
+  ---- ;; check call convention
   -- Call_convention_ok:
       p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
                     : argumentIR_cast*
 
 ;;;; EXTERN_METHOD `( parameterTypeIR* ) `-> typeIR
+
+dec $callable_extern_method(cursor, context) : bool
+
+def $callable_extern_method(GLOBAL, C) = false
+def $callable_extern_method(BLOCK, C)
+  = C.BLOCK.KIND = PARSER \/ C.BLOCK.KIND = CONTROL
+def $callable_extern_method(LOCAL, C) = true
 
 rule Call_ok/extern-method:
   p C |- (EXTERN_METHOD `( parameterTypeIR* ) `-> typeIR_ret)
@@ -380,12 +433,21 @@ rule Call_ok/extern-method:
   -- if methodTypeIR_inferred
       = EXTERN_METHOD `( parameterTypeIR_aligned_inferred* ) `-> typeIR_ret_inferred
   -- RoutineType_wf: $bound(p, C) |- methodTypeIR_inferred
-  ---- ;; (TODO) check call site
+  ---- ;; check call site
+  -- if $callable_extern_method(p, C)
+  ---- ;; check call convention
   -- Call_convention_ok:
       p C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
                     : argumentIR_cast*
 
 ;;;; EXTERN_METHOD ABSTRACT `( parameterTypeIR* ) `-> typeIR
+
+dec $callable_extern_abstract_method(cursor, context) : bool
+
+def $callable_extern_abstract_method(GLOBAL, C) = false
+def $callable_extern_abstract_method(BLOCK, C)
+  = C.BLOCK.KIND = PARSER \/ C.BLOCK.KIND = CONTROL
+def $callable_extern_abstract_method(LOCAL, C) = true
 
 rule Call_ok/extern-abstract-method:
   p C |- (EXTERN_METHOD ABSTRACT `( parameterTypeIR* ) `-> typeIR_ret)
@@ -412,12 +474,21 @@ rule Call_ok/extern-abstract-method:
   -- if methodTypeIR_inferred
       = EXTERN_METHOD ABSTRACT `( parameterTypeIR_aligned_inferred* ) `-> typeIR_ret_inferred
   -- RoutineType_wf: $bound(p, C) |- methodTypeIR_inferred
-  ---- ;; (TODO) check call site
+  ---- ;; check call site
+  -- if $callable_extern_abstract_method(p, C)
+  ---- ;; check call convention
   -- Call_convention_ok:
       p C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
                     : argumentIR_cast*
 
 ;;;; PARSER_APPLY `( parameterTypeIR* )
+
+dec $callable_parser_apply_method(cursor, context) : bool
+
+def $callable_parser_apply_method(GLOBAL, C) = false
+def $callable_parser_apply_method(BLOCK, C) = false
+def $callable_parser_apply_method(LOCAL, C)
+  = $is_parser_state_localKind(C.LOCAL.KIND)
 
 rule Call_ok/parser-apply-method:
   p C |- (PARSER_APPLY `( parameterTypeIR* ))
@@ -431,12 +502,21 @@ rule Call_ok/parser-apply-method:
   ---- ;; align parameters and arguments if named
   -- if parameterTypeIR_aligned*
       = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
-  ---- ;; (TODO) check call site
+  ---- ;; check call site
+  -- if $callable_parser_apply_method(p, C)
+  ---- ;; check call convention
   -- Call_convention_ok:
       p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
                     : argumentIR_cast*
 
 ;;;; CONTROL_APPLY `( parameterTypeIR* )
+
+dec $callable_control_apply_method(cursor, context) : bool
+
+def $callable_control_apply_method(GLOBAL, C) = false
+def $callable_control_apply_method(BLOCK, C) = false
+def $callable_control_apply_method(LOCAL, C)
+  = $is_control_apply_method_localKind(C.LOCAL.KIND)
 
 rule Call_ok/control-apply-method:
   p C |- (CONTROL_APPLY `( parameterTypeIR* ))
@@ -450,13 +530,25 @@ rule Call_ok/control-apply-method:
   ---- ;; align parameters and arguments if named
   -- if parameterTypeIR_aligned*
       = $align_parameters(parameterTypeIR_non_default*, argumentIR*)
-  ---- ;; (TODO) check call site
+  ---- ;; check call site
+  -- if $callable_control_apply_method(p, C)
+  ---- ;; check call convention
   -- Call_convention_ok:
       p C NOACTION |- parameterTypeIR_aligned* `@ argumentIR*
                     : argumentIR_cast*
 
 ;;;; TABLE_APPLY `-> typeIR
 
+dec $callable_table_apply_method(cursor, context) : bool
+
+def $callable_table_apply_method(GLOBAL, C) = false
+def $callable_table_apply_method(BLOCK, C) = false
+def $callable_table_apply_method(LOCAL, C)
+  = $is_control_apply_method_localKind(C.LOCAL.KIND)
+    \/ $is_table_apply_method_localKind(C.LOCAL.KIND)
+
 rule Call_ok/table-apply-method:
   p C |- (TABLE_APPLY `-> typeIR_table) `< eps `# eps > `( eps `# eps )
         : typeIR_table `< eps > `( eps )
+  ---- ;; check call site
+  -- if $callable_table_apply_method(p, C)

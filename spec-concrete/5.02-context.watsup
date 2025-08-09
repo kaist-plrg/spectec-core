@@ -12,7 +12,7 @@ var p : cursor
 
 ;; Global layer
 
-syntax glayer =
+syntax globalTypingLayer =
   { CDENV cdenv,
     TDENV tdenv,
     RDENV rdenv,
@@ -20,19 +20,86 @@ syntax glayer =
 
 ;; Block layer
 
-syntax blayer =
+syntax blockKind =
+  | `EMPTY
+  | EXTERN
+  | PARSER
+  | CONTROL
+  | PACKAGE
+
+syntax blockTypingLayer =
   { ID id,
+    KIND blockKind,
     TDENV tdenv,
     RDENV rdenv,
     FRAME frame }
 
 ;; Local layer
 
-syntax lret = `EMPTY | typeIR
+syntax localKind =
+  | `EMPTY
+  | FUNCTION `-> typeIR
+  | EXTERN_FUNCTION `-> typeIR
+  | ACTION
+  | EXTERN_METHOD `-> typeIR
+  | EXTERN_METHOD ABSTRACT `-> typeIR
+  | PARSER_STATE
+  | CONTROL_APPLY_METHOD
+  | TABLE_APPLY_METHOD
 
-syntax llayer =
+dec $is_function_localKind(localKind) : bool
+def $is_function_localKind(FUNCTION `-> _) = true
+def $is_function_localKind(_) = false
+  -- otherwise
+
+dec $is_extern_function_localKind(localKind) : bool
+def $is_extern_function_localKind(
+    EXTERN_FUNCTION `-> _
+  ) = true
+def $is_extern_function_localKind(_) = false
+  -- otherwise
+
+dec $is_action_localKind(localKind) : bool
+def $is_action_localKind(ACTION) = true
+def $is_action_localKind(_) = false
+  -- otherwise
+
+dec $is_extern_method_localKind(localKind) : bool
+def $is_extern_method_localKind(
+    EXTERN_METHOD `-> _
+  ) = true
+def $is_extern_method_localKind(_) = false
+  -- otherwise
+
+dec $is_extern_abstract_method_localKind(localKind) : bool
+def $is_extern_abstract_method_localKind(
+    EXTERN_METHOD ABSTRACT `-> _
+  ) = true
+def $is_extern_abstract_method_localKind(_) = false
+  -- otherwise
+
+dec $is_parser_state_localKind(localKind) : bool
+def $is_parser_state_localKind(PARSER_STATE) = true
+def $is_parser_state_localKind(_) = false
+  -- otherwise
+
+dec $is_control_apply_method_localKind(localKind) : bool
+def $is_control_apply_method_localKind(
+    CONTROL_APPLY_METHOD
+  ) = true
+def $is_control_apply_method_localKind(_) = false
+  -- otherwise
+
+dec $is_table_apply_method_localKind(localKind) : bool
+def $is_table_apply_method_localKind(
+    TABLE_APPLY_METHOD
+  ) = true
+def $is_table_apply_method_localKind(_) = false
+  -- otherwise
+
+syntax localTypingLayer =
   { ID id,
-    RET lret,
+    KIND localKind,
     TDENV tdenv,
     FRAMES frame* }
 
@@ -41,9 +108,9 @@ syntax llayer =
 ;;
 
 syntax context =
-  { GLOBAL glayer,
-    BLOCK blayer,
-    LOCAL llayer }
+  { GLOBAL globalTypingLayer,
+    BLOCK blockTypingLayer,
+    LOCAL localTypingLayer }
 
 var C : context
 
@@ -54,22 +121,26 @@ var C : context
 dec $empty_context : context
 
 def $empty_context = C
-  -- if glayer =
-      { CDENV $empty_cdenv,
-        TDENV $empty_tdenv,
-        RDENV $empty_rdenv,
-        FRAME $empty_frame }
-  -- if blayer =
-      { ID "",
-        TDENV $empty_tdenv,
-        RDENV $empty_rdenv,
-        FRAME $empty_frame }
-  -- if llayer =
-      { ID "",
-        RET `EMPTY,
-        TDENV $empty_tdenv,
-        FRAMES ([ $empty_frame ]) }
-  -- if C = { GLOBAL glayer, BLOCK blayer, LOCAL llayer }
+  -- if globalTypingLayer
+      = { CDENV $empty_cdenv,
+          TDENV $empty_tdenv,
+          RDENV $empty_rdenv,
+          FRAME $empty_frame }
+  -- if blockTypingLayer
+      = { ID "",
+          KIND `EMPTY,
+          TDENV $empty_tdenv,
+          RDENV $empty_rdenv,
+          FRAME $empty_frame }
+  -- if localTypingLayer
+      = { ID "",
+          KIND `EMPTY,
+          TDENV $empty_tdenv,
+          FRAMES ([ $empty_frame ]) }
+  -- if C
+      = { GLOBAL globalTypingLayer,
+          BLOCK blockTypingLayer,
+          LOCAL localTypingLayer }
 
 ;;
 ;; Bound type variabls
@@ -97,22 +168,6 @@ def $exit(C) = C[ .LOCAL.FRAMES = frame_t* ]
   -- if frame_h :: frame_t* = C.LOCAL.FRAMES
 
 ;;
-;; Return type tracking
-;;
-
-dec $set_return_type(context, typeIR) : context
-
-def $set_return_type(C, typeIR_ret)
-  = C[ .LOCAL.RET = typeIR_ret ]
-
-dec $get_return_type(context) : typeIR?
-
-def $get_return_type(C) = typeIR_ret
-  -- if typeIR_ret = C.LOCAL.RET
-def $get_return_type(C) = eps
-  -- otherwise
-
-;;
 ;; Adders
 ;;
 
@@ -124,16 +179,20 @@ dec $add_vars(cursor, context, id*, varTypeIR*) : context
 def $add_var(GLOBAL, C, id, varTypeIR) = C'
   -- if frame = C.GLOBAL.FRAME
   -- if ~$in_set<id>(id, $dom_map<id, varTypeIR>(frame))
+  -- if _ typeIR _ _ = varTypeIR
+  -- if (id = "main") => $is_package_object_typeIR($canon(typeIR))
   -- if frame_update = $add_map<id, varTypeIR>(frame, id, varTypeIR)
   -- if C' = C [ .GLOBAL.FRAME = frame_update ]
 def $add_var(BLOCK, C, id, varTypeIR) = C'
   -- if frame = C.BLOCK.FRAME
   -- if ~$in_set<id>(id, $dom_map<id, varTypeIR>(frame))
+  -- if id =/= "main"
   -- if frame_update = $add_map<id, varTypeIR>(C.BLOCK.FRAME, id, varTypeIR)
   -- if C' = C [ .BLOCK.FRAME = frame_update ]
 def $add_var(LOCAL, C, id, varTypeIR) = C'
   -- if frame_h :: frame_t* = C.LOCAL.FRAMES
   -- if ~$in_set<id>(id, $dom_map<id, varTypeIR>(frame_h))
+  -- if id =/= "main"
   -- if frame_h_update = $add_map<id, varTypeIR>(frame_h, id, varTypeIR)
   -- if frame* = frame_h_update :: frame_t*
   -- if C' = C [ .LOCAL.FRAMES = frame* ]
@@ -391,3 +450,23 @@ def $find_constructor_overloaded(C, `` id, argumentIR*)
   = $find_overloaded<constructorTypeDefIR>(cdenv, id, (id_arg?)*)
   -- if cdenv = C.GLOBAL.CDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
+
+;;; Finder for return types
+
+dec $find_return_type(context) : typeIR?
+
+def $find_return_type(C) = typeIR_ret
+  -- if FUNCTION `-> typeIR_ret = C.LOCAL.KIND
+def $find_return_type(C) = typeIR_ret
+  -- if EXTERN_FUNCTION `-> typeIR_ret = C.LOCAL.KIND
+def $find_return_type(C) = VOID
+  -- if ACTION = C.LOCAL.KIND
+def $find_return_type(C) = typeIR_ret
+  -- if EXTERN_METHOD `-> typeIR_ret = C.LOCAL.KIND
+def $find_return_type(C) = typeIR_ret
+  -- if EXTERN_METHOD ABSTRACT `-> typeIR_ret
+      = C.LOCAL.KIND
+def $find_return_type(C) = VOID
+  -- if CONTROL_APPLY_METHOD = C.LOCAL.KIND
+def $find_return_type(C) = eps
+  -- otherwise

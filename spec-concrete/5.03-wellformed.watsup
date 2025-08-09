@@ -613,6 +613,7 @@ def $nestable_parserapplymethod'(direction, STRING) = false
   -- if direction =/= `EMPTY
 def $nestable_parserapplymethod'(direction, INT) = false
   -- if direction =/= `EMPTY
+def $nestable_parserapplymethod'(direction, PARSER `( _ )) = false
 def $nestable_parserapplymethod'(direction, CONTROL `( _ )) = false
 def $nestable_parserapplymethod'(direction, PACKAGE `< _ >) = false
 def $nestable_parserapplymethod'(direction, TABLE _ `# _) = false
