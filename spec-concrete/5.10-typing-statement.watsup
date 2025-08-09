@@ -126,7 +126,7 @@ rule Stmt_ok/returnStatement-empty:
   LOCAL C f |- RETURN `;
              : C RET (RETURN `;)
   ---- ;; check that the return type in the context is VOID
-  -- if VOID = $get_return_type(C)
+  -- if VOID = $find_return_type(C)
 
 ;;;; RETURN expression `;
 
@@ -138,7 +138,7 @@ rule Stmt_ok/returnStatement-expression:
   ---- ;; fetch annotation
   -- if _ `# `( typeIR _ ) = typedExpressionIR
   ---- ;; check the return type in the context
-  -- if typeIR_ret = $get_return_type(C)
+  -- if typeIR_ret = $find_return_type(C)
   ---- ;; check type compatibility
   ---- ;; while inserting implicit casts if necessary
   -- if typedExpressionIR_cast = $coerce_unary(typedExpressionIR, typeIR_ret)

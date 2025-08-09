@@ -48,13 +48,13 @@ rule TableKey_ok:
   C TC_0 |- expression `: name_matchkind annotationList `;
           : TC_2 tableKeyIR
   ---- ;; check expression
-  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
   -- if _ `# `( typeIR _ ) = typedExpressionIR
   ---- ;; check that the expression can be embedded in a set
-  -- Type_wf: $bound(BLOCK, C) |- SET `< typeIR >
+  -- Type_wf: $bound(LOCAL, C) |- SET `< typeIR >
   ---- ;; check match kind
   -- if nameIR_matchkind = $name(name_matchkind)
-  -- if MATCH_KIND `. nameIR_matchkind = $find_value(BLOCK, C, `` nameIR_matchkind)
+  -- if MATCH_KIND `. nameIR_matchkind = $find_value(LOCAL, C, `` nameIR_matchkind)
   ---- ;; check compatibility with the match kind
   -- if $compat_table_key(nameIR_matchkind, typeIR)
   ---- ;; update table context
@@ -111,7 +111,7 @@ rule Call_action_partial_ok:
   -- if $(|parameterTypeIR_data*| = |argumentIR*|)
   ---- ;; check calling convention on dataplane parameters
   -- Call_convention_ok:
-      BLOCK C ACTION |- parameterTypeIR_data* `@ argumentIR*
+      LOCAL C ACTION |- parameterTypeIR_data* `@ argumentIR*
                       : argumentIR_cast*
 
 ;;; syntax tableAction = annotationList tableActionReference `;
@@ -125,7 +125,7 @@ rule TableAction_ok/prefixedNonTypeName:
   ---- ;; check that the action exists
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
   -- if ACTION `( parameterTypeIR* )
-      = $find_routine_non_overloaded(BLOCK, C, prefixedNameIR)
+      = $find_routine_non_overloaded(LOCAL, C, prefixedNameIR)
   ---- ;; check that the action reference is a valid data-plane call
   -- Call_action_partial_ok: C |- parameterTypeIR* `@ eps
                                 : parameterTypeIR_data* `, parameterTypeIR_control*
@@ -143,10 +143,10 @@ rule TableAction_ok/prefixedNonTypeName-argumentList:
   ---- ;; check that the action exists
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
   -- if ACTION `( parameterTypeIR* )
-      = $find_routine_non_overloaded(BLOCK, C, prefixedNameIR)
+      = $find_routine_non_overloaded(LOCAL, C, prefixedNameIR)
   ---- ;; check arguments
   -- if argument* = $flatten_argumentList(argumentList)
-  -- (Argument_ok: BLOCK C |- argument : argumentIR)*
+  -- (Argument_ok: LOCAL C |- argument : argumentIR)*
   ---- ;; check that the action reference is a valid data-plane call
   -- Call_action_partial_ok: C |- parameterTypeIR* `@ argumentIR*
                                 : parameterTypeIR_data* `, parameterTypeIR_control*
@@ -186,7 +186,7 @@ rule Call_action_default_ok:
       = $split_dataplane_parameters(parameterTypeIR*)
   ---- ;; check calling convention
   -- Call_convention_ok:
-      BLOCK C ACTION |- parameterTypeIR* `@ argumentIR*
+      LOCAL C ACTION |- parameterTypeIR* `@ argumentIR*
                       : argumentIR_cast*
 
 ;;; prefixedNonTypeName
@@ -209,7 +209,7 @@ rule TableDefaultAction_ok/prefixedNonTypeName-argumentList:
       = $find_action(TC, prefixedNameIR)
   ---- ;; check arguments
   -- if argument* = $flatten_argumentList(argumentList)
-  -- (Argument_ok: BLOCK C |- argument : argumentIR)*
+  -- (Argument_ok: LOCAL C |- argument : argumentIR)*
   ---- ;; check calling convention
   -- Call_action_default_ok:
       C |- parameterTypeIR_action* `@ argumentIR*
@@ -248,7 +248,7 @@ rule TableEntry_keyset_simple_ok/expression-lpm:
   ---- ;; check match mode
   -- if TC.MODE = NOPRILPM n
   ---- ;; check expression
-  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
   -- if _ `# `( typeIR ctk ) = typedExpressionIR
   ---- ;; check compatibility with the key type
   -- Sub_impl: typeIR <: typeIR_key
@@ -263,7 +263,7 @@ rule TableEntry_keyset_simple_ok/expression-non-lpm:
   ---- ;; check match mode
   -- if nameIR_matchkind =/= "lpm"
   ---- ;; check expression
-  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
   -- if _ `# `( typeIR ctk ) = typedExpressionIR
   ---- ;; check compatibility with the key type
   -- Sub_impl: typeIR <: typeIR_key
@@ -280,8 +280,8 @@ rule TableEntry_keyset_simple_ok/mask-lpm:
   ---- ;; check match mode
   -- if TC.MODE = NOPRILPM n
   ---- ;; check both sides
-  -- Expr_ok: BLOCK C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: BLOCK C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: LOCAL C |- expression_l : typedExpressionIR_l
+  -- Expr_ok: LOCAL C |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -298,7 +298,7 @@ rule TableEntry_keyset_simple_ok/mask-lpm:
   -- Sub_impl: typeIR_reduced <: typeIR_key
   ---- ;; statically evaluate the right hand side to get its width
   -- if ctk_r_reduced = LCTK
-  -- Eval_static: BLOCK C |- typedExpressionIR_r_reduced ~> value_r
+  -- Eval_static: LOCAL C |- typedExpressionIR_r_reduced ~> value_r
   -- if i_r = $to_number(value_r)
   ---- ;; compute the table entry state
   -- if n_prefix = $tableEntry_lpm_prefix(n W $to_bitstr(n, i_r))
@@ -307,8 +307,8 @@ rule TableEntry_keyset_simple_ok/mask-ternary:
   C TC |- (typeIR_key, "ternary") `@ (expression_l `&&& expression_r)
         : NOLPM (typedExpressionIR_l_reduced `&&& typedExpressionIR_r_reduced)
   ---- ;; check both sides
-  -- Expr_ok: BLOCK C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: BLOCK C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: LOCAL C |- expression_l : typedExpressionIR_l
+  -- Expr_ok: LOCAL C |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -330,8 +330,8 @@ rule TableEntry_keyset_simple_ok/range-range:
   C TC |- (typeIR_key, "range") `@ (expression_l `.. expression_r)
         : NOLPM (typedExpressionIR_l_reduced `.. typedExpressionIR_r_reduced)
   ---- ;; check both sides
-  -- Expr_ok: BLOCK C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: BLOCK C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: LOCAL C |- expression_l : typedExpressionIR_l
+  -- Expr_ok: LOCAL C |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -555,7 +555,7 @@ rule TableEntry_action_ok/prefixedNonTypeName-argumentList:
       = $find_action(TC, prefixedNameIR)
   ---- ;; check arguments
   -- if argument* = $flatten_argumentList(argumentList)
-  -- (Argument_ok: BLOCK C |- argument : argumentIR)*
+  -- (Argument_ok: LOCAL C |- argument : argumentIR)*
   ---- ;; check calling convention
   -- Call_action_default_ok:
       C |- parameterTypeIR_action* `@ argumentIR*
@@ -678,9 +678,9 @@ rule TableEntry_priority_ok/pri-prilpm-expression-init:
   ---- ;; if no priority has been specified yet
   -- if TC_0.PRIORITIES.VALUES = eps
   ---- ;; evaluate and initialize the priority
-  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
   -- if _ `# `( _ LCTK ) = typedExpressionIR
-  -- Eval_static: BLOCK C |- typedExpressionIR ~> value
+  -- Eval_static: LOCAL C |- typedExpressionIR ~> value
   -- if n = $to_number(value)
   -- if TC_1 = TC_0[ .PRIORITIES.INIT = true ]
   -- if TC_2 = $add_table_priority(TC_1, n)
@@ -695,9 +695,9 @@ rule TableEntry_priority_ok/pri-prilpm-expression-non-init:
   -- if TC_0.PRIORITIES.VALUES =/= eps
   -- if TC_0.PRIORITIES.INIT
   ---- ;; evaluate and initialize the priority
-  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
   -- if _ `# `( _ LCTK ) = typedExpressionIR
-  -- Eval_static: BLOCK C |- typedExpressionIR ~> value
+  -- Eval_static: LOCAL C |- typedExpressionIR ~> value
   -- if n = $to_number(value)
   -- if TC_1 = $add_table_priority(TC_0, n)
   
@@ -811,7 +811,7 @@ rule TableProperty_ok/custom-size:
   ---- ;; check that the custom property is for size
   -- if "size" = $tableCustomName(tableCustomName)
   ---- ;; check initializer
-  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
   -- if _ `# `( typeIR _ ) = typedExpressionIR
   -- if $is_arbitrary_int_typeIR(typeIR)
         \/ $is_fixed_int_typeIR(typeIR)
@@ -827,9 +827,9 @@ rule TableProperty_ok/custom-largest-priority-wins:
   ---- ;; check that the custom property is for largest_priority_wins
   -- if "largest_priority_wins" = $tableCustomName(tableCustomName)
   ---- ;; check initializer
-  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
   -- if _ `# `( BOOL _ ) = typedExpressionIR
-  -- Eval_static: BLOCK C |- typedExpressionIR ~> B b_largest_priority_wins
+  -- Eval_static: LOCAL C |- typedExpressionIR ~> B b_largest_priority_wins
   ---- ;; update table context
   -- if TC_1 = TC_0[ .PRIORITIES.LARGEST_WINS = b_largest_priority_wins ]
   ---- ;; create IR
@@ -843,12 +843,12 @@ rule TableProperty_ok/custom-priority-delta:
   ---- ;; check that the custom property is for priority_delta
   -- if "priority_delta" = $tableCustomName(tableCustomName)
   ---- ;; check initializer
-  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
   -- if _ `# `( typeIR _ ) = typedExpressionIR
   -- if $is_arbitrary_int_typeIR(typeIR)
         \/ $is_fixed_int_typeIR(typeIR)
         \/ $is_fixed_bit_typeIR(typeIR)
-  -- Eval_static: BLOCK C |- typedExpressionIR ~> value
+  -- Eval_static: LOCAL C |- typedExpressionIR ~> value
   -- if n_delta = $to_number(value)
   -- if $(n_delta > 0)
   ---- ;; update table context
@@ -867,7 +867,7 @@ rule TableProperty_ok/custom:
         /\ nameIR =/= "largest_priority_wins"
         /\ nameIR =/= "priority_delta"
   ---- ;; check initializer
-  -- Expr_ok: BLOCK C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
   ---- ;; create IR
   -- if constOptIR = $flatten_constOpt(constOpt)
   -- if tablePropertyIR

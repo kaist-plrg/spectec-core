@@ -68,14 +68,16 @@ rule ControlLocalDecl_ok/actionDeclaration:
 
 rule ControlLocalDecl_ok/tableDeclaration:
   C_0 |- annotationList TABLE name `{ tablePropertyList }
-       : C_2 tableDeclarationIR
+       : C_3 tableDeclarationIR
+  ---- ;; set local context
+  -- if C_1 = C_0[ .LOCAL.KIND = TABLE_APPLY_METHOD ]
   ---- ;; check table properties
   -- if tableProperty* = $flatten_tablePropertyList(tablePropertyList)
-  -- Table_ok: C_0 |- tableProperty* : TC tablePropertyIR*
+  -- Table_ok: C_1 |- tableProperty* : TC tablePropertyIR*
   ---- ;; update the context with synthesized table
   -- if nameIR = $name(name)
-  -- TableType_ok: C_0 TC |- name : C_1 typeIR_table
-  -- if C_2 = $add_var(BLOCK, C_1, nameIR, `EMPTY typeIR_table DYN eps)
+  -- TableType_ok: C_1 TC |- name : C_2 typeIR_table
+  -- if C_3 = $add_var(BLOCK, C_2, nameIR, `EMPTY typeIR_table DYN eps)
   ---- ;; create IR
   -- if tableDeclarationIR
       = annotationList TABLE nameIR `{ tablePropertyIR* }

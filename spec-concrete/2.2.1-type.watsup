@@ -170,8 +170,8 @@ syntax parameterTypeIR = direction typeIR id value?
 syntax functionTypeIR =
   | BUILTIN_FUNCTION `( parameterTypeIR* ) `-> typeIR
   | FUNCTION `( parameterTypeIR* ) `-> typeIR
-  | ACTION `( parameterTypeIR* )
   | EXTERN_FUNCTION `( parameterTypeIR* ) `-> typeIR
+  | ACTION `( parameterTypeIR* )
 
 syntax methodTypeIR =
   | BUILTIN_METHOD `( parameterTypeIR* ) `-> typeIR

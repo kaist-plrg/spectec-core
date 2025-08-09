@@ -9,6 +9,7 @@ relation Eval_static:
 
 ;;
 ;;;; Type evaluation
+;;;; Inserts fresh type variables (`# tid*) for don't care type arguments (`_)
 ;;
 
 relation Type_ok:
@@ -271,6 +272,31 @@ relation Program_ok:
   hint(input %0)
 
 ;;
+;;;; Call/instantiation convention
+;;
+
+;; Checks the copy-in/out calling convention,
+;; and inserts implicit casts for arguments, if necessary
+;; note that it depends on whether an action is being called or not
+
+syntax actctxt = ACTION | NOACTION
+
+relation Call_convention_expr_ok:
+  cursor context actctxt |- parameterTypeIR `@ typedExpressionIR
+                          : typedExpressionIR
+  hint(input %0 %1 %2 %3 %4)
+
+relation Call_convention_argument_ok:
+  cursor context actctxt |- parameterTypeIR `@ argumentIR
+                          : argumentIR
+  hint(input %0 %1 %2 %3 %4)
+
+relation Call_convention_ok:
+  cursor context actctxt |- parameterTypeIR* `@ argumentListIR
+                          : argumentListIR
+  hint(input %0 %1 %2 %3 %4)
+
+;;
 ;;;; Routine typing
 ;;
 
@@ -302,6 +328,17 @@ relation RoutineType_ok:
                   : routineTypeIR `< `# tid* > `( `# id* )
   hint(input %0 %1 %2 %3 %4)
 
+;; Checks that an action/function/method invocation is valid,
+;; gets the return type,
+;; infers the types of missing type arguments,
+;; and inserts implicit casts for arguments, if necessary
+
+relation Call_ok:
+  cursor context |- routineTypeIR `< typeArgumentListIR `# tid* >
+                                  `( argumentListIR `# id* )
+                  : typeIR `< typeArgumentListIR > `( argumentListIR )
+  hint(input %0 %1 %2 %3 %4 %5 %6)
+
 ;;
 ;;;; Constructor typing
 ;;
@@ -315,49 +352,18 @@ relation ConstructorType_ok:
                   : constructorTypeIR `< `# tid* > `( `# id* )
   hint(input %0 %1 %2 %3 %4)
 
-;;
-;;;; Call/instantiation typing
-;;
-
-;; Checks the copy-in/out calling convention,
-;; and inserts implicit casts for arguments, if necessary
-;; note that it depends on whether an action is being called or not
-
-syntax actctxt = ACTION | NOACTION
-
-relation Call_convention_expr_ok:
-  cursor context actctxt |- parameterTypeIR `@ typedExpressionIR
-                          : typedExpressionIR
-  hint(input %0 %1 %2 %3 %4)
-
-relation Call_convention_argument_ok:
-  cursor context actctxt |- parameterTypeIR `@ argumentIR
-                          : argumentIR
-  hint(input %0 %1 %2 %3 %4)
-
-relation Call_convention_ok:
-  cursor context actctxt |- parameterTypeIR* `@ argumentListIR
-                          : argumentListIR
-  hint(input %0 %1 %2 %3 %4)
-
-;; Checks that an action/function/method invocation is valid,
-;; gets the return type,
-;; infers the types of missing type arguments,
-;; and inserts implicit casts for arguments, if necessary
-
-relation Call_ok:
-  cursor context |- routineTypeIR `< typeArgumentListIR `# tid* >
-                                  `( argumentListIR `# id* )
-                  : typeIR `< typeArgumentListIR > `( argumentListIR )
-  hint(input %0 %1 %2 %3 %4 %5 %6)
-
 ;; Checks that a constructor invocation is valid,
 ;; gets the return type,
 ;; infers the types of missing type arguments,
 ;; and inserts implicit casts for arguments, if necessary
 
+syntax instctxt = NAMED | ANON
+
 relation Inst_ok:
-  cursor context |- constructorTypeIR `< typeArgumentListIR `# tid* >
-                                      `( argumentListIR `# id* )
-                  : typeIR `< typeArgumentListIR > `( argumentListIR )
-  hint(input %0 %1 %2 %3 %4 %5 %6)
+  cursor context instctxt |- constructorTypeIR
+                              `< typeArgumentListIR `# tid* >
+                              `( argumentListIR `# id* )
+                           : typeIR
+                              `< typeArgumentListIR >
+                              `( argumentListIR )
+  hint(input %0 %1 %2 %3 %4 %5 %6 %7)
