@@ -1,5 +1,4 @@
 open Source
-open Print
 
 (* Backtracking *)
 
@@ -32,6 +31,7 @@ let nest at msg attempt =
   | Fail failtraces -> Fail [ Failtrace (at, msg, failtraces) ]
 
 (* Extract region from Fail *)
+
 let rec region_of_failtrace failtrace =
   let (Failtrace (region, _, failtraces)) = failtrace in
   if region = no_region then region_of_failtraces failtraces else region
@@ -49,39 +49,38 @@ let compare_failtrace failtrace_l failtrace_r =
 
 (* Error with backfailtraces *)
 
-let rec string_of_failtrace ?(level = 0) ~(region_parent : region)
+let rec string_of_failtrace ?(indent = "") ?(level = 0) ~(region_parent : region) ~(is_last : bool)
     ~(depth : int) ~(bullet : string) (failtrace : failtrace) : string =
   let (Failtrace (region, msg, subfailtraces)) = failtrace in
   let smsg =
     if level < depth then ""
     else
-      let indent = indent (max (level - depth - 1) 0) in
-      Format.asprintf "%s%s%s%s\n" indent
-        (if level = 0 then "" else bullet)
+      let prefix = if is_last then "└── " else "├── " in
+      let indent_prefix = String.make 4 ' ' in
+      Format.asprintf "%s%s%s%s%s\n" indent prefix
         (if region_parent = region || region = no_region then ""
          else
            string_of_region region ^ "\n"
-           ^ if level = 0 then indent else indent ^ "    ")
+            ^ indent ^ indent_prefix) bullet
         msg
   in
   let region_parent = if region = no_region then region_parent else region in
+  let indent = if is_last then indent ^ "    " else indent ^ "│   " in
   Format.asprintf "%s%s" smsg
-    (string_of_failtraces ~level:(level + 1) ~region_parent ~depth subfailtraces)
+    (string_of_failtraces ~indent ~level:(level+1) ~region_parent ~depth subfailtraces)
 
-and string_of_failtraces ?(level = 0) ~(region_parent : region) ~(depth : int)
+and string_of_failtraces ?(indent = "") ?(level = 0) ~(region_parent : region) ~(depth : int)
     (failtraces : failtrace list) : string =
   match failtraces with
   | [] -> ""
   | [ failtrace ] ->
-      string_of_failtrace ~level ~region_parent ~depth ~bullet:"└── " failtrace
+      string_of_failtrace ~indent ~level ~region_parent ~is_last:true ~depth ~bullet:"" failtrace
   | failtraces ->
       List.mapi
         (fun idx failtrace ->
-          let bullet =
-            (if idx = List.length failtraces - 1 then "└── " else "├── ")
-            ^ string_of_int (idx + 1)
-            ^ ". "
+          let is_last = idx = List.length failtraces - 1 in
+          let bullet = string_of_int (idx + 1) ^ ". "
           in
-          string_of_failtrace ~level ~region_parent ~depth ~bullet failtrace)
+          string_of_failtrace ~indent ~level ~region_parent ~is_last ~depth ~bullet failtrace)
         failtraces
       |> String.concat ""
