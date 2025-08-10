@@ -3,6 +3,8 @@
 type pos = { file : string; line : int; column : int }
 type region = { left : pos; right : pos }
 
+(* Compare regions for sorting *)
+
 let compare_region region_l region_r =
   if region_l.left.file = region_r.left.file then
     if region_l.left.line = region_r.left.line then
@@ -37,7 +39,7 @@ let string_of_range left right =
 
 let string_of_region region =
   if region = region_of_file region.left.file then region.left.file
-  else region.left.file ^ ":" ^ string_of_range region.left region.right
+  else region.left.file ^ ":" ^ string_of_range region.left region.right ^ ":"
 
 (* Phrases *)
 
