@@ -1,0 +1,62 @@
+;;
+;; Extern method instantiation
+;;
+;; syntax methodPrototypeIR
+;;
+
+;;; annotationList functionPrototypeIR `;
+
+rule ExternMethod_inst/non-abstract:
+  rdenv_0 |- annotationList (typeIR_ret nameIR 
+    `< typeParameterListIR `, typeParameterListIR_inferred >
+    `( parameterIR* )) `;
+    ==> rdenv_1
+    -- if $rid_IR(nameIR, parameterIR*) = rid
+    -- if ($parameterIR(parameterIR) = parameterTypeIR)*
+    -- if EXTERN_METHOD `( parameterTypeIR* ) `-> typeIR_ret
+        = methodTypeIR
+    -- if methodTypeIR `< typeParameterListIR `, typeParameterListIR_inferred >
+        = routineTypeDefIR
+    -- if $add_map<rid, routineTypeDefIR>(rdenv_0, rid, routineTypeDefIR)
+        = rdenv_1
+
+rule ExternMethod_inst/abstract:
+  rdenv_0 |- _ ABSTRACT
+    (typeIR_ret nameIR `< typeParameterListIR `, typeParameterListIR_inferred >
+    `( parameterIR* )) `;
+    ==> rdenv_1
+    -- if $rid_IR(nameIR, parameterIR*) = rid
+    -- if ($parameterIR(parameterIR) = parameterTypeIR)*
+    -- if EXTERN_METHOD ABSTRACT `( parameterTypeIR* ) `-> typeIR_ret
+        = methodTypeIR
+    -- if methodTypeIR `< typeParameterListIR `, typeParameterListIR_inferred >
+        = routineTypeDefIR
+    -- if $add_map<rid, routineTypeDefIR>(rdenv_0, rid, routineTypeDefIR)
+        = rdenv_1
+
+rule ExternMethods_inst/nil:
+  rdenv |- eps ==> rdenv
+
+rule ExternMethods_inst/cons:
+  rdenv_0 |- methodPrototypeIR_h :: methodPrototypeIR_t* ==> rdenv_2
+  -- ExternMethod_inst: rdenv_0 |- methodPrototypeIR_h ==> rdenv_1
+  -- ExternMethods_inst: rdenv_1 |- methodPrototypeIR_t* ==> rdenv_2
+
+rule ExternConstructor_inst/constructor:
+  p Ci_0 typeParameterListIR methodPrototypeListIR |- annotationList nameIR `< `, typeParameterListIR_inferred > `( parameterListIR ) `;
+    ==> Ci_1
+  -- if $cid_IR(nameIR, parameterListIR) = cid
+  -- if EXTERN nameIR `< typeParameterListIR ++ typeParameterListIR_inferred >
+        `( parameterListIR ) `{ methodPrototypeListIR }
+      = consDyn
+  -- if $add_constructor_inst(p, Ci_0, cid, consDyn) = Ci_1
+
+rule ExternConstructors_inst/nil:
+  p Ci typeParameterListIR methodPrototypeListIR |- eps ==> Ci
+
+rule ExternConstructors_inst/cons:
+  p Ci_0 typeParameterListIR methodPrototypeListIR |- methodPrototypeIR_h :: methodPrototypeIR_t*
+    ==> Ci_2
+  -- ExternConstructor_inst: p Ci_0 typeParameterListIR methodPrototypeListIR |- methodPrototypeIR_h ==> Ci_1
+  -- ExternConstructors_inst: p Ci_1 typeParameterListIR methodPrototypeListIR |- methodPrototypeIR_t* ==> Ci_2
+

@@ -124,15 +124,27 @@ def $add_values_inst(p, Ci, id_h :: id_t*, value_h :: value_t*) = Ci''
 
 dec $add_routine_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
 
+def $add_routine_overload_inst(GLOBAL, Ci, rid, routineDyn) = Ci[ .GLOBAL.RENV = renv ]
+  -- if ~$in_set<rid>(rid, $dom_map<rid, routineDyn>(Ci.GLOBAL.RENV))
+  -- if $add_map<rid, routineDyn>(Ci.GLOBAL.RENV, rid, routineDyn) = renv
+
+def $add_routine_overload_inst(BLOCK, Ci, rid, routineDyn) = Ci[ .BLOCK.RENV = renv ]
+  -- if ~$in_set<rid>(rid, $dom_map<rid, routineDyn>(Ci.BLOCK.RENV))
+  -- if $add_map<rid, routineDyn>(Ci.BLOCK.RENV, rid, routineDyn) = renv
+
 dec $add_routine_non_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
 
 def $add_routine_non_overload_inst(GLOBAL, Ci, rid, routineDyn) = Ci[ .GLOBAL.RENV = renv ]
-  -- if ~$in_set<rid>(rid, $dom_map<rid, routineDyn>(Ci.GLOBAL.RENV))
-  -- if renv = $add_map<rid, routineDyn>(Ci.GLOBAL.RENV, rid, routineDyn)
+  -- if rid = id `( _ )
+  -- if $dom_map<rid, routineDyn>(Ci.GLOBAL.RENV) = `{ (id_k `( _ ))* }
+  -- if ~$in_set<id>(id, `{ id_k* })
+  -- if $add_map<rid, routineDyn>(Ci.GLOBAL.RENV, rid, routineDyn) = renv
 
 def $add_routine_non_overload_inst(BLOCK, Ci, rid, routineDyn) = Ci[ .BLOCK.RENV = renv ]
-  -- if ~$in_set<rid>(rid, $dom_map<rid, routineDyn>(Ci.BLOCK.RENV))
-  -- if renv = $add_map<rid, routineDyn>(Ci.BLOCK.RENV, rid, routineDyn)
+  -- if rid = id `( _ )
+  -- if $dom_map<rid, routineDyn>(Ci.BLOCK.RENV) = `{ (id_k `( _ ))* }
+  -- if ~$in_set<id>(id, `{ id_k* })
+  -- if $add_map<rid, routineDyn>(Ci.BLOCK.RENV, rid, routineDyn) = renv
 
 dec $add_tparams_inst(cursor, contextInst, typeParameterIR*, typeIR*) : contextInst
 dec $add_tparam_inst(cursor, contextInst, typeParameterIR, typeIR) : contextInst
@@ -159,6 +171,13 @@ dec $add_typedef_inst(cursor, contextInst, tid, typeDefIR) : contextInst
 
 def $add_typedef_inst(GLOBAL, Ci, tid, typeDefIR) = Ci[ .GLOBAL.TDENV = tdenv ]
   -- if tdenv = $add_map<tid, typeDefIR>(Ci.GLOBAL.TDENV, tid, typeDefIR)
+
+;;; Adder for parser states
+dec $add_state_inst(cursor, contextInst, id, stateDyn) : contextInst
+
+def $add_state_inst(BLOCK, Ci, id, stateDyn) = Ci[ .BLOCK.SENV = senv ]
+  -- if ~$in_set<id>(id, $dom_map<id, stateDyn>(Ci.BLOCK.SENV))
+  -- if senv = $add_map<id, stateDyn>(Ci.BLOCK.SENV, id, stateDyn) ;;TODO: nodup
 
 ;;
 ;; Finders

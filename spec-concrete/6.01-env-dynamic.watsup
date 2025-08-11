@@ -12,10 +12,10 @@ def $empty_venv() = $empty_map<id, value>
 
 syntax stateDyn = parserBlockStatementIR
 ;; Map from names to parser states
-syntax senv = map<name, stateDyn>
+syntax senv = map<id, stateDyn>
 
 dec $empty_senv() : senv
-def $empty_senv() = $empty_map<name, stateDyn>
+def $empty_senv() = $empty_map<id, stateDyn>
 
 ;;
 ;; L-values

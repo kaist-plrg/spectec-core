@@ -41,12 +41,12 @@ relation Decl_inst:
   hint(input %0 %1 %2 %3)
 
 relation ParserLocalDecl_inst:
-  cursor contextInst sto |- parserLocalDeclarationIR ==> contextInst sto parserLocalDeclarationIR
-  hint(input %0 %1 %2 %3)
+  contextInst sto |- parserLocalDeclarationIR ==> contextInst sto parserLocalDeclarationIR?
+  hint(input %0 %1 %2)
 
 relation ParserLocalDecls_inst:
-  cursor contextInst sto |- parserLocalDeclarationListIR ==> contextInst sto parserLocalDeclarationListIR
-  hint(input %0 %1 %2 %3)
+  contextInst sto |- parserLocalDeclarationIR* ==> contextInst sto parserLocalDeclarationIR*
+  hint(input %0 %1 %2)
 
 relation ControlLocalDecl_inst:
   contextInst sto |- controlLocalDeclarationIR ==> contextInst sto controlLocalDeclarationIR?
@@ -67,6 +67,24 @@ relation TableProperties_inst:
 relation ObjectDecls_inst:
   cursor contextInst sto |- objectDeclarationListIR ==> contextInst sto objectDeclarationListIR
   hint(input %0 %1 %2 %3)
+
+relation ExternMethod_inst:
+  rdenv |- methodPrototypeIR ==> rdenv
+  hint(input %0 %1)
+
+relation ExternMethods_inst:
+  rdenv |- methodPrototypeIR* ==> rdenv
+  hint(input %0 %1)
+
+relation ExternConstructor_inst:
+  cursor contextInst typeParameterListIR methodPrototypeListIR |- methodPrototypeIR ==> contextInst
+  hint(input %0 %1 %2 %3 %4)
+
+relation ExternConstructors_inst:
+  cursor contextInst typeParameterListIR methodPrototypeListIR |- methodPrototypeIR* ==> contextInst
+  hint(input %0 %1 %2 %3 %4)
+
+
 ;;
 ;;;; Method instantiation
 ;;
