@@ -6,21 +6,21 @@
 ;;
 
 rule ParserState_ok:
-  C_0 nameIR_state* |- annotationList STATE name
+  TC_0 nameIR_state* |- annotationList STATE name
                         `{ parserStatementList transitionStatement }
-                     : parserStateIR
+                      : parserStateIR
   -- if nameIR = $name(name)
   ---- ;; enter block scope
-  -- if C_1 = $enter(C_0)
+  -- if TC_1 = $enter(TC_0)
   ---- ;; check parser statements
   -- if parserStatement*
       = $flatten_parserStatementList(parserStatementList)
-  -- ParserStmts_ok: C_1 |- parserStatement* : C_2 parserStatementIR*
+  -- ParserStmts_ok: TC_1 |- parserStatement* : TC_2 parserStatementIR*
   ---- ;; check transition statement
-  -- ParserTransition_ok: C_2 nameIR_state* |- transitionStatement
-                                             : transitionStatementIR
+  -- ParserTransition_ok: TC_2 nameIR_state* |- transitionStatement
+                                              : transitionStatementIR
   ---- ;; exit block scope
-  -- if C_3 = $exit(C_2)
+  -- if TC_3 = $exit(TC_2)
   ---- ;; create IR
   -- if parserStateIR
       = annotationList STATE nameIR `{ parserStatementIR* transitionStatementIR }
@@ -32,7 +32,7 @@ rule ParserState_ok:
 ;;
 
 rule ParserStates_ok:
-  C |- parserState* : parserStateIR*
+  TC |- parserState* : parserStateIR*
   ---- ;; check that state names are distinct
   -- if (_ STATE name_state `{ _ _ } = parserState)*
   -- if (nameIR_state = $name(name_state))*
@@ -43,4 +43,4 @@ rule ParserStates_ok:
   -- if ~("accept" <- nameIR_state*) /\ ~("reject" <- nameIR_state*)
   -- if nameIR_state_impl* = "accept" :: "reject" :: nameIR_state*
   ---- ;; check each parser state
-  -- (ParserState_ok: C nameIR_state_impl* |- parserState : parserStateIR)*
+  -- (ParserState_ok: TC nameIR_state_impl* |- parserState : parserStateIR)*

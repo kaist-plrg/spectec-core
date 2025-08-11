@@ -4,7 +4,7 @@
 ;;
 
 relation Eval_static:
-  cursor context |- typedExpressionIR ~> value
+  cursor typingContext |- typedExpressionIR ~> value
   hint(input %0 %1 %2)
 
 ;;
@@ -13,15 +13,15 @@ relation Eval_static:
 ;;
 
 relation Type_ok:
-  cursor context |- typeOrVoid : typeIR `# tid*
+  cursor typingContext |- typeOrVoid : typeIR `# tid*
   hint(input %0 %1 %2)
 
 relation TypeArgument_ok:
-  cursor context |- typeArgument : typeArgumentIR `# tid*
+  cursor typingContext |- typeArgument : typeArgumentIR `# tid*
   hint(input %0 %1 %2)
 
 relation TypeArguments_ok:
-  cursor context |- typeArgument* : typeArgumentListIR `# tid*
+  cursor typingContext |- typeArgument* : typeArgumentListIR `# tid*
   hint(input %0 %1 %2)
 
 ;;
@@ -41,7 +41,7 @@ relation Sub_impl_canon_neq: typeIR <: typeIR hint(input %0 %1)
 ;;
 
 relation Expr_ok:
-  cursor context |- expression : typedExpressionIR
+  cursor typingContext |- expression : typedExpressionIR
   hint(input %0 %1 %2)
 
 ;;
@@ -49,7 +49,7 @@ relation Expr_ok:
 ;;
 
 relation Argument_ok:
-  cursor context |- argument : argumentIR
+  cursor typingContext |- argument : argumentIR
   hint(input %0 %1 %2)
 
 ;;
@@ -57,7 +57,7 @@ relation Argument_ok:
 ;;
 
 relation Lvalue_ok:
-  cursor context |- lvalue : typedLvalueIR
+  cursor typingContext |- lvalue : typedLvalueIR
   hint(input %0 %1 %2)
 
 ;;
@@ -65,26 +65,26 @@ relation Lvalue_ok:
 ;;
 
 relation Stmt_ok:
-  cursor context flow |- statement : context flow statementIR
+  cursor typingContext flow |- statement : typingContext flow statementIR
   hint(input %0 %1 %2 %3)
 
 relation Stmts_ok:
-  cursor context flow |- statement* : context flow statementIR*
+  cursor typingContext flow |- statement* : typingContext flow statementIR*
   hint(input %0 %1 %2 %3)
 
 relation BlockElementStmt_ok:
-  context flow |- blockElementStatement
-                : context flow blockElementStatementIR
+  typingContext flow |- blockElementStatement
+                : typingContext flow blockElementStatementIR
   hint(input %0 %1 %2)
 
 relation BlockElementStmts_ok:
-  context flow |- blockElementStatement*
-                : context flow blockElementStatementIR*
+  typingContext flow |- blockElementStatement*
+                : typingContext flow blockElementStatementIR*
   hint(input %0 %1 %2)
 
 relation Block_ok:
-  context flow |- blockStatement
-                : context flow blockStatementIR
+  typingContext flow |- blockStatement
+                : typingContext flow blockStatementIR
   hint(input %0 %1 %2)
 
 ;;
@@ -93,11 +93,11 @@ relation Block_ok:
 ;;
 
 relation Parameter_ok:
-  cursor context |- parameter : parameterIR `# tid*
+  cursor typingContext |- parameter : parameterIR `# tid*
   hint(input %0 %1 %2)
 
 relation Parameters_ok:
-  cursor context |- parameter* : parameterListIR `# tid*
+  cursor typingContext |- parameter* : parameterListIR `# tid*
   hint(input %0 %1 %2)
 
 dec $parameterIR(parameterIR) : parameterTypeIR
@@ -107,12 +107,12 @@ def $parameterIR(_ direction typeIR nameIR (`= value))
   = direction typeIR nameIR value
 
 relation ConstructorParameter_ok:
-  cursor context |- constructorParameter
+  cursor typingContext |- constructorParameter
                   : constructorParameterIR `# tid*
   hint(input %0 %1 %2)
 
 relation ConstructorParameters_ok:
-  cursor context |- constructorParameter*
+  cursor typingContext |- constructorParameter*
                   : constructorParameterListIR `# tid*
   hint(input %0 %1 %2)
 
@@ -125,19 +125,19 @@ def $constructorParameterIR(constructorParameterIR)
 ;;
 
 relation ExternMethod_ok:
-  context tid |- methodPrototype : context methodPrototypeIR
+  typingContext tid |- methodPrototype : typingContext methodPrototypeIR
   hint(input %0 %1 %2)
 
 relation ExternMethods_ok:
-  context tid |- methodPrototype* : context methodPrototypeIR*
+  typingContext tid |- methodPrototype* : typingContext methodPrototypeIR*
   hint(input %0 %1 %2)
 
 relation ExternConstructor_ok:
-  context tid |- methodPrototype : context methodPrototypeIR
+  typingContext tid |- methodPrototype : typingContext methodPrototypeIR
   hint(input %0 %1 %2)
 
 relation ExternConstructors_ok:
-  context tid |- methodPrototype* : context methodPrototypeIR*
+  typingContext tid |- methodPrototype* : typingContext methodPrototypeIR*
   hint(input %0 %1 %2)
 
 ;;
@@ -145,33 +145,33 @@ relation ExternConstructors_ok:
 ;;
 
 relation ParserTransition_ok:
-  context nameIR* |- transitionStatement : transitionStatementIR
+  typingContext nameIR* |- transitionStatement : transitionStatementIR
   hint(input %0 %1 %2)
 
 relation ParserStmt_ok:
-  context |- parserStatement : context parserStatementIR
+  typingContext |- parserStatement : typingContext parserStatementIR
   hint(input %0 %1)
 
 relation ParserStmts_ok:
-  context |- parserStatement* : context parserStatementIR*
+  typingContext |- parserStatement* : typingContext parserStatementIR*
   hint(input %0 %1)
 
 relation ParserState_ok:
-  context nameIR* |- parserState : parserStateIR
+  typingContext nameIR* |- parserState : parserStateIR
   hint(input %0 %1 %2)
 
 relation ParserStates_ok:
-  context |- parserState* : parserStateIR*
+  typingContext |- parserState* : parserStateIR*
   hint(input %0 %1)
 
 relation ParserLocalDecl_ok:
-  context |- parserLocalDeclaration
-           : context parserLocalDeclarationIR
+  typingContext |- parserLocalDeclaration
+                 : typingContext parserLocalDeclarationIR
   hint(input %0 %1)
 
 relation ParserLocalDecls_ok:
-  context |- parserLocalDeclaration*
-           : context parserLocalDeclarationIR*
+  typingContext |- parserLocalDeclaration*
+                 : typingContext parserLocalDeclarationIR*
   hint(input %0 %1)
 
 ;;
@@ -179,80 +179,80 @@ relation ParserLocalDecls_ok:
 ;;
 
 relation TableKey_ok:
-  context tablecontext |- tableKey : tablecontext tableKeyIR
+  typingContext tableContext |- tableKey : tableContext tableKeyIR
   hint(input %0 %1 %2)
 
 relation TableKeys_ok:
-  context tablecontext |- tableKey* : tablecontext tableKeyListIR
+  typingContext tableContext |- tableKey* : tableContext tableKeyListIR
   hint(input %0 %1 %2)
 
 relation Call_action_partial_ok:
-  context |- parameterTypeIR* `@ argumentListIR
-           : parameterTypeIR* `, parameterTypeIR* `@ argumentListIR
+  typingContext |- parameterTypeIR* `@ argumentListIR
+                 : parameterTypeIR* `, parameterTypeIR* `@ argumentListIR
   hint(input %0 %1 %2)
 
 relation TableAction_ok:
-  context tablecontext |- tableAction : tablecontext tableActionIR
+  typingContext tableContext |- tableAction : tableContext tableActionIR
   hint(input %0 %1 %2)
 
 relation TableActions_ok:
-  context tablecontext |- tableAction* : tablecontext tableActionListIR
+  typingContext tableContext |- tableAction* : tableContext tableActionListIR
   hint(input %0 %1 %2)
 
 relation Call_action_default_ok:
-  context |- parameterTypeIR* `@ argumentListIR
-           : parameterTypeIR* `, parameterTypeIR* `@ argumentListIR
+  typingContext |- parameterTypeIR* `@ argumentListIR
+                 : parameterTypeIR* `, parameterTypeIR* `@ argumentListIR
   hint(input %0 %1 %2)
 
 relation TableDefaultAction_ok:
-  context tablecontext |- initializer : tableActionReferenceIR
+  typingContext tableContext |- initializer : tableActionReferenceIR
   hint(input %0 %1 %2)
 
 relation TableEntry_keyset_ok:
-  context tablecontext |- keysetExpression : tableEntryState keysetExpressionIR
+  typingContext tableContext |- keysetExpression : tableEntryState keysetExpressionIR
   hint(input %0 %1 %2)
 
 relation TableEntry_action_ok:
-  context tablecontext |- tableActionReference : tableActionReferenceIR
+  typingContext tableContext |- tableActionReference : tableActionReferenceIR
   hint(input %0 %1 %2)
 
 relation TableEntry_priority_ok:
-  context tablecontext tableEntryState |- tableEntryPriority?
-                                        : tablecontext tableEntryPriorityOptIR
+  typingContext tableContext tableEntryState |- tableEntryPriority?
+                                              : tableContext tableEntryPriorityOptIR
   hint(input %0 %1 %2 %3)
 
 relation TableEntry_ok:
-  context tablecontext |- tableEntry : tablecontext tableEntryIR
+  typingContext tableContext |- tableEntry : tableContext tableEntryIR
   hint(input %0 %1 %2)
 
 relation TableEntries_ok:
-  context tablecontext |- tableEntry* : tablecontext tableEntryListIR
+  typingContext tableContext |- tableEntry* : tableContext tableEntryListIR
   hint(input %0 %1 %2)
 
 relation TableProperty_ok:
-  context tablecontext |- tableProperty : tablecontext tablePropertyIR
+  typingContext tableContext |- tableProperty : tableContext tablePropertyIR
   hint(input %0 %1 %2)
 
 relation TableProperties_ok:
-  context tablecontext |- tableProperty* : tablecontext tablePropertyListIR
+  typingContext tableContext |- tableProperty* : tableContext tablePropertyListIR
   hint(input %0 %1 %2)
 
 relation Table_ok:
-  context |- tableProperty* : tablecontext tablePropertyListIR
+  typingContext |- tableProperty* : tableContext tablePropertyListIR
   hint(input %0 %1)
 
 relation TableType_ok:
-  context tablecontext |- name : context typeIR
+  typingContext tableContext |- name : typingContext typeIR
   hint(input %0 %1 %2)
 
 relation ControlLocalDecl_ok:
-  context |- controlLocalDeclaration
-           : context controlLocalDeclarationIR
+  typingContext |- controlLocalDeclaration
+                 : typingContext controlLocalDeclarationIR
   hint(input %0 %1)
 
 relation ControlLocalDecls_ok:
-  context |- controlLocalDeclaration*
-           : context controlLocalDeclarationIR*
+  typingContext |- controlLocalDeclaration*
+           : typingContext controlLocalDeclarationIR*
   hint(input %0 %1)
 
 ;;
@@ -260,15 +260,15 @@ relation ControlLocalDecls_ok:
 ;;
 
 relation Decl_ok:
-  cursor context |- declaration : context declarationIR
+  cursor typingContext |- declaration : typingContext declarationIR
   hint(input %0 %1 %2)
 
 relation Decls_ok:
-  cursor context |- declaration* : context declarationIR*
+  cursor typingContext |- declaration* : typingContext declarationIR*
   hint(input %0 %1 %2)
 
 relation Program_ok:
-  |- p4program : context p4programIR
+  |- p4program : typingContext p4programIR
   hint(input %0)
 
 ;;
@@ -282,18 +282,18 @@ relation Program_ok:
 syntax actctxt = ACTION | NOACTION
 
 relation Call_convention_expr_ok:
-  cursor context actctxt |- parameterTypeIR `@ typedExpressionIR
-                          : typedExpressionIR
+  cursor typingContext actctxt |- parameterTypeIR `@ typedExpressionIR
+                                : typedExpressionIR
   hint(input %0 %1 %2 %3 %4)
 
 relation Call_convention_argument_ok:
-  cursor context actctxt |- parameterTypeIR `@ argumentIR
-                          : argumentIR
+  cursor typingContext actctxt |- parameterTypeIR `@ argumentIR
+                                : argumentIR
   hint(input %0 %1 %2 %3 %4)
 
 relation Call_convention_ok:
-  cursor context actctxt |- parameterTypeIR* `@ argumentListIR
-                          : argumentListIR
+  cursor typingContext actctxt |- parameterTypeIR* `@ argumentListIR
+                                : argumentListIR
   hint(input %0 %1 %2 %3 %4)
 
 ;;
@@ -316,16 +316,16 @@ def $is_static_routineTarget(_) = DYN
   -- otherwise
 
 relation RoutineTarget_ok:
-  cursor context |- routineTarget : routineTargetIR
+  cursor typingContext |- routineTarget : routineTargetIR
   hint(input %0 %1 %2)
 
 relation RoutineTarget_lvalue_ok:
-  cursor context |- lvalue : routineTargetIR
+  cursor typingContext |- lvalue : routineTargetIR
   hint(input %0 %1 %2)
 
 relation RoutineType_ok:
-  cursor context |- routineTargetIR `< typeArgumentListIR > `( argumentIR* )
-                  : routineTypeIR `< `# tid* > `( `# id* )
+  cursor typingContext |- routineTargetIR `< typeArgumentListIR > `( argumentIR* )
+                        : routineTypeIR `< `# tid* > `( `# id* )
   hint(input %0 %1 %2 %3 %4)
 
 ;; Checks that an action/function/method invocation is valid,
@@ -334,9 +334,9 @@ relation RoutineType_ok:
 ;; and inserts implicit casts for arguments, if necessary
 
 relation Call_ok:
-  cursor context |- routineTypeIR `< typeArgumentListIR `# tid* >
+  cursor typingContext |- routineTypeIR `< typeArgumentListIR `# tid* >
                                   `( argumentListIR `# id* )
-                  : typeIR `< typeArgumentListIR > `( argumentListIR )
+                        : typeIR `< typeArgumentListIR > `( argumentListIR )
   hint(input %0 %1 %2 %3 %4 %5 %6)
 
 ;;
@@ -348,8 +348,8 @@ relation Call_ok:
 ;; and also identifies the ids of default arguments (id*)
 
 relation ConstructorType_ok:
-  cursor context |- prefixedNameIR `< typeArgumentListIR > `( argumentIR* )
-                  : constructorTypeIR `< `# tid* > `( `# id* )
+  cursor typingContext |- prefixedNameIR `< typeArgumentListIR > `( argumentIR* )
+                        : constructorTypeIR `< `# tid* > `( `# id* )
   hint(input %0 %1 %2 %3 %4)
 
 ;; Checks that a constructor invocation is valid,
@@ -360,10 +360,10 @@ relation ConstructorType_ok:
 syntax instctxt = NAMED | ANON
 
 relation Inst_ok:
-  cursor context instctxt |- constructorTypeIR
-                              `< typeArgumentListIR `# tid* >
-                              `( argumentListIR `# id* )
-                           : typeIR
-                              `< typeArgumentListIR >
-                              `( argumentListIR )
+  cursor typingContext instctxt |- constructorTypeIR
+                                    `< typeArgumentListIR `# tid* >
+                                    `( argumentListIR `# id* )
+                                 : typeIR
+                                    `< typeArgumentListIR >
+                                    `( argumentListIR )
   hint(input %0 %1 %2 %3 %4 %5 %6 %7)

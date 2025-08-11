@@ -3,84 +3,84 @@
 ;;
 
 rule ConstructorType_ok:
-  p C |- prefixedNameIR `< typeArgumentIR* > `( argumentIR* )
-       : constructorTypeIR `< `# tid_impl* > `( `# id_default* )
+  p TC |- prefixedNameIR `< typeArgumentIR* > `( argumentIR* )
+        : constructorTypeIR `< `# tid_impl* > `( `# id_default* )
   ---- ;; find and specialize the constructor type definition
   -- if (cid, constructorTypeDefIR, id_default*)
-      = $find_constructor_overloaded(C, prefixedNameIR, argumentIR*)
+      = $find_constructor_overloaded(TC, prefixedNameIR, argumentIR*)
   -- if (constructorTypeIR, tid_impl*)
       = $specialize_constructorTypeDef(constructorTypeDefIR, typeArgumentIR*)
   ---- ;; check that the constructor type is well-formed
-  -- if bound = $union_set<tid>($bound(p, C), `{ tid_impl* })
+  -- if bound = $union_set<tid>($bound(p, TC), `{ tid_impl* })
   -- ConstructorType_wf: bound |- constructorTypeIR
 
 ;;
 ;; Instantiation
 ;;
 
-dec $instantiable_extern(cursor, context, instctxt) : bool
+dec $instantiable_extern(cursor, typingContext, instctxt) : bool
 
-def $instantiable_extern(GLOBAL, C, instctxt) = true
-def $instantiable_extern(BLOCK, C, instctxt) = true
-def $instantiable_extern(LOCAL, C, instctxt) = true
+def $instantiable_extern(GLOBAL, TC, instctxt) = true
+def $instantiable_extern(BLOCK, TC, instctxt) = true
+def $instantiable_extern(LOCAL, TC, instctxt) = true
 
-dec $instantiable_parser(cursor, context, instctxt) : bool
+dec $instantiable_parser(cursor, typingContext, instctxt) : bool
 
-def $instantiable_parser(GLOBAL, C, instctxt)
+def $instantiable_parser(GLOBAL, TC, instctxt)
   = instctxt = ANON
-def $instantiable_parser(BLOCK, C, instctxt)
-  = C.BLOCK.KIND = PARSER
-def $instantiable_parser(LOCAL, C, instctxt)
-  = $is_parser_state_localKind(C.LOCAL.KIND)
+def $instantiable_parser(BLOCK, TC, instctxt)
+  = $is_parser_blockKind(TC.BLOCK.KIND)
+def $instantiable_parser(LOCAL, TC, instctxt)
+  = $is_parser_state_localKind(TC.LOCAL.KIND)
 
-dec $instantiable_control(cursor, context, instctxt) : bool
+dec $instantiable_control(cursor, typingContext, instctxt) : bool
 
-def $instantiable_control(GLOBAL, C, instctxt)
+def $instantiable_control(GLOBAL, TC, instctxt)
   = instctxt = ANON
-def $instantiable_control(BLOCK, C, instctxt)
-  = C.BLOCK.KIND = CONTROL
-def $instantiable_control(LOCAL, C, instctxt)
-  = $is_control_apply_method_localKind(C.LOCAL.KIND)
+def $instantiable_control(BLOCK, TC, instctxt)
+  = $is_control_blockKind(TC.BLOCK.KIND)
+def $instantiable_control(LOCAL, TC, instctxt)
+  = $is_control_apply_method_localKind(TC.LOCAL.KIND)
 
-dec $instantiable_package(cursor, context, instctxt) : bool
+dec $instantiable_package(cursor, typingContext, instctxt) : bool
 
-def $instantiable_package(GLOBAL, C, instctxt) = true
-def $instantiable_package(BLOCK, C, instctxt)
-  = C.BLOCK.KIND = PACKAGE
-def $instantiable_package(LOCAL, C, instctxt) = false
+def $instantiable_package(GLOBAL, TC, instctxt) = true
+def $instantiable_package(BLOCK, TC, instctxt)
+  = $is_package_blockKind(TC.BLOCK.KIND)
+def $instantiable_package(LOCAL, TC, instctxt) = false
 
-dec $instantiable_table(cursor, context, instctxt) : bool
+dec $instantiable_table(cursor, typingContext, instctxt) : bool
 
-def $instantiable_table(GLOBAL, C, instctxt) = false
-def $instantiable_table(BLOCK, C, instctxt)
-  = C.BLOCK.KIND = CONTROL
-def $instantiable_table(LOCAL, C, instctxt) = false
+def $instantiable_table(GLOBAL, TC, instctxt) = false
+def $instantiable_table(BLOCK, TC, instctxt)
+  = $is_control_blockKind(TC.BLOCK.KIND)
+def $instantiable_table(LOCAL, TC, instctxt) = false
 
-dec $instantiable(cursor, context, instctxt, typeIR) : bool
+dec $instantiable(cursor, typingContext, instctxt, typeIR) : bool
 
-def $instantiable(p, C, instctxt, typeIR)
-  = $instantiable_extern(p, C, instctxt)
+def $instantiable(p, TC, instctxt, typeIR)
+  = $instantiable_extern(p, TC, instctxt)
   -- if $is_extern_object_typeIR($canon(typeIR))
-def $instantiable(p, C, instctxt, typeIR)
-  = $instantiable_parser(p, C, instctxt)
+def $instantiable(p, TC, instctxt, typeIR)
+  = $instantiable_parser(p, TC, instctxt)
   -- if $is_parser_object_typeIR($canon(typeIR))
-def $instantiable(p, C, instctxt, typeIR)
-  = $instantiable_control(p, C, instctxt)
+def $instantiable(p, TC, instctxt, typeIR)
+  = $instantiable_control(p, TC, instctxt)
   -- if $is_control_object_typeIR($canon(typeIR))
-def $instantiable(p, C, instctxt, typeIR)
-  = $instantiable_package(p, C, instctxt)
+def $instantiable(p, TC, instctxt, typeIR)
+  = $instantiable_package(p, TC, instctxt)
   -- if $is_package_object_typeIR($canon(typeIR))
-def $instantiable(p, C, instctxt, typeIR)
-  = $instantiable_table(p, C, instctxt)
+def $instantiable(p, TC, instctxt, typeIR)
+  = $instantiable_table(p, TC, instctxt)
   -- if $is_table_object_typeIR($canon(typeIR))
 
 ;;; Instantiation of a package
 
 rule Inst_ok/package:
-  GLOBAL C instctxt |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > 
-                                         `( argumentIR* `# id_default* )
-                     : typeIR_object_inferred `< typeArgumentIR_inferred* >
-                                              `( argumentIR_cast* )
+  GLOBAL TC instctxt |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > 
+                                          `( argumentIR* `# id_default* )
+                      : typeIR_object_inferred `< typeArgumentIR_inferred* >
+                                               `( argumentIR_cast* )
   ---- ;; if the constructor is for a package object
   -- if CONSTRUCTOR `( parameterTypeIR* ) `-> typeIR_object = constructorTypeIR
   -- if PACKAGE `< _ > = $canon(typeIR_object)
@@ -104,21 +104,21 @@ rule Inst_ok/package:
   ---- ;; check that the substituted constructor is still well-formed
   -- if constructorTypeIR_inferred
       = CONSTRUCTOR `( parameterTypeIR_aligned_inferred* ) `-> typeIR_object_inferred
-  -- ConstructorType_wf: $bound(GLOBAL, C) |- constructorTypeIR_inferred
+  -- ConstructorType_wf: $bound(GLOBAL, TC) |- constructorTypeIR_inferred
   ---- ;; check instantiation site
-  -- if $instantiable(GLOBAL, C, instctxt, typeIR_object_inferred)
+  -- if $instantiable(GLOBAL, TC, instctxt, typeIR_object_inferred)
   ---- ;; check call convention
   -- Call_convention_ok:
-      BLOCK C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
-                        : argumentIR_cast*
+      BLOCK TC NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
+                         : argumentIR_cast*
 
 ;;; Instantiation of a non-package
 
 rule Inst_ok/non-package:
-  p C instctxt |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > 
-                                    `( argumentIR* `# id_default* )
-                : typeIR_object_inferred `< typeArgumentIR_inferred* >
-                                         `( argumentIR_cast* )
+  p TC instctxt |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > 
+                                     `( argumentIR* `# id_default* )
+                 : typeIR_object_inferred `< typeArgumentIR_inferred* >
+                                          `( argumentIR_cast* )
   ---- ;; if the constructor is not for a package object
   -- if CONSTRUCTOR `( parameterTypeIR* ) `-> typeIR_object = constructorTypeIR
   -- if ~$is_package_object_typeIR($canon(typeIR_object))
@@ -142,10 +142,10 @@ rule Inst_ok/non-package:
   ---- ;; check that the substituted constructor is still well-formed
   -- if constructorTypeIR_inferred
       = CONSTRUCTOR `( parameterTypeIR_aligned_inferred* ) `-> typeIR_object_inferred
-  -- ConstructorType_wf: $bound(p, C) |- constructorTypeIR_inferred
+  -- ConstructorType_wf: $bound(p, TC) |- constructorTypeIR_inferred
   ---- ;; check instantiation site
-  -- if $instantiable(p, C, instctxt, typeIR_object_inferred)
+  -- if $instantiable(p, TC, instctxt, typeIR_object_inferred)
   ---- ;; check call convention
   -- Call_convention_ok:
-      p C NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
-                    : argumentIR_cast*
+      p TC NOACTION |- parameterTypeIR_aligned_inferred* `@ argumentIR*
+                     : argumentIR_cast*

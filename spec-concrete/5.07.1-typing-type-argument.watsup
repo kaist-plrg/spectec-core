@@ -10,24 +10,24 @@
 ;;;;  type
 
 rule TypeArgument_ok/type:
-  p C |- type : typeIR `# tid_impl*
-  -- Type_ok: p C |- type : typeIR `# tid_impl*
+  p TC |- type : typeIR `# tid_impl*
+  -- Type_ok: p TC |- type : typeIR `# tid_impl*
 
 ;;;;  VOID
 
 rule TypeArgument_ok/void:
-  p C |- VOID : VOID `# eps
+  p TC |- VOID : VOID `# eps
 
 ;;;;  `_
 
 rule TypeArgument_ok/dontcare:
-  p C |- `_ : (TID tid_impl) `# tid_impl 
+  p TC |- `_ : (TID tid_impl) `# tid_impl 
   -- if tid_impl = $fresh_tid()
 
 ;;; nonTypeName
 
 rule TypeArgument_ok/nonTypeName:
-  p C |- nonTypeName : (TID tid) `# eps
+  p TC |- nonTypeName : (TID tid) `# eps
   -- if tid = $name(nonTypeName)
 
 ;;
@@ -37,13 +37,13 @@ rule TypeArgument_ok/nonTypeName:
 ;;
 
 rule TypeArguments_ok:
-  p C |- eps : eps `# eps
+  p TC |- eps : eps `# eps
 
 rule TypeArguments_ok:
-  p C |- typeArgument_h :: typeArgument_t*
-       : (typeArgumentIR_h :: typeArgumentIR_t*) `# tid_impl*
-  -- TypeArgument_ok: p C |- typeArgument_h
-                           : typeArgumentIR_h `# tid_impl_h*
-  -- TypeArguments_ok: p C |- typeArgument_t*
-                            : typeArgumentIR_t* `# tid_impl_t*
+  p TC |- typeArgument_h :: typeArgument_t*
+        : (typeArgumentIR_h :: typeArgumentIR_t*) `# tid_impl*
+  -- TypeArgument_ok: p TC |- typeArgument_h
+                            : typeArgumentIR_h `# tid_impl_h*
+  -- TypeArguments_ok: p TC |- typeArgument_t*
+                             : typeArgumentIR_t* `# tid_impl_t*
   -- if tid_impl* = tid_impl_h* ++ tid_impl_t*

@@ -1745,6 +1745,7 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2844-enum.p4
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/issue2890.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/issue2900.p4
+negative inner acc: -0.046576
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/issue2900.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/issue2904.p4

@@ -7,23 +7,23 @@
 ;;; expression
 
 rule Argument_ok/expression:
-  p C |- expression : typedExpressionIR
-  -- Expr_ok: p C |- expression : typedExpressionIR
+  p TC |- expression : typedExpressionIR
+  -- Expr_ok: p TC |- expression : typedExpressionIR
 
 ;;; name `= expression
 
 rule Argument_ok/name-expression:
-  p C |- (name `= expression) : (nameIR `= typedExpressionIR)
+  p TC |- (name `= expression) : (nameIR `= typedExpressionIR)
   -- if nameIR = $name(name)
-  -- Expr_ok: p C |- expression : typedExpressionIR
+  -- Expr_ok: p TC |- expression : typedExpressionIR
 
 ;;; name `= `_
 
 rule Argument_ok/name-dontcare:
-  p C |- (name `= `_) : (nameIR `= `_)
+  p TC |- (name `= `_) : (nameIR `= `_)
   -- if nameIR = $name(name)
 
 ;;; `_
 
 rule Argument_ok/dontcare:
-  p C |- `_ : `_
+  p TC |- `_ : `_
