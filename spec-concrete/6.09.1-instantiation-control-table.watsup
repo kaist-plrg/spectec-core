@@ -42,5 +42,3 @@ rule TableProperties_inst/cons:
     ==> Ci_2 sto_2 (tablePropertyIR_h' :: tablePropertyIR_t*)
   -- TableProperty_inst: Ci_0 sto_0 |- tablePropertyIR_h ==> Ci_1 sto_1 tablePropertyIR_h'
   -- TableProperties_inst: Ci_1 sto_1 |- tablePropertyIR_t* ==> Ci_2 sto_2 tablePropertyIR_t*
-
-def $init_table(tablePropertyListIR) = tablePropertyListIR

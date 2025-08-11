@@ -1,0 +1,14 @@
+;;
+;; Parser state instantiation
+;;
+;; syntax parserStateIR =
+;;   annotationList STATE nameIR
+;;     `{ parserStatementListIR transitionStatementIR }
+;;
+
+rule ParserState_inst:
+  Ci_0 sto_0 |- annotationList STATE nameIR
+             `{ parserStatementListIR transitionStatementIR }
+    ==> Ci_0 sto_0
+  -- ParserStmts_inst: Ci_0 sto_0 |- parserStatementListIR ==> Ci_1 sto_1 parserStatementListIR_inst
+

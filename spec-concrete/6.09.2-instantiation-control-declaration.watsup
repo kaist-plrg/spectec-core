@@ -19,8 +19,7 @@ rule ControlLocalDecl_inst/instantiationIR:
 ;;; variableDeclarationIR
 
 rule ControlLocalDecl_inst/variableDeclarationIR:
-  Ci_0 sto_0 |- variableDeclarationIR ==> Ci_1 sto_1 variableDeclarationIR_inst?
-  -- BlockElementStmt_inst: BLOCK Ci_0 sto_0 |- variableDeclarationIR ==> Ci_1 sto_1 variableDeclarationIR_inst?
+  Ci sto |- variableDeclarationIR ==> Ci sto variableDeclarationIR
 
 ;;; actionDeclarationIR
 
@@ -53,12 +52,12 @@ rule ControlLocalDecls_inst/nil:
 
 rule ControlLocalDecls_inst/cons-none:
   Ci_0 sto_0 |- controlLocalDeclarationIR_h :: controlLocalDeclarationIR_t*
-    ==> Ci_2 sto_2 controlLocalDeclarationIR_t*
+    ==> Ci_2 sto_2 controlLocalDeclarationIR_t'*
   -- ControlLocalDecl_inst: Ci_0 sto_0 |- controlLocalDeclarationIR_h ==> Ci_1 sto_1 eps
-  -- ControlLocalDecls_inst: Ci_1 sto_1 |- controlLocalDeclarationIR_t* ==> Ci_2 sto_2 controlLocalDeclarationIR_t*
+  -- ControlLocalDecls_inst: Ci_1 sto_1 |- controlLocalDeclarationIR_t* ==> Ci_2 sto_2 controlLocalDeclarationIR_t'*
 
 rule ControlLocalDecls_inst/cons-none:
   Ci_0 sto_0 |- controlLocalDeclarationIR_h :: controlLocalDeclarationIR_t*
-    ==> Ci_2 sto_2 (controlLocalDeclarationIR_h' :: controlLocalDeclarationIR_t*)
+    ==> Ci_2 sto_2 (controlLocalDeclarationIR_h' :: controlLocalDeclarationIR_t'*)
   -- ControlLocalDecl_inst: Ci_0 sto_0 |- controlLocalDeclarationIR_h ==> Ci_1 sto_1 controlLocalDeclarationIR_h'
-  -- ControlLocalDecls_inst: Ci_1 sto_1 |- controlLocalDeclarationIR_t* ==> Ci_2 sto_2 controlLocalDeclarationIR_t*
+  -- ControlLocalDecls_inst: Ci_1 sto_1 |- controlLocalDeclarationIR_t* ==> Ci_2 sto_2 controlLocalDeclarationIR_t'*

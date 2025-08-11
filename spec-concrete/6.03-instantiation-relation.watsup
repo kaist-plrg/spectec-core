@@ -92,12 +92,12 @@ relation Stmt_inst:
   hint(input %0 %1 %2 %3)
 
 relation BlockElementStmt_inst:
-  cursor contextInst sto |- blockElementStatementIR ==> contextInst sto blockElementStatementIR?
-  hint(input %0 %1 %2 %3)
+  contextInst sto |- blockElementStatementIR ==> contextInst sto blockElementStatementIR?
+  hint(input %0 %1 %2)
 
 relation BlockElementStmts_inst:
-  cursor contextInst sto |- blockElementStatementIR* ==> contextInst sto blockElementStatementIR*
-  hint(input %0 %1 %2 %3)
+  contextInst sto |- blockElementStatementIR* ==> contextInst sto blockElementStatementIR*
+  hint(input %0 %1 %2)
 
 relation SwitchCases_inst:
   cursor contextInst sto |- switchCaseIR* ==> contextInst sto switchCaseIR*
@@ -111,18 +111,26 @@ relation SwitchCase_inst:
 ;;;; Parser state instantiation
 ;;
 
+relation ParserStmt_inst:
+  contextInst sto |- parserStatementIR ==> contextInst sto parserStatementIR?
+  hint(input %0 %1 %2)
+
+relation ParserStmts_inst:
+  contextInst sto |- parserStatementIR* ==> contextInst sto parserStatementIR*
+  hint(input %0 %1 %2)
+
 relation ParserState_inst:
-  cursor contextInst sto |- parserStateIR ==> contextInst sto
-  hint(input %0 %1 %2 %3)
+  contextInst sto |- parserStateIR ==> contextInst sto
+  hint(input %0 %1 %2)
 
 relation ParserStates_inst:
-  cursor contextInst sto |- parserStateIR* ==> contextInst sto
-  hint(input %0 %1 %2 %3)
+  contextInst sto |- parserStateIR* ==> contextInst sto
+  hint(input %0 %1 %2)
 
 
 relation Block_inst:
-  cursor contextInst sto bool |- blockStatementIR ==> contextInst sto blockStatementIR
-  hint(input %0 %1 %2 %3 %4)
+  contextInst sto bool |- blockStatementIR ==> contextInst sto blockStatementIR
+  hint(input %0 %1 %2 %3)
 
 relation Table_inst:
   cursor contextInst sto |- tablePropertyListIR ==> contextInst sto tablePropertyListIR
