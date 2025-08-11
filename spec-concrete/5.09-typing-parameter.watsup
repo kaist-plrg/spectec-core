@@ -10,26 +10,26 @@
 ;;;; `EMPTY
 
 rule Parameter_ok/empty:
-  p C |- annotationList direction type name `EMPTY
-       : (annotationList direction typeIR nameIR eps)
-         `# tid_fresh*
-  -- Type_ok: p C |- type : typeIR `# tid_fresh*
-  -- if bound = $union_set<tid>($bound(p, C), `{ tid_fresh* })
+  p TC |- annotationList direction type name `EMPTY
+        : (annotationList direction typeIR nameIR eps)
+            `# tid_fresh*
+  -- Type_ok: p TC |- type : typeIR `# tid_fresh*
+  -- if bound = $union_set<tid>($bound(p, TC), `{ tid_fresh* })
   -- Type_wf: bound |- typeIR
   -- if nameIR = $name(name)
 
 ;;;; initializer
 
 rule Parameter_ok/empty:
-  p C |- annotationList direction type name (`= expression_init)
-       : (annotationList direction typeIR nameIR (`= value_init))
-         `# tid_fresh*
+  p TC |- annotationList direction type name (`= expression_init)
+        : (annotationList direction typeIR nameIR (`= value_init))
+            `# tid_fresh*
   ---- ;; check parameter type
-  -- Type_ok: p C |- type : typeIR `# tid_fresh*
-  -- if bound = $union_set<tid>($bound(p, C), `{ tid_fresh* })
+  -- Type_ok: p TC |- type : typeIR `# tid_fresh*
+  -- if bound = $union_set<tid>($bound(p, TC), `{ tid_fresh* })
   -- Type_wf: bound |- typeIR
   ---- ;; check initializer
-  -- Expr_ok: p C |- expression_init : typedExpressionIR_init
+  -- Expr_ok: p TC |- expression_init : typedExpressionIR_init
   -- if _ `# `( typeIR_init LCTK ) = typedExpressionIR_init
   ---- ;; check that the initializer type is
   ---- ;; compatible with the parameter type
@@ -38,7 +38,7 @@ rule Parameter_ok/empty:
       = $coerce_unary(typedExpressionIR_init, typeIR)
   -- if nameIR = $name(name)
   ---- ;; evaluate the initializer
-  -- Eval_static: p C |- typedExpressionIR_init_cast ~> value_init
+  -- Eval_static: p TC |- typedExpressionIR_init_cast ~> value_init
 
 ;;
 ;; Parameter list typing
@@ -47,13 +47,13 @@ rule Parameter_ok/empty:
 ;;
 
 rule Parameters_ok/nil:
-  p C |- eps : eps `# eps
+  p TC |- eps : eps `# eps
 
 rule Parameters_ok/cons:
-  p C |- parameter_h :: parameter_t*
-       : (parameterIR_h :: parameterIR_t*) `# (tid_fresh_h* ++ tid_fresh_t*)
-  -- Parameter_ok: p C |- parameter_h : parameterIR_h `# tid_fresh_h*
-  -- Parameters_ok: p C |- parameter_t* : parameterIR_t* `# tid_fresh_t*
+  p TC |- parameter_h :: parameter_t*
+        : (parameterIR_h :: parameterIR_t*) `# (tid_fresh_h* ++ tid_fresh_t*)
+  -- Parameter_ok: p TC |- parameter_h : parameterIR_h `# tid_fresh_h*
+  -- Parameters_ok: p TC |- parameter_t* : parameterIR_t* `# tid_fresh_t*
 
 ;;
 ;; Constructor typing
@@ -62,9 +62,9 @@ rule Parameters_ok/cons:
 ;;
 
 rule ConstructorParameter_ok:
-  p C |- constructorParameter : constructorParameterIR `# tid_fresh*
-  -- Parameter_ok: p C |- constructorParameter
-                        : constructorParameterIR `# tid_fresh*
+  p TC |- constructorParameter : constructorParameterIR `# tid_fresh*
+  -- Parameter_ok: p TC |- constructorParameter
+                         : constructorParameterIR `# tid_fresh*
 
 ;;
 ;; Constructor list typing
@@ -73,6 +73,6 @@ rule ConstructorParameter_ok:
 ;;
 
 rule ConstructorParameters_ok:
-  p C |- constructorParameter* : constructorParameterIR* `# tid_fresh*
-  -- Parameters_ok: p C |- constructorParameter*
-                         : constructorParameterIR* `# tid_fresh*
+  p TC |- constructorParameter* : constructorParameterIR* `# tid_fresh*
+  -- Parameters_ok: p TC |- constructorParameter*
+                          : constructorParameterIR* `# tid_fresh*

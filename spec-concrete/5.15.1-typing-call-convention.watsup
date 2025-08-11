@@ -49,8 +49,8 @@ def $align_parameters'(_, parameterTypeIR, `_)
 ;;; IN
 
 rule Call_convention_expr_ok/in:
-  p C actctxt |- (IN typeIR_param _ _) `@ typedExpressionIR_arg
-               : typedExpressionIR_arg_cast
+  p TC actctxt |- (IN typeIR_param _ _) `@ typedExpressionIR_arg
+                : typedExpressionIR_arg_cast
   ---- ;; may insert implicit casts for direction in
   -- if typedExpressionIR_arg_cast
       = $coerce_unary(typedExpressionIR_arg, typeIR_param)
@@ -58,64 +58,64 @@ rule Call_convention_expr_ok/in:
 ;;; OUT | INOUT
 
 relation Expr_lvalue_ok:
-  cursor context |- typedExpressionIR
+  cursor typingContext |- typedExpressionIR
   hint(input %0 %1 %2)
 
 rule Expr_lvalue_ok/referenceExpressionIR:
-  p C |- prefixedNameIR `# `( _ _ )
-  -- if direction _ DYN _ = $find_var(p, C, prefixedNameIR)
+  p TC |- prefixedNameIR `# `( _ _ )
+  -- if direction _ DYN _ = $find_var(p, TC, prefixedNameIR)
   -- if direction = OUT \/ direction = INOUT
 
 rule Expr_lvalue_ok/accessExpressionIR-memberAccessExpressionIR-stack:
-  p C |- (typedExpressionIR_base `. nameIR) `# `( _ _ )
-  -- Expr_lvalue_ok: p C |- typedExpressionIR_base
+  p TC |- (typedExpressionIR_base `. nameIR) `# `( _ _ )
+  -- Expr_lvalue_ok: p TC |- typedExpressionIR_base
   ---- ;; if the base expressionis a haeder stack
   -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   -- if typeIR `[ _ ] = $canon(typeIR_base)
   ---- ;; if accessing "next" or "last"
   -- if nameIR = "next" \/ nameIR = "last"
   ---- ;; "next" and "last" can be only used within a parser
-  -- if (p = BLOCK /\ C.BLOCK.KIND = PARSER)
-        \/ (p = LOCAL /\ $is_parser_state_localKind(C.LOCAL.KIND))
+  -- if (p = BLOCK /\ $is_parser_blockKind(TC.BLOCK.KIND))
+        \/ (p = LOCAL /\ $is_parser_state_localKind(TC.LOCAL.KIND))
 
 rule Expr_lvalue_ok/accessExpressionIR-memberAccessExpressionIR-non-stack:
-  p C |- (typedExpressionIR_base `. nameIR) `# `( _ _ )
-  -- Expr_lvalue_ok: p C |- typedExpressionIR_base
+  p TC |- (typedExpressionIR_base `. nameIR) `# `( _ _ )
+  -- Expr_lvalue_ok: p TC |- typedExpressionIR_base
   -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   ---- ;; if the base expression is not a header stack
   -- if ~$is_headerStackTypeIR($canon(typeIR_base))
 
 rule Expr_lvalue_ok/accessExpressionIR-indexAccessExpressionIR:
-  p C |- (typedExpressionIR_base `[ typedExpressionIR_index ]) `# `( _ _ )
-  -- Expr_lvalue_ok: p C |- typedExpressionIR_base
+  p TC |- (typedExpressionIR_base `[ typedExpressionIR_index ]) `# `( _ _ )
+  -- Expr_lvalue_ok: p TC |- typedExpressionIR_base
 
 rule Expr_lvalue_ok/accessExpressionIR-indexAccessExpressionIR-bitslice:
-  p C |- (typedExpressionIR_base `[ typedExpressionIR_hi
-                                  `: typedExpressionIR_lo ]) `# `( _ _ )
-  -- Expr_lvalue_ok: p C |- typedExpressionIR_base
+  p TC |- (typedExpressionIR_base `[ typedExpressionIR_hi
+                                    `: typedExpressionIR_lo ]) `# `( _ _ )
+  -- Expr_lvalue_ok: p TC |- typedExpressionIR_base
 
 rule Call_convention_expr_ok/out-inout:
-  p C actctxt |- (direction typeIR_param _ _) `@ typedExpressionIR_arg
-               : typedExpressionIR_arg
+  p TC actctxt |- (direction typeIR_param _ _) `@ typedExpressionIR_arg
+                : typedExpressionIR_arg
   -- if direction = OUT \/ direction = INOUT
   ---- ;; may not insert implicit casts for direction out or inout
   -- if _ `# `( typeIR_arg _ ) = typedExpressionIR_arg
   -- Type_alpha: typeIR_param ~~ typeIR_arg
   ---- ;; for copy-out, the expression must be a l-value
-  -- Expr_lvalue_ok: p C |- typedExpressionIR_arg
+  -- Expr_lvalue_ok: p TC |- typedExpressionIR_arg
 
 ;;; `EMPTY
 
 rule Call_convention_expr_ok/empty-action:
-  p C ACTION |- (`EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
-              : typedExpressionIR_arg_cast
+  p TC ACTION |- (`EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
+               : typedExpressionIR_arg_cast
    ---- ;; may insert implicit casts for directionless action argument
   -- if typedExpressionIR_arg_cast
       = $coerce_unary(typedExpressionIR_arg, typeIR_param) 
   
 rule Call_convention_expr_ok/empty-not-action:
-  p C NOACTION |- (`EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
-                : typedExpressionIR_arg
+  p TC NOACTION |- (`EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
+                 : typedExpressionIR_arg
   ---- ;; may not insert implicit casts for direction out or inout
   -- if _ `# `( typeIR_arg ctk_arg ) = typedExpressionIR_arg
   -- Type_alpha: typeIR_param ~~ typeIR_arg
@@ -127,32 +127,32 @@ rule Call_convention_expr_ok/empty-not-action:
 ;;; typedExpressionIR
 
 rule Call_convention_argument_ok/typedExpression:
-  p C actctxt |- parameterTypeIR `@ typedExpressionIR
-               : typedExpressionIR_cast
+  p TC actctxt |- parameterTypeIR `@ typedExpressionIR
+                : typedExpressionIR_cast
   -- Call_convention_expr_ok:
-      p C actctxt |- parameterTypeIR `@ typedExpressionIR
-                   : typedExpressionIR_cast
+      p TC actctxt |- parameterTypeIR `@ typedExpressionIR
+                    : typedExpressionIR_cast
 
 ;;; nameIR `= typedExpressionIR
 
 rule Call_convention_argument_ok/nameIR-typedExpression:
-  p C actctxt |- parameterTypeIR `@ (nameIR `= typedExpressionIR)
-               : (nameIR `= typedExpressionIR_cast)
+  p TC actctxt |- parameterTypeIR `@ (nameIR `= typedExpressionIR)
+                : (nameIR `= typedExpressionIR_cast)
   -- Call_convention_expr_ok:
-      p C actctxt |- parameterTypeIR `@ typedExpressionIR
-                   : typedExpressionIR_cast
+      p TC actctxt |- parameterTypeIR `@ typedExpressionIR
+                    : typedExpressionIR_cast
 
 ;;; nameIR `= `_
 
 rule Call_convention_argument_ok/nameIR-dontcare:
-  p C actctxt |- parameterTypeIR `@ (nameIR `= `_)
-               : (nameIR `= `_)
+  p TC actctxt |- parameterTypeIR `@ (nameIR `= `_)
+                : (nameIR `= `_)
   -- if OUT _ _ _ = parameterTypeIR
 
 ;;; `_
 
 rule Call_convention_argument_ok/dontcare:
-  p C actctxt |- parameterTypeIR `@ `_ : `_
+  p TC actctxt |- parameterTypeIR `@ `_ : `_
   -- if OUT _ _ _ = parameterTypeIR
 
 ;;
@@ -160,15 +160,15 @@ rule Call_convention_argument_ok/dontcare:
 ;;
 
 rule Call_convention_ok/nil:
-  p C actctxt |- eps `@ eps : eps
+  p TC actctxt |- eps `@ eps : eps
 
 rule Call_convention_ok/cons:
-  p C actctxt |- (parameterTypeIR_h :: parameterTypeIR_t*)
-                 `@ (argumentIR_h :: argumentIR_t*)
-               : (argumentIR_h_cast :: argumentIR_t_cast*)
+  p TC actctxt |- (parameterTypeIR_h :: parameterTypeIR_t*)
+                    `@ (argumentIR_h :: argumentIR_t*)
+                : (argumentIR_h_cast :: argumentIR_t_cast*)
   -- Call_convention_argument_ok:
-      p C actctxt |- parameterTypeIR_h `@ argumentIR_h
-                   : argumentIR_h_cast
+      p TC actctxt |- parameterTypeIR_h `@ argumentIR_h
+                    : argumentIR_h_cast
   -- Call_convention_ok:
-      p C actctxt |- parameterTypeIR_t* `@ argumentIR_t*
-                   : argumentIR_t_cast*
+      p TC actctxt |- parameterTypeIR_t* `@ argumentIR_t*
+                    : argumentIR_t_cast*

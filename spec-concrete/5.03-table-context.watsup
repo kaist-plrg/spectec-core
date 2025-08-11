@@ -26,14 +26,14 @@ syntax matchMode =
   ;; requires explicit priority and is lpm
   | PRILPM
 
-syntax tablecontext =
+syntax tableContext =
   { KEYS matchKey*,
     ACTIONS matchAction*,
     PRIORITIES matchPriority,
     ENTRIES matchEntry,
     MODE matchMode }
 
-var TC : tablecontext
+var TBLC : tableContext
 
 ;;
 ;; State per table entry
@@ -45,14 +45,14 @@ syntax tableEntryState =
   ;; the entry is not lpm
   | NOLPM
 
-var TES : tableEntryState
+var TBLS : tableEntryState
 
 ;;
 ;; Constructor
 ;;
 
-dec $empty_tablecontext: tablecontext
-def $empty_tablecontext
+dec $empty_tableContext: tableContext
+def $empty_tableContext
     = { KEYS eps,
         ACTIONS eps,
         PRIORITIES matchPriority,
@@ -73,26 +73,26 @@ def $empty_tablecontext
 
 ;;; Adder for keys
 
-dec $add_key(tablecontext, id, typeIR) : tablecontext
+dec $add_key(tableContext, id, typeIR) : tableContext
 
-def $add_key(TC, id, typeIR)
-  = TC[ .KEYS = TC.KEYS ++ [ matchKey ] ]
+def $add_key(TBLC, id, typeIR)
+  = TBLC[ .KEYS = TBLC.KEYS ++ [ matchKey ] ]
   -- if matchKey = (typeIR, id)
 
 ;;; Adder for actions
 
-dec $add_action(tablecontext, prefixedNameIR, parameterTypeIR*, argumentListIR) : tablecontext
+dec $add_action(tableContext, prefixedNameIR, parameterTypeIR*, argumentListIR) : tableContext
 
-def $add_action(TC, prefixedNameIR, parameterTypeIR*, argumentListIR)
-  = TC[ .ACTIONS = TC.ACTIONS ++ [ matchAction ] ]
+def $add_action(TBLC, prefixedNameIR, parameterTypeIR*, argumentListIR)
+  = TBLC[ .ACTIONS = TBLC.ACTIONS ++ [ matchAction ] ]
   -- if matchAction = (prefixedNameIR, parameterTypeIR*, argumentListIR)
 
 ;;; Adder for table entry priorities
 
-dec $add_table_priority(tablecontext, nat) : tablecontext
+dec $add_table_priority(tableContext, nat) : tableContext
 
-def $add_table_priority(TC, n)
-  = TC[ .PRIORITIES.VALUES = TC.PRIORITIES.VALUES ++ [ n ] ]
+def $add_table_priority(TBLC, n)
+  = TBLC[ .PRIORITIES.VALUES = TBLC.PRIORITIES.VALUES ++ [ n ] ]
 
 ;;
 ;; Updaters
@@ -100,33 +100,33 @@ def $add_table_priority(TC, n)
 
 ;;; Updater for modes
 
-dec $update_mode(tablecontext, id, typeIR) : tablecontext
-dec $update_mode'(tablecontext, id, typeIR) : tablecontext
+dec $update_mode(tableContext, id, typeIR) : tableContext
+dec $update_mode'(tableContext, id, typeIR) : tableContext
 
-def $update_mode(TC, id, typeIR) = $update_mode'(TC, id, $canon(typeIR))
-def $update_mode'(TC, "lpm", INT `< n >) = TC[ .MODE = NOPRILPM n ]
-  -- if TC.MODE = NOPRI
-def $update_mode'(TC, "lpm", BIT `< n >) = TC[ .MODE = NOPRILPM n ]
-  -- if TC.MODE = NOPRI
-def $update_mode'(TC, "lpm", VARBIT `< n >) = TC[ .MODE = NOPRILPM n ]
-  -- if TC.MODE = NOPRI
-def $update_mode'(TC, "lpm", TYPE _ typeIR)
-  = $update_mode(TC, "lpm", typeIR)
-def $update_mode'(TC, "lpm", _) = TC[ .MODE = PRILPM ]
-  -- if TC.MODE = PRI
-def $update_mode'(TC, "range", _) = TC[ .MODE = PRI ]
-  -- if TC.MODE = NOPRI
-def $update_mode'(TC, "ternary", _) = TC[ .MODE = PRI ]
-  -- if TC.MODE = NOPRI
-def $update_mode'(TC, "optional", _) = TC[ .MODE = PRI ]
-  -- if TC.MODE = NOPRI
-def $update_mode'(TC, "range", _) = TC[ .MODE = PRILPM ]
-  -- if TC.MODE = NOPRILPM _
-def $update_mode'(TC, "ternary", _) = TC[ .MODE = PRILPM ]
-  -- if TC.MODE = NOPRILPM _
-def $update_mode'(TC, "optional", _) = TC[ .MODE = PRILPM ]
-  -- if TC.MODE = NOPRILPM _
-def $update_mode'(TC, _, _) = TC
+def $update_mode(TBLC, id, typeIR) = $update_mode'(TBLC, id, $canon(typeIR))
+def $update_mode'(TBLC, "lpm", INT `< n >) = TBLC[ .MODE = NOPRILPM n ]
+  -- if TBLC.MODE = NOPRI
+def $update_mode'(TBLC, "lpm", BIT `< n >) = TBLC[ .MODE = NOPRILPM n ]
+  -- if TBLC.MODE = NOPRI
+def $update_mode'(TBLC, "lpm", VARBIT `< n >) = TBLC[ .MODE = NOPRILPM n ]
+  -- if TBLC.MODE = NOPRI
+def $update_mode'(TBLC, "lpm", TYPE _ typeIR)
+  = $update_mode(TBLC, "lpm", typeIR)
+def $update_mode'(TBLC, "lpm", _) = TBLC[ .MODE = PRILPM ]
+  -- if TBLC.MODE = PRI
+def $update_mode'(TBLC, "range", _) = TBLC[ .MODE = PRI ]
+  -- if TBLC.MODE = NOPRI
+def $update_mode'(TBLC, "ternary", _) = TBLC[ .MODE = PRI ]
+  -- if TBLC.MODE = NOPRI
+def $update_mode'(TBLC, "optional", _) = TBLC[ .MODE = PRI ]
+  -- if TBLC.MODE = NOPRI
+def $update_mode'(TBLC, "range", _) = TBLC[ .MODE = PRILPM ]
+  -- if TBLC.MODE = NOPRILPM _
+def $update_mode'(TBLC, "ternary", _) = TBLC[ .MODE = PRILPM ]
+  -- if TBLC.MODE = NOPRILPM _
+def $update_mode'(TBLC, "optional", _) = TBLC[ .MODE = PRILPM ]
+  -- if TBLC.MODE = NOPRILPM _
+def $update_mode'(TBLC, _, _) = TBLC
   -- otherwise
 
 ;;
@@ -135,10 +135,10 @@ def $update_mode'(TC, _, _) = TC
 
 ;;; Finder for actions
 
-dec $find_action(tablecontext, prefixedNameIR) : (parameterTypeIR*, argumentListIR)?
+dec $find_action(tableContext, prefixedNameIR) : (parameterTypeIR*, argumentListIR)?
 dec $find_action'(matchAction*, prefixedNameIR) : (parameterTypeIR*, argumentListIR)?
 
-def $find_action(TC, prefixedNameIR) = $find_action'(TC.ACTIONS, prefixedNameIR)
+def $find_action(TBLC, prefixedNameIR) = $find_action'(TBLC.ACTIONS, prefixedNameIR)
 
 def $find_action'(eps, prefixedNameIR) = eps
 
@@ -153,10 +153,10 @@ def $find_action'(matchAction_h :: matchAction_t*, prefixedNameIR)
 
 ;;; Finder for last table priority
 
-dec $find_table_priority_last(tablecontext) : nat
+dec $find_table_priority_last(tableContext) : nat
 
-def $find_table_priority_last(TC) = n*[|n*| - 1]
-  -- if n* = TC.PRIORITIES.VALUES
+def $find_table_priority_last(TBLC) = n*[|n*| - 1]
+  -- if n* = TBLC.PRIORITIES.VALUES
 
 ;;
 ;; State management

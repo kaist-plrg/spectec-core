@@ -45,21 +45,21 @@ def $compat_table_key(nameIR, typeIR) = false
   -- otherwise
 
 rule TableKey_ok:
-  C TC_0 |- expression `: name_matchkind annotationList `;
-          : TC_2 tableKeyIR
+  TC TBLC_0 |- expression `: name_matchkind annotationList `;
+             : TBLC_2 tableKeyIR
   ---- ;; check expression
-  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL TC |- expression : typedExpressionIR
   -- if _ `# `( typeIR _ ) = typedExpressionIR
   ---- ;; check that the expression can be embedded in a set
-  -- Type_wf: $bound(LOCAL, C) |- SET `< typeIR >
+  -- Type_wf: $bound(LOCAL, TC) |- SET `< typeIR >
   ---- ;; check match kind
   -- if nameIR_matchkind = $name(name_matchkind)
-  -- if MATCH_KIND `. nameIR_matchkind = $find_value(LOCAL, C, `` nameIR_matchkind)
+  -- if MATCH_KIND `. nameIR_matchkind = $find_value(LOCAL, TC, `` nameIR_matchkind)
   ---- ;; check compatibility with the match kind
   -- if $compat_table_key(nameIR_matchkind, typeIR)
   ---- ;; update table context
-  -- if TC_1 = $update_mode(TC_0, nameIR_matchkind, typeIR)
-  -- if TC_2 = $add_key(TC_1, nameIR_matchkind, typeIR)
+  -- if TBLC_1 = $update_mode(TBLC_0, nameIR_matchkind, typeIR)
+  -- if TBLC_2 = $add_key(TBLC_1, nameIR_matchkind, typeIR)
   ---- ;; create IR
   -- if tableKeyIR = typedExpressionIR `: nameIR_matchkind annotationList `;
 
@@ -70,13 +70,13 @@ rule TableKey_ok:
 ;;
 
 rule TableKeys_ok/nil:
-  C TC |- eps : TC eps
+  TC TBLC |- eps : TBLC eps
 
 rule TableKeys_ok/cons:
-  C TC_0 |- (tableKey_h :: tableKey_t*)
-          : TC_2 (tableKeyIR_h :: tableKeyIR_t*)
-  -- TableKey_ok: C TC_0 |- tableKey_h : TC_1 tableKeyIR_h
-  -- TableKeys_ok: C TC_1 |- tableKey_t* : TC_2 tableKeyIR_t*
+  TC TBLC_0 |- (tableKey_h :: tableKey_t*)
+             : TBLC_2 (tableKeyIR_h :: tableKeyIR_t*)
+  -- TableKey_ok: TC TBLC_0 |- tableKey_h : TBLC_1 tableKeyIR_h
+  -- TableKeys_ok: TC TBLC_1 |- tableKey_t* : TBLC_2 tableKeyIR_t*
 
 ;;
 ;; Table action property typing
@@ -101,9 +101,9 @@ def $split_dataplane_parameters(parameterTypeIR_h :: parameterTypeIR_t*)
       = $split_dataplane_parameters(parameterTypeIR_t*)
 
 rule Call_action_partial_ok:
-  C |- parameterTypeIR* `@ argumentIR*
-     : parameterTypeIR_data* `, parameterTypeIR_control*
-       `@ argumentIR_cast*
+  TC |- parameterTypeIR* `@ argumentIR*
+      : parameterTypeIR_data* `, parameterTypeIR_control*
+        `@ argumentIR_cast*
   ---- ;; split parameters into data- and control-planes
   -- if (parameterTypeIR_data*, parameterTypeIR_control*)
       = $split_dataplane_parameters(parameterTypeIR*)
@@ -111,8 +111,8 @@ rule Call_action_partial_ok:
   -- if $(|parameterTypeIR_data*| = |argumentIR*|)
   ---- ;; check calling convention on dataplane parameters
   -- Call_convention_ok:
-      LOCAL C ACTION |- parameterTypeIR_data* `@ argumentIR*
-                      : argumentIR_cast*
+      LOCAL TC ACTION |- parameterTypeIR_data* `@ argumentIR*
+                       : argumentIR_cast*
 
 ;;; syntax tableAction = annotationList tableActionReference `;
 ;;;; syntax tableActionReference
@@ -120,39 +120,39 @@ rule Call_action_partial_ok:
 ;;;; prefixedNonTypeName
 
 rule TableAction_ok/prefixedNonTypeName:
-  C TC_0 |- annotationList prefixedNonTypeName `;
-          : TC_1 tableActionIR
+  TC TBLC_0 |- annotationList prefixedNonTypeName `;
+             : TBLC_1 tableActionIR
   ---- ;; check that the action exists
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
   -- if ACTION `( parameterTypeIR* )
-      = $find_routine_non_overloaded(LOCAL, C, prefixedNameIR)
+      = $find_routine_non_overloaded(LOCAL, TC, prefixedNameIR)
   ---- ;; check that the action reference is a valid data-plane call
-  -- Call_action_partial_ok: C |- parameterTypeIR* `@ eps
-                                : parameterTypeIR_data* `, parameterTypeIR_control*
-                                  `@ eps
+  -- Call_action_partial_ok: TC |- parameterTypeIR* `@ eps
+                                 : parameterTypeIR_data* `, parameterTypeIR_control*
+                                   `@ eps
   ---- ;; update the table context with the action
-  -- if TC_1 = $add_action(TC_0, prefixedNameIR, parameterTypeIR*, eps)
+  -- if TBLC_1 = $add_action(TBLC_0, prefixedNameIR, parameterTypeIR*, eps)
   ---- ;; create IR
   -- if tableActionIR = annotationList (prefixedNameIR `( eps )) `;
 
 ;;;; prefixedNonTypeName `( argumentList )
 
 rule TableAction_ok/prefixedNonTypeName-argumentList:
-  C TC_0 |- annotationList (prefixedNonTypeName `( argumentList )) `;
-          : TC_1 tableActionIR
+  TC TBLC_0 |- annotationList (prefixedNonTypeName `( argumentList )) `;
+             : TBLC_1 tableActionIR
   ---- ;; check that the action exists
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
   -- if ACTION `( parameterTypeIR* )
-      = $find_routine_non_overloaded(LOCAL, C, prefixedNameIR)
+      = $find_routine_non_overloaded(LOCAL, TC, prefixedNameIR)
   ---- ;; check arguments
   -- if argument* = $flatten_argumentList(argumentList)
-  -- (Argument_ok: LOCAL C |- argument : argumentIR)*
+  -- (Argument_ok: LOCAL TC |- argument : argumentIR)*
   ---- ;; check that the action reference is a valid data-plane call
-  -- Call_action_partial_ok: C |- parameterTypeIR* `@ argumentIR*
-                                : parameterTypeIR_data* `, parameterTypeIR_control*
-                                  `@ argumentIR_cast*
+  -- Call_action_partial_ok: TC |- parameterTypeIR* `@ argumentIR*
+                                 : parameterTypeIR_data* `, parameterTypeIR_control*
+                                   `@ argumentIR_cast*
   ---- ;; update the table context with the action
-  -- if TC_1 = $add_action(TC_0, prefixedNameIR, parameterTypeIR*, argumentIR_cast*)
+  -- if TBLC_1 = $add_action(TBLC_0, prefixedNameIR, parameterTypeIR*, argumentIR_cast*)
   ---- ;; create IR
   -- if tableActionIR = annotationList (prefixedNameIR `( argumentIR_cast* )) `;
 
@@ -163,13 +163,13 @@ rule TableAction_ok/prefixedNonTypeName-argumentList:
 ;;
 
 rule TableActions_ok/nil:
-  C TC |- eps : TC eps
+  TC TBLC |- eps : TBLC eps
 
 rule TableActions_ok/cons:
-  C TC_0 |- (tableAction_h :: tableAction_t*)
-          : TC_2 (tableActionIR_h :: tableActionIR_t*)
-  -- TableAction_ok: C TC_0 |- tableAction_h : TC_1 tableActionIR_h
-  -- TableActions_ok: C TC_1 |- tableAction_t* : TC_2 tableActionIR_t*
+  TC TBLC_0 |- (tableAction_h :: tableAction_t*)
+             : TBLC_2 (tableActionIR_h :: tableActionIR_t*)
+  -- TableAction_ok: TC TBLC_0 |- tableAction_h : TBLC_1 tableActionIR_h
+  -- TableActions_ok: TC TBLC_1 |- tableAction_t* : TBLC_2 tableActionIR_t*
 
 ;;
 ;; Table default action property typing
@@ -178,43 +178,43 @@ rule TableActions_ok/cons:
 ;;
 
 rule Call_action_default_ok:
-  C |- parameterTypeIR* `@ argumentIR*
-     : parameterTypeIR_data* `, parameterTypeIR_control*
-       `@ argumentIR_cast*
+  TC |- parameterTypeIR* `@ argumentIR*
+      : parameterTypeIR_data* `, parameterTypeIR_control*
+        `@ argumentIR_cast*
   ---- ;; split parameters into data- and control-planes
   -- if (parameterTypeIR_data*, parameterTypeIR_control*)
       = $split_dataplane_parameters(parameterTypeIR*)
   ---- ;; check calling convention
   -- Call_convention_ok:
-      LOCAL C ACTION |- parameterTypeIR* `@ argumentIR*
-                      : argumentIR_cast*
+      LOCAL TC ACTION |- parameterTypeIR* `@ argumentIR*
+                       : argumentIR_cast*
 
 ;;; prefixedNonTypeName
 
 rule TableDefaultAction_ok/prefixedNonTypeName:
-  C TC |- `= prefixedNonTypeName
-        : prefixedNameIR `( eps )
+  TC TBLC |- `= prefixedNonTypeName
+           : prefixedNameIR `( eps )
   ---- ;; find matching action
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
-  -- if (eps, eps) = $find_action(TC, prefixedNameIR)
+  -- if (eps, eps) = $find_action(TBLC, prefixedNameIR)
 
 ;;; prefixedNonTypeName `( argumentList )
 
 rule TableDefaultAction_ok/prefixedNonTypeName-argumentList:
-  C TC |- `= (prefixedNonTypeName `( argumentList ))
-        : prefixedNameIR `( argumentIR_cast* )
+  TC TBLC |- `= (prefixedNonTypeName `( argumentList ))
+           : prefixedNameIR `( argumentIR_cast* )
   ---- ;; find matching action
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
   -- if (parameterTypeIR_action*, argumentIR_action*)
-      = $find_action(TC, prefixedNameIR)
+      = $find_action(TBLC, prefixedNameIR)
   ---- ;; check arguments
   -- if argument* = $flatten_argumentList(argumentList)
-  -- (Argument_ok: LOCAL C |- argument : argumentIR)*
+  -- (Argument_ok: LOCAL TC |- argument : argumentIR)*
   ---- ;; check calling convention
   -- Call_action_default_ok:
-      C |- parameterTypeIR_action* `@ argumentIR*
-         : parameterTypeIR_action_data* `, parameterTypeIR_action_control*
-           `@ argumentIR_cast*
+      TC |- parameterTypeIR_action* `@ argumentIR*
+          : parameterTypeIR_action_data* `, parameterTypeIR_action_control*
+            `@ argumentIR_cast*
   ---- ;; arguments must be syntatcially equivalent to
   ---- ;; dataplane arguments specified in the actions list property
   -- if argumentIR_action_data*
@@ -236,19 +236,19 @@ rule TableDefaultAction_ok/prefixedNonTypeName-argumentList:
 ;;
 
 relation TableEntry_keyset_simple_ok:
-  context tablecontext |- matchKey `@ simpleKeysetExpression
-                        : tableEntryState simpleKeysetExpressionIR
+  typingContext tableContext |- matchKey `@ simpleKeysetExpression
+                              : tableEntryState simpleKeysetExpressionIR
   hint(input %0 %1 %2 %3)
 
 ;;;;;; expression
 
 rule TableEntry_keyset_simple_ok/expression-lpm:
-  C TC |- (typeIR_key, "lpm") `@ expression
-        : (LPM n) typedExpressionIR_set
+  TC TBLC |- (typeIR_key, "lpm") `@ expression
+           : (LPM n) typedExpressionIR_set
   ---- ;; check match mode
-  -- if TC.MODE = NOPRILPM n
+  -- if TBLC.MODE = NOPRILPM n
   ---- ;; check expression
-  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL TC |- expression : typedExpressionIR
   -- if _ `# `( typeIR ctk ) = typedExpressionIR
   ---- ;; check compatibility with the key type
   -- Sub_impl: typeIR <: typeIR_key
@@ -258,12 +258,12 @@ rule TableEntry_keyset_simple_ok/expression-lpm:
       = (`( typeIR_set ) typedExpressionIR) `# `( typeIR_set ctk )
 
 rule TableEntry_keyset_simple_ok/expression-non-lpm:
-  C TC |- (typeIR_key, nameIR_matchkind) `@ expression
-        : NOLPM typedExpressionIR_set
+  TC TBLC |- (typeIR_key, nameIR_matchkind) `@ expression
+           : NOLPM typedExpressionIR_set
   ---- ;; check match mode
   -- if nameIR_matchkind =/= "lpm"
   ---- ;; check expression
-  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL TC |- expression : typedExpressionIR
   -- if _ `# `( typeIR ctk ) = typedExpressionIR
   ---- ;; check compatibility with the key type
   -- Sub_impl: typeIR <: typeIR_key
@@ -275,13 +275,13 @@ rule TableEntry_keyset_simple_ok/expression-non-lpm:
 ;;;;;; expression `&&& expression
 
 rule TableEntry_keyset_simple_ok/mask-lpm:
-  C TC |- (typeIR_key, "lpm") `@ (expression_l `&&& expression_r)
-        : (LPM n_prefix) (typedExpressionIR_l_reduced `&&& typedExpressionIR_r_reduced)
+  TC TBLC |- (typeIR_key, "lpm") `@ (expression_l `&&& expression_r)
+           : (LPM n_prefix) (typedExpressionIR_l_reduced `&&& typedExpressionIR_r_reduced)
   ---- ;; check match mode
-  -- if TC.MODE = NOPRILPM n
+  -- if TBLC.MODE = NOPRILPM n
   ---- ;; check both sides
-  -- Expr_ok: LOCAL C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: LOCAL C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: LOCAL TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: LOCAL TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -298,17 +298,17 @@ rule TableEntry_keyset_simple_ok/mask-lpm:
   -- Sub_impl: typeIR_reduced <: typeIR_key
   ---- ;; statically evaluate the right hand side to get its width
   -- if ctk_r_reduced = LCTK
-  -- Eval_static: LOCAL C |- typedExpressionIR_r_reduced ~> value_r
+  -- Eval_static: LOCAL TC |- typedExpressionIR_r_reduced ~> value_r
   -- if i_r = $to_number(value_r)
   ---- ;; compute the table entry state
   -- if n_prefix = $tableEntry_lpm_prefix(n W $to_bitstr(n, i_r))
 
 rule TableEntry_keyset_simple_ok/mask-ternary:
-  C TC |- (typeIR_key, "ternary") `@ (expression_l `&&& expression_r)
-        : NOLPM (typedExpressionIR_l_reduced `&&& typedExpressionIR_r_reduced)
+  TC TBLC |- (typeIR_key, "ternary") `@ (expression_l `&&& expression_r)
+           : NOLPM (typedExpressionIR_l_reduced `&&& typedExpressionIR_r_reduced)
   ---- ;; check both sides
-  -- Expr_ok: LOCAL C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: LOCAL C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: LOCAL TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: LOCAL TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -327,11 +327,11 @@ rule TableEntry_keyset_simple_ok/mask-ternary:
 ;;;;;; expression `.. expression
 
 rule TableEntry_keyset_simple_ok/range-range:
-  C TC |- (typeIR_key, "range") `@ (expression_l `.. expression_r)
-        : NOLPM (typedExpressionIR_l_reduced `.. typedExpressionIR_r_reduced)
+  TC TBLC |- (typeIR_key, "range") `@ (expression_l `.. expression_r)
+           : NOLPM (typedExpressionIR_l_reduced `.. typedExpressionIR_r_reduced)
   ---- ;; check both sides
-  -- Expr_ok: LOCAL C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: LOCAL C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: LOCAL TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: LOCAL TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -350,24 +350,24 @@ rule TableEntry_keyset_simple_ok/range-range:
 ;;;;;; DEFAULT
 
 rule TableEntry_keyset_simple_ok/default-lpm:
-  C TC |- (typeIR_key, "lpm") `@ DEFAULT : (LPM n) DEFAULT
+  TC TBLC |- (typeIR_key, "lpm") `@ DEFAULT : (LPM n) DEFAULT
   ---- ;; check match mode
-  -- if TC.MODE = NOPRILPM n
+  -- if TBLC.MODE = NOPRILPM n
 
 rule TableEntry_keyset_simple_ok/default-else:
-  C TC |- (typeIR_key, nameIR_matchkind) `@ DEFAULT : NOLPM DEFAULT
+  TC TBLC |- (typeIR_key, nameIR_matchkind) `@ DEFAULT : NOLPM DEFAULT
   ---- ;; cannot use default for exact match
   -- if nameIR_matchkind =/= "exact"
 
 ;;;;;; `_
 
 rule TableEntry_keyset_simple_ok/dontcare-lpm:
-  C TC |- (typeIR_key, "lpm") `@ `_ : (LPM 0) `_
+  TC TBLC |- (typeIR_key, "lpm") `@ `_ : (LPM 0) `_
   ---- ;; check match mode
-  -- if TC.MODE = NOPRILPM _
+  -- if TBLC.MODE = NOPRILPM _
 
 rule TableEntry_keyset_simple_ok/dontcare-else:
-  C TC |- (typeIR_key, nameIR_matchkind) `@ `_ : NOLPM `_
+  TC TBLC |- (typeIR_key, nameIR_matchkind) `@ `_ : NOLPM `_
   ---- ;; cannot use don't care for exact match
   -- if nameIR_matchkind =/= "exact"
 
@@ -378,24 +378,24 @@ rule TableEntry_keyset_simple_ok/dontcare-else:
 ;;
 
 relation TableEntry_keysets_simple_ok:
-  context tablecontext tableEntryState |- matchKey* `@ simpleKeysetExpression*
-                                        : tableEntryState simpleKeysetExpressionIR*
+  typingContext tableContext tableEntryState |- matchKey* `@ simpleKeysetExpression*
+                                              : tableEntryState simpleKeysetExpressionIR*
   hint(input %0 %1 %2 %3 %4)
 
 rule TableEntry_keysets_simple_ok/nil:
-  C TC TES |- eps `@ eps : TES eps
+  TC TBLC TBLS |- eps `@ eps : TBLS eps
 
 rule TableEntry_keysets_simple_ok/cons:
-  C TC TES_0 |- (matchKey_h :: matchKey_t*)
-                `@ (simpleKeysetExpression_h :: simpleKeysetExpression_t*)
-              : TES_3 (simpleKeysetExpressionIR_h :: simpleKeysetExpressionIR_t*)
+  TC TBLC TBLS_0 |- (matchKey_h :: matchKey_t*)
+                    `@ (simpleKeysetExpression_h :: simpleKeysetExpression_t*)
+                  : TBLS_3 (simpleKeysetExpressionIR_h :: simpleKeysetExpressionIR_t*)
   -- TableEntry_keyset_simple_ok:
-      C TC |- matchKey_h `@ simpleKeysetExpression_h
-            : TES_1 simpleKeysetExpressionIR_h
-  -- if TES_2 = $join_tableEntryState(TES_0, TES_1)
+      TC TBLC |- matchKey_h `@ simpleKeysetExpression_h
+               : TBLS_1 simpleKeysetExpressionIR_h
+  -- if TBLS_2 = $join_tableEntryState(TBLS_0, TBLS_1)
   -- TableEntry_keysets_simple_ok:
-      C TC TES_2 |- matchKey_t* `@ simpleKeysetExpression_t*
-                  : TES_3 simpleKeysetExpressionIR_t*
+      TC TBLC TBLS_2 |- matchKey_t* `@ simpleKeysetExpression_t*
+                      : TBLS_3 simpleKeysetExpressionIR_t*
 
 ;;
 ;;;; Table keyset typing
@@ -409,59 +409,59 @@ rule TableEntry_keysets_simple_ok/cons:
 ;;;;;; expression
 
 rule TableEntry_keyset_ok/simpleKeysetExpression-expression:
-  C TC |- expression : TES simpleKeysetExpressionIR
+  TC TBLC |- expression : TBLS simpleKeysetExpressionIR
   ---- ;; check arity
-  -- if $(|TC.KEYS| = 1)
+  -- if $(|TBLC.KEYS| = 1)
   ---- ;; check that the expression matches the key type
   -- TableEntry_keysets_simple_ok:
-      C TC NOLPM |- TC.KEYS `@ expression
-                  : TES simpleKeysetExpressionIR
+      TC TBLC NOLPM |- TBLC.KEYS `@ expression
+                     : TBLS simpleKeysetExpressionIR
 
 ;;;;;; expression `&&& expression
 
 rule TableEntry_keyset_ok/simpleKeysetExpression-mask:
-  C TC |- expression_l `&&& expression_r : TES simpleKeysetExpressionIR
+  TC TBLC |- expression_l `&&& expression_r : TBLS simpleKeysetExpressionIR
   ---- ;; check arity
-  -- if $(|TC.KEYS| = 1)
+  -- if $(|TBLC.KEYS| = 1)
   ---- ;; check that the expression matches the key type
   -- TableEntry_keysets_simple_ok:
-      C TC NOLPM |- TC.KEYS `@ (expression_l `&&& expression_r)
-                  : TES simpleKeysetExpressionIR
+      TC TBLC NOLPM |- TBLC.KEYS `@ (expression_l `&&& expression_r)
+                     : TBLS simpleKeysetExpressionIR
 
 ;;;;;; expression `.. expression
 
 rule TableEntry_keyset_ok/simpleKeysetExpression-range:
-  C TC |- expression_l `.. expression_r : TES simpleKeysetExpressionIR
+  TC TBLC |- expression_l `.. expression_r : TBLS simpleKeysetExpressionIR
   ---- ;; check arity
-  -- if $(|TC.KEYS| = 1)
+  -- if $(|TBLC.KEYS| = 1)
   ---- ;; check that the expression matches the key type
   -- TableEntry_keysets_simple_ok:
-      C TC NOLPM |- TC.KEYS `@ (expression_l `.. expression_r)
-                  : TES simpleKeysetExpressionIR
+      TC TBLC NOLPM |- TBLC.KEYS `@ (expression_l `.. expression_r)
+                     : TBLS simpleKeysetExpressionIR
 
 ;;;;;; DEFAULT
 
 rule TableEntry_keyset_ok/simpleKeysetExpression-default-noprilpm:
-  C TC |- DEFAULT : TES DEFAULT
-  -- if TC.MODE = NOPRILPM n
-  -- if TES = LPM n
+  TC TBLC |- DEFAULT : TBLS DEFAULT
+  -- if TBLC.MODE = NOPRILPM n
+  -- if TBLS = LPM n
 
 rule TableEntry_keyset_ok/simpleKeysetExpression-default-else:
-  C TC |- DEFAULT : TES DEFAULT
-  -- if TC.MODE = NOPRI \/ TC.MODE = PRI \/ TC.MODE = PRILPM
-  -- if TES = NOLPM
+  TC TBLC |- DEFAULT : TBLS DEFAULT
+  -- if TBLC.MODE = NOPRI \/ TBLC.MODE = PRI \/ TBLC.MODE = PRILPM
+  -- if TBLS = NOLPM
 
 ;;;;;; `_
 
 rule TableEntry_keyset_ok/simpleKeysetExpression-dontcare-noprilpm:
-  C TC |- `_ : TES `_
-  -- if TC.MODE = NOPRILPM n
-  -- if TES = LPM 0
+  TC TBLC |- `_ : TBLS `_
+  -- if TBLC.MODE = NOPRILPM n
+  -- if TBLS = LPM 0
 
 rule TableEntry_keyset_ok/simpleKeysetExpression-dontcare-else:
-  C TC |- `_ : TES `_
-  -- if TC.MODE = NOPRI \/ TC.MODE = PRI \/ TC.MODE = PRILPM
-  -- if TES = NOLPM
+  TC TBLC |- `_ : TBLS `_
+  -- if TBLC.MODE = NOPRI \/ TBLC.MODE = PRI \/ TBLC.MODE = PRILPM
+  -- if TBLS = NOLPM
 
 ;;;;; tupleKeysetExpression
 ;;;;; syntax tupleKeysetExpression
@@ -469,66 +469,66 @@ rule TableEntry_keyset_ok/simpleKeysetExpression-dontcare-else:
 ;;;;;; `( expression `&&& expression )
 
 rule TableEntry_keyset_ok/tupleKeysetExpression-mask:
-  C TC |- `( expression_l `&&& expression_r )
-        : TES (`( simpleKeysetExpressionIR ))
+  TC TBLC |- `( expression_l `&&& expression_r )
+           : TBLS (`( simpleKeysetExpressionIR ))
   ---- ;; check arity
-  -- if $(|TC.KEYS| = 1)
+  -- if $(|TBLC.KEYS| = 1)
   ---- ;; check that the expression matches the key type
   -- TableEntry_keysets_simple_ok:
-      C TC NOLPM |- TC.KEYS `@ (expression_l `&&& expression_r)
-                  : TES simpleKeysetExpressionIR
+      TC TBLC NOLPM |- TBLC.KEYS `@ (expression_l `&&& expression_r)
+                     : TBLS simpleKeysetExpressionIR
 
 ;;;;;; `( expression `.. expression )
 
 rule TableEntry_keyset_ok/tupleKeysetExpression-range:
-  C TC |- `( expression_l `.. expression_r )
-        : TES (`( simpleKeysetExpressionIR ))
+  TC TBLC |- `( expression_l `.. expression_r )
+           : TBLS (`( simpleKeysetExpressionIR ))
   ---- ;; check arity
-  -- if $(|TC.KEYS| = 1)
+  -- if $(|TBLC.KEYS| = 1)
   ---- ;; check that the expression matches the key type
   -- TableEntry_keysets_simple_ok:
-      C TC NOLPM |- TC.KEYS `@ (expression_l `.. expression_r)
-                  : TES simpleKeysetExpressionIR
+      TC TBLC NOLPM |- TBLC.KEYS `@ (expression_l `.. expression_r)
+                     : TBLS simpleKeysetExpressionIR
 
 ;;;;;; `( DEFAULT )
 
 rule TableEntry_keyset_ok/tupleKeysetExpression-default-noprilpm:
-  C TC |- `( DEFAULT ) : TES (`( DEFAULT ))
-  -- if TC.MODE = NOPRILPM n
-  -- if TES = LPM n
+  TC TBLC |- `( DEFAULT ) : TBLS (`( DEFAULT ))
+  -- if TBLC.MODE = NOPRILPM n
+  -- if TBLS = LPM n
 
 rule TableEntry_keyset_ok/tupleKeysetExpression-default-else:
-  C TC |- `( DEFAULT ) : TES (`( DEFAULT ))
-  -- if TC.MODE = NOPRI \/ TC.MODE = PRI \/ TC.MODE = PRILPM
-  -- if TES = NOLPM
+  TC TBLC |- `( DEFAULT ) : TBLS (`( DEFAULT ))
+  -- if TBLC.MODE = NOPRI \/ TBLC.MODE = PRI \/ TBLC.MODE = PRILPM
+  -- if TBLS = NOLPM
 
 ;;;;;; `( `_ )
 
 rule TableEntry_keyset_ok/tupleKeysetExpression-dontcare-noprilpm:
-  C TC |- `( `_ ) : TES (`( `_ ))
-  -- if TC.MODE = NOPRILPM n
-  -- if TES = LPM 0
+  TC TBLC |- `( `_ ) : TBLS (`( `_ ))
+  -- if TBLC.MODE = NOPRILPM n
+  -- if TBLS = LPM 0
 
 rule TableEntry_keyset_ok/simpleKeysetExpression-dontcare-else:
-  C TC |- `( `_ ) : TES (`( `_ ))
-  -- if TC.MODE = NOPRI \/ TC.MODE = PRI \/ TC.MODE = PRILPM
-  -- if TES = NOLPM
+  TC TBLC |- `( `_ ) : TBLS (`( `_ ))
+  -- if TBLC.MODE = NOPRI \/ TBLC.MODE = PRI \/ TBLC.MODE = PRILPM
+  -- if TBLS = NOLPM
 
 ;;;;;; `( simpleKeysetExpression `, simpleKeysetExpressionList )
 
 rule TableEntry_keyset_ok/tupleKeysetExpression-list:
-  C TC |- `( simpleKeysetExpression_h `, simpleKeysetExpressionList_t )
-        : TES (`( simpleKeysetExpressionIR* ))
+  TC TBLC |- `( simpleKeysetExpression_h `, simpleKeysetExpressionList_t )
+           : TBLS (`( simpleKeysetExpressionIR* ))
   ---- ;; check arity
   -- if simpleKeysetExpression_t*
       = $flatten_simpleKeysetExpressionList(simpleKeysetExpressionList_t)
   -- if simpleKeysetExpression*
       = simpleKeysetExpression_h :: simpleKeysetExpression_t*
-  -- if |TC.KEYS| = |simpleKeysetExpression*|
+  -- if |TBLC.KEYS| = |simpleKeysetExpression*|
   ---- ;; check keysets pairwise
   -- TableEntry_keysets_simple_ok:
-      C TC NOLPM |- TC.KEYS `@ simpleKeysetExpression*
-                  : TES simpleKeysetExpressionIR*
+      TC TBLC NOLPM |- TBLC.KEYS `@ simpleKeysetExpression*
+                     : TBLS simpleKeysetExpressionIR*
 
 ;;
 ;;;; Table entry action reference typing
@@ -539,28 +539,28 @@ rule TableEntry_keyset_ok/tupleKeysetExpression-list:
 ;;; prefixedNonTypeName
 
 rule TableEntry_action_ok/prefixedNonTypeName:
-  C TC |- prefixedNonTypeName : prefixedNameIR `( eps )
+  TC TBLC |- prefixedNonTypeName : prefixedNameIR `( eps )
   ---- ;; find matching action
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
-  -- if (eps, eps) = $find_action(TC, prefixedNameIR)
+  -- if (eps, eps) = $find_action(TBLC, prefixedNameIR)
 
 ;;; prefixedNonTypeName `( argumentList )
 
 rule TableEntry_action_ok/prefixedNonTypeName-argumentList:
-  C TC |- (prefixedNonTypeName `( argumentList ))
-        : prefixedNameIR `( argumentIR_cast* )
+  TC TBLC |- (prefixedNonTypeName `( argumentList ))
+           : prefixedNameIR `( argumentIR_cast* )
   ---- ;; find matching action
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
   -- if (parameterTypeIR_action*, argumentIR_action*)
-      = $find_action(TC, prefixedNameIR)
+      = $find_action(TBLC, prefixedNameIR)
   ---- ;; check arguments
   -- if argument* = $flatten_argumentList(argumentList)
-  -- (Argument_ok: LOCAL C |- argument : argumentIR)*
+  -- (Argument_ok: LOCAL TC |- argument : argumentIR)*
   ---- ;; check calling convention
   -- Call_action_default_ok:
-      C |- parameterTypeIR_action* `@ argumentIR*
-         : parameterTypeIR_action_data* `, parameterTypeIR_action_control*
-           `@ argumentIR_cast*
+      TC |- parameterTypeIR_action* `@ argumentIR*
+          : parameterTypeIR_action_data* `, parameterTypeIR_action_control*
+            `@ argumentIR_cast*
   ---- ;; arguments must be syntatcially equivalent to
   ---- ;; dataplane arguments specified in the actions list property
   -- if argumentIR_action_data*
@@ -578,142 +578,143 @@ rule TableEntry_action_ok/prefixedNonTypeName-argumentList:
 ;;;;; eps
 
 rule TableEntry_priority_ok/nopri:
-  C TC TES |- eps : TC eps
-  -- if TC.MODE = NOPRI
+  TC TBLC TBLS |- eps : TBLC eps
+  -- if TBLC.MODE = NOPRI
 
 rule TableEntry_priority_ok/noprilpm:
-  C TC TES |- eps : TC eps
-  -- if TC.MODE = NOPRILPM n
-  -- if TES = LPM n_prefix
+  TC TBLC TBLS |- eps : TBLC eps
+  -- if TBLC.MODE = NOPRILPM n
+  -- if TBLS = LPM n_prefix
 
 rule TableEntry_priority_ok/pri-prilpm-number-init-largest-wins:
-  C TC_0 TES |- eps : TC_1 (PRIORITY `= (D n) `:)
+  TC TBLC_0 TBLS |- eps : TBLC_1 (PRIORITY `= (D n) `:)
   ---- ;; check match mode
-  -- if TC_0.MODE = PRI \/ TC_0.MODE = PRILPM
+  -- if TBLC_0.MODE = PRI \/ TBLC_0.MODE = PRILPM
   ---- ;; if no priority has been specified yet
-  -- if TC_0.PRIORITIES.VALUES = eps
+  -- if TBLC_0.PRIORITIES.VALUES = eps
   ---- ;; if largest wins
-  -- if TC_0.PRIORITIES.LARGEST_WINS
+  -- if TBLC_0.PRIORITIES.LARGEST_WINS
   ---- ;; infer and initialize the priority
-  -- if n_size = TC_0.ENTRIES.SIZE
-  -- if n_delta = TC_0.PRIORITIES.DELTA
+  -- if n_size = TBLC_0.ENTRIES.SIZE
+  -- if n_delta = TBLC_0.PRIORITIES.DELTA
   -- if n = $((n_size - 1) * n_delta + 1)
-  -- if TC_1 = $add_table_priority(TC_0, n)
+  -- if TBLC_1 = $add_table_priority(TBLC_0, n)
 
 rule TableEntry_priority_ok/pri-prilpm-number-init-non-largest-wins:
-  C TC_0 TES |- eps : TC_1 (PRIORITY `= (D 1) `:)
+  TC TBLC_0 TBLS |- eps : TBLC_1 (PRIORITY `= (D 1) `:)
   ---- ;; check match mode
-  -- if TC_0.MODE = PRI \/ TC_0.MODE = PRILPM
+  -- if TBLC_0.MODE = PRI \/ TBLC_0.MODE = PRILPM
   ---- ;; if no priority has been specified yet
-  -- if TC_0.PRIORITIES.VALUES = eps
+  -- if TBLC_0.PRIORITIES.VALUES = eps
   ---- ;; if not largest wins
-  -- if ~TC_0.PRIORITIES.LARGEST_WINS
+  -- if ~TBLC_0.PRIORITIES.LARGEST_WINS
   ---- ;; infer and initialize the priority
-  -- if TC_1 = $add_table_priority(TC_0, 1)
+  -- if TBLC_1 = $add_table_priority(TBLC_0, 1)
 
 rule TableEntry_priority_ok/pri-prilpm-number-non-init-largest-wins:
-  C TC_0 TES |- eps : TC_1 (PRIORITY `= (D n) `:)
+  TC TBLC_0 TBLS |- eps : TBLC_1 (PRIORITY `= (D n) `:)
   ---- ;; check match mode
-  -- if TC_0.MODE = PRI \/ TC_0.MODE = PRILPM
+  -- if TBLC_0.MODE = PRI \/ TBLC_0.MODE = PRILPM
   ---- ;; if priority has been specified
-  -- if TC_0.PRIORITIES.VALUES =/= eps
+  -- if TBLC_0.PRIORITIES.VALUES =/= eps
   ---- ;; if largest wins
-  -- if TC_0.PRIORITIES.LARGEST_WINS
+  -- if TBLC_0.PRIORITIES.LARGEST_WINS
   ---- ;; infer the priority
-  -- if n_last = $find_table_priority_last(TC_0)
-  -- if n_delta = TC_0.PRIORITIES.DELTA
+  -- if n_last = $find_table_priority_last(TBLC_0)
+  -- if n_delta = TBLC_0.PRIORITIES.DELTA
   -- if n = $(n_last - n_delta)
-  -- if TC_1 = $add_table_priority(TC_0, n)
+  -- if TBLC_1 = $add_table_priority(TBLC_0, n)
 
 rule TableEntry_priority_ok/pri-prilpm-number-non-init-non-largest-wins:
-  C TC_0 TES |- eps : TC_1 (PRIORITY `= (D n) `:)
+  TC TBLC_0 TBLS |- eps : TBLC_1 (PRIORITY `= (D n) `:)
   ---- ;; check match mode
-  -- if TC_0.MODE = PRI \/ TC_0.MODE = PRILPM
+  -- if TBLC_0.MODE = PRI \/ TBLC_0.MODE = PRILPM
   ---- ;; if priority has been specified
-  -- if TC_0.PRIORITIES.VALUES =/= eps
+  -- if TBLC_0.PRIORITIES.VALUES =/= eps
   ---- ;; if not largest wins
-  -- if ~TC_0.PRIORITIES.LARGEST_WINS
+  -- if ~TBLC_0.PRIORITIES.LARGEST_WINS
   ---- ;; infer the priority
-  -- if n_last = $find_table_priority_last(TC_0)
-  -- if n_delta = TC_0.PRIORITIES.DELTA
+  -- if n_last = $find_table_priority_last(TBLC_0)
+  -- if n_delta = TBLC_0.PRIORITIES.DELTA
   -- if n = $(n_last + n_delta)
-  -- if TC_1 = $add_table_priority(TC_0, n)
+  -- if TBLC_1 = $add_table_priority(TBLC_0, n)
 
 ;;;;; PRIORITY `= number `:
 
 rule TableEntry_priority_ok/pri-prilpm-number-init:
-  C TC_0 TES |- PRIORITY `= number `:
-              : TC_2 (PRIORITY `= number `:)
+  TC TBLC_0 TBLS |- PRIORITY `= number `:
+                  : TBLC_2 (PRIORITY `= number `:)
   ---- ;; check match mode
-  -- if TC_0.MODE = PRI \/ TC_0.MODE = PRILPM
-  -- if ~TC_0.ENTRIES.CONST
+  -- if TBLC_0.MODE = PRI \/ TBLC_0.MODE = PRILPM
+  -- if ~TBLC_0.ENTRIES.CONST
   ---- ;; if no priority has been specified yet
-  -- if TC_0.PRIORITIES.VALUES = eps
+  -- if TBLC_0.PRIORITIES.VALUES = eps
   ---- ;; evaluate and initialize the priority
   -- if n = $to_number(number)
-  -- if TC_1 = TC_0[ .PRIORITIES.INIT = true ]
-  -- if TC_2 = $add_table_priority(TC_1, n)
+  -- if TBLC_1 = TBLC_0[ .PRIORITIES.INIT = true ]
+  -- if TBLC_2 = $add_table_priority(TBLC_1, n)
 
 rule TableEntry_priority_ok/pri-prilpm-number-non-init:
-  C TC_0 TES |- PRIORITY `= number `:
-              : TC_1 (PRIORITY `= number `:)
+  TC TBLC_0 TBLS |- PRIORITY `= number `:
+                  : TBLC_1 (PRIORITY `= number `:)
   ---- ;; check match mode
-  -- if TC_0.MODE = PRI \/ TC_0.MODE = PRILPM
-  -- if ~TC_0.ENTRIES.CONST
+  -- if TBLC_0.MODE = PRI \/ TBLC_0.MODE = PRILPM
+  -- if ~TBLC_0.ENTRIES.CONST
   ---- ;; if priority has been specified
-  -- if TC_0.PRIORITIES.VALUES =/= eps
-  -- if TC_0.PRIORITIES.INIT
+  -- if TBLC_0.PRIORITIES.VALUES =/= eps
+  -- if TBLC_0.PRIORITIES.INIT
   ---- ;; evaluate and initialize the priority
   -- if n = $to_number(number)
-  -- if TC_1 = $add_table_priority(TC_0, n)
+  -- if TBLC_1 = $add_table_priority(TBLC_0, n)
 
 ;;;;; PRIORITY `= `( expression ) `:
 
 rule TableEntry_priority_ok/pri-prilpm-expression-init:
-  C TC_0 TES |- PRIORITY `= `( expression ) `:
-              : TC_2 (PRIORITY `= `( typedExpressionIR ) `:)
+  TC TBLC_0 TBLS |- PRIORITY `= `( expression ) `:
+                  : TBLC_2 (PRIORITY `= `( typedExpressionIR ) `:)
   ---- ;; check match mode
-  -- if TC_0.MODE = PRI \/ TC_0.MODE = PRILPM
-  -- if ~TC_0.ENTRIES.CONST
+  -- if TBLC_0.MODE = PRI \/ TBLC_0.MODE = PRILPM
+  -- if ~TBLC_0.ENTRIES.CONST
   ---- ;; if no priority has been specified yet
-  -- if TC_0.PRIORITIES.VALUES = eps
+  -- if TBLC_0.PRIORITIES.VALUES = eps
   ---- ;; evaluate and initialize the priority
-  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL TC |- expression : typedExpressionIR
   -- if _ `# `( _ LCTK ) = typedExpressionIR
-  -- Eval_static: LOCAL C |- typedExpressionIR ~> value
+  -- Eval_static: LOCAL TC |- typedExpressionIR ~> value
   -- if n = $to_number(value)
-  -- if TC_1 = TC_0[ .PRIORITIES.INIT = true ]
-  -- if TC_2 = $add_table_priority(TC_1, n)
+  -- if TBLC_1 = TBLC_0[ .PRIORITIES.INIT = true ]
+  -- if TBLC_2 = $add_table_priority(TBLC_1, n)
 
 rule TableEntry_priority_ok/pri-prilpm-expression-non-init:
-  C TC_0 TES |- PRIORITY `= `( expression ) `:
-              : TC_1 (PRIORITY `= `( typedExpressionIR ) `:)
+  TC TBLC_0 TBLS |- PRIORITY `= `( expression ) `:
+                  : TBLC_1 (PRIORITY `= `( typedExpressionIR ) `:)
   ---- ;; check match mode
-  -- if TC_0.MODE = PRI \/ TC_0.MODE = PRILPM
-  -- if ~TC_0.ENTRIES.CONST
+  -- if TBLC_0.MODE = PRI \/ TBLC_0.MODE = PRILPM
+  -- if ~TBLC_0.ENTRIES.CONST
   ---- ;; if priority has been specified
-  -- if TC_0.PRIORITIES.VALUES =/= eps
-  -- if TC_0.PRIORITIES.INIT
+  -- if TBLC_0.PRIORITIES.VALUES =/= eps
+  -- if TBLC_0.PRIORITIES.INIT
   ---- ;; evaluate and initialize the priority
-  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL TC |- expression : typedExpressionIR
   -- if _ `# `( _ LCTK ) = typedExpressionIR
-  -- Eval_static: LOCAL C |- typedExpressionIR ~> value
+  -- Eval_static: LOCAL TC |- typedExpressionIR ~> value
   -- if n = $to_number(value)
-  -- if TC_1 = $add_table_priority(TC_0, n)
+  -- if TBLC_1 = $add_table_priority(TBLC_0, n)
   
 ;;; constOpt tableEntryPriority
 ;;;   keysetExpression `: tableActionReference annotationList `; 
 
 rule TableEntry_ok/priority:
-  C TC_0 |- constOpt tableEntryPriority
-              keysetExpression `: tableActionReference annotationList `;
-          : TC_1 tableEntryIR
+  TC TBLC_0 |- constOpt tableEntryPriority
+                keysetExpression `: tableActionReference annotationList `;
+             : TBLC_1 tableEntryIR
   ---- ;; check entry key
-  -- TableEntry_keyset_ok: C TC_0 |- keysetExpression : TES keysetExpressionIR
+  -- TableEntry_keyset_ok: TC TBLC_0 |- keysetExpression : TBLS keysetExpressionIR
   ---- ;; check entry action
-  -- TableEntry_action_ok: C TC_0 |- tableActionReference : tableActionReferenceIR
+  -- TableEntry_action_ok: TC TBLC_0 |- tableActionReference : tableActionReferenceIR
   ---- ;; check entry priority
-  -- TableEntry_priority_ok: C TC_0 TES |- tableEntryPriority : TC_1 tableEntryPriorityOptIR
+  -- TableEntry_priority_ok: TC TBLC_0 TBLS |- tableEntryPriority
+                                             : TBLC_1 tableEntryPriorityOptIR
   ---- ;; create IR
   -- if constOptIR = $flatten_constOpt(constOpt)
   -- if tableEntryIR
@@ -723,15 +724,15 @@ rule TableEntry_ok/priority:
 ;;; constOpt keysetExpression `: tableActionReference annotationList `; 
 
 rule TableEntry_ok/non-priority:
-  C TC_0 |- constOpt
-            keysetExpression `: tableActionReference annotationList `;
-          : TC_1 tableEntryIR
+  TC TBLC_0 |- constOpt
+                keysetExpression `: tableActionReference annotationList `;
+             : TBLC_1 tableEntryIR
   ---- ;; check entry key
-  -- TableEntry_keyset_ok: C TC_0 |- keysetExpression : TES keysetExpressionIR
+  -- TableEntry_keyset_ok: TC TBLC_0 |- keysetExpression : TBLS keysetExpressionIR
   ---- ;; check entry action
-  -- TableEntry_action_ok: C TC_0 |- tableActionReference : tableActionReferenceIR
+  -- TableEntry_action_ok: TC TBLC_0 |- tableActionReference : tableActionReferenceIR
   ---- ;; check entry priority
-  -- TableEntry_priority_ok: C TC_0 TES |- eps : TC_1 tableEntryPriorityOptIR
+  -- TableEntry_priority_ok: TC TBLC_0 TBLS |- eps : TBLC_1 tableEntryPriorityOptIR
   ---- ;; create IR
   -- if constOptIR = $flatten_constOpt(constOpt)
   -- if tableEntryIR
@@ -745,13 +746,13 @@ rule TableEntry_ok/non-priority:
 ;;
 
 rule TableEntries_ok/nil:
-  C TC |- eps : TC eps
+  TC TBLC |- eps : TBLC eps
 
 rule TableEntries_ok/cons:
-  C TC_0 |- (tableEntry_h :: tableEntry_t*)
-          : TC_2 (tableEntryIR_h :: tableEntryIR_t*)
-  -- TableEntry_ok: C TC_0 |- tableEntry_h : TC_1 tableEntryIR_h
-  -- TableEntries_ok: C TC_1 |- tableEntry_t* : TC_2 tableEntryIR_t*
+  TC TBLC_0 |- (tableEntry_h :: tableEntry_t*)
+             : TBLC_2 (tableEntryIR_h :: tableEntryIR_t*)
+  -- TableEntry_ok: TC TBLC_0 |- tableEntry_h : TBLC_1 tableEntryIR_h
+  -- TableEntries_ok: TC TBLC_1 |- tableEntry_t* : TBLC_2 tableEntryIR_t*
 
 ;;
 ;; Table property typing
@@ -762,56 +763,56 @@ rule TableEntries_ok/cons:
 ;;; KEY `= `{ tableKeyList }
 
 rule TableProperty_ok/key:
-  C TC_0 |- KEY `= `{ tableKeyList }
-          : TC_1 (KEY `= `{ tableKeyIR* })
+  TC TBLC_0 |- KEY `= `{ tableKeyList }
+             : TBLC_1 (KEY `= `{ tableKeyIR* })
   -- if tableKey* = $flatten_tableKeyList(tableKeyList)
-  -- TableKeys_ok: C TC_0 |- tableKey* : TC_1 tableKeyIR*
+  -- TableKeys_ok: TC TBLC_0 |- tableKey* : TBLC_1 tableKeyIR*
 
 ;;; ACTIONS `= `{ tableActionList }
 
 rule TableProperty_ok/actions:
-  C TC_0 |- ACTIONS `= `{ tableActionList }
-          : TC_1 (ACTIONS `= `{ tableActionIR* })
+  TC TBLC_0 |- ACTIONS `= `{ tableActionList }
+             : TBLC_1 (ACTIONS `= `{ tableActionIR* })
   -- if tableAction* = $flatten_tableActionList(tableActionList)
-  -- TableActions_ok: C TC_0 |- tableAction* : TC_1 tableActionIR*
+  -- TableActions_ok: TC TBLC_0 |- tableAction* : TBLC_1 tableActionIR*
 
 ;;; annotationList constOpt ENTRIES `= `{ tableEntryList }
 
 rule TableProperty_ok/entries:
-  C TC_0 |- annotationList constOpt ENTRIES `= `{ tableEntryList }
-          : TC_3 (annotationList constOptIR ENTRIES `= `{ tableEntryIR* })
+  TC TBLC_0 |- annotationList constOpt ENTRIES `= `{ tableEntryList }
+             : TBLC_3 (annotationList constOptIR ENTRIES `= `{ tableEntryIR* })
   ---- ;; if the table key is empty, then the table entries must be empty
   -- if tableEntry* = $flatten_tableEntryList(tableEntryList)
-  -- if $(|TC_0.KEYS| = 0) => $(|tableEntry*| = 0)
+  -- if $(|TBLC_0.KEYS| = 0) => $(|tableEntry*| = 0)
   ---- ;; set size of table entries
-  -- if TC_1 = TC_0[ .ENTRIES.SIZE = |tableEntry*| ]
+  -- if TBLC_1 = TBLC_0[ .ENTRIES.SIZE = |tableEntry*| ]
   ---- ;; set whether the table entries is constant
   -- if constOptIR = $flatten_constOpt(constOpt)
-  -- if TC_2 = TC_1[ .ENTRIES.CONST = (constOptIR = CONST) ]
+  -- if TBLC_2 = TBLC_1[ .ENTRIES.CONST = (constOptIR = CONST) ]
   ---- ;; check table entries
-  -- TableEntries_ok: C TC_2 |- tableEntry* : TC_3 tableEntryIR*
+  -- TableEntries_ok: TC TBLC_2 |- tableEntry* : TBLC_3 tableEntryIR*
 
 ;;; annotationList constOpt tableCustomName initializer `;
 
 rule TableProperty_ok/custom-default-action:
-  C TC |- annotationList constOpt tableCustomName initializer `;
-        : TC tablePropertyIR
+  TC TBLC |- annotationList constOpt tableCustomName initializer `;
+           : TBLC tablePropertyIR
   ---- ;; check that the custom property is for default action
   -- if "default_action" = $tableCustomName(tableCustomName)
   ---- ;; check the initializer
-  -- TableDefaultAction_ok: C TC |- initializer : tableActionReferenceIR
+  -- TableDefaultAction_ok: TC TBLC |- initializer : tableActionReferenceIR
   ---- ;; create IR
   -- if constOptIR = $flatten_constOpt(constOpt)
   -- if tablePropertyIR
       = annotationList constOptIR DEFAULT_ACTION `= tableActionReferenceIR `;
 
 rule TableProperty_ok/custom-size:
-  C TC |- annotationList constOpt tableCustomName (`= expression) `;
-        : TC tablePropertyIR
+  TC TBLC |- annotationList constOpt tableCustomName (`= expression) `;
+           : TBLC tablePropertyIR
   ---- ;; check that the custom property is for size
   -- if "size" = $tableCustomName(tableCustomName)
   ---- ;; check initializer
-  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL TC |- expression : typedExpressionIR
   -- if _ `# `( typeIR _ ) = typedExpressionIR
   -- if $is_arbitrary_int_typeIR(typeIR)
         \/ $is_fixed_int_typeIR(typeIR)
@@ -822,16 +823,16 @@ rule TableProperty_ok/custom-size:
       = annotationList constOptIR CUSTOM "size" (`= typedExpressionIR) `;
 
 rule TableProperty_ok/custom-largest-priority-wins:
-  C TC_0 |- annotationList constOpt tableCustomName (`= expression) `;
-          : TC_1 tablePropertyIR
+  TC TBLC_0 |- annotationList constOpt tableCustomName (`= expression) `;
+            : TBLC_1 tablePropertyIR
   ---- ;; check that the custom property is for largest_priority_wins
   -- if "largest_priority_wins" = $tableCustomName(tableCustomName)
   ---- ;; check initializer
-  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL TC |- expression : typedExpressionIR
   -- if _ `# `( BOOL _ ) = typedExpressionIR
-  -- Eval_static: LOCAL C |- typedExpressionIR ~> B b_largest_priority_wins
+  -- Eval_static: LOCAL TC |- typedExpressionIR ~> B b_largest_priority_wins
   ---- ;; update table context
-  -- if TC_1 = TC_0[ .PRIORITIES.LARGEST_WINS = b_largest_priority_wins ]
+  -- if TBLC_1 = TBLC_0 [ .PRIORITIES.LARGEST_WINS = b_largest_priority_wins ]
   ---- ;; create IR
   -- if constOptIR = $flatten_constOpt(constOpt)
   -- if tablePropertyIR
@@ -839,21 +840,21 @@ rule TableProperty_ok/custom-largest-priority-wins:
           "largest_priority_wins" (`= (B b_largest_priority_wins)) `;
 
 rule TableProperty_ok/custom-priority-delta:
-  C TC_0 |- annotationList constOpt tableCustomName (`= expression) `;
-          : TC_1 tablePropertyIR
+  TC TBLC_0 |- annotationList constOpt tableCustomName (`= expression) `;
+             : TBLC_1 tablePropertyIR
   ---- ;; check that the custom property is for priority_delta
   -- if "priority_delta" = $tableCustomName(tableCustomName)
   ---- ;; check initializer
-  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL TC |- expression : typedExpressionIR
   -- if _ `# `( typeIR _ ) = typedExpressionIR
   -- if $is_arbitrary_int_typeIR(typeIR)
         \/ $is_fixed_int_typeIR(typeIR)
         \/ $is_fixed_bit_typeIR(typeIR)
-  -- Eval_static: LOCAL C |- typedExpressionIR ~> value
+  -- Eval_static: LOCAL TC |- typedExpressionIR ~> value
   -- if n_delta = $to_number(value)
   -- if $(n_delta > 0)
   ---- ;; update table context
-  -- if TC_1 = TC_0[ .PRIORITIES.DELTA = n_delta ]
+  -- if TBLC_1 = TBLC_0 [ .PRIORITIES.DELTA = n_delta ]
   ---- ;; create IR
   -- if constOptIR = $flatten_constOpt(constOpt)
   -- if tablePropertyIR
@@ -861,15 +862,15 @@ rule TableProperty_ok/custom-priority-delta:
           "priority_delta" (`= (D n_delta)) `;
 
 rule TableProperty_ok/custom:
-  C TC |- annotationList constOpt tableCustomName (`= expression) `;
-        : TC tablePropertyIR
+  TC TBLC |- annotationList constOpt tableCustomName (`= expression) `;
+           : TBLC tablePropertyIR
   ---- ;; check that the custom property is not one of the predefined ones
   -- if nameIR = $tableCustomName(tableCustomName)
   -- if nameIR =/= "size"
         /\ nameIR =/= "largest_priority_wins"
         /\ nameIR =/= "priority_delta"
   ---- ;; check initializer
-  -- Expr_ok: LOCAL C |- expression : typedExpressionIR
+  -- Expr_ok: LOCAL TC |- expression : typedExpressionIR
   ---- ;; create IR
   -- if constOptIR = $flatten_constOpt(constOpt)
   -- if tablePropertyIR
@@ -882,13 +883,13 @@ rule TableProperty_ok/custom:
 ;;
 
 rule TableProperties_ok/nil:
-  C TC |- eps : TC eps
+  TC TBLC |- eps : TBLC eps
 
 rule TableProperties_ok/cons:
-  C TC_0 |- (tableProperty_h :: tableProperty_t*)
-          : TC_2 (tablePropertyIR_h :: tablePropertyIR_t*)
-  -- TableProperty_ok: C TC_0 |- tableProperty_h : TC_1 tablePropertyIR_h
-  -- TableProperties_ok: C TC_1 |- tableProperty_t* : TC_2 tablePropertyIR_t*
+  TC TBLC_0 |- (tableProperty_h :: tableProperty_t*)
+             : TBLC_2 (tablePropertyIR_h :: tablePropertyIR_t*)
+  -- TableProperty_ok: TC TBLC_0 |- tableProperty_h : TBLC_1 tablePropertyIR_h
+  -- TableProperties_ok: TC TBLC_1 |- tableProperty_t* : TBLC_2 tablePropertyIR_t*
 
 ;;
 ;; Table typing
@@ -923,30 +924,30 @@ def $count_table_actions(
   -- otherwise
 
 rule Table_ok:
-  C |- tableProperty* : TC_1 tablePropertyIR*
+  TC |- tableProperty* : TBLC_1 tablePropertyIR*
   ---- ;; check that the table has at most one key property
   -- if $($count_table_keys(tableProperty*) <= 1)
   ---- ;; check that the table has exactly one action property
   -- if $($count_table_actions(tableProperty*) = 1)
   ---- ;; check table properties
-  -- if TC_0 = $empty_tablecontext
-  -- TableProperties_ok: C TC_0 |- tableProperty* : TC_1 tablePropertyIR*
+  -- if TBLC_0 = $empty_tableContext
+  -- TableProperties_ok: TC TBLC_0 |- tableProperty* : TBLC_1 tablePropertyIR*
 
 rule TableType_ok:
-  C_0 TC |- name : C_1 typeIR_table
+  TC_0 TBLC |- name : TC_1 typeIR_table
   -- if nameIR = $name(name)
   ---- ;; create table enum type
   -- if tid_enum = "action_list(" ++ nameIR ++ ")"
-  -- if (prefixedNameIR_action, _, _)* = TC.ACTIONS
+  -- if (prefixedNameIR_action, _, _)* = TBLC.ACTIONS
   -- if (id_enum_field = $flatten_prefixedNameIR(prefixedNameIR_action))*
   -- if typeIR_table_enum = TABLE_ENUM tid_enum `{ id_enum_field* }
   ---- ;; add enum fields to context
   -- if (value_enum_field = TABLE_ENUM tid_enum `. id_enum_field)*
   -- if (varTypeIR_enum_field
         = `EMPTY typeIR_table_enum LCTK value_enum_field)*
-  -- if C_1
+  -- if TC_1
       = $add_vars(
-          BLOCK, C_0,
+          BLOCK, TC_0,
           (tid_enum ++ "." ++ id_enum_field)*,
           varTypeIR_enum_field*
         )

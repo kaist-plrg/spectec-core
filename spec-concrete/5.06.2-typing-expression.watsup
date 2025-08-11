@@ -10,31 +10,31 @@
 ;;;; TRUE | FALSE
 
 rule Expr_ok/literalExpression-true:
-  p C |- TRUE : TRUE `# expressionNoteIR
+  p TC |- TRUE : TRUE `# expressionNoteIR
   -- if expressionNoteIR = `( BOOL LCTK )
 
 rule Expr_ok/literalExpression-false:
-  p C |- FALSE : FALSE `# expressionNoteIR
+  p TC |- FALSE : FALSE `# expressionNoteIR
   -- if expressionNoteIR = `( BOOL LCTK )
 
 ;;;; number
 
 rule Expr_ok/literalExpression-number-arbint:
-  p C |- D i : (D i) `# expressionNoteIR
+  p TC |- D i : (D i) `# expressionNoteIR
   -- if expressionNoteIR = `( INT LCTK )
 
 rule Expr_ok/literalExpression-number-fixint:
-  p C |- n S i : (n S i) `# expressionNoteIR
+  p TC |- n S i : (n S i) `# expressionNoteIR
   -- if expressionNoteIR = `( (INT `< n >) LCTK )
 
 rule Expr_ok/literalExpression-number-fixbit:
-  p C |- n W i : (n W i) `# expressionNoteIR
+  p TC |- n W i : (n W i) `# expressionNoteIR
   -- if expressionNoteIR = `( (BIT `< n >) LCTK )
 
 ;;;; stringLiteral 
 
 rule Expr_ok/literalExpression-stringliteral:
-  p C |- (`" text `") : (`" text `") `# expressionNoteIR
+  p TC |- (`" text `") : (`" text `") `# expressionNoteIR
   -- if expressionNoteIR = `( STRING LCTK )
 
 ;;; referenceExpression
@@ -43,23 +43,23 @@ rule Expr_ok/literalExpression-stringliteral:
 ;;;; prefixedNonTypeName
 
 rule Expr_ok/referenceExpression-prefixedNonTypeName:
-  p C |- prefixedNonTypeName : prefixedNameIR `# expressionNoteIR
+  p TC |- prefixedNonTypeName : prefixedNameIR `# expressionNoteIR
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
-  -- if _ typeIR ctk _ = $find_var(p, C, prefixedNameIR)
+  -- if _ typeIR ctk _ = $find_var(p, TC, prefixedNameIR)
   -- if expressionNoteIR = `( typeIR ctk )
 
 ;;;; THIS
 
 rule Expr_ok/referenceExpression-this:
-  p C |- THIS : prefixedNameIR `# expressionNoteIR
+  p TC |- THIS : prefixedNameIR `# expressionNoteIR
   -- if prefixedNameIR = `` "this"
-  -- if _ typeIR ctk _ = $find_var(p, C, prefixedNameIR)
+  -- if _ typeIR ctk _ = $find_var(p, TC, prefixedNameIR)
   -- if expressionNoteIR = `( typeIR ctk )
 
 ;;; defaultExpression
 
 rule Expr_ok/defaultExpression:
-  p C |- `... : `... `# expressionNoteIR
+  p TC |- `... : `... `# expressionNoteIR
   -- if expressionNoteIR = `( DEFAULT LCTK )
 
 ;;; unaryExpression
@@ -75,9 +75,9 @@ def $compat'_lnot(typeIR) = false
   --otherwise
 
 rule Expr_ok/unaryExpression-lnot:
-  p C |- `! expression : (`! typedExpressionIR_reduced) `# expressionNoteIR
+  p TC |- `! expression : (`! typedExpressionIR_reduced) `# expressionNoteIR
   ---- ;; check expression
-  -- Expr_ok: p C |- expression : typedExpressionIR
+  -- Expr_ok: p TC |- expression : typedExpressionIR
   ---- ;; check that the type is compatible
   ---- ;; while inserting implicit casts if necessary
   -- if typedExpressionIR_reduced
@@ -97,9 +97,9 @@ def $compat'_bnot(typeIR) = false
   -- otherwise
 
 rule Expr_ok/unaryExpression-bnot:
-  p C |- `~ expression : (`~ typedExpressionIR_reduced) `# expressionNoteIR
+  p TC |- `~ expression : (`~ typedExpressionIR_reduced) `# expressionNoteIR
   ---- ;; check expression
-  -- Expr_ok: p C |- expression : typedExpressionIR
+  -- Expr_ok: p TC |- expression : typedExpressionIR
   ---- ;; check that the type is compatible
   ---- ;; while inserting implicit casts if necessary
   -- if typedExpressionIR_reduced
@@ -120,10 +120,10 @@ def $compat'_uplusminus(typeIR) = false
   -- otherwise
 
 rule Expr_ok/unaryExpression-uplusminus:
-  p C |- unop expression : (unop typedExpressionIR_reduced) `# expressionNoteIR
+  p TC |- unop expression : (unop typedExpressionIR_reduced) `# expressionNoteIR
   -- if unop = `+ \/ unop = `-
   ---- ;; check expression
-  -- Expr_ok: p C |- expression : typedExpressionIR
+  -- Expr_ok: p TC |- expression : typedExpressionIR
   ---- ;; check that the type is compatible
   ---- ;; while inserting implicit casts if necessary
   -- if typedExpressionIR_reduced
@@ -147,12 +147,12 @@ def $compat'_plusminusmult(typeIR_l, typeIR_r) = false
   -- otherwise
 
 rule Expr_ok/binaryExpression-plusminusmult:
-  p C |- expression_l binop expression_r
-       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
+  p TC |- expression_l binop expression_r
+        : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `+ , `- , `* ]
   ---- ;; check both sides
-  -- Expr_ok: p C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: p C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: p TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: p TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -183,12 +183,12 @@ def $compat'_satplusminus(typeIR_l, typeIR_r) = false
   -- otherwise
 
 rule Expr_ok/binaryExpression-satplusminus:
-  p C |- expression_l binop expression_r
-       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
+  p TC |- expression_l binop expression_r
+        : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `|+| , `|-| ]
   ---- ;; check both sides
-  -- Expr_ok: p C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: p C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: p TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: p TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -218,12 +218,12 @@ def $compat'_divmod(typeIR_l, typeIR_r) = false
   -- otherwise
 
 rule Expr_ok/binaryExpression-divmod-lctk:
-  p C |- expression_l binop expression_r
-       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
+  p TC |- expression_l binop expression_r
+        : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `/ , `% ]
   ---- ;; check both sides
-  -- Expr_ok: p C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: p C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: p TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: p TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -239,7 +239,7 @@ rule Expr_ok/binaryExpression-divmod-lctk:
   -- if _ `# `( _ ctk_r_reduced ) = typedExpressionIR_r_reduced
   ---- ;; check that the divisor is local compile-time known and is positive
   -- if ctk_r_reduced = LCTK
-  -- Eval_static: p C |- typedExpressionIR_r_reduced ~> value_r
+  -- Eval_static: p TC |- typedExpressionIR_r_reduced ~> value_r
   -- if n_r = $to_number(value_r)
   -- if $(n_r > 0)
   ---- ;; create typed expression
@@ -247,12 +247,12 @@ rule Expr_ok/binaryExpression-divmod-lctk:
   -- if expressionNoteIR = `( typeIR_reduced ctk_reduced )
 
 rule Expr_ok/binaryExpression-divmod-non-lctk:
-  p C |- expression_l binop expression_r
-       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
+  p TC |- expression_l binop expression_r
+        : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `/ , `% ]
   ---- ;; check both sides
-  -- Expr_ok: p C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: p C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: p TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: p TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -293,12 +293,12 @@ def $compat'_shift(typeIR_l, typeIR_r) = false
   -- otherwise
 
 rule Expr_ok/binaryExpression-shift-fixbit:
-  p C |- expression_l binop expression_r
-       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
+  p TC |- expression_l binop expression_r
+        : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `<< , `>> ]
   ---- ;; check both sides
-  -- Expr_ok: p C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: p C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: p TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: p TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_reduced, typedExpressionIR_r_reduced)
@@ -317,12 +317,12 @@ rule Expr_ok/binaryExpression-shift-fixbit:
   -- if expressionNoteIR = `( typeIR_l_reduced ctk_reduced )
 
 rule Expr_ok/binaryExpression-shift-integer:
-  p C |- expression_l binop expression_r
-       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
+  p TC |- expression_l binop expression_r
+        : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `<< , `>> ]
   ---- ;; check both sides
-  -- Expr_ok: p C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: p C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: p TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: p TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_reduced, typedExpressionIR_r_reduced)
@@ -345,12 +345,12 @@ rule Expr_ok/binaryExpression-shift-integer:
 ;;;; `== | `!=
 
 rule Expr_ok/binaryExpression-eq:
-  p C |- expression_l binop expression_r
-       : (typedExpressionIR_l_cast binop typedExpressionIR_r_cast) `# expressionNoteIR
+  p TC |- expression_l binop expression_r
+        : (typedExpressionIR_l_cast binop typedExpressionIR_r_cast) `# expressionNoteIR
   -- if binop <- [ `== , `!= ]
   ---- ;; check both sides
-  -- Expr_ok: p C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: p C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: p TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: p TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -378,12 +378,12 @@ def $compat'_compare(typeIR_l, typeIR_r) = false
   -- otherwise
 
 rule Expr_ok/binaryExpression-compare:
-  p C |- expression_l binop expression_r
-       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
+  p TC |- expression_l binop expression_r
+        : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `<= , `>= , ``< , ``> ]
   ---- ;; check both sides
-  -- Expr_ok: p C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: p C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: p TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: p TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -414,12 +414,12 @@ def $compat'_bitwise(typeIR_l, typeIR_r) = false
   -- otherwise
 
 rule Expr_ok/binaryExpression-bitwise:
-  p C |- expression_l binop expression_r
-       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
+  p TC |- expression_l binop expression_r
+        : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `& , `^ , `| ]
   ---- ;; check both sides
-  -- Expr_ok: p C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: p C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: p TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: p TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -464,11 +464,11 @@ def $result'_concat(typeIR_l, typeIR_r) = eps
   -- otherwise
 
 rule Expr_ok/binaryExpression-concat:
-  p C |- expression_l `++ expression_r
-       : (typedExpressionIR_l_reduced `++ typedExpressionIR_r_reduced) `# expressionNoteIR
+  p TC |- expression_l `++ expression_r
+        : (typedExpressionIR_l_reduced `++ typedExpressionIR_r_reduced) `# expressionNoteIR
   ---- ;; check both sides
-  -- Expr_ok: p C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: p C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: p TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: p TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_reduced, typedExpressionIR_r_reduced)
@@ -499,12 +499,12 @@ def $compat'_logical(typeIR_l, typeIR_r) = false
   -- otherwise
 
 rule Expr_ok/binaryExpression-logical:
-  p C |- expression_l binop expression_r
-       : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
+  p TC |- expression_l binop expression_r
+        : (typedExpressionIR_l_reduced binop typedExpressionIR_r_reduced) `# expressionNoteIR
   -- if binop <- [ `&&, `|| ]
   ---- ;; check both sides
-  -- Expr_ok: p C |- expression_l : typedExpressionIR_l
-  -- Expr_ok: p C |- expression_r : typedExpressionIR_r
+  -- Expr_ok: p TC |- expression_l : typedExpressionIR_l
+  -- Expr_ok: p TC |- expression_r : typedExpressionIR_r
   ---- ;; check that the types are compatible
   ---- ;; while inserting implicit casts if necessary
   -- if (typedExpressionIR_l_cast, typedExpressionIR_r_cast)
@@ -527,15 +527,15 @@ rule Expr_ok/binaryExpression-logical:
 ;;;   expression `? expression `: expression
 
 rule Expr_ok/ternaryExpression:
-  p C |- expression_cond `? expression_true `: expression_false
-       : (typedExpressionIR_cond `? typedExpressionIR_true_cast `: typedExpressionIR_false_cast)
-         `# expressionNoteIR
+  p TC |- expression_cond `? expression_true `: expression_false
+        : (typedExpressionIR_cond `? typedExpressionIR_true_cast `: typedExpressionIR_false_cast)
+            `# expressionNoteIR
   ---- ;; check condition
-  -- Expr_ok: p C |- expression_cond : typedExpressionIR_cond
+  -- Expr_ok: p TC |- expression_cond : typedExpressionIR_cond
   -- if _ `# `( BOOL ctk_cond ) = typedExpressionIR_cond
   ---- ;; check both branches
-  -- Expr_ok: p C |- expression_true : typedExpressionIR_true
-  -- Expr_ok: p C |- expression_false : typedExpressionIR_false
+  -- Expr_ok: p TC |- expression_true : typedExpressionIR_true
+  -- Expr_ok: p TC |- expression_false : typedExpressionIR_false
   ---- ;; check that the types are compatible for the branches
   -- if (typedExpressionIR_true_cast, typedExpressionIR_false_cast)
         = $coerce_binary(typedExpressionIR_true, typedExpressionIR_false)
@@ -553,13 +553,13 @@ rule Expr_ok/ternaryExpression:
 ;;; syntax castExpression = `( type ) expression
 
 rule Expr_ok/castExpression:
-  p C |- `( type_t ) expression
-       : (`( typeIR_t ) typedExpressionIR) `# expressionNoteIR
+  p TC |- `( type_t ) expression
+        : (`( typeIR_t ) typedExpressionIR) `# expressionNoteIR
   ---- ;; check target type
-  -- Type_ok: p C |- type_t : typeIR_t `# eps
-  -- Type_wf: $bound(p, C) |- typeIR_t
+  -- Type_ok: p TC |- type_t : typeIR_t `# eps
+  -- Type_wf: $bound(p, TC) |- typeIR_t
   ---- ;; check expression
-  -- Expr_ok: p C |- expression : typedExpressionIR
+  -- Expr_ok: p TC |- expression : typedExpressionIR
   ---- ;; fetch annotation
   -- if _ `# `( typeIR ctk ) = typedExpressionIR
   ---- ;; check that explicit cast is defined
@@ -573,7 +573,7 @@ rule Expr_ok/castExpression:
 ;;;; `{#}
 
 rule Expr_ok/dataExpression-invalid:
-  p C |- `{#} : `{#} `# expressionNoteIR
+  p TC |- `{#} : `{#} `# expressionNoteIR
   -- if expressionNoteIR = `( HEADER_INVALID LCTK )
 
 ;;;; `{ dataElementExpression trailingCommaOpt }
@@ -583,14 +583,14 @@ rule Expr_ok/dataExpression-invalid:
 ;;;;; syntax sequenceElementExpression = expressionList
 
 rule Expr_ok/dataExpression-sequenceElementExpression-non-default:
-  p C |- `{ expressionList _ }
-       : (SEQ `{ typedExpressionIR_e* }) `# expressionNoteIR
+  p TC |- `{ expressionList _ }
+        : (SEQ `{ typedExpressionIR_e* }) `# expressionNoteIR
   ---- ;; if ... is not used
   -- if expression_e* = $flatten_expressionList(expressionList)
   -- if ~(`... <- expression_e*)
   ---- ;; check each expression
   -- if expression_e* = $flatten_expressionList(expressionList)
-  -- (Expr_ok: p C |- expression_e : typedExpressionIR_e)*
+  -- (Expr_ok: p TC |- expression_e : typedExpressionIR_e)*
   ---- ;; fetch annotations
   -- if (_ `# `( typeIR_e ctk_e ) = typedExpressionIR_e)*
   ---- ;; create typed expression
@@ -599,8 +599,8 @@ rule Expr_ok/dataExpression-sequenceElementExpression-non-default:
   -- if expressionNoteIR = `( typeIR ctk )
 
 rule Expr_ok/dataExpression-sequenceElementExpression-default:
-  p C |- `{ expressionList _ }
-       : (SEQ `{ typedExpressionIR_e_h* `, `... }) `# expressionNoteIR
+  p TC |- `{ expressionList _ }
+        : (SEQ `{ typedExpressionIR_e_h* `, `... }) `# expressionNoteIR
   ---- ;; if ... is used, it must be the last element
   -- if expression_e* = $flatten_expressionList(expressionList)
   -- if `... <- expression_e*
@@ -608,7 +608,7 @@ rule Expr_ok/dataExpression-sequenceElementExpression-default:
   -- if expression_e_h* = $rev_<expression>(expression_e_h_rev*)
   -- if ~(`... <- expression_e_h*)
   ---- ;; check each expression
-  -- (Expr_ok: p C |- expression_e_h : typedExpressionIR_e_h)*
+  -- (Expr_ok: p TC |- expression_e_h : typedExpressionIR_e_h)*
   ---- ;; fetch annotations
   -- if (_ `# `( typeIR_e_h ctk_e_h ) = typedExpressionIR_e_h)*
   ---- ;; create typed expression
@@ -622,12 +622,12 @@ rule Expr_ok/dataExpression-sequenceElementExpression-default:
 ;;;;;; name `= expression
 
 rule Expr_ok/dataExpression-recordElementExpression-single:
-  p C |- `{ (name_f `= expression_f) _ }
-       : (RECORD `{ (nameIR_f `= typedExpressionIR_f) })
-         `# expressionNoteIR
+  p TC |- `{ (name_f `= expression_f) _ }
+        : (RECORD `{ (nameIR_f `= typedExpressionIR_f) })
+            `# expressionNoteIR
   -- if nameIR_f = $name(name_f)
   ---- ;; check expression
-  -- Expr_ok: p C |- expression_f : typedExpressionIR_f
+  -- Expr_ok: p TC |- expression_f : typedExpressionIR_f
   ---- ;; fetch annotation
   -- if _ `# `( typeIR_f ctk_f ) = typedExpressionIR_f
   ---- ;; create typed expression
@@ -637,12 +637,12 @@ rule Expr_ok/dataExpression-recordElementExpression-single:
 ;;;;;; name `= expression `, `...
 
 rule Expr_ok/dataExpression-recordElementExpression-single-default:
-  p C |- `{ (name_f `= expression_f `, `...) _ }
-       : (RECORD `{ (nameIR_f `= typedExpressionIR_f) `, `... })
-         `# expressionNoteIR
+  p TC |- `{ (name_f `= expression_f `, `...) _ }
+        : (RECORD `{ (nameIR_f `= typedExpressionIR_f) `, `... })
+            `# expressionNoteIR
   -- if nameIR_f = $name(name_f)
   ---- ;; check expression
-  -- Expr_ok: p C |- expression_f : typedExpressionIR_f
+  -- Expr_ok: p TC |- expression_f : typedExpressionIR_f
   ---- ;; fetch annotation
   -- if _ `# `( typeIR_f ctk_f ) = typedExpressionIR_f
   ---- ;; create typed expression
@@ -652,16 +652,16 @@ rule Expr_ok/dataExpression-recordElementExpression-single-default:
 ;;;;;; name `= expression `, namedExpressionList
 
 rule Expr_ok/dataExpression-recordElementExpression-multiple:
-  p C |- `{ (name_f_h `= expression_f_h `, namedExpressionList_t) _ }
-       : (RECORD `{ (nameIR_f `= typedExpressionIR_f)* })
-         `# expressionNoteIR
+  p TC |- `{ (name_f_h `= expression_f_h `, namedExpressionList_t) _ }
+        : (RECORD `{ (nameIR_f `= typedExpressionIR_f)* })
+            `# expressionNoteIR
   -- if (name_f_t `= expression_f_t)*
       = $flatten_namedExpressionList(namedExpressionList_t)
   -- if name_f* = name_f_h :: name_f_t*
   -- if (nameIR_f = $name(name_f))*
   -- if expression_f* = expression_f_h :: expression_f_t*
   ---- ;; check expressions
-  -- (Expr_ok: p C |- expression_f : typedExpressionIR_f)*
+  -- (Expr_ok: p TC |- expression_f : typedExpressionIR_f)*
   ---- ;; fetch annotations
   -- if (_ `# `( typeIR_f ctk_f ) = typedExpressionIR_f)*
   ---- ;; create typed expression
@@ -672,7 +672,7 @@ rule Expr_ok/dataExpression-recordElementExpression-multiple:
 ;;;;;; name `= expression `, namedExpressionList `, `...
 
 rule Expr_ok/dataExpression-recordElementExpression-multiple-default:
-  p C |- `{ (name_f_h `= expression_f_h `, namedExpressionList_t `, `...) _ }
+  p TC |- `{ (name_f_h `= expression_f_h `, namedExpressionList_t `, `...) _ }
        : (RECORD `{ (nameIR_f `= typedExpressionIR_f)* `, `... })
          `# expressionNoteIR
   -- if (name_f_t `= expression_f_t)*
@@ -681,7 +681,7 @@ rule Expr_ok/dataExpression-recordElementExpression-multiple-default:
   -- if (nameIR_f = $name(name_f))*
   -- if expression_f* = expression_f_h :: expression_f_t*
   ---- ;; check expressions
-  -- (Expr_ok: p C |- expression_f : typedExpressionIR_f)*
+  -- (Expr_ok: p TC |- expression_f : typedExpressionIR_f)*
   ---- ;; fetch annotations
   -- if (_ `# `( typeIR_f ctk_f ) = typedExpressionIR_f)*
   ---- ;; create typed expression
@@ -696,11 +696,11 @@ rule Expr_ok/dataExpression-recordElementExpression-multiple-default:
 ;;;; syntax errorAccessExpression = ERROR `. member
 
 rule Expr_ok/accessExpression-errorAccessExpression:
-  p C |- ERROR `. member : (ERROR `. nameIR) `# expressionNoteIR
+  p TC |- ERROR `. member : (ERROR `. nameIR) `# expressionNoteIR
   ---- ;; check that error member is defined
   -- if nameIR = $name(member)
   -- if nameIR_error = "error." ++ nameIR 
-  -- if ERROR `. nameIR = $find_value(p, C, `` nameIR_error)
+  -- if ERROR `. nameIR = $find_value(p, TC, `` nameIR_error)
   ---- ;; create typed expression
   -- if expressionNoteIR = `( ERROR LCTK )
 
@@ -711,11 +711,11 @@ rule Expr_ok/accessExpression-errorAccessExpression:
 ;;;;;; prefixedTypeName
 
 rule Expr_ok/accessExpression-memberAccessExpression-prefixedType-enum:
-  p C |- prefixedTypeName_base `. member
-       : ((TYPE prefixedNameIR_base) `. nameIR) `# expressionNoteIR
+  p TC |- prefixedTypeName_base `. member
+        : ((TYPE prefixedNameIR_base) `. nameIR) `# expressionNoteIR
   ---- ;; find the type
   -- if prefixedNameIR_base = $prefixedTypeName(prefixedTypeName_base)
-  -- if typeIR_base = $find_type(p, C, prefixedNameIR_base)
+  -- if typeIR_base = $find_type(p, TC, prefixedNameIR_base)
   ---- ;; check that the type is an enum
   -- if ENUM _ `{ nameIR_f* } = $canon(typeIR_base)
   ---- ;; check that the member is defined
@@ -725,11 +725,11 @@ rule Expr_ok/accessExpression-memberAccessExpression-prefixedType-enum:
   -- if expressionNoteIR = `( typeIR_base LCTK )
 
 rule Expr_ok/accessExpression-memberAccessExpression-prefixedType-serenum:
-  p C |- prefixedTypeName_base `. member
+  p TC |- prefixedTypeName_base `. member
        : ((TYPE prefixedNameIR_base) `. nameIR) `# expressionNoteIR
   ---- ;; find the type
   -- if prefixedNameIR_base = $prefixedTypeName(prefixedTypeName_base)
-  -- if typeIR_base = $find_type(p, C, prefixedNameIR_base)
+  -- if typeIR_base = $find_type(p, TC, prefixedNameIR_base)
   ---- ;; check that the type is an enum
   -- if ENUM _ `# _ `{ (nameIR_f `= _ `;)* } = $canon(typeIR_base)
   ---- ;; check that the member is defined
@@ -741,12 +741,12 @@ rule Expr_ok/accessExpression-memberAccessExpression-prefixedType-serenum:
 ;;;;;; expression
 
 rule Expr_ok/accessExpression-memberAccessExpression-expression-stack-size:
-  p C |- expression_base `. member
-       : (typedExpressionIR_base `. "size") `# expressionNoteIR
+  p TC |- expression_base `. member
+        : (typedExpressionIR_base `. "size") `# expressionNoteIR
   ---- ;; check that member is "size"
   -- if "size" = $name(member)
   ---- ;; check expression
-  -- Expr_ok: p C |- expression_base : typedExpressionIR_base
+  -- Expr_ok: p TC |- expression_base : typedExpressionIR_base
   ---- ;; fetch annotation
   -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   ---- ;; check that the expression is a header stack
@@ -755,15 +755,15 @@ rule Expr_ok/accessExpression-memberAccessExpression-expression-stack-size:
   -- if expressionNoteIR = `( (BIT `< 32 >) LCTK )
 
 rule Expr_ok/accessExpression-memberAccessExpression-expression-stack-lastIndex:
-  p C |- expression_base `. member
-       : (typedExpressionIR_base `. "lastIndex") `# expressionNoteIR
+  p TC |- expression_base `. member
+        : (typedExpressionIR_base `. "lastIndex") `# expressionNoteIR
   ---- ;; check that member is "lastIndex"
   -- if "lastIndex" = $name(member)
   ---- ;; "lastIndex" can be only used within a parser
-  -- if (p = BLOCK /\ C.BLOCK.KIND = PARSER)
-        \/ (p = LOCAL /\ $is_parser_state_localKind(C.LOCAL.KIND))
+  -- if (p = BLOCK /\ $is_parser_blockKind(TC.BLOCK.KIND))
+        \/ (p = LOCAL /\ $is_parser_state_localKind(TC.LOCAL.KIND))
   ---- ;; check expression
-  -- Expr_ok: p C |- expression_base : typedExpressionIR_base
+  -- Expr_ok: p TC |- expression_base : typedExpressionIR_base
   ---- ;; fetch annotation
   -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   ---- ;; check that the expression is a header stack
@@ -772,15 +772,15 @@ rule Expr_ok/accessExpression-memberAccessExpression-expression-stack-lastIndex:
   -- if expressionNoteIR = `( (BIT `< 32 >) DYN )
 
 rule Expr_ok/accessExpression-memberAccessExpression-expression-stack-last:
-  p C |- expression_base `. member
-       : (typedExpressionIR_base `. "last") `# expressionNoteIR
+  p TC |- expression_base `. member
+        : (typedExpressionIR_base `. "last") `# expressionNoteIR
   ---- ;; check that member is "last"
   -- if "last" = $name(member)
   ---- ;; "last" can be only used within a parser
-  -- if (p = BLOCK /\ C.BLOCK.KIND = PARSER)
-        \/ (p = LOCAL /\ $is_parser_state_localKind(C.LOCAL.KIND))
+  -- if (p = BLOCK /\ $is_parser_blockKind(TC.BLOCK.KIND))
+        \/ (p = LOCAL /\ $is_parser_state_localKind(TC.LOCAL.KIND))
   ---- ;; check expression
-  -- Expr_ok: p C |- expression_base : typedExpressionIR_base
+  -- Expr_ok: p TC |- expression_base : typedExpressionIR_base
   ---- ;; fetch annotation
   -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   ---- ;; check that the expression is a header stack
@@ -789,15 +789,15 @@ rule Expr_ok/accessExpression-memberAccessExpression-expression-stack-last:
   -- if expressionNoteIR = `( typeIR DYN )
 
 rule Expr_ok/accessExpression-memberAccessExpression-expression-stack-next:
-  p C |- expression_base `. member
-       : (typedExpressionIR_base `. "next") `# expressionNoteIR
+  p TC |- expression_base `. member
+        : (typedExpressionIR_base `. "next") `# expressionNoteIR
   ---- ;; check that member is "next"
   -- if "next" = $name(member)
   ---- ;; "next" can be only used within a parser
-  -- if (p = BLOCK /\ C.BLOCK.KIND = PARSER)
-        \/ (p = LOCAL /\ $is_parser_state_localKind(C.LOCAL.KIND))
+  -- if (p = BLOCK /\ $is_parser_blockKind(TC.BLOCK.KIND))
+        \/ (p = LOCAL /\ $is_parser_state_localKind(TC.LOCAL.KIND))
   ---- ;; check expression
-  -- Expr_ok: p C |- expression_base : typedExpressionIR_base
+  -- Expr_ok: p TC |- expression_base : typedExpressionIR_base
   ---- ;; fetch annotation
   -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   ---- ;; check that the expression is a header stack
@@ -806,10 +806,10 @@ rule Expr_ok/accessExpression-memberAccessExpression-expression-stack-next:
   -- if expressionNoteIR = `( typeIR DYN )
 
 rule Expr_ok/accessExpression-memberAccessExpression-expression-struct:
-  p C |- expression_base `. member
-       : (typedExpressionIR_base `. nameIR) `# expressionNoteIR
+  p TC |- expression_base `. member
+        : (typedExpressionIR_base `. nameIR) `# expressionNoteIR
   ---- ;; check expression
-  -- Expr_ok: p C |- expression_base : typedExpressionIR_base
+  -- Expr_ok: p TC |- expression_base : typedExpressionIR_base
   ---- ;; fetch annotation
   -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   ---- ;; check that the expression is a struct
@@ -821,10 +821,10 @@ rule Expr_ok/accessExpression-memberAccessExpression-expression-struct:
   -- if expressionNoteIR = `( typeIR DYN )
 
 rule Expr_ok/accessExpression-memberAccessExpression-expression-header:
-  p C |- expression_base `. member
-       : (typedExpressionIR_base `. nameIR) `# expressionNoteIR
+  p TC |- expression_base `. member
+        : (typedExpressionIR_base `. nameIR) `# expressionNoteIR
   ---- ;; check expression
-  -- Expr_ok: p C |- expression_base : typedExpressionIR_base
+  -- Expr_ok: p TC |- expression_base : typedExpressionIR_base
   ---- ;; fetch annotation
   -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   ---- ;; check that the expression is a header
@@ -836,10 +836,10 @@ rule Expr_ok/accessExpression-memberAccessExpression-expression-header:
   -- if expressionNoteIR = `( typeIR DYN )
 
 rule Expr_ok/accessExpression-memberAccessExpression-expression-headerunion:
-  p C |- expression_base `. member
-       : (typedExpressionIR_base `. nameIR) `# expressionNoteIR
+  p TC |- expression_base `. member
+        : (typedExpressionIR_base `. nameIR) `# expressionNoteIR
   ---- ;; check expression
-  -- Expr_ok: p C |- expression_base : typedExpressionIR_base
+  -- Expr_ok: p TC |- expression_base : typedExpressionIR_base
   ---- ;; fetch annotation
   -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   ---- ;; check that the expression is a header union 
@@ -851,10 +851,10 @@ rule Expr_ok/accessExpression-memberAccessExpression-expression-headerunion:
   -- if expressionNoteIR = `( typeIR DYN )
 
 rule Expr_ok/accessExpression-memberAccessExpression-expression-tablestruct:
-  p C |- expression_base `. member
-       : (typedExpressionIR_base `. nameIR) `# expressionNoteIR
+  p TC |- expression_base `. member
+        : (typedExpressionIR_base `. nameIR) `# expressionNoteIR
   ---- ;; check expression
-  -- Expr_ok: p C |- expression_base : typedExpressionIR_base
+  -- Expr_ok: p TC |- expression_base : typedExpressionIR_base
   ---- ;; fetch annotation
   -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
   ---- ;; check that the expression is a table struct
@@ -882,12 +882,12 @@ def $compat'_arrayindex(typeIR) = false
   -- otherwise
 
 rule Expr_ok/indexAccessExpression-tuple:
-  p C |- expression_base `[ expression_index ]
-       : (typedExpressionIR_base `[ typedExpressionIR_index_reduced ])
-         `# expressionNoteIR
+  p TC |- expression_base `[ expression_index ]
+        : (typedExpressionIR_base `[ typedExpressionIR_index_reduced ])
+            `# expressionNoteIR
   ---- ;; check expressions
-  -- Expr_ok: p C |- expression_base : typedExpressionIR_base
-  -- Expr_ok: p C |- expression_index : typedExpressionIR_index
+  -- Expr_ok: p TC |- expression_base : typedExpressionIR_base
+  -- Expr_ok: p TC |- expression_index : typedExpressionIR_index
   ---- ;; fetch annotations
   -- if _ `# `( typeIR_base ctk_base ) = typedExpressionIR_base
   -- if _ `# `( typeIR_index ctk_index ) = typedExpressionIR_index
@@ -902,19 +902,19 @@ rule Expr_ok/indexAccessExpression-tuple:
   ---- ;; then, index must be local compile-time known and in range
   -- if TUPLE `< typeIR_e* > = $canon(typeIR_base)
   -- if ctk_index = LCTK
-  -- Eval_static: p C |- typedExpressionIR_index_reduced ~> value_index
+  -- Eval_static: p TC |- typedExpressionIR_index_reduced ~> value_index
   -- if n_index = $to_number(value_index)
   -- if $(n_index < |typeIR_e*|)
   ---- ;; create typed expression
   -- if expressionNoteIR = `( typeIR_e*[n_index] DYN )
 
 rule Expr_ok/indexAccessExpression-stack-lctk:
-  p C |- expression_base `[ expression_index ]
-       : (typedExpressionIR_base `[ typedExpressionIR_index_reduced ])
-         `# expressionNoteIR
+  p TC |- expression_base `[ expression_index ]
+        : (typedExpressionIR_base `[ typedExpressionIR_index_reduced ])
+            `# expressionNoteIR
   ---- ;; check expressions
-  -- Expr_ok: p C |- expression_base : typedExpressionIR_base
-  -- Expr_ok: p C |- expression_index : typedExpressionIR_index
+  -- Expr_ok: p TC |- expression_base : typedExpressionIR_base
+  -- Expr_ok: p TC |- expression_index : typedExpressionIR_index
   ---- ;; fetch annotations
   -- if _ `# `( typeIR_base ctk_base ) = typedExpressionIR_base
   -- if _ `# `( typeIR_index ctk_index ) = typedExpressionIR_index
@@ -929,19 +929,19 @@ rule Expr_ok/indexAccessExpression-stack-lctk:
   ---- ;; if the index is local compile-time known, then it must be in range
   -- if typeIR `[ n_size ] = $canon(typeIR_base)
   -- if ctk_index = LCTK
-  -- Eval_static: p C |- typedExpressionIR_index_reduced ~> value_index
+  -- Eval_static: p TC |- typedExpressionIR_index_reduced ~> value_index
   -- if n_index = $to_number(value_index)
   -- if $(n_index < n_size)
   ---- ;; create typed expression
   -- if expressionNoteIR = `( typeIR DYN )
 
 rule Expr_ok/indexAccessExpression-stack-non-lctk:
-  p C |- expression_base `[ expression_index ]
-       : (typedExpressionIR_base `[ typedExpressionIR_index_reduced ])
-         `# expressionNoteIR
+  p TC |- expression_base `[ expression_index ]
+        : (typedExpressionIR_base `[ typedExpressionIR_index_reduced ])
+            `# expressionNoteIR
   ---- ;; check expressions
-  -- Expr_ok: p C |- expression_base : typedExpressionIR_base
-  -- Expr_ok: p C |- expression_index : typedExpressionIR_index
+  -- Expr_ok: p TC |- expression_base : typedExpressionIR_base
+  -- Expr_ok: p TC |- expression_index : typedExpressionIR_index
   ---- ;; fetch annotations
   -- if _ `# `( typeIR_base ctk_base ) = typedExpressionIR_base
   -- if _ `# `( typeIR_index ctk_index ) = typedExpressionIR_index
@@ -999,14 +999,14 @@ def $is_valid_bitslice'(_, _, _) = false
   -- otherwise
 
 rule Expr_ok/indexAccessExpression-bitslice:
-  p C |- expression_base `[ expression_hi `: expression_lo ]
-       : (typedExpressionIR_base
+  p TC |- expression_base `[ expression_hi `: expression_lo ]
+        : (typedExpressionIR_base
             `[ typedExpressionIR_hi_reduced `: typedExpressionIR_lo_reduced ])
-         `# expressionNoteIR
+            `# expressionNoteIR
   ---- ;; check expressions
-  -- Expr_ok: p C |- expression_base : typedExpressionIR_base
-  -- Expr_ok: p C |- expression_hi : typedExpressionIR_hi
-  -- Expr_ok: p C |- expression_lo : typedExpressionIR_lo
+  -- Expr_ok: p TC |- expression_base : typedExpressionIR_base
+  -- Expr_ok: p TC |- expression_hi : typedExpressionIR_hi
+  -- Expr_ok: p TC |- expression_lo : typedExpressionIR_lo
   ---- ;; check that the base expression is compatible
   ---- ;; while inserting implicit casts if necessary
   -- if typedExpressionIR_base_reduced
@@ -1036,10 +1036,10 @@ rule Expr_ok/indexAccessExpression-bitslice:
       = typedExpressionIR_lo_reduced
   ---- ;; check that the indices are local compile-time known
   -- if ctk_hi_reduced = LCTK
-  -- Eval_static: p C |- typedExpressionIR_hi_reduced ~> value_hi
+  -- Eval_static: p TC |- typedExpressionIR_hi_reduced ~> value_hi
   -- if n_hi = $to_number(value_hi)
   -- if ctk_lo_reduced = LCTK
-  -- Eval_static: p C |- typedExpressionIR_lo_reduced ~> value_lo
+  -- Eval_static: p TC |- typedExpressionIR_lo_reduced ~> value_lo
   -- if n_lo = $to_number(value_lo)
   ---- ;; check that the slice is valid
   -- if $is_valid_bitslice(typeIR_base_reduced, n_lo, n_hi)
@@ -1054,21 +1054,21 @@ rule Expr_ok/indexAccessExpression-bitslice:
 ;;;; routineTarget `< realTypeArgumentList > `( argumentList )
 
 rule Expr_ok/callExpression-routineTarget-no-typeArgumentList:
-  p C |- routineTarget `( argumentList )
-       : callExpressionIR `# expressionNoteIR
+  p TC |- routineTarget `( argumentList )
+        : callExpressionIR `# expressionNoteIR
   ---- ;; check routine target
-  -- RoutineTarget_ok: p C |- routineTarget : routineTargetIR
+  -- RoutineTarget_ok: p TC |- routineTarget : routineTargetIR
   ---- ;; check arguments
   -- if argument* = $flatten_argumentList(argumentList)
-  -- (Argument_ok: p C |- argument : argumentIR)*
+  -- (Argument_ok: p TC |- argument : argumentIR)*
   ---- ;; check routine
   -- RoutineType_ok:
-      p C |- routineTargetIR `< eps > `( argumentIR* )
+      p TC |- routineTargetIR `< eps > `( argumentIR* )
            : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
   ---- ;; check calling convention
   -- if tid_infer* = tid_inserted*
-  -- Call_ok: p C |- routineTypeIR `< eps `# tid_infer* > `( argumentIR* `# id_default* )
-                   : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+  -- Call_ok: p TC |- routineTypeIR `< eps `# tid_infer* > `( argumentIR* `# id_default* )
+                    : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; call must not return void on expression level
   -- if typeIR_ret =/= VOID
   ---- ;; check whether the call is static
@@ -1079,25 +1079,25 @@ rule Expr_ok/callExpression-routineTarget-no-typeArgumentList:
   -- if expressionNoteIR = `( typeIR_ret ctk )
 
 rule Expr_ok/callExpression-routineTarget-typeArgumentList:
-  p C |- routineTarget `< realTypeArgumentList > `( argumentList )
-       : callExpressionIR `# expressionNoteIR
+  p TC |- routineTarget `< realTypeArgumentList > `( argumentList )
+        : callExpressionIR `# expressionNoteIR
   ---- ;; check routine target
-  -- RoutineTarget_ok: p C |- routineTarget : routineTargetIR
+  -- RoutineTarget_ok: p TC |- routineTarget : routineTargetIR
   ---- ;; check type arguments
   -- if realTypeArgument* = $flatten_realTypeArgumentList(realTypeArgumentList)
-  -- TypeArguments_ok: p C |- realTypeArgument* : typeArgumentIR* `# tid_impl*
+  -- TypeArguments_ok: p TC |- realTypeArgument* : typeArgumentIR* `# tid_impl*
   ---- ;; check arguments
   -- if argument* = $flatten_argumentList(argumentList)
-  -- (Argument_ok: p C |- argument : argumentIR)*
+  -- (Argument_ok: p TC |- argument : argumentIR)*
   ---- ;; check routine
   -- RoutineType_ok:
-      p C |- routineTargetIR `< typeArgumentIR* > `( argumentIR* )
+      p TC |- routineTargetIR `< typeArgumentIR* > `( argumentIR* )
            : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
   ---- ;; check calling convention
   -- if tid_infer* = tid_impl* ++ tid_inserted*
   -- Call_ok:
-      p C |- routineTypeIR `< typeArgumentIR* `# tid_infer* > `( argumentIR* `# id_default* )
-           : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+      p TC |- routineTypeIR `< typeArgumentIR* `# tid_infer* > `( argumentIR* `# id_default* )
+            : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; call must not return void on expression level
   -- if typeIR_ret =/= VOID
   ---- ;; check whether the call is static
@@ -1138,19 +1138,19 @@ def $is_concrete_extern_object'''(_) = true
 ;;;;;;; prefixedTypeName
 
 rule Expr_ok/callExpression-constructorTarget-prefixedTypeName:
-  p C |- prefixedTypeName `( argumentList )
-       : callExpressionIR `# expressionNoteIR
+  p TC |- prefixedTypeName `( argumentList )
+        : callExpressionIR `# expressionNoteIR
   ---- ;; check arguments
   -- if argument* = $flatten_argumentList(argumentList)
-  -- (Argument_ok: p C |- argument : argumentIR)*
+  -- (Argument_ok: p TC |- argument : argumentIR)*
   ---- ;; check constructor type
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
-  -- ConstructorType_ok: p C |- prefixedNameIR `< eps > `( argumentIR* )
-                              : constructorTypeIR `< `# tid_impl* > `( `# id_default* )
+  -- ConstructorType_ok: p TC |- prefixedNameIR `< eps > `( argumentIR* )
+                               : constructorTypeIR `< `# tid_impl* > `( `# id_default* )
   ---- ;; check instantiation convention
   -- Inst_ok:
-      p C ANON |- constructorTypeIR `< eps `# tid_impl* > `( argumentIR* `# id_default* )
-                : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+      p TC ANON |- constructorTypeIR `< eps `# tid_impl* > `( argumentIR* `# id_default* )
+                 : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; constructed object may not contain an abstract method
   -- if $is_concrete_extern_object(typeIR_object)
   ---- ;; create IR
@@ -1161,24 +1161,24 @@ rule Expr_ok/callExpression-constructorTarget-prefixedTypeName:
 ;;;;;;; specializedType
 
 rule Expr_ok/callExpression-constructorTarget-specializedType:
-  p C |- (prefixedTypeName `< typeArgumentList >) `( argumentList )
-       : callExpressionIR `# expressionNoteIR
+  p TC |- (prefixedTypeName `< typeArgumentList >) `( argumentList )
+        : callExpressionIR `# expressionNoteIR
   ---- ;; check type arguments
   -- if typeArgument* = $flatten_typeArgumentList(typeArgumentList)
-  -- TypeArguments_ok: p C |- typeArgument* : typeArgumentIR* `# tid_impl*
+  -- TypeArguments_ok: p TC |- typeArgument* : typeArgumentIR* `# tid_impl*
   ---- ;; check arguments
   -- if argument* = $flatten_argumentList(argumentList)
-  -- (Argument_ok: p C |- argument : argumentIR)*
+  -- (Argument_ok: p TC |- argument : argumentIR)*
   ---- ;; check constructor type
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
   -- ConstructorType_ok:
-      p C |- prefixedNameIR `< typeArgumentIR* > `( argumentIR* )
+      p TC |- prefixedNameIR `< typeArgumentIR* > `( argumentIR* )
            : constructorTypeIR `< `# tid_inserted* > `( `# id_default* )
   ---- ;; check instantiation convention
   -- if tid_infer* = tid_impl* ++ tid_inserted*
   -- Inst_ok:
-      p C ANON |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > `( argumentIR* `# id_default* )
-                : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
+      p TC ANON |- constructorTypeIR `< typeArgumentIR* `# tid_infer* > `( argumentIR* `# id_default* )
+                 : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; constructed object may not contain an abstract method
   -- if $is_concrete_extern_object(typeIR_object)
   ---- ;; create IR
@@ -1190,6 +1190,6 @@ rule Expr_ok/callExpression-constructorTarget-specializedType:
 ;;; syntax parenthesizedExpression = `( expression )
 
 rule Expr_ok/parenthesizedExpression:
-  p C |- `( expression ) : (`( typedExpressionIR )) `# expressionNoteIR
-  -- Expr_ok: p C |- expression : typedExpressionIR
+  p TC |- `( expression ) : (`( typedExpressionIR )) `# expressionNoteIR
+  -- Expr_ok: p TC |- expression : typedExpressionIR
   -- if _ `# expressionNoteIR = typedExpressionIR
