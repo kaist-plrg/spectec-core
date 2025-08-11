@@ -24,7 +24,7 @@ rule Decl_inst/constantDeclarationIR-non-global:
 dec $get_init_decls(objectInitializerOptIR) : objectDeclarationListIR
 
 rule Decl_inst/instantiationIR-extern:
-  p Ci_0 sto_0 |- _ prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR
+  p Ci_0 sto_0 |- _ _ prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR
     objectInitializerOptIR `;
   ==> Ci_0 sto_2 eps
   -- if $find_constructor_overloaded_inst(Ci_0, prefixedNameIR, argumentListIR) = (_, consDyn, id_default*)
@@ -40,7 +40,7 @@ def $is_extern_object(EXTERN `{ _ _ _ _ }) = true
 def $is_extern_object(_) = false
 
 rule Decl_inst/instantiationIR-non-extern:
-  p Ci_0 sto_0 |- _ prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR
+  p Ci_0 sto_0 |- _ _ prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR
     objectInitializerOptIR `;
     ==> Ci_0 sto_1 eps
   -- if $find_constructor_overloaded_inst(Ci_0, prefixedNameIR, argumentListIR) = (_, consDyn, id_default*)

@@ -435,7 +435,7 @@ syntax objectInitializerIR = `= `{ objectDeclarationListIR }
 syntax objectInitializerOptIR = objectInitializerIR?
 
 syntax instantiationIR =
-  annotationList prefixedNameIR
+  annotationList typeIR prefixedNameIR
     `< typeArgumentListIR > `( argumentListIR ) nameIR
     objectInitializerOptIR `;
 
