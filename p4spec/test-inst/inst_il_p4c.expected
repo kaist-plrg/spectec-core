@@ -1936,16 +1936,18 @@ Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue361-bmv2.p4
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue3616.p4
 Error on instantiation: ../../../../p4c/testdata/p4_16_samples/issue3616.p4
 tracing backtrack logs:
-- because invocation of function $find_value_inst(p, Ci, nameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:36.10-36.26)
-  1. because application of clause find_value_inst(cursor, Ci, nameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:36.10-36.26)
-    - because condition value'?{value' <- value'?} matches (_) was not met (../../../../spec-concrete/6.02-context-instantiation.watsup:194.9-194.14)
-  2. because application of clause find_value_inst(cursor, Ci, nameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:36.10-36.26)
+- because invocation of function $find_value_inst(p, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:36.10-36.26)
+  1. because application of clause find_value_inst(p, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:36.10-36.26)
+    - because condition prefixedNameIR matches `.%` was not met ()
+  2. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:36.10-36.26)
+    - because condition value'?{value' <- value'?} matches (_) was not met (../../../../spec-concrete/6.02-context-instantiation.watsup:196.9-196.14)
+  3. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:36.10-36.26)
     - because condition cursor matches `BLOCK` was not met ()
-  3. because application of clause find_value_inst(cursor, Ci, nameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:36.10-36.26)
+  4. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:36.10-36.26)
     - because condition cursor matches `BLOCK` was not met ()
-  4. because application of clause find_value_inst(cursor, Ci, nameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:36.10-36.26)
+  5. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:36.10-36.26)
     - because condition cursor matches `LOCAL` was not met ()
-  5. because application of clause find_value_inst(cursor, Ci, nameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:36.10-36.26)
+  6. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:36.10-36.26)
     - because condition cursor matches `LOCAL` was not met ()
 
 
@@ -3090,35 +3092,6 @@ Instantiation success: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid3.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid4.p4
-negative inner acc: -1.974525
-negative inner acc: -1.974204
-negative inner acc: -1.973428
-negative inner acc: -1.973396
-negative inner acc: -1.973369
-negative inner acc: -1.973348
-negative inner acc: -1.972351
-negative inner acc: -1.972310
-negative inner acc: -1.972277
-negative inner acc: -1.970341
-negative inner acc: -1.950354
-negative inner acc: -1.782825
-negative inner acc: -1.056179
-negative inner acc: -1.056125
-negative inner acc: -0.756944
-negative inner acc: -0.423914
-negative inner acc: -0.390871
-negative inner acc: -0.356475
-negative inner acc: -0.340465
-negative inner acc: -0.319949
-negative inner acc: -0.291141
-negative inner acc: -0.250681
-negative inner acc: -0.246153
-negative inner acc: -0.245484
-negative inner acc: -0.244899
-negative inner acc: -0.242815
-negative inner acc: -0.240351
-negative inner acc: -0.238849
-negative inner acc: -0.238171
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid4.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/psa-dpdk-table-key-isValid5.p4
@@ -3503,116 +3476,7 @@ Instantiation success: ../../../../p4c/testdata/p4_16_samples/spec-ex09.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/spec-ex10.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/spec-ex12.p4
-Error on instantiation: ../../../../p4c/testdata/p4_16_samples/spec-ex12.p4
-tracing backtrack logs:
-- because condition declarationIR*{declarationIR <- declarationIR*} matches [] was not met (../../../../spec-concrete/6.08-instantiation-declaration.watsup:428.15-428.18)
-- because invocation of relation Decl_inst failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-  1. because application of rule Decl_inst/constantDeclarationIR-global failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: constantDeclarationIR was not met ()
-  2. because application of rule Decl_inst/constantDeclarationIR-non-global failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: constantDeclarationIR was not met ()
-  3. because application of rule Decl_inst/instantiationIR-global failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: instantiationIR was not met (../../../../spec-concrete/6.08-instantiation-declaration.watsup:39.20-39.35)
-  4. because application of rule Decl_inst/instantiationIR-extern failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: instantiationIR was not met ()
-  5. because application of rule Decl_inst/instantiationIR-non-extern failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: instantiationIR was not met ()
-  6. because application of rule Decl_inst/functionDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: functionDeclarationIR was not met ()
-  7. because application of rule Decl_inst/actionDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: actionDeclarationIR was not met ()
-  8. because application of rule Decl_inst/errorDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: errorDeclarationIR was not met ()
-  9. because application of rule Decl_inst/matchKindDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: matchKindDeclarationIR was not met ()
-  10. because application of rule Decl_inst/externFunctionDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: externFunctionDeclarationIR was not met ()
-  11. because application of rule Decl_inst/extern-object-no-constructors failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: externObjectDeclarationIR was not met ()
-  12. because application of rule Decl_inst/extern-object-with-constructors failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: externObjectDeclarationIR was not met ()
-  13. because application of rule Decl_inst/parserDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: parserDeclarationIR was not met ()
-  14. because application of rule Decl_inst/controlDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: controlDeclarationIR was not met ()
-  15. because application of rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-enumTypeDeclarationIR-enum failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: enumTypeDeclarationIR was not met ()
-  16. because application of rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-enumTypeDeclarationIR-serializableEnum failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: enumTypeDeclarationIR was not met ()
-  17. because application of rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-structTypeDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: structTypeDeclarationIR was not met ()
-  18. because application of rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-headerTypeDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: headerTypeDeclarationIR was not met ()
-  19. because application of rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-headerTypeDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: headerUnionTypeDeclarationIR was not met ()
-  20. because application of rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-typedef-typeIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition typedefTypeIR <: typeIR was not met (../../../../spec-concrete/6.08-instantiation-declaration.watsup:330.32-330.38)
-  21. because application of rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-typedef-derivedTypeDeclarationIR-monoTypeDefIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition tid*{tid <- tid*} matches [ _/1 ] was not met (../../../../spec-concrete/6.08-instantiation-declaration.watsup:342.10-342.21)
-  22. because application of rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-typedef-derivedTypeDeclaration-polyTypeDefIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition tid*{tid <- tid*} matches [ _/1 ] was not met (../../../../spec-concrete/6.08-instantiation-declaration.watsup:353.10-353.21)
-  23. because application of rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-newtype failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition typedefDeclarationIR matches `%TYPE%%;` was not met ()
-  24. because application of rule Decl_inst/typeDeclarationIR-parserTypeDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: parserTypeDeclarationIR was not met ()
-  25. because application of rule Decl_inst/typeDeclarationIR-controlTypeDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: controlTypeDeclarationIR was not met ()
-  26. because application of rule Decl_inst/typeDeclarationIR-packageTypeDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:433.6-433.15)
-    - because condition declarationIR <: packageTypeDeclarationIR was not met ()
-- because invocation of relation Decl_inst failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-  1. because application of rule Decl_inst/constantDeclarationIR-global failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: constantDeclarationIR was not met ()
-  2. because application of rule Decl_inst/constantDeclarationIR-non-global failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: constantDeclarationIR was not met ()
-  3. because application of rule Decl_inst/instantiationIR-global failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: instantiationIR was not met (../../../../spec-concrete/6.08-instantiation-declaration.watsup:39.20-39.35)
-  4. because application of rule Decl_inst/instantiationIR-extern failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: instantiationIR was not met ()
-  5. because application of rule Decl_inst/instantiationIR-non-extern failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: instantiationIR was not met ()
-  6. because application of rule Decl_inst/functionDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: functionDeclarationIR was not met ()
-  7. because application of rule Decl_inst/actionDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: actionDeclarationIR was not met ()
-  8. because application of rule Decl_inst/errorDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: errorDeclarationIR was not met ()
-  9. because application of rule Decl_inst/matchKindDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: matchKindDeclarationIR was not met ()
-  10. because application of rule Decl_inst/externFunctionDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: externFunctionDeclarationIR was not met ()
-  11. because application of rule Decl_inst/extern-object-no-constructors failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: externObjectDeclarationIR was not met ()
-  12. because application of rule Decl_inst/extern-object-with-constructors failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: externObjectDeclarationIR was not met ()
-  13. because application of rule Decl_inst/parserDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: parserDeclarationIR was not met ()
-  14. because application of rule Decl_inst/controlDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: controlDeclarationIR was not met ()
-  15. because application of rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-enumTypeDeclarationIR-enum failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: enumTypeDeclarationIR was not met ()
-  16. because application of rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-enumTypeDeclarationIR-serializableEnum failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: enumTypeDeclarationIR was not met ()
-  17. because application of rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-structTypeDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: structTypeDeclarationIR was not met ()
-  18. because application of rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-headerTypeDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: headerTypeDeclarationIR was not met ()
-  19. because application of rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-headerTypeDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: headerUnionTypeDeclarationIR was not met ()
-  20. because application of rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-typedef-typeIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition typedefTypeIR <: typeIR was not met (../../../../spec-concrete/6.08-instantiation-declaration.watsup:330.32-330.38)
-  21. because application of rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-typedef-derivedTypeDeclarationIR-monoTypeDefIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition tid*{tid <- tid*} matches [ _/1 ] was not met (../../../../spec-concrete/6.08-instantiation-declaration.watsup:342.10-342.21)
-  22. because application of rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-typedef-derivedTypeDeclaration-polyTypeDefIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition tid*{tid <- tid*} matches [ _/1 ] was not met (../../../../spec-concrete/6.08-instantiation-declaration.watsup:353.10-353.21)
-  23. because application of rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-newtype failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition typedefDeclarationIR matches `%TYPE%%;` was not met ()
-  24. because application of rule Decl_inst/typeDeclarationIR-parserTypeDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: parserTypeDeclarationIR was not met ()
-  25. because application of rule Decl_inst/typeDeclarationIR-controlTypeDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: controlTypeDeclarationIR was not met ()
-  26. because application of rule Decl_inst/typeDeclarationIR-packageTypeDeclarationIR failed (../../../../spec-concrete/6.08-instantiation-declaration.watsup:439.6-439.15)
-    - because condition declarationIR <: packageTypeDeclarationIR was not met ()
-
+Instantiation success: ../../../../p4c/testdata/p4_16_samples/spec-ex12.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/spec-ex13.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/spec-ex13.p4
@@ -3986,4 +3850,4 @@ Instantiation success: ../../../../p4c/testdata/p4_16_samples/xdp_vlan_push_pop_
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 
-Running instantiation: [EXCLUDE] 224/1278 (17.53%) [PASS] 1052/1278 (82.32%) [FAIL] 2/1278 (0.16%)
+Running instantiation: [EXCLUDE] 224/1278 (17.53%) [PASS] 1053/1278 (82.39%) [FAIL] 1/1278 (0.08%)
