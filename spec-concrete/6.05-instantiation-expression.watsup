@@ -27,19 +27,13 @@ rule Expr_inst/literalExpressionIR-stringLiteral:
   p Ci sto |- (`" text `") `# _ ==> sto (`" text `")
 
 ;;;; referenceExpressionIR
-;;;; syntax referenceExpressionIR
+;;;; syntax referenceExpressionIR =
 
-;;;;; `` nameIR
+;;;;   prefixedNameIR
 
 rule Expr_inst/referenceExpressionIR-id:
-  p Ci sto |- (`` nameIR) `# _ ==> sto value
-  -- if $find_value_inst(p, Ci, nameIR) = value
-
-;;;;; `. nameIR
-
-rule Expr_inst/referenceExpressionIR-dotName:
-p Ci sto |- (`. nameIR) `# _ ==> sto value
-  -- if $find_value_inst(p, Ci, nameIR) = value
+  p Ci sto |- prefixedNameIR `# _ ==> sto value
+  -- if $find_value_inst(p, Ci, prefixedNameIR) = value
 
 ;;;; defaultExpressionIR
 
@@ -347,7 +341,7 @@ rule Expr_inst/accessExpressionIR-errorAccessExpressionIR:
   p Ci sto |- (ERROR `. nameIR) `# _
     ==> sto value
   -- if $concat_text([ "error.", nameIR ]) = nameIR'
-  -- if $find_value_inst(p, Ci, nameIR') = value
+  -- if $find_value_inst(p, Ci, `. nameIR') = value
 
 ;;;;; memberAccessExpressionIR
 ;;;;; syntax memberAccessExpressionIR =
@@ -428,3 +422,16 @@ rule Expr_inst/parenthesizedExpressionIR:
   p Ci sto |- (`( typedExpressionIR )) `# _
     ==> sto' value
   -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto' value
+
+;;
+;; Expression list instantiation
+;;
+
+rule Exprs_inst/nil:
+  p Ci sto |- eps ==> sto eps
+
+rule Exprs_inst/cons:
+  p Ci sto_0 |- typedExpressionIR_h :: typedExpressionIR_t*
+    ==> sto_2 (value_h :: value_t*)
+  -- Expr_inst: p Ci sto_0 |- typedExpressionIR_h ==> sto_1 value_h
+  -- Exprs_inst: p Ci sto_1 |- typedExpressionIR_t* ==> sto_2 value_t*
