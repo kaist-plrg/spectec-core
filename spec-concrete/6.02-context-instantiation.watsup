@@ -102,10 +102,37 @@ def $copy_context_inst(LOCAL, Ci) = Ci
 ;; Adders
 ;;
 
-dec $add_value_inst(cursor, contextInst, nameIR, value): contextInst
-dec $add_values_inst(cursor, contextInst, nameIR*, value*): contextInst
+;;; Adder for values
+
+dec $add_value_inst(cursor, contextInst, id, value): contextInst
+dec $add_values_inst(cursor, contextInst, id*, value*): contextInst
+
+def $add_value_inst(GLOBAL, Ci, id, value) = Ci[ .GLOBAL.VENV = venv ]
+  -- if $add_map<id, value>(Ci.GLOBAL.VENV, id, value) = venv ;; TODO: add_nodup?
+def $add_value_inst(BLOCK, Ci, id, value) = Ci[ .BLOCK.VENV = venv ]
+  -- if $add_map<id, value>(Ci.BLOCK.VENV, id, value) = venv ;; TODO: add_nodup?
+def $add_value_inst(LOCAL, Ci, id, value) = Ci[ .LOCAL.VENVS = venv_h :: venv_t* ]
+  -- if Ci.LOCAL.VENVS = venv_h :: venv_t*
+  -- if $add_map<id, value>(venv_h, id, value) = venv_h' ;; TODO: add_nodup?
+
+def $add_values_inst(p, Ci, eps, eps) = Ci
+def $add_values_inst(p, Ci, id_h :: id_t*, value_h :: value_t*) = Ci''
+  -- if $add_value_inst(p, Ci, id_h, value_h) = Ci'
+  -- if $add_values_inst(p, Ci', id_t*, value_t*) = Ci''
+
+;;; Adder for routines
+
 dec $add_routine_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
+
 dec $add_routine_non_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
+
+def $add_routine_non_overload_inst(GLOBAL, Ci, rid, routineDyn) = Ci[ .GLOBAL.RENV = renv ]
+  -- if ~$in_set<rid>(rid, $dom_map<rid, routineDyn>(Ci.GLOBAL.RENV))
+  -- if renv = $add_map<rid, routineDyn>(Ci.GLOBAL.RENV, rid, routineDyn)
+
+def $add_routine_non_overload_inst(BLOCK, Ci, rid, routineDyn) = Ci[ .BLOCK.RENV = renv ]
+  -- if ~$in_set<rid>(rid, $dom_map<rid, routineDyn>(Ci.BLOCK.RENV))
+  -- if renv = $add_map<rid, routineDyn>(Ci.BLOCK.RENV, rid, routineDyn)
 
 dec $add_tparams_inst(cursor, contextInst, typeParameterIR*, typeIR*) : contextInst
 dec $add_tparam_inst(cursor, contextInst, typeParameterIR, typeIR) : contextInst
@@ -120,8 +147,6 @@ def $add_tparam_inst(BLOCK, Ci, typeParameterIR, typeIR) = Ci[ .BLOCK.THETA = th
   -- if $add_map<tid, typeIR>(Ci.BLOCK.THETA, typeParameterIR, typeIR) = theta
 def $add_tparam_inst(LOCAL, Ci, typeParameterIR, typeIR) = Ci[ .LOCAL.THETA = theta ]
   -- if $add_map<tid, typeIR>(Ci.LOCAL.THETA, typeParameterIR, typeIR) = theta
-
-
 
 ;;; Adder for constructors
 dec $add_constructor_inst(cursor, contextInst, cid, consDyn) : contextInst
