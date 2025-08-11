@@ -57,10 +57,7 @@ let rec string_of_failtrace ?(indent = "") ?(level = 0)
   let smsg =
     if level < depth then ""
     else
-      let prefix = 
-        if is_root then "" else
-        if is_last then "└── " else "├── "
-      in
+      let prefix = if is_root then "" else if is_last then "└── " else "├── " in
       let indent_prefix = String.make 4 ' ' in
       Format.asprintf "%s%s%s%s%s\n" indent prefix
         (if region_parent = region || region = no_region then ""
@@ -68,7 +65,11 @@ let rec string_of_failtrace ?(indent = "") ?(level = 0)
         bullet msg
   in
   let region_parent = if region = no_region then region_parent else region in
-  let indent = if is_root then indent else if is_last then indent ^ "    " else indent ^ "│   " in
+  let indent =
+    if is_root then indent
+    else if is_last then indent ^ "    "
+    else indent ^ "│   "
+  in
   Format.asprintf "%s%s" smsg
     (string_of_failtraces ~indent ~level:(level + 1) ~region_parent ~depth
        subfailtraces)
