@@ -759,6 +759,9 @@ rule Expr_ok/accessExpression-memberAccessExpression-expression-stack-lastIndex:
        : (typedExpressionIR_base `. "lastIndex") `# expressionNoteIR
   ---- ;; check that member is "lastIndex"
   -- if "lastIndex" = $name(member)
+  ---- ;; "lastIndex" can be only used within a parser
+  -- if (p = BLOCK /\ C.BLOCK.KIND = PARSER)
+        \/ (p = LOCAL /\ $is_parser_state_localKind(C.LOCAL.KIND))
   ---- ;; check expression
   -- Expr_ok: p C |- expression_base : typedExpressionIR_base
   ---- ;; fetch annotation
@@ -773,6 +776,9 @@ rule Expr_ok/accessExpression-memberAccessExpression-expression-stack-last:
        : (typedExpressionIR_base `. "last") `# expressionNoteIR
   ---- ;; check that member is "last"
   -- if "last" = $name(member)
+  ---- ;; "last" can be only used within a parser
+  -- if (p = BLOCK /\ C.BLOCK.KIND = PARSER)
+        \/ (p = LOCAL /\ $is_parser_state_localKind(C.LOCAL.KIND))
   ---- ;; check expression
   -- Expr_ok: p C |- expression_base : typedExpressionIR_base
   ---- ;; fetch annotation
@@ -787,6 +793,9 @@ rule Expr_ok/accessExpression-memberAccessExpression-expression-stack-next:
        : (typedExpressionIR_base `. "next") `# expressionNoteIR
   ---- ;; check that member is "next"
   -- if "next" = $name(member)
+  ---- ;; "next" can be only used within a parser
+  -- if (p = BLOCK /\ C.BLOCK.KIND = PARSER)
+        \/ (p = LOCAL /\ $is_parser_state_localKind(C.LOCAL.KIND))
   ---- ;; check expression
   -- Expr_ok: p C |- expression_base : typedExpressionIR_base
   ---- ;; fetch annotation

@@ -30,6 +30,9 @@ rule Lvalue_ok/lvalue-member-stack-next-last:
   ---- ;; check that the field is "next" or "last"
   -- if nameIR = $name(member)
   -- if nameIR = "next" \/ nameIR = "last"
+  ---- ;; "next" and "last" can be only used within a parser
+  -- if (p = BLOCK /\ C.BLOCK.KIND = PARSER)
+        \/ (p = LOCAL /\ $is_parser_state_localKind(C.LOCAL.KIND))
   ---- ;; create typed lvalue
   -- if typedLvalueIR
       = (typedLvalueIR_base `. nameIR) `# `( typeIR )

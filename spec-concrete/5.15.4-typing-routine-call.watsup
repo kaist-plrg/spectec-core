@@ -12,6 +12,10 @@
 rule RoutineTarget_ok/prefixedNonTypeName:
   p C |- prefixedNonTypeName : prefixedNameIR
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
+  ---- ;; call to "verify" is only allowed in parsers
+  -- if ((prefixedNameIR = `` "verify") \/ (prefixedNameIR = `. "verify"))
+        => ((p = BLOCK /\ C.BLOCK.KIND = PARSER)
+             \/ (p = LOCAL /\ $is_parser_state_localKind(C.LOCAL.KIND)))
 
 ;;;; THIS
 
