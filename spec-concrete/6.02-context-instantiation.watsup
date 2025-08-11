@@ -108,12 +108,15 @@ dec $add_value_inst(cursor, contextInst, id, value): contextInst
 dec $add_values_inst(cursor, contextInst, id*, value*): contextInst
 
 def $add_value_inst(GLOBAL, Ci, id, value) = Ci[ .GLOBAL.VENV = venv ]
-  -- if $add_map<id, value>(Ci.GLOBAL.VENV, id, value) = venv ;; TODO: add_nodup?
+  -- if ~$in_set<id>(id, $dom_map<id, value>(Ci.GLOBAL.VENV))
+  -- if $add_map<id, value>(Ci.GLOBAL.VENV, id, value) = venv
 def $add_value_inst(BLOCK, Ci, id, value) = Ci[ .BLOCK.VENV = venv ]
-  -- if $add_map<id, value>(Ci.BLOCK.VENV, id, value) = venv ;; TODO: add_nodup?
-def $add_value_inst(LOCAL, Ci, id, value) = Ci[ .LOCAL.VENVS = venv_h :: venv_t* ]
+  -- if ~$in_set<id>(id, $dom_map<id, value>(Ci.BLOCK.VENV))
+  -- if $add_map<id, value>(Ci.BLOCK.VENV, id, value) = venv
+def $add_value_inst(LOCAL, Ci, id, value) = Ci[ .LOCAL.VENVS = venv_h' :: venv_t* ]
   -- if Ci.LOCAL.VENVS = venv_h :: venv_t*
-  -- if $add_map<id, value>(venv_h, id, value) = venv_h' ;; TODO: add_nodup?
+  -- if ~$in_set<id>(id, $dom_map<id, value>(venv_h))
+  -- if $add_map<id, value>(venv_h, id, value) = venv_h'
 
 def $add_values_inst(p, Ci, eps, eps) = Ci
 def $add_values_inst(p, Ci, id_h :: id_t*, value_h :: value_t*) = Ci''
@@ -185,7 +188,23 @@ def $add_state_inst(BLOCK, Ci, id, stateDyn) = Ci[ .BLOCK.SENV = senv ]
 
 ;;; Finder for values
 
-dec $find_value_inst(cursor, contextInst, nameIR) : value?
+dec $find_value_inst(cursor, contextInst, prefixedNameIR) : value
+
+def $find_value_inst(p, Ci, `. id) = value
+  -- if value = $find_map<id, value>(Ci.GLOBAL.VENV, id)
+def $find_value_inst(GLOBAL, Ci, `` id) = value
+  -- if value = $find_map<id, value>(Ci.GLOBAL.VENV, id)
+def $find_value_inst(BLOCK, Ci, `` id) = value
+  -- if value = $find_map<id, value>(Ci.BLOCK.VENV, id)
+def $find_value_inst(BLOCK, Ci, `` id)
+  = $find_value_inst(GLOBAL, Ci, `` id)
+  -- otherwise
+def $find_value_inst(LOCAL, Ci, `` id) = value
+  -- if venv* = Ci.LOCAL.VENVS
+  -- if value = $find_maps<id, value>(venv*, id)
+def $find_value_inst(LOCAL, Ci, `` id)
+  = $find_value_inst(BLOCK, Ci, `` id)
+  -- otherwise
 
 ;;; Finder for types
 dec $find_type_inst(cursor, contextInst, prefixedNameIR) : typeIR
@@ -206,12 +225,10 @@ def $id_argument_IR(nameIR `= `_) = nameIR
 def $id_argument_IR(`_) = eps
 
 dec $find_constructor_overloaded_inst(contextInst, prefixedNameIR, argumentIR*) : (rid, consDyn, id*)?
+
 def $find_constructor_overloaded_inst(Ci, `` id, argumentIR*)
   = $find_overloaded<consDyn>(Ci.GLOBAL.CENV, id, (id_arg?)*)
   -- if $ids_arguments_IR(argumentIR*) = (id_arg?)*
-
 def $find_constructor_overloaded_inst(Ci, `. id, argumentIR*)
   = $find_overloaded<consDyn>(Ci.GLOBAL.CENV, id, (id_arg?)*)
   -- if $ids_arguments_IR(argumentIR*) = (id_arg?)*
-
-

@@ -23,8 +23,23 @@ rule Decl_inst/constantDeclarationIR-non-global:
 
 dec $get_init_decls(objectInitializerOptIR) : objectDeclarationListIR
 
+def $get_init_decls(eps) = eps
+def $get_init_decls(`= `{ objectDeclarationListIR }) = objectDeclarationListIR
+
+dec $merge_venvs(venv, venv) : venv
+
+def $merge_venvs(venv, `{ (id `: value)* })
+  = $adds_map<id, value>(venv, id*, value*)
+
+dec $merge_renvs(renv, renv) : renv
+
+def $merge_renvs(renv, `{ eps }) = renv
+
+rule Decl_inst/instantiationIR-global:
+  GLOBAL Ci sto |- instantiationIR ==> Ci sto eps
+
 rule Decl_inst/instantiationIR-extern:
-  p Ci_0 sto_0 |- _ _ prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR
+  p Ci_0 sto_0 |- _ typeIR prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR
     objectInitializerOptIR `;
   ==> Ci_0 sto_2 eps
   -- if $find_constructor_overloaded_inst(Ci_0, prefixedNameIR, argumentListIR) = (_, consDyn, id_default*)
@@ -34,21 +49,26 @@ rule Decl_inst/instantiationIR-extern:
   -- if $empty_context_inst()[ .PATH = Ci_1.PATH ++ nameIR ][ .GLOBAL = Ci_1.GLOBAL ] = Ci_init
   -- if $get_init_decls(objectInitializerOptIR) = objectDeclarationListIR
   -- ObjectDecls_inst: BLOCK Ci_init sto_1 |- objectDeclarationListIR ==> Ci_init_2 sto_2 _
+  -- if $merge_venvs(Ci_init_2.BLOCK.VENV, venv) = venv_merged
+  -- if $merge_renvs(Ci_init_2.BLOCK.RENV, renv) = renv_merged
+  -- if EXTERN `{ tid theta venv_merged renv_merged } = objDyn
+  -- if oid = Ci_1.PATH ++ nameIR
+  -- if $add_sto(sto_2, oid, objDyn) = sto_3
+  -- if $add_value_inst(p, Ci_1, nameIR, `! oid) = Ci_2
+  -- if constantDeclarationIR = `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
 
 dec $is_extern_object(objDyn) : bool
 def $is_extern_object(EXTERN `{ _ _ _ _ }) = true
 def $is_extern_object(_) = false
 
 rule Decl_inst/instantiationIR-non-extern:
-  p Ci_0 sto_0 |- _ _ prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR
+  p Ci_0 sto_0 |- _ typeIR prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR
     objectInitializerOptIR `;
     ==> Ci_0 sto_1 eps
   -- if $find_constructor_overloaded_inst(Ci_0, prefixedNameIR, argumentListIR) = (_, consDyn, id_default*)
   -- if $enter_path(Ci_0, nameIR) = Ci_1
   -- Constructor_inst: p Ci_1 sto_0 |- consDyn `< typeArgumentListIR > `( argumentListIR `# id_default* ) ==> sto_1 objDyn
   -- if ~$is_extern_object(objDyn)
-  -- if $flatten_prefixedNameIR(prefixedNameIR) = tid
-  -- if TID tid = typeIR
   -- if oid = Ci_1.PATH ++ nameIR
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
   -- if $add_value_inst(p, Ci_1, nameIR, `! oid) = Ci_2
