@@ -1,0 +1,69 @@
+;;
+;; Parser statement instantiation
+;;
+;; syntax parserStatementIR
+;;
+
+;;; constantDeclarationIR
+
+rule ParserStmt_inst/constantDeclarationIR:
+  Ci sto |- constantDeclarationIR ==> Ci sto constantDeclarationIR
+
+;;; variableDeclarationIR
+
+rule ParserStmt_inst/variableDeclarationIR:
+  Ci sto |- variableDeclarationIR ==> Ci sto variableDeclarationIR
+
+;;; emptyStatementIR
+
+rule ParserStmt_inst/emptyStatementIR:
+  Ci_0 sto_0 |- emptyStatementIR ==> Ci_1 sto_1 emptyStatementIR_inst
+  -- Stmt_inst: LOCAL Ci_0 sto_0 |- emptyStatementIR ==> Ci_1 sto_1 emptyStatementIR_inst
+
+;;; assignmentStatementIR
+
+rule ParserStmt_inst/assignmentStatementIR:
+  Ci_0 sto_0 |- assignmentStatementIR ==> Ci_1 sto_1 assignmentStatementIR_inst
+  -- Stmt_inst: LOCAL Ci_0 sto_0 |- assignmentStatementIR ==> Ci_1 sto_1 assignmentStatementIR_inst
+
+;;; callStatementIR
+
+rule ParserStmt_inst/callStatementIR:
+  Ci_0 sto_0 |- callStatementIR ==> Ci_1 sto_1 callStatementIR_inst
+  -- Stmt_inst: LOCAL Ci_0 sto_0 |- callStatementIR ==> Ci_1 sto_1 callStatementIR_inst
+
+;;; directApplicationStatementIR
+
+rule ParserStmt_inst/directApplicationStatementIR:
+  Ci_0 sto_0 |- directApplicationStatementIR ==> Ci_1 sto_1 directApplicationStatementIR_inst
+  -- Stmt_inst: LOCAL Ci_0 sto_0 |- directApplicationStatementIR ==> Ci_1 sto_1 directApplicationStatementIR_inst
+
+;;; parserBlockStatementIR
+
+rule ParserStmt_inst/parserBlockStatementIR:
+  Ci_0 sto_0 |- annotationList `{ parserStatementListIR }
+    ==> Ci_1 sto_1 parserBlockStatementIR
+  -- ParserStmts_inst: Ci_0 sto_0 |- parserStatementListIR ==> Ci_1 sto_1 parserStatementListIR_inst
+  -- if parserBlockStatementIR
+      = annotationList `{ parserStatementListIR_inst }
+
+;;; conditionalStatementIR
+
+rule ParserStmt_inst/conditionalStatementIR:
+  Ci_0 sto_0 |- conditionalStatementIR ==> Ci_1 sto_1 conditionalStatementIR_inst
+  -- Stmt_inst: LOCAL Ci_0 sto_0 |- conditionalStatementIR ==> Ci_1 sto_1 conditionalStatementIR_inst
+
+;;
+;; Parser statement list instantiation
+;;
+;; syntax parserStatementListIR
+;;
+
+rule ParserStmts_inst/nil:
+  Ci sto |- eps ==> Ci sto eps
+
+rule ParserStmts_inst/cons:
+  Ci_0 sto_0 |- parserStatementIR_h :: parserStatementIR_t*
+    ==> Ci_2 sto_2 (parserStatementIR_h' :: parserStatementIR_t'*)
+  -- ParserStmt_inst: Ci_0 sto_0 |- parserStatementIR_h ==> Ci_1 sto_1 parserStatementIR_h'
+  -- ParserStmts_inst: Ci_1 sto_1 |- parserStatementIR_t* ==> Ci_2 sto_2 parserStatementIR_t'*

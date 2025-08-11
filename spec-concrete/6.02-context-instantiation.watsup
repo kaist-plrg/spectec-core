@@ -141,7 +141,7 @@ dec $add_tparam_inst(cursor, contextInst, typeParameterIR, typeIR) : contextInst
 def $add_tparams_inst(p, Ci, eps, eps) = Ci
 def $add_tparams_inst(p, Ci, typeParameterIR_h :: typeParameterIR_t*, typeIR_h :: typeIR_t*) =
     $add_tparams_inst(p, Ci', typeParameterIR_t*, typeIR_t*)
-  -- if $add_tparams_inst(p, Ci, typeParameterIR_h, typeIR_h) = Ci'
+  -- if $add_tparam_inst(p, Ci, typeParameterIR_h, typeIR_h) = Ci'
 
 def $add_tparam_inst(BLOCK, Ci, typeParameterIR, typeIR) = Ci[ .BLOCK.THETA = theta ]
   -- if $add_map<tid, typeIR>(Ci.BLOCK.THETA, typeParameterIR, typeIR) = theta

@@ -10,7 +10,7 @@ syntax venv = map<id, value>
 dec $empty_venv() : venv
 def $empty_venv() = $empty_map<id, value>
 
-syntax stateDyn = blockStatementIR
+syntax stateDyn = parserBlockStatementIR
 ;; Map from names to parser states
 syntax senv = map<name, stateDyn>
 
@@ -89,5 +89,10 @@ syntax objDyn =
 syntax sto = map<oid, objDyn>
 
 dec $empty_sto() : sto
+
 def $empty_sto() = $empty_map<oid, objDyn>
+
 dec $add_sto(sto, oid, objDyn) : sto
+
+def $add_sto(sto, oid, objDyn) = 
+    $add_map<oid, objDyn>(sto, oid, objDyn)
