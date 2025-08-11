@@ -307,7 +307,7 @@ rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-headerTypeDeclarationI
 ;;;;;     `< typeParameterListIR `, typeParameterListIR >
 ;;;;;     `{ typeFieldListIR }
 
-rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-headerTypeDeclarationIR:
+rule Decl_inst/typeDeclarationIR-derivedTypeDeclarationIR-headerUnionTypeDeclarationIR:
   GLOBAL Ci_0 sto |- _ HEADER_UNION nameIR
     `< typeParameterListIR `, typeParameterListIR_inferred >
     `{ typeFieldIR* }
@@ -338,7 +338,7 @@ rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-typedef-derivedTypeDeclara
   GLOBAL Ci_0 sto |- _ TYPEDEF derivedTypeDeclarationIR nameIR `;
     ==> Ci_1 sto eps
   -- Decl_inst: GLOBAL Ci_0 $empty_sto() |- derivedTypeDeclarationIR ==> Ci_local _ _
-  -- if $diff_set<tid>($dom_map<tid, typeDefIR>(Ci_0.GLOBAL.TDENV), $dom_map<tid, typeDefIR>(Ci_local.GLOBAL.TDENV))
+  -- if $diff_set<tid>($dom_map<tid, typeDefIR>(Ci_local.GLOBAL.TDENV), $dom_map<tid, typeDefIR>(Ci_0.GLOBAL.TDENV))
     = `{ tid_newtype }
   -- if $find_typedef_inst(GLOBAL, Ci_local, tid_newtype) = typeDefIR
   -- if typeDefIR = monoTypeDefIR
@@ -349,7 +349,7 @@ rule Decl_inst/typeDeclarationIR-typedefDeclarationIR-typedef-derivedTypeDeclara
   GLOBAL Ci_0 sto |- _ TYPEDEF derivedTypeDeclarationIR nameIR `;
     ==> Ci_1 sto eps
   -- Decl_inst: GLOBAL Ci_0 $empty_sto() |- derivedTypeDeclarationIR ==> Ci_local _ _
-  -- if $diff_set<tid>($dom_map<tid, typeDefIR>(Ci_0.GLOBAL.TDENV), $dom_map<tid, typeDefIR>(Ci_local.GLOBAL.TDENV))
+  -- if $diff_set<tid>($dom_map<tid, typeDefIR>(Ci_local.GLOBAL.TDENV), $dom_map<tid, typeDefIR>(Ci_0.GLOBAL.TDENV))
     = `{ tid_newtype }
   -- if $find_typedef_inst(GLOBAL, Ci_local, tid_newtype) = typeDefIR
   -- if typeDefIR = polyTypeDefIR
