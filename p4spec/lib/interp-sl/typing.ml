@@ -28,8 +28,8 @@ let run_typing_internal (spec : spec) (filename_p4 : string)
     (value_program : value) (ignores : IdSet.t) : res =
   Builtin.init ();
   Value.refresh ();
-  Cache.LFU.clear !Interp.func_cache;
-  Cache.LFU.clear !Interp.rule_cache;
+  Cache.Cache.clear !Interp.func_cache;
+  Cache.Cache.clear !Interp.rule_cache;
   let graph = Dep.Graph.empty () in
   let cover = ref (SCov.init ignores spec) in
   try
@@ -45,8 +45,8 @@ let run_typing' ?(derive : bool = false) (spec : spec)
     =
   Builtin.init ();
   Value.refresh ();
-  Cache.LFU.clear !Interp.func_cache;
-  Cache.LFU.clear !Interp.rule_cache;
+  Cache.Cache.clear !Interp.func_cache;
+  Cache.Cache.clear !Interp.rule_cache;
   let graph = Dep.Graph.init () in
   let cover = ref (SCov.init ignores spec) in
   try

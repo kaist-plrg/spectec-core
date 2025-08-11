@@ -21,8 +21,8 @@ let run_typing' ?(debug : bool = false) ?(profile : bool = false) (spec : spec)
     (includes_p4 : string list) (filename_p4 : string) : res =
   Builtin.init ();
   Value.refresh ();
-  Cache.LFU.clear !Interp.func_cache;
-  Cache.LFU.clear !Interp.rule_cache;
+  Cache.Cache.clear !Interp.func_cache;
+  Cache.Cache.clear !Interp.rule_cache;
   try
     let value_program = Convert.In.in_program includes_p4 filename_p4 in
     let ctx = Ctx.empty ~debug ~profile filename_p4 in
