@@ -52,7 +52,7 @@ rule Decl_ok/instantiation-prefixedTypeName-non-objectInitializer:
   -- if TC_1 = $add_var(p, TC_0, nameIR, `EMPTY typeIR_object CTK eps)
   ---- ;; create IR
   -- if instantiationIR
-      = annotationList prefixedNameIR
+      = annotationList typeIR_object prefixedNameIR
           `< typeArgumentIR_inferred* > `( argumentIR* ) nameIR eps `;
 
 rule Decl_ok/instantiation-specializedType-non-objectInitializer:
@@ -80,7 +80,7 @@ rule Decl_ok/instantiation-specializedType-non-objectInitializer:
   -- if TC_1 = $add_var(p, TC_0, nameIR, `EMPTY typeIR_object CTK eps)
   ---- ;; create IR
   -- if instantiationIR
-      = annotationList prefixedNameIR
+      = annotationList typeIR_object prefixedNameIR
           `< typeArgumentIR_inferred* > `( argumentIR* ) nameIR eps `;
 
 ;;;; annotationList type `( argumentList ) name objectInitializer `;
@@ -143,7 +143,7 @@ rule Decl_object_ok/instantiation:
   ---- ;; check instantiation
   -- Decl_ok: p TC_0 |- instantiation : TC_1 instantiationIR
   ---- ;; add instance
-  -- if _ _ `< _ > `( _ ) nameIR _ `; = instantiationIR
+  -- if _ _ _ `< _ > `( _ ) nameIR _ `; = instantiationIR
   -- if varTypeIR = $find_var(p, TC_1, `` nameIR)
   -- if frame_init
       = $update_map<id, varTypeIR>(frame, nameIR, varTypeIR)
@@ -228,7 +228,7 @@ rule Decl_ok/instantiation-prefixedTypeName-objectInitializer:
   -- if TC_2 = $add_var(p, TC_0, nameIR, `EMPTY typeIR_object_init CTK eps)
   ---- ;; create IR
   -- if instantiationIR
-      = annotationList prefixedNameIR
+      = annotationList typeIR_object_init prefixedNameIR
           `< typeArgumentIR_inferred* > `( argumentIR* ) nameIR (`= `{ objectDeclarationIR* }) `;
 
 rule Decl_ok/instantiation-specializedType-objectInitializer:
@@ -277,7 +277,7 @@ rule Decl_ok/instantiation-specializedType-objectInitializer:
   -- if TC_2 = $add_var(p, TC_0, nameIR, `EMPTY typeIR_object_init CTK eps)
   ---- ;; create IR
   -- if instantiationIR
-      = annotationList prefixedNameIR
+      = annotationList typeIR_object_init prefixedNameIR
           `< typeArgumentIR_inferred* > `( argumentIR* ) nameIR (`= `{ objectDeclarationIR* }) `;
 
 ;;; functionDeclaration
