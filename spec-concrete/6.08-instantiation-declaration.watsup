@@ -38,6 +38,7 @@ rule Decl_inst/instantiationIR-extern:
 dec $is_extern_object(objDyn) : bool
 def $is_extern_object(EXTERN `{ _ _ _ _ }) = true
 def $is_extern_object(_) = false
+
 rule Decl_inst/instantiationIR-non-extern:
   p Ci_0 sto_0 |- _ prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR
     objectInitializerOptIR `;
@@ -68,8 +69,6 @@ def $pid_IR(_ _ _ nameIR constantInitializerIR) = nameIR `# true
 dec $cid_IR(nameIR, constructorParameterListIR) : cid
 
 def $cid_IR(nameIR, constructorParameterListIR) = $rid_IR(nameIR, constructorParameterListIR)
-
-
 
 rule Decl_inst/functionDeclarationIR:
   p Ci_0 sto |- _ (typeIR nameIR (`< typeParameterListIR `, typeParameterListIR_inferred >)
@@ -128,10 +127,60 @@ rule Decl_inst/externFunctionDeclarationIR:
 
 ;;;; externObjectDeclarationIR
 
-;; rule Decl_inst/extern-object:
-;;   p Ci_0 sto |- annotationList EXTERN nonTypeName tparamIR* `{ methodPrototypeIR* } ==> Ci_1 sto eps
+dec $split_constructors_IR(methodPrototypeIR*) : (methodPrototypeIR*, methodPrototypeIR*)
 
+def $split_constructors_IR(eps) = (eps, eps)
+def $split_constructors_IR(methodPrototypeIR_h :: methodPrototypeIR_t*)
+  = (methodPrototypeIR_h :: methodPrototypeIR_t_constructor*,
+     methodPrototypeIR_t_method*)
+  -- if _ _ `< `, _ > `( _ ) `; = methodPrototypeIR_h
+  -- if (methodPrototypeIR_t_constructor*, methodPrototypeIR_t_method*)
+      = $split_constructors_IR(methodPrototypeIR_t*)
+def $split_constructors_IR(methodPrototypeIR_h :: methodPrototypeIR_t*)
+  = (methodPrototypeIR_t_constructor*,
+     methodPrototypeIR_h :: methodPrototypeIR_t_method*)
+  -- if _ _ `; = methodPrototypeIR_h
+  -- if (methodPrototypeIR_t_constructor*, methodPrototypeIR_t_method*)
+      = $split_constructors_IR(methodPrototypeIR_t*)
+def $split_constructors_IR(methodPrototypeIR_h :: methodPrototypeIR_t*)
+  = (methodPrototypeIR_t_constructor*,
+     methodPrototypeIR_h :: methodPrototypeIR_t_method*)
+  -- if _ ABSTRACT _ `; = methodPrototypeIR_h
+  -- if (methodPrototypeIR_t_constructor*, methodPrototypeIR_t_method*)
+      = $split_constructors_IR(methodPrototypeIR_t*)
 
+rule Decl_inst/extern-object-no-constructors:
+  p Ci_0 sto |- annotationList EXTERN nameIR 
+    `< typeParameterListIR `, typeParameterListIR_inferred >
+    `{ methodPrototypeIR* } ==> Ci_2 sto eps
+  ---- ;; split methods and constructors
+  -- if $split_constructors_IR(methodPrototypeIR*)
+      = (eps, methodPrototypeIR_method*)
+  ---- ;; if no constructors are provided
+  -- ExternMethods_inst: $empty_rdenv() |- methodPrototypeIR_method* ==> rdenv
+  -- if EXTERN nameIR rdenv = externObjectTypeIR
+  -- if externObjectTypeIR `< typeParameterListIR `, eps >
+      = polyTypeDefIR
+  -- if $add_typedef_inst(p, Ci_0, nameIR, polyTypeDefIR) = Ci_1
+  -- if $cid_IR(nameIR, eps) = cid
+  -- if EXTERN nameIR `< typeParameterListIR > `( eps ) `{ methodPrototypeIR_method* }
+      = consDyn
+  -- if $add_constructor_inst(p, Ci_1, cid, consDyn) = Ci_2
+
+rule Decl_inst/extern-object-with-constructors:
+  p Ci_0 sto |- annotationList EXTERN nameIR 
+    `< typeParameterListIR `, typeParameterListIR_inferred >
+    `{ methodPrototypeIR* } ==> Ci_2 sto eps
+  ---- ;; split methods and constructors
+  -- if $split_constructors_IR(methodPrototypeIR*)
+      = (methodPrototypeIR_constructor*, methodPrototypeIR_method*)
+  ---- ;; if no constructors are provided
+  -- ExternMethods_inst: $empty_rdenv() |- methodPrototypeIR_method* ==> rdenv
+  -- if EXTERN nameIR rdenv = externObjectTypeIR
+  -- if externObjectTypeIR `< typeParameterListIR `, eps >
+      = polyTypeDefIR
+  -- if $add_typedef_inst(p, Ci_0, nameIR, polyTypeDefIR) = Ci_1
+  -- ExternConstructors_inst: p Ci_1 typeParameterListIR methodPrototypeIR_constructor* |- eps ==> Ci_2
 
 ;;; parserDeclarationIR
 ;;; syntax parserDeclarationIR
