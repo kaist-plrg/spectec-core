@@ -667,7 +667,9 @@ syntax tablePropertyIR =
   | ACTIONS `= `{ tableActionListIR }
   | annotationList constOptIR ENTRIES `= `{ tableEntryListIR }
   | annotationList constOptIR DEFAULT_ACTION `= tableActionReferenceIR `;
-  | annotationList constOptIR nameIR initializerIR `;
+  ;; (TODO) Consider extending syntax value in syntax expressionIR
+  | annotationList constOptIR CUSTOM nameIR initializerIR `;
+  | annotationList constOptIR CUSTOM_CONST nameIR constantInitializerIR `;
 
 syntax tablePropertyListIR = tablePropertyIR*
 

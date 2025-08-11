@@ -819,7 +819,7 @@ rule TableProperty_ok/custom-size:
   ---- ;; create IR
   -- if constOptIR = $flatten_constOpt(constOpt)
   -- if tablePropertyIR
-      = annotationList constOptIR "size" (`= typedExpressionIR) `;
+      = annotationList constOptIR CUSTOM "size" (`= typedExpressionIR) `;
 
 rule TableProperty_ok/custom-largest-priority-wins:
   C TC_0 |- annotationList constOpt tableCustomName (`= expression) `;
@@ -835,7 +835,8 @@ rule TableProperty_ok/custom-largest-priority-wins:
   ---- ;; create IR
   -- if constOptIR = $flatten_constOpt(constOpt)
   -- if tablePropertyIR
-      = annotationList constOptIR "largest_priority_wins" (`= typedExpressionIR) `;
+      = annotationList constOptIR CUSTOM_CONST
+          "largest_priority_wins" (`= (B b_largest_priority_wins)) `;
 
 rule TableProperty_ok/custom-priority-delta:
   C TC_0 |- annotationList constOpt tableCustomName (`= expression) `;
@@ -856,7 +857,8 @@ rule TableProperty_ok/custom-priority-delta:
   ---- ;; create IR
   -- if constOptIR = $flatten_constOpt(constOpt)
   -- if tablePropertyIR
-      = annotationList constOptIR "priority_delta" (`= typedExpressionIR) `;
+      = annotationList constOptIR CUSTOM_CONST
+          "priority_delta" (`= (D n_delta)) `;
 
 rule TableProperty_ok/custom:
   C TC |- annotationList constOpt tableCustomName (`= expression) `;
@@ -871,7 +873,7 @@ rule TableProperty_ok/custom:
   ---- ;; create IR
   -- if constOptIR = $flatten_constOpt(constOpt)
   -- if tablePropertyIR
-      = annotationList constOptIR nameIR (`= typedExpressionIR) `;
+      = annotationList constOptIR CUSTOM nameIR (`= typedExpressionIR) `;
 
 ;;
 ;; Table property list typing
