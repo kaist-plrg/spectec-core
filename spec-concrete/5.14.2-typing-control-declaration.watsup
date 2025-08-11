@@ -80,7 +80,7 @@ rule ControlLocalDecl_ok/tableDeclaration:
   -- if C_3 = $add_var(BLOCK, C_2, nameIR, `EMPTY typeIR_table DYN eps)
   ---- ;; create IR
   -- if tableDeclarationIR
-      = annotationList TABLE nameIR `{ tablePropertyIR* }
+      = annotationList TABLE typeIR_table nameIR `{ tablePropertyIR* }
 
 ;;
 ;; Control local declaration list typing
