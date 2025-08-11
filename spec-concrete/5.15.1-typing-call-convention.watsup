@@ -57,6 +57,43 @@ rule Call_convention_expr_ok/in:
 
 ;;; OUT | INOUT
 
+relation Expr_lvalue_ok:
+  cursor context |- typedExpressionIR
+  hint(input %0 %1 %2)
+
+rule Expr_lvalue_ok/referenceExpressionIR:
+  p C |- prefixedNameIR `# `( _ _ )
+  -- if direction _ DYN _ = $find_var(p, C, prefixedNameIR)
+  -- if direction = OUT \/ direction = INOUT
+
+rule Expr_lvalue_ok/accessExpressionIR-memberAccessExpressionIR-stack:
+  p C |- (typedExpressionIR_base `. nameIR) `# `( _ _ )
+  -- Expr_lvalue_ok: p C |- typedExpressionIR_base
+  ---- ;; if the base expressionis a haeder stack
+  -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
+  -- if typeIR `[ _ ] = $canon(typeIR_base)
+  ---- ;; if accessing "next" or "last"
+  -- if nameIR = "next" \/ nameIR = "last"
+  ---- ;; "next" and "last" can be only used within a parser
+  -- if (p = BLOCK /\ C.BLOCK.KIND = PARSER)
+        \/ (p = LOCAL /\ $is_parser_state_localKind(C.LOCAL.KIND))
+
+rule Expr_lvalue_ok/accessExpressionIR-memberAccessExpressionIR-non-stack:
+  p C |- (typedExpressionIR_base `. nameIR) `# `( _ _ )
+  -- Expr_lvalue_ok: p C |- typedExpressionIR_base
+  -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
+  ---- ;; if the base expression is not a header stack
+  -- if ~$is_headerStackTypeIR($canon(typeIR_base))
+
+rule Expr_lvalue_ok/accessExpressionIR-indexAccessExpressionIR:
+  p C |- (typedExpressionIR_base `[ typedExpressionIR_index ]) `# `( _ _ )
+  -- Expr_lvalue_ok: p C |- typedExpressionIR_base
+
+rule Expr_lvalue_ok/accessExpressionIR-indexAccessExpressionIR-bitslice:
+  p C |- (typedExpressionIR_base `[ typedExpressionIR_hi
+                                  `: typedExpressionIR_lo ]) `# `( _ _ )
+  -- Expr_lvalue_ok: p C |- typedExpressionIR_base
+
 rule Call_convention_expr_ok/out-inout:
   p C actctxt |- (direction typeIR_param _ _) `@ typedExpressionIR_arg
                : typedExpressionIR_arg
@@ -65,7 +102,7 @@ rule Call_convention_expr_ok/out-inout:
   -- if _ `# `( typeIR_arg _ ) = typedExpressionIR_arg
   -- Type_alpha: typeIR_param ~~ typeIR_arg
   ---- ;; for copy-out, the expression must be a l-value
-  ---- ;; (TODO)
+  -- Expr_lvalue_ok: p C |- typedExpressionIR_arg
 
 ;;; `EMPTY
 

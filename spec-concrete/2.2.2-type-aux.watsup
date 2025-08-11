@@ -73,6 +73,16 @@ def $is_fixed_bit_typeIR(typeIR) = false
 
 ;;;;; Data types
 
+dec $is_dataTypeIR(typeIR) : bool
+def $is_dataTypeIR(dataTypeIR) = true
+def $is_dataTypeIR(typeIR) = false
+  -- otherwise
+
+dec $is_headerStackTypeIR(typeIR) : bool
+def $is_headerStackTypeIR(headerStackTypeIR) = true
+def $is_headerStackTypeIR(typeIR) = false
+  -- otherwise
+
 ;;;;; Object types
 
 dec $is_objectTypeIR(typeIR) : bool
