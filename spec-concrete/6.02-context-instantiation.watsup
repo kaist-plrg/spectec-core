@@ -213,6 +213,9 @@ dec $find_type_inst(cursor, contextInst, prefixedNameIR) : typeIR
 
 dec $find_typedef_inst(cursor, contextInst, nameIR) : typeDefIR?
 
+def $find_typedef_inst(_, Ci, nameIR) =
+    $find_map<tid, typeDefIR>(Ci.GLOBAL.TDENV, nameIR)
+
 ;;; Finder for routines
 
 dec $ids_arguments_IR(argumentIR*) : (id?)*
