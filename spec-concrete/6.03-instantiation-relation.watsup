@@ -49,12 +49,20 @@ relation ParserLocalDecls_inst:
   hint(input %0 %1 %2 %3)
 
 relation ControlLocalDecl_inst:
-  cursor contextInst sto |- controlLocalDeclarationIR ==> contextInst sto controlLocalDeclarationIR
-  hint(input %0 %1 %2 %3)
+  contextInst sto |- controlLocalDeclarationIR ==> contextInst sto controlLocalDeclarationIR?
+  hint(input %0 %1 %2)
 
 relation ControlLocalDecls_inst:
-  cursor contextInst sto |- controlLocalDeclarationListIR ==> contextInst sto controlLocalDeclarationListIR
-  hint(input %0 %1 %2 %3)
+  contextInst sto |- controlLocalDeclarationIR* ==> contextInst sto controlLocalDeclarationIR*
+  hint(input %0 %1 %2)
+
+relation TableProperty_inst:
+  contextInst sto |- tablePropertyIR ==> contextInst sto tablePropertyIR
+  hint(input %0 %1 %2)
+
+relation TableProperties_inst:
+  contextInst sto |- tablePropertyIR* ==> contextInst sto tablePropertyIR*
+  hint(input %0 %1 %2)
 
 relation ObjectDecls_inst:
   cursor contextInst sto |- objectDeclarationListIR ==> contextInst sto objectDeclarationListIR

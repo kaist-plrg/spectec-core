@@ -24,24 +24,34 @@ rule Decl_inst/constantDeclarationIR-non-global:
 dec $get_init_decls(objectInitializerOptIR) : objectDeclarationListIR
 
 rule Decl_inst/instantiationIR-extern:
-  p Ci_0 sto_0 |- _ prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR 
+  p Ci_0 sto_0 |- _ prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR
     objectInitializerOptIR `;
   ==> Ci_0 sto_2 eps
   -- if $find_constructor_overloaded_inst(Ci_0, prefixedNameIR, argumentListIR) = (_, consDyn, id_default*)
   -- if $enter_path(Ci_0, nameIR) = Ci_1
   -- Constructor_inst: p Ci_1 sto_0 |- consDyn `< typeArgumentListIR > `( argumentListIR `# id_default* ) ==> sto_1 objDyn
-  -- if EXTERN `{ tid theta venv renv } = objDyn
-  -- if Ci_2 = { PATH (Ci_1.PATH ++ nameIR), GLOBAL Ci_1.GLOBAL, BLOCK $empty_block(), LOCAL $empty_local }
+  -- if objDyn = EXTERN `{ tid theta venv renv }
+  -- if $empty_context_inst()[ .PATH = Ci_1.PATH ++ nameIR ][ .GLOBAL = Ci_1.GLOBAL ] = Ci_init
   -- if $get_init_decls(objectInitializerOptIR) = objectDeclarationListIR
-  -- ObjectDecls_inst: BLOCK Ci_2 sto_1 |- objectDeclarationListIR ==> Ci_3 sto_2 _
+  -- ObjectDecls_inst: BLOCK Ci_init sto_1 |- objectDeclarationListIR ==> Ci_init_2 sto_2 _
 
+dec $is_extern_object(objDyn) : bool
+def $is_extern_object(EXTERN `{ _ _ _ _ }) = true
+def $is_extern_object(_) = false
 rule Decl_inst/instantiationIR-non-extern:
-  p Ci_0 sto_0 |- _ prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR objectInitializerOptIR `;
+  p Ci_0 sto_0 |- _ prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR
+    objectInitializerOptIR `;
     ==> Ci_0 sto_1 eps
   -- if $find_constructor_overloaded_inst(Ci_0, prefixedNameIR, argumentListIR) = (_, consDyn, id_default*)
   -- if $enter_path(Ci_0, nameIR) = Ci_1
   -- Constructor_inst: p Ci_1 sto_0 |- consDyn `< typeArgumentListIR > `( argumentListIR `# id_default* ) ==> sto_1 objDyn
-  -- if EXTERN `{ tid theta venv renv } = objDyn
+  -- if ~$is_extern_object(objDyn)
+  -- if $flatten_prefixedNameIR(prefixedNameIR) = tid
+  -- if TID tid = typeIR
+  -- if oid = Ci_1.PATH ++ nameIR
+  -- if $add_sto(sto_1, oid, objDyn) = sto_2
+  -- if $add_value_inst(p, Ci_1, nameIR, `! oid) = Ci_2
+  -- if constantDeclarationIR = `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
 
 ;;; functionDeclarationIR
 ;;; syntax functionDeclarationIR
@@ -75,7 +85,7 @@ rule Decl_inst/functionDeclarationIR:
 ;;; syntax actionDeclarationIR
 ;;;; annotationList ACTION nameIR `( parameterListIR ) blockStatementIR
 
-rule Decl_inst/action:
+rule Decl_inst/actionDeclarationIR:
   p Ci_0 sto |- _ ACTION nameIR `( parameterListIR ) blockStatementIR ==> Ci_1 sto eps
   -- if $rid_IR(nameIR, parameterListIR) = rid
   -- if ACTION `( parameterListIR ) `{ blockStatementIR } = funcDyn
@@ -341,11 +351,9 @@ rule Decl_inst/typeDeclarationIR-packageTypeDeclarationIR:
     = consDyn_package
   -- if $add_constructor_inst(GLOBAL, Ci_1, cid, consDyn_package) = Ci_2
 
-rule Program_inst:
-  |- declarationIR* `; ==> Ci_1.GLOBAL.CENV Ci_1.GLOBAL.TDENV Ci_1.GLOBAL.RENV Ci_1.GLOBAL.VENV sto_1
-  -- if $empty_context_inst() = Ci_0
-  -- if $empty_sto() = sto_0
-  -- Decls_inst: GLOBAL Ci_0 sto_0 |- declarationIR* ==> Ci_1 sto_1 eps
+;;
+;; syntax declarationListIR
+;;
 
 rule Decls_inst/nil:
   p Ci sto |- eps ==> Ci sto eps
@@ -361,4 +369,14 @@ rule Decls_inst/cons-some:
     ==> Ci_2 sto_2 (declarationIR_h' :: declarationIR_t'*)
   -- Decl_inst: p Ci_0 sto_0 |- declarationIR_h ==> Ci_1 sto_1 declarationIR_h'
   -- Decls_inst: p Ci_1 sto_1 |- declarationIR_t* ==> Ci_2 sto_2 declarationIR_t'*
+
+;;
+;; syntax p4programIR
+;;
+
+rule Program_inst:
+  |- declarationIR* `; ==> Ci_1.GLOBAL.CENV Ci_1.GLOBAL.TDENV Ci_1.GLOBAL.RENV Ci_1.GLOBAL.VENV sto_1
+  -- if $empty_context_inst() = Ci_0
+  -- if $empty_sto() = sto_0
+  -- Decls_inst: GLOBAL Ci_0 sto_0 |- declarationIR* ==> Ci_1 sto_1 eps
 
