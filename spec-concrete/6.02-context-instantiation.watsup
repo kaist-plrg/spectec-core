@@ -234,7 +234,7 @@ def $id_argument_IR(nameIR `= _) = nameIR
 def $id_argument_IR(nameIR `= `_) = nameIR
 def $id_argument_IR(`_) = eps
 
-dec $find_constructor_overloaded_inst(contextInst, prefixedNameIR, argumentIR*) : (rid, consDyn, id*)?
+dec $find_constructor_overloaded_inst(contextInst, prefixedNameIR, argumentIR*) : (cid, consDyn, id*)?
 
 def $find_constructor_overloaded_inst(Ci, `` id, argumentIR*)
   = $find_overloaded<consDyn>(Ci.GLOBAL.CENV, id, (id_arg?)*)

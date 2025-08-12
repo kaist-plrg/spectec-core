@@ -27,7 +27,7 @@ rule Stmt_inst/callStatementIR:
 
 rule Stmt_inst/directApplicationStatementIR:
   p Ci sto_0 |- prefixedNameIR `. APPLY `( argumentListIR ) `;
-    ==> Ci sto_2 blockStatementIR 
+    ==> Ci sto_2 blockStatementIR
   -- if $find_constructor_overloaded_inst(Ci, prefixedNameIR, eps) = (_, consDyn, _)
   -- Constructor_inst: p Ci sto_0 |- consDyn `< eps > `( eps `# eps ) ==> sto_1 objDyn
   -- if $fresh_tid() = tid_fresh
@@ -36,10 +36,10 @@ rule Stmt_inst/directApplicationStatementIR:
   -- if $concat_text([ tid, "_", tid_fresh]) = nameIR
   -- if oid = Ci.PATH ++ nameIR
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
-  -- if constantDeclarationIR = `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
-  -- if routineTargetIR = ((`` tid) `# `( typeIR CTK )) `. "apply"
-  -- if callStatementIR = routineTargetIR `< eps > `( argumentListIR ) `;
-  -- if blockStatementIR = `EMPTY `{ [ constantDeclarationIR, callStatementIR ] }
+  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
+  -- if ((`` tid) `# `( typeIR CTK )) `. "apply" = routineTargetIR
+  -- if routineTargetIR `< eps > `( argumentListIR ) `; = callStatementIR
+  -- if `EMPTY `{ [ constantDeclarationIR, callStatementIR ] } = blockStatementIR
 
 ;;; returnStatementIR
 
