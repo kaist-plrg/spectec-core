@@ -7,12 +7,14 @@
 ;;; constantDeclarationIR
 
 rule ParserStmt_inst/constantDeclarationIR:
-  Ci sto |- constantDeclarationIR ==> Ci sto constantDeclarationIR
+  Ci_0 sto_0 |- constantDeclarationIR ==> Ci_1 sto_1 constantDeclarationIR_inst?
+  -- Decl_inst: LOCAL Ci_0 sto_0 |- constantDeclarationIR ==> Ci_1 sto_1 constantDeclarationIR_inst?
 
 ;;; variableDeclarationIR
 
 rule ParserStmt_inst/variableDeclarationIR:
-  Ci sto |- variableDeclarationIR ==> Ci sto variableDeclarationIR
+  Ci_0 sto_0 |- variableDeclarationIR ==> Ci_1 sto_1 variableDeclarationIR_inst?
+  -- BlockElementStmt_inst: Ci_0 sto_0 |- variableDeclarationIR ==> Ci_1 sto_1 variableDeclarationIR_inst?
 
 ;;; emptyStatementIR
 

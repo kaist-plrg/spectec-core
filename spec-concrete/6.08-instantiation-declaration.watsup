@@ -8,54 +8,75 @@
 ;;; syntax constantDeclarationIR =
 ;;;   annotationList CONST typeIR nameIR initializerIR `;
 
-rule Decl_inst/constantDeclarationIR-global:
-  GLOBAL Ci_0 sto |- _ CONST typeIR nameIR (`= value) `; ==> Ci_1 sto eps
-  -- if $add_value_inst(GLOBAL, Ci_0, nameIR, value) = Ci_1
+dec $wrap_decl(cursor, declarationIR) : declarationIR?
 
-rule Decl_inst/constantDeclarationIR-non-global:
+def $wrap_decl(GLOBAL, declarationIR) = eps
+def $wrap_decl(_, declarationIR) = declarationIR
+
+rule Decl_inst/constantDeclarationIR:
   p Ci_0 sto |- annotationList CONST typeIR nameIR (`= value) `;
-  ==> Ci_1 sto (annotationList CONST typeIR nameIR (`= value) `;)
+  ==> Ci_1 sto $wrap_decl(p, constantDeclarationIR)
   -- if $add_value_inst(p, Ci_0, nameIR, value) = Ci_1
+  -- if annotationList CONST typeIR nameIR (`= value) `;
+      = constantDeclarationIR
 
 ;;; instantiationIR
 ;;; syntax instantiationIR
 ;;;; annotationList typeIR `< typeArgumentListIR > `( argumentListIR ) nameIR objectInitializerOptIR `;
 
+;; Unwrap objectInitializerOptIR
 dec $get_init_decls(objectInitializerOptIR) : objectDeclarationListIR
 
 def $get_init_decls(eps) = eps
 def $get_init_decls(`= `{ objectDeclarationListIR }) = objectDeclarationListIR
 
+;; Merge value environments
 dec $merge_venvs(venv, venv) : venv
 
 def $merge_venvs(venv, `{ (id `: value)* })
   = $adds_map<id, value>(venv, id*, value*)
 
-dec $merge_renvs(renv, renv) : renv
+;; Merge routine environments and transform functions to extern methods
+dec $merge_renv_with_extern(renv, renv) : renv
 
-def $merge_renvs(renv, `{ eps }) = renv
-
-rule Decl_inst/instantiationIR-global:
-  GLOBAL Ci sto |- instantiationIR ==> Ci sto eps
+def $merge_renv_with_extern(renv, `{ eps }) = renv
+def $merge_renv_with_extern(renv, `{ (rid_h `: routineDyn_h) :: (rid_t `: routineDyn_t)* })
+  = $merge_renv_with_extern(renv_post, `{ (rid_t `: routineDyn_t)* })
+  -- if FUNCTION `< typeParameterListIR > `( parameterListIR ) blockStatementIR
+    = routineDyn_h
+  -- if EXTERN_METHOD `< typeParameterListIR > `( parameterListIR ) blockStatementIR
+    = routineDyn_h_post
+  -- if $update_map<rid, routineDyn>(renv, rid_h, routineDyn_h_post)
+      = renv_post
 
 rule Decl_inst/instantiationIR-extern:
   p Ci_0 sto_0 |- _ typeIR prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR
     objectInitializerOptIR `;
-  ==> Ci_0 sto_2 eps
+  ==> Ci_1 sto_2 $wrap_decl(p, constantDeclarationIR)
+  ---- ;; find and instantiate constructor
   -- if $find_constructor_overloaded_inst(Ci_0, prefixedNameIR, argumentListIR) = (_, consDyn, id_default*)
-  -- if $enter_path(Ci_0, nameIR) = Ci_1
-  -- Constructor_inst: p Ci_1 sto_0 |- consDyn `< typeArgumentListIR > `( argumentListIR `# id_default* ) ==> sto_1 objDyn
+  -- if $enter_path(Ci_0, nameIR) = Ci_inner
+  -- Constructor_inst: p Ci_inner sto_0 |- consDyn `< typeArgumentListIR > `( argumentListIR `# id_default* ) ==> sto_1 objDyn
+  ---- ;; if object is an extern
   -- if objDyn = EXTERN `{ tid theta venv renv }
-  -- if $empty_context_inst()[ .PATH = Ci_1.PATH ++ nameIR ][ .GLOBAL = Ci_1.GLOBAL ] = Ci_init
+  ---- ;; initialize context for object declarations
+  -- if $empty_context_inst()[ .PATH = Ci_0.PATH ][ .GLOBAL = Ci_0.GLOBAL ] = Ci_decl
   -- if $get_init_decls(objectInitializerOptIR) = objectDeclarationListIR
-  -- ObjectDecls_inst: BLOCK Ci_init sto_1 |- objectDeclarationListIR ==> Ci_init_2 sto_2 _
-  -- if $merge_venvs(Ci_init_2.BLOCK.VENV, venv) = venv_merged
-  -- if $merge_renvs(Ci_init_2.BLOCK.RENV, renv) = renv_merged
-  -- if EXTERN `{ tid theta venv_merged renv_merged } = objDyn
-  -- if oid = Ci_1.PATH ++ nameIR
-  -- if $add_sto(sto_2, oid, objDyn) = sto_3
-  -- if $add_value_inst(p, Ci_1, nameIR, `! oid) = Ci_2
-  -- if constantDeclarationIR = `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
+  -- Decls_inst: BLOCK Ci_decl sto_1 |- objectDeclarationListIR ==> Ci_decl_post sto_2 _
+  ---- ;; merge value environments
+  -- if $merge_venvs(venv, Ci_decl_post.BLOCK.VENV) = venv_merged
+  ---- ;; merge routine environments and transform functions to extern methods
+  -- if $merge_renv_with_extern(renv, Ci_decl_post.BLOCK.RENV) = renv_merged
+  ---- ;; create new object with merged environments
+  -- if EXTERN `{ tid theta venv_merged renv_merged } = objDyn_1
+  ---- ;; add object to store
+  -- if Ci_0.PATH ++ nameIR = oid
+  -- if $add_sto(sto_2, oid, objDyn_1) = sto_3
+  ---- ;; add reference to object in value environment
+  -- if $add_value_inst(p, Ci_0, nameIR, `! oid) = Ci_1
+  ---- ;; replace declaration with constant declaration holding the reference
+  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
+      = constantDeclarationIR
 
 dec $is_extern_object(objDyn) : bool
 def $is_extern_object(EXTERN `{ _ _ _ _ }) = true
@@ -64,15 +85,21 @@ def $is_extern_object(_) = false
 rule Decl_inst/instantiationIR-non-extern:
   p Ci_0 sto_0 |- _ typeIR prefixedNameIR `< typeArgumentListIR > `( argumentListIR ) nameIR
     objectInitializerOptIR `;
-    ==> Ci_0 sto_1 eps
+    ==> Ci_1 sto_1 $wrap_decl(p, constantDeclarationIR)
+  ---- ;; find and instantiate constructor
   -- if $find_constructor_overloaded_inst(Ci_0, prefixedNameIR, argumentListIR) = (_, consDyn, id_default*)
-  -- if $enter_path(Ci_0, nameIR) = Ci_1
-  -- Constructor_inst: p Ci_1 sto_0 |- consDyn `< typeArgumentListIR > `( argumentListIR `# id_default* ) ==> sto_1 objDyn
+  -- if $enter_path(Ci_0, nameIR) = Ci_inner
+  -- Constructor_inst: p Ci_inner sto_0 |- consDyn `< typeArgumentListIR > `( argumentListIR `# id_default* ) ==> sto_1 objDyn
+  ---- ;; if object is not an extern
   -- if ~$is_extern_object(objDyn)
-  -- if oid = Ci_1.PATH ++ nameIR
+  ---- ;; add object to store
+  -- if Ci_0.PATH ++ nameIR = oid
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
-  -- if $add_value_inst(p, Ci_1, nameIR, `! oid) = Ci_2
-  -- if constantDeclarationIR = `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
+  ---- ;; add reference to object in value environment
+  -- if $add_value_inst(p, Ci_0, nameIR, `! oid) = Ci_1
+  ---- ;; replace declaration with constant declaration holding the reference
+  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
+      = constantDeclarationIR
 
 ;;; functionDeclarationIR
 ;;; syntax functionDeclarationIR
@@ -176,12 +203,12 @@ rule Decl_inst/extern-object-no-constructors:
   ---- ;; split methods and constructors
   -- if $split_constructors_IR(methodPrototypeIR*)
       = (eps, methodPrototypeIR_method*)
-  ---- ;; if no constructors are provided
   -- ExternMethods_inst: $empty_rdenv() |- methodPrototypeIR_method* ==> rdenv
   -- if EXTERN nameIR rdenv = externObjectTypeIR
   -- if externObjectTypeIR `< typeParameterListIR `, eps >
       = polyTypeDefIR
   -- if $add_typedef_inst(p, Ci_0, nameIR, polyTypeDefIR) = Ci_1
+  ---- ;; if no constructors are provided, add default constructor
   -- if $cid_IR(nameIR, eps) = cid
   -- if EXTERN nameIR `< typeParameterListIR > `( eps ) `{ methodPrototypeIR_method* }
       = consDyn
@@ -194,13 +221,14 @@ rule Decl_inst/extern-object-with-constructors:
   ---- ;; split methods and constructors
   -- if $split_constructors_IR(methodPrototypeIR*)
       = (methodPrototypeIR_constructor*, methodPrototypeIR_method*)
-  ---- ;; if no constructors are provided
+  ---- ;; bind methods to routine environment
   -- ExternMethods_inst: $empty_rdenv() |- methodPrototypeIR_method* ==> rdenv
+  ---- ;; add polymorphic extern type to typedef environment
   -- if EXTERN nameIR rdenv = externObjectTypeIR
   -- if externObjectTypeIR `< typeParameterListIR `, eps >
       = polyTypeDefIR
   -- if $add_typedef_inst(p, Ci_0, nameIR, polyTypeDefIR) = Ci_1
-  -- ExternConstructors_inst: p Ci_1 typeParameterListIR methodPrototypeIR_constructor* |- eps ==> Ci_2
+  -- ExternConstructors_inst: p Ci_1 typeParameterListIR methodPrototypeIR_method* |- methodPrototypeIR_constructor* ==> Ci_2
 
 ;;; parserDeclarationIR
 ;;; syntax parserDeclarationIR
@@ -448,4 +476,3 @@ rule Program_inst:
   -- if $empty_context_inst() = Ci_0
   -- if $empty_sto() = sto_0
   -- Decls_inst: GLOBAL Ci_0 sto_0 |- declarationIR* ==> Ci_1 sto_1 eps
-

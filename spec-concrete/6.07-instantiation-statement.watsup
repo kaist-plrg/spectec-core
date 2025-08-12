@@ -74,7 +74,9 @@ rule Stmt_inst/conditionalStatementIR-non-else:
 rule Stmt_inst/conditionalStatementIR-else:
   p Ci sto |- IF `( typedExpressionIR ) statementIR_then ELSE statementIR_else
        ==> Ci sto'' (IF `( typedExpressionIR ) statementIR_then' ELSE statementIR_else')
+  ---- ;; instantiate then branch
   -- Stmt_inst: p Ci sto |- statementIR_then ==> _ sto' statementIR_then'
+  ---- ;; instantiate else branch
   -- Stmt_inst: p Ci sto' |- statementIR_else ==> _ sto'' statementIR_else'
 
 ;;; forStatementIR : TODO
@@ -95,14 +97,34 @@ rule Stmt_inst/continueStatementIR:
 rule Stmt_inst/switchStatementIR:
   p Ci sto |- SWITCH `( typedExpressionIR ) `{ switchCaseListIR } 
   ==> Ci' sto' (SWITCH `( typedExpressionIR ) `{ switchCaseListIR' })
+  ---- ;; instantiate switch cases
   -- SwitchCases_inst: p Ci sto |- switchCaseListIR ==> Ci' sto' switchCaseListIR'
+
+;;
+;; Switch case instantiation
+;;
+;; syntax switchCaseIR
+;;
+
+;;; switchLabelIR `: blockStatementIR
 
 rule SwitchCase_inst/match:
   p Ci sto |- switchLabelIR `: blockStatementIR ==> Ci' sto' (switchLabelIR `: blockStatementIR')
-  -- Stmt_inst: p Ci sto |- blockStatementIR ==> Ci' sto' blockStatementIR' ;; TODO:start false
+  -- Stmt_inst: p Ci sto |- blockStatementIR ==> Ci' sto' blockStatementIR'
+
+;;; switchLabelIR `:
 
 rule SwitchCase_inst/fallthrough:
   p Ci sto |- switchLabelIR `: ==> Ci sto (switchLabelIR `:)
+
+rule SwitchCases_inst/nil:
+  p Ci sto |- eps ==> Ci sto eps
+
+rule SwitchCases_inst/cons:
+  p Ci_0 sto_0 |- switchCaseIR_h :: switchCaseIR_t*
+    ==> Ci_2 sto_2 (switchCaseIR_h' :: switchCaseIR_t'*)
+  -- SwitchCase_inst: p Ci_0 sto_0 |- switchCaseIR_h ==> Ci_1 sto_1 switchCaseIR_h'
+  -- SwitchCases_inst: p Ci_1 sto_1 |- switchCaseIR_t* ==> Ci_2 sto_2 switchCaseIR_t'*
 
 ;;
 ;; syntax blockElementStatementIR
@@ -110,16 +132,11 @@ rule SwitchCase_inst/fallthrough:
 
 ;;; constantDeclarationIR
 
-;; rule BlockElementStmt_inst/constantDeclarationIR-global:
-
 rule BlockElementStmt_inst/constantDeclarationIR:
   Ci sto |- constantDeclarationIR ==> Ci' sto' constantDeclarationIR'
   -- Decl_inst: LOCAL Ci sto |- constantDeclarationIR ==> Ci' sto' constantDeclarationIR'
 
 ;;; variableDeclarationIR
-
-;; rule BlockElementStmt_inst/variableDeclarationIR-global:
-;;   GLOBAL Ci sto |- variableDeclarationIR ==> Ci sto eps
 
 rule BlockElementStmt_inst/variableDeclarationIR:
   Ci sto |- variableDeclarationIR ==> Ci sto variableDeclarationIR
