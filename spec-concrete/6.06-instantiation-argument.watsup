@@ -1,4 +1,6 @@
 ;;
+;; Argument evaluation for instantiation
+;;
 ;; syntax argumentIR
 ;;
 
@@ -15,5 +17,7 @@ rule Argument_inst/namedexpression:
   -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto' value
 
 ;;; nameIR `= `_
+;;; instantiation arguments must not be missing
 
 ;;; `_
+;;; instantiation arguments must not be missing

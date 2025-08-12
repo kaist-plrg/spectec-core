@@ -5,17 +5,19 @@
 dec $empty_theta() : theta
 def $empty_theta() = $empty_map<tid, typeIR>()
 
+;; Map from variable identifiers to values
 syntax venv = map<id, value>
 
 dec $empty_venv() : venv
 def $empty_venv() = $empty_map<id, value>
 
 syntax stateDyn = parserBlockStatementIR
-;; Map from names to parser states
-syntax senv = map<id, stateDyn>
+
+;; Map from parser state names to parser states
+syntax senv = map<nameIR, stateDyn>
 
 dec $empty_senv() : senv
-def $empty_senv() = $empty_map<id, stateDyn>
+def $empty_senv() = $empty_map<nameIR, stateDyn>
 
 ;;
 ;; L-values
@@ -41,7 +43,7 @@ syntax funcDyn =
 
 syntax methodDyn =
   | BUILTIN_METHOD `( parameterListIR ) `# lvalueDyn 
-  | EXTERN_METHOD `< typeParameterListIR > `( parameterListIR )
+  | EXTERN_METHOD `< typeParameterListIR > `( parameterListIR ) blockStatementIR?
   | EXTERN_METHOD ABSTRACT `< typeParameterListIR > `( parameterListIR )
   | PARSER_APPLY `( parameterListIR ) `{ parserLocalDeclarationListIR `; senv }
   | CONTROL_APPLY `( parameterListIR ) `{ controlLocalDeclarationListIR `; renv `; blockElementStatementListIR }

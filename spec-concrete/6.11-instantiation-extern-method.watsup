@@ -7,7 +7,7 @@
 ;;; annotationList functionPrototypeIR `;
 
 rule ExternMethod_inst/non-abstract:
-  rdenv_0 |- annotationList (typeIR_ret nameIR 
+  rdenv_0 |-_ (typeIR_ret nameIR 
     `< typeParameterListIR `, typeParameterListIR_inferred >
     `( parameterIR* )) `;
     ==> rdenv_1
@@ -60,3 +60,33 @@ rule ExternConstructors_inst/cons:
   -- ExternConstructor_inst: p Ci_0 typeParameterListIR methodPrototypeListIR |- methodPrototypeIR_h ==> Ci_1
   -- ExternConstructors_inst: p Ci_1 typeParameterListIR methodPrototypeListIR |- methodPrototypeIR_t* ==> Ci_2
 
+rule Method_inst/non-abstract:
+  Ci_0 |- _ (_ nameIR 
+    `< typeParameterListIR `, typeParameterListIR_inferred >
+    `( parameterListIR )) `;
+    ==> Ci_1
+    -- if $rid_IR(nameIR, parameterListIR) = rid
+    -- if EXTERN_METHOD `< typeParameterListIR ++ typeParameterListIR_inferred >
+          `( parameterListIR ) eps
+        = methodDyn
+    -- if $add_routine_overload_inst(BLOCK, Ci_0, rid, methodDyn) = Ci_1
+
+rule Method_inst/abstract:
+  Ci_0 |- _ ABSTRACT
+    (_ nameIR `< typeParameterListIR `, typeParameterListIR_inferred >
+    `( parameterListIR )) `;
+    ==> Ci_1
+    -- if $rid_IR(nameIR, parameterListIR) = rid
+    -- if EXTERN_METHOD ABSTRACT 
+          `< typeParameterListIR ++ typeParameterListIR_inferred >
+          `( parameterListIR )
+        = methodDyn
+    -- if $add_routine_overload_inst(BLOCK, Ci_0, rid, methodDyn) = Ci_1
+
+rule Methods_inst/nil:
+  Ci |- eps ==> Ci
+
+rule Methods_inst/cons:
+  Ci_0 |- methodPrototypeIR_h :: methodPrototypeIR_t* ==> Ci_2
+  -- Method_inst: Ci_0 |- methodPrototypeIR_h ==> Ci_1
+  -- Methods_inst: Ci_1 |- methodPrototypeIR_t* ==> Ci_2

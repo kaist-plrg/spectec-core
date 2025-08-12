@@ -24,78 +24,13 @@ relation Expr_inst:
   cursor contextInst sto |- typedExpressionIR ==> sto value
   hint(input %0 %1 %2 %3)
 
+;;
+;;;; Argument instantiation
+;;
+
 relation Argument_inst:
   cursor contextInst sto |- argumentIR ==> sto value
   hint(input %0 %1 %2 %3)
-
-;;
-;;;; Declaration instantiation
-;;
-
-relation Decls_inst:
-  cursor contextInst sto |- declarationIR* ==> contextInst sto declarationIR*
-  hint(input %0 %1 %2 %3)
-
-relation Decl_inst:
-  cursor contextInst sto |- declarationIR ==> contextInst sto declarationIR?
-  hint(input %0 %1 %2 %3)
-
-relation ParserLocalDecl_inst:
-  contextInst sto |- parserLocalDeclarationIR ==> contextInst sto parserLocalDeclarationIR?
-  hint(input %0 %1 %2)
-
-relation ParserLocalDecls_inst:
-  contextInst sto |- parserLocalDeclarationIR* ==> contextInst sto parserLocalDeclarationIR*
-  hint(input %0 %1 %2)
-
-relation ControlLocalDecl_inst:
-  contextInst sto |- controlLocalDeclarationIR ==> contextInst sto controlLocalDeclarationIR?
-  hint(input %0 %1 %2)
-
-relation ControlLocalDecls_inst:
-  contextInst sto |- controlLocalDeclarationIR* ==> contextInst sto controlLocalDeclarationIR*
-  hint(input %0 %1 %2)
-
-relation TableProperty_inst:
-  contextInst sto |- tablePropertyIR ==> contextInst sto tablePropertyIR
-  hint(input %0 %1 %2)
-
-relation TableProperties_inst:
-  contextInst sto |- tablePropertyIR* ==> contextInst sto tablePropertyIR*
-  hint(input %0 %1 %2)
-
-relation ObjectDecls_inst:
-  cursor contextInst sto |- objectDeclarationListIR ==> contextInst sto objectDeclarationListIR
-  hint(input %0 %1 %2 %3)
-
-relation ExternMethod_inst:
-  rdenv |- methodPrototypeIR ==> rdenv
-  hint(input %0 %1)
-
-relation ExternMethods_inst:
-  rdenv |- methodPrototypeIR* ==> rdenv
-  hint(input %0 %1)
-
-relation ExternConstructor_inst:
-  cursor contextInst typeParameterListIR methodPrototypeListIR |- methodPrototypeIR ==> contextInst
-  hint(input %0 %1 %2 %3 %4)
-
-relation ExternConstructors_inst:
-  cursor contextInst typeParameterListIR methodPrototypeListIR |- methodPrototypeIR* ==> contextInst
-  hint(input %0 %1 %2 %3 %4)
-
-
-;;
-;;;; Method instantiation
-;;
-
-relation Methods_inst:
-  cursor contextInst |- methodPrototypeIR* ==> contextInst
-  hint(input %0 %1 %2)
-
-relation Method_inst:
-  cursor contextInst |- methodPrototypeIR ==> contextInst
-  hint(input %0 %1 %2)
 
 ;;
 ;;;; Statement instantiation
@@ -125,8 +60,32 @@ relation SwitchCase_inst:
   cursor contextInst sto |- switchCaseIR ==> contextInst sto switchCaseIR
   hint(input %0 %1 %2 %3)
 
+relation Block_inst:
+  contextInst sto bool |- blockStatementIR ==> contextInst sto blockStatementIR
+  hint(input %0 %1 %2 %3)
+
 ;;
-;;;; Parser state instantiation
+;;;; Extern method/constructor instantiation
+;;
+
+relation ExternMethod_inst:
+  rdenv |- methodPrototypeIR ==> rdenv
+  hint(input %0 %1)
+
+relation ExternMethods_inst:
+  rdenv |- methodPrototypeIR* ==> rdenv
+  hint(input %0 %1)
+
+relation ExternConstructor_inst:
+  cursor contextInst typeParameterListIR methodPrototypeListIR |- methodPrototypeIR ==> contextInst
+  hint(input %0 %1 %2 %3 %4)
+
+relation ExternConstructors_inst:
+  cursor contextInst typeParameterListIR methodPrototypeListIR |- methodPrototypeIR* ==> contextInst
+  hint(input %0 %1 %2 %3 %4)
+
+;;
+;;;; Parser instantiation
 ;;
 
 relation ParserStmt_inst:
@@ -145,11 +104,62 @@ relation ParserStates_inst:
   contextInst sto |- parserStateIR* ==> contextInst sto
   hint(input %0 %1 %2)
 
+relation ParserLocalDecl_inst:
+  contextInst sto |- parserLocalDeclarationIR ==> contextInst sto parserLocalDeclarationIR?
+  hint(input %0 %1 %2)
 
-relation Block_inst:
-  contextInst sto bool |- blockStatementIR ==> contextInst sto blockStatementIR
-  hint(input %0 %1 %2 %3)
+relation ParserLocalDecls_inst:
+  contextInst sto |- parserLocalDeclarationIR* ==> contextInst sto parserLocalDeclarationIR*
+  hint(input %0 %1 %2)
+
+;;
+;;;; Control instantiation
+;;
+
+relation ControlLocalDecl_inst:
+  contextInst sto |- controlLocalDeclarationIR ==> contextInst sto controlLocalDeclarationIR?
+  hint(input %0 %1 %2)
+
+relation ControlLocalDecls_inst:
+  contextInst sto |- controlLocalDeclarationIR* ==> contextInst sto controlLocalDeclarationIR*
+  hint(input %0 %1 %2)
 
 relation Table_inst:
   cursor contextInst sto |- tablePropertyListIR ==> contextInst sto tablePropertyListIR
   hint(input %0 %1 %2 %3)
+
+relation TableProperty_inst:
+  contextInst sto |- tablePropertyIR ==> contextInst sto tablePropertyIR
+  hint(input %0 %1 %2)
+
+relation TableProperties_inst:
+  contextInst sto |- tablePropertyIR* ==> contextInst sto tablePropertyIR*
+  hint(input %0 %1 %2)
+
+relation ObjectDecls_inst:
+  contextInst sto |- objectDeclarationListIR ==> contextInst sto objectDeclarationListIR
+  hint(input %0 %1 %2)
+
+;;
+;;;; Declaration instantiation
+;;
+
+relation Decls_inst:
+  cursor contextInst sto |- declarationIR* ==> contextInst sto declarationIR*
+  hint(input %0 %1 %2 %3)
+
+relation Decl_inst:
+  cursor contextInst sto |- declarationIR ==> contextInst sto declarationIR?
+  hint(input %0 %1 %2 %3)
+
+;;
+;;;; Method instantiation
+;;
+
+relation Methods_inst:
+  contextInst |- methodPrototypeIR* ==> contextInst
+  hint(input %0 %1)
+
+relation Method_inst:
+  contextInst |- methodPrototypeIR ==> contextInst
+  hint(input %0 %1)
