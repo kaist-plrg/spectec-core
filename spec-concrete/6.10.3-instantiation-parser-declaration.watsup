@@ -8,13 +8,13 @@
 
 rule ParserLocalDecl_inst/constantDeclarationIR:
   Ci_0 sto_0 |- constantDeclarationIR ==> Ci_1 sto_1 constantDeclarationIR_inst?
-  -- Decl_inst: LOCAL Ci_0 sto_0 |- constantDeclarationIR ==> Ci_1 sto_1 constantDeclarationIR_inst?
+  -- Decl_inst: BLOCK Ci_0 sto_0 |- constantDeclarationIR ==> Ci_1 sto_1 constantDeclarationIR_inst?
 
 ;;; instantiationIR
 
 rule ParserLocalDecl_inst/instantiationIR:
   Ci_0 sto_0 |- instantiationIR ==> Ci_1 sto_1 instantiationIR_inst?
-  -- Decl_inst: LOCAL Ci_0 sto_0 |- instantiationIR ==> Ci_1 sto_1 instantiationIR_inst?
+  -- Decl_inst: BLOCK Ci_0 sto_0 |- instantiationIR ==> Ci_1 sto_1 instantiationIR_inst?
 
 ;;; variableDeclarationIR
 

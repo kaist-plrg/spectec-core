@@ -67,28 +67,28 @@ def $align_cparams_with_args'(
   -- if $align_cparams_with_args'(`{ (id_map `:  constructorParameterIR_map)* }, constructorParameterIR_t*, argumentIR_t*)
       = (constructorParameterIR_aligned*, argumentIR_aligned*)
 
-relation Eval_args:
-  cursor cursor contextInst sto |- id* argumentIR* ==> contextInst sto
-  hint(input %0 %1 %2 %3 %4 %5)
+relation Bind_args:
+  cursor contextInst ; cursor contextInst sto |- id* argumentIR* ==> contextInst sto
+  hint(input %0 %1 %2 %3 %4 %5 %6)
 
-relation Eval_arg:
-  cursor cursor contextInst sto |- id argumentIR ==> contextInst sto
-  hint(input %0 %1 %2 %3 %4 %5)
+relation Bind_arg:
+  cursor contextInst ; cursor contextInst sto |- id argumentIR ==> contextInst sto
+  hint(input %0 %1 %2 %3 %4 %5 %6)
 
-rule Eval_arg:
-  p p_callee Ci_0 sto_0 |- id argumentIR ==> Ci_1 sto_1
-  -- if $enter_path(Ci_0, id) = Ci_caller
-  -- Argument_inst: p Ci_caller sto_0 |- argumentIR ==> sto_1 value
-  -- if $add_value_inst(p_callee, Ci_0, id, value) = Ci_1
+rule Bind_arg:
+  p_caller Ci_caller ; p_callee Ci_callee sto_0 |- id argumentIR ==> Ci_callee_1 sto_1
+  -- if $enter_path(Ci_caller, id) = Ci_caller_inner
+  -- Argument_inst: p_caller Ci_caller_inner sto_0 |- argumentIR ==> sto_1 value
+  -- if $add_value_inst(p_callee, Ci_callee, id, value) = Ci_callee_1
 
-rule Eval_args/nil:
-  p p_callee Ci_0 sto_0 |- eps eps ==> Ci_0 sto_0
+rule Bind_args/nil:
+  p_caller Ci_caller ; p_callee Ci_callee sto_0 |- eps eps ==> Ci_callee sto_0
 
-rule Eval_args/cons:
-  p p_callee Ci_0 sto_0 |- (id_h :: id_t*) (argumentIR_h :: argumentIR_t*)
-    ==> Ci_2 sto_2
-  -- Eval_arg: p p_callee Ci_0 sto_0 |- id_h argumentIR_h ==> Ci_1 sto_1
-  -- Eval_args: p p_callee Ci_1 sto_1 |- id_t* argumentIR_t* ==> Ci_2 sto_2
+rule Bind_args/cons:
+  p_caller Ci_caller ; p_callee Ci_callee sto_0 |- (id_h :: id_t*) (argumentIR_h :: argumentIR_t*)
+    ==> Ci_callee_2 sto_2
+  -- Bind_arg: p_caller Ci_caller ; p_callee Ci_callee sto_0 |- id_h argumentIR_h ==> Ci_callee_1 sto_1
+  -- Bind_args: p_caller Ci_caller ; p_callee Ci_callee sto_1 |- id_t* argumentIR_t* ==> Ci_callee_2 sto_2
 
 ;; syntax consDyn
 
@@ -107,7 +107,7 @@ rule Constructor_inst/extern:
       = (constructorParameterIR_aligned*, argumentIR_aligned*, constructorParameterIR_default*, value_default*)
   ---- ;; bind non-default arguments to callee context
   -- if (constructorParameterIR_aligned = _ _ _ id_aligned _)*
-  -- Eval_args: p p_callee Ci_callee_1 sto_0 |- id_aligned* argumentIR_aligned* ==> Ci_callee_2 sto_1
+  -- Bind_args: p Ci ; p_callee Ci_callee_1 sto_0 |- id_aligned* argumentIR_aligned* ==> Ci_callee_2 sto_1
   ---- ;; bind default values to callee context
   -- if (constructorParameterIR_default = _ _ _ id_cparam_default _)*
   -- if $add_values_inst(p_callee, Ci_callee_2, id_cparam_default*, value_default*) = Ci_callee_3
@@ -130,7 +130,7 @@ rule Constructor_inst/parser:
       = (constructorParameterIR_aligned*, argumentIR_aligned*, constructorParameterIR_default*, value_default*)
   ---- ;; bind non-default arguments to callee context
   -- if (constructorParameterIR_aligned = _ _ _ id_aligned _)*
-  -- Eval_args: p p_callee Ci_callee_1 sto_0 |- id_aligned* argumentIR_aligned* ==> Ci_callee_2 sto_1
+  -- Bind_args: p Ci ; p_callee Ci_callee_1 sto_0 |- id_aligned* argumentIR_aligned* ==> Ci_callee_2 sto_1
   ---- ;; bind default values to callee context
   -- if (constructorParameterIR_default = _ _ _ id_cparam_default _)*
   -- if $add_values_inst(p_callee, Ci_callee_2, id_cparam_default*, value_default*) = Ci_callee_3
@@ -140,8 +140,8 @@ rule Constructor_inst/parser:
   -- if $add_state_inst(BLOCK, Ci_local, "accept", stateDyn_empty) = Ci_local_1
   -- if $add_state_inst(BLOCK, Ci_local_1, "reject", stateDyn_empty) = Ci_local_2
   ---- ;; instantiate parser states
-  -- ParserStates_inst: Ci_callee_3 sto_2 |- parserStateIR* ==> Ci_state sto_3
-  -- if PARSER `{ Ci_local.BLOCK.VENV parameterIR* parserLocalDeclarationIR_inst* Ci_state.BLOCK.SENV }
+  -- ParserStates_inst: Ci_local_2 sto_2 |- parserStateIR* ==> Ci_state sto_3
+  -- if PARSER `{ Ci_callee_3.BLOCK.VENV parameterIR* parserLocalDeclarationIR_inst* Ci_state.BLOCK.SENV }
       = objDyn
 
 ;;; CONTROL `< typeParameterListIR > `( parameterListIR ) `( constructorParameterListIR ) `{ controlLocalDeclarationListIR APPLY controlBodyIR }
@@ -159,7 +159,7 @@ rule Constructor_inst/control:
       = (constructorParameterIR_aligned*, argumentIR_aligned*, constructorParameterIR_default*, value_default*)
   ---- ;; bind non-default arguments to callee context
   -- if (constructorParameterIR_aligned = _ _ _ id_aligned _)*
-  -- Eval_args: p p_callee Ci_callee_1 sto |- id_aligned* argumentIR_aligned* ==> Ci_callee_2 sto'
+  -- Bind_args: p Ci ; p_callee Ci_callee_1 sto |- id_aligned* argumentIR_aligned* ==> Ci_callee_2 sto'
   ---- ;; bind default values to callee context
   -- if (constructorParameterIR_default = _ _ _ id_cparam_default _)*
   -- if $add_values_inst(p_callee, Ci_callee_2, id_cparam_default*, value_default*) = Ci_callee_3
@@ -181,7 +181,7 @@ rule Constructor_inst/package:
       = (constructorParameterIR_aligned*, argumentIR_aligned*, constructorParameterIR_default*, value_default*)
   ---- ;; bind non-default arguments to callee context
   -- if (constructorParameterIR_aligned = _ _ _ id_aligned _)*
-  -- Eval_args: p p_callee Ci_callee_1 sto_0 |- id_aligned* argumentIR_aligned* ==> Ci_callee_2 sto_1
+  -- Bind_args: p Ci ; p_callee Ci_callee_1 sto_0 |- id_aligned* argumentIR_aligned* ==> Ci_callee_2 sto_1
   ---- ;; bind default values to callee context
   -- if (constructorParameterIR_default = _ _ _ id_cparam_default _)*
   -- if $add_values_inst(p_callee, Ci_callee_2, id_cparam_default*, value_default*) = Ci_callee_3
@@ -206,7 +206,7 @@ rule Constructor_inst/table:
       = (constructorParameterIR_aligned*, argumentIR_aligned*, constructorParameterIR_default*, value_default*)
   ---- ;; bind non-default arguments to callee context
   -- if (constructorParameterIR_aligned = _ _ _ id_aligned _)*
-  -- Eval_args: p p_callee Ci_callee_1 sto |- id_aligned* argumentIR_aligned* ==> Ci_callee_2 sto'
+  -- Bind_args: p Ci ; p_callee Ci_callee_1 sto |- id_aligned* argumentIR_aligned* ==> Ci_callee_2 sto'
   ---- ;; bind default values to callee context
   -- if (constructorParameterIR_default = _ _ _ id_cparam_default _)*
   -- if $add_values_inst(p_callee, Ci_callee_2, id_cparam_default*, value_default*) = Ci_callee_3
