@@ -27,14 +27,14 @@ rule Stmt_inst/callStatementIR:
 
 rule Stmt_inst/directApplicationStatementIR:
   p Ci sto_0 |- prefixedNameIR `. APPLY `( argumentListIR ) `;
-    ==> Ci sto_2 blockStatementIR
+            ==> Ci sto_2 blockStatementIR
   -- if $find_constructor_overloaded_inst(Ci, prefixedNameIR, eps) = (_, consDyn, _)
   -- Constructor_inst: p Ci sto_0 |- consDyn `< eps > `( eps `# eps ) ==> sto_1 objDyn
   -- if $fresh_tid() = tid_fresh
   -- if $flatten_prefixedNameIR(prefixedNameIR) = tid
   -- if TID tid = typeIR
   -- if $concat_text([ tid, "_", tid_fresh]) = nameIR
-  -- if oid = Ci.PATH ++ nameIR
+  -- if Ci.PATH ++ nameIR = oid
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
   -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
   -- if ((`` tid) `# `( typeIR CTK )) `. "apply" = routineTargetIR
@@ -56,8 +56,8 @@ rule Stmt_inst/exitStatementIR:
 
 rule Stmt_inst/blockStatementIR:
   p Ci sto |- annotationList `{ blockElementStatementListIR }
-    ==> Ci' sto' (annotationList `{ blockElementStatementListIR' })
-  -- Block_inst: p Ci sto |- annotationList `{ blockElementStatementListIR } ==> Ci' sto' (_ `{ blockElementStatementListIR' })
+          ==> Ci_1 sto_1 (annotationList `{ blockElementStatementListIR' })
+  -- Block_inst: p Ci sto |- annotationList `{ blockElementStatementListIR } ==> Ci_1 sto_1 (_ `{ blockElementStatementListIR' })
 
 ;;; conditionalStatementIR
 ;;; syntax conditionalStatementIR =
@@ -66,18 +66,18 @@ rule Stmt_inst/blockStatementIR:
 
 rule Stmt_inst/conditionalStatementIR-non-else:
   p Ci sto |- IF `( typedExpressionIR ) statementIR
-       ==> Ci sto' (IF `( typedExpressionIR ) statementIR')
-  -- Stmt_inst: p Ci sto |- statementIR ==> _ sto' statementIR'
+          ==> Ci_1 sto_1 (IF `( typedExpressionIR ) statementIR')
+  -- Stmt_inst: p Ci sto |- statementIR ==> _ sto_1 statementIR'
 
 ;;;; IF `( typedExpressionIR ) statementIR ELSE statementIR
 
 rule Stmt_inst/conditionalStatementIR-else:
   p Ci sto |- IF `( typedExpressionIR ) statementIR_then ELSE statementIR_else
-       ==> Ci sto'' (IF `( typedExpressionIR ) statementIR_then' ELSE statementIR_else')
+          ==> Ci_1 sto_1 (IF `( typedExpressionIR ) statementIR_then' ELSE statementIR_else')
   ---- ;; instantiate then branch
-  -- Stmt_inst: p Ci sto |- statementIR_then ==> _ sto' statementIR_then'
+  -- Stmt_inst: p Ci sto |- statementIR_then ==> _ sto_1 statementIR_then'
   ---- ;; instantiate else branch
-  -- Stmt_inst: p Ci sto' |- statementIR_else ==> _ sto'' statementIR_else'
+  -- Stmt_inst: p Ci sto_1 |- statementIR_else ==> _ sto_2 statementIR_else'
 
 ;;; forStatementIR : TODO
 
@@ -96,9 +96,9 @@ rule Stmt_inst/continueStatementIR:
 
 rule Stmt_inst/switchStatementIR:
   p Ci sto |- SWITCH `( typedExpressionIR ) `{ switchCaseListIR } 
-  ==> Ci' sto' (SWITCH `( typedExpressionIR ) `{ switchCaseListIR' })
+          ==> Ci_1 sto_1 (SWITCH `( typedExpressionIR ) `{ switchCaseListIR' })
   ---- ;; instantiate switch cases
-  -- SwitchCases_inst: p Ci sto |- switchCaseListIR ==> Ci' sto' switchCaseListIR'
+  -- SwitchCases_inst: p Ci sto |- switchCaseListIR ==> Ci_1 sto_1 switchCaseListIR'
 
 ;;
 ;; Switch case instantiation
@@ -109,8 +109,8 @@ rule Stmt_inst/switchStatementIR:
 ;;; switchLabelIR `: blockStatementIR
 
 rule SwitchCase_inst/match:
-  p Ci sto |- switchLabelIR `: blockStatementIR ==> Ci' sto' (switchLabelIR `: blockStatementIR')
-  -- Stmt_inst: p Ci sto |- blockStatementIR ==> Ci' sto' blockStatementIR'
+  p Ci sto |- switchLabelIR `: blockStatementIR ==> Ci_1 sto_1 (switchLabelIR `: blockStatementIR')
+  -- Stmt_inst: p Ci sto |- blockStatementIR ==> Ci_1 sto_1 blockStatementIR'
 
 ;;; switchLabelIR `:
 
@@ -122,7 +122,7 @@ rule SwitchCases_inst/nil:
 
 rule SwitchCases_inst/cons:
   p Ci_0 sto_0 |- switchCaseIR_h :: switchCaseIR_t*
-    ==> Ci_2 sto_2 (switchCaseIR_h' :: switchCaseIR_t'*)
+              ==> Ci_2 sto_2 (switchCaseIR_h' :: switchCaseIR_t'*)
   -- SwitchCase_inst: p Ci_0 sto_0 |- switchCaseIR_h ==> Ci_1 sto_1 switchCaseIR_h'
   -- SwitchCases_inst: p Ci_1 sto_1 |- switchCaseIR_t* ==> Ci_2 sto_2 switchCaseIR_t'*
 
@@ -133,8 +133,8 @@ rule SwitchCases_inst/cons:
 ;;; constantDeclarationIR
 
 rule BlockElementStmt_inst/constantDeclarationIR:
-  p Ci sto |- constantDeclarationIR ==> Ci' sto' constantDeclarationIR'
-  -- Decl_inst: p Ci sto |- constantDeclarationIR ==> Ci' sto' constantDeclarationIR'
+  p Ci sto |- constantDeclarationIR ==> Ci_1 sto_1 constantDeclarationIR'
+  -- Decl_inst: p Ci sto |- constantDeclarationIR ==> Ci_1 sto_1 constantDeclarationIR'
 
 ;;; variableDeclarationIR
 
@@ -147,15 +147,15 @@ rule BlockElementStmt_inst/variableDeclarationIR:
 ;;; statementIR
 
 rule BlockElementStmt_inst/statementIR:
-  p Ci sto |- statementIR ==> Ci' sto' statementIR_inst
-  -- Stmt_inst: LOCAL Ci sto |- statementIR ==> Ci' sto' statementIR_inst
+  p Ci sto |- statementIR ==> Ci_1 sto_1 statementIR_inst
+  -- Stmt_inst: LOCAL Ci sto |- statementIR ==> Ci_1 sto_1 statementIR_inst
 
 rule BlockElementStmts_inst/nil:
   p Ci sto |- eps ==> Ci sto eps
 
 rule BlockElementStmts_inst/cons:
   p Ci_0 sto_0 |- blockElementStatementIR_h :: blockElementStatementIR_t*
-    ==> Ci_2 sto_2 (blockElementStatementIR_h' :: blockElementStatementIR_t'*)
+              ==> Ci_2 sto_2 (blockElementStatementIR_h' :: blockElementStatementIR_t'*)
   -- BlockElementStmt_inst: p Ci_0 sto_0 |- blockElementStatementIR_h ==> Ci_1 sto_1 blockElementStatementIR_h'
   -- BlockElementStmts_inst: p Ci_1 sto_1 |- blockElementStatementIR_t* ==> Ci_2 sto_2 blockElementStatementIR_t'*
 
@@ -168,7 +168,7 @@ rule BlockElementStmts_inst/cons:
 
 rule Block_inst:
   p Ci_0 sto_0 |- annotationList `{ blockElementStatementListIR }
-    ==> Ci_2 sto_1 (annotationList `{ blockElementStatementListIR_inst })
+              ==> Ci_2 sto_1 (annotationList `{ blockElementStatementListIR_inst })
   -- if $enter_inst(Ci_0) = Ci_1
   -- BlockElementStmts_inst: p Ci_1 sto_0 |- blockElementStatementListIR ==> Ci_2 sto_1 blockElementStatementListIR_inst
   -- if $exit_inst(Ci_2) = Ci_3
