@@ -276,17 +276,14 @@ rule Expr_inst/accessExpressionIR-errorAccessExpressionIR:
 rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-typeaccess-enum:
   p Ci sto |- ((TYPE prefixedNameIR) `. nameIR) `# _
           ==> sto (tid `. nameIR)
-  -- if $flatten_prefixedNameIR(prefixedNameIR) = nameIR_type
-  -- if $find_typedef_inst(p, Ci, nameIR_type) = typeIR
-  -- if $canon(typeIR) = ENUM tid `{ _ }
+  -- if $find_typedef_inst(p, Ci, prefixedNameIR) = ENUM tid `{ _ }
 
 rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-typeaccess-senum:
   p Ci sto |- ((TYPE prefixedNameIR) `. nameIR) `# _
           ==> sto (tid `. nameIR `# value)
-  -- if $flatten_prefixedNameIR(prefixedNameIR) = nameIR_type
-  -- if $find_typedef_inst(p, Ci, nameIR_type) = typeIR
-  -- if $canon(typeIR) = ENUM tid `# _ `{ (id_f `= value_f `;)* }
-  -- if $assoc_<nameIR, value>(nameIR, (id_f, value_f)*) = value
+  -- if $find_typedef_inst(p, Ci, prefixedNameIR) 
+      = ENUM tid `# _ `{ (id_member `= value_member `;)* }
+  -- if $assoc_<nameIR, value>(nameIR, (id_member, value_member)*) = value
 
 ;;;;;;; typedExpressionIR
 
@@ -332,8 +329,6 @@ rule Expr_inst/callExpressionIR-instantiation:
 
 ;;;;;; syntax routineTargetIR
 
-dec $size(typeIR, nameIR) : value
-
 ;;;;;;; referenceExpressionIR
 ;;;;;;; function/action calls are not evaluated statically
 
@@ -342,7 +337,7 @@ dec $size(typeIR, nameIR) : value
 rule Expr_inst/callExpressionIR-methodTarget-generic:
   p Ci sto |- ((typedExpressionIR `. nameIR ) `< eps > `( eps )) `# _
           ==> sto $sizeof(typeIR_base, nameIR)
-  -- if typedExpressionIR = `# `( typeIR_base _ )
+  -- if typedExpressionIR = _ `# `( typeIR_base _ )
   -- if nameIR <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
 
 ;;;;;;; TYPE prefixedNameIR `. nameIR
@@ -351,7 +346,7 @@ rule Expr_inst/callExpressionIR-methodTarget-non-generic:
   p Ci sto |- ((TYPE prefixedNameIR `. nameIR ) `< eps > `( eps )) `# _
           ==> sto $sizeof(typeIR_base, nameIR)
   -- if nameIR <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
-  -- if $find_type_inst(p, Ci, prefixedNameIR) = typeIR_base
+  -- if $find_typedef_inst(p, Ci, prefixedNameIR) = typeIR_base
 
 ;;;;;;; `( routineTargetIR )
 
