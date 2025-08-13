@@ -11,6 +11,7 @@ syntax venv = map<id, value>
 dec $empty_venv() : venv
 def $empty_venv() = $empty_map<id, value>
 
+;; Dynamic representation of a parser state
 syntax stateDyn = parserBlockStatementIR
 
 ;; Map from parser state names to parser states

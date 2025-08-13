@@ -45,12 +45,12 @@ relation Stmt_inst:
   hint(input %0 %1 %2 %3)
 
 relation BlockElementStmt_inst:
-  contextInst sto |- blockElementStatementIR ==> contextInst sto blockElementStatementIR?
-  hint(input %0 %1 %2)
+  cursor contextInst sto |- blockElementStatementIR ==> contextInst sto blockElementStatementIR?
+  hint(input %0 %1 %2 %3)
 
 relation BlockElementStmts_inst:
-  contextInst sto |- blockElementStatementIR* ==> contextInst sto blockElementStatementIR*
-  hint(input %0 %1 %2)
+  cursor contextInst sto |- blockElementStatementIR* ==> contextInst sto blockElementStatementIR*
+  hint(input %0 %1 %2 %3)
 
 relation SwitchCases_inst:
   cursor contextInst sto |- switchCaseIR* ==> contextInst sto switchCaseIR*
@@ -61,7 +61,7 @@ relation SwitchCase_inst:
   hint(input %0 %1 %2 %3)
 
 relation Block_inst:
-  contextInst sto bool |- blockStatementIR ==> contextInst sto blockStatementIR
+  cursor contextInst sto |- blockStatementIR ==> contextInst sto blockStatementIR
   hint(input %0 %1 %2 %3)
 
 ;;

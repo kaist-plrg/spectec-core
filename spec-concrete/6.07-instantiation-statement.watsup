@@ -57,7 +57,7 @@ rule Stmt_inst/exitStatementIR:
 rule Stmt_inst/blockStatementIR:
   p Ci sto |- annotationList `{ blockElementStatementListIR }
     ==> Ci' sto' (annotationList `{ blockElementStatementListIR' })
-  -- Block_inst: Ci sto false |- annotationList `{ blockElementStatementListIR } ==> Ci' sto' (_ `{ blockElementStatementListIR' })
+  -- Block_inst: p Ci sto |- annotationList `{ blockElementStatementListIR } ==> Ci' sto' (_ `{ blockElementStatementListIR' })
 
 ;;; conditionalStatementIR
 ;;; syntax conditionalStatementIR =
@@ -133,28 +133,31 @@ rule SwitchCases_inst/cons:
 ;;; constantDeclarationIR
 
 rule BlockElementStmt_inst/constantDeclarationIR:
-  Ci sto |- constantDeclarationIR ==> Ci' sto' constantDeclarationIR'
-  -- Decl_inst: LOCAL Ci sto |- constantDeclarationIR ==> Ci' sto' constantDeclarationIR'
+  p Ci sto |- constantDeclarationIR ==> Ci' sto' constantDeclarationIR'
+  -- Decl_inst: p Ci sto |- constantDeclarationIR ==> Ci' sto' constantDeclarationIR'
 
 ;;; variableDeclarationIR
 
 rule BlockElementStmt_inst/variableDeclarationIR:
-  Ci sto |- variableDeclarationIR ==> Ci sto variableDeclarationIR
+  GLOBAL Ci sto |- variableDeclarationIR ==> Ci sto eps
+
+rule BlockElementStmt_inst/variableDeclarationIR:
+  p Ci sto |- variableDeclarationIR ==> Ci sto variableDeclarationIR
 
 ;;; statementIR
 
 rule BlockElementStmt_inst/statementIR:
-  Ci sto |- statementIR ==> Ci' sto' statementIR_inst
+  p Ci sto |- statementIR ==> Ci' sto' statementIR_inst
   -- Stmt_inst: LOCAL Ci sto |- statementIR ==> Ci' sto' statementIR_inst
 
 rule BlockElementStmts_inst/nil:
-  Ci sto |- eps ==> Ci sto eps
+  p Ci sto |- eps ==> Ci sto eps
 
 rule BlockElementStmts_inst/cons:
-  Ci_0 sto_0 |- blockElementStatementIR_h :: blockElementStatementIR_t*
+  p Ci_0 sto_0 |- blockElementStatementIR_h :: blockElementStatementIR_t*
     ==> Ci_2 sto_2 (blockElementStatementIR_h' :: blockElementStatementIR_t'*)
-  -- BlockElementStmt_inst: Ci_0 sto_0 |- blockElementStatementIR_h ==> Ci_1 sto_1 blockElementStatementIR_h'
-  -- BlockElementStmts_inst: Ci_1 sto_1 |- blockElementStatementIR_t* ==> Ci_2 sto_2 blockElementStatementIR_t'*
+  -- BlockElementStmt_inst: p Ci_0 sto_0 |- blockElementStatementIR_h ==> Ci_1 sto_1 blockElementStatementIR_h'
+  -- BlockElementStmts_inst: p Ci_1 sto_1 |- blockElementStatementIR_t* ==> Ci_2 sto_2 blockElementStatementIR_t'*
 
 ;;
 ;; syntax blockStatmentIR
@@ -163,14 +166,9 @@ rule BlockElementStmts_inst/cons:
 ;;; syntax blockStatmentIR =
 ;;;   annotationList `{ blockElementStatementListIR }
 
-rule Block_inst/start:
-  Ci_0 sto_0 true |- annotationList `{ blockElementStatementListIR }
-    ==> Ci_1 sto_1 (annotationList `{ blockElementStatementListIR_inst })
-  -- BlockElementStmts_inst: Ci_0 sto_0 |- blockElementStatementListIR ==> Ci_1 sto_1 blockElementStatementListIR_inst
-
-rule Block_inst/no-start:
-  Ci_0 sto_0 false |- annotationList `{ blockElementStatementListIR }
+rule Block_inst:
+  p Ci_0 sto_0 |- annotationList `{ blockElementStatementListIR }
     ==> Ci_2 sto_1 (annotationList `{ blockElementStatementListIR_inst })
   -- if $enter_inst(Ci_0) = Ci_1
-  -- BlockElementStmts_inst: Ci_1 sto_0 |- blockElementStatementListIR ==> Ci_2 sto_1 blockElementStatementListIR_inst
+  -- BlockElementStmts_inst: p Ci_1 sto_0 |- blockElementStatementListIR ==> Ci_2 sto_1 blockElementStatementListIR_inst
   -- if $exit_inst(Ci_2) = Ci_3
