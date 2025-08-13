@@ -209,7 +209,9 @@ rule Decl_inst/extern-object-no-constructors:
   ---- ;; split extern methods and constructors
   -- if $split_constructors_IR(methodPrototypeIR*)
       = (eps, methodPrototypeIR_method*)
-  -- ExternMethods_inst: $empty_rdenv() |- methodPrototypeIR_method* ==> rdenv
+  ---- ;; bind methods to routine environment
+  -- Bind_methods: $empty_rdenv() |- methodPrototypeIR_method* ==> rdenv
+  ---- ;; add polymorphic extern type to typedef environment
   -- if EXTERN nameIR rdenv = externObjectTypeIR
   -- if externObjectTypeIR `< typeParameterListIR `, eps >
       = polyTypeDefIR
@@ -229,13 +231,14 @@ rule Decl_inst/extern-object-with-constructors:
   -- if $split_constructors_IR(methodPrototypeIR*)
       = (methodPrototypeIR_constructor*, methodPrototypeIR_method*)
   ---- ;; bind methods to routine environment
-  -- ExternMethods_inst: $empty_rdenv() |- methodPrototypeIR_method* ==> rdenv
+  -- Bind_methods: $empty_rdenv() |- methodPrototypeIR_method* ==> rdenv
   ---- ;; add polymorphic extern type to typedef environment
   -- if EXTERN nameIR rdenv = externObjectTypeIR
   -- if externObjectTypeIR `< typeParameterListIR `, eps >
       = polyTypeDefIR
   -- if $add_typedef_inst(p, Ci_0, nameIR, polyTypeDefIR) = Ci_1
-  -- ExternConstructors_inst: p Ci_1 typeParameterListIR methodPrototypeIR_method* |- methodPrototypeIR_constructor* ==> Ci_2
+  ---- ;; bind extern constructors to constructor environment
+  -- Bind_constructors: p Ci_1 typeParameterListIR methodPrototypeIR_method* |- methodPrototypeIR_constructor* ==> Ci_2
 
 ;;; parserDeclarationIR
 ;;; syntax parserDeclarationIR

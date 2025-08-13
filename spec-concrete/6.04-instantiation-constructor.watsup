@@ -67,14 +67,6 @@ def $align_cparams_with_args'(
   -- if $align_cparams_with_args'(`{ (id_map `:  constructorParameterIR_map)* }, constructorParameterIR_t*, argumentIR_t*)
       = (constructorParameterIR_aligned*, argumentIR_aligned*)
 
-relation Bind_args:
-  cursor contextInst ; cursor contextInst sto |- id* argumentIR* ==> contextInst sto
-  hint(input %0 %1 %2 %3 %4 %5 %6)
-
-relation Bind_arg:
-  cursor contextInst ; cursor contextInst sto |- id argumentIR ==> contextInst sto
-  hint(input %0 %1 %2 %3 %4 %5 %6)
-
 rule Bind_arg:
   p_caller Ci_caller ; p_callee Ci_callee_0 sto_0 |- id argumentIR ==> Ci_callee_1 sto_1
   -- if $enter_path(Ci_caller, id) = Ci_caller_inner
@@ -86,7 +78,7 @@ rule Bind_args/nil:
 
 rule Bind_args/cons:
   p_caller Ci_caller ; p_callee Ci_callee_0 sto_0 |- (id_h :: id_t*) (argumentIR_h :: argumentIR_t*)
-    ==> Ci_callee_2 sto_2
+                                                 ==> Ci_callee_2 sto_2
   -- Bind_arg: p_caller Ci_caller ; p_callee Ci_callee_0 sto_0 |- id_h argumentIR_h ==> Ci_callee_1 sto_1
   -- Bind_args: p_caller Ci_caller ; p_callee Ci_callee_1 sto_1 |- id_t* argumentIR_t* ==> Ci_callee_2 sto_2
 
@@ -96,8 +88,8 @@ rule Bind_args/cons:
 
 rule Constructor_inst/extern:
   p Ci sto_0 |- (EXTERN nameIR `< typeParameterIR* > `( constructorParameterIR* ) `{ methodPrototypeIR* })
-    `< typeArgumentIR* > `( argumentIR* `# id_default* )
-    ==> sto_1 objDyn
+                  `< typeArgumentIR* > `( argumentIR* `# id_default* )
+            ==> sto_1 objDyn
   ---- ;; initialize callee context
   -- if BLOCK = p_callee
   -- if $copy_context_inst(GLOBAL, Ci) = Ci_callee_0
@@ -111,16 +103,19 @@ rule Constructor_inst/extern:
   ---- ;; bind default values to callee context
   -- if (constructorParameterIR_default = _ _ _ id_cparam_default _)*
   -- if $add_values_inst(p_callee, Ci_callee_2, id_cparam_default*, value_default*) = Ci_callee_3
-  -- Methods_inst: Ci_callee_3 |- methodPrototypeIR* ==> Ci_callee_4
+  ---- ;; instantiate method prototypes
+  -- ExternMethods_inst: Ci_callee_3 |- methodPrototypeIR* ==> Ci_callee_4
+  ---- ;; create extern object with final callee context
   -- if EXTERN `{ nameIR Ci_callee_4.BLOCK.THETA Ci_callee_4.BLOCK.VENV Ci_callee_4.BLOCK.RENV }
       = objDyn
 
 ;;; PARSER `< typeParameterListIR > `( parameterListIR ) `( constructorParameterListIR ) `{ parserLocalDeclarationListIR parserStateListIR }
 
 rule Constructor_inst/parser:
-  p Ci sto_0 |- (PARSER `< typeParameterIR* > `( parameterIR* )`( constructorParameterIR* ) `{ parserLocalDeclarationIR* parserStateIR* })
-    `< typeArgumentIR* > `( argumentIR* `# id_default* )
-    ==> sto_3 objDyn
+  p Ci sto_0 |- (PARSER `< typeParameterIR* > `( parameterIR* )`( constructorParameterIR* )
+                  `{ parserLocalDeclarationIR* parserStateIR* })
+                  `< typeArgumentIR* > `( argumentIR* `# id_default* )
+            ==> sto_3 objDyn
   ---- ;; initialize callee context
   -- if BLOCK = p_callee
   -- if $copy_context_inst(GLOBAL, Ci) = Ci_callee_0
@@ -141,15 +136,17 @@ rule Constructor_inst/parser:
   -- if $add_state_inst(BLOCK, Ci_local_1, "reject", stateDyn_empty) = Ci_local_2
   ---- ;; instantiate parser states
   -- ParserStates_inst: Ci_local_2 sto_2 |- parserStateIR* ==> Ci_state sto_3
+  ---- ;; create parser object with callee value environment and instantiated state environment
   -- if PARSER `{ Ci_callee_3.BLOCK.VENV parameterIR* parserLocalDeclarationIR_inst* Ci_state.BLOCK.SENV }
       = objDyn
 
 ;;; CONTROL `< typeParameterListIR > `( parameterListIR ) `( constructorParameterListIR ) `{ controlLocalDeclarationListIR APPLY controlBodyIR }
 
 rule Constructor_inst/control:
-  p Ci sto_0 |- (CONTROL `< typeParameterIR* > `( parameterIR* ) `( constructorParameterIR* ) `{ controlLocalDeclarationIR* APPLY controlBodyIR })
-    `< typeArgumentIR* > `( argumentIR* `# id_default* )
-    ==> sto_3 (CONTROL `{ Ci_callee_3.BLOCK.VENV parameterIR* controlLocalDeclarationIR'* Ci_local.BLOCK.RENV controlBodyIR' })
+  p Ci sto_0 |- (CONTROL `< typeParameterIR* > `( parameterIR* ) `( constructorParameterIR* )
+                  `{ controlLocalDeclarationIR* APPLY controlBodyIR })
+                  `< typeArgumentIR* > `( argumentIR* `# id_default* )
+            ==> sto_3 objDyn
   ---- ;; initialize callee context
   -- if BLOCK = p_callee
   -- if $copy_context_inst(GLOBAL, Ci) = Ci_callee_0
@@ -163,15 +160,21 @@ rule Constructor_inst/control:
   ---- ;; bind default values to callee context
   -- if (constructorParameterIR_default = _ _ _ id_cparam_default _)*
   -- if $add_values_inst(p_callee, Ci_callee_2, id_cparam_default*, value_default*) = Ci_callee_3
+  ---- ;; instantiate local declarations
   -- ControlLocalDecls_inst: Ci_callee_3 sto_1 |- controlLocalDeclarationIR* ==> Ci_local sto_2 controlLocalDeclarationIR'*
+  ---- ;; instantiate control body
   -- Block_inst: LOCAL Ci_local sto_2 |- controlBodyIR ==> _ sto_3 controlBodyIR'
+  ---- ;; create control object with callee value environment and local routine environment
+  -- if CONTROL `{ Ci_callee_3.BLOCK.VENV parameterIR* controlLocalDeclarationIR'*
+          Ci_local.BLOCK.RENV controlBodyIR' }
+      = objDyn
 
 ;;; PACKAGE `< typeParameterListIR > `( constructorParameterListIR )
 
 rule Constructor_inst/package:
   p Ci sto_0 |- (PACKAGE `< typeParameterIR* > `( constructorParameterIR*))
-    `< typeArgumentIR* > `( argumentIR* `# id_default* )
-    ==> sto_1 objDyn
+                  `< typeArgumentIR* > `( argumentIR* `# id_default* )
+            ==> sto_1 objDyn
   ---- ;; initialize callee context
   -- if BLOCK = p_callee
   -- if $copy_context_inst(GLOBAL, Ci) = Ci_callee_0
@@ -185,6 +188,7 @@ rule Constructor_inst/package:
   ---- ;; bind default values to callee context
   -- if (constructorParameterIR_default = _ _ _ id_cparam_default _)*
   -- if $add_values_inst(p_callee, Ci_callee_2, id_cparam_default*, value_default*) = Ci_callee_3
+  ---- ;; create package object with final callee context
   -- if PACKAGE `{ Ci_callee_3.BLOCK.THETA Ci_callee_3.BLOCK.VENV }
       = objDyn
 
@@ -197,8 +201,8 @@ def $init_table(tablePropertyListIR) = tablePropertyListIR
 
 rule Constructor_inst/table:
   p Ci sto |- (TABLE nameIR `{ tablePropertyListIR })
-    `< typeArgumentIR* > `( argumentIR* `# id_default* )
-    ==> sto_2 objDyn
+              `< typeArgumentIR* > `( argumentIR* `# id_default* )
+          ==> sto_2 objDyn
   ---- ;; initialize callee context
   -- if LOCAL = p_callee
   -- if $copy_context_inst(BLOCK, Ci) = Ci_callee_0
@@ -212,9 +216,12 @@ rule Constructor_inst/table:
   ---- ;; bind default values to callee context
   -- if (constructorParameterIR_default = _ _ _ id_cparam_default _)*
   -- if $add_values_inst(p_callee, Ci_callee_2, id_cparam_default*, value_default*) = Ci_callee_3
+  ---- ;; create table frame
   -- if $enter_inst(Ci_callee_3) = Ci_frame
+  ---- ;; insantiate table properties
   -- TableProperties_inst: Ci_frame sto_1 |- tablePropertyListIR ==> Ci_table sto_2 tablePropertyListIR_inst
   -- if $init_table(tablePropertyListIR_inst) = tablePropertyListIR_dynamic
+  ---- ;; create table object with table frame
   -- if Ci_table.LOCAL.VENVS = venv :: _
   -- if TABLE `{ nameIR venv tablePropertyListIR_dynamic }
       = objDyn

@@ -1936,18 +1936,18 @@ Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue361-bmv2.p4
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue3616.p4
 Error on instantiation: ../../../../p4c/testdata/p4_16_samples/issue3616.p4
 tracing backtrack logs:
-- because invocation of function $find_value_inst(p, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:42.10-42.26)
-  1. because application of clause find_value_inst(p, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:42.10-42.26)
+- because invocation of function $find_value_inst(p, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:43.10-43.26)
+  1. because application of clause find_value_inst(p, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:43.10-43.26)
     - because condition prefixedNameIR matches `.%` was not met ()
-  2. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:42.10-42.26)
-    - because condition value'?{value' <- value'?} matches (_) was not met (../../../../spec-concrete/6.02-context-instantiation.watsup:200.9-200.14)
-  3. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:42.10-42.26)
+  2. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:43.10-43.26)
+    - because condition value'?{value' <- value'?} matches (_) was not met (../../../../spec-concrete/6.02-context-instantiation.watsup:202.52-202.57)
+  3. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:43.10-43.26)
     - because condition cursor matches `BLOCK` was not met ()
-  4. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:42.10-42.26)
+  4. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:43.10-43.26)
     - because condition cursor matches `BLOCK` was not met ()
-  5. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:42.10-42.26)
+  5. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:43.10-43.26)
     - because condition cursor matches `LOCAL` was not met ()
-  6. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:42.10-42.26)
+  6. because application of clause find_value_inst(cursor, Ci, prefixedNameIR) failed (../../../../spec-concrete/6.05-instantiation-expression.watsup:43.10-43.26)
     - because condition cursor matches `LOCAL` was not met ()
 
 
