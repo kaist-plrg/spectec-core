@@ -35,12 +35,16 @@ rule ControlLocalDecl_inst/actionDeclarationIR:
 
 rule ControlLocalDecl_inst/tableDeclarationIR:
   Ci_0 sto_0 |- _ TABLE typeIR nameIR `{ tablePropertyListIR } ==> Ci_1 sto_1 constantDeclarationIR
+  ---- ;; instantiate table constructor
   -- if $enter_path(Ci_0, nameIR) = Ci_inner
-  ;;-- debug Ci_inner
-  -- Constructor_inst: BLOCK Ci_0 sto_0 |- (TABLE nameIR `{ tablePropertyListIR }) `< eps > `( eps `# eps ) ==> sto_1 objDyn
-  -- if oid = Ci_0.PATH ++ nameIR
+  -- Constructor_inst: BLOCK Ci_0 sto_0 |- (TABLE nameIR `{ tablePropertyListIR }) `< eps > `( eps `# eps ) 
+                                       ==> sto_1 objDyn
+  ---- ;; bind object to store
+  -- if Ci_0.PATH ++ nameIR = oid
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
+  ---- ;; add reference to object in value environment
   -- if $add_value_inst(BLOCK, Ci_0, nameIR, `! oid) = Ci_1
+  ---- ;; replace declaration with constant declaration holding the reference
   -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
       = constantDeclarationIR
 ;;

@@ -28,14 +28,18 @@ rule Stmt_inst/callStatementIR:
 rule Stmt_inst/directApplicationStatementIR:
   p Ci sto_0 |- prefixedNameIR `. APPLY `( argumentListIR ) `;
             ==> Ci sto_2 blockStatementIR
+  ---- ;; find and instantiate constructor
   -- if $find_constructor_overloaded_inst(Ci, prefixedNameIR, eps) = (_, consDyn, _)
   -- Constructor_inst: p Ci sto_0 |- consDyn `< eps > `( eps `# eps ) ==> sto_1 objDyn
+  ---- ;; assign new tid with random string appended
   -- if $fresh_tid() = tid_fresh
   -- if $flatten_prefixedNameIR(prefixedNameIR) = tid
   -- if TID tid = typeIR
   -- if $concat_text([ tid, "_", tid_fresh]) = nameIR
+  ---- ;; add object to store
   -- if Ci.PATH ++ nameIR = oid
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
+  ---- ;; replace with constant declaration and call statement
   -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
   -- if ((`` tid) `# `( typeIR CTK )) `. "apply" = routineTargetIR
   -- if routineTargetIR `< eps > `( argumentListIR ) `; = callStatementIR
@@ -67,17 +71,17 @@ rule Stmt_inst/blockStatementIR:
 rule Stmt_inst/conditionalStatementIR-non-else:
   p Ci sto |- IF `( typedExpressionIR ) statementIR
           ==> Ci_1 sto_1 (IF `( typedExpressionIR ) statementIR')
-  -- Stmt_inst: p Ci sto |- statementIR ==> _ sto_1 statementIR'
+  -- Stmt_inst: p Ci sto |- statementIR ==> Ci_1 sto_1 statementIR'
 
 ;;;; IF `( typedExpressionIR ) statementIR ELSE statementIR
 
 rule Stmt_inst/conditionalStatementIR-else:
   p Ci sto |- IF `( typedExpressionIR ) statementIR_then ELSE statementIR_else
-          ==> Ci_1 sto_1 (IF `( typedExpressionIR ) statementIR_then' ELSE statementIR_else')
+          ==> Ci_2 sto_2 (IF `( typedExpressionIR ) statementIR_then' ELSE statementIR_else')
   ---- ;; instantiate then branch
-  -- Stmt_inst: p Ci sto |- statementIR_then ==> _ sto_1 statementIR_then'
+  -- Stmt_inst: p Ci sto |- statementIR_then ==> Ci_1 sto_1 statementIR_then'
   ---- ;; instantiate else branch
-  -- Stmt_inst: p Ci sto_1 |- statementIR_else ==> _ sto_2 statementIR_else'
+  -- Stmt_inst: p Ci_1 sto_1 |- statementIR_else ==> Ci_2 sto_2 statementIR_else'
 
 ;;; forStatementIR : TODO
 

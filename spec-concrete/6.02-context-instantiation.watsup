@@ -214,15 +214,13 @@ def $find_value_inst(LOCAL, Ci, `` id)
   ---- ;; fallback to block layer
   -- if $find_maps<id, value>(Ci.LOCAL.VENVS, id) = eps
 
-;;; (TODO) Finder for types
-
-dec $find_type_inst(cursor, contextInst, prefixedNameIR) : typeIR
-
 ;;; Finder for typedefs
 
-dec $find_typedef_inst(cursor, contextInst, nameIR) : typeDefIR?
+dec $find_typedef_inst(cursor, contextInst, prefixedNameIR) : typeDefIR?
 
-def $find_typedef_inst(_, Ci, nameIR) =
+def $find_typedef_inst(_, Ci, `` nameIR) =
+    $find_map<tid, typeDefIR>(Ci.GLOBAL.TDENV, nameIR)
+def $find_typedef_inst(_, Ci, `. nameIR) =
     $find_map<tid, typeDefIR>(Ci.GLOBAL.TDENV, nameIR)
 
 ;;; Finder for constructors 

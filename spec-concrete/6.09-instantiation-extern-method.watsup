@@ -7,10 +7,11 @@
 ;;; annotationList functionPrototypeIR `;
 
 rule ExternMethod_inst/non-abstract:
-  rdenv_0 |-_ (typeIR_ret nameIR 
-    `< typeParameterListIR `, typeParameterListIR_inferred >
-    `( parameterIR* )) `;
-    ==> rdenv_1
+  rdenv_0 |- _ (typeIR_ret nameIR 
+               `< typeParameterListIR `, typeParameterListIR_inferred >
+               `( parameterIR* )) `;
+         ==> rdenv_1
+    ---- ;; add extern method to routine type environment
     -- if $rid_IR(nameIR, parameterIR*) = rid
     -- if ($parameterIR(parameterIR) = parameterTypeIR)*
     -- if EXTERN_METHOD `( parameterTypeIR* ) `-> typeIR_ret
@@ -21,10 +22,11 @@ rule ExternMethod_inst/non-abstract:
         = rdenv_1
 
 rule ExternMethod_inst/abstract:
-  rdenv_0 |- _ ABSTRACT
-    (typeIR_ret nameIR `< typeParameterListIR `, typeParameterListIR_inferred >
-    `( parameterIR* )) `;
-    ==> rdenv_1
+  rdenv_0 |- _ ABSTRACT (typeIR_ret nameIR
+               `< typeParameterListIR `, typeParameterListIR_inferred >
+               `( parameterIR* )) `;
+         ==> rdenv_1
+    ---- ;; add extern abstract method to routine type environment
     -- if $rid_IR(nameIR, parameterIR*) = rid
     -- if ($parameterIR(parameterIR) = parameterTypeIR)*
     -- if EXTERN_METHOD ABSTRACT `( parameterTypeIR* ) `-> typeIR_ret
@@ -43,8 +45,10 @@ rule ExternMethods_inst/cons:
   -- ExternMethods_inst: rdenv_1 |- methodPrototypeIR_t* ==> rdenv_2
 
 rule ExternConstructor_inst/constructor:
-  p Ci_0 typeParameterListIR methodPrototypeListIR |- annotationList nameIR `< `, typeParameterListIR_inferred > `( parameterListIR ) `;
-    ==> Ci_1
+  p Ci_0 typeParameterListIR methodPrototypeListIR |- annotationList nameIR `< `, typeParameterListIR_inferred >
+                                                      `( parameterListIR ) `;
+                                                  ==> Ci_1
+  ---- ;; add extern constructor to constructor environment
   -- if $cid_IR(nameIR, parameterListIR) = cid
   -- if EXTERN nameIR `< typeParameterListIR ++ typeParameterListIR_inferred >
         `( parameterListIR ) `{ methodPrototypeListIR }
@@ -62,9 +66,10 @@ rule ExternConstructors_inst/cons:
 
 rule Method_inst/non-abstract:
   Ci_0 |- _ (_ nameIR 
-    `< typeParameterListIR `, typeParameterListIR_inferred >
-    `( parameterListIR )) `;
-    ==> Ci_1
+            `< typeParameterListIR `, typeParameterListIR_inferred >
+            `( parameterListIR )) `;
+      ==> Ci_1
+    ---- ;; bind extern method to routine environment
     -- if $rid_IR(nameIR, parameterListIR) = rid
     -- if EXTERN_METHOD `< typeParameterListIR ++ typeParameterListIR_inferred >
           `( parameterListIR ) eps
@@ -76,6 +81,7 @@ rule Method_inst/abstract:
     (_ nameIR `< typeParameterListIR `, typeParameterListIR_inferred >
     `( parameterListIR )) `;
     ==> Ci_1
+    ---- ;; bind extern abstract method to routine environment
     -- if $rid_IR(nameIR, parameterListIR) = rid
     -- if EXTERN_METHOD ABSTRACT 
           `< typeParameterListIR ++ typeParameterListIR_inferred >

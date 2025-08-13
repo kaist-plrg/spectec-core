@@ -38,7 +38,7 @@ rule ParserStmt_inst/callStatementIR:
 
 rule ParserStmt_inst/directApplicationStatementIR:
   Ci sto_0 |- prefixedNameIR `. APPLY `( argumentListIR ) `;
-    ==> Ci sto_2 parserBlockStatementIR
+          ==> Ci sto_2 parserBlockStatementIR
   ---- ;; find and instantiate constructor
   -- if $find_constructor_overloaded_inst(Ci, prefixedNameIR, eps) = (_, consDyn, _)
   -- Constructor_inst: BLOCK Ci sto_0 |- consDyn `< eps > `( eps `# eps ) ==> sto_1 objDyn
@@ -54,13 +54,15 @@ rule ParserStmt_inst/directApplicationStatementIR:
   -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
   -- if ((`` tid) `# `( typeIR CTK )) `. "apply" = routineTargetIR
   -- if routineTargetIR `< eps > `( argumentListIR ) `; = callStatementIR
+  ---- ;; create parser block
   -- if `EMPTY `{ [ constantDeclarationIR, callStatementIR ] } = parserBlockStatementIR
 
 ;;; parserBlockStatementIR
 
 rule ParserStmt_inst/parserBlockStatementIR:
   Ci_0 sto_0 |- annotationList `{ parserStatementListIR }
-    ==> Ci_1 sto_1 parserBlockStatementIR_inst
+            ==> Ci_1 sto_1 parserBlockStatementIR_inst
+  ---- ;; instantiate inner statements
   -- ParserStmts_inst: Ci_0 sto_0 |- parserStatementListIR ==> Ci_1 sto_1 parserStatementListIR_inst
   -- if annotationList `{ parserStatementListIR_inst }
       = parserBlockStatementIR_inst
@@ -82,12 +84,12 @@ rule ParserStmts_inst/nil:
 
 rule ParserStmts_inst/cons-none:
   Ci_0 sto_0 |- parserStatementIR_h :: parserStatementIR_t*
-    ==> Ci_2 sto_2 parserStatementIR_t'*
+            ==> Ci_2 sto_2 parserStatementIR_t'*
   -- ParserStmt_inst: Ci_0 sto_0 |- parserStatementIR_h ==> Ci_1 sto_1 eps
   -- ParserStmts_inst: Ci_1 sto_1 |- parserStatementIR_t* ==> Ci_2 sto_2 parserStatementIR_t'*
 
 rule ParserStmts_inst/cons-some:
   Ci_0 sto_0 |- parserStatementIR_h :: parserStatementIR_t*
-    ==> Ci_2 sto_2 (parserStatementIR_h' :: parserStatementIR_t'*)
+            ==> Ci_2 sto_2 (parserStatementIR_h' :: parserStatementIR_t'*)
   -- ParserStmt_inst: Ci_0 sto_0 |- parserStatementIR_h ==> Ci_1 sto_1 parserStatementIR_h'
   -- ParserStmts_inst: Ci_1 sto_1 |- parserStatementIR_t* ==> Ci_2 sto_2 parserStatementIR_t'*
