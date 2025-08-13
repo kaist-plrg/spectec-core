@@ -13,8 +13,8 @@ rule ControlLocalDecl_inst/constantDeclarationIR:
 ;;; instantiationIR
 
 rule ControlLocalDecl_inst/instantiationIR:
-  Ci_0 sto_0 |- instantiationIR ==> Ci_1 sto_1 instantiationIR_inst?
-  -- Decl_inst: BLOCK Ci_0 sto_0 |- instantiationIR ==> Ci_1 sto_1 instantiationIR_inst?
+  Ci_0 sto_0 |- instantiationIR ==> Ci_1 sto_1 constantDeclarationIR?
+  -- Decl_inst: BLOCK Ci_0 sto_0 |- instantiationIR ==> Ci_1 sto_1 constantDeclarationIR?
 
 ;;; variableDeclarationIR
 
@@ -30,17 +30,19 @@ rule ControlLocalDecl_inst/actionDeclarationIR:
 rule ControlLocalDecl_inst/actionDeclarationIR:
   Ci_0 sto_0 |- actionDeclarationIR ==> Ci_1 sto_1 actionDeclarationIR_inst?
   -- Decl_inst: BLOCK Ci_0 sto_0 |- actionDeclarationIR ==> Ci_1 sto_1 actionDeclarationIR_inst?
+
 ;;; tableDeclarationIR
 
 rule ControlLocalDecl_inst/tableDeclarationIR:
-  Ci_0 sto_0 |- _ TABLE typeIR nameIR `{ tablePropertyListIR } ==> Ci_2 sto_1 constantDeclarationIR
-  -- if $enter_path(Ci_0, nameIR) = Ci_1
+  Ci_0 sto_0 |- _ TABLE typeIR nameIR `{ tablePropertyListIR } ==> Ci_1 sto_1 constantDeclarationIR
+  -- if $enter_path(Ci_0, nameIR) = Ci_inner
+  ;;-- debug Ci_inner
   -- Constructor_inst: BLOCK Ci_0 sto_0 |- (TABLE nameIR `{ tablePropertyListIR }) `< eps > `( eps `# eps ) ==> sto_1 objDyn
-  -- if oid = Ci_1.PATH ++ nameIR
+  -- if oid = Ci_0.PATH ++ nameIR
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
-  -- if $add_value_inst(BLOCK, Ci_1, nameIR, `! oid) = Ci_2
-  -- if constantDeclarationIR = `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
-
+  -- if $add_value_inst(BLOCK, Ci_0, nameIR, `! oid) = Ci_1
+  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
+      = constantDeclarationIR
 ;;
 ;; Control local declaration list instantiation
 ;;

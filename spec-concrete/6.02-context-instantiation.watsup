@@ -4,7 +4,7 @@
 
 ;; Global layer
 
-syntax glayerInst =
+syntax globalInstantiationLayer =
   { CENV cenv,
     TDENV tdenv,
     RENV renv,
@@ -12,7 +12,7 @@ syntax glayerInst =
 
 ;; Block Layer
 
-syntax blayerInst =
+syntax blockInstantiationLayer =
   { THETA theta,
     RENV renv,
     SENV senv,
@@ -20,7 +20,7 @@ syntax blayerInst =
 
 ;; Local layer
 
-syntax llayerInst =
+syntax localInstantiationLayer =
   { THETA theta,
     VENVS venv* }
 
@@ -30,9 +30,9 @@ syntax llayerInst =
 
 syntax contextInst =
   { PATH oid,
-    GLOBAL glayerInst,
-    BLOCK blayerInst,
-    LOCAL llayerInst }
+    GLOBAL globalInstantiationLayer,
+    BLOCK blockInstantiationLayer,
+    LOCAL localInstantiationLayer }
 
 var Ci : contextInst
 
@@ -40,7 +40,7 @@ var Ci : contextInst
 ;; Constructors
 ;;
 
-dec $empty_block() : blayerInst
+dec $empty_block() : blockInstantiationLayer
 
 def $empty_block() =
   { THETA $empty_theta,
@@ -48,7 +48,7 @@ def $empty_block() =
     SENV $empty_senv,
     VENV $empty_venv }
 
-dec $empty_local() : llayerInst
+dec $empty_local() : localInstantiationLayer
 
 def $empty_local() =
   { THETA $empty_theta,
@@ -57,14 +57,18 @@ def $empty_local() =
 dec $empty_context_inst() : contextInst
 
 def $empty_context_inst() = Ci
-  -- if glayerInst =
-      { CENV $empty_cenv,
-        TDENV $empty_tdenv,
-        RENV $empty_renv,
-        VENV $empty_venv }
-  -- if blayerInst = $empty_block()
-  -- if llayerInst = $empty_local()
-  -- if Ci = { PATH ([]), GLOBAL glayerInst, BLOCK blayerInst, LOCAL llayerInst }
+  -- if { CENV $empty_cenv,
+          TDENV $empty_tdenv,
+          RENV $empty_renv,
+          VENV $empty_venv }
+      = globalInstantiationLayer
+  -- if $empty_block() = blockInstantiationLayer
+  -- if $empty_local() = localInstantiationLayer
+  -- if { PATH ([]), 
+          GLOBAL globalInstantiationLayer,
+          BLOCK blockInstantiationLayer,
+          LOCAL localInstantiationLayer }
+      = Ci
 
 
 ;;
@@ -138,20 +142,20 @@ def $add_state_inst(BLOCK, Ci, nameIR, stateDyn) = Ci[ .BLOCK.SENV = senv ]
   -- if ~$in_set<nameIR>(nameIR, $dom_map<nameIR, stateDyn>(Ci.BLOCK.SENV))
   -- if $add_map<nameIR, stateDyn>(Ci.BLOCK.SENV, nameIR, stateDyn) = senv
 
-;;; Adder for type parameters
+;;; Adder for type variables
 
-dec $add_tparams_inst(cursor, contextInst, typeParameterIR*, typeIR*) : contextInst
-dec $add_tparam_inst(cursor, contextInst, typeParameterIR, typeIR) : contextInst
+dec $add_types_inst(cursor, contextInst, tid*, typeIR*) : contextInst
+dec $add_type_inst(cursor, contextInst, tid, typeIR) : contextInst
 
-def $add_tparams_inst(p, Ci, eps, eps) = Ci
-def $add_tparams_inst(p, Ci, typeParameterIR_h :: typeParameterIR_t*, typeIR_h :: typeIR_t*) =
-    $add_tparams_inst(p, Ci', typeParameterIR_t*, typeIR_t*)
-  -- if $add_tparam_inst(p, Ci, typeParameterIR_h, typeIR_h) = Ci'
+def $add_types_inst(p, Ci, eps, eps) = Ci
+def $add_types_inst(p, Ci, tid_h :: tid_t*, typeIR_h :: typeIR_t*) =
+    $add_types_inst(p, Ci', tid_t*, typeIR_t*)
+  -- if $add_type_inst(p, Ci, tid_h, typeIR_h) = Ci'
 
-def $add_tparam_inst(BLOCK, Ci, typeParameterIR, typeIR) = Ci[ .BLOCK.THETA = theta ]
-  -- if $add_map<tid, typeIR>(Ci.BLOCK.THETA, typeParameterIR, typeIR) = theta
-def $add_tparam_inst(LOCAL, Ci, typeParameterIR, typeIR) = Ci[ .LOCAL.THETA = theta ]
-  -- if $add_map<tid, typeIR>(Ci.LOCAL.THETA, typeParameterIR, typeIR) = theta
+def $add_type_inst(BLOCK, Ci, tid, typeIR) = Ci[ .BLOCK.THETA = theta ]
+  -- if $add_map<tid, typeIR>(Ci.BLOCK.THETA, tid, typeIR) = theta
+def $add_type_inst(LOCAL, Ci, tid, typeIR) = Ci[ .LOCAL.THETA = theta ]
+  -- if $add_map<tid, typeIR>(Ci.LOCAL.THETA, tid, typeIR) = theta
 
 ;;; Adder for routines
 
@@ -160,7 +164,6 @@ dec $add_routine_overload_inst(cursor, contextInst, rid, routineDyn) : contextIn
 def $add_routine_overload_inst(GLOBAL, Ci, rid, routineDyn) = Ci[ .GLOBAL.RENV = renv ]
   -- if ~$in_set<rid>(rid, $dom_map<rid, routineDyn>(Ci.GLOBAL.RENV))
   -- if $add_map<rid, routineDyn>(Ci.GLOBAL.RENV, rid, routineDyn) = renv
-
 def $add_routine_overload_inst(BLOCK, Ci, rid, routineDyn) = Ci[ .BLOCK.RENV = renv ]
   -- if ~$in_set<rid>(rid, $dom_map<rid, routineDyn>(Ci.BLOCK.RENV))
   -- if $add_map<rid, routineDyn>(Ci.BLOCK.RENV, rid, routineDyn) = renv
@@ -172,7 +175,6 @@ def $add_routine_non_overload_inst(GLOBAL, Ci, rid, routineDyn) = Ci[ .GLOBAL.RE
   -- if $dom_map<rid, routineDyn>(Ci.GLOBAL.RENV) = `{ (id_k `( _ ))* }
   -- if ~$in_set<id>(id, `{ id_k* })
   -- if $add_map<rid, routineDyn>(Ci.GLOBAL.RENV, rid, routineDyn) = renv
-
 def $add_routine_non_overload_inst(BLOCK, Ci, rid, routineDyn) = Ci[ .BLOCK.RENV = renv ]
   -- if rid = id `( _ )
   -- if $dom_map<rid, routineDyn>(Ci.BLOCK.RENV) = `{ (id_k `( _ ))* }
@@ -195,22 +197,22 @@ def $add_constructor_inst(GLOBAL, Ci, cid, consDyn) = Ci[ .GLOBAL.CENV = cenv ]
 dec $find_value_inst(cursor, contextInst, prefixedNameIR) : value
 
 def $find_value_inst(p, Ci, `. id) = value
-  -- if value = $find_map<id, value>(Ci.GLOBAL.VENV, id)
+  -- if $find_map<id, value>(Ci.GLOBAL.VENV, id) = value
 def $find_value_inst(GLOBAL, Ci, `` id) = value
-  -- if value = $find_map<id, value>(Ci.GLOBAL.VENV, id)
+  -- if $find_map<id, value>(Ci.GLOBAL.VENV, id) = value
 def $find_value_inst(BLOCK, Ci, `` id) = value
-  -- if value = $find_map<id, value>(Ci.BLOCK.VENV, id)
+  -- if $find_map<id, value>(Ci.BLOCK.VENV, id) = value
 def $find_value_inst(BLOCK, Ci, `` id)
   = $find_value_inst(GLOBAL, Ci, `` id)
   ---- ;; fallback to global layer
-  -- otherwise
+  -- if $find_map<id, value>(Ci.BLOCK.VENV, id) = eps
 def $find_value_inst(LOCAL, Ci, `` id) = value
   -- if Ci.LOCAL.VENVS = venv*
   -- if $find_maps<id, value>(venv*, id) = value
 def $find_value_inst(LOCAL, Ci, `` id)
   = $find_value_inst(BLOCK, Ci, `` id)
   ---- ;; fallback to block layer
-  -- otherwise
+  -- if $find_maps<id, value>(Ci.LOCAL.VENVS, id) = eps
 
 ;;; (TODO) Finder for types
 
