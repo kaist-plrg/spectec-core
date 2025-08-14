@@ -18,6 +18,7 @@ let error_with_failtraces (failtraces : failtrace list) =
     | [] -> ""
     | _ ->
       let depth = depth (List.hd failtraces) in
+      let depth = max 0 (depth - 3) in
       string_of_failtraces ~region_parent:no_region ~depth failtraces
   in
   error no_region ("tracing backtrack logs:\n" ^ sfailtrace)
