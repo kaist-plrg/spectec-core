@@ -43,7 +43,9 @@ let elab_spec spec =
   match Elaborate.Elab.elab_spec spec with
   | Spec spec_il -> spec_il
   | Errors errors ->
-      raise (ElabErrList (List.map (fun (at, failtraces) -> (at, failtraces)) errors))
+      raise
+        (ElabErrList
+           (List.map (fun (at, failtraces) -> (at, failtraces)) errors))
 
 (* Commands *)
 
@@ -58,9 +60,8 @@ let elab_command =
          let spec_il = elab_spec spec in
          Format.printf "%s\n" (Il.Print.string_of_spec spec_il)
        with
-       | ParseError (at, msg) ->
-        Format.eprintf "%s\n" (string_of_error at msg)
-        | ElabErrList errors ->
+       | ParseError (at, msg) -> Format.eprintf "%s\n" (string_of_error at msg)
+       | ElabErrList errors ->
            Format.eprintf "%s\n" (string_of_elab_errors errors))
 
 let struct_command =
