@@ -37,6 +37,14 @@ let collect_excludes (paths_exclude : string list) =
   in
   List.concat_map collect_exclude filenames_exclude
 
+exception ElabErrList of elaboration_error list
+
+let elab_spec spec =
+  match Elaborate.Elab.elab_spec spec with
+  | Spec spec_il -> spec_il
+  | Errors errors ->
+      raise (ElabErrList (List.map (fun (at, failtraces) -> (at, failtraces)) errors))
+
 (* Commands *)
 
 let elab_command =
@@ -47,14 +55,13 @@ let elab_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames in
-         let elab_result = Elaborate.Elab.elab_spec spec in
-         match elab_result with
-         | Elaborate.Elab.Spec spec_il ->
-             Format.printf "%s\n" (Il.Print.string_of_spec spec_il)
-         | Elaborate.Elab.Errors errors ->
-             Format.printf "%s\n" (string_of_elab_errors errors)
-       with ParseError (at, msg) ->
-         Format.eprintf "%s\n" (string_of_error at msg))
+         let spec_il = elab_spec spec in
+         Format.printf "%s\n" (Il.Print.string_of_spec spec_il)
+       with
+       | ParseError (at, msg) ->
+        Format.eprintf "%s\n" (string_of_error at msg)
+        | ElabErrList errors ->
+           Format.eprintf "%s\n" (string_of_elab_errors errors))
 
 let struct_command =
   Core.Command.basic ~summary:"insert structured control flow to a p4_16 spec"
@@ -64,16 +71,14 @@ let struct_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames in
-         let elab_result = Elaborate.Elab.elab_spec spec in
-         match elab_result with
-         | Spec spec_il ->
-             let spec_sl = Structure.Struct.struct_spec spec_il in
-             Format.printf "%s\n" (Sl.Print.string_of_spec spec_sl)
-         | Errors errors -> Format.printf "%s\n" (string_of_elab_errors errors)
+         let spec_il = elab_spec spec in
+         let spec_sl = Structure.Struct.struct_spec spec_il in
+         Format.printf "%s\n" (Sl.Print.string_of_spec spec_sl);
+         ()
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, failtraces) ->
-           Format.printf "%s\n" (string_of_elab_error at failtraces))
+       | ElabErrList errors ->
+           Format.printf "%s\n" (string_of_elab_errors errors))
 
 let run_il_command =
   Core.Command.basic
@@ -87,21 +92,17 @@ let run_il_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
-         let elab_result = Elaborate.Elab.elab_spec spec in
-         match elab_result with
-         | Spec spec_il -> (
-             match
-               Interp_il.Typing.run_typing ~debug spec_il includes_p4
-                 filename_p4
-             with
-             | WellTyped -> Format.printf "well-typed\n"
-             | IllTyped (_, msg) -> Format.printf "ill-typed: %s\n" msg
-             | IllFormed msg -> Format.printf "ill-formed: %s\n" msg)
-         | Errors errors -> Format.printf "%s\n" (string_of_elab_errors errors)
+         let spec_il = elab_spec spec in
+         match
+           Interp_il.Typing.run_typing ~debug spec_il includes_p4 filename_p4
+         with
+         | WellTyped -> Format.printf "well-typed\n"
+         | IllTyped (_, msg) -> Format.printf "ill-typed: %s\n" msg
+         | IllFormed msg -> Format.printf "ill-formed: %s\n" msg
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, failtraces) ->
-           Format.printf "%s\n" (string_of_elab_error at failtraces))
+       | ElabErrList errors ->
+           Format.printf "%s\n" (string_of_elab_errors errors))
 
 let run_il_concrete_command =
   Core.Command.basic
@@ -115,22 +116,18 @@ let run_il_concrete_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
-         let elab_result = Elaborate.Elab.elab_spec spec in
-         match elab_result with
-         | Elaborate.Elab.Spec spec_il -> (
-             match
-               Interp_il.Typing_concrete.run_typing ~debug spec_il includes_p4
-                 filename_p4
-             with
-             | WellTyped -> Format.printf "well-typed\n"
-             | IllTyped (_, msg) -> Format.printf "ill-typed: %s\n" msg
-             | IllFormed msg -> Format.printf "ill-formed: %s\n" msg)
-         | Elaborate.Elab.Errors errors ->
-             Format.printf "%s\n" (string_of_elab_errors errors)
+         let spec_il = elab_spec spec in
+         match
+           Interp_il.Typing_concrete.run_typing ~debug spec_il includes_p4
+             filename_p4
+         with
+         | WellTyped -> Format.printf "well-typed\n"
+         | IllTyped (_, msg) -> Format.printf "ill-typed: %s\n" msg
+         | IllFormed msg -> Format.printf "ill-formed: %s\n" msg
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, failtraces) ->
-           Format.printf "%s\n" (string_of_elab_error at failtraces))
+       | ElabErrList errors ->
+           Format.printf "%s\n" (string_of_elab_errors errors))
 
 let run_sl_command =
   Core.Command.basic
@@ -148,23 +145,19 @@ let run_sl_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
-         let elab_result = Elaborate.Elab.elab_spec spec in
-         match elab_result with
-         | Spec spec_il -> (
-             let spec_sl = Structure.Struct.struct_spec spec_il in
-             match
-               Interp_sl.Typing.run_typing ~derive spec_sl includes_p4
-                 filename_p4 filenames_ignore
-             with
-             | WellTyped _ -> Format.printf "well-typed\n"
-             | IllTyped (_, msg, _) -> Format.printf "ill-typed: %s\n" msg
-             | IllFormed (msg, _) -> Format.printf "ill-formed: %s\n" msg)
-         | Elaborate.Elab.Errors errors ->
-             Format.printf "%s\n" (string_of_elab_errors errors)
+         let spec_il = elab_spec spec in
+         let spec_sl = Structure.Struct.struct_spec spec_il in
+         match
+           Interp_sl.Typing.run_typing ~derive spec_sl includes_p4 filename_p4
+             filenames_ignore
+         with
+         | WellTyped _ -> Format.printf "well-typed\n"
+         | IllTyped (_, msg, _) -> Format.printf "ill-typed: %s\n" msg
+         | IllFormed (msg, _) -> Format.printf "ill-formed: %s\n" msg
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, failtraces) ->
-           Format.printf "%s\n" (string_of_elab_error at failtraces))
+       | ElabErrList errors ->
+           Format.printf "%s\n" (string_of_elab_errors errors))
 
 let cover_sl_command =
   Core.Command.basic ~summary:"measure phantom coverage of SL"
@@ -184,31 +177,28 @@ let cover_sl_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
-         let elab_result = Elaborate.Elab.elab_spec spec in
-         match elab_result with
-         | Spec spec_il ->
-             let spec_sl = Structure.Struct.struct_spec spec_il in
-             let excludes_p4 = collect_excludes excludes_p4 in
-             let filenames_p4 =
-               List.concat_map (collect_files ~suffix:".p4") dirnames_p4
-             in
-             let filenames_p4 =
-               List.filter
-                 (fun filename_p4 ->
-                   not (List.exists (String.equal filename_p4) excludes_p4))
-                 filenames_p4
-             in
-             let cover =
-               Interp_sl.Typing.cover_typings spec_sl includes_p4 filenames_p4
-                 filenames_ignore
-             in
-             Runtime_testgen.Cov.Multiple.log
-               ~filename_cov_opt:(Some filename_cov) cover
-         | Errors errors -> Format.printf "%s\n" (string_of_elab_errors errors)
+         let spec_il = elab_spec spec in
+         let spec_sl = Structure.Struct.struct_spec spec_il in
+         let excludes_p4 = collect_excludes excludes_p4 in
+         let filenames_p4 =
+           List.concat_map (collect_files ~suffix:".p4") dirnames_p4
+         in
+         let filenames_p4 =
+           List.filter
+             (fun filename_p4 ->
+               not (List.exists (String.equal filename_p4) excludes_p4))
+             filenames_p4
+         in
+         let cover =
+           Interp_sl.Typing.cover_typings spec_sl includes_p4 filenames_p4
+             filenames_ignore
+         in
+         Runtime_testgen.Cov.Multiple.log ~filename_cov_opt:(Some filename_cov)
+           cover
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, failtraces) ->
-           Format.printf "%s\n" (string_of_elab_error at failtraces))
+       | ElabErrList errors ->
+           Format.printf "%s\n" (string_of_elab_errors errors))
 
 let run_testgen_command =
   Core.Command.basic
@@ -245,43 +235,39 @@ let run_testgen_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
-         let elab_result = Elaborate.Elab.elab_spec spec in
-         match elab_result with
-         | Spec spec_il ->
-             let spec_sl = Structure.Struct.struct_spec spec_il in
-             let logmode =
-               if silent then Testgen.Modes.Silent else Testgen.Modes.Verbose
-             in
-             let bootmode =
-               match (dirname_cold_boot, filename_boot) with
-               | Some dirname_cold_boot, None ->
-                   Testgen.Modes.Cold (excludes_p4, dirname_cold_boot)
-               | None, Some filename_boot -> Testgen.Modes.Warm filename_boot
-               | Some _, Some _ ->
-                   Format.asprintf
-                     "Error: should specify only one of -cold or -warm\n"
-                   |> failwith
-               | None, None ->
-                   Format.asprintf
-                     "Error: should specify either -cold or -warm\n"
-                   |> failwith
-             in
-             let mutationmode =
-               if random then Testgen.Modes.Random
-               else if hybrid then Testgen.Modes.Hybrid
-               else Testgen.Modes.Derive
-             in
-             let covermode =
-               if strict then Testgen.Modes.Strict else Testgen.Modes.Relaxed
-             in
-             Testgen.Gen.fuzz_typing fuel spec_sl includes_p4 filenames_ignore
-               dirname_gen name_campaign randseed logmode bootmode mutationmode
-               covermode
-         | Errors errors -> Format.printf "%s\n" (string_of_elab_errors errors)
+         let spec_il = elab_spec spec in
+         let spec_sl = Structure.Struct.struct_spec spec_il in
+         let logmode =
+           if silent then Testgen.Modes.Silent else Testgen.Modes.Verbose
+         in
+         let bootmode =
+           match (dirname_cold_boot, filename_boot) with
+           | Some dirname_cold_boot, None ->
+               Testgen.Modes.Cold (excludes_p4, dirname_cold_boot)
+           | None, Some filename_boot -> Testgen.Modes.Warm filename_boot
+           | Some _, Some _ ->
+               Format.asprintf
+                 "Error: should specify only one of -cold or -warm\n"
+               |> failwith
+           | None, None ->
+               Format.asprintf "Error: should specify either -cold or -warm\n"
+               |> failwith
+         in
+         let mutationmode =
+           if random then Testgen.Modes.Random
+           else if hybrid then Testgen.Modes.Hybrid
+           else Testgen.Modes.Derive
+         in
+         let covermode =
+           if strict then Testgen.Modes.Strict else Testgen.Modes.Relaxed
+         in
+         Testgen.Gen.fuzz_typing fuel spec_sl includes_p4 filenames_ignore
+           dirname_gen name_campaign randseed logmode bootmode mutationmode
+           covermode
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, failtraces) ->
-           Format.printf "%s\n" (string_of_elab_error at failtraces))
+       | ElabErrList errors ->
+           Format.printf "%s\n" (string_of_elab_errors errors))
 
 let run_testgen_debug_command =
   Core.Command.basic
@@ -300,17 +286,14 @@ let run_testgen_debug_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
-         let elab_result = Elaborate.Elab.elab_spec spec in
-         match elab_result with
-         | Spec spec_il ->
-             let spec_sl = Structure.Struct.struct_spec spec_il in
-             Testgen.Derive.debug_phantom spec_sl includes_p4 filename_p4
-               filenames_ignore dirname_debug pid
-         | Errors errors -> Format.printf "%s\n" (string_of_elab_errors errors)
+         let spec_il = elab_spec spec in
+         let spec_sl = Structure.Struct.struct_spec spec_il in
+         Testgen.Derive.debug_phantom spec_sl includes_p4 filename_p4
+           filenames_ignore dirname_debug pid
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, failtraces) ->
-           Format.printf "%s\n" (string_of_elab_error at failtraces))
+       | ElabErrList errors ->
+           Format.printf "%s\n" (string_of_elab_errors errors))
 
 let interesting_command =
   Core.Command.basic ~summary:"interestingness test for reducing p4_16 programs"
@@ -333,72 +316,64 @@ let interesting_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
-         let elab_result = Elaborate.Elab.elab_spec spec in
-         match elab_result with
-         | Spec spec_il -> (
-             let spec_sl = Structure.Struct.struct_spec spec_il in
-             let typing_result =
-               Interp_sl.Typing.run_typing spec_sl includes_p4 filename_p4
-                 filenames_ignore
-             in
-             if dbg then
-               match typing_result with
-               | IllTyped (_, _, cover_single) | WellTyped (_, _, cover_single)
-                 ->
-                   Interp_sl.Interp.SCov.Cover.iter
-                     (fun pid (branch : Interp_sl.Interp.SCov.Branch.t) ->
-                       match branch.status with
-                       | Hit -> Printf.printf "%d Hit\n" pid
-                       | Miss [] -> Printf.printf "%d Miss\n" pid
-                       | Miss _ -> Printf.printf "%d Close\n" pid)
-                     cover_single
-               | _ -> ()
-             else ();
-             match typing_result with
-             | WellTyped (_, _, cover_single) ->
-                 if check_well_typed then (
-                   let branch =
-                     Interp_sl.Interp.SCov.Cover.find pid cover_single
-                   in
+         let spec_il = elab_spec spec in
+         let spec_sl = Structure.Struct.struct_spec spec_il in
+         let typing_result =
+           Interp_sl.Typing.run_typing spec_sl includes_p4 filename_p4
+             filenames_ignore
+         in
+         if dbg then
+           match typing_result with
+           | IllTyped (_, _, cover_single) | WellTyped (_, _, cover_single) ->
+               Interp_sl.Interp.SCov.Cover.iter
+                 (fun pid (branch : Interp_sl.Interp.SCov.Branch.t) ->
                    match branch.status with
-                   | Hit ->
-                       Printf.printf "WellTyped: Hit\n";
-                       if check_close_miss then exit 3 else exit 0
-                   | Miss (_ :: _) ->
-                       Printf.printf "WellTyped: Close\n";
-                       if check_close_miss then exit 0 else exit 2
-                   | Miss [] ->
-                       Printf.printf "WellTyped: Miss\n";
-                       exit 1)
-                 else (
-                   Printf.printf "WellTyped\n";
-                   exit 11)
-             | IllTyped (_, _, cover_single) -> (
-                 if check_well_typed then (
-                   Printf.printf "IllTyped\n";
-                   exit 10)
-                 else
-                   let branch =
-                     Interp_sl.Interp.SCov.Cover.find pid cover_single
-                   in
-                   match branch.status with
-                   | Hit ->
-                       Printf.printf "IllTyped: Hit\n";
-                       if check_close_miss then exit 3 else exit 0
-                   | Miss (_ :: _) ->
-                       Printf.printf "IllTyped: Close\n";
-                       if check_close_miss then exit 0 else exit 2
-                   | Miss [] ->
-                       Printf.printf "IllTyped: Miss\n";
-                       exit 1)
-             | IllFormed _ ->
-                 Printf.printf "IllFormed";
-                 exit 12)
-         | Errors errors -> Format.printf "%s\n" (string_of_elab_errors errors)
+                   | Hit -> Printf.printf "%d Hit\n" pid
+                   | Miss [] -> Printf.printf "%d Miss\n" pid
+                   | Miss _ -> Printf.printf "%d Close\n" pid)
+                 cover_single
+           | _ -> ()
+         else ();
+         match typing_result with
+         | WellTyped (_, _, cover_single) ->
+             if check_well_typed then (
+               let branch = Interp_sl.Interp.SCov.Cover.find pid cover_single in
+               match branch.status with
+               | Hit ->
+                   Printf.printf "WellTyped: Hit\n";
+                   if check_close_miss then exit 3 else exit 0
+               | Miss (_ :: _) ->
+                   Printf.printf "WellTyped: Close\n";
+                   if check_close_miss then exit 0 else exit 2
+               | Miss [] ->
+                   Printf.printf "WellTyped: Miss\n";
+                   exit 1)
+             else (
+               Printf.printf "WellTyped\n";
+               exit 11)
+         | IllTyped (_, _, cover_single) -> (
+             if check_well_typed then (
+               Printf.printf "IllTyped\n";
+               exit 10)
+             else
+               let branch = Interp_sl.Interp.SCov.Cover.find pid cover_single in
+               match branch.status with
+               | Hit ->
+                   Printf.printf "IllTyped: Hit\n";
+                   if check_close_miss then exit 3 else exit 0
+               | Miss (_ :: _) ->
+                   Printf.printf "IllTyped: Close\n";
+                   if check_close_miss then exit 0 else exit 2
+               | Miss [] ->
+                   Printf.printf "IllTyped: Miss\n";
+                   exit 1)
+         | IllFormed _ ->
+             Printf.printf "IllFormed";
+             exit 12
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, failtraces) ->
-           Format.printf "%s\n" (string_of_elab_error at failtraces))
+       | ElabErrList errors ->
+           Format.printf "%s\n" (string_of_elab_errors errors))
 
 let parse_command =
   Core.Command.basic
@@ -438,3 +413,4 @@ let command =
     ]
 
 let () = Command_unix.run ~version command
+
