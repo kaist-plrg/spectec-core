@@ -1,0 +1,1346 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Homebrew) (preloaded format=pdflatex 2025.1.26)  8 MAR 2025 16:40
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**spec.tex
+(./spec.tex
+LaTeX2e <2023-11-01> patch level 1
+L3 programming layer <2024-02-20>
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/koma-script
+/scrartcl.cls
+Document Class: scrartcl 2023/07/07 v3.41 KOMA-Script document class (article)
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/koma-script
+/scrkbase.sty
+Package: scrkbase 2023/07/07 v3.41 KOMA-Script package (KOMA-Script-dependent b
+asics and keyval usage)
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/koma-script
+/scrbase.sty
+Package: scrbase 2023/07/07 v3.41 KOMA-Script package (KOMA-Script-independent 
+basics and keyval usage)
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/koma-script
+/scrlfile.sty
+Package: scrlfile 2023/07/07 v3.41 KOMA-Script package (file load hooks)
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/koma-script
+/scrlfile-hook.sty
+Package: scrlfile-hook 2023/07/07 v3.41 KOMA-Script package (using LaTeX hooks)
+
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/koma-script
+/scrlogo.sty
+Package: scrlogo 2023/07/07 v3.41 KOMA-Script package (logo)
+)))
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/graphics/ke
+yval.sty
+Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
+\KV@toks@=\toks17
+)
+Applying: [2021/05/01] Usage of raw or classic option list on input line 252.
+Already applied: [0000/00/00] Usage of raw or classic option list on input line
+ 368.
+))
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/koma-script
+/tocbasic.sty
+Package: tocbasic 2023/07/07 v3.41 KOMA-Script package (handling toc-files)
+\scr@dte@tocline@numberwidth=\skip48
+\scr@dte@tocline@numbox=\box51
+)
+Package tocbasic Info: omitting babel extension for `toc'
+(tocbasic)             because of feature `nobabel' available
+(tocbasic)             for `toc' on input line 133.
+Class scrartcl Info: File `scrsize11pt.clo' used instead of
+(scrartcl)           file `scrsize11.clo' to setup font sizes on input line 244
+1.
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/koma-script
+/scrsize11pt.clo
+File: scrsize11pt.clo 2023/07/07 v3.41 KOMA-Script font size class option (11pt
+)
+)
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/koma-script
+/typearea.sty
+Package: typearea 2023/07/07 v3.41 KOMA-Script package (type area)
+\ta@bcor=\skip49
+\ta@div=\count188
+Package typearea Info: You've used standard option `a4paper'.
+(typearea)             This is correct!
+(typearea)             Internally I'm using `paper=a4'.
+(typearea)             If you'd like to set the option with \KOMAoptions,
+(typearea)             you'd have to use `paper=a4' there
+(typearea)             instead of `a4paper', too.
+\ta@hblk=\skip50
+\ta@vblk=\skip51
+\ta@temp=\skip52
+\footheight=\skip53
+Package typearea Info: These are the values describing the layout:
+(typearea)             DIV  = 10
+(typearea)             BCOR = 0.0pt
+(typearea)             \paperwidth      = 597.50793pt
+(typearea)              \textwidth      = 418.25555pt
+(typearea)              DIV departure   = -6%
+(typearea)              \evensidemargin = 17.3562pt
+(typearea)              \oddsidemargin  = 17.3562pt
+(typearea)             \paperheight     = 845.04694pt
+(typearea)              \textheight     = 595.80026pt
+(typearea)              \topmargin      = -25.16531pt
+(typearea)              \headheight     = 17.0pt
+(typearea)              \headsep        = 20.40001pt
+(typearea)              \topskip        = 11.0pt
+(typearea)              \footskip       = 47.6pt
+(typearea)              \baselineskip   = 13.6pt
+(typearea)              on input line 1799.
+)
+\c@part=\count189
+\c@section=\count190
+\c@subsection=\count191
+\c@subsubsection=\count192
+\c@paragraph=\count193
+\c@subparagraph=\count194
+\scr@dte@section@maxnumwidth=\skip54
+Class scrartcl Info: using compatibility default `runin=bysign'
+(scrartcl)           for `\section on input line 5082.
+Class scrartcl Info: using compatibility default `afterindent=bysign'
+(scrartcl)           for `\section on input line 5082.
+\scr@dte@part@maxnumwidth=\skip55
+Class scrartcl Info: using compatibility default `afterindent=false'
+(scrartcl)           for `\part on input line 5090.
+\scr@dte@subsection@maxnumwidth=\skip56
+Class scrartcl Info: using compatibility default `runin=bysign'
+(scrartcl)           for `\subsection on input line 5100.
+Class scrartcl Info: using compatibility default `afterindent=bysign'
+(scrartcl)           for `\subsection on input line 5100.
+\scr@dte@subsubsection@maxnumwidth=\skip57
+Class scrartcl Info: using compatibility default `runin=bysign'
+(scrartcl)           for `\subsubsection on input line 5110.
+Class scrartcl Info: using compatibility default `afterindent=bysign'
+(scrartcl)           for `\subsubsection on input line 5110.
+\scr@dte@paragraph@maxnumwidth=\skip58
+Class scrartcl Info: using compatibility default `runin=bysign'
+(scrartcl)           for `\paragraph on input line 5121.
+Class scrartcl Info: using compatibility default `afterindent=bysign'
+(scrartcl)           for `\paragraph on input line 5121.
+\scr@dte@subparagraph@maxnumwidth=\skip59
+Class scrartcl Info: using compatibility default `runin=bysign'
+(scrartcl)           for `\subparagraph on input line 5131.
+Class scrartcl Info: using compatibility default `afterindent=bysign'
+(scrartcl)           for `\subparagraph on input line 5131.
+\abovecaptionskip=\skip60
+\belowcaptionskip=\skip61
+\c@pti@nb@sid@b@x=\box52
+Package tocbasic Info: omitting babel extension for `lof'
+(tocbasic)             because of feature `nobabel' available
+(tocbasic)             for `lof' on input line 6309.
+\scr@dte@figure@maxnumwidth=\skip62
+\c@figure=\count195
+Package tocbasic Info: omitting babel extension for `lot'
+(tocbasic)             because of feature `nobabel' available
+(tocbasic)             for `lot' on input line 6325.
+\scr@dte@table@maxnumwidth=\skip63
+\c@table=\count196
+Class scrartcl Info: Redefining `\numberline' on input line 6495.
+\bibindent=\dimen140
+)
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/amsmath/ams
+math.sty
+Package: amsmath 2023/05/13 v2.17o AMS math features
+\@mathmargin=\skip64
+
+For additional information on amsmath, use the `?' option.
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/amsmath/ams
+text.sty
+Package: amstext 2021/08/26 v2.01 AMS text
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/amsmath/ams
+gen.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks18
+\ex@=\dimen141
+))
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/amsmath/ams
+bsy.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen142
+)
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/amsmath/ams
+opn.sty
+Package: amsopn 2022/04/08 v2.04 operator names
+)
+\inf@bad=\count197
+LaTeX Info: Redefining \frac on input line 234.
+\uproot@=\count198
+\leftroot@=\count199
+LaTeX Info: Redefining \overline on input line 399.
+LaTeX Info: Redefining \colon on input line 410.
+\classnum@=\count266
+\DOTSCASE@=\count267
+LaTeX Info: Redefining \ldots on input line 496.
+LaTeX Info: Redefining \dots on input line 499.
+LaTeX Info: Redefining \cdots on input line 620.
+\Mathstrutbox@=\box53
+\strutbox@=\box54
+LaTeX Info: Redefining \big on input line 722.
+LaTeX Info: Redefining \Big on input line 723.
+LaTeX Info: Redefining \bigg on input line 724.
+LaTeX Info: Redefining \Bigg on input line 725.
+\big@size=\dimen143
+LaTeX Font Info:    Redeclaring font encoding OML on input line 743.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 744.
+\macc@depth=\count268
+LaTeX Info: Redefining \bmod on input line 905.
+LaTeX Info: Redefining \pmod on input line 910.
+LaTeX Info: Redefining \smash on input line 940.
+LaTeX Info: Redefining \relbar on input line 970.
+LaTeX Info: Redefining \Relbar on input line 971.
+\c@MaxMatrixCols=\count269
+\dotsspace@=\muskip16
+\c@parentequation=\count270
+\dspbrk@lvl=\count271
+\tag@help=\toks19
+\row@=\count272
+\column@=\count273
+\maxfields@=\count274
+\andhelp@=\toks20
+\eqnshift@=\dimen144
+\alignsep@=\dimen145
+\tagshift@=\dimen146
+\tagwidth@=\dimen147
+\totwidth@=\dimen148
+\lineht@=\dimen149
+\@envbody=\toks21
+\multlinegap=\skip65
+\multlinetaggap=\skip66
+\mathdisplay@stack=\toks22
+LaTeX Info: Redefining \[ on input line 2953.
+LaTeX Info: Redefining \] on input line 2954.
+)
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/amsfonts/am
+ssymb.sty
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/amsfonts/am
+sfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+))
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/graphics/co
+lor.sty
+Package: color 2022/01/06 v1.3d Standard LaTeX Color (DPC)
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/graphics-cf
+g/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package color Info: Driver file: pdftex.def on input line 149.
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/graphics-de
+f/pdftex.def
+File: pdftex.def 2022/09/22 v1.2b Graphics/color driver for pdftex
+)
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/graphics/ma
+thcolor.ltx))
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/l3backend/l
+3backend-pdftex.def
+File: l3backend-pdftex.def 2024-02-20 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count275
+\l__pdf_internal_box=\box55
+) (./spec.aux)
+\openout1 = `spec.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+Package scrbase Info: activating english \abstractname on input line 11.
+Package scrbase Info: activating english \partname on input line 11.
+Package scrbase Info: activating english \figurename on input line 11.
+Package scrbase Info: activating english \tablename on input line 11.
+Package scrbase Info: activating english \contentsname on input line 11.
+Package scrbase Info: activating english \listfigurename on input line 11.
+Package scrbase Info: activating english \listtablename on input line 11.
+Package scrbase Info: activating english \refname on input line 11.
+Package scrbase Info: activating english \indexname on input line 11.
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/context/base/mkii
+/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count276
+\scratchdimen=\dimen150
+\scratchbox=\box56
+\nofMPsegments=\count277
+\nofMParguments=\count278
+\everyMPshowfont=\toks23
+\MPscratchCnt=\count279
+\MPscratchDim=\dimen151
+\MPnumerator=\count280
+\makeMPintoPDFobject=\count281
+\everyMPtoPDFconversion=\toks24
+)
+LaTeX Font Info:    Trying to load font information for U+msa on input line 16.
+
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/amsfonts/um
+sa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 16.
+
+
+(/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/tex/latex/amsfonts/um
+sb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+
+LaTeX Warning: No \author given.
+
+(./spec-gen.include
+
+LaTeX Font Warning: Command \Large invalid in math mode on input line 51.
+
+
+LaTeX Font Warning: Command \Large invalid in math mode on input line 52.
+
+
+LaTeX Font Warning: Command \Large invalid in math mode on input line 52.
+
+[1
+
+
+{/opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/fonts/map/pdftex/updm
+ap/pdftex.map}] [2] [3] [4] [5] [6] [7] [8]
+Overfull \hbox (50.75713pt too wide) detected at line 750
+[]
+ []
+
+
+Overfull \hbox (174.91098pt too wide) detected at line 769
+[]
+ []
+
+[9]
+Overfull \hbox (184.39027pt too wide) detected at line 789
+[]
+ []
+
+
+Overfull \hbox (111.21259pt too wide) detected at line 837
+[]
+ []
+
+
+Overfull \hbox (49.41254pt too wide) detected at line 863
+[]
+ []
+
+[10]
+Overfull \hbox (205.87508pt too wide) detected at line 891
+[]
+ []
+
+
+Overfull \hbox (226.13225pt too wide) detected at line 916
+[]
+ []
+
+[11] [12]
+Overfull \hbox (18.73926pt too wide) detected at line 1124
+[]
+ []
+
+[13]
+Overfull \hbox (41.2287pt too wide) detected at line 1345
+[]
+ []
+
+
+Overfull \hbox (45.50282pt too wide) detected at line 1404
+[]
+ []
+
+
+Overfull \hbox (75.85759pt too wide) detected at line 1454
+[]
+ []
+
+
+Overfull \hbox (44.89032pt too wide) detected at line 1475
+[]
+ []
+
+[14]
+Overfull \hbox (58.97604pt too wide) detected at line 1513
+[]
+ []
+
+
+Overfull \hbox (73.82718pt too wide) detected at line 1532
+[]
+ []
+
+
+Overfull \hbox (55.00815pt too wide) detected at line 1564
+[]
+ []
+
+
+Overfull \hbox (0.798pt too wide) detected at line 1585
+[]
+ []
+
+
+Overfull \hbox (44.41707pt too wide) detected at line 1606
+[]
+ []
+
+
+Overfull \hbox (155.94815pt too wide) detected at line 1627
+[]
+ []
+
+[15] [16]
+Overfull \hbox (1.34218pt too wide) detected at line 1920
+[]
+ []
+
+[17] [18]
+Overfull \hbox (276.28467pt too wide) detected at line 2169
+[]
+ []
+
+
+Overfull \hbox (135.95493pt too wide) detected at line 2237
+[]
+ []
+
+[19]
+Overfull \hbox (21.32224pt too wide) detected at line 2267
+[]
+ []
+
+
+Overfull \hbox (96.82414pt too wide) detected at line 2318
+[]
+ []
+
+
+Overfull \hbox (230.05629pt too wide) detected at line 2337
+[]
+ []
+
+
+Overfull \hbox (236.7407pt too wide) detected at line 2356
+[]
+ []
+
+
+Overfull \hbox (5.22128pt too wide) detected at line 2366
+[]
+ []
+
+
+Overfull \hbox (215.24748pt too wide) detected at line 2387
+[]
+ []
+
+
+Overfull \hbox (107.30412pt too wide) detected at line 2408
+[]
+ []
+
+
+Overfull \hbox (209.43417pt too wide) detected at line 2429
+[]
+ []
+
+
+Overfull \hbox (246.37624pt too wide) detected at line 2450
+[]
+ []
+
+
+Overfull \hbox (226.94977pt too wide) detected at line 2467
+[]
+ []
+
+[20]
+Overfull \hbox (63.63165pt too wide) detected at line 2486
+[]
+ []
+
+
+Overfull \hbox (53.6203pt too wide) detected at line 2573
+[]
+ []
+
+
+Overfull \hbox (56.22136pt too wide) detected at line 2596
+[]
+ []
+
+
+Overfull \hbox (35.49455pt too wide) detected at line 2644
+[]
+ []
+
+[21]
+Overfull \hbox (59.38895pt too wide) detected at line 2719
+[]
+ []
+
+
+Overfull \hbox (96.29959pt too wide) detected at line 2742
+[]
+ []
+
+
+Overfull \hbox (122.22546pt too wide) detected at line 2754
+[]
+ []
+
+
+Overfull \hbox (316.43852pt too wide) detected at line 2786
+[]
+ []
+
+[22]
+Overfull \hbox (363.05843pt too wide) detected at line 2798
+[]
+ []
+
+
+Overfull \hbox (62.31882pt too wide) detected at line 2825
+[]
+ []
+
+[23] [24] [25] [26] [27] [28]
+Overfull \hbox (144.99678pt too wide) detected at line 3453
+[]
+ []
+
+[29]
+Overfull \hbox (21.34282pt too wide) detected at line 3586
+[]
+ []
+
+[30] [31]
+Overfull \hbox (2.4474pt too wide) detected at line 3729
+[]
+ []
+
+
+Overfull \hbox (137.61203pt too wide) detected at line 3791
+[]
+ []
+
+
+Overfull \hbox (253.07106pt too wide) detected at line 3825
+[]
+ []
+
+[32]
+Overfull \hbox (151.67775pt too wide) detected at line 4009
+[]
+ []
+
+
+Overfull \hbox (148.74442pt too wide) detected at line 4039
+[]
+ []
+
+[33] [34]
+Overfull \hbox (19.24748pt too wide) detected at line 4298
+[]
+ []
+
+
+Overfull \hbox (19.86972pt too wide) detected at line 4313
+[]
+ []
+
+
+Overfull \hbox (106.72989pt too wide) detected at line 4415
+[]
+ []
+
+
+Overfull \hbox (107.35213pt too wide) detected at line 4434
+[]
+ []
+
+[35]
+Overfull \hbox (18.26971pt too wide) detected at line 4614
+[]
+ []
+
+
+Overfull \hbox (18.89195pt too wide) detected at line 4629
+[]
+ []
+
+[36]
+Overfull \hbox (105.75212pt too wide) detected at line 4731
+[]
+ []
+
+
+Overfull \hbox (106.37436pt too wide) detected at line 4750
+[]
+ []
+
+[37]
+Overfull \hbox (32.83833pt too wide) detected at line 4884
+[]
+ []
+
+
+Overfull \hbox (121.27997pt too wide) detected at line 4897
+[]
+ []
+
+
+Overfull \hbox (53.44324pt too wide) detected at line 4944
+[]
+ []
+
+
+Overfull \hbox (51.26543pt too wide) detected at line 4964
+[]
+ []
+
+
+Overfull \hbox (59.21933pt too wide) detected at line 4986
+[]
+ []
+
+
+Overfull \hbox (71.45941pt too wide) detected at line 5008
+[]
+ []
+
+[38]
+Overfull \hbox (172.16345pt too wide) detected at line 5042
+[]
+ []
+
+
+Overfull \hbox (159.98172pt too wide) detected at line 5073
+[]
+ []
+
+
+Overfull \hbox (112.64938pt too wide) detected at line 5103
+[]
+ []
+
+[39]
+Overfull \hbox (81.70682pt too wide) detected at line 5141
+[]
+ []
+
+
+Overfull \hbox (118.93039pt too wide) detected at line 5216
+[]
+ []
+
+[40]
+Overfull \hbox (109.21088pt too wide) detected at line 5247
+[]
+ []
+
+
+Overfull \hbox (127.83374pt too wide) detected at line 5282
+[]
+ []
+
+
+Overfull \hbox (113.38707pt too wide) detected at line 5312
+[]
+ []
+
+
+Overfull \hbox (87.0164pt too wide) detected at line 5385
+[]
+ []
+
+[41]
+Overfull \hbox (101.68378pt too wide) detected at line 5416
+[]
+ []
+
+
+Overfull \hbox (43.85927pt too wide) detected at line 5530
+[]
+ []
+
+
+Overfull \hbox (41.64305pt too wide) detected at line 5551
+[]
+ []
+
+[42]
+Overfull \hbox (91.35237pt too wide) detected at line 5587
+[]
+ []
+
+
+Overfull \hbox (109.80402pt too wide) detected at line 5691
+[]
+ []
+
+
+Overfull \hbox (219.17505pt too wide) detected at line 5706
+[]
+ []
+
+[43]
+Overfull \hbox (83.65709pt too wide) detected at line 5738
+[]
+ []
+
+
+Overfull \hbox (61.96828pt too wide) detected at line 5755
+[]
+ []
+
+
+Overfull \hbox (35.28958pt too wide) detected at line 5785
+[]
+ []
+
+
+Overfull \hbox (42.1341pt too wide) detected at line 5802
+[]
+ []
+
+
+Overfull \hbox (31.78305pt too wide) detected at line 5819
+[]
+ []
+
+
+Overfull \hbox (79.35684pt too wide) detected at line 5836
+[]
+ []
+
+
+Overfull \hbox (33.37389pt too wide) detected at line 5863
+[]
+ []
+
+
+Overfull \hbox (44.69829pt too wide) detected at line 5890
+[]
+ []
+
+[44]
+Overfull \hbox (35.6058pt too wide) detected at line 6022
+[]
+ []
+
+[45]
+Overfull \hbox (155.71341pt too wide) detected at line 6093
+[]
+ []
+
+
+Overfull \hbox (49.89697pt too wide) detected at line 6120
+[]
+ []
+
+
+Overfull \hbox (103.30392pt too wide) detected at line 6158
+[]
+ []
+
+
+Overfull \hbox (275.67046pt too wide) detected at line 6175
+[]
+ []
+
+
+Overfull \hbox (46.83313pt too wide) detected at line 6219
+[]
+ []
+
+[46]
+Overfull \hbox (96.15402pt too wide) detected at line 6257
+[]
+ []
+
+
+Overfull \hbox (241.55763pt too wide) detected at line 6278
+[]
+ []
+
+
+Overfull \hbox (195.65971pt too wide) detected at line 6297
+[]
+ []
+
+[47]
+Overfull \hbox (42.78232pt too wide) detected at line 6428
+[]
+ []
+
+
+Overfull \hbox (42.90771pt too wide) detected at line 6455
+[]
+ []
+
+
+Overfull \hbox (110.89038pt too wide) detected at line 6523
+[]
+ []
+
+
+Overfull \hbox (121.90808pt too wide) detected at line 6553
+[]
+ []
+
+[48]
+Overfull \hbox (176.85515pt too wide) detected at line 6685
+[]
+ []
+
+
+Overfull \hbox (33.94865pt too wide) detected at line 6712
+[]
+ []
+
+
+Overfull \hbox (421.53249pt too wide) detected at line 6729
+[]
+ []
+
+[49]
+Overfull \hbox (206.33926pt too wide) detected at line 6770
+[]
+ []
+
+
+Overfull \hbox (72.54361pt too wide) detected at line 6793
+[]
+ []
+
+
+Overfull \hbox (70.65569pt too wide) detected at line 6816
+[]
+ []
+
+
+Overfull \hbox (134.77983pt too wide) detected at line 6839
+[]
+ []
+
+
+Overfull \hbox (159.3273pt too wide) detected at line 6864
+[]
+ []
+
+
+Overfull \hbox (163.98288pt too wide) detected at line 6889
+[]
+ []
+
+
+Overfull \hbox (152.95956pt too wide) detected at line 6914
+[]
+ []
+
+[50]
+Overfull \hbox (234.73926pt too wide) detected at line 6948
+[]
+ []
+
+
+Overfull \hbox (100.20682pt too wide) detected at line 6980
+[]
+ []
+
+
+Overfull \hbox (68.00485pt too wide) detected at line 7010
+[]
+ []
+
+
+Overfull \hbox (107.3962pt too wide) detected at line 7043
+[]
+ []
+
+
+Overfull \hbox (86.39725pt too wide) detected at line 7068
+[]
+ []
+
+[51]
+Overfull \hbox (83.30571pt too wide) detected at line 7093
+[]
+ []
+
+
+Overfull \hbox (141.11179pt too wide) detected at line 7167
+[]
+ []
+
+
+Overfull \hbox (169.39612pt too wide) detected at line 7202
+[]
+ []
+
+
+Overfull \hbox (459.9104pt too wide) detected at line 7237
+[]
+ []
+
+[52]
+Overfull \hbox (200.64708pt too wide) detected at line 7270
+[]
+ []
+
+
+Overfull \hbox (163.70502pt too wide) detected at line 7303
+[]
+ []
+
+
+Overfull \hbox (121.89378pt too wide) detected at line 7364
+[]
+ []
+
+[53]
+Overfull \hbox (165.94191pt too wide) detected at line 7418
+[]
+ []
+
+
+Overfull \hbox (39.59877pt too wide) detected at line 7460
+[]
+ []
+
+
+Overfull \hbox (288.85284pt too wide) detected at line 7522
+[]
+ []
+
+
+Overfull \hbox (270.9694pt too wide) detected at line 7556
+[]
+ []
+
+[54]
+Overfull \hbox (44.32355pt too wide) detected at line 7606
+[]
+ []
+
+
+Overfull \hbox (210.67758pt too wide) detected at line 7631
+[]
+ []
+
+
+Overfull \hbox (187.17079pt too wide) detected at line 7656
+[]
+ []
+
+
+Overfull \hbox (207.9092pt too wide) detected at line 7691
+[]
+ []
+
+[55]
+Overfull \hbox (112.72198pt too wide) detected at line 7718
+[]
+ []
+
+
+Overfull \hbox (93.11504pt too wide) detected at line 7731
+[]
+ []
+
+
+Overfull \hbox (32.06001pt too wide) detected at line 7744
+[]
+ []
+
+
+Overfull \hbox (47.47852pt too wide) detected at line 7761
+[]
+ []
+
+
+Overfull \hbox (420.255pt too wide) detected at line 7790
+[]
+ []
+
+
+Overfull \hbox (108.37836pt too wide) detected at line 7849
+[]
+ []
+
+
+Overfull \hbox (150.47371pt too wide) detected at line 7861
+[]
+ []
+
+[56]
+Overfull \hbox (15.87585pt too wide) detected at line 7880
+[]
+ []
+
+
+Overfull \hbox (33.21718pt too wide) detected at line 7905
+[]
+ []
+
+
+Overfull \hbox (113.02382pt too wide) detected at line 7958
+[]
+ []
+
+
+Overfull \hbox (121.84154pt too wide) detected at line 7985
+[]
+ []
+
+
+Overfull \hbox (89.57242pt too wide) detected at line 8006
+[]
+ []
+
+
+Overfull \hbox (3.55135pt too wide) detected at line 8031
+[]
+ []
+
+[57]
+Overfull \hbox (7.14122pt too wide) detected at line 8054
+[]
+ []
+
+
+Overfull \hbox (20.15448pt too wide) detected at line 8077
+[]
+ []
+
+
+Overfull \hbox (17.37503pt too wide) detected at line 8098
+[]
+ []
+
+
+Overfull \hbox (111.38716pt too wide) detected at line 8125
+[]
+ []
+
+
+Overfull \hbox (33.92387pt too wide) detected at line 8148
+[]
+ []
+
+
+Overfull \hbox (11.11775pt too wide) detected at line 8173
+[]
+ []
+
+[58]
+Overfull \hbox (193.40395pt too wide) detected at line 8207
+[]
+ []
+
+
+Overfull \hbox (92.48741pt too wide) detected at line 8230
+[]
+ []
+
+
+Overfull \hbox (22.7017pt too wide) detected at line 8256
+[]
+ []
+
+
+Overfull \hbox (7.07278pt too wide) detected at line 8267
+[]
+ []
+
+
+Overfull \hbox (85.68066pt too wide) detected at line 8278
+[]
+ []
+
+
+Overfull \hbox (34.35721pt too wide) detected at line 8289
+[]
+ []
+
+
+Overfull \hbox (67.94539pt too wide) detected at line 8316
+[]
+ []
+
+
+Overfull \hbox (13.47464pt too wide) detected at line 8349
+[]
+ []
+
+
+Overfull \hbox (32.317pt too wide) detected at line 8380
+[]
+ []
+
+[59]
+Overfull \hbox (172.62633pt too wide) detected at line 8407
+[]
+ []
+
+
+Overfull \hbox (299.62062pt too wide) detected at line 8456
+[]
+ []
+
+
+Overfull \hbox (369.0543pt too wide) detected at line 8497
+[]
+ []
+
+[60]
+Overfull \hbox (29.66013pt too wide) detected at line 8574
+[]
+ []
+
+
+Overfull \hbox (29.19162pt too wide) detected at line 8624
+[]
+ []
+
+
+Overfull \hbox (21.86765pt too wide) detected at line 8641
+[]
+ []
+
+
+Overfull \hbox (70.53302pt too wide) detected at line 8660
+[]
+ []
+
+[61]
+Overfull \hbox (105.72548pt too wide) detected at line 8676
+[]
+ []
+
+
+Overfull \hbox (130.55185pt too wide) detected at line 8693
+[]
+ []
+
+
+Overfull \hbox (70.20564pt too wide) detected at line 8709
+[]
+ []
+
+
+Overfull \hbox (80.09427pt too wide) detected at line 8729
+[]
+ []
+
+
+Overfull \hbox (110.68968pt too wide) detected at line 8753
+[]
+ []
+
+
+Overfull \hbox (117.3741pt too wide) detected at line 8777
+[]
+ []
+
+
+Overfull \hbox (78.84502pt too wide) detected at line 8809
+[]
+ []
+
+[62]
+Overfull \hbox (211.1789pt too wide) detected at line 8828
+[]
+ []
+
+
+Overfull \hbox (48.65685pt too wide) detected at line 8836
+[]
+ []
+
+
+Overfull \hbox (123.92032pt too wide) detected at line 8863
+[]
+ []
+
+
+Overfull \hbox (99.8532pt too wide) detected at line 8875
+[]
+ []
+
+
+Overfull \hbox (241.28241pt too wide) detected at line 8925
+[]
+ []
+
+[63]
+Overfull \hbox (71.49666pt too wide) detected at line 8959
+[]
+ []
+
+[64]
+Overfull \hbox (122.97423pt too wide) detected at line 9013
+[]
+ []
+
+
+Overfull \hbox (1.37175pt too wide) detected at line 9025
+[]
+ []
+
+
+Overfull \hbox (74.3718pt too wide) detected at line 9052
+[]
+ []
+
+
+Overfull \hbox (157.36696pt too wide) detected at line 9075
+[]
+ []
+
+
+Overfull \hbox (163.35971pt too wide) detected at line 9106
+[]
+ []
+
+
+Overfull \hbox (126.06044pt too wide) detected at line 9129
+[]
+ []
+
+[65]
+Overfull \hbox (113.04718pt too wide) detected at line 9160
+[]
+ []
+
+
+Overfull \hbox (133.79715pt too wide) detected at line 9183
+[]
+ []
+
+
+Overfull \hbox (168.69136pt too wide) detected at line 9206
+[]
+ []
+
+
+Overfull \hbox (172.29523pt too wide) detected at line 9237
+[]
+ []
+
+
+Overfull \hbox (228.0715pt too wide) detected at line 9260
+[]
+ []
+
+[66]
+Overfull \hbox (249.55399pt too wide) detected at line 9291
+[]
+ []
+
+
+Overfull \hbox (132.87817pt too wide) detected at line 9314
+[]
+ []
+
+
+Overfull \hbox (139.56259pt too wide) detected at line 9337
+[]
+ []
+
+
+Overfull \hbox (43.4813pt too wide) detected at line 9367
+[]
+ []
+
+[67]
+Overfull \hbox (199.82936pt too wide) detected at line 9496
+[]
+ []
+
+
+Overfull \hbox (189.52098pt too wide) detected at line 9531
+[]
+ []
+
+
+Overfull \hbox (116.33157pt too wide) detected at line 9554
+[]
+ []
+
+
+Overfull \hbox (103.31831pt too wide) detected at line 9585
+[]
+ []
+
+) [68] (./spec.aux)
+ ***********
+LaTeX2e <2023-11-01> patch level 1
+L3 programming layer <2024-02-20>
+ ***********
+ ) 
+Here is how much of TeX's memory you used:
+ 5199 strings out of 474116
+ 104979 string characters out of 5732613
+ 1971187 words of memory out of 5000000
+ 27547 multiletter control sequences out of 15000+600000
+ 565858 words of font info for 66 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 108i,20n,107p,10899b,273s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmcsc10.pfb></opt/homebrew/Cellar/texlive/20240312_3/share/texmf-di
+st/fonts/type1/public/amsfonts/cm/cmex10.pfb></opt/homebrew/Cellar/texlive/2024
+0312_3/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></opt/homebre
+w/Cellar/texlive/20240312_3/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmm
+i5.pfb></opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmmi7.pfb></opt/homebrew/Cellar/texlive/20240312_3/share/texmf
+-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></opt/homebrew/Cellar/texlive/20
+240312_3/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></opt/homebr
+ew/Cellar/texlive/20240312_3/share/texmf-dist/fonts/type1/public/amsfonts/cm/cm
+r7.pfb></opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmss10.pfb></opt/homebrew/Cellar/texlive/20240312_3/share/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></opt/homebrew/Cellar/texliv
+e/20240312_3/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></opt/h
+omebrew/Cellar/texlive/20240312_3/share/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmsy5.pfb></opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/fonts/ty
+pe1/public/amsfonts/cm/cmsy7.pfb></opt/homebrew/Cellar/texlive/20240312_3/share
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></opt/homebrew/Cellar/tex
+live/20240312_3/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti7.pfb></opt
+/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmtt10.pfb></opt/homebrew/Cellar/texlive/20240312_3/share/texmf-dist/fonts
+/type1/public/amsfonts/cm/cmtt8.pfb></opt/homebrew/Cellar/texlive/20240312_3/sh
+are/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on spec.pdf (68 pages, 413376 bytes).
+PDF statistics:
+ 315 PDF objects out of 1000 (max. 8388607)
+ 206 compressed objects within 3 object streams
+ 0 named destinations out of 1000 (max. 500000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+

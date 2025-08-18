@@ -1,6 +1,0 @@
-(library
- (name exec)
- (libraries lang il domain runtime_static runtime_dynamic instance stf)
- (modules sigs ctx core hash driver interp v1model ebpf gen)
- (instrumentation
-  (backend bisect_ppx)))

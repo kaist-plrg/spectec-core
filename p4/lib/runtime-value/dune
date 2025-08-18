@@ -1,4 +1,0 @@
-(library
- (name runtime_value)
- (libraries lang util domain)
- (modules vdom value pp eq utils num))
