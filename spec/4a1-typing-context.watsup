@@ -181,10 +181,10 @@ def $add_styps(cursor, C, id_h :: id_t*, styp_h :: styp_t*) = C''
 dec $add_param(cursor, context, paramtyp) : context
 
 def $add_param(p, C, pt) = C'
-    -- if id NO typ val? = pt
+    -- if id NO typ exprIL? = pt
     -- if C' = $add_styp(p, C, id, typ NO CTK eps)
 def $add_param(p, C, pt) = C'
-    -- if id dir typ val? = pt
+    -- if id dir typ exprIL? = pt
     -- if dir = IN \/ dir = OUT \/ dir = INOUT
     -- if C' = $add_styp(p, C, id, typ dir DYN eps)
 

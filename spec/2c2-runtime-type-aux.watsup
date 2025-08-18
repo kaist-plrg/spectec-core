@@ -108,7 +108,7 @@ def $is_alias(typ) = false
 
 dec $is_deft(typ) : bool
     hint(show % IS DEF_T)
-def $is_deft(DefT _) = true
+def $is_deft(DefT _ _) = true
 def $is_deft(typ) = false
   -- otherwise
 
@@ -186,19 +186,19 @@ def $is_externt(typ) = false
 
 dec $is_parsert(typ) : bool
     hint(show % IS PARSER_T)
-def $is_parsert(ParserT _) = true
+def $is_parsert(ParserT _ _) = true
 def $is_parsert(typ) = false
   -- otherwise
 
 dec $is_controlt(typ) : bool
     hint(show % IS CONTROL_T)
-def $is_controlt(ControlT _) = true
+def $is_controlt(ControlT _ _) = true
 def $is_controlt(typ) = false
   -- otherwise
 
 dec $is_packaget(typ) : bool
     hint(show % IS PACKAGE_T)
-def $is_packaget(PackageT _) = true
+def $is_packaget(PackageT _ _) = true
 def $is_packaget(typ) = false
   -- otherwise
 

@@ -8,8 +8,12 @@ syntax typ, polytypdef, funcdef
 ;; Parameter Type
 ;;
 
+;;
+;; Forward declaration of mutually recursive syntax
+;;
+
 syntax paramtyp hint(show %latex("\\tau_\\texttt{param}")) =
-  id dir typ val?
+  id dir typ exprIL?
 
 var pt : paramtyp hint(show %latex("\\tau_\\texttt{param}"))
 
@@ -50,7 +54,7 @@ syntax abstyp hint(show %latex("\\tau_\\texttt{abs}")) =
 ;;
 
 syntax aliastyp hint(show %latex("\\tau_\\texttt{alias}")) =
-  | DefT typ                        hint(show DEF#_#T %)
+  | DefT id typ                        hint(show DEF#_#T %)
 
 syntax datatyp hint(show %latex("\\tau_\\texttt{data}")) =
   | NewT id typ                     hint(show NEW#_#T % %)
@@ -65,9 +69,9 @@ syntax datatyp hint(show %latex("\\tau_\\texttt{data}")) =
 
 syntax objtyp hint(show %latex("\\tau_\\texttt{obj}")) =
   | ExternT id map<fid, funcdef>    hint(show EXTERN#_#T % %)
-  | ParserT paramtyp*               hint(show PARSER#_#T (%))
-  | ControlT paramtyp*              hint(show CONTROL#_#T (%))
-  | PackageT typ*                   hint(show PACKAGE#_#T %)
+  | ParserT id paramtyp*               hint(show PARSER#_#T (%))
+  | ControlT id paramtyp*              hint(show CONTROL#_#T (%))
+  | PackageT id typ*                   hint(show PACKAGE#_#T %)
   | TableT id typ                   hint(show TABLE#_#T %)
 
 syntax deftyp hint(show %latex("\\tau_\\texttt{def}")) =

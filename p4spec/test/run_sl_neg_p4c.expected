@@ -780,11 +780,11 @@ Error on typecheck: ../../../../p4c/testdata/p4_16_errors/issue764.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/issue774-1.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/issue774-1.p4
-../../../../spec/4h-typing-call.watsup:473.7-473.29: relation was not matched
+../../../../spec/4h-typing-call.watsup:484.7-484.29: relation was not matched
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/issue774-2.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/issue774-2.p4
-../../../../spec/4h-typing-call.watsup:335.57-335.71: function was not matched
+../../../../spec/4h-typing-call.watsup:346.65-346.79: function was not matched
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/issue803-1.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/issue803-1.p4
@@ -832,7 +832,7 @@ Excluding file: ../../../../p4c/testdata/p4_16_errors/loop3-err.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/methodArgDontcare.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/methodArgDontcare.p4
-../../../../spec/4h-typing-call.watsup:335.57-335.71: function was not matched
+../../../../spec/4h-typing-call.watsup:346.65-346.79: function was not matched
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/minWidth.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/minWidth.p4
@@ -1007,7 +1007,7 @@ Error on typecheck: ../../../../p4c/testdata/p4_16_errors/stack2.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/stack3.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/stack3.p4
-../../../../spec/4c-typing-static-eval.watsup:18.16-18.25: function was not matched
+../../../../spec/4c-typing-static-eval.watsup:47.16-47.25: function was not matched
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/stack_e.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/stack_e.p4

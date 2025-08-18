@@ -1,4 +1,0 @@
-(library
- (name el)
- (libraries util lang)
- (modules ast pp mp eq walk))

@@ -3,28 +3,28 @@
 ;;
 
 rule Expr_ok/boole:
-  p C |- BoolE b : ValueE (BoolV b) `(BoolT; LCTK)
+  p C |- BoolE b : BoolE b `(BoolT; LCTK)
 
 ;;
 ;; String expression
 ;;
 
 rule Expr_ok/stre:
-  p C |- StrE t : ValueE (StrV t) `(StrT; LCTK)
+  p C |- StrE t : StrE t `(StrT; LCTK)
 
 ;;
 ;; Number expression
 ;;
 
 rule Expr_ok/nume-intt:
-  p C |- NumE (INT i) : ValueE (IntV i) `(IntT; LCTK)
+  p C |- NumE (INT i) : NumE (INT i) `(IntT; LCTK)
 
 rule Expr_ok/nume-fintt:
-  p C |- NumE (FINT w i) : ValueE (FIntV w bs) `(FIntT w; LCTK)
+  p C |- NumE (FINT w i) : NumE (FINT w i) `(FIntT w; LCTK)
   -- if bs = $to_bitstr(w, i)
 
 rule Expr_ok/nume-fbitt:
-  p C |- NumE (FBIT w i) : ValueE (FBitV w bs) `(FBitT w; LCTK)
+  p C |- NumE (FBIT w i) : NumE (FBIT w i) `(FBitT w; LCTK)
   -- if bs = $to_bitstr(w, i)
 
 ;;
@@ -79,7 +79,7 @@ rule Expr_ok/defaulte:
 ;;
 
 rule Expr_ok/invalide:
-  p C |- InvalidE : ValueE InvalidV `(InvalidT; LCTK)
+  p C |- InvalidE : InvalidE `(InvalidT; LCTK)
 
 ;;
 ;; Unary expression
@@ -224,7 +224,7 @@ rule Expr_ok/bine-div-mod-lctk:
   -- if `(typ''; ctk_l'') = $annot(exprIL_l'')
   -- if `(_; LCTK) = $annot(exprIL_r'')
   ----
-  -- Eval_static: p C |- exprIL_r'' ~> val_r
+  -- Eval_static: p C |- exprIL_r'' ~> val_r _
   -- if n_r = $get_num(val_r)
   -- if $(n_r > 0)
   ----
@@ -291,7 +291,7 @@ rule Expr_ok/bine-shift-intt:
   ----
   -- if $is_intt(typ_r') \/ $is_fintt(typ_r')
   -- if ctk_r' = LCTK
-  -- Eval_static: p C |- exprIL_r' ~> val_r'
+  -- Eval_static: p C |- exprIL_r' ~> val_r' _
   -- if n_r = $get_num(val_r')
   ----
   -- if ctk = $join_ctk(ctk_l', ctk_r')
@@ -621,7 +621,7 @@ rule Expr_ok/arracce-tuplet:
   -- if exprIL_i' = $reduce_senum_unary(exprIL_i, def $compatible_arrayindex)
   ----
   -- if TupleT typ_b'* = $canon_typ(typ_b)
-  -- Eval_static: p C |- exprIL_i' ~> val_i
+  -- Eval_static: p C |- exprIL_i' ~> val_i _
   -- if n = $get_num(val_i)
   -- if typ = typ_b'*[n]
 
@@ -636,7 +636,7 @@ rule Expr_ok/arracce-stackt-lctk:
   -- if exprIL_i' = $reduce_senum_unary(exprIL_i, def $compatible_arrayindex)
   ----
   -- if StackT typ_b' i_s = $canon_typ(typ_b)
-  -- Eval_static: p C |- exprIL_i' ~> val_i
+  -- Eval_static: p C |- exprIL_i' ~> val_i _
   -- if i = $get_num(val_i)
   -- if $(0 <= i) /\ $(i <= i_s)
 
@@ -704,7 +704,7 @@ rule Expr_ok/bitacce:
   ----
   -- if exprIL_l' = $reduce_senum_unary(exprIL_l, def $compatible_bitstringindex)
   ----
-  -- Eval_static: p C |- exprIL_l' ~> val_l
+  -- Eval_static: p C |- exprIL_l' ~> val_l _
   -- if n_l = $get_num(val_l)
   -- if exprIL_l'' = ValueE val_l `(typ_l; LCTK)
   ----
@@ -713,7 +713,7 @@ rule Expr_ok/bitacce:
   ----
   -- if exprIL_h' = $reduce_senum_unary(exprIL_h, def $compatible_bitstringindex)
   ----
-  -- Eval_static: p C |- exprIL_h' ~> val_h
+  -- Eval_static: p C |- exprIL_h' ~> val_h _
   -- if n_h = $get_num(val_h)
   -- if exprIL_h'' = ValueE val_h `(typ_h; LCTK)
   ----
@@ -726,22 +726,22 @@ rule Expr_ok/bitacce:
 ;;
 
 rule Expr_ok/erracce:
-  p C |- ErrAccE member : ValueE (ErrV member) `(ErrT; LCTK)
+  p C |- ErrAccE member : ErrAccE member `(ErrT; LCTK)
   -- if id = $concat_text([ "error.", member ])
-  -- if ErrV member = $find_val(p, C, TOP id)
+  -- if ErrV _ = $find_val(p, C, TOP id)
 
 ;;
 ;; Type access expression
 ;;
 
 rule Expr_ok/typeacce-enumt:
-  p C |- TypeAccE name member : ValueE (EnumFieldV id_t member) `(typ; LCTK)
+  p C |- TypeAccE name member : TypeAccE name member `(typ; LCTK)
   -- if MonoD typ = $find_typdef(p, C, name)
   -- if EnumT id_t member_t* = $canon_typ(typ)
   -- if member <- member_t*
 
 rule Expr_ok/typeacce-senumt:
-  p C |- TypeAccE name member : ValueE (SEnumFieldV id_t member val) `(typ; LCTK)
+  p C |- TypeAccE name member : TypeAccE name member `(typ; LCTK)
   -- if MonoD typ = $find_typdef(p, C, name)
   -- if SEnumT id_t typ_t (member_t, val_t)* = $canon_typ(typ)
   -- if val = $assoc_<member, val>(member, (member_t, val_t)*)
@@ -891,7 +891,7 @@ def $not_abstract_extern_object''(_) = true
   -- otherwise
 
 rule Expr_ok/inste:
-  p C |- InstE name targ* arg* : InstE name targIL'* argIL'* `(typ; CTK)
+  p C |- InstE name targ* arg* : InstE name targIL'* targIL_hidden* argIL'* `(typ; CTK)
   -- (Type_ok: p C |- targ : targIL tid_fresh_a*)*
   -- if tid_fresh* = $concat_<tid>(tid_fresh_a**)
   ----
@@ -899,7 +899,7 @@ rule Expr_ok/inste:
   ----
   -- if tid_fresh'* = $concat_<tid>(tid_fresh* ++ tid_fresh_inserted*)
   ----
-  -- Inst_ok: p C tid_fresh'* |- ct targIL* arg* id_deft* : typ targIL'* argIL'*
+  -- Inst_ok: p C tid_fresh'* |- ct targIL* arg* id_deft* : typ targIL'* targIL_hidden* argIL'*
   -- if $not_abstract_extern_object(typ)
 
 ;;

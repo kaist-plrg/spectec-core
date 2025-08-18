@@ -3,21 +3,21 @@
 ;;
 
 rule Call_convention_ok/in:
-  p C actctxt |- (id IN typ_p val?) ~~ (exprIL, typ_a) : exprIL'
+  p C actctxt |- (id IN typ_p exprIL_deft?) ~~ (exprIL, typ_a) : exprIL'
   -- if exprIL' = $coerce_assign(exprIL, typ_p)
 
 rule Call_convention_ok/out-inout:
-  p C actctxt |- (id dir typ_p val?) ~~ (exprIL, typ_a) : exprIL
+  p C actctxt |- (id dir typ_p exprIL_deft?) ~~ (exprIL, typ_a) : exprIL
   -- if dir = OUT \/ dir = INOUT
   -- Type_alpha: typ_a ~~ typ_p
   -- Lval_ok: p C |- exprIL
 
 rule Call_convention_ok/no-action:
-  p C ACT |- (id NO typ_p val?) ~~ (exprIL, typ_a) : exprIL'
+  p C ACT |- (id NO typ_p exprIL_deft?) ~~ (exprIL, typ_a) : exprIL'
   -- if exprIL' = $coerce_assign(exprIL, typ_p)
 
 rule Call_convention_ok/no-not-action:
-  p C NOACT |- (id NO typ val?) ~~ (exprIL, typ') : exprIL
+  p C NOACT |- (id NO typ exprIL_deft?) ~~ (exprIL, typ') : exprIL
   -- if `(_; ctk) = $annot(exprIL)
   -- if ctk = LCTK \/ ctk = CTK
   -- Type_alpha: typ' ~~ typ
@@ -104,13 +104,13 @@ rule MethodType_ok/parsert:
   ----
   -- Expr_ok: p C |- expr_b: exprIL_b
   -- if `(typ_b; _) = $annot(exprIL_b)
-  -- if ParserT pt* = $canon_typ(typ_b)
+  -- if ParserT _ pt* = $canon_typ(typ_b)
   ----
   -- if ft = ParserApplyMethodT pt*
   -- if fd = MonoFD ft
   ----
-  -- if (id_p _ _ val_deft? = pt)*
-  -- if (b_deft = (val_deft? =/= eps))*
+  -- if (id_p _ _ exprIL_deft? = pt)*
+  -- if (b_deft = (exprIL_deft? =/= eps))*
   -- if fid = "apply" (id_p, b_deft)*
   ----
   -- if (fid, MonoFD ft, id_deft*) = $find_func<funcdef>("apply", $to_fkey(arg*), `{ (fid -> fd) })
@@ -120,13 +120,13 @@ rule MethodType_ok/controlt:
   ----
   -- Expr_ok: p C |- expr_b: exprIL_b
   -- if `(typ_b; _) = $annot(exprIL_b)
-  -- if ControlT pt* = $canon_typ(typ_b)
+  -- if ControlT _ pt* = $canon_typ(typ_b)
   ----
   -- if ft = ControlApplyMethodT pt*
   -- if fd = MonoFD ft
   ----
-  -- if (id_p _ _ val_deft? = pt)*
-  -- if (b_deft = (val_deft? =/= eps))*
+  -- if (id_p _ _ exprIL_deft? = pt)*
+  -- if (b_deft = (exprIL_deft? =/= eps))*
   -- if fid = "apply" (id_p, b_deft)*
   ----
   -- if (fid, MonoFD ft, id_deft*) = $find_func<funcdef>("apply", $to_fkey(arg*), `{ (fid -> fd) })
@@ -223,9 +223,9 @@ def $gen_cstr(cstr, SpecT ptd_p typ_p'*, SpecT ptd_a typ_a'*) = cstr'
   -- if ~($is_nominal(typ_p'') /\ $is_nominal(typ_a''))
   -- if cstr' = $gen_cstr(cstr, typ_p'', typ_a'')
 
-def $gen_cstr(cstr, DefT typ_p', typ_a) = $gen_cstr(cstr, typ_p', typ_a)
+def $gen_cstr(cstr, DefT _ typ_p', typ_a) = $gen_cstr(cstr, typ_p', typ_a)
 
-def $gen_cstr(cstr, typ_p, DefT typ_a') = $gen_cstr(cstr, typ_p, typ_a')
+def $gen_cstr(cstr, typ_p, DefT _ typ_a') = $gen_cstr(cstr, typ_p, typ_a')
 
 def $gen_cstr(cstr, NewT id typ_p', NewT id typ_a') = $gen_cstr(cstr, typ_p', typ_a')
 
@@ -246,15 +246,15 @@ def $gen_cstr(cstr, ExternT id fdenv_p, ExternT id fdenv_a) = $gen_cstr_fd'(cstr
   -- if `{ (fid_a -> fd_a)* } = fdenv_a
   -- if $eq_set<fid>(`{ fid_p* }, `{ fid_a* })
 
-def $gen_cstr(cstr, ParserT pt_p*, ParserT pt_a*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
+def $gen_cstr(cstr, ParserT _ pt_p*, ParserT _ pt_a*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
   -- if (_ dir typ_p' _ = pt_p)*
   -- if (_ dir typ_a' _ = pt_a)*
 
-def $gen_cstr(cstr, ControlT pt_p*, ControlT pt_a*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
+def $gen_cstr(cstr, ControlT _ pt_p*, ControlT _ pt_a*) = $gen_cstrs(cstr, typ_p'*, typ_a'*)
   -- if (_ dir typ_p' _ = pt_p)*
   -- if (_ dir typ_a' _ = pt_a)*
 
-def $gen_cstr(cstr, PackageT typ_p*, PackageT typ_a*) = $gen_cstrs(cstr, typ_p*, typ_a*)
+def $gen_cstr(cstr, PackageT _ typ_p*, PackageT _ typ_a*) = $gen_cstrs(cstr, typ_p*, typ_a*)
 
 def $gen_cstr(cstr, typ_p, typ_a) = cstr
   -- otherwise
@@ -320,8 +320,18 @@ def $merge_cstrs(cstr, cstr_h :: cstr_t*) = cstr''
   -- if cstr' = $merge_cstr(cstr, cstr_h)
   -- if cstr'' = $merge_cstrs(cstr', cstr_t*)
 
+dec $gen_tparam(typ) : tparamIL
+def $gen_tparam(typ) = $fresh_tid()
 
 def $resolve_cstrs(`{ eps }) = `{ eps }
+
+def $resolve_cstrs(`{ ((tid_h -> (KNOWN typ_h)) :: (tid_t -> typcstr_t)*) })
+  = $add_map<tid, typ>(`{ (tid_t' -> typ_t')* }, tid_h, typ_h')
+  -- if typ_h = SeqT typ_inner*
+  -- if (tparamIL = $gen_tparam(typ_inner))* 
+  -- if (typ_inner' = VarT tparamIL)*
+  -- if typ_h' = SpecT (PolyD (tparamIL*, eps) -> TupleT typ_inner*) typ_inner'*
+  -- if `{ (tid_t' -> typ_t')* } = $resolve_cstrs(`{ (tid_t -> typcstr_t)* })
 
 def $resolve_cstrs(`{ ((tid_h -> (KNOWN typ_h)) :: (tid_t -> typcstr_t)*) })
   = $add_map<tid, typ>(`{ (tid_t' -> typ_t')* }, tid_h, typ_h)
@@ -329,10 +339,11 @@ def $resolve_cstrs(`{ ((tid_h -> (KNOWN typ_h)) :: (tid_t -> typcstr_t)*) })
   -- if `{ (tid_t' -> typ_t')* } = $resolve_cstrs(`{ (tid_t -> typcstr_t)* })
 
 
+
 dec $infer_targs(tid*, paramtyp*, typ*) : map<tid, typ>
     ;;hint(show INFER_TARGS(%1, %2, %3))
 
-def $infer_targs(tid*, (id dir typ_p val?)*, typ_a*) = $resolve_cstrs(cstr')
+def $infer_targs(tid*, (id dir typ_p exprIL_deft?)*, typ_a*) = $resolve_cstrs(cstr')
   -- if cstr = $empty_cstr(tid*)
   -- if cstr' = $gen_cstrs(cstr, typ_p*, typ_a*)
 
@@ -711,7 +722,7 @@ rule Inst_site_ok/local-controlapplymethod:
 
 
 rule Inst_ok/global-packaget-no-targsinfer:
-  GLOBAL C_0 eps |- ct targIL* arg* id_deft* : typ_i targIL* argIL''*
+  GLOBAL C_0 eps |- ct targIL* arg* id_deft* : typ_i targIL* eps argIL''*
   -- if ConsT pt* typ_i = ct
   -- if $is_packaget($canon_typ(typ_i))
   ----
@@ -729,7 +740,7 @@ rule Inst_ok/global-packaget-no-targsinfer:
   -- (Call_convention_arg_ok: BLOCK C_1 NOACT |- pt'' ~~ (argIL, typ_a) : argIL'')*
 
 rule Inst_ok/global-packaget-targsinfer:
-  GLOBAL C_0 tid_fresh* |- ct targIL* arg* id_deft* : typ_i' targIL''* argIL''*
+  GLOBAL C_0 tid_fresh* |- ct targIL* arg* id_deft* : typ_i' targIL* targIL_hidden* argIL''*
   -- if ConsT pt* typ_i = ct
   -- if $is_packaget($canon_typ(typ_i))
   ----
@@ -745,8 +756,7 @@ rule Inst_ok/global-packaget-targsinfer:
   ----
   -- if theta = $infer_targs(tid_fresh*, pt''*, typ_a*)
   ----
-  -- if (targIL' = $find_map<tid, typ>(theta, tid_fresh))*
-  -- if targIL''* = targIL* ++ targIL'*
+  -- if (targIL_hidden = $find_map<tid, typ>(theta, tid_fresh))*
   ----
   -- if ConsT pt'''* typ_i' = $subst_constyp(theta, ConsT pt''* typ_i)
   ----
@@ -756,7 +766,7 @@ rule Inst_ok/global-packaget-targsinfer:
   -- (Call_convention_arg_ok: BLOCK C_1 NOACT |- pt''' ~~ (argIL, typ_a) : argIL'')*
 
 rule Inst_ok/else-no-targsinfer:
-  p C eps |- ct targIL* arg* id_deft* : typ_i targIL* argIL''*
+  p C eps |- ct targIL* arg* id_deft* : typ_i targIL* eps argIL''*
   -- if ConsT pt* typ_i = ct
   -- if ~((p = GLOBAL) /\ $is_packaget($canon_typ(typ_i)))
   ----
@@ -773,7 +783,7 @@ rule Inst_ok/else-no-targsinfer:
   -- (Call_convention_arg_ok: p C NOACT |- pt'' ~~ (argIL, typ_a) : argIL'')*
 
 rule Inst_ok/else-targsinfer:
-  p C tid_fresh* |- ct targIL* arg* id_deft* : typ_i' targIL* argIL''*
+  p C tid_fresh* |- ct targIL* arg* id_deft* : typ_i' targIL* targIL_hidden* argIL''*
   -- if ConsT pt* typ_i = ct
   -- if ~((p = GLOBAL) /\ $is_packaget($canon_typ(typ_i)))
   ----
@@ -786,8 +796,7 @@ rule Inst_ok/else-targsinfer:
   ----
   -- if theta = $infer_targs(tid_fresh*, pt''*, typ_a*)
   ----
-  -- if (targIL' = $find_map<tid, typ>(theta, tid_fresh))*
-  -- if targIL''* = targIL* ++ targIL'*
+  -- if (targIL_hidden = $find_map<tid, typ>(theta, tid_fresh))*
   ----
   -- if ConsT pt'''* typ_i' = $subst_constyp(theta, ConsT pt''* typ_i)
   ----

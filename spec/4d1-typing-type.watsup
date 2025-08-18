@@ -24,7 +24,7 @@ rule Type_ok/fintt:
   p C |- FIntT expr : (FIntT w) eps
   -- Expr_ok: p C |- expr : exprIL
   -- if `(_; LCTK) = $annot(exprIL)
-  -- Eval_static: p C |- exprIL ~> val
+  -- Eval_static: p C |- exprIL ~> val _
   -- if w = $get_num(val)
   -- if $(w > 0)
 
@@ -32,14 +32,14 @@ rule Type_ok/fbitt:
   p C |- FBitT expr : (FBitT w) eps
   -- Expr_ok: p C |- expr : exprIL
   -- if `(_; LCTK) = $annot(exprIL)
-  -- Eval_static: p C |- exprIL ~> val
+  -- Eval_static: p C |- exprIL ~> val _
   -- if w = $get_num(val)
 
 rule Type_ok/vbitt:
   p C |- VBitT expr : (VBitT w) eps
   -- Expr_ok: p C |- expr : exprIL
   -- if `(_; LCTK) = $annot(exprIL)
-  -- Eval_static: p C |- exprIL ~> val
+  -- Eval_static: p C |- exprIL ~> val _
   -- if w = $get_num(val)
 
 rule Type_ok/stackt:
@@ -48,7 +48,7 @@ rule Type_ok/stackt:
   ----
   -- Expr_ok: p C |- expr : exprIL
   -- if `(_; LCTK) = $annot(exprIL)
-  -- Eval_static: p C |- exprIL ~> val
+  -- Eval_static: p C |- exprIL ~> val _
   -- if i_size = $get_num(val)
   ----
   -- if ptd = PolyD ("T", eps) -> (StackT (VarT "T") i_size)

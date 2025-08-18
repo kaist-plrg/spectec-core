@@ -60,7 +60,7 @@ syntax dirIL = dir
 ;; Forward declarations of mutually recursive syntax
 ;;
 
-syntax exprIL, stmtIL, switchcaseIL, declIL, tblpropIL
+syntax stmtIL, switchcaseIL, declIL, tblpropIL
 
 ;;
 ;; Types
@@ -78,7 +78,7 @@ syntax tparamIL = id
 ;; Parameters
 ;;
 
-syntax paramIL = idIL dirIL typeIL val?
+syntax paramIL = idIL dirIL typeIL exprIL?
 
 ;;
 ;; Constructor parameters
@@ -123,12 +123,16 @@ syntax selectcaseIL = keysetIL* statelabelIL
 syntax annotIL = `(typ; ctk)
 syntax exprIL =
   | ValueE val annotIL                                        hint(show %)
+  | BoolE bool annotIL                                        hint(show %)
+  | StrE text annotIL                                         hint(show %)
+  | NumE num annotIL                                          hint(show %)
   | NameE nameIL annotIL                                      hint(show %)
   | SeqE exprIL* annotIL                                      hint(show %latex("\\{")#%#%latex("\\}"))
   | SeqDefaultE exprIL* annotIL                               ;;hint(show %latex("\\{")#%, ... %latex("\\}"))
   | RecordE (memberIL, exprIL)* annotIL                       hint(show %latex("\\{")#%#%latex("\\}"))
   | RecordDefaultE (memberIL, exprIL)* annotIL                ;;hint(show %latex("\\{")#%, ... %latex("\\}"))
   | DefaultE annotIL                                          hint(show ...%latex())
+  | InvalidE annotIL                                          hint(show INVALID)
   | UnE unopIL exprIL annotIL                                 hint(show %#%)
   | BinE binopIL exprIL exprIL annotIL                        hint(show %2 %1 %3)
   | TernE exprIL exprIL exprIL annotIL                        hint(show (% %latex("?") % `: %))
@@ -138,11 +142,13 @@ syntax exprIL =
   | SelectE exprIL* selectcaseIL* annotIL                     hint(show SELECT (%) %latex("\\{")#%#%latex("\\}"))
   | ArrAccE exprIL exprIL annotIL                             hint(show %`[%])
   | BitAccE exprIL exprIL exprIL annotIL                      hint(show %`[% `: %])
+  | ErrAccE memberIL annotIL                                  hint(show ERROR.%)
+  | TypeAccE nameIL memberIL annotIL                          hint(show %.%)
   | ExprAccE exprIL memberIL annotIL                          hint(show %.%)
   | CallFuncE nameIL targIL* argIL* annotIL                   hint(show %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
   | CallMethodE exprIL memberIL targIL* argIL* annotIL        hint(show %.%#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
   | CallTypeE nameIL memberIL targIL* argIL* annotIL          hint(show %.%#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
-  | InstE nameIL targIL* argIL* annotIL                       hint(show %#%latex("\\langle")#%#%latex("\\rangle")#(%)#%latex())
+  | InstE nameIL targIL* targIL* argIL* annotIL               hint(show %1#%latex("\\langle")#%2#%latex("\\rangle")#(%4)#%latex())
 
 ;;
 ;; Blocks (sequence of statements)
@@ -256,7 +262,7 @@ syntax declIL =
   | VarD idIL typeIL exprIL?                                            hint(show %2 %1 = %3)
   | ErrD memberIL*                                                      hint(show ERROR %latex("\\{")#%#%latex("\\}"))
   | MatchKindD memberIL*                                                hint(show MATCH#_#KIND %latex("\\{")#%#%latex("\\}"))
-  | InstD idIL typeIL nameIL targIL* argIL* declIL*                     hint(show %3#%latex("\\langle")#%4#%latex("\\rangle")#(%5) %1 = %latex("\\{")#%6#%latex("\\}") %latex("/*")%2%latex("*/"))
+  | InstD idIL typeIL nameIL targIL* targIL* argIL* declIL*             hint(show %3#%latex("\\langle")#%4#%latex("\\rangle")#(%6) %1 = %latex("\\{")#%7#%latex("\\}") %latex("/*")%2%latex("*/"))
   | StructD idIL tparamIL* tparamIL* (memberIL, typeIL)*                ;;hint(show STRUCT %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | HeaderD idIL tparamIL* tparamIL* (memberIL, typeIL)*                ;;hint(show HEADER %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))
   | UnionD idIL tparamIL* tparamIL* (memberIL, typeIL)*                 ;;hint(show UNION %#%latex("\\langle")#%,%#%latex("\\rangle") %latex("\\{")#%#%latex("\\}"))

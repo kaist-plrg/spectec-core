@@ -40,3 +40,7 @@ syntax setval =
   | SingletonSet val                hint(show %latex("\\{") % %latex("\\}"))
   | MaskSet val val                 hint(show %latex("\\{") % %latex("\\&\\&\\&") % %latex("\\}"))
   | RangeSet val val                hint(show %latex("\\{") % ... % %latex("\\}"))
+
+syntax exprIL ;;Forward declaration
+
+syntax valIL = val exprIL

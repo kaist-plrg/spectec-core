@@ -145,20 +145,12 @@ relation TableProperties_inst:
   contextInst sto |- tablePropertyIR* ==> contextInst sto tablePropertyIR*
   hint(input %0 %1 %2)
 
-relation Table_inst:
-  cursor contextInst sto |- tablePropertyListIR ==> contextInst sto tablePropertyListIR
-  hint(input %0 %1 %2 %3)
-
 relation ControlLocalDecl_inst:
   contextInst sto |- controlLocalDeclarationIR ==> contextInst sto controlLocalDeclarationIR?
   hint(input %0 %1 %2)
 
 relation ControlLocalDecls_inst:
   contextInst sto |- controlLocalDeclarationIR* ==> contextInst sto controlLocalDeclarationIR*
-  hint(input %0 %1 %2)
-
-relation ObjectDecls_inst:
-  contextInst sto |- objectDeclarationListIR ==> contextInst sto objectDeclarationListIR
   hint(input %0 %1 %2)
 
 ;;

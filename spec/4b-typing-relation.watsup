@@ -5,12 +5,16 @@
 dec $annot(exprIL) : annotIL
 
 def $annot(ValueE _ annotIL) = annotIL
+def $annot(BoolE _ annotIL) = annotIL
+def $annot(StrE _ annotIL) = annotIL
+def $annot(NumE _ annotIL) = annotIL
 def $annot(NameE _ annotIL) = annotIL
 def $annot(SeqE _ annotIL) = annotIL
 def $annot(SeqDefaultE _ annotIL) = annotIL
 def $annot(RecordE _ annotIL) = annotIL
 def $annot(RecordDefaultE _ annotIL) = annotIL
 def $annot(DefaultE annotIL) = annotIL
+def $annot(InvalidE annotIL) = annotIL
 def $annot(UnE _ _ annotIL) = annotIL
 def $annot(BinE _ _ _ annotIL) = annotIL
 def $annot(TernE _ _ _ annotIL) = annotIL
@@ -20,11 +24,13 @@ def $annot(RangeE _ _ annotIL) = annotIL
 def $annot(SelectE _ _ annotIL) = annotIL
 def $annot(ArrAccE _ _ annotIL) = annotIL
 def $annot(BitAccE _ _ _ annotIL) = annotIL
+def $annot(ErrAccE _ annotIL) = annotIL
+def $annot(TypeAccE _ _ annotIL) = annotIL
 def $annot(ExprAccE _ _ annotIL) = annotIL
 def $annot(CallFuncE _ _ _ annotIL) = annotIL
 def $annot(CallMethodE _ _ _ _ annotIL) = annotIL
 def $annot(CallTypeE _ _ _ _ annotIL) = annotIL
-def $annot(InstE _ _ _ annotIL) = annotIL
+def $annot(InstE _ _ _ _ annotIL) = annotIL
 
 ;;
 ;; Static evaluation
@@ -32,7 +38,7 @@ def $annot(InstE _ _ _ annotIL) = annotIL
 
 ;; Static evaluation of expressions that are local compile-time known
 relation Eval_static:
-  cursor context |- exprIL ~> val
+  cursor context |- exprIL ~> valIL
   hint(input %0 %1 %2)
 
 ;;
@@ -172,5 +178,5 @@ relation Inst_site_ok:
   cursor context |- constyp : INSTSITE_OK
   hint(input %0 %1 %2)
 relation Inst_ok:
-  cursor context tid* |- constyp targIL* arg* id* : typ targIL* argIL*
+  cursor context tid* |- constyp targIL* arg* id* : typ targIL* targIL* argIL*
   hint(input %0 %1 %2 %3 %4 %5 %6)

@@ -7,14 +7,43 @@
 ;;
 
 rule Eval_static/valuee:
-  p C |- ValueE val _ ~> val
+  p C |- ValueE val annotIL ~> val (ValueE val annotIL)
+
+;;
+;; Boolean expression
+;;
+
+rule Eval_static/boole:
+  p C |- BoolE b annotIL ~> (BoolV b) (BoolE b annotIL)
+
+;;
+;; String expression
+;;
+
+rule Eval_static/stre:
+  p C |- StrE t annotIL ~> (StrV t) (StrE t annotIL)
+
+;;
+;; Number expression
+;;
+
+rule Eval_static/nume-intt:
+  p C |- NumE (INT i) annotIL ~> (IntV i) (NumE (INT i) annotIL)
+
+rule Eval_static/nume-fintt:
+  p C |- NumE (FINT w i) annotIL ~> (FIntV w bs) (NumE (FINT w i) annotIL)
+  -- if bs = $to_bitstr(w, i)
+
+rule Eval_static/nume-fbitt:
+  p C |- NumE (FBIT w i) annotIL ~> (FBitV w bs) (NumE (FBIT w i) annotIL)
+  -- if bs = $to_bitstr(w, i)
 
 ;;
 ;; Variable expression
 ;;
 
 rule Eval_static/namee:
-  p C |- NameE name _ ~> val
+  p C |- NameE name annotIL ~> val (NameE name annotIL)
   -- if val = $find_val(p, C, name)
 
 ;;
@@ -22,95 +51,123 @@ rule Eval_static/namee:
 ;;
 
 rule Eval_static/seqe:
-  p C |- SeqE exprIL* _ ~> SeqV val*
-  -- (Eval_static: p C |- exprIL ~> val)*
+  p C |- SeqE exprIL* annotIL ~> (SeqV val*) (SeqE exprIL* annotIL)
+  -- (Eval_static: p C |- exprIL ~> val _)*
 
 rule Eval_static/seqdefaulte:
-  p C |- SeqDefaultE exprIL* _ ~> SeqDefaultV val*
-  -- (Eval_static: p C |- exprIL ~> val)*
+  p C |- SeqDefaultE exprIL* annotIL ~> (SeqDefaultV val*) (SeqDefaultE exprIL* annotIL)
+  -- (Eval_static: p C |- exprIL ~> val _)*
 
 ;;
 ;; Record expression
 ;;
 
 rule Eval_static/recorde:
-  p C |- RecordE (member, exprIL)* _ ~> RecordV (member, val)*
-  -- (Eval_static: p C |- exprIL ~> val)*
+  p C |- RecordE (member, exprIL)* annotIL ~> (RecordV (member, val)*) (RecordE (member, exprIL)* annotIL)
+  -- (Eval_static: p C |- exprIL ~> val _)*
 
 rule Eval_static/recorddefaulte:
-  p C |- RecordDefaultE (member, exprIL)* _ ~> RecordDefaultV (member, val)*
-  -- (Eval_static: p C |- exprIL ~> val)*
+  p C |- RecordDefaultE (member, exprIL)* annotIL ~> (RecordDefaultV (member, val)*) (RecordDefaultE (member, exprIL)* annotIL)
+  -- (Eval_static: p C |- exprIL ~> val _)*
 
 ;;
 ;; Default expression
 ;;
 
 rule Eval_static/defaulte:
-  p C |- DefaultE _ ~> DefaultV 
+  p C |- DefaultE annotIL ~> (DefaultV) (DefaultE annotIL)
+
+rule Eval_static/invalide:
+  p C |- InvalidE annotIL ~> (InvalidV) (InvalidE annotIL)
 
 ;;
 ;; Unary expression
 ;;
 
 rule Eval_static/une:
-  p C |- UnE unop exprIL _ ~> $un_op(unop, val)
-  -- Eval_static: p C |- exprIL ~> val
+  p C |- UnE unop exprIL annotIL ~> $un_op(unop, val) (UnE unop exprIL annotIL)
+  -- Eval_static: p C |- exprIL ~> val _
 
 ;;
 ;; Binary expression
 ;;
 
 rule Eval_static/bine:
-  p C |- BinE binop exprIL_l exprIL_r _ ~> $bin_op(binop, val_l, val_r)
-  -- Eval_static: p C |- exprIL_l ~> val_l
-  -- Eval_static: p C |- exprIL_r ~> val_r
+  p C |- BinE binop exprIL_l exprIL_r annotIL ~> $bin_op(binop, val_l, val_r) (BinE binop exprIL_l exprIL_r annotIL)
+  -- Eval_static: p C |- exprIL_l ~> val_l _
+  -- Eval_static: p C |- exprIL_r ~> val_r _
 
 ;;
 ;; Ternary expression
 ;;
 
 rule Eval_static/terne-true:
-  p C |- TernE exprIL_c exprIL_t exprIL_f _ ~> val
-  -- Eval_static: p C |- exprIL_c ~> BoolV true
-  -- Eval_static: p C |- exprIL_t ~> val
+  p C |- TernE exprIL_c exprIL_t exprIL_f annotIL ~> val (TernE exprIL_c exprIL_t exprIL_f annotIL)
+  -- Eval_static: p C |- exprIL_c ~> (BoolV true) _
+  -- Eval_static: p C |- exprIL_t ~> val _
 
 rule Eval_static/terne-false:
-  p C |- TernE exprIL_c exprIL_t exprIL_f _ ~> val
-  -- Eval_static: p C |- exprIL_c ~> BoolV false
-  -- Eval_static: p C |- exprIL_f ~> val
+  p C |- TernE exprIL_c exprIL_t exprIL_f annotIL ~> val (TernE exprIL_c exprIL_t exprIL_f annotIL)
+  -- Eval_static: p C |- exprIL_c ~> (BoolV false) _
+  -- Eval_static: p C |- exprIL_f ~> val _
 
 ;;
 ;; Cast expression
 ;;
 
 rule Eval_static/caste:
-  p C |- CastE typ exprIL _ ~> $cast_op(typ, val)
-  -- Eval_static: p C |- exprIL ~> val
+  p C |- CastE typ exprIL annotIL ~> $cast_op(typ, val) (CastE typ exprIL annotIL)
+  -- Eval_static: p C |- exprIL ~> val _
 
 ;;
 ;; Bitstring access expression
 ;;
 
 rule Eval_static/bitacce:
-  p C |- BitAccE exprIL_b exprIL_l exprIL_h _ ~> $bitacc_op(val_b, val_h, val_l)
-  -- Eval_static: p C |- exprIL_b ~> val_b
-  -- Eval_static: p C |- exprIL_l ~> val_l
-  -- Eval_static: p C |- exprIL_h ~> val_h
+  p C |- BitAccE exprIL_b exprIL_l exprIL_h annotIL ~> $bitacc_op(val_b, val_h, val_l) (BitAccE exprIL_b exprIL_l exprIL_h annotIL)
+  -- Eval_static: p C |- exprIL_b ~> val_b _
+  -- Eval_static: p C |- exprIL_l ~> val_l _
+  -- Eval_static: p C |- exprIL_h ~> val_h _
+
+;;
+;; Error access expression
+;;
+
+rule Eval_static/erracce:
+  p C |- ErrAccE member annotIL ~> (ErrV member) (ErrAccE member annotIL)
+  -- if id = $concat_text([ "error.", member ])
+  -- if ErrV member = $find_val(p, C, TOP id)
+
+;;
+;; Type access expression
+;;
+
+rule Eval_static/typeacce-enumt:
+  p C |- TypeAccE name member annotIL ~> (EnumFieldV id_t member) (TypeAccE name member annotIL)
+  -- if MonoD typ = $find_typdef(p, C, name)
+  -- if EnumT id_t member_t* = $canon_typ(typ)
+  -- if member <- member_t*
+
+rule Eval_static/typeacce-senumt:
+  p C |- TypeAccE name member annotIL ~> (SEnumFieldV id_t member val) (TypeAccE name member annotIL)
+  -- if MonoD typ = $find_typdef(p, C, name)
+  -- if SEnumT id_t typ_t (member_t, val_t)* = $canon_typ(typ)
+  -- if val = $assoc_<member, val>(member, (member_t, val_t)*)
 
 ;;
 ;; Expression access expression
 ;;
 
 rule Eval_static/expracce-stack:
-  p C |- ExprAccE exprIL_b "size" _ ~> IntV i_size
-  -- Eval_static: p C |- exprIL_b ~> StackV val* i_size i_idx
+  p C |- ExprAccE exprIL_b "size" annotIL ~> (IntV i_size) (ExprAccE exprIL_b "size" annotIL)
+  -- Eval_static: p C |- exprIL_b ~> (StackV val* i_size i_idx) _
 
 ;;
 ;; Method call expression
 ;;
 
 rule Eval_static/callmethode:
-  p C |- CallMethodE exprIL_b member eps eps _ ~> val
+  p C |- CallMethodE exprIL_b member eps eps annotIL ~> val (CallMethodE exprIL_b member eps eps annotIL)
   -- if member = "minSizeInBits" \/ member = "minSizeInBytes" \/ member = "maxSizeInBits" \/ member = "maxSizeInBytes"
   ----
   -- if `(typ_b; _) = $annot(exprIL_b)
@@ -121,7 +178,7 @@ rule Eval_static/callmethode:
 ;;
 
 rule Eval_static/calltypee:
-  p C |- CallTypeE name member eps eps _ ~> $size(typ, member)
+  p C |- CallTypeE name member eps eps annotIL ~> $size(typ, member) (CallTypeE name member eps eps annotIL)
   -- if member = "minSizeInBits" \/ member = "minSizeInBytes"
         \/ member = "maxSizeInBits" \/ member = "maxSizeInBytes"
   ----
