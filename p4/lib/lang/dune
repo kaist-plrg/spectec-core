@@ -1,4 +1,0 @@
-(library
- (name lang)
- (libraries bignum util)
- (modules ast pp eq walk))

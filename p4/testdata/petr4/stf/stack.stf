@@ -1,2 +1,0 @@
-packet 0 00
-expect 0 0000 0005 2A2A 2A2A 2A2A 2A2A 00

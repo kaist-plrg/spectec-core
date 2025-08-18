@@ -1,48 +1,20 @@
 # ocaml build artifacts
 _build
-_coverage
 *.opam
-
-# spectec
-watsup
-spec-gen.include
-*.aux
-*.log
-*.tex
-!spec/spec.tex
-*.pdf
 
 # p4spectec build and executables
 p4spectec
 
-# p4cherry build and executables
-p4cherry
-doc/_sphinx
-doc/spectec
-
-# p4cherry-test logs
-log
-error
-!p4/status/p4c/*.log
-!p4/status/petr4/*.log
-
-# p4spec testgen artifacts
+# p4spectec testgen artifacts
 gen
 seed
 
-# calculus
-!calculus/*.tex
-
-# scripts
+# p4spectec testgen scripts
 scripts/__pycache__
-run.sh
 
-# tools
-tools
-
-# debugs
+# logs and debugs
+log
 debug
 
-# reducer originals and interestingness scripts
-reductions/o*
-reductions/interesting
+# MacOS
+*.DS_Store
