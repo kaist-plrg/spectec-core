@@ -482,17 +482,6 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/factory2.p4
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/filter.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/flag_lost-bmv2.p4
-negative inner acc: -0.051658
-negative inner acc: -0.050832
-negative inner acc: -0.050587
-negative inner acc: -0.050513
-negative inner acc: -0.050490
-negative inner acc: -0.050272
-negative inner acc: -0.050127
-negative inner acc: -0.050067
-negative inner acc: -0.050047
-negative inner acc: -0.044239
-negative inner acc: -0.044122
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/flag_lost-bmv2.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/flowlet_switching-bmv2.p4
