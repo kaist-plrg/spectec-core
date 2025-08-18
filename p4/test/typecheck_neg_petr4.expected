@@ -1,9 +1,0 @@
-Running typecheck tests on 1 files
-
-
->>> Running typecheck test on ../../../testdata/petr4/program/ill-typed/error.p4
-Error on typecheck: File ../../../testdata/petr4/program/ill-typed/error.p4, line 15, characters 23-30
-(type_array_acc_expr) Index 15 out of range for hdr
-
-Parser on file: [PASS] 1/1 (100.00%) [FAIL] 0/1 (0.00%)
-Typecheck: [PASS] 0/1 (0.00%) [FAIL] 1/1 (100.00%)
