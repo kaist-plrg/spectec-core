@@ -13,7 +13,6 @@
  * under the License.
  *)
 
-open Core
 module SMap = Map.Make (String)
 
 type has_params = bool
@@ -36,19 +35,19 @@ let declare (id : string) (k : ident_kind) : unit =
   | m :: l ->
       Debug_config.context_debug_print ">>> Declaring %s as %s\n" id
         (match k with TypeName _ -> "TypeName" | Ident _ -> "Ident");
-      context := SMap.set m ~key:id ~data:k :: l
+      context := SMap.add id k m :: l
 
 let declare_type id has_params = declare id (TypeName has_params)
-let declare_types types = List.iter types ~f:(fun s -> declare_type s false)
+let declare_types types = List.iter (fun s -> declare_type s false) types
 let declare_var id has_params = declare id (Ident has_params)
-let declare_vars vars = List.iter ~f:(fun s -> declare_var s false) vars
+let declare_vars vars = List.iter (fun s -> declare_var s false) vars
 
 (* Tests whether [id] is known as a type name. *)
 let get_kind (id : string) : ident_kind =
   let rec loop = function
     | [] -> Ident false
     | m :: rest -> (
-        match SMap.find m id with None -> loop rest | Some k -> k)
+        match SMap.find_opt id m with None -> loop rest | Some k -> k)
   in
   loop !context
 
@@ -59,10 +58,10 @@ let mark_template (id : string) =
   let rec loop = function
     | [] -> []
     | m :: rest -> (
-        match SMap.find m id with
+        match SMap.find_opt id m with
         | None -> m :: loop rest
-        | Some (TypeName _) -> SMap.set m ~key:id ~data:(TypeName true) :: rest
-        | Some (Ident _) -> SMap.set m ~key:id ~data:(Ident true) :: rest)
+        | Some (TypeName _) -> SMap.add id (TypeName true) m :: rest
+        | Some (Ident _) -> SMap.add id (Ident true) m :: rest)
   in
   context := loop !context
 
@@ -100,11 +99,15 @@ let print_entry x k =
   | Ident false -> Printf.printf "%s : ident" x
 
 let print_map m =
-  SMap.iteri m ~f:(fun ~key:x ~data:k ->
+  SMap.iter
+    (fun x k ->
       print_entry x k;
       print_endline "")
+    m
 
 let print_context () =
-  List.iter !context ~f:(fun m ->
+  List.iter
+    (fun m ->
       print_map m;
       print_endline "----")
+    !context
