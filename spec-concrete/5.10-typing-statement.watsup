@@ -18,7 +18,7 @@ rule Stmt_ok/emptyStatement:
 
 rule Stmt_ok/assignmentStatement-eq:
   p TC f |- lvalue `= expression `;
-          : TC f (typedLvalueIR `= typedExpressionIR `;)
+          : TC f (typedLvalueIR `= typedExpressionIR_cast `;)
   ---- ;; check lvalue
   -- Lvalue_ok: p TC |- lvalue : typedLvalueIR
   ---- ;; check expression

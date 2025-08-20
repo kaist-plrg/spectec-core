@@ -12794,7 +12794,7 @@ relation Stmt_ok: cursor typingContext flow |- statement : typingContext flow st
       -- if (statement = ; as statement)
 
    ;; ../../../../spec-concrete/5.10-typing-statement.watsup:19.1-31.76
-   rule assignmentStatement-eq: p TC f |- statement : TC f typedLvalueIR = typedExpressionIR ; as statementIR
+   rule assignmentStatement-eq: p TC f |- statement : TC f typedLvalueIR = typedExpressionIR_cast ; as statementIR
       -- if statement <: assignmentStatement
       -- let lvalue assignop expression ; = statement as assignmentStatement
       -- if assignop matches `=`
