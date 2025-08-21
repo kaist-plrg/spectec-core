@@ -11,10 +11,10 @@ This reuses parts of the [Petr4](https://github.com/verified-network-toolchain/p
   $ opam init
   ```
 
-* Create OCaml switch for version 4.14.0
+* Create OCaml switch for version 5.1.0
   Install `dune` version 3.16.1, `bignum` version v0.17.0, `menhir` version 20240715, `core` version v0.17.1, `core_unix` version v0.17.0, and `bisect_ppx` version 2.8.3 via `opam`.
   ```shell
-  $ opam switch create 4.14.0
+  $ opam switch create 5.1.0
   $ eval $(opam env)
   $ opam install dune bignum menhir core core_unix bisect_ppx
   ```

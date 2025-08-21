@@ -1163,7 +1163,7 @@ Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue1524.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue1535.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue1538.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue1538.p4
+Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue1538.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue1540.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue1540.p4
@@ -1607,7 +1607,7 @@ Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue2485.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue2487.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue2488-bmv2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2488-bmv2.p4
+Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue2488-bmv2.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue249.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue249.p4
@@ -1628,7 +1628,7 @@ Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue2514.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue2542.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue2543-1.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2543-1.p4
+Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue2543-1.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue2543-2.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue2543-2.p4
@@ -1760,7 +1760,7 @@ Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue2905.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue2956.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue2957.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue2957.p4
+Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue2957.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue2958.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue2958.p4
@@ -1847,10 +1847,10 @@ Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3246-1.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue3274-1.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue3274-2.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3274-2.p4
+Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue3274-2.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue3274.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3274.p4
+Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue3274.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue3283.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3283.p4
@@ -1868,7 +1868,7 @@ Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue3289.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3291-1.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue3292.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue3292.p4
+Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue3292.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue3307.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue3307.p4
@@ -2063,7 +2063,7 @@ Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue447-5-bmv2.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue447-bmv2.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue4500.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue4500.p4
+Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue4500.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue4507_1.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue4507_1.p4
@@ -2153,7 +2153,7 @@ Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue512.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue5211_simplify_parsers_dup_state_local_var_decl.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue5231-const-int-concat.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/issue5231-const-int-concat.p4
+Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue5231-const-int-concat.p4
 
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/issue529.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/issue529.p4
@@ -3879,4 +3879,4 @@ Instantiation success: ../../../../p4c/testdata/p4_16_samples/xdp_vlan_push_pop_
 >>> Running instantiation test on ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 Instantiation success: ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 
-Running instantiation: [EXCLUDE] 224/1278 (17.53%) [PASS] 1052/1278 (82.32%) [FAIL] 2/1278 (0.16%)
+Running instantiation: [EXCLUDE] 215/1278 (16.82%) [PASS] 1061/1278 (83.02%) [FAIL] 2/1278 (0.16%)
