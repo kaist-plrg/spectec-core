@@ -9,7 +9,7 @@ let rec internalize_iter ?(iterexps : iterexp list = []) (prem : prem) :
     prem * iterexp list =
   match prem.it with
   | IterPr (prem, iterexp) ->
-      internalize_iter ~iterexps:(iterexps @ [ iterexp ]) prem
+      internalize_iter ~iterexps:(iterexp :: iterexps) prem
   | _ -> (prem, iterexps)
 
 let rec struct_prems (prems : prem list) (instr_ret : Ol.Ast.instr) :

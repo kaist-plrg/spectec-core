@@ -199,12 +199,21 @@ let rename_exp_bind_sub (dctx : Dctx.t) (renv : REnv.t) (typ_sub : typ)
   let exp = To.as_exp to_ in
   (dctx, renv, exp)
 
+let check_upcast_terminal (exp : exp) : bool =
+  match exp.it with
+  | UpCastE (_, { it = CaseE (_, []); _ }) -> true
+  | _ -> false
+
 let rec rename_exp (dctx : Dctx.t) (binds : IdSet.t) (renv : REnv.t) (exp : exp)
     : Dctx.t * REnv.t * exp =
   let frees = Il.Free.free_exp exp in
-  (* If the expression contains no bindings, rename it *)
-  if IdSet.inter binds frees |> IdSet.is_empty then
-    rename_exp_bound dctx renv exp
+  (* If the expression contains no bindings, rename it
+     Yet, skip upcast on terminals to enforce case-analysis,
+     which helps with the later structuring phase
+     e.g., patterns like let typ = (VoidT as typ) *)
+  if
+    IdSet.inter binds frees |> IdSet.is_empty && not (check_upcast_terminal exp)
+  then rename_exp_bound dctx renv exp
   else rename_exp_bind dctx binds renv exp
 
 and rename_exp_bound (dctx : Dctx.t) (renv : REnv.t) (exp : exp) :
