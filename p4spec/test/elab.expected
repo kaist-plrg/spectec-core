@@ -1068,7 +1068,9 @@ def $is_voidt(typ) : bool =
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:21.1-21.28
    clause 0(typ) = true
-      -- if (typ = `VoidT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `VoidT`
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:22.1-23.15
    clause 1(typ) = false
@@ -1079,7 +1081,9 @@ def $is_errt(typ) : bool =
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:27.1-27.26
    clause 0(typ) = true
-      -- if (typ = `ErrT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `ErrT`
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:28.1-29.15
    clause 1(typ) = false
@@ -1090,7 +1094,9 @@ def $is_matchkindt(typ) : bool =
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:33.1-33.38
    clause 0(typ) = true
-      -- if (typ = `MatchKindT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `MatchKindT`
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:34.1-35.15
    clause 1(typ) = false
@@ -1101,7 +1107,9 @@ def $is_strt(typ) : bool =
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:39.1-39.26
    clause 0(typ) = true
-      -- if (typ = `StrT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `StrT`
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:40.1-41.15
    clause 1(typ) = false
@@ -1112,7 +1120,9 @@ def $is_boolt(typ) : bool =
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:45.1-45.28
    clause 0(typ) = true
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:46.1-47.15
    clause 1(typ) = false
@@ -1135,7 +1145,9 @@ def $is_intt(typ) : bool =
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:57.1-57.26
    clause 0(typ) = true
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
 
    ;; ../../../../spec/2c2-runtime-type-aux.watsup:58.1-59.15
    clause 1(typ) = false
@@ -1918,7 +1930,9 @@ def $free_typ(typ) : set<tid> =
 
    ;; ../../../../spec/2c3-runtime-type-subst.watsup:73.1-73.35
    clause 19(typ) = `{%}`_set<tid>([])
-      -- if (typ = `DefaultT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `DefaultT`
 
    ;; ../../../../spec/2c3-runtime-type-subst.watsup:75.1-75.61
    clause 20(typ') = $unions_set<tid>($free_typ(typ)*{typ <- typ*})
@@ -1950,7 +1964,9 @@ def $free_typ(typ) : set<tid> =
 
    ;; ../../../../spec/2c3-runtime-type-subst.watsup:83.1-83.35
    clause 24(typ) = `{%}`_set<tid>([])
-      -- if (typ = `InvalidT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `InvalidT`
 
    ;; ../../../../spec/2c3-runtime-type-subst.watsup:85.1-85.41
    clause 25(typ') = $free_typ(typ)
@@ -1961,7 +1977,9 @@ def $free_typ(typ) : set<tid> =
 
    ;; ../../../../spec/2c3-runtime-type-subst.watsup:87.1-87.33
    clause 26(typ) = `{%}`_set<tid>([])
-      -- if (typ = `StateT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `StateT`
 
    ;; ../../../../spec/2c3-runtime-type-subst.watsup:89.1-89.41
    clause 27(typ) = `{%}`_set<tid>([])
@@ -1979,7 +1997,9 @@ def $free_typ(typ) : set<tid> =
 
    ;; ../../../../spec/2c3-runtime-type-subst.watsup:93.1-93.31
    clause 29(typ) = `{%}`_set<tid>([])
-      -- if (typ = `AnyT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `AnyT`
 
 ;; ../../../../spec/2c3-runtime-type-subst.watsup:9.1-10.44
 def $free_typdef_poly(polytypdef) : set<tid> =
@@ -2526,19 +2546,27 @@ def $is_deftable'(typ) : bool =
 
    ;; ../../../../spec/2c4-runtime-type-util.watsup:30.1-30.31
    clause 0(typ) = true
-      -- if (typ = `ErrT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `ErrT`
 
    ;; ../../../../spec/2c4-runtime-type-util.watsup:31.1-31.31
    clause 1(typ) = true
-      -- if (typ = `StrT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `StrT`
 
    ;; ../../../../spec/2c4-runtime-type-util.watsup:32.1-32.32
    clause 2(typ) = true
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2c4-runtime-type-util.watsup:33.1-33.31
    clause 3(typ) = true
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
 
    ;; ../../../../spec/2c4-runtime-type-util.watsup:34.1-34.34
    clause 4(typ) = true
@@ -2636,7 +2664,9 @@ def $is_equalable'(typ) : bool =
 
    ;; ../../../../spec/2c4-runtime-type-util.watsup:59.1-59.34
    clause 0(typ) = false
-      -- if (typ = `VoidT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `VoidT`
 
    ;; ../../../../spec/2c4-runtime-type-util.watsup:60.1-60.35
    clause 1(typ) = false
@@ -2700,15 +2730,21 @@ def $is_assignable'(typ) : bool =
 
    ;; ../../../../spec/2c4-runtime-type-util.watsup:77.1-77.35
    clause 0(typ) = false
-      -- if (typ = `VoidT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `VoidT`
 
    ;; ../../../../spec/2c4-runtime-type-util.watsup:78.1-78.34
    clause 1(typ) = false
-      -- if (typ = `StrT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `StrT`
 
    ;; ../../../../spec/2c4-runtime-type-util.watsup:79.1-79.34
    clause 2(typ) = false
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
 
    ;; ../../../../spec/2c4-runtime-type-util.watsup:80.1-80.36
    clause 3(typ) = false
@@ -3026,8 +3062,12 @@ relation Type_alpha: `%~~%`(typ, typ)
 
    ;; ../../../../spec/2c5-runtime-type-alpha.watsup:127.1-128.23
    rule defaultt: `%~~%`(typ, typ')
-      -- if (typ = `DefaultT`_synthtyp() as typ)
-      -- if (typ' = `DefaultT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `DefaultT`
+      -- if typ' <: synthtyp
+      -- let synthtyp' = typ' as synthtyp
+      -- if synthtyp' matches `DefaultT`
 
    ;; ../../../../spec/2c5-runtime-type-alpha.watsup:130.1-132.35
    rule seqt: `%~~%`(typ, typ')
@@ -3081,8 +3121,12 @@ relation Type_alpha: `%~~%`(typ, typ)
 
    ;; ../../../../spec/2c5-runtime-type-alpha.watsup:146.1-147.23
    rule invalidt: `%~~%`(typ, typ')
-      -- if (typ = `InvalidT`_synthtyp() as typ)
-      -- if (typ' = `InvalidT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `InvalidT`
+      -- if typ' <: synthtyp
+      -- let synthtyp' = typ' as synthtyp
+      -- if synthtyp' matches `InvalidT`
 
    ;; ../../../../spec/2c5-runtime-type-alpha.watsup:149.1-151.32
    rule sett: `%~~%`(typ, typ')
@@ -3098,8 +3142,12 @@ relation Type_alpha: `%~~%`(typ, typ)
 
    ;; ../../../../spec/2c5-runtime-type-alpha.watsup:153.1-154.19
    rule statet: `%~~%`(typ, typ')
-      -- if (typ = `StateT`_synthtyp() as typ)
-      -- if (typ' = `StateT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `StateT`
+      -- if typ' <: synthtyp
+      -- let synthtyp' = typ' as synthtyp
+      -- if synthtyp' matches `StateT`
 
    ;; ../../../../spec/2c5-runtime-type-alpha.watsup:156.1-157.53
    rule tableenumt: `%~~%`(typ, typ')
@@ -3130,8 +3178,12 @@ relation Type_alpha: `%~~%`(typ, typ)
 
    ;; ../../../../spec/2c5-runtime-type-alpha.watsup:163.1-164.15
    rule anyt: `%~~%`(typ, typ')
-      -- if (typ = `AnyT`_synthtyp() as typ)
-      -- if (typ' = `AnyT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `AnyT`
+      -- if typ' <: synthtyp
+      -- let synthtyp' = typ' as synthtyp
+      -- if synthtyp' matches `AnyT`
 
 ;; ../../../../spec/2c5-runtime-type-alpha.watsup:9.1-11.20
 relation FuncType_alpha: `%~~%`(functyp, functyp)
@@ -3425,7 +3477,9 @@ relation Type_wf: `%|-%`(tidset, typ)
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:238.1-239.21
    rule defaultt: `%|-%`(tidset, typ)
-      -- if (typ = `DefaultT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `DefaultT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:241.1-243.31
    rule seqt: `%|-%`(tidset, typ')
@@ -3463,7 +3517,9 @@ relation Type_wf: `%|-%`(tidset, typ)
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:259.1-260.21
    rule invalidt: `%|-%`(tidset, typ)
-      -- if (typ = `InvalidT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `InvalidT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:313.1-317.28
    rule sett: `%|-%`(tidset, typ'')
@@ -3477,7 +3533,9 @@ relation Type_wf: `%|-%`(tidset, typ)
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:319.1-320.19
    rule statet: `%|-%`(tidset, typ)
-      -- if (typ = `StateT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `StateT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:322.1-324.36
    rule tableenumt: `%|-%`(tidset, typ)
@@ -3497,8 +3555,12 @@ relation Type_wf: `%|-%`(tidset, typ)
       -- let typ'''''*{typ''''' <- typ'''''*} = typ*{typ <- typ*}
       -- if typ'''''*{typ''''' <- typ'''''*} matches [ _/3 ]
       -- let [typ'', typ''', typ''''] = typ'''''*{typ''''' <- typ'''''*}
-      -- if (typ'' = `BoolT`_primtyp() as typ)
-      -- if (typ''' = `BoolT`_primtyp() as typ)
+      -- if typ'' <: primtyp
+      -- let primtyp = typ'' as primtyp
+      -- if primtyp matches `BoolT`
+      -- if typ''' <: primtyp
+      -- let primtyp' = typ''' as primtyp
+      -- if primtyp' matches `BoolT`
       -- if typ'''' <: synthtyp
       -- let synthtyp' = typ'''' as synthtyp
       -- if synthtyp' matches `TableEnumT%%`
@@ -3507,7 +3569,9 @@ relation Type_wf: `%|-%`(tidset, typ)
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:332.1-333.17
    rule anyt: `%|-%`(tidset, typ)
-      -- if (typ = `AnyT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `AnyT`
 
 ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:6.1-6.42
 relation TypeDef_wf: `%|-%`(tidset, typdef)
@@ -3788,7 +3852,9 @@ def $nestable'_newt(typ) : bool =
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:56.1-56.34
    clause 0(typ) = true
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:57.1-57.36
    clause 1(typ) = true
@@ -3945,11 +4011,15 @@ def $nestable'_tuplet(typ) : bool =
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:118.1-118.35
    clause 0(typ) = true
-      -- if (typ = `ErrT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `ErrT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:119.1-119.36
    clause 1(typ) = true
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:120.1-120.50
    clause 2(typ) = ~$is_intt(numtyp as typ)
@@ -4017,11 +4087,15 @@ def $nestable'_structt(typ) : bool =
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:151.1-151.36
    clause 0(typ) = true
-      -- if (typ = `ErrT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `ErrT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:152.1-152.37
    clause 1(typ) = true
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:153.1-153.51
    clause 2(typ) = ~$is_intt(numtyp as typ)
@@ -4055,7 +4129,9 @@ def $nestable'_headert(typ) : bool =
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:171.1-171.37
    clause 0(typ) = true
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:172.1-172.51
    clause 1(typ) = ~$is_intt(numtyp as typ)
@@ -4106,7 +4182,9 @@ def $nestable'_structt_in_headert(typ) : bool =
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:182.1-182.48
    clause 0(typ) = true
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:183.1-183.50
    clause 1(typ) = true
@@ -4200,11 +4278,15 @@ def $nestable'_sett(typ) : bool =
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:270.1-270.33
    clause 0(typ) = true
-      -- if (typ = `ErrT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `ErrT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:271.1-271.34
    clause 1(typ) = true
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:272.1-272.36
    clause 2(typ) = true
@@ -4279,7 +4361,9 @@ def $nestable'_tuplet_in_sett(typ) : bool =
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:286.1-286.44
    clause 0(typ) = true
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:287.1-287.46
    clause 1(typ) = true
@@ -4346,7 +4430,9 @@ def $nestable'_seqt_in_sett(typ) : bool =
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:299.1-299.42
    clause 0(typ) = true
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2c6-runtime-type-wellformed.watsup:300.1-300.44
    clause 1(typ) = true
@@ -5553,19 +5639,27 @@ def $default'(typ) : val =
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:619.1-619.37
    clause 0(typ) = `ErrV%`_val("NoError")
-      -- if (typ = `ErrT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `ErrT`
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:620.1-620.30
    clause 1(typ) = `StrV%`_val("")
-      -- if (typ = `StrT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `StrT`
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:621.1-621.35
    clause 2(typ) = `BoolV%`_val(false)
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:622.1-622.29
    clause 3(typ) = `IntV%`_val(0 as int)
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:623.1-623.35
    clause 4(typ) = `FIntV%%`_val(w, 0 as bitstr)
@@ -5666,7 +5760,9 @@ def $cast_bool'(typ, bool) : val =
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:433.1-433.36
    clause 0(typ, b) = `BoolV%`_val(b)
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:434.1-434.43
    clause 1(typ, bool) = `FBitV%%`_val(w, 1 as bitstr)
@@ -5702,11 +5798,15 @@ def $cast_int'(typ, int) : val =
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:447.1-447.41
    clause 0(typ, i) = `BoolV%`_val((i = 0 as int))
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:448.1-448.33
    clause 1(typ, i) = `IntV%`_val(i)
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:449.1-449.56
    clause 2(typ, i) = `FIntV%%`_val(w, $to_bitstr(w as int, i))
@@ -5748,7 +5848,9 @@ def $cast_fint'(typ, width, bitstr) : val =
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:464.1-464.53
    clause 0(typ, w, bs) = `IntV%`_val($to_int(w as int, bs))
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:465.1-466.52
    clause 1(typ, w_from, bs) = `FIntV%%`_val(w_to, bs')
@@ -5792,11 +5894,15 @@ def $cast_fbit'(typ, width, bitstr) : val =
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:482.1-482.47
    clause 0(typ, w, bs) = `BoolV%`_val((bs = 1 as bitstr))
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:483.1-483.39
    clause 1(typ, _width, bs) = `IntV%`_val(bs)
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
 
    ;; ../../../../spec/2d1-runtime-numerics.watsup:484.1-485.35
    clause 2(typ, _width, bs) = `FIntV%%`_val(w_to, bs')
@@ -6046,7 +6152,9 @@ def $size_minSizeInBits''(typ) : nat =
 
    ;; ../../../../spec/2d2-runtime-builtins.watsup:25.1-25.37
    clause 0(typ) = 1
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2d2-runtime-builtins.watsup:26.1-26.39
    clause 1(typ) = w
@@ -6144,7 +6252,9 @@ def $size_maxSizeInBits''(typ) : nat =
 
    ;; ../../../../spec/2d2-runtime-builtins.watsup:51.1-51.37
    clause 0(typ) = 1
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/2d2-runtime-builtins.watsup:52.1-52.39
    clause 1(typ) = w
@@ -8021,17 +8131,25 @@ relation Sub_expl_canon_neq: `%<:%`(typ, typ)
    ;; ../../../../spec/4d2-typing-subtyping.watsup:18.1-19.19
    rule fbitt-boolt: `%<:%`(typ, typ')
       -- if (typ = `FBitT%`_numtyp(1) as typ)
-      -- if (typ' = `BoolT`_primtyp() as typ)
+      -- if typ' <: primtyp
+      -- let primtyp = typ' as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:21.1-22.19
    rule boolt-fbitt: `%<:%`(typ, typ')
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
       -- if (typ' = `FBitT%`_numtyp(1) as typ)
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:24.1-25.16
    rule intt-boolt: `%<:%`(typ, typ')
-      -- if (typ = `IntT`_numtyp() as typ)
-      -- if (typ' = `BoolT`_primtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
+      -- if typ' <: primtyp
+      -- let primtyp = typ' as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:27.1-28.29
    rule fintt-fbitt: `%<:%`(typ, typ')
@@ -8085,7 +8203,9 @@ relation Sub_expl_canon_neq: `%<:%`(typ, typ)
       -- let numtyp = typ as numtyp
       -- if numtyp matches `FBitT%`
       -- let `FBitT%`_numtyp(width) = numtyp
-      -- if (typ' = `IntT`_numtyp() as typ)
+      -- if typ' <: numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `IntT`
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:42.1-43.22
    rule fintt-intt: `%<:%`(typ, typ')
@@ -8093,23 +8213,29 @@ relation Sub_expl_canon_neq: `%<:%`(typ, typ)
       -- let numtyp = typ as numtyp
       -- if numtyp matches `FIntT%`
       -- let `FIntT%`_numtyp(width) = numtyp
-      -- if (typ' = `IntT`_numtyp() as typ)
+      -- if typ' <: numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `IntT`
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:45.1-46.22
    rule intt-fbitt: `%<:%`(typ, typ')
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
       -- if typ' <: numtyp
-      -- let numtyp = typ' as numtyp
-      -- if numtyp matches `FBitT%`
-      -- let `FBitT%`_numtyp(width) = numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `FBitT%`
+      -- let `FBitT%`_numtyp(width) = numtyp'
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:48.1-49.22
    rule intt-fintt: `%<:%`(typ, typ')
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
       -- if typ' <: numtyp
-      -- let numtyp = typ' as numtyp
-      -- if numtyp matches `FIntT%`
-      -- let `FIntT%`_numtyp(width) = numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `FIntT%`
+      -- let `FIntT%`_numtyp(width) = numtyp'
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:51.1-53.30
    rule newt-innert: `%<:%`(typ, typ_b)
@@ -8244,7 +8370,9 @@ relation Sub_expl_canon_neq: `%<:%`(typ, typ)
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:104.1-106.26
    rule defaultt: `%<:%`(typ', typ)
-      -- if (typ' = `DefaultT`_synthtyp() as typ)
+      -- if typ' <: synthtyp
+      -- let synthtyp = typ' as synthtyp
+      -- if synthtyp matches `DefaultT`
       -- if $is_deftable(typ)
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:108.1-114.31
@@ -8356,7 +8484,9 @@ relation Sub_expl_canon_neq: `%<:%`(typ, typ)
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:162.1-163.26
    rule invalidt-headert: `%<:%`(typ, typ')
-      -- if (typ = `InvalidT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `InvalidT`
       -- if typ' <: datatyp
       -- let datatyp = typ' as datatyp
       -- if datatyp matches `HeaderT%%`
@@ -8364,7 +8494,9 @@ relation Sub_expl_canon_neq: `%<:%`(typ, typ)
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:165.1-166.25
    rule invalidt-uniont: `%<:%`(typ, typ')
-      -- if (typ = `InvalidT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `InvalidT`
       -- if typ' <: datatyp
       -- let datatyp = typ' as datatyp
       -- if datatyp matches `UnionT%%`
@@ -8414,19 +8546,23 @@ relation Sub_impl_canon_neq: `%<<%`(typ, typ)
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:193.1-194.18
    rule intt-fbitt: `%<<%`(typ, typ')
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
       -- if typ' <: numtyp
-      -- let numtyp = typ' as numtyp
-      -- if numtyp matches `FBitT%`
-      -- let `FBitT%`_numtyp(_width) = numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `FBitT%`
+      -- let `FBitT%`_numtyp(_width) = numtyp'
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:196.1-197.18
    rule intt-fintt: `%<<%`(typ, typ')
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
       -- if typ' <: numtyp
-      -- let numtyp = typ' as numtyp
-      -- if numtyp matches `FIntT%`
-      -- let `FIntT%`_numtyp(_width) = numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `FIntT%`
+      -- let `FIntT%`_numtyp(_width) = numtyp'
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:199.1-201.30
    rule senumt-innert: `%<<%`(typ, typ_b)
@@ -8549,7 +8685,9 @@ relation Sub_impl_canon_neq: `%<<%`(typ, typ)
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:244.1-246.26
    rule defaultt: `%<<%`(typ', typ)
-      -- if (typ' = `DefaultT`_synthtyp() as typ)
+      -- if typ' <: synthtyp
+      -- let synthtyp = typ' as synthtyp
+      -- if synthtyp matches `DefaultT`
       -- if $is_deftable(typ)
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:248.1-254.31
@@ -8661,7 +8799,9 @@ relation Sub_impl_canon_neq: `%<<%`(typ, typ)
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:302.1-303.26
    rule invalidt-headert: `%<<%`(typ, typ')
-      -- if (typ = `InvalidT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `InvalidT`
       -- if typ' <: datatyp
       -- let datatyp = typ' as datatyp
       -- if datatyp matches `HeaderT%%`
@@ -8669,7 +8809,9 @@ relation Sub_impl_canon_neq: `%<<%`(typ, typ)
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:305.1-306.25
    rule invalidt-uniont: `%<<%`(typ, typ')
-      -- if (typ = `InvalidT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `InvalidT`
       -- if typ' <: datatyp
       -- let datatyp = typ' as datatyp
       -- if datatyp matches `UnionT%%`
@@ -9019,7 +9161,9 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- let `TernE%%%`_expr(expr_c, expr_t, expr_f) = expr
       -- Expr_ok: `%%|-%:%`(p, C, expr_c, exprIL_c)
       -- let `(%;%)`_annotIL(typ, ctk_c) = $annot(exprIL_c)
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
       -- Expr_ok: `%%|-%:%`(p, C, expr_t, exprIL_t)
       -- Expr_ok: `%%|-%:%`(p, C, expr_f, exprIL_f)
       -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_t, exprIL_f)
@@ -9355,7 +9499,9 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if member <- ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]
       -- MethodType_ok: `%%|-%%%%:%%%%`(p, C, expr_b, member, [], [], ft, exprIL_b, tid_fresh_inserted*{tid_fresh_inserted <- tid_fresh_inserted*}, id_deft*{id_deft <- id_deft*})
       -- Call_ok: `%%%|-%%%%:%%%`(p, C, [], ft, [], [], [], typ, targIL*{targIL <- targIL*}, argIL*{argIL <- argIL*})
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
       -- if targIL*{targIL <- targIL*} matches []
       -- if argIL*{argIL <- argIL*} matches []
 
@@ -9383,7 +9529,9 @@ relation Expr_ok: `%%|-%:%`(cursor, context, expr, exprIL)
       -- if member <- ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]
       -- let ft = `BuiltinMethodT%%`_functyp([], `IntT`_numtyp() as typ)
       -- Call_ok: `%%%|-%%%%:%%%`(p, C, [], ft, [], [], [], typ, targIL*{targIL <- targIL*}, argIL*{argIL <- argIL*})
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
       -- if targIL*{targIL <- targIL*} matches []
       -- if argIL*{argIL <- argIL*} matches []
 
@@ -9536,7 +9684,9 @@ relation Stmt_ok: `%%%|-%:%%%`(cursor, context, flow, stmt, context, flow, stmtI
       -- let `IfS%%%`_stmt(expr_c, stmt_t, stmt_f) = stmt
       -- Expr_ok: `%%|-%:%`(p, C, expr_c, exprIL_c)
       -- let `(%;%)`_annotIL(typ, _ctk) = $annot(exprIL_c)
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
       -- Stmt_ok: `%%%|-%:%%%`(p, C, f, stmt_t, C_t, f_t, stmtIL_t)
       -- Stmt_ok: `%%%|-%:%%%`(p, C, f, stmt_f, C_f, f_f, stmtIL_f)
       -- let f' = $join_flow(f_t, f_f)
@@ -9623,7 +9773,9 @@ relation Stmt_ok: `%%%|-%:%%%`(cursor, context, flow, stmt, context, flow, stmtI
       -- let `TransS%`_stmt(expr) = stmt
       -- Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
       -- let `(%;%)`_annotIL(typ, _ctk) = $annot(exprIL)
-      -- if (typ = `StateT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `StateT`
 
    ;; ../../../../spec/4f-typing-stmt.watsup:270.1-272.38
    rule decls: `%%%|-%:%%%`(p, C, f, stmt, C', f, `DeclS%`_stmtIL(declIL))
@@ -11109,7 +11261,9 @@ def $compatible'_lnot(typ) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:107.1-107.36
    clause 0(typ) = true
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:108.1-109.14
    clause 1(typ) = false
@@ -11126,7 +11280,9 @@ def $compatible'_uplus(typ) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:121.1-121.36
    clause 0(typ) = true
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:122.1-122.39
    clause 1(typ) = true
@@ -11157,7 +11313,9 @@ def $compatible'_uminus(typ) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:137.1-137.37
    clause 0(typ) = true
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:138.1-138.40
    clause 1(typ) = true
@@ -11188,8 +11346,12 @@ def $compatible'_plusminusmult(typ, typ) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:158.1-158.50
    clause 0(typ, typ') = true
-      -- if (typ = `IntT`_numtyp() as typ)
-      -- if (typ' = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
+      -- if typ' <: numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:159.1-159.56
    clause 1(typ, typ') = true
@@ -11267,8 +11429,12 @@ def $compatible'_divmod(typ, typ) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:209.1-209.43
    clause 0(typ, typ') = true
-      -- if (typ = `IntT`_numtyp() as typ)
-      -- if (typ' = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
+      -- if typ' <: numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:210.1-211.15
    clause 1(typ_l, typ_r) = false
@@ -11285,24 +11451,32 @@ def $compatible'_shift(typ, typ) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:254.1-254.42
    clause 0(typ, typ') = true
-      -- if (typ = `IntT`_numtyp() as typ)
-      -- if (typ' = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
+      -- if typ' <: numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:255.1-255.45
    clause 1(typ, typ') = true
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
       -- if typ' <: numtyp
-      -- let numtyp = typ' as numtyp
-      -- if numtyp matches `FIntT%`
-      -- let `FIntT%`_numtyp(_width) = numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `FIntT%`
+      -- let `FIntT%`_numtyp(_width) = numtyp'
 
    ;; ../../../../spec/4e-typing-expr.watsup:256.1-256.45
    clause 2(typ, typ') = true
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
       -- if typ' <: numtyp
-      -- let numtyp = typ' as numtyp
-      -- if numtyp matches `FBitT%`
-      -- let `FBitT%`_numtyp(_width) = numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `FBitT%`
+      -- let `FBitT%`_numtyp(_width) = numtyp'
 
    ;; ../../../../spec/4e-typing-expr.watsup:257.1-257.45
    clause 3(typ, typ') = true
@@ -11310,7 +11484,9 @@ def $compatible'_shift(typ, typ) : bool =
       -- let numtyp = typ as numtyp
       -- if numtyp matches `FIntT%`
       -- let `FIntT%`_numtyp(_width) = numtyp
-      -- if (typ' = `IntT`_numtyp() as typ)
+      -- if typ' <: numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:258.1-258.48
    clause 4(typ, typ') = true
@@ -11340,7 +11516,9 @@ def $compatible'_shift(typ, typ) : bool =
       -- let numtyp = typ as numtyp
       -- if numtyp matches `FBitT%`
       -- let `FBitT%`_numtyp(_width) = numtyp
-      -- if (typ' = `IntT`_numtyp() as typ)
+      -- if typ' <: numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:261.1-261.48
    clause 7(typ, typ') = true
@@ -11379,8 +11557,12 @@ def $compatible'_compare(typ, typ) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:319.1-319.44
    clause 0(typ, typ') = true
-      -- if (typ = `IntT`_numtyp() as typ)
-      -- if (typ' = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
+      -- if typ' <: numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:320.1-320.50
    clause 1(typ, typ') = true
@@ -11515,8 +11697,12 @@ def $compatible'_logical(typ, typ) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:414.1-414.46
    clause 0(typ, typ') = true
-      -- if (typ = `BoolT`_primtyp() as typ)
-      -- if (typ' = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
+      -- if typ' <: primtyp
+      -- let primtyp' = typ' as primtyp
+      -- if primtyp' matches `BoolT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:415.1-416.15
    clause 1(typ_l, typ_r) = false
@@ -11533,8 +11719,12 @@ def $compatible'_mask(typ, typ) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:476.1-476.41
    clause 0(typ, typ') = true
-      -- if (typ = `IntT`_numtyp() as typ)
-      -- if (typ' = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
+      -- if typ' <: numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:477.1-477.47
    clause 1(typ, typ') = true
@@ -11575,8 +11765,12 @@ def $compatible'_range(typ, typ) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:504.1-504.42
    clause 0(typ, typ') = true
-      -- if (typ = `IntT`_numtyp() as typ)
-      -- if (typ' = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
+      -- if typ' <: numtyp
+      -- let numtyp' = typ' as numtyp
+      -- if numtyp' matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:505.1-505.48
    clause 1(typ, typ') = true
@@ -11689,7 +11883,9 @@ relation Select_case_ok: `%%%|-%:%`(cursor, context, typ*, selectcase, selectcas
       -- let styp?{styp <- styp?} = $find_styp(`LOCAL`_cursor(), C, `CURRENT%`_name(statelabel))
       -- if styp?{styp <- styp?} matches (_)
       -- let ?(`%%%%`_styp(typ, dir'', ctk'', val?{val <- val?})) = styp?{styp <- styp?}
-      -- if (typ = `StateT`_synthtyp() as typ)
+      -- if typ <: synthtyp
+      -- let synthtyp = typ as synthtyp
+      -- if synthtyp matches `StateT`
       -- if val?{val <- val?} matches ()
 
 ;; ../../../../spec/4e-typing-expr.watsup:603.1-603.39
@@ -11703,7 +11899,9 @@ def $compatible'_arrayindex(typ) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:607.1-607.41
    clause 0(typ) = true
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:608.1-608.44
    clause 1(typ) = true
@@ -11734,7 +11932,9 @@ def $compatible'_bitstringbase(typ) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:664.1-664.44
    clause 0(typ) = true
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:665.1-665.48
    clause 1(typ) = (w > 0)
@@ -11765,7 +11965,9 @@ def $compatible'_bitstringindex(typ) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:674.1-674.45
    clause 0(typ) = true
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:675.1-675.48
    clause 1(typ) = true
@@ -11796,7 +11998,9 @@ def $is_valid_bitstring_slice'(typ, nat, nat) : bool =
 
    ;; ../../../../spec/4e-typing-expr.watsup:685.1-685.50
    clause 0(typ, _nat, _nat') = true
-      -- if (typ = `IntT`_numtyp() as typ)
+      -- if typ <: numtyp
+      -- let numtyp = typ as numtyp
+      -- if numtyp matches `IntT`
 
    ;; ../../../../spec/4e-typing-expr.watsup:686.1-688.35
    clause 1(typ, n_l, n_h) = ((n_h <= w) /\ (w_slice <= w))
@@ -12716,7 +12920,9 @@ relation Table_custom_ok: `%%%|-%:%%`(cursor, context, tblctx, tblcustomprop, tb
       -- if (text = "largest_priority_wins")
       -- Expr_ok: `%%|-%:%`(p, C, expr, exprIL)
       -- let `(%;%)`_annotIL(typ, _ctk) = $annot(exprIL)
-      -- if (typ = `BoolT`_primtyp() as typ)
+      -- if typ <: primtyp
+      -- let primtyp = typ as primtyp
+      -- if primtyp matches `BoolT`
       -- Eval_static: `%%|-%~>%`(p, C, exprIL, `%%`_valIL(val, _exprIL))
       -- if val matches `BoolV%`
       -- let `BoolV%`_val(b_lw) = val

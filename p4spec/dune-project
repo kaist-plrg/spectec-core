@@ -13,5 +13,5 @@
   (depends
     p4cherry
     bignum
-    (core (and (>= "v0.15.0") (< "v0.16.0")))
-    (core_unix (and (>= "v0.15.0") (< "v0.16.0")))))
+    core
+    core_unix))
