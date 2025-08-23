@@ -41,5 +41,5 @@ promote-spec:
 .PHONY: clean
 
 clean:
-	rm -f ./$(MAIN) ./$(SPEC)
+	rm -f ./$(SPEC)
 	cd p4spec && dune clean
