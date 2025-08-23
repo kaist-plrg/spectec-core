@@ -16451,27 +16451,29 @@ def $coerce_binary(exprIL_a, exprIL_b)
 
                 2. Return ?((exprIL_a'', exprIL_b'))
 
-            3. (Let typ? be $reduce_senum_type(typ_b))
+            3. If ((?() = $reduce_senum_type(typ_a))), then
 
-            4. If ((typ? matches pattern (_))), then
+              1. (Let typ? be $reduce_senum_type(typ_b))
 
-              1. (Let ?(typ_b') be typ?)
+              2. If ((typ? matches pattern (_))), then
 
-              2. (Let exprIL_b' be (CastE typ_b' exprIL_b (( typ_b' ; _ctk' ))))
+                1. (Let ?(typ_b') be typ?)
 
-              3. (Let (exprIL, exprIL)? be $coerce_binary(exprIL_a, exprIL_b'))
+                2. (Let exprIL_b' be (CastE typ_b' exprIL_b (( typ_b' ; _ctk' ))))
 
-              4. If (((exprIL, exprIL)? matches pattern (_))), then
+                3. (Let (exprIL, exprIL)? be $coerce_binary(exprIL_a, exprIL_b'))
 
-                1. (Let ?((exprIL_a', exprIL_b'')) be (exprIL, exprIL)?)
+                4. If (((exprIL, exprIL)? matches pattern (_))), then
 
-                2. Return ?((exprIL_a', exprIL_b''))
+                  1. (Let ?((exprIL_a', exprIL_b'')) be (exprIL, exprIL)?)
+
+                  2. Return ?((exprIL_a', exprIL_b''))
 
 4. Otherwise
 
   1. Return ?()
 
-;; ../../../../spec/4d2-typing-subtyping.watsup:426.1-427.31
+;; ../../../../spec/4d2-typing-subtyping.watsup:427.1-427.42
 def $coerce_assign(exprIL, typ_t)
 
 1. (Let (( typ_f ; _ctk )) be $annot(exprIL))

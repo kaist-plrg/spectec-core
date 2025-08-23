@@ -11186,13 +11186,14 @@ def $coerce_binary(exprIL, exprIL) : (exprIL, exprIL)? =
       -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
       -- let ?((exprIL_a'', exprIL_b')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:412.1-420.70
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:412.1-421.70
    clause 4(exprIL_a, exprIL_b) = ?((exprIL_a', exprIL_b''))
       -- let `(%;%)`_annotIL(typ_a, _ctk) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
       -- if ~Type_alpha: `%~~%`(typ_a, typ_b) holds
       -- if ~Sub_impl: `%<<%`(typ_a, typ_b) holds
       -- if ~Sub_impl: `%<<%`(typ_b, typ_a) holds
+      -- if (?() = $reduce_senum_type(typ_a))
       -- let typ?{typ <- typ?} = $reduce_senum_type(typ_b)
       -- if typ?{typ <- typ?} matches (_)
       -- let ?(typ_b') = typ?{typ <- typ?}
@@ -11201,11 +11202,11 @@ def $coerce_binary(exprIL, exprIL) : (exprIL, exprIL)? =
       -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
       -- let ?((exprIL_a', exprIL_b'')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:422.1-423.15
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:423.1-424.15
    clause 5(exprIL_a, exprIL_b) = ?()
       -- otherwise
 
-;; ../../../../spec/4d2-typing-subtyping.watsup:426.1-427.31
+;; ../../../../spec/4d2-typing-subtyping.watsup:427.1-427.42
 def $coerce_assign(exprIL, typ) : exprIL? =
 
    ;; ../../../../spec/4d2-typing-subtyping.watsup:429.1-431.32

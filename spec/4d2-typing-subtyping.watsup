@@ -415,6 +415,7 @@ def $coerce_binary(exprIL_a, exprIL_b) = (exprIL_a', exprIL_b'')
   -- Type_alpha:/ typ_a ~~ typ_b
   -- Sub_impl:/ typ_a << typ_b
   -- Sub_impl:/ typ_b << typ_a
+  -- if eps = $reduce_senum_type(typ_a)
   -- if typ_b' = $reduce_senum_type(typ_b)
   -- if exprIL_b' = CastE typ_b' exprIL_b `(typ_b'; ctk_b)
   -- if (exprIL_a', exprIL_b'') = $coerce_binary(exprIL_a, exprIL_b')
@@ -424,7 +425,6 @@ def $coerce_binary(exprIL_a, exprIL_b) = eps
 
 
 dec $coerce_assign(exprIL, typ) : exprIL?
-    hint(show COERCE %1 to %2)
 
 def $coerce_assign(exprIL, typ_t) = exprIL
   -- if `(typ_f; _) = $annot(exprIL)
