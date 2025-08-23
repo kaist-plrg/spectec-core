@@ -14408,7 +14408,7 @@ relation Decl_ok: p', C'''', decl''
 
                 3. (Let styp_s be (typ_s (NO) (LCTK) ?(val_s)))*
 
-                4. (Let C_2 be $add_styps((GLOBAL), C_1, id_s*, styp_s*))
+                4. (Let C_2 be $add_styps((GLOBAL), C'''', id_s*, styp_s*))
 
                 5. (Let td be ((MonoD typ_s) as typdef))
 
@@ -16354,7 +16354,53 @@ def $reduce_senums_binary(exprIL_a, exprIL_b, $check_binary)
 
   1. Return ?()
 
-;; ../../../../spec/4d2-typing-subtyping.watsup:358.1-359.32
+;; ../../../../spec/4d2-typing-subtyping.watsup:357.1-357.35
+def $reduce_senum_type(typ)
+
+1. (Let typ' be $reduce_senum_type'(typ))
+
+2. If (~(Type_alpha: typ ~~ typ' holds)), then
+
+  1. Return ?(typ')
+
+3. Otherwise
+
+  1. Return ?()
+
+;; ../../../../spec/4d2-typing-subtyping.watsup:358.1-358.35
+def $reduce_senum_type'(typ)
+
+1. Case analysis on typ
+
+  1. Case (% has type datatyp)
+
+    1. (Let datatyp be (typ as datatyp))
+
+    2. If ((datatyp matches pattern `SEnumT%%%`)), then
+
+      1. (Let (SEnumT _id typ' _(member, val)*) be datatyp)
+
+      2. (Let typ'' be $reduce_senum_type'(typ'))
+
+      3. Return typ''
+
+  2. Case (% has type synthtyp)
+
+    1. (Let synthtyp be (typ as synthtyp))
+
+    2. If ((synthtyp matches pattern `SeqT%`)), then
+
+      1. (Let (SeqT typ'*) be synthtyp)
+
+      2. (Let typ'' be $reduce_senum_type'(typ'))*
+
+      3. Return ((SeqT typ''*) as typ)
+
+2. Otherwise
+
+  1. Return typ
+
+;; ../../../../spec/4d2-typing-subtyping.watsup:379.1-380.32
 def $coerce_binary(exprIL_a, exprIL_b)
 
 1. (Let (( typ_a ; _ctk )) be $annot(exprIL_a))
@@ -16379,17 +16425,55 @@ def $coerce_binary(exprIL_a, exprIL_b)
 
       2. Case false
 
-        1. If ((Sub_impl: typ_b << typ_a holds)), then
+        1. Case analysis on (Sub_impl: typ_b << typ_a holds)
 
-          1. (Let exprIL_b' be (CastE typ_a exprIL_b (( typ_a ; _ctk' ))))
+          1. Case true
 
-          2. Return ?((exprIL_a, exprIL_b'))
+            1. (Let exprIL_b' be (CastE typ_a exprIL_b (( typ_a ; _ctk' ))))
+
+            2. Return ?((exprIL_a, exprIL_b'))
+
+          2. Case false
+
+            1. (Let typ? be $reduce_senum_type(typ_a))
+
+            2. If ((typ? matches pattern (_))), then
+
+              1. (Let ?(typ_a') be typ?)
+
+              2. (Let exprIL_a' be (CastE typ_a' exprIL_a (( typ_a' ; _ctk' ))))
+
+              3. (Let (exprIL, exprIL)? be $coerce_binary(exprIL_a', exprIL_b))
+
+              4. If (((exprIL, exprIL)? matches pattern (_))), then
+
+                1. (Let ?((exprIL_a'', exprIL_b')) be (exprIL, exprIL)?)
+
+                2. Return ?((exprIL_a'', exprIL_b'))
+
+            3. If ((?() = $reduce_senum_type(typ_a))), then
+
+              1. (Let typ? be $reduce_senum_type(typ_b))
+
+              2. If ((typ? matches pattern (_))), then
+
+                1. (Let ?(typ_b') be typ?)
+
+                2. (Let exprIL_b' be (CastE typ_b' exprIL_b (( typ_b' ; _ctk' ))))
+
+                3. (Let (exprIL, exprIL)? be $coerce_binary(exprIL_a, exprIL_b'))
+
+                4. If (((exprIL, exprIL)? matches pattern (_))), then
+
+                  1. (Let ?((exprIL_a', exprIL_b'')) be (exprIL, exprIL)?)
+
+                  2. Return ?((exprIL_a', exprIL_b''))
 
 4. Otherwise
 
   1. Return ?()
 
-;; ../../../../spec/4d2-typing-subtyping.watsup:385.1-386.31
+;; ../../../../spec/4d2-typing-subtyping.watsup:427.1-427.42
 def $coerce_assign(exprIL, typ_t)
 
 1. (Let (( typ_f ; _ctk )) be $annot(exprIL))

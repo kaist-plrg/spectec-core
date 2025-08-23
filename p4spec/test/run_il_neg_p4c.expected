@@ -159,7 +159,7 @@ Error on typecheck: ../../../../p4c/testdata/p4_16_errors/duplicate-label.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/enumCast.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/enumCast.p4
-../../../../spec/4g-typing-decl.watsup:308.15-308.24: function was not matched
+../../../../spec/4f-typing-stmt.watsup:272.6-272.13: relation was not matched
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_errors/equality-fail.p4
 Error on typecheck: ../../../../p4c/testdata/p4_16_errors/equality-fail.p4

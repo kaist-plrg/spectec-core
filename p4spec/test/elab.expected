@@ -10023,7 +10023,7 @@ relation Decl_ok: `%%|-%:%%`(cursor, context, decl, context, declIL)
       -- (let id_s = $concat_text([id, ".", member]))*{id_s <- id_s*, member <- member*}
       -- let typ_s = `SEnumT%%%`_datatyp(id, typ, (member, val_s)*{member <- member*, val_s <- val_s*}) as typ
       -- (let styp_s = `%%%%`_styp(typ_s, `NO`_dir(), `LCTK`_ctk(), ?(val_s)))*{styp_s <- styp_s*, val_s <- val_s*}
-      -- let C_2 = $add_styps(`GLOBAL`_cursor(), C_1, id_s*{id_s <- id_s*}, styp_s*{styp_s <- styp_s*})
+      -- let C_2 = $add_styps(`GLOBAL`_cursor(), C_0, id_s*{id_s <- id_s*}, styp_s*{styp_s <- styp_s*})
       -- let td = `MonoD%`_monotypdef(typ_s) as typdef
       -- if TypeDef_wf: `%|-%`($bound_tids(`GLOBAL`_cursor(), C_0), td) holds
       -- let C_3 = $add_typdef(`GLOBAL`_cursor(), C_2, id, td)
@@ -11108,16 +11108,53 @@ def $reduce_senums_binary(exprIL, exprIL, $check_binary(typ, typ) : bool) : (exp
    clause 3(exprIL_a, exprIL_b, $check_binary) = ?()
       -- otherwise
 
-;; ../../../../spec/4d2-typing-subtyping.watsup:358.1-359.32
+;; ../../../../spec/4d2-typing-subtyping.watsup:357.1-357.35
+def $reduce_senum_type(typ) : typ? =
+
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:360.1-362.30
+   clause 0(typ) = ?(typ')
+      -- let typ' = $reduce_senum_type'(typ)
+      -- if ~Type_alpha: `%~~%`(typ, typ') holds
+
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:364.1-365.15
+   clause 1(typ) = ?()
+      -- otherwise
+
+;; ../../../../spec/4d2-typing-subtyping.watsup:358.1-358.35
+def $reduce_senum_type'(typ) : typ =
+
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:367.1-369.42
+   clause 0(typ) = typ''
+      -- let typ''' = typ
+      -- if typ''' <: datatyp
+      -- let datatyp = typ''' as datatyp
+      -- if datatyp matches `SEnumT%%%`
+      -- let `SEnumT%%%`_datatyp(_id, typ', _(member, val)*{_(member, val) <- _(member, val)*}) = datatyp
+      -- let typ'' = $reduce_senum_type'(typ')
+
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:371.1-373.45
+   clause 1(typ) = `SeqT%`_synthtyp(typ''*{typ'' <- typ''*}) as typ
+      -- let typ''' = typ
+      -- if typ''' <: synthtyp
+      -- let synthtyp = typ''' as synthtyp
+      -- if synthtyp matches `SeqT%`
+      -- let `SeqT%`_synthtyp(typ'*{typ' <- typ'*}) = synthtyp
+      -- (let typ'' = $reduce_senum_type'(typ'))*{typ' <- typ'*, typ'' <- typ''*}
+
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:375.1-376.15
+   clause 2(typ) = typ
+      -- otherwise
+
+;; ../../../../spec/4d2-typing-subtyping.watsup:379.1-380.32
 def $coerce_binary(exprIL, exprIL) : (exprIL, exprIL)? =
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:361.1-364.32
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:382.1-385.32
    clause 0(exprIL_a, exprIL_b) = ?((exprIL_a, exprIL_b))
       -- let `(%;%)`_annotIL(typ_a, _ctk) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, _ctk') = $annot(exprIL_b)
       -- if Type_alpha: `%~~%`(typ_a, typ_b) holds
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:366.1-371.57
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:387.1-392.57
    clause 1(exprIL_a, exprIL_b) = ?((exprIL_a', exprIL_b))
       -- let `(%;%)`_annotIL(typ_a, ctk_a) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, _ctk) = $annot(exprIL_b)
@@ -11125,7 +11162,7 @@ def $coerce_binary(exprIL, exprIL) : (exprIL, exprIL)? =
       -- if Sub_impl: `%<<%`(typ_a, typ_b) holds
       -- let exprIL_a' = `CastE%%%`_exprIL(typ_b, exprIL_a, `(%;%)`_annotIL(typ_b, ctk_a))
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:373.1-379.57
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:394.1-400.57
    clause 2(exprIL_a, exprIL_b) = ?((exprIL_a, exprIL_b'))
       -- let `(%;%)`_annotIL(typ_a, _ctk) = $annot(exprIL_a)
       -- let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
@@ -11134,25 +11171,56 @@ def $coerce_binary(exprIL, exprIL) : (exprIL, exprIL)? =
       -- if Sub_impl: `%<<%`(typ_b, typ_a) holds
       -- let exprIL_b' = `CastE%%%`_exprIL(typ_a, exprIL_b, `(%;%)`_annotIL(typ_a, ctk_b))
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:381.1-382.15
-   clause 3(exprIL_a, exprIL_b) = ?()
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:402.1-410.70
+   clause 3(exprIL_a, exprIL_b) = ?((exprIL_a'', exprIL_b'))
+      -- let `(%;%)`_annotIL(typ_a, ctk_a) = $annot(exprIL_a)
+      -- let `(%;%)`_annotIL(typ_b, _ctk) = $annot(exprIL_b)
+      -- if ~Type_alpha: `%~~%`(typ_a, typ_b) holds
+      -- if ~Sub_impl: `%<<%`(typ_a, typ_b) holds
+      -- if ~Sub_impl: `%<<%`(typ_b, typ_a) holds
+      -- let typ?{typ <- typ?} = $reduce_senum_type(typ_a)
+      -- if typ?{typ <- typ?} matches (_)
+      -- let ?(typ_a') = typ?{typ <- typ?}
+      -- let exprIL_a' = `CastE%%%`_exprIL(typ_a', exprIL_a, `(%;%)`_annotIL(typ_a', ctk_a))
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_a', exprIL_b)
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_a'', exprIL_b')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
+
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:412.1-421.70
+   clause 4(exprIL_a, exprIL_b) = ?((exprIL_a', exprIL_b''))
+      -- let `(%;%)`_annotIL(typ_a, _ctk) = $annot(exprIL_a)
+      -- let `(%;%)`_annotIL(typ_b, ctk_b) = $annot(exprIL_b)
+      -- if ~Type_alpha: `%~~%`(typ_a, typ_b) holds
+      -- if ~Sub_impl: `%<<%`(typ_a, typ_b) holds
+      -- if ~Sub_impl: `%<<%`(typ_b, typ_a) holds
+      -- if (?() = $reduce_senum_type(typ_a))
+      -- let typ?{typ <- typ?} = $reduce_senum_type(typ_b)
+      -- if typ?{typ <- typ?} matches (_)
+      -- let ?(typ_b') = typ?{typ <- typ?}
+      -- let exprIL_b' = `CastE%%%`_exprIL(typ_b', exprIL_b, `(%;%)`_annotIL(typ_b', ctk_b))
+      -- let (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} = $coerce_binary(exprIL_a, exprIL_b')
+      -- if (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?} matches (_)
+      -- let ?((exprIL_a', exprIL_b'')) = (exprIL, exprIL)?{(exprIL, exprIL) <- (exprIL, exprIL)?}
+
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:423.1-424.15
+   clause 5(exprIL_a, exprIL_b) = ?()
       -- otherwise
 
-;; ../../../../spec/4d2-typing-subtyping.watsup:385.1-386.31
+;; ../../../../spec/4d2-typing-subtyping.watsup:427.1-427.42
 def $coerce_assign(exprIL, typ) : exprIL? =
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:388.1-390.32
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:429.1-431.32
    clause 0(exprIL, typ_t) = ?(exprIL)
       -- let `(%;%)`_annotIL(typ_f, _ctk) = $annot(exprIL)
       -- if Type_alpha: `%~~%`(typ_f, typ_t) holds
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:392.1-395.30
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:433.1-436.30
    clause 1(exprIL, typ_t) = ?(`CastE%%%`_exprIL(typ_t, exprIL, `(%;%)`_annotIL(typ_t, ctk_f)))
       -- let `(%;%)`_annotIL(typ_f, ctk_f) = $annot(exprIL)
       -- if ~Type_alpha: `%~~%`(typ_f, typ_t) holds
       -- if Sub_impl: `%<<%`(typ_f, typ_t) holds
 
-   ;; ../../../../spec/4d2-typing-subtyping.watsup:397.1-398.15
+   ;; ../../../../spec/4d2-typing-subtyping.watsup:438.1-439.15
    clause 2(exprIL, typ_t) = ?()
       -- otherwise
 
