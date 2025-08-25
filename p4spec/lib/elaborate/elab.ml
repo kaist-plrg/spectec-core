@@ -643,13 +643,24 @@ and infer_slice_exp (ctx : Ctx.t) (exp_b : exp) (exp_l : exp) (exp_h : exp) :
 
 and infer_mem_exp (ctx : Ctx.t) (exp_e : exp) (exp_s : exp) :
     (Ctx.t * Il.Ast.exp' * plaintyp') attempt =
-  let* ctx, exp_il_e, plaintyp_e = infer_exp ctx exp_e in
-  let* ctx, exp_il_s =
-    elab_exp ctx (IterT (plaintyp_e, List) $ plaintyp_e.at) exp_s
-  in
-  let exp_il = Il.Ast.MemE (exp_il_e, exp_il_s) in
-  let plaintyp = BoolT in
-  Ok (ctx, exp_il, plaintyp)
+  choice
+    [
+      (fun () ->
+        let* ctx, exp_il_e, plaintyp_e = infer_exp ctx exp_e in
+        let* ctx, exp_il_s =
+          elab_exp ctx (IterT (plaintyp_e, List) $ plaintyp_e.at) exp_s
+        in
+        let exp_il = Il.Ast.MemE (exp_il_e, exp_il_s) in
+        let plaintyp = BoolT in
+        Ok (ctx, exp_il, plaintyp));
+      (fun () ->
+        let* ctx, exp_il_s, plaintyp_s = infer_exp ctx exp_s in
+        let* plaintyp_s = as_list_plaintyp ctx plaintyp_s in
+        let* ctx, exp_il_e = elab_exp ctx plaintyp_s exp_e in
+        let exp_il = Il.Ast.MemE (exp_il_e, exp_il_s) in
+        let plaintyp = BoolT in
+        Ok (ctx, exp_il, plaintyp));
+    ]
 
 (* Inference of dot expressions *)
 
