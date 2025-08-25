@@ -335,7 +335,7 @@ rule Decl_ok/senumd:
   -- if typ_s = SEnumT id typ (member, val_s)*
   -- if (styp_s = typ_s NO LCTK val_s)*
   ----
-  -- if C_2 = $add_styps(GLOBAL, C_1, id_s*, styp_s*)
+  -- if C_2 = $add_styps(GLOBAL, C_0, id_s*, styp_s*)
   ----
   -- if td = MonoD typ_s
   -- TypeDef_wf: $bound_tids(GLOBAL, C_0) |- td

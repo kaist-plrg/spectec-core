@@ -320,7 +320,7 @@ Typecheck success: ../../../../p4c/testdata/p4_16_samples/csum_ubpf.p4
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/custom-type-restricted-fields.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-pna-dpdk.p4
-Excluding file: ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-pna-dpdk.p4
+Typecheck success: ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-pna-dpdk.p4
 
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-v1model-bmv2.p4
 Excluding file: ../../../../p4c/testdata/p4_16_samples/dash/dash-pipeline-v1model-bmv2.p4
@@ -3835,4 +3835,4 @@ Typecheck success: ../../../../p4c/testdata/p4_16_samples/xdp_vlan_push_pop_ebpf
 >>> Running typing test on ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 Typecheck success: ../../../../p4c/testdata/p4_16_samples/xor_test.p4
 
-Running typing: [EXCLUDE] 223/1278 (17.45%) [PASS] 1055/1278 (82.55%) [FAIL] 0/1278 (0.00%)
+Running typing: [EXCLUDE] 222/1278 (17.37%) [PASS] 1056/1278 (82.63%) [FAIL] 0/1278 (0.00%)
