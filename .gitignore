@@ -2,19 +2,8 @@
 _build
 *.opam
 
-# p4spectec build and executables
-p4spectec
-
-# p4spectec testgen artifacts
-gen
-seed
-
-# p4spectec testgen scripts
-scripts/__pycache__
-
-# logs and debugs
-log
-debug
+# spectec build and executables
+spectec-core
 
 # MacOS
 *.DS_Store

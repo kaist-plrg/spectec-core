@@ -1,20 +1,18 @@
-SPEC = p4spectec
+NAME = spectec-core
 
 # Compile
 
 .PHONY: build build-spec
 
-EXEMAIN = p4/_build/default/bin/main.exe
-EXESPEC = p4spec/_build/default/bin/main.exe
+EXESPEC = spectec/_build/default/bin/main.exe
 
 build: build-spec
 
 build-spec:
-	rm -f ./$(SPEC)
-	rm -f ./p4spec/lib/parsing/parser.ml ./p4spec/lib/parsing/parser.mli
+	rm -f ./$(NAME)
 	opam switch 5.1.0
-	cd p4spec && opam exec -- dune build bin/main.exe && echo
-	ln -f $(EXESPEC) ./$(SPEC)
+	cd spectec && opam exec -- dune build bin/main.exe && echo
+	ln -f $(EXESPEC) ./$(NAME)
 
 # Format
 
@@ -22,30 +20,25 @@ build-spec:
 
 fmt:
 	opam switch 5.1.0
-	cd p4spec && opam exec dune fmt
+	cd spectec && opam exec dune fmt
 
 # Tests
 
-.PHONY: test-spec test-spec-inst promote-spec
+.PHONY: test-spec promote-spec
 
 test-spec:
 	echo "#### Running (dune runtest)"
 	opam switch 5.1.0
-	cd p4spec && opam exec -- dune runtest test --profile=release && echo OK || (echo "####>" Failure running dune test. && echo "####>" Run \`make promote-spec\` to accept changes in test expectations. && false)
-
-test-spec-inst:
-	echo "#### Running inst-il tests"
-	opam switch 5.1.0
-	cd p4spec && opam exec -- dune runtest test-inst --profile=release && echo OK || (echo "####>" Failure running inst-il tests. && echo "####>" Run \`make promote-spec\` to accept changes in test expectations. && false)
+	cd spectec && opam exec -- dune runtest --profile=release && echo OK || (echo "####>" Failure running dune test. && echo "####>" Run \`make promote-spec\` to accept changes in test expectations. && false)
 
 promote-spec:
 	opam switch 5.1.0
-	cd p4spec && opam exec -- dune promote
+	cd spectec && opam exec -- dune promote
 
 # Cleanup
 
 .PHONY: clean
 
 clean:
-	rm -f ./$(SPEC)
-	cd p4spec && dune clean
+	rm -f ./$(NAME)
+	cd spectec && dune clean
