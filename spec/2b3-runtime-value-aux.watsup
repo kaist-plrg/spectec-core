@@ -1,8 +1,0 @@
-;; Underlying raw integer of a numeric value
-
-dec $get_num(val) : int
-
-def $get_num(IntV i) = i
-def $get_num(FIntV w bs) = $to_int(w, bs)
-def $get_num(FBitV _ bs) = bs
-def $get_num(VBitV _ _ bs) = bs
