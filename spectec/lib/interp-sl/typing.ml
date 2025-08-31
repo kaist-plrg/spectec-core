@@ -50,7 +50,7 @@ let run_typing' ?(derive : bool = false) (spec : spec)
   let graph = Dep.Graph.init () in
   let cover = ref (SCov.init ignores spec) in
   try
-    let value_program = Convert.In.in_program graph includes_p4 filename_p4 in
+    let value_program = Parsing.Parse.parse_file includes_p4 filename_p4 in
     let ctx =
       Ctx.empty ~derive filename_p4 graph value_program.note.vid cover
     in

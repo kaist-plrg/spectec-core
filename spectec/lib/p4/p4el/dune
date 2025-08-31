@@ -1,4 +1,0 @@
-(library
- (name p4el)
- (libraries p4util p4lang)
- (modules ast pp eq walk))

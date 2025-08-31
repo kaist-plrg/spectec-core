@@ -10,5 +10,4 @@
   il
   runtime_static
   runtime_dynamic_il
-  p4
   parsing))

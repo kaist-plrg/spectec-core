@@ -13,4 +13,5 @@
   runtime_static
   runtime_dynamic_sl
   runtime_testgen
-  p4))
+  parsing)
+ )
