@@ -2,13 +2,11 @@ NAME = spectec-core
 
 # Compile
 
-.PHONY: build build-spec
+.PHONY: exe
 
 EXESPEC = spectec/_build/default/bin/main.exe
 
-build: build-spec
-
-build-spec:
+exe:
 	rm -f ./$(NAME)
 	opam switch 5.1.0
 	cd spectec && opam exec -- dune build bin/main.exe && echo
@@ -24,14 +22,14 @@ fmt:
 
 # Tests
 
-.PHONY: test-spec promote-spec
+.PHONY: test promote
 
-test-spec:
+test:
 	echo "#### Running (dune runtest)"
 	opam switch 5.1.0
 	cd spectec && opam exec -- dune runtest --profile=release && echo OK || (echo "####>" Failure running dune test. && echo "####>" Run \`make promote-spec\` to accept changes in test expectations. && false)
 
-promote-spec:
+promote:
 	opam switch 5.1.0
 	cd spectec && opam exec -- dune promote
 

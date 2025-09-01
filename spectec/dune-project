@@ -1,17 +1,16 @@
 (lang dune 3.7)
 (using menhir 2.0)
 (using mdx 0.2)
-(name p4spec)
+(name spectec)
 
 (generate_opam_files true)
 
 (package
-  (name p4spec)
+  (name spectec)
   (version 0.0.1)
-  (synopsis "P4Spec: A language design framework for the P4 Programming Language")
-  (maintainers "99jaehyunlee@kaist.ac.kr")
+  (synopsis "SpecTec-Core: A spec mechanization framework")
+  (maintainers "kunjeong99@naver.com")
   (depends
-    p4cherry
     bignum
     core
     core_unix))

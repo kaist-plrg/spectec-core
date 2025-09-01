@@ -1,7 +1,6 @@
 open Xl
 open Il.Ast
 module Value = Runtime_dynamic.Value
-module Dep = Runtime_testgen.Dep
 open Util.Source
 
 (* Conversion between meta-numerics and OCaml numerics *)
@@ -9,13 +8,12 @@ open Util.Source
 let bigint_of_value (value : value) : Bigint.t =
   value |> Value.get_num |> Num.to_int
 
-let value_of_bigint (ctx : Ctx.t) (i : Bigint.t) : value =
+let value_of_bigint (i : Bigint.t) : value =
   let value =
     let vid = Value.fresh () in
     let typ = Il.Ast.NumT `IntT in
     NumV (`Int i) $$$ { vid; typ }
   in
-  Ctx.add_node ctx value;
   value
 
 (* Built-in implementations *)
@@ -26,13 +24,12 @@ let rec shl' (v : Bigint.t) (o : Bigint.t) : Bigint.t =
   if Bigint.(o > zero) then shl' Bigint.(v * (one + one)) Bigint.(o - one)
   else v
 
-let shl (ctx : Ctx.t) (at : region) (targs : targ list)
-    (values_input : value list) : value =
+let shl (at : region) (targs : targ list) (values_input : value list) : value =
   Extract.zero at targs;
   let value_base, value_offset = Extract.two at values_input in
   let base = bigint_of_value value_base in
   let offset = bigint_of_value value_offset in
-  shl' base offset |> value_of_bigint ctx
+  shl' base offset |> value_of_bigint
 
 (* dec $shr(int, int) : int *)
 
@@ -42,13 +39,12 @@ let rec shr' (v : Bigint.t) (o : Bigint.t) : Bigint.t =
     shr' v_shifted Bigint.(o - one)
   else v
 
-let shr (ctx : Ctx.t) (at : region) (targs : targ list)
-    (values_input : value list) : value =
+let shr (at : region) (targs : targ list) (values_input : value list) : value =
   Extract.zero at targs;
   let value_base, value_offset = Extract.two at values_input in
   let base = bigint_of_value value_base in
   let offset = bigint_of_value value_offset in
-  shr' base offset |> value_of_bigint ctx
+  shr' base offset |> value_of_bigint
 
 (* dec $shr_arith(int, int, int) : int *)
 
@@ -61,25 +57,24 @@ let shr_arith' (v : Bigint.t) (o : Bigint.t) (m : Bigint.t) : Bigint.t =
   in
   shr_arith'' v o
 
-let shr_arith (ctx : Ctx.t) (at : region) (targs : targ list)
-    (values_input : value list) : value =
+let shr_arith (at : region) (targs : targ list) (values_input : value list) :
+    value =
   Extract.zero at targs;
   let value_base, value_offset, value_modulus = Extract.three at values_input in
   let base = bigint_of_value value_base in
   let offset = bigint_of_value value_offset in
   let modulus = bigint_of_value value_modulus in
-  shr_arith' base offset modulus |> value_of_bigint ctx
+  shr_arith' base offset modulus |> value_of_bigint
 
 (* dec $pow2(nat) : int *)
 
 let pow2' (w : Bigint.t) : Bigint.t = shl' Bigint.one w
 
-let pow2 (ctx : Ctx.t) (at : region) (targs : targ list)
-    (values_input : value list) : value =
+let pow2 (at : region) (targs : targ list) (values_input : value list) : value =
   Extract.zero at targs;
   let value_width = Extract.one at values_input in
   let width = bigint_of_value value_width in
-  pow2' width |> value_of_bigint ctx
+  pow2' width |> value_of_bigint
 
 (* dec $to_int(int, bitstr) : int *)
 
@@ -90,13 +85,13 @@ let rec to_int' (w : Bigint.t) (n : Bigint.t) : Bigint.t =
   else if Bigint.(n < -(w' / two)) then to_int' w Bigint.(n + w')
   else n
 
-let to_int (ctx : Ctx.t) (at : region) (targs : targ list)
-    (values_input : value list) : value =
+let to_int (at : region) (targs : targ list) (values_input : value list) : value
+    =
   Extract.zero at targs;
   let value_width, value_bitstr = Extract.two at values_input in
   let width = bigint_of_value value_width in
   let bitstr = bigint_of_value value_bitstr in
-  to_int' width bitstr |> value_of_bigint ctx
+  to_int' width bitstr |> value_of_bigint
 
 (* dec $to_bitstr(int, int) : bitstr *)
 
@@ -106,52 +101,48 @@ let rec to_bitstr' (w : Bigint.t) (n : Bigint.t) : Bigint.t =
   else if Bigint.(n < zero) then to_bitstr' w Bigint.(n + w')
   else n
 
-let to_bitstr (ctx : Ctx.t) (at : region) (targs : targ list)
-    (values_input : value list) : value =
+let to_bitstr (at : region) (targs : targ list) (values_input : value list) :
+    value =
   Extract.zero at targs;
   let value_width, value_int = Extract.two at values_input in
   let width = bigint_of_value value_width in
   let rawint = bigint_of_value value_int in
-  to_bitstr' width rawint |> value_of_bigint ctx
+  to_bitstr' width rawint |> value_of_bigint
 
 (* dec $bneg(int) : int *)
 
-let bneg (ctx : Ctx.t) (at : region) (targs : targ list)
-    (values_input : value list) : value =
+let bneg (at : region) (targs : targ list) (values_input : value list) : value =
   Extract.zero at targs;
   let value = Extract.one at values_input in
   let rawint = bigint_of_value value in
-  Bigint.bit_not rawint |> value_of_bigint ctx
+  Bigint.bit_not rawint |> value_of_bigint
 
 (* dec $band(int, int) : int *)
 
-let band (ctx : Ctx.t) (at : region) (targs : targ list)
-    (values_input : value list) : value =
+let band (at : region) (targs : targ list) (values_input : value list) : value =
   Extract.zero at targs;
   let value_l, value_r = Extract.two at values_input in
   let rawint_l = bigint_of_value value_l in
   let rawint_r = bigint_of_value value_r in
-  Bigint.bit_and rawint_l rawint_r |> value_of_bigint ctx
+  Bigint.bit_and rawint_l rawint_r |> value_of_bigint
 
 (* dec $bxor(int, int) : int *)
 
-let bxor (ctx : Ctx.t) (at : region) (targs : targ list)
-    (values_input : value list) : value =
+let bxor (at : region) (targs : targ list) (values_input : value list) : value =
   Extract.zero at targs;
   let value_l, value_r = Extract.two at values_input in
   let rawint_l = bigint_of_value value_l in
   let rawint_r = bigint_of_value value_r in
-  Bigint.bit_xor rawint_l rawint_r |> value_of_bigint ctx
+  Bigint.bit_xor rawint_l rawint_r |> value_of_bigint
 
 (* dec $bor(int, int) : int *)
 
-let bor (ctx : Ctx.t) (at : region) (targs : targ list)
-    (values_input : value list) : value =
+let bor (at : region) (targs : targ list) (values_input : value list) : value =
   Extract.zero at targs;
   let value_l, value_r = Extract.two at values_input in
   let rawint_l = bigint_of_value value_l in
   let rawint_r = bigint_of_value value_r in
-  Bigint.bit_or rawint_l rawint_r |> value_of_bigint ctx
+  Bigint.bit_or rawint_l rawint_r |> value_of_bigint
 
 (* dec $bitacc(int, int, int) : int *)
 
@@ -163,11 +154,11 @@ let bitacc' (n : Bigint.t) (m : Bigint.t) (l : Bigint.t) : Bigint.t =
   let mask = Bigint.(pow2' slice_width - one) in
   Bigint.bit_and shifted mask
 
-let bitacc (ctx : Ctx.t) (at : region) (targs : targ list)
-    (values_input : value list) : value =
+let bitacc (at : region) (targs : targ list) (values_input : value list) : value
+    =
   Extract.zero at targs;
   let value_b, value_h, value_l = Extract.three at values_input in
   let rawint_b = bigint_of_value value_b in
   let rawint_h = bigint_of_value value_h in
   let rawint_l = bigint_of_value value_l in
-  bitacc' rawint_b rawint_h rawint_l |> value_of_bigint ctx
+  bitacc' rawint_b rawint_h rawint_l |> value_of_bigint

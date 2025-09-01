@@ -22,18 +22,24 @@ SpecTec was originally developed for WebAssembly (Wasm-SpecTec), then adapted/ge
 ### Building the Project
 
 ```bash
-$ make exe
+make exe
 ```
 
 This creates an executable `spectec-core` in the project root.
 
 ### Structure
 
-SpecTec-Core currently consists of five main components.
+SpecTec-Core currently consists of three main components.
 * SpecTec EL is the surface language in which the spec is authored.
 * SpecTec IL (internal language). EL -> IL conversion is called "elaboration". Elaboration makes the spec more algorithmic and unambiguous.
-* SpecTec SL (structured langauge). IL -> SL conversion is called "structuring". Structuring uses syntactic over-approximation to create a more structured control-flow.
-* Interpreter backends for IL and SL.
+* An interpreter backend for IL.
+  * Needs to be coupled with a parser that converts an input file into a SpecTec IL value to properly produce output.
+
+### Commands
+```bash
+# elaborate a SpecTec spec
+./spectec-core elab spec/*.spectec
+```
 
 ### Contributing
 

@@ -55,10 +55,9 @@ let funcs =
 
 let is_builtin (id : id) : bool = Funcs.mem id.it funcs
 
-let invoke (ctx : Ctx.t) (id : id) (targs : targ list) (args : value list) :
-    value =
+let invoke (id : id) (targs : targ list) (args : value list) : value =
   let func = Funcs.find_opt id.it funcs in
   check (Option.is_some func) id.at
     (Format.asprintf "implementation for builtin %s is missing" id.it);
   let func = Option.get func in
-  func ctx id.at targs args
+  func id.at targs args

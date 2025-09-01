@@ -492,7 +492,8 @@ and infer_binop (ctx : Ctx.t) (at : region) (binop : binop)
   in
   List.fold_left
     (fun binop_infer
-         (optyp_il, plaintyp_l_expect, plaintyp_r_expect, plaintyp_res_expect) ->
+         (optyp_il, plaintyp_l_expect, plaintyp_r_expect, plaintyp_res_expect)
+       ->
       match binop_infer with
       | Ok _ -> binop_infer
       | _ -> (

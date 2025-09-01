@@ -1,14 +1,13 @@
 open Il.Ast
 module Value = Runtime_dynamic.Value
-module Dep = Runtime_testgen.Dep
 open Util.Source
 
 let ctr = ref 0
 
 (* dec $fresh_tid() : tid *)
 
-let fresh_tid (ctx : Ctx.t) (at : region) (targs : targ list)
-    (values_input : value list) : value =
+let fresh_tid (at : region) (targs : targ list) (values_input : value list) :
+    value =
   Extract.zero at targs;
   Extract.zero at values_input;
   let tid = "FRESH__" ^ string_of_int !ctr in
@@ -18,5 +17,4 @@ let fresh_tid (ctx : Ctx.t) (at : region) (targs : targ list)
     let typ = Il.Ast.VarT ("tid" $ no_region, []) in
     TextV tid $$$ { vid; typ }
   in
-  Ctx.add_node ctx value;
   value
