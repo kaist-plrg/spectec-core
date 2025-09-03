@@ -1,0 +1,99 @@
+;;
+;; Names
+;;
+
+syntax nameIR = text
+
+dec $name(name) : nameIR
+
+def $name(`ID t) = t
+def $name(`TID t) = t
+def $name(APPLY) = "apply"
+def $name(KEY) = "key"
+def $name(ACTIONS) = "actions"
+def $name(STATE) = "state"
+def $name(ENTRIES) = "entries"
+def $name(TYPE) = "type"
+def $name(PRIORITY) = "priority"
+def $name(LIST) = "list"
+
+dec $tableCustomName(tableCustomName) : nameIR
+
+def $tableCustomName(`ID t) = t
+def $tableCustomName(`TID t) = t
+def $tableCustomName(APPLY) = "apply"
+def $tableCustomName(STATE) = "state"
+def $tableCustomName(TYPE) = "type"
+def $tableCustomName(PRIORITY) = "priority"
+
+;;
+;; Variable names
+;;
+
+syntax id = text
+
+;;
+;; Type variable names
+;;
+
+syntax tid = id
+
+dec $fresh_tid() : tid
+dec $fresh_tids(nat) : tid*
+
+def $fresh_tids(0) = eps
+def $fresh_tids(n) = $fresh_tid() :: $fresh_tids($(n - 1))
+  -- otherwise
+
+;;
+;; Routine names
+;;
+;; A pair of function name and a list of parameter names,
+;; with a boolean flag indicating whether the parameter has
+;; a default value
+;;
+
+syntax pid = id `# bool
+syntax rid = id `( pid* )
+
+dec $rid(name, parameterList) : rid
+dec $pids(parameterList) : pid*
+dec $pid(parameter) : pid
+
+def $rid(name, parameterList)
+  = $name(name) `( $pids(parameterList) )
+
+def $pids(`EMPTY) = eps
+def $pids(parameter) = $pid(parameter)
+def $pids(nonEmptyParameterList `, parameter)
+  = $pids(nonEmptyParameterList) ++ [ $pid(parameter) ]
+
+def $pid(_ _ _ name `EMPTY) = $name(name) `# false
+def $pid(_ _ _ name initializer) = $name(name) `# true
+
+;;
+;; Constructor names
+;;
+
+syntax cid = rid
+
+dec $cid(name, constructorParameterListOpt) : cid
+
+def $cid(name, `EMPTY) = $name(name) `( eps )
+def $cid(name, `( parameterList ))
+  = $name(name) `( $pids(parameterList) )
+
+
+
+dec $expression_as_lvalue(expression) : lvalue?
+
+def $expression_as_lvalue(referenceExpression) = referenceExpression
+def $expression_as_lvalue(expression `. member) = lvalue `. member
+  -- if lvalue = $expression_as_lvalue(expression)
+def $expression_as_lvalue(`( expression )) = `( lvalue )
+  -- if lvalue = $expression_as_lvalue(expression)
+;;
+;; Object names
+;;
+
+syntax oid = id*

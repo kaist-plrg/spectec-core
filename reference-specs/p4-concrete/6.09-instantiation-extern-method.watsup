@@ -1,0 +1,98 @@
+;;
+;; Extern method instantiation
+;;
+;; syntax methodPrototypeIR
+;;
+
+;;; annotationList functionPrototypeIR `;
+
+rule Bind_method/non-abstract:
+  rdenv_0 |- _ (typeIR_ret nameIR 
+               `< typeParameterListIR `, typeParameterListIR_inferred >
+               `( parameterIR* )) `;
+         ==> rdenv_1
+    ---- ;; add extern method to routine type environment
+    -- if $rid_IR(nameIR, parameterIR*) = rid
+    -- if ($parameterIR(parameterIR) = parameterTypeIR)*
+    -- if EXTERN_METHOD `( parameterTypeIR* ) `-> typeIR_ret
+        = methodTypeIR
+    -- if methodTypeIR `< typeParameterListIR `, typeParameterListIR_inferred >
+        = routineTypeDefIR
+    -- if $add_map<rid, routineTypeDefIR>(rdenv_0, rid, routineTypeDefIR)
+        = rdenv_1
+
+rule Bind_method/abstract:
+  rdenv_0 |- _ ABSTRACT (typeIR_ret nameIR
+               `< typeParameterListIR `, typeParameterListIR_inferred >
+               `( parameterIR* )) `;
+         ==> rdenv_1
+    ---- ;; add extern abstract method to routine type environment
+    -- if $rid_IR(nameIR, parameterIR*) = rid
+    -- if ($parameterIR(parameterIR) = parameterTypeIR)*
+    -- if EXTERN_METHOD ABSTRACT `( parameterTypeIR* ) `-> typeIR_ret
+        = methodTypeIR
+    -- if methodTypeIR `< typeParameterListIR `, typeParameterListIR_inferred >
+        = routineTypeDefIR
+    -- if $add_map<rid, routineTypeDefIR>(rdenv_0, rid, routineTypeDefIR)
+        = rdenv_1
+
+rule Bind_methods/nil:
+  rdenv |- eps ==> rdenv
+
+rule Bind_methods/cons:
+  rdenv_0 |- methodPrototypeIR_h :: methodPrototypeIR_t* ==> rdenv_2
+  -- Bind_method: rdenv_0 |- methodPrototypeIR_h ==> rdenv_1
+  -- Bind_methods: rdenv_1 |- methodPrototypeIR_t* ==> rdenv_2
+
+rule Bind_constructor/constructor:
+  p Ci_0 typeParameterListIR methodPrototypeListIR |- annotationList nameIR `< `, typeParameterListIR_inferred >
+                                                      `( parameterListIR ) `;
+                                                  ==> Ci_1
+  ---- ;; add extern constructor to constructor environment
+  -- if $cid_IR(nameIR, parameterListIR) = cid
+  -- if EXTERN nameIR `< typeParameterListIR ++ typeParameterListIR_inferred >
+        `( parameterListIR ) `{ methodPrototypeListIR }
+      = consDyn
+  -- if $add_constructor_inst(p, Ci_0, cid, consDyn) = Ci_1
+
+rule Bind_constructors/nil:
+  p Ci typeParameterListIR methodPrototypeListIR |- eps ==> Ci
+
+rule Bind_constructors/cons:
+  p Ci_0 typeParameterListIR methodPrototypeListIR |- methodPrototypeIR_h :: methodPrototypeIR_t*
+    ==> Ci_2
+  -- Bind_constructor: p Ci_0 typeParameterListIR methodPrototypeListIR |- methodPrototypeIR_h ==> Ci_1
+  -- Bind_constructors: p Ci_1 typeParameterListIR methodPrototypeListIR |- methodPrototypeIR_t* ==> Ci_2
+
+rule ExternMethod_inst/non-abstract:
+  Ci_0 |- _ (_ nameIR 
+            `< typeParameterListIR `, typeParameterListIR_inferred >
+            `( parameterListIR )) `;
+      ==> Ci_1
+    ---- ;; bind extern method to routine environment
+    -- if $rid_IR(nameIR, parameterListIR) = rid
+    -- if EXTERN_METHOD `< typeParameterListIR ++ typeParameterListIR_inferred >
+          `( parameterListIR ) eps
+        = methodDyn
+    -- if $add_routine_overload_inst(BLOCK, Ci_0, rid, methodDyn) = Ci_1
+
+rule ExternMethod_inst/abstract:
+  Ci_0 |- _ ABSTRACT
+    (_ nameIR `< typeParameterListIR `, typeParameterListIR_inferred >
+    `( parameterListIR )) `;
+    ==> Ci_1
+    ---- ;; bind extern abstract method to routine environment
+    -- if $rid_IR(nameIR, parameterListIR) = rid
+    -- if EXTERN_METHOD ABSTRACT 
+          `< typeParameterListIR ++ typeParameterListIR_inferred >
+          `( parameterListIR )
+        = methodDyn
+    -- if $add_routine_overload_inst(BLOCK, Ci_0, rid, methodDyn) = Ci_1
+
+rule ExternMethods_inst/nil:
+  Ci |- eps ==> Ci
+
+rule ExternMethods_inst/cons:
+  Ci_0 |- methodPrototypeIR_h :: methodPrototypeIR_t* ==> Ci_2
+  -- ExternMethod_inst: Ci_0 |- methodPrototypeIR_h ==> Ci_1
+  -- ExternMethods_inst: Ci_1 |- methodPrototypeIR_t* ==> Ci_2

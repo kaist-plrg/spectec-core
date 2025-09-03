@@ -1,0 +1,95 @@
+;;
+;; Parser statement instantiation
+;;
+;; syntax parserStatementIR
+;;
+
+;;; constantDeclarationIR
+
+rule ParserStmt_inst/constantDeclarationIR:
+  Ci_0 sto_0 |- constantDeclarationIR ==> Ci_1 sto_1 constantDeclarationIR_inst?
+  -- Decl_inst: BLOCK Ci_0 sto_0 |- constantDeclarationIR ==> Ci_1 sto_1 constantDeclarationIR_inst?
+
+;;; variableDeclarationIR
+
+rule ParserStmt_inst/variableDeclarationIR:
+  Ci_0 sto_0 |- variableDeclarationIR ==> Ci_1 sto_1 variableDeclarationIR_inst?
+  -- BlockElementStmt_inst: BLOCK Ci_0 sto_0 |- variableDeclarationIR ==> Ci_1 sto_1 variableDeclarationIR_inst?
+
+;;; emptyStatementIR
+
+rule ParserStmt_inst/emptyStatementIR:
+  Ci_0 sto_0 |- emptyStatementIR ==> Ci_1 sto_1 emptyStatementIR_inst
+  -- Stmt_inst: BLOCK Ci_0 sto_0 |- emptyStatementIR ==> Ci_1 sto_1 emptyStatementIR_inst
+
+;;; assignmentStatementIR
+
+rule ParserStmt_inst/assignmentStatementIR:
+  Ci_0 sto_0 |- assignmentStatementIR ==> Ci_1 sto_1 assignmentStatementIR_inst
+  -- Stmt_inst: BLOCK Ci_0 sto_0 |- assignmentStatementIR ==> Ci_1 sto_1 assignmentStatementIR_inst
+
+;;; callStatementIR
+
+rule ParserStmt_inst/callStatementIR:
+  Ci_0 sto_0 |- callStatementIR ==> Ci_1 sto_1 callStatementIR_inst
+  -- Stmt_inst: BLOCK Ci_0 sto_0 |- callStatementIR ==> Ci_1 sto_1 callStatementIR_inst
+
+;;; directApplicationStatementIR
+
+rule ParserStmt_inst/directApplicationStatementIR:
+  Ci sto_0 |- prefixedNameIR `. APPLY `( argumentListIR ) `;
+          ==> Ci sto_2 parserBlockStatementIR
+  ---- ;; find and instantiate constructor
+  -- if $find_constructor_overloaded_inst(Ci, prefixedNameIR, eps) = (_, consDyn, _)
+  -- Constructor_inst: BLOCK Ci sto_0 |- consDyn `< eps > `( eps `# eps ) ==> sto_1 objDyn
+  ---- ;; assign new tid with random string appended
+  -- if $flatten_prefixedNameIR(prefixedNameIR) = tid
+  -- if $fresh_tid() = tid_fresh
+  -- if $concat_text([ tid, "_", tid_fresh]) = nameIR
+  ---- ;; add object to store
+  -- if Ci.PATH ++ nameIR = oid
+  -- if $add_sto(sto_1, oid, objDyn) = sto_2
+  ---- ;; replace with constant declaration and call statement
+  -- if TID tid = typeIR
+  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
+  -- if ((`` tid) `# `( typeIR CTK )) `. "apply" = routineTargetIR
+  -- if routineTargetIR `< eps > `( argumentListIR ) `; = callStatementIR
+  ---- ;; create parser block
+  -- if `EMPTY `{ [ constantDeclarationIR, callStatementIR ] } = parserBlockStatementIR
+
+;;; parserBlockStatementIR
+
+rule ParserStmt_inst/parserBlockStatementIR:
+  Ci_0 sto_0 |- annotationList `{ parserStatementListIR }
+            ==> Ci_1 sto_1 parserBlockStatementIR_inst
+  ---- ;; instantiate inner statements
+  -- ParserStmts_inst: Ci_0 sto_0 |- parserStatementListIR ==> Ci_1 sto_1 parserStatementListIR_inst
+  -- if annotationList `{ parserStatementListIR_inst }
+      = parserBlockStatementIR_inst
+
+;;; conditionalStatementIR
+
+rule ParserStmt_inst/conditionalStatementIR:
+  Ci_0 sto_0 |- conditionalStatementIR ==> Ci_1 sto_1 conditionalStatementIR_inst
+  -- Stmt_inst: BLOCK Ci_0 sto_0 |- conditionalStatementIR ==> Ci_1 sto_1 conditionalStatementIR_inst
+
+;;
+;; Parser statement list instantiation
+;;
+;; syntax parserStatementListIR
+;;
+
+rule ParserStmts_inst/nil:
+  Ci sto |- eps ==> Ci sto eps
+
+rule ParserStmts_inst/cons-none:
+  Ci_0 sto_0 |- parserStatementIR_h :: parserStatementIR_t*
+            ==> Ci_2 sto_2 parserStatementIR_t'*
+  -- ParserStmt_inst: Ci_0 sto_0 |- parserStatementIR_h ==> Ci_1 sto_1 eps
+  -- ParserStmts_inst: Ci_1 sto_1 |- parserStatementIR_t* ==> Ci_2 sto_2 parserStatementIR_t'*
+
+rule ParserStmts_inst/cons-some:
+  Ci_0 sto_0 |- parserStatementIR_h :: parserStatementIR_t*
+            ==> Ci_2 sto_2 (parserStatementIR_h' :: parserStatementIR_t'*)
+  -- ParserStmt_inst: Ci_0 sto_0 |- parserStatementIR_h ==> Ci_1 sto_1 parserStatementIR_h'
+  -- ParserStmts_inst: Ci_1 sto_1 |- parserStatementIR_t* ==> Ci_2 sto_2 parserStatementIR_t'*

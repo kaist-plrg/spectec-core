@@ -1,0 +1,244 @@
+;;
+;; Layered context
+;;
+
+;; Global layer
+
+syntax globalInstantiationLayer =
+  { CENV cenv,
+    TDENV tdenv,
+    RENV renv,
+    VENV venv }
+
+;; Block Layer
+
+syntax blockInstantiationLayer =
+  { THETA theta,
+    RENV renv,
+    SENV senv,
+    VENV venv }
+
+;; Local layer
+
+syntax localInstantiationLayer =
+  { THETA theta,
+    VENVS venv* }
+
+;;
+;; Instantiation context
+;;
+
+syntax contextInst =
+  { PATH oid,
+    GLOBAL globalInstantiationLayer,
+    BLOCK blockInstantiationLayer,
+    LOCAL localInstantiationLayer }
+
+var Ci : contextInst
+
+;;
+;; Constructors
+;;
+
+dec $empty_block() : blockInstantiationLayer
+
+def $empty_block() =
+  { THETA $empty_theta,
+    RENV $empty_renv,
+    SENV $empty_senv,
+    VENV $empty_venv }
+
+dec $empty_local() : localInstantiationLayer
+
+def $empty_local() =
+  { THETA $empty_theta,
+    VENVS ([]) }
+
+dec $empty_context_inst() : contextInst
+
+def $empty_context_inst() = Ci
+  -- if { CENV $empty_cenv,
+          TDENV $empty_tdenv,
+          RENV $empty_renv,
+          VENV $empty_venv }
+      = globalInstantiationLayer
+  -- if $empty_block() = blockInstantiationLayer
+  -- if $empty_local() = localInstantiationLayer
+  -- if { PATH ([]), 
+          GLOBAL globalInstantiationLayer,
+          BLOCK blockInstantiationLayer,
+          LOCAL localInstantiationLayer }
+      = Ci
+
+
+;;
+;; Frame entry and exit
+;;
+
+dec $enter_inst(contextInst) : contextInst
+
+def $enter_inst(Ci) = Ci[ .LOCAL.VENVS = $empty_venv :: Ci.LOCAL.VENVS ]
+
+dec $exit_inst(contextInst) : contextInst
+
+def $exit_inst(Ci) = Ci[ .LOCAL.VENVS = venv_t* ]
+  -- if Ci.LOCAL.VENVS = venv_h :: venv_t*
+
+;;
+;; Path entry
+;;
+
+dec $enter_path(contextInst, id) : contextInst
+
+def $enter_path(Ci, id) = Ci[ .PATH = Ci.PATH ++ id ]
+
+;;
+;; Context inheritance
+;;
+
+dec $copy_context_inst(cursor, contextInst) : contextInst
+
+def $copy_context_inst(GLOBAL, Ci) = Ci[ .BLOCK = $empty_block ][ .LOCAL = $empty_local ]
+def $copy_context_inst(BLOCK, Ci) = Ci[ .LOCAL = $empty_local ]
+def $copy_context_inst(LOCAL, Ci) = Ci
+
+;;
+;; Adders
+;;
+
+;;; Adder for values
+
+dec $add_value_inst(cursor, contextInst, id, value): contextInst
+dec $add_values_inst(cursor, contextInst, id*, value*): contextInst
+
+def $add_value_inst(GLOBAL, Ci, id, value) = Ci[ .GLOBAL.VENV = venv ]
+  -- if ~$in_set<id>(id, $dom_map<id, value>(Ci.GLOBAL.VENV))
+  -- if $add_map<id, value>(Ci.GLOBAL.VENV, id, value) = venv
+def $add_value_inst(BLOCK, Ci, id, value) = Ci[ .BLOCK.VENV = venv ]
+  -- if ~$in_set<id>(id, $dom_map<id, value>(Ci.BLOCK.VENV))
+  -- if $add_map<id, value>(Ci.BLOCK.VENV, id, value) = venv
+def $add_value_inst(LOCAL, Ci, id, value) = Ci[ .LOCAL.VENVS = venv_h' :: venv_t* ]
+  -- if Ci.LOCAL.VENVS = venv_h :: venv_t*
+  -- if ~$in_set<id>(id, $dom_map<id, value>(venv_h))
+  -- if $add_map<id, value>(venv_h, id, value) = venv_h'
+
+def $add_values_inst(p, Ci, eps, eps) = Ci
+def $add_values_inst(p, Ci, id_h :: id_t*, value_h :: value_t*) = Ci''
+  -- if $add_value_inst(p, Ci, id_h, value_h) = Ci'
+  -- if $add_values_inst(p, Ci', id_t*, value_t*) = Ci''
+
+;;; Adder for type definitions
+
+dec $add_typedef_inst(cursor, contextInst, tid, typeDefIR) : contextInst
+
+def $add_typedef_inst(GLOBAL, Ci, tid, typeDefIR) = Ci[ .GLOBAL.TDENV = tdenv ]
+  -- if $add_map<tid, typeDefIR>(Ci.GLOBAL.TDENV, tid, typeDefIR) = tdenv
+
+;;; Adder for parser states
+
+dec $add_state_inst(cursor, contextInst, nameIR, stateDyn) : contextInst
+
+def $add_state_inst(BLOCK, Ci, nameIR, stateDyn) = Ci[ .BLOCK.SENV = senv ]
+  -- if ~$in_set<nameIR>(nameIR, $dom_map<nameIR, stateDyn>(Ci.BLOCK.SENV))
+  -- if $add_map<nameIR, stateDyn>(Ci.BLOCK.SENV, nameIR, stateDyn) = senv
+
+;;; Adder for type variables
+
+dec $add_types_inst(cursor, contextInst, tid*, typeIR*) : contextInst
+dec $add_type_inst(cursor, contextInst, tid, typeIR) : contextInst
+
+def $add_types_inst(p, Ci, eps, eps) = Ci
+def $add_types_inst(p, Ci, tid_h :: tid_t*, typeIR_h :: typeIR_t*) =
+    $add_types_inst(p, Ci', tid_t*, typeIR_t*)
+  -- if $add_type_inst(p, Ci, tid_h, typeIR_h) = Ci'
+
+def $add_type_inst(BLOCK, Ci, tid, typeIR) = Ci[ .BLOCK.THETA = theta ]
+  -- if $add_map<tid, typeIR>(Ci.BLOCK.THETA, tid, typeIR) = theta
+def $add_type_inst(LOCAL, Ci, tid, typeIR) = Ci[ .LOCAL.THETA = theta ]
+  -- if $add_map<tid, typeIR>(Ci.LOCAL.THETA, tid, typeIR) = theta
+
+;;; Adder for routines
+
+dec $add_routine_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
+
+def $add_routine_overload_inst(GLOBAL, Ci, rid, routineDyn) = Ci[ .GLOBAL.RENV = renv ]
+  -- if ~$in_set<rid>(rid, $dom_map<rid, routineDyn>(Ci.GLOBAL.RENV))
+  -- if $add_map<rid, routineDyn>(Ci.GLOBAL.RENV, rid, routineDyn) = renv
+def $add_routine_overload_inst(BLOCK, Ci, rid, routineDyn) = Ci[ .BLOCK.RENV = renv ]
+  -- if ~$in_set<rid>(rid, $dom_map<rid, routineDyn>(Ci.BLOCK.RENV))
+  -- if $add_map<rid, routineDyn>(Ci.BLOCK.RENV, rid, routineDyn) = renv
+
+dec $add_routine_non_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
+
+def $add_routine_non_overload_inst(GLOBAL, Ci, rid, routineDyn) = Ci[ .GLOBAL.RENV = renv ]
+  -- if rid = id `( _ )
+  -- if $dom_map<rid, routineDyn>(Ci.GLOBAL.RENV) = `{ (id_k `( _ ))* }
+  -- if ~$in_set<id>(id, `{ id_k* })
+  -- if $add_map<rid, routineDyn>(Ci.GLOBAL.RENV, rid, routineDyn) = renv
+def $add_routine_non_overload_inst(BLOCK, Ci, rid, routineDyn) = Ci[ .BLOCK.RENV = renv ]
+  -- if rid = id `( _ )
+  -- if $dom_map<rid, routineDyn>(Ci.BLOCK.RENV) = `{ (id_k `( _ ))* }
+  -- if ~$in_set<id>(id, `{ id_k* })
+  -- if $add_map<rid, routineDyn>(Ci.BLOCK.RENV, rid, routineDyn) = renv
+
+;;; Adder for constructors
+
+dec $add_constructor_inst(cursor, contextInst, cid, consDyn) : contextInst
+
+def $add_constructor_inst(GLOBAL, Ci, cid, consDyn) = Ci[ .GLOBAL.CENV = cenv ]
+  -- if $add_map<cid, consDyn>(Ci.GLOBAL.CENV, cid, consDyn) = cenv
+
+;;
+;; Finders
+;;
+
+;;; Finder for values
+
+dec $find_value_inst(cursor, contextInst, prefixedNameIR) : value
+
+def $find_value_inst(p, Ci, `. id) = value
+  -- if $find_map<id, value>(Ci.GLOBAL.VENV, id) = value
+def $find_value_inst(GLOBAL, Ci, `` id) = value
+  -- if $find_map<id, value>(Ci.GLOBAL.VENV, id) = value
+def $find_value_inst(BLOCK, Ci, `` id) = value
+  -- if $find_map<id, value>(Ci.BLOCK.VENV, id) = value
+def $find_value_inst(BLOCK, Ci, `` id)
+  = $find_value_inst(GLOBAL, Ci, `` id)
+  ---- ;; fallback to global layer
+  -- if $find_map<id, value>(Ci.BLOCK.VENV, id) = eps
+def $find_value_inst(LOCAL, Ci, `` id) = value
+  -- if Ci.LOCAL.VENVS = venv*
+  -- if $find_maps<id, value>(venv*, id) = value
+def $find_value_inst(LOCAL, Ci, `` id)
+  = $find_value_inst(BLOCK, Ci, `` id)
+  ---- ;; fallback to block layer
+  -- if $find_maps<id, value>(Ci.LOCAL.VENVS, id) = eps
+
+;;; Finder for typedefs
+
+dec $find_typedef_inst(cursor, contextInst, prefixedNameIR) : typeDefIR?
+
+def $find_typedef_inst(_, Ci, `` nameIR) =
+    $find_map<tid, typeDefIR>(Ci.GLOBAL.TDENV, nameIR)
+def $find_typedef_inst(_, Ci, `. nameIR) =
+    $find_map<tid, typeDefIR>(Ci.GLOBAL.TDENV, nameIR)
+
+;;; Finder for constructors 
+
+dec $ids_arguments_IR(argumentIR*) : (id?)*
+dec $id_argument_IR(argumentIR) : id?
+
+def $ids_arguments_IR(argumentIR*) = ($id_argument_IR(argumentIR))*
+def $id_argument_IR(typedExpressionIR) = eps
+def $id_argument_IR(nameIR `= _) = nameIR
+def $id_argument_IR(nameIR `= `_) = nameIR
+def $id_argument_IR(`_) = eps
+
+dec $find_constructor_overloaded_inst(contextInst, prefixedNameIR, argumentIR*) : (cid, consDyn, id*)?
+
+def $find_constructor_overloaded_inst(Ci, `` id, argumentIR*)
+  = $find_overloaded<consDyn>(Ci.GLOBAL.CENV, id, (id_arg?)*)
+  -- if $ids_arguments_IR(argumentIR*) = (id_arg?)*
+def $find_constructor_overloaded_inst(Ci, `. id, argumentIR*)
+  = $find_overloaded<consDyn>(Ci.GLOBAL.CENV, id, (id_arg?)*)
+  -- if $ids_arguments_IR(argumentIR*) = (id_arg?)*

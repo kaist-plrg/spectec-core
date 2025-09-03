@@ -1,0 +1,69 @@
+;;
+;; Control local declaration instantiation
+;;
+;; syntax controlLocalDeclarationIR
+;;
+
+;;; constantDeclarationIR
+
+rule ControlLocalDecl_inst/constantDeclarationIR:
+  Ci_0 sto_0 |- constantDeclarationIR ==> Ci_1 sto_1 constantDeclarationIR_inst?
+  -- Decl_inst: BLOCK Ci_0 sto_0 |- constantDeclarationIR ==> Ci_1 sto_1 constantDeclarationIR_inst?
+
+;;; instantiationIR
+
+rule ControlLocalDecl_inst/instantiationIR:
+  Ci_0 sto_0 |- instantiationIR ==> Ci_1 sto_1 constantDeclarationIR?
+  -- Decl_inst: BLOCK Ci_0 sto_0 |- instantiationIR ==> Ci_1 sto_1 constantDeclarationIR?
+
+;;; variableDeclarationIR
+
+rule ControlLocalDecl_inst/variableDeclarationIR:
+  Ci sto |- variableDeclarationIR ==> Ci sto variableDeclarationIR
+
+;;; actionDeclarationIR
+
+rule ControlLocalDecl_inst/actionDeclarationIR:
+  Ci_0 sto_0 |- actionDeclarationIR ==> Ci_1 sto_1 actionDeclarationIR_inst?
+  -- Decl_inst: BLOCK Ci_0 sto_0 |- actionDeclarationIR ==> Ci_1 sto_1 actionDeclarationIR_inst?
+
+rule ControlLocalDecl_inst/actionDeclarationIR:
+  Ci_0 sto_0 |- actionDeclarationIR ==> Ci_1 sto_1 actionDeclarationIR_inst?
+  -- Decl_inst: BLOCK Ci_0 sto_0 |- actionDeclarationIR ==> Ci_1 sto_1 actionDeclarationIR_inst?
+
+;;; tableDeclarationIR
+
+rule ControlLocalDecl_inst/tableDeclarationIR:
+  Ci_0 sto_0 |- _ TABLE typeIR nameIR `{ tablePropertyListIR } ==> Ci_1 sto_1 constantDeclarationIR
+  ---- ;; instantiate table constructor
+  -- if $enter_path(Ci_0, nameIR) = Ci_inner
+  -- Constructor_inst: BLOCK Ci_0 sto_0 |- (TABLE nameIR `{ tablePropertyListIR }) `< eps > `( eps `# eps ) 
+                                       ==> sto_1 objDyn
+  ---- ;; bind object to store
+  -- if Ci_0.PATH ++ nameIR = oid
+  -- if $add_sto(sto_1, oid, objDyn) = sto_2
+  ---- ;; add reference to object in value environment
+  -- if $add_value_inst(BLOCK, Ci_0, nameIR, `! oid) = Ci_1
+  ---- ;; replace declaration with constant declaration holding the reference
+  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
+      = constantDeclarationIR
+;;
+;; Control local declaration list instantiation
+;;
+;; syntax controlLocalDeclarationListIR
+;;
+
+rule ControlLocalDecls_inst/nil:
+  Ci sto |- eps ==> Ci sto eps
+
+rule ControlLocalDecls_inst/cons-none:
+  Ci_0 sto_0 |- controlLocalDeclarationIR_h :: controlLocalDeclarationIR_t*
+    ==> Ci_2 sto_2 controlLocalDeclarationIR_t'*
+  -- ControlLocalDecl_inst: Ci_0 sto_0 |- controlLocalDeclarationIR_h ==> Ci_1 sto_1 eps
+  -- ControlLocalDecls_inst: Ci_1 sto_1 |- controlLocalDeclarationIR_t* ==> Ci_2 sto_2 controlLocalDeclarationIR_t'*
+
+rule ControlLocalDecls_inst/cons-none:
+  Ci_0 sto_0 |- controlLocalDeclarationIR_h :: controlLocalDeclarationIR_t*
+    ==> Ci_2 sto_2 (controlLocalDeclarationIR_h' :: controlLocalDeclarationIR_t'*)
+  -- ControlLocalDecl_inst: Ci_0 sto_0 |- controlLocalDeclarationIR_h ==> Ci_1 sto_1 controlLocalDeclarationIR_h'
+  -- ControlLocalDecls_inst: Ci_1 sto_1 |- controlLocalDeclarationIR_t* ==> Ci_2 sto_2 controlLocalDeclarationIR_t'*

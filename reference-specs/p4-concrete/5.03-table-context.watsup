@@ -1,0 +1,185 @@
+;;
+;; Table context
+;;
+
+syntax matchKey = (typeIR, id)
+
+syntax matchAction = (prefixedNameIR, parameterTypeIR*, argumentListIR)
+
+syntax matchPriority =
+  { VALUES nat*,
+    INIT bool,
+    DELTA nat,
+    LARGEST_WINS bool }
+
+syntax matchEntry =
+  { SIZE nat,
+    CONST bool }
+
+syntax matchMode =
+  ;; does not require explicit priority and is not lpm
+  | NOPRI
+  ;; does not require explicit priority and is lpm, holding the max prefix
+  | NOPRILPM nat
+  ;; requires explicit priority and is not lpm
+  | PRI
+  ;; requires explicit priority and is lpm
+  | PRILPM
+
+syntax tableContext =
+  { KEYS matchKey*,
+    ACTIONS matchAction*,
+    PRIORITIES matchPriority,
+    ENTRIES matchEntry,
+    MODE matchMode }
+
+var TBLC : tableContext
+
+;;
+;; State per table entry
+;;
+
+syntax tableEntryState =
+  ;; the entry is lpm, holding the prefix length
+  | LPM nat
+  ;; the entry is not lpm
+  | NOLPM
+
+var TBLS : tableEntryState
+
+;;
+;; Constructor
+;;
+
+dec $empty_tableContext: tableContext
+def $empty_tableContext
+    = { KEYS eps,
+        ACTIONS eps,
+        PRIORITIES matchPriority,
+        ENTRIES matchEntry,
+        MODE NOPRI }
+  -- if matchPriority
+        = { VALUES eps,
+            INIT false,
+            DELTA 1,
+            LARGEST_WINS true }
+  -- if matchEntry
+        = { SIZE 0,
+            CONST true }
+
+;;
+;; Adders
+;;
+
+;;; Adder for keys
+
+dec $add_key(tableContext, id, typeIR) : tableContext
+
+def $add_key(TBLC, id, typeIR)
+  = TBLC[ .KEYS = TBLC.KEYS ++ [ matchKey ] ]
+  -- if matchKey = (typeIR, id)
+
+;;; Adder for actions
+
+dec $add_action(tableContext, prefixedNameIR, parameterTypeIR*, argumentListIR) : tableContext
+
+def $add_action(TBLC, prefixedNameIR, parameterTypeIR*, argumentListIR)
+  = TBLC[ .ACTIONS = TBLC.ACTIONS ++ [ matchAction ] ]
+  -- if matchAction = (prefixedNameIR, parameterTypeIR*, argumentListIR)
+
+;;; Adder for table entry priorities
+
+dec $add_table_priority(tableContext, nat) : tableContext
+
+def $add_table_priority(TBLC, n)
+  = TBLC[ .PRIORITIES.VALUES = TBLC.PRIORITIES.VALUES ++ [ n ] ]
+
+;;
+;; Updaters
+;;
+
+;;; Updater for modes
+
+dec $update_mode(tableContext, id, typeIR) : tableContext
+dec $update_mode'(tableContext, id, typeIR) : tableContext
+
+def $update_mode(TBLC, id, typeIR) = $update_mode'(TBLC, id, $canon(typeIR))
+def $update_mode'(TBLC, "lpm", INT `< n >) = TBLC[ .MODE = NOPRILPM n ]
+  -- if TBLC.MODE = NOPRI
+def $update_mode'(TBLC, "lpm", BIT `< n >) = TBLC[ .MODE = NOPRILPM n ]
+  -- if TBLC.MODE = NOPRI
+def $update_mode'(TBLC, "lpm", VARBIT `< n >) = TBLC[ .MODE = NOPRILPM n ]
+  -- if TBLC.MODE = NOPRI
+def $update_mode'(TBLC, "lpm", TYPE _ typeIR)
+  = $update_mode(TBLC, "lpm", typeIR)
+def $update_mode'(TBLC, "lpm", _) = TBLC[ .MODE = PRILPM ]
+  -- if TBLC.MODE = PRI
+def $update_mode'(TBLC, "range", _) = TBLC[ .MODE = PRI ]
+  -- if TBLC.MODE = NOPRI
+def $update_mode'(TBLC, "ternary", _) = TBLC[ .MODE = PRI ]
+  -- if TBLC.MODE = NOPRI
+def $update_mode'(TBLC, "optional", _) = TBLC[ .MODE = PRI ]
+  -- if TBLC.MODE = NOPRI
+def $update_mode'(TBLC, "range", _) = TBLC[ .MODE = PRILPM ]
+  -- if TBLC.MODE = NOPRILPM _
+def $update_mode'(TBLC, "ternary", _) = TBLC[ .MODE = PRILPM ]
+  -- if TBLC.MODE = NOPRILPM _
+def $update_mode'(TBLC, "optional", _) = TBLC[ .MODE = PRILPM ]
+  -- if TBLC.MODE = NOPRILPM _
+def $update_mode'(TBLC, _, _) = TBLC
+  -- otherwise
+
+;;
+;; Finders
+;;
+
+;;; Finder for actions
+
+dec $find_action(tableContext, prefixedNameIR) : (parameterTypeIR*, argumentListIR)?
+dec $find_action'(matchAction*, prefixedNameIR) : (parameterTypeIR*, argumentListIR)?
+
+def $find_action(TBLC, prefixedNameIR) = $find_action'(TBLC.ACTIONS, prefixedNameIR)
+
+def $find_action'(eps, prefixedNameIR) = eps
+
+def $find_action'(matchAction_h :: matchAction_t*, prefixedNameIR)
+  = (parameterTypeIR*, argumentListIR)
+  -- if (prefixedNameIR, parameterTypeIR*, argumentListIR) = matchAction_h
+
+def $find_action'(matchAction_h :: matchAction_t*, prefixedNameIR)
+  = $find_action'(matchAction_t*, prefixedNameIR)
+  -- if (prefixedNameIR_h, _, _) = matchAction_h
+  -- if prefixedNameIR_h =/= prefixedNameIR
+
+;;; Finder for last table priority
+
+dec $find_table_priority_last(tableContext) : nat
+
+def $find_table_priority_last(TBLC) = n*[|n*| - 1]
+  -- if n* = TBLC.PRIORITIES.VALUES
+
+;;
+;; State management
+;;
+
+dec $join_tableEntryState(tableEntryState, tableEntryState) : tableEntryState
+
+def $join_tableEntryState(NOLPM, LPM n) = LPM n
+def $join_tableEntryState(LPM n, NOLPM) = LPM n
+def $join_tableEntryState(NOLPM, NOLPM) = NOLPM
+
+dec $tableEntry_lpm_prefix(value) : nat
+dec $tableEntry_lpm_prefix'(value, nat) : nat
+
+def $tableEntry_lpm_prefix(value) = $tableEntry_lpm_prefix'(value, 0)
+def $tableEntry_lpm_prefix'(0 W _, n_prefix) = n_prefix
+def $tableEntry_lpm_prefix'(w W n, n_prefix)
+  = $tableEntry_lpm_prefix'(value', $(n_prefix + 1))
+  -- if $(w > 0)
+  -- if $(n \ 2 =/= 0)
+  -- if value' = $(w - 1) W $((n - 1) / 2)
+def $tableEntry_lpm_prefix'(w W n, 0)
+  = $tableEntry_lpm_prefix'(value', 0)
+  -- if $(w > 0)
+  -- if $(n \ 2 = 0)
+  -- if value' = $(w - 1) W $(n / 2)

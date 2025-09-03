@@ -1,0 +1,143 @@
+;;
+;; Extern method typing
+;;
+;; syntax methodPrototype
+;;
+
+;;; annotationList functionPrototype `;
+
+rule ExternMethod_ok/non-abstract:
+  TC_0 tid_extern |- annotationList
+                      (typeOrVoid name typeParameterListOpt `( parameterList )) `;
+                   : TC_4 methodPrototypeIR
+  ---- ;; check that method name does not overlap with the extern name
+  -- if nameIR = $name(name)
+  -- if nameIR =/= tid_extern
+  ---- ;; check type parameters and add them to the context
+  -- if typeParameter* = $flatten_typeParameterListOpt(typeParameterListOpt)
+  -- if (tid_expl = $name(typeParameter))*
+  -- if TC_1 = $add_types(LOCAL, TC_0, tid_expl*, (TID tid_expl)*)
+  ---- ;; check return type
+  -- Type_ok: LOCAL TC_1 |- typeOrVoid : typeIR_ret `# eps
+  ---- ;; set local context
+  -- if TC_2 = TC_1[ .LOCAL.KIND = EXTERN_METHOD `-> typeIR_ret ]
+  ---- ;; check parameters and add them to the context
+  -- if parameter* = $flatten_parameterList(parameterList)
+  -- Parameters_ok: LOCAL TC_2 |- parameter* : parameterIR* `# tid_impl*
+  -- if (parameterTypeIR = $parameterIR(parameterIR))*
+  -- if TC_3 = $add_parameters(LOCAL, TC_2, parameterTypeIR*)
+  ---- ;; create method type and add it to the context
+  -- if rid = $rid(name, parameterList)
+  -- if methodTypeIR
+      = EXTERN_METHOD `( parameterTypeIR* ) `-> typeIR_ret
+  -- if routineTypeDefIR = methodTypeIR `< tid_expl* `, tid_impl* >
+  -- RoutineTypeDef_wf: $bound(BLOCK, TC_0) |- routineTypeDefIR
+  -- if TC_4 = $add_routine_overload(BLOCK, TC_0, rid, routineTypeDefIR)
+  ---- ;; create IR
+  -- if methodPrototypeIR
+      = annotationList
+          (typeIR_ret nameIR `< tid_expl* `, tid_impl* > `( parameterIR* )) `;
+
+;;; annotationList ABSTRACT functionPrototype `;
+
+rule ExternMethod_ok/abstract:
+  TC_0 tid_extern |- annotationList ABSTRACT
+                      (typeOrVoid name typeParameterListOpt `( parameterList )) `;
+                   : TC_4 methodPrototypeIR
+  ---- ;; check that method name does not overlap with the extern name
+  -- if nameIR = $name(name)
+  -- if nameIR =/= tid_extern
+  ---- ;; check type parameters and add them to the context
+  -- if typeParameter* = $flatten_typeParameterListOpt(typeParameterListOpt)
+  -- if (tid_expl = $name(typeParameter))*
+  -- if TC_1 = $add_types(LOCAL, TC_0, tid_expl*, (TID tid_expl)*)
+  ---- ;; check return type
+  -- Type_ok: LOCAL TC_1 |- typeOrVoid : typeIR_ret `# eps
+  ---- ;; set local context
+  -- if TC_2 = TC_1[ .LOCAL.KIND = EXTERN_METHOD ABSTRACT `-> typeIR_ret ]
+  ---- ;; check parameters and add them to the context
+  -- if parameter* = $flatten_parameterList(parameterList)
+  -- Parameters_ok: LOCAL TC_2 |- parameter* : parameterIR* `# tid_impl*
+  -- if (parameterTypeIR = $parameterIR(parameterIR))*
+  -- if TC_3 = $add_parameters(LOCAL, TC_2, parameterTypeIR*)
+  ---- ;; create method type and add it to the context
+  -- if rid = $rid(name, parameterList)
+  -- if methodTypeIR
+      = EXTERN_METHOD ABSTRACT `( parameterTypeIR* ) `-> typeIR_ret
+  -- if routineTypeDefIR = methodTypeIR `< tid_expl* `, tid_impl* >
+  -- RoutineTypeDef_wf: $bound(BLOCK, TC_0) |- routineTypeDefIR
+  -- if TC_4 = $add_routine_overload(BLOCK, TC_0, rid, routineTypeDefIR)
+  ---- ;; create IR
+  -- if methodPrototypeIR
+      = annotationList ABSTRACT
+          (typeIR_ret nameIR `< tid_expl* `, tid_impl* > `( parameterIR* )) `;
+
+;;
+;; Extern method list typing
+;;
+;; syntax methodPrototypeList
+;;
+
+rule ExternMethods_ok/nil:
+  TC tid_extern |- eps : TC eps
+
+rule ExternMethods_ok/cons:
+  TC_0 tid_extern |- methodPrototype_h :: methodPrototype_t*
+                   : TC_2 (methodPrototypeIR_h :: methodPrototypeIR_t*)
+  -- ExternMethod_ok: TC_0 tid_extern |- methodPrototype_h
+                                       : TC_1 methodPrototypeIR_h
+  -- ExternMethods_ok: TC_1 tid_extern |- methodPrototype_t*
+                                        : TC_2 methodPrototypeIR_t*
+
+;;
+;; Extern constructor typing
+;;
+;; syntax methodPrototype
+;;
+
+;;; annotationList typeIdentifier `( parameterList ) `;
+
+rule ExternConstructor_ok:
+  TC_0 tid_extern |- annotationList typeIdentifier `( parameterList ) `;
+                   : TC_1 methodPrototypeIR
+  ---- ;; check that constructor name is the same as the extern name
+  -- if nameIR = $name(typeIdentifier)
+  -- if nameIR = tid_extern
+  ---- ;; check constructor parameters
+  -- if constructorParameter* = $flatten_parameterList(parameterList)
+  -- ConstructorParameters_ok: BLOCK TC_0 |- constructorParameter*
+                                           : constructorParameterIR* `# tid_impl*
+  -- if (constructorParameterTypeIR
+      = $constructorParameterIR(constructorParameterIR))*
+  ---- ;; find extern type
+  -- if typeIR_extern `< tid_expl* `, eps > = $find_type(GLOBAL, TC_0, `` nameIR)
+  ---- ;; add implicit type parameters to the constructor
+  ---- ;; and add it to the context
+  -- if cid = $cid(typeIdentifier, `( parameterList ))
+  -- if typeIR_extern_spec
+      = (typeIR_extern `< tid_expl* `, eps >) `< (TID tid_expl)* >
+  -- if constructorTypeIR
+      = CONSTRUCTOR `( constructorParameterTypeIR* ) `-> typeIR_extern_spec
+  -- if constructorTypeDefIR = constructorTypeIR `< tid_expl* `, tid_impl* >
+  -- ConstructorTypeDef_wf: $bound(BLOCK, TC_0) |- constructorTypeDefIR
+  -- if TC_1 = $add_constructor(TC_0, cid, constructorTypeDefIR)
+  ---- ;; create IR
+  -- if methodPrototypeIR
+      = annotationList nameIR `< `, tid_impl* > `( constructorParameterIR* ) `;
+
+;;
+;; Extern constructor list typing
+;;
+;; syntax methodPrototypeList
+;;
+
+rule ExternConstructors_ok/nil:
+  TC tid_extern |- eps : TC eps
+
+rule ExternConstructors_ok/cons:
+  TC_0 tid_extern |- methodPrototype_h :: methodPrototype_t*
+                  : TC_2 (methodPrototypeIR_h :: methodPrototypeIR_t*)
+  -- ExternConstructor_ok: TC_0 tid_extern |- methodPrototype_h
+                                            : TC_1 methodPrototypeIR_h
+  -- ExternConstructors_ok: TC_1 tid_extern |- methodPrototype_t*
+                                             : TC_2 methodPrototypeIR_t*

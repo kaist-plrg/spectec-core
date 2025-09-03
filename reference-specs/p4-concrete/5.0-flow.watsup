@@ -1,0 +1,12 @@
+;;
+;; Control Flow Tracker
+;;
+
+syntax flow = CONT | RET
+
+var f : flow
+
+dec $join_flow(flow, flow) : flow
+def $join_flow(RET, RET) = RET
+def $join_flow(f_a, f_b) = CONT
+  -- otherwise

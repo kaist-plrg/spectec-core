@@ -1,0 +1,45 @@
+;;
+;; Table property instantiation
+;;
+;; syntax tablePropertyIR
+;;
+
+;;; KEY `= `{ tableKeyListIR }
+rule TableProperty_inst/key:
+  Ci sto |- KEY `= `{ tableKeyListIR } ==> Ci sto (KEY `= `{ tableKeyListIR })
+
+;;; ACTIONS `= `{ tableActionListIR }
+rule TableProperty_inst/actions:
+  Ci sto |- ACTIONS `= `{ tableActionListIR } ==> Ci sto (ACTIONS `= `{ tableActionListIR })
+
+;;; annotationList constOptIR ENTRIES `= `{ tableEntryListIR }
+rule TableProperty_inst/entries:
+  Ci sto |- annotationList constOptIR ENTRIES `= `{ tableEntryListIR }
+    ==> Ci sto (annotationList constOptIR ENTRIES `= `{ tableEntryListIR })
+
+;;; annotationList constOptIR DEFAULT_ACTION `= tableActionReferenceIR `;
+rule TableProperty_inst/custom-default-action:
+  Ci sto |- annotationList constOptIR DEFAULT_ACTION `= tableActionReferenceIR `;
+    ==> Ci sto (annotationList constOptIR DEFAULT_ACTION `= tableActionReferenceIR `;)
+
+;;; annotationList constOptIR CUSTOM nameIR initializerIR `;
+rule TableProperty_inst/custom:
+  Ci sto |- annotationList constOptIR CUSTOM nameIR (`= typedExpressionIR) `;
+    ==> Ci sto_1 (annotationList constOptIR CUSTOM_CONST nameIR (`= value) `;)
+  -- if $enter_path(Ci, nameIR) = Ci_inner
+  ---- ;; instantiate expression and replace custom property with evaluated result
+  -- Expr_inst: LOCAL Ci_inner sto |- typedExpressionIR ==> sto_1 value
+
+;;; annotationList constOptIR CUSTOM_CONST nameIR constantInitializerIR `;
+rule TableProperty_inst/custom-const:
+  Ci sto |- annotationList constOptIR CUSTOM_CONST nameIR constantInitializerIR `;
+    ==> Ci sto (annotationList constOptIR CUSTOM_CONST nameIR constantInitializerIR `;)
+
+rule TableProperties_inst/nil:
+  Ci sto |- eps ==> Ci sto eps
+
+rule TableProperties_inst/cons:
+  Ci_0 sto_0 |- tablePropertyIR_h :: tablePropertyIR_t*
+    ==> Ci_2 sto_2 (tablePropertyIR_h' :: tablePropertyIR_t'*)
+  -- TableProperty_inst: Ci_0 sto_0 |- tablePropertyIR_h ==> Ci_1 sto_1 tablePropertyIR_h'
+  -- TableProperties_inst: Ci_1 sto_1 |- tablePropertyIR_t* ==> Ci_2 sto_2 tablePropertyIR_t'*

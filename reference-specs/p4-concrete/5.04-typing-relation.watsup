@@ -1,0 +1,369 @@
+;;
+;; Static evaluation
+;; of expressions that are local compile-time known
+;;
+
+relation Eval_static:
+  cursor typingContext |- typedExpressionIR ~> value
+  hint(input %0 %1 %2)
+
+;;
+;;;; Type evaluation
+;;;; Inserts fresh type variables (`# tid*) for don't care type arguments (`_)
+;;
+
+relation Type_ok:
+  cursor typingContext |- typeOrVoid : typeIR `# tid*
+  hint(input %0 %1 %2)
+
+relation TypeArgument_ok:
+  cursor typingContext |- typeArgument : typeArgumentIR `# tid*
+  hint(input %0 %1 %2)
+
+relation TypeArguments_ok:
+  cursor typingContext |- typeArgument* : typeArgumentListIR `# tid*
+  hint(input %0 %1 %2)
+
+;;
+;;;; Subtyping, explicit and implicit
+;;
+
+relation Sub_expl: typeIR <: typeIR hint(input %0 %1)
+relation Sub_expl_canon: typeIR <: typeIR hint(input %0 %1)
+relation Sub_expl_canon_neq: typeIR <: typeIR hint(input %0 %1)
+
+relation Sub_impl: typeIR <: typeIR hint(input %0 %1)
+relation Sub_impl_canon: typeIR <: typeIR hint(input %0 %1)
+relation Sub_impl_canon_neq: typeIR <: typeIR hint(input %0 %1)
+
+;;
+;;;; Expression typing
+;;
+
+relation Expr_ok:
+  cursor typingContext |- expression : typedExpressionIR
+  hint(input %0 %1 %2)
+
+;;
+;;;; Argument typing
+;;
+
+relation Argument_ok:
+  cursor typingContext |- argument : argumentIR
+  hint(input %0 %1 %2)
+
+;;
+;;;; L-value typing
+;;
+
+relation Lvalue_ok:
+  cursor typingContext |- lvalue : typedLvalueIR
+  hint(input %0 %1 %2)
+
+;;
+;;;; Statement typing
+;;
+
+relation Stmt_ok:
+  cursor typingContext flow |- statement : typingContext flow statementIR
+  hint(input %0 %1 %2 %3)
+
+relation Stmts_ok:
+  cursor typingContext flow |- statement* : typingContext flow statementIR*
+  hint(input %0 %1 %2 %3)
+
+relation BlockElementStmt_ok:
+  typingContext flow |- blockElementStatement
+                : typingContext flow blockElementStatementIR
+  hint(input %0 %1 %2)
+
+relation BlockElementStmts_ok:
+  typingContext flow |- blockElementStatement*
+                : typingContext flow blockElementStatementIR*
+  hint(input %0 %1 %2)
+
+relation Block_ok:
+  typingContext flow |- blockStatement
+                : typingContext flow blockStatementIR
+  hint(input %0 %1 %2)
+
+;;
+;;;; Parameter typing
+;;;; inserts fresh type variables for parameters with don't care types
+;;
+
+relation Parameter_ok:
+  cursor typingContext |- parameter : parameterIR `# tid*
+  hint(input %0 %1 %2)
+
+relation Parameters_ok:
+  cursor typingContext |- parameter* : parameterListIR `# tid*
+  hint(input %0 %1 %2)
+
+dec $parameterIR(parameterIR) : parameterTypeIR
+def $parameterIR(_ direction typeIR nameIR eps)
+  = direction typeIR nameIR eps
+def $parameterIR(_ direction typeIR nameIR (`= value))
+  = direction typeIR nameIR value
+
+relation ConstructorParameter_ok:
+  cursor typingContext |- constructorParameter
+                  : constructorParameterIR `# tid*
+  hint(input %0 %1 %2)
+
+relation ConstructorParameters_ok:
+  cursor typingContext |- constructorParameter*
+                  : constructorParameterListIR `# tid*
+  hint(input %0 %1 %2)
+
+dec $constructorParameterIR(constructorParameterIR) : constructorParameterTypeIR
+def $constructorParameterIR(constructorParameterIR)
+  = $parameterIR(constructorParameterIR)
+
+;;
+;;;; Extern method/constructor typing
+;;
+
+relation ExternMethod_ok:
+  typingContext tid |- methodPrototype : typingContext methodPrototypeIR
+  hint(input %0 %1 %2)
+
+relation ExternMethods_ok:
+  typingContext tid |- methodPrototype* : typingContext methodPrototypeIR*
+  hint(input %0 %1 %2)
+
+relation ExternConstructor_ok:
+  typingContext tid |- methodPrototype : typingContext methodPrototypeIR
+  hint(input %0 %1 %2)
+
+relation ExternConstructors_ok:
+  typingContext tid |- methodPrototype* : typingContext methodPrototypeIR*
+  hint(input %0 %1 %2)
+
+;;
+;;;; Parser typing
+;;
+
+relation ParserTransition_ok:
+  typingContext nameIR* |- transitionStatement : transitionStatementIR
+  hint(input %0 %1 %2)
+
+relation ParserStmt_ok:
+  typingContext |- parserStatement : typingContext parserStatementIR
+  hint(input %0 %1)
+
+relation ParserStmts_ok:
+  typingContext |- parserStatement* : typingContext parserStatementIR*
+  hint(input %0 %1)
+
+relation ParserState_ok:
+  typingContext nameIR* |- parserState : parserStateIR
+  hint(input %0 %1 %2)
+
+relation ParserStates_ok:
+  typingContext |- parserState* : parserStateIR*
+  hint(input %0 %1)
+
+relation ParserLocalDecl_ok:
+  typingContext |- parserLocalDeclaration
+                 : typingContext parserLocalDeclarationIR
+  hint(input %0 %1)
+
+relation ParserLocalDecls_ok:
+  typingContext |- parserLocalDeclaration*
+                 : typingContext parserLocalDeclarationIR*
+  hint(input %0 %1)
+
+;;
+;;;; Control typing
+;;
+
+relation TableKey_ok:
+  typingContext tableContext |- tableKey : tableContext tableKeyIR
+  hint(input %0 %1 %2)
+
+relation TableKeys_ok:
+  typingContext tableContext |- tableKey* : tableContext tableKeyListIR
+  hint(input %0 %1 %2)
+
+relation Call_action_partial_ok:
+  typingContext |- parameterTypeIR* `@ argumentListIR
+                 : parameterTypeIR* `, parameterTypeIR* `@ argumentListIR
+  hint(input %0 %1 %2)
+
+relation TableAction_ok:
+  typingContext tableContext |- tableAction : tableContext tableActionIR
+  hint(input %0 %1 %2)
+
+relation TableActions_ok:
+  typingContext tableContext |- tableAction* : tableContext tableActionListIR
+  hint(input %0 %1 %2)
+
+relation Call_action_default_ok:
+  typingContext |- parameterTypeIR* `@ argumentListIR
+                 : parameterTypeIR* `, parameterTypeIR* `@ argumentListIR
+  hint(input %0 %1 %2)
+
+relation TableDefaultAction_ok:
+  typingContext tableContext |- initializer : tableActionReferenceIR
+  hint(input %0 %1 %2)
+
+relation TableEntry_keyset_ok:
+  typingContext tableContext |- keysetExpression : tableEntryState keysetExpressionIR
+  hint(input %0 %1 %2)
+
+relation TableEntry_action_ok:
+  typingContext tableContext |- tableActionReference : tableActionReferenceIR
+  hint(input %0 %1 %2)
+
+relation TableEntry_priority_ok:
+  typingContext tableContext tableEntryState |- tableEntryPriority?
+                                              : tableContext tableEntryPriorityOptIR
+  hint(input %0 %1 %2 %3)
+
+relation TableEntry_ok:
+  typingContext tableContext |- tableEntry : tableContext tableEntryIR
+  hint(input %0 %1 %2)
+
+relation TableEntries_ok:
+  typingContext tableContext |- tableEntry* : tableContext tableEntryListIR
+  hint(input %0 %1 %2)
+
+relation TableProperty_ok:
+  typingContext tableContext |- tableProperty : tableContext tablePropertyIR
+  hint(input %0 %1 %2)
+
+relation TableProperties_ok:
+  typingContext tableContext |- tableProperty* : tableContext tablePropertyListIR
+  hint(input %0 %1 %2)
+
+relation Table_ok:
+  typingContext |- tableProperty* : tableContext tablePropertyListIR
+  hint(input %0 %1)
+
+relation TableType_ok:
+  typingContext tableContext |- name : typingContext typeIR
+  hint(input %0 %1 %2)
+
+relation ControlLocalDecl_ok:
+  typingContext |- controlLocalDeclaration
+                 : typingContext controlLocalDeclarationIR
+  hint(input %0 %1)
+
+relation ControlLocalDecls_ok:
+  typingContext |- controlLocalDeclaration*
+           : typingContext controlLocalDeclarationIR*
+  hint(input %0 %1)
+
+;;
+;;;; Declaration typing
+;;
+
+relation Decl_ok:
+  cursor typingContext |- declaration : typingContext declarationIR
+  hint(input %0 %1 %2)
+
+relation Decls_ok:
+  cursor typingContext |- declaration* : typingContext declarationIR*
+  hint(input %0 %1 %2)
+
+relation Program_ok:
+  |- p4program : typingContext p4programIR
+  hint(input %0)
+
+;;
+;;;; Call/instantiation convention
+;;
+
+;; Checks the copy-in/out calling convention,
+;; and inserts implicit casts for arguments, if necessary
+;; note that it depends on whether an action is being called or not
+
+syntax actctxt = ACTION | NOACTION
+
+relation Call_convention_expr_ok:
+  cursor typingContext actctxt |- parameterTypeIR `@ typedExpressionIR
+                                : typedExpressionIR
+  hint(input %0 %1 %2 %3 %4)
+
+relation Call_convention_argument_ok:
+  cursor typingContext actctxt |- parameterTypeIR `@ argumentIR
+                                : argumentIR
+  hint(input %0 %1 %2 %3 %4)
+
+relation Call_convention_ok:
+  cursor typingContext actctxt |- parameterTypeIR* `@ argumentListIR
+                                : argumentListIR
+  hint(input %0 %1 %2 %3 %4)
+
+;;
+;;;; Routine typing
+;;
+
+;; Finds the type of a routine target,
+;; inserts fresh type variables for parameters with don't care types, (tid*)
+;; and also identifies the ids of default arguments (id*)
+
+dec $is_static_routineTarget(routineTargetIR) : ctk
+
+def $is_static_routineTarget(_ `. nameIR) = LCTK
+  -- if nameIR <- [ "minSizeInBits", "minSizeInBytes",
+                    "maxSizeInBits", "maxSizeInBytes" ]
+def $is_static_routineTarget(TYPE _ `. nameIR) = LCTK
+  -- if nameIR <- [ "minSizeInBits", "minSizeInBytes",
+                    "maxSizeInBits", "maxSizeInBytes" ]
+def $is_static_routineTarget(_) = DYN
+  -- otherwise
+
+relation RoutineTarget_ok:
+  cursor typingContext |- routineTarget : routineTargetIR
+  hint(input %0 %1 %2)
+
+relation RoutineTarget_lvalue_ok:
+  cursor typingContext |- lvalue : routineTargetIR
+  hint(input %0 %1 %2)
+
+relation RoutineType_ok:
+  cursor typingContext |- routineTargetIR `< typeArgumentListIR > `( argumentIR* )
+                        : routineTypeIR `< `# tid* > `( `# id* )
+  hint(input %0 %1 %2 %3 %4)
+
+;; Checks that an action/function/method invocation is valid,
+;; gets the return type,
+;; infers the types of missing type arguments,
+;; and inserts implicit casts for arguments, if necessary
+
+relation Call_ok:
+  cursor typingContext |- routineTypeIR `< typeArgumentListIR `# tid* >
+                                  `( argumentListIR `# id* )
+                        : typeIR `< typeArgumentListIR > `( argumentListIR )
+  hint(input %0 %1 %2 %3 %4 %5 %6)
+
+;;
+;;;; Constructor typing
+;;
+
+;; Finds the type of a constructor,
+;; inserts fresh type variables for parameters with don't care types, (tid*)
+;; and also identifies the ids of default arguments (id*)
+
+relation ConstructorType_ok:
+  cursor typingContext |- prefixedNameIR `< typeArgumentListIR > `( argumentIR* )
+                        : constructorTypeIR `< `# tid* > `( `# id* )
+  hint(input %0 %1 %2 %3 %4)
+
+;; Checks that a constructor invocation is valid,
+;; gets the return type,
+;; infers the types of missing type arguments,
+;; and inserts implicit casts for arguments, if necessary
+
+syntax instctxt = NAMED | ANON
+
+relation Inst_ok:
+  cursor typingContext instctxt |- constructorTypeIR
+                                    `< typeArgumentListIR `# tid* >
+                                    `( argumentListIR `# id* )
+                                 : typeIR
+                                    `< typeArgumentListIR >
+                                    `( argumentListIR )
+  hint(input %0 %1 %2 %3 %4 %5 %6 %7)
