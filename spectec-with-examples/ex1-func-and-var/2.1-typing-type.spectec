@@ -1,0 +1,3 @@
+syntax type =
+  | INT
+  | type -> type

@@ -1,0 +1,13 @@
+syntax id = text
+
+syntax binop = ADD | MUL
+
+syntax type
+
+syntax expr =
+  | NumE int              ;; n
+  | BinE binop expr expr  ;; e1 op e2
+  | LetE id expr expr     ;; let x = e1 in e2
+  | VarE id               ;; x
+  | FuncE id type expr    ;; λx:t.e
+  | ApplyE expr expr      ;; e1 e2

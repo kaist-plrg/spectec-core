@@ -1,0 +1,5 @@
+syntax env
+syntax value =
+  | NumV nat
+  | CloV id expr env  ;; <λx.e, env>
+  | LocV nat          ;; loc

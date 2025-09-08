@@ -1,0 +1,10 @@
+syntax pair<K, V> = K -> V
+syntax map<K, V> = (pair<K, V>)*
+
+syntax localContext = map<id, type>
+syntax globalContext = map<id, type>
+syntax context =
+  { GLOBAL globalContext,
+    LOCAL localContext }
+
+var C : context

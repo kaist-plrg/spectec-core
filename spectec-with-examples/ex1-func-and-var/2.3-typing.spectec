@@ -1,0 +1,32 @@
+relation Type:
+  context |- expr : type
+  hint(input %0 %1)
+
+var e : expr
+var n : nat
+
+rule Type/numE:
+  C |- NumE n : INT
+
+rule Type/varE:
+  C |- VarE id : type
+  -- if $lookup_<id, type>(C, id) = type
+
+rule Type/binE:
+  C |- BinE _ e_l e_r : INT
+  -- Type: C |- e_l: INT
+  -- Type: C |- e_r: INT
+
+rule Type/letE:
+  C |- LetE id e_p e_b : type_b
+  -- Type: C |- e_p : type_p
+  -- Type: (id -> type_p) :: C |- e_b : type_b
+
+rule Type/funcE:
+  C |- FuncE id type_p e_b : type_p -> type_b
+  -- Type: (id -> type_p) :: C |- e_b : type_b
+
+rule Type/applyE:
+  C |- ApplyE e_f e_a : type_b
+  -- Type: C |- e_f : type_p -> type_b
+  -- Type: C |- e_a : type_p

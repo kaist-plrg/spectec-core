@@ -1,0 +1,44 @@
+syntax env = map<id, value>
+
+dec $lookup_<K, V>(map<K, V>, K) : V?
+def $lookup_<K, V>( eps, K_query ) = eps
+def $lookup_<K, V>( (K_h -> V_h) :: (K_t -> V_t)*, K_query ) = V_h
+  -- if K_h = K_query
+def $lookup_<K, V>( (K_h -> V_h) :: (K_t -> V_t)*, K_query )
+  = $lookup_<K, V>( (K_t -> V_t)*, K_query )
+  -- otherwise
+
+relation Eval:
+  env |- expr ==> value
+  hint(input %0 %1)
+
+rule Eval/numE:
+  env |- NumE int ==> NumV int
+
+rule Eval/varE:
+  env |- VarE id ==> value
+  -- if $lookup_<id, value>(env, id) = value
+
+rule Eval/binE-add:
+  env |- BinE ADD e_l e_r ==> NumV $(n_l + n_r)
+  -- Eval: env |- e_l ==> NumV n_l
+  -- Eval: env |- e_r ==> NumV n_r
+
+rule Eval/binE-mul:
+  env |- BinE MUL e_l e_r ==> NumV $(n_l * n_r)
+  -- Eval: env |- e_l ==> NumV n_l
+  -- Eval: env |- e_r ==> NumV n_r
+
+rule Eval/letE:
+  env |- LetE id e_p e_b ==> value_b
+  -- Eval: env |- e_p ==> value_p
+  -- Eval: (id -> value_p) :: env |- e_b ==> value_b
+
+rule Eval/funE:
+  env |- FuncE id _ e ==> CloV id e env 
+
+rule Eval/appE:
+  env |- ApplyE e_f e_a ==> value_r
+  -- Eval: env |- e_f ==> CloV id e_b env_clo
+  -- Eval: env |- e_a ==> value_a
+  -- Eval: (id -> value_a) :: env_clo |- e_b ==> value_r

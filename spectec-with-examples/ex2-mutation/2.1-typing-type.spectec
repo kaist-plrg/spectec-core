@@ -1,0 +1,4 @@
+syntax type =
+  | INT
+  | type -> type
+  | REF type

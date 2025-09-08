@@ -1,0 +1,5 @@
+syntax env
+
+syntax value =
+  | NumV int          ;; n
+  | CloV id expr env  ;; <id, expr, env>
