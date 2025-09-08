@@ -1,51 +1,37 @@
-syntax env = map<id, value>
-syntax sto = value*
-
-def $lookup_<K, V>( eps, K_query ) = eps
-def $lookup_<K, V>( (K_h -> V_h) :: (K_t -> V_t)*, K_query ) = V_h
-  -- if K_h = K_query
-def $lookup_<K, V>( (K_h -> V_h) :: (K_t -> V_t)*, K_query )
-  = $lookup_<K, V>( (K_t -> V_t)*, K_query )
-  -- otherwise
-
 dec $update_at_<X>(X*, nat, X) : X*?
-def $update_at_<X>(eps, n, X) = eps
-def $update_at_<X>(X_h::X_t*, 0, X)
-  = X :: X_t*
-def $update_at_<X>(X_h::X_t*, n, X)
-  = X_h :: $update_at_<X>(X_t*, $(n - 1), X)
-
 
 relation Eval:
   env; sto |- expr ==> value; sto
   hint(input %0 %1 %2)
 
-rule Eval/numE:
-  env; sto |- NumE n ==> NumV n; sto
+var n : nat
 
-rule Eval/varE:
-  env; sto |- VarE id ==> value; sto
-  -- if $lookup_<id, value>(env, id) = value
+rule Eval/numE:
+  env; sto |- NumE i ==> NumV i; sto
 
 rule Eval/binE-add:
-  env; sto |- BinE ADD e_l e_r ==> NumV $(n_l + n_r); sto_2
-  -- Eval: env; sto |- e_l ==> NumV n_l; sto_1
-  -- Eval: env; sto_1 |- e_r ==> NumV n_r; sto_2
+  env; sto |- BinE ADD e_l e_r ==> NumV $(i_l + i_r); sto_2
+  -- Eval: env; sto |- e_l ==> NumV i_l; sto_1
+  -- Eval: env; sto_1 |- e_r ==> NumV i_r; sto_2
 
 rule Eval/binE-mul:
-  env; sto |- BinE MUL e_l e_r ==> NumV $(n_l * n_r); sto_2
-  -- Eval: env; sto |- e_l ==> NumV n_l; sto_1
-  -- Eval: env; sto_1 |- e_r ==> NumV n_r; sto_2
+  env; sto |- BinE MUL e_l e_r ==> NumV $(i_l * i_r); sto_2
+  -- Eval: env; sto |- e_l ==> NumV i_l; sto_1
+  -- Eval: env; sto_1 |- e_r ==> NumV i_r; sto_2
 
 rule Eval/letE:
   env; sto |- LetE id e_p e_b ==> value_b; sto_2
   -- Eval: env; sto |- e_p ==> value_p; sto_1
   -- Eval: ((id -> value_p) :: env); sto_1 |- e_b ==> value_b; sto_2
 
-rule Eval/funE:
+rule Eval/varE:
+  env; sto |- VarE id ==> value; sto
+  -- if $lookup_env(env, id) = value
+
+rule Eval/funcE:
   env; sto |- FuncE id _ e ==> CloV id e env; sto
 
-rule Eval/appE:
+rule Eval/applyE:
   env; sto |- ApplyE e_f e_a ==> value_r; sto_3
   -- Eval: env; sto |- e_f ==> CloV id e_b env_clo; sto_1
   -- Eval: env; sto_1 |- e_a ==> value_a; sto_2

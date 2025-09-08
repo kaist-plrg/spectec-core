@@ -2,4 +2,7 @@ syntax env
 
 syntax value =
   | NumV int          ;; n
-  | CloV id expr env  ;; <id, expr, env>
+  | CloV id expr env  ;; <λx.e, env>
+
+syntax env = map<id, value>
+dec $lookup_env(env, id): value?

@@ -1,5 +1,11 @@
 syntax env
+
 syntax value =
-  | NumV nat
+  | NumV int          ;; n
   | CloV id expr env  ;; <λx.e, env>
   | LocV nat          ;; loc
+
+syntax env = map<id, value>
+dec $lookup_env(env, id): value?
+
+syntax sto = value*

@@ -1,7 +1,7 @@
 syntax pair<K, V> = K -> V
 syntax map<K, V> = (pair<K, V>)*
-dec $lookup_<K, V>(map<K, V>, K) : V?
 
 syntax context = map<id, type>
+dec $lookup_context(context, id) : type?
 
 var C : context
