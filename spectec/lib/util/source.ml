@@ -3,6 +3,15 @@
 type pos = { file : string; line : int; column : int }
 type region = { left : pos; right : pos }
 
+(* Compare regions for sorting *)
+
+let compare_region region_l region_r =
+  if region_l.left.file = region_r.left.file then
+    if region_l.left.line = region_r.left.line then
+      compare region_l.left.column region_r.left.column
+    else compare region_l.left.line region_r.left.line
+  else compare region_l.left.file region_r.left.file
+
 let no_pos = { file = ""; line = 0; column = 0 }
 let no_region = { left = no_pos; right = no_pos }
 let pos_of_file file = { no_pos with file }
@@ -23,14 +32,14 @@ let over_region = function
 
 let string_of_pos pos =
   if pos.line = -1 then Printf.sprintf "0x%x" pos.column
-  else string_of_int pos.line ^ "." ^ string_of_int (pos.column + 1)
+  else string_of_int pos.line ^ ":" ^ string_of_int (pos.column + 1)
 
 let string_of_range left right =
   string_of_pos left ^ if left = right then "" else "-" ^ string_of_pos right
 
 let string_of_region region =
   if region = region_of_file region.left.file then region.left.file
-  else region.left.file ^ ":" ^ string_of_range region.left region.right
+  else region.left.file ^ ":" ^ string_of_range region.left region.right ^ ":"
 
 (* Phrases *)
 

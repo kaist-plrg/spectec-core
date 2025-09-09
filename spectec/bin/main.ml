@@ -2,6 +2,16 @@ open Util.Error
 
 let version = "0.1"
 
+exception ElabErrList of elaboration_error list
+
+let elab_spec spec =
+  match Elaborate.Elab.elab_spec spec with
+  | Spec spec_il -> spec_il
+  | Errors errors ->
+      raise
+        (ElabErrList
+           (List.map (fun (at, failtraces) -> (at, failtraces)) errors))
+
 (* Commands *)
 
 let elab_command =
@@ -12,12 +22,13 @@ let elab_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames in
-         let spec_il = Elaborate.Elab.elab_spec spec in
+         let spec_il = elab_spec spec in
          Format.printf "%s\n" (Il.Print_debug.string_of_spec spec_il);
          ()
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       | ElabErrList errors ->
+           Format.printf "%s\n" (string_of_elab_errors errors))
 
 let run_il_command =
   Core.Command.basic ~summary:"run a spec based on backtracking IL"
@@ -31,7 +42,7 @@ let run_il_command =
      fun () ->
        try
          let spec = List.concat_map Frontend.Parse.parse_file filenames_spec in
-         let spec_il = Elaborate.Elab.elab_spec spec in
+         let spec_il = elab_spec spec in
          match
            Interp_il.Typing_concrete.run_typing ~debug ~profile spec_il
              includes_p4 filename_p4
@@ -41,7 +52,8 @@ let run_il_command =
          | IllFormed msg -> Format.printf "ill-formed: %s\n" msg
        with
        | ParseError (at, msg) -> Format.printf "%s\n" (string_of_error at msg)
-       | ElabError (at, msg) -> Format.printf "%s\n" (string_of_error at msg))
+       | ElabErrList errors ->
+           Format.printf "%s\n" (string_of_elab_errors errors))
 
 let command =
   Core.Command.group

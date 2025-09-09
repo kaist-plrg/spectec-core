@@ -14,22 +14,7 @@ let ( let* ) (attempt : 'a attempt) (f : 'a -> 'b) : 'b =
 
 let error_with_failtraces (failtraces : failtrace list) =
   let sfailtrace =
-    match failtraces with
-    | [] -> ""
-    | [ failtrace ] ->
-        let depth = depth failtrace in
-        let depth = max 0 (depth - 3) in
-        string_of_failtrace ~depth ~bullet:"-" failtrace
-    | failtraces ->
-        List.mapi
-          (fun idx failtrace ->
-            let depth = depth failtrace in
-            let depth = max 0 (depth - 3) in
-            string_of_failtrace ~depth
-              ~bullet:(string_of_int (idx + 1) ^ ".")
-              failtrace)
-          failtraces
-        |> String.concat ""
+        string_of_failtraces ~region_parent:no_region ~depth:0 failtraces
   in
   error no_region ("tracing backtrack logs:\n" ^ sfailtrace)
 
