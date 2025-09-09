@@ -40,7 +40,7 @@ Because there are multiple versions of SpecTec with varying language constructs 
 ## SpecTec with Examples
 In this section, we showcase the various features of SpecTec by writing a specification for simple toy language. We start with a very small language and gradually add new features to it.
 
-### Step 1: Language With Functions and Local Variables
+### Language 1: Language With Functions and Local Variables
 Our first language has only one language construct: expressions. Expressions are recursively constructed into numeric literals, binary expressions, let expressions (local binding), variable expressions, lambda functions, and function applications. 
 
 #### Defining Abstract Syntax
@@ -228,17 +228,26 @@ All that is left is to provide the definitions of `$lookup_env` and `$lookup_con
 ;; 4-aux.spectec
 dec $lookup_<K, V>(map<K, V>, K) : V?
 
+;; Case 1: map is empty
 def $lookup_<K, V>(eps, K) = eps
+;; Case 2: key is at the head
 def $lookup_<K, V>((K_h -> V_h)::(K_t -> V_t)*, K) = V_h
-  -- if K_h = K_query
+  -- if K_h = K
+;; Case 3: key is not at the head
 def $lookup_<K, V>((K_h -> V_h)::(K_t -> V_t)*, K)
   = $lookup_<K, V>((K_t -> V_t)*, K)
   -- otherwise
 
 def $lookup_context(context, id) = $lookup_<id, type>(context, id)
 def $lookup_env(env, id) = $lookup_<id, value>(env, id)
-
 ```
 
 We declare a generic `$lookup_` that takes a map from `K` to `V` and optionally returns a `V`. Next, we provide the definitions. Like relations and rules, each function definition is also a single control flow from input to output. Therefore, multiple definition are needed to define the function completely.
-The IL interpreter tries each of the definition *in the order they are written*. Thus, a rule of thumb is that functions on inductive types (recursively defined syntax or iterators) follow this general pattern: start from the base case and inductively build to general ones. That is exactly what happens here - we start with the easiest case of all: the empty list. `eps` stands for the greek letter epsilon (ε) which is often used to denote empty syntax. In SpecTec, `eps` can be used for empty iterators; i.e. empty lists and empty option types. So any lookup on an empty list would return None.
+The IL interpreter tries each of the definition *in the order they are written*. A rule of thumb here is that functions on inductive types (recursively defined syntax or iterators) follow this general pattern: start from the base case and inductively build to general ones. That is exactly what happens here - we start with the easiest case of all: the empty list. `eps` stands for the greek letter epsilon (ε) which is often used to denote empty syntax. In SpecTec, `eps` can be used for empty iterators; i.e. empty lists and empty option types. So any lookup on an empty list would return None.
+We then define another base case. Lists are either empty (`eps`), or can be deconstructed into the *head* element and *tail* list (`x_h::x_t*`). Since we already handled the empty case, we can now deconstruct the map into head and tail, each denoted by the pair syntax. Case 2 here is where the key we're searching for (`K`) is at the head(`K_h`), for which we return the value (`V_h`).
+Case 3 is the inductive case. When the key is *not* at the head, we simply call lookup with the same key on the tail. This recursively completes the definition; if the tail is empty we go to Case 1, if the key was at position 2 we go to Case 2, and if we still fail to find the key we return to Case 3 with a smaller list.
+Notice the usage of `-- otherwise` here, known as the *else premise*. Else premises negate all premises from the previous rule; here it negates `-- if K_h = K` becoming `-- if K_h =/= K`. In terms of the backtracking interpreter, it is a no-op; however else premises can help make it visually explicit that a function or relation has been fully defined.
+Finally, we specialize the generic `$lookup_` with type parameters to get `$lookup_context` and `$lookup_env` which we used in typing and evaluation. The trailing `_` in `$lookup_` is to denote that the function is generic, thus incomplete. We discourage the use of generic functions in bodies of rules, as the presence of type parameters can be confusing when they are mixed with variables of the same type.
+
+### Language 2: Language With Mutable Variables [TODO]
+So far we have defined the full static and dynamic semantics of a relatively small language. We now extend this language with a new feature: mutation.

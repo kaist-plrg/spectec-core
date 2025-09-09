@@ -1,7 +1,8 @@
-# SpecTec EL
+# SpecTec EL Language Reference
 
-SpecTec EL(External Language), also known as SpecTec DSL, is a language designed to describe the syntax and semantics of other programming languages. It is modeled after *mathematical inference rules* which are used in programming language textbooks and papers.
+SpecTec EL(External Language), also known as SpecTec DSL, is a language designed to describe the syntax and semantics of other programming languages. It is modeled after *mathematical inference rules* which are used in programming language textbooks and literature.
 
+## Notation
 In the SpecTec-style BNF grammars shown in this document, we use `x?`, `x*`, `x+` to describe optional, sequences and non-empty sequences of symbols, respectively. We also use `"s"` to describe concrete syntax strings.
 Furthermore, a bit less standard, we write `x*sep` or `x+sep` to describe respective sequences of `x`'s that are separated by `sep`.
 Note that `x+`, `"s"`, `x*sep` and `x+sep` are not part of the actual SpecTec grammar.
@@ -29,6 +30,7 @@ syntax definition =
 syntax syntaxDeclaration =
   SYNTAX syntaxId+","
 ```
+Declaring one or more syntax before they are defined. Mostly used as forward-declarations for mutually recursive syntax.
 
 ### Syntax Definitions
 ```spectec
@@ -94,7 +96,6 @@ syntax typeDef =
   | structTypeDef
   | variantTypeDef
 ```
-
 
 ### Struct Type Definitions
 ```spectec
@@ -282,6 +283,13 @@ syntax listIndexAccessExpr =
   expr "[" expr "]"
 ```
 Accessing an expression of *iterated type* with an index of `nat` type.
+
+#### Index Update
+```spectec
+syntax listIndexUpdateExpr =
+  expr "[" nat "]" = expr
+```
+Creates a new list with element at index(`nat`) updated to right-hand side `expr`.
 
 #### Slicing (TODO)
 ```spectec
