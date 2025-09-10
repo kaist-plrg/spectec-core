@@ -192,6 +192,7 @@ atom :
   | atom_ { $1 @@@ $sloc }
 atom_ :
   | atomid { Atom.Atom $1 }
+  | TEXTLIT { Atom.Concrete $1 }
   | atom_escape { $1 }
 atom_escape :
   | TICK_UPID { Atom.SilentAtom $1 }

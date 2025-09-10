@@ -2,6 +2,7 @@
 
 type t =
   | Atom of string       (* atomid *)
+  | Concrete of string  (* id *)
   | SilentAtom of string (* `atomid *)
   | Sub                  (* `<:` *)
   | Sup                  (* `:>` *)
@@ -80,6 +81,7 @@ let eq atom_a atom_b = compare atom_a atom_b = 0
 
 let string_of_atom = function
   | Atom id -> id
+  | Concrete id -> id
   | SilentAtom id -> "`" ^ id
   | Sub -> "<:"
   | Sup -> ":>"
