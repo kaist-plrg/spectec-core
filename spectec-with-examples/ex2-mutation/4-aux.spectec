@@ -7,12 +7,5 @@ def $lookup_<K, V>((K_h -> V_h):: (K_t -> V_t)*, K)
   = $lookup_<K, V>((K_t -> V_t)*, K)
   -- otherwise
 
-def $lookup_context(context, id) = $lookup_<id, type>(context, id)
 def $lookup_env(env, id) = $lookup_<id, value>(env, id)
-
-;; Update list at index
-def $update_at_<X>(eps, n, X) = eps
-def $update_at_<X>(X_h::X_t*, 0, X)
-  = X :: X_t*
-def $update_at_<X>(X_h::X_t*, n, X)
-  = X_h :: $update_at_<X>(X_t*, $(n - 1), X)
+def $lookup_context(context, id) = $lookup_<id, type>(context, id)

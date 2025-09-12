@@ -24,7 +24,8 @@ spectec-core/
 │  ├─ 2.2-typing-context.spectec
 │  ├─ 2.3-typing.spectec
 │  ├─ 3.1-evaluation-value.spectec
-│  └─ 3.2-evaluation.spectec
+│  ├─ 3.2-evaluation.spectec
+│  └─ 4-aux.spectec
 └─ spectec/
    └─ ...
 ```
@@ -36,6 +37,7 @@ Because there are multiple versions of SpecTec with varying language constructs 
 * *Syntax Highlighting*
   * [VSCode extension: Wasm-SpecTec syntax highlighter](https://marketplace.visualstudio.com/items?itemName=taichimaeda2.spectec-highlight)
   * [Neovim treesitter grammar for P4-SpecTec](https://github.com/KunJeong/tree-sitter-spectec)
+Fonts with custom ligatures for common programming and math symbols can greatly improve the readability of SpecTec's ASCII symbols, such as various arrows and turnstiles.
 
 ## SpecTec with Examples
 In this section, we showcase the various features of SpecTec by writing a specification for simple toy language. We start with a very small language and gradually add new features to it.
@@ -244,10 +246,111 @@ def $lookup_env(env, id) = $lookup_<id, value>(env, id)
 
 We declare a generic `$lookup_` that takes a map from `K` to `V` and optionally returns a `V`. Next, we provide the definitions. Like relations and rules, each function definition is also a single control flow from input to output. Therefore, multiple definition are needed to define the function completely.
 The IL interpreter tries each of the definition *in the order they are written*. A rule of thumb here is that functions on inductive types (recursively defined syntax or iterators) follow this general pattern: start from the base case and inductively build to general ones. That is exactly what happens here - we start with the easiest case of all: the empty list. `eps` stands for the greek letter epsilon (ε) which is often used to denote empty syntax. In SpecTec, `eps` can be used for empty iterators; i.e. empty lists and empty option types. So any lookup on an empty list would return None.
-We then define another base case. Lists are either empty (`eps`), or can be deconstructed into the *head* element and *tail* list (`x_h::x_t*`). Since we already handled the empty case, we can now deconstruct the map into head and tail, each denoted by the pair syntax. Case 2 here is where the key we're searching for (`K`) is at the head(`K_h`), for which we return the value (`V_h`).
+We then define another base case. Lists are either empty (`eps`), or can be deconstructed into the *head* element and *tail* list with the *cons*(`::`) operator: (`x_h::x_t*`). Since we already handled the empty case, we can now deconstruct the map into head and tail, each denoted by the pair syntax. Case 2 here is where the key we're searching for (`K`) is at the head(`K_h`), for which we return the value (`V_h`).
 Case 3 is the inductive case. When the key is *not* at the head, we simply call lookup with the same key on the tail. This recursively completes the definition; if the tail is empty we go to Case 1, if the key was at position 2 we go to Case 2, and if we still fail to find the key we return to Case 3 with a smaller list.
 Notice the usage of `-- otherwise` here, known as the *else premise*. Else premises negate all premises from the previous rule; here it negates `-- if K_h = K` becoming `-- if K_h =/= K`. In terms of the backtracking interpreter, it is a no-op; however else premises can help make it visually explicit that a function or relation has been fully defined.
 Finally, we specialize the generic `$lookup_` with type parameters to get `$lookup_context` and `$lookup_env` which we used in typing and evaluation. The trailing `_` in `$lookup_` is to denote that the function is generic, thus incomplete. We discourage the use of generic functions in bodies of rules, as the presence of type parameters can be confusing when they are mixed with variables of the same type.
 
-### Language 2: Language With Mutable Variables [TODO]
-So far we have defined the full static and dynamic semantics of a relatively small language. We now extend this language with a new feature: mutation.
+### Language 2: Language With Mutable Variables
+So far we have defined the full static and dynamic semantics of a relatively small language. We now extend this language with a new feature: mutation. We skip the parts common with Language 1; you can find the whole specification in [spectec-with-examples].
+
+#### Updating the Syntax and Type System
+```spectec
+;; 1-syntax.spectec
+
+;; ...
+
+syntax expr =
+  ;; ...
+  | RefE expr             ;; ref e
+  | DerefE expr           ;; !e
+  | UpdateE expr expr     ;; e1 := e2
+```
+The syntax is extended with three more expressions. `RefE` creates a reference to a mutable expression, `DerefE` accesses the underlying value, and `UpdateE` updates the underlying value. We can comine these expressions with local variables to create and use local variables. For instance, the program string `let x = ref 2 in x := x + 1` creates a mutable variable x with initial value 2 and later mutates it to 3. We can even pass these references to functions and mutate the values within the function body. What an exciting feature!
+```spectec
+;; 2.1-typing-type.spectec
+syntax type =
+  | INT
+  | type -> type
+  | REF type    ;; reference type
+```
+Now let's move on to types. We need a new type to disambiguate mutable expressions with immutable ones. Since references have underlying expressions, we can use the type of that expression to define reference types. The context definition is untouched.
+
+```spectec
+;; 2.3-typing.spectec
+
+;; ...
+
+rule Type/refE:
+  C |- RefE e : REF type
+  -- Type: C |- e : type
+
+rule Type/derefE:
+  C |- DerefE e : type
+  -- Type: C |- e : REF type
+
+rule Type/updateE:
+  C |- UpdateE e_l e_r : type
+  -- Type: C |- e_l : REF type
+  -- Type: C |- e_r : type
+```
+The new typing rules are also straightforward. A reference expression creates a reference type by typing the underlying expression first. A derefencing expression unwraps the reference type. An update expression checks whether the reference's underlying type matches the type of the supplied expression.
+
+#### Updating the Dynamic Semantics
+While the type system was simple to extend, the evaluation is slightly more complex. 
+```spectec
+;; 3.1-evaluation-value.spectec
+syntax value =
+  | NumV int          ;; n
+  | CloV id expr env  ;; <λx.e, env>
+  | LocV nat          ;; loc
+
+syntax sto = value*
+```
+
+We need a way to store the values in memory at runtime. Since we never deallocate memoery, we can model memory with an array of values, called a *store*. However, since every valid expression should be evaluated into a value, we need a new value for references. Since the store is an array, we can refer to values with their index in the array, which we call *location*. Thus `LocV` is defined with `nat`, the built-in type for 0 or greater integers - perfect for array indexes. We also declare an auxiliary function `$update_sto_at_index` which takes a store, an index, and a value, and returns an updated store.
+
+```spectec
+relation Eval:
+  env; sto |- expr ==> value; sto
+  hint(input %0 %1 %2)
+```
+
+The evaluation relation is updated as well; now expressions are not state-free, as they have the potential to update the store. Therefore we pass the store to evaluation and return the updated store. The `;` is another symbolic atom - having a separator here helps us write the inference rules without extra parentheses.
+
+```spectec
+rule Eval/numE:
+  env; sto |- NumE i ==> NumV i; sto
+
+rule Eval/binE-add:
+  env; sto |- BinE ADD e_l e_r ==> NumV $(i_l + i_r); sto_2
+  -- Eval: env; sto |- e_l ==> NumV i_l; sto_1
+  -- Eval: env; sto_1 |- e_r ==> NumV i_r; sto_2
+```
+Stores are added to each side of the relation. This time, the two premises are no longer order-agnostic; as long as side-effects are involved, we must always use the updated store as an input to the next evaluation. The same changes are made to every evaluation rule.
+
+```spectec
+rule Eval/refE:
+  env; sto |- RefE e ==> LocV n; sto_1 ++ [ value ]
+  -- Eval: env; sto |- e ==> value; sto_1
+  -- if |sto_1| = n
+```
+Now let's take a look at the new rules one by one. These showcase some list-related syntax features of SpecTec.
+A reference expression is evaluated by evaluating the underlying expression first, to get `value`. We then check the length of the latest store with `|sto_1| = n`, as that will become the index for the new value. Therefore the whole expression evaluates to `LocV n`, and the new store is the latest store with `value` appended. Since we want to preserve order, instead of prepending with *cons*(`::`), we use the *list concatenation operator* `++` to concatenate `sto_1` with a singleton list `[ value ]`. The *list construction expression*(`[ x_1, x_2 ]`) can be used to construct a list type from a comma-separated list of values.
+
+```spectec
+rule Eval/derefE:
+  env; sto |- DerefE e ==> value; sto_1
+  -- Eval: env; sto |- e ==> LocV n; sto_1
+  -- if sto_1[n] = value
+```
+For dereferencing, we evaluate the expression which should return a location. We then index the store with this location to get the desired value.
+
+```spectec
+rule Eval/updateE:
+  env; sto |- UpdateE e_l e_r ==> value_r; sto_3
+  -- Eval: env; sto |- e_l ==> LocV n; sto_1
+  -- Eval: env; sto_1 |- e_r ==> value_r; sto_2
+  -- if sto_2[[n] = value_r] = sto_3
+```
+For updating, we use another piece of SpecTec syntax, the *list update expression*, which allows us to produce an update copy of the store with the `n`th value updated to `value_r`. SpecTec disallows mutation (as to not surprise spec editors with unexpected side-effects), but instead provides declarative syntax to easily locate and update values when necessary.

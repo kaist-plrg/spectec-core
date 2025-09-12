@@ -24,10 +24,10 @@ rule Eval/varE:
   env |- VarE id ==> value
   -- if $lookup_env(env, id) = value
 
-rule Eval/funE:
+rule Eval/funcE:
   env |- FuncE id _ e ==> CloV id e env 
 
-rule Eval/appE:
+rule Eval/applyE:
   env |- ApplyE e_f e_a ==> value_r
   -- Eval: env |- e_f ==> CloV id e_b env_clo
   -- Eval: env |- e_a ==> value_a

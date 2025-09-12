@@ -1,5 +1,3 @@
-dec $update_at_<X>(X*, nat, X) : X*?
-
 relation Eval:
   env; sto |- expr ==> value; sto
   hint(input %0 %1 %2)
@@ -51,4 +49,4 @@ rule Eval/updateE:
   env; sto |- UpdateE e_l e_r ==> value_r; sto_3
   -- Eval: env; sto |- e_l ==> LocV n; sto_1
   -- Eval: env; sto_1 |- e_r ==> value_r; sto_2
-  -- if $update_at_<value>(sto_1, n, value_r) = sto_3
+  -- if sto_2[[n] = value_r] = sto_3

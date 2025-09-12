@@ -238,9 +238,16 @@ Access the field named `id` in `expr` of *struct type*.
 #### Field Update Expressions
 ```spectec
 syntax fieldUpdateExpression =
-  expr "[" path "=" expr "]"
+  expr "[" "." path "=" expr "]"
 ```
 For an `expr_1` with *struct type* `type_s`, creates a new value of `type_s` that has the same fields as `expr_1` except for the field `path`, which is updated to `expr_2`.
+
+#### Field List Update Expression =
+```spectec
+syntax fieldListUpdateExpression =
+  expr "[" "." path "[" nat "]" "=" expr "]"
+```
+Special case of field updates, when the field is a list. Creates a new copy of the original `expr_1` with the field `path` is updated at index `nat` to `expr`. Field update expressions and field list update expressions can recursively apply to nested structs.
 
 ### Operation on Iterated Types
 #### Epsilon
