@@ -67,7 +67,9 @@ syntax expr =
 ```
 First, we define identifiers as simple strings, using the built-in syntax type `text`.
 Then we define binary arithmetic operators, which is specified using keywords `ADD` and `MUL`, called *atoms*. Atoms can appear anywhere inside syntax definitions.
+
 We then build upon these to recursively define expressions. SpecTec allows such recursive syntax definitions by default. Note that the leading `|` in variant types is optional.
+
 We also need to annotate the parameter types of lambda functions. However, we want to define types at a later stage. In such cases, we can just define the syntax and provide the definition later.
 
 #### Defining Types
@@ -96,6 +98,7 @@ var C : context
 We define a *generic syntax* `pair` for type parameters `K` and `V`, as a maaping from key to value. Then we define a `map` as a list of `pair`s using an *iterator*(`*`), which basically creates an unbounded list of the underlying type.  We can then use the `map` syntax for different key and value types. So, our typing context is a map from `id` to `type`. Let's also pretend that we have an auxiliary function `$lookup_context` that can fetch the type of a given id. This function has a return type of `type?`; the `?` is the *optional iterator*, meaning the function either returns a `type` or `eps`(none). The function body will be provided later.
 
 We also declare a *meta-variable* `C`. This variable declaration ensures that variables named `C` has meta-type `context` wherever it is used.
+
 By default, SpecTec allows the usage of variables that have the same name as their syntax, as well as subscripts and primed variations of these. For instance, `context`, `context_new`, `C`, and `C'` can all be used as variables of meta-type `context`.
 
 #### Defining the Type System
@@ -172,6 +175,7 @@ dec $lookup_env(env, id): value?
 
 ```
 In our simple langauge, we only need two types of values: integer values and closures. Closures are first-class functions, or *functions as values*. Using functions as values allow us to pass a functions as arguments to other functions, which is also known as *high-order functions*. The concept is quite simple; we take the function definition (`id` and `expr`) along with the environment at the moment of definition, and we freeze it in time. We then pass this frozen capsule around pretending it's a value, and when the time comes to apply the function, we unpack the closure to reveal all the data.
+
 This begs the question: what is an environment? The *environment* is not much different from the typing context; instead of mapping ids to types, we map ids to values. Local bindings will add bindings to the environment, like what we did in the typing rules. We also declare the same lookup function for environments.
 
 #### Defining Evaluation
@@ -209,6 +213,7 @@ rule Type/varE:
   -- if $lookup_context(C, id) = type
 ```
 Evaluating an integer expression produces an integer value. Unlike typing, we have two separate rules for `ADD` and `MUL` which are straightforward. To describe the result we use *arithmetic expressions* surrounded by `$( )`, which is necessary to disambiguate operators such as `*` and `<=` which can have multiple meanings.
+
 The evaluation of let and variable expressions are symmetric with their typing counterparts.
 
 ```spectec
@@ -245,10 +250,15 @@ def $lookup_env(env, id) = $lookup_<id, value>(env, id)
 ```
 
 We declare a generic `$lookup_` that takes a map from `K` to `V` and optionally returns a `V`. Next, we provide the definitions. Like relations and rules, each function definition is also a single control flow from input to output. Therefore, multiple definition are needed to define the function completely.
+
 The IL interpreter tries each of the definition *in the order they are written*. A rule of thumb here is that functions on inductive types (recursively defined syntax or iterators) follow this general pattern: start from the base case and inductively build to general ones. That is exactly what happens here - we start with the easiest case of all: the empty list. `eps` stands for the greek letter epsilon (ε) which is often used to denote empty syntax. In SpecTec, `eps` can be used for empty iterators; i.e. empty lists and empty option types. So any lookup on an empty list would return None.
+
 We then define another base case. Lists are either empty (`eps`), or can be deconstructed into the *head* element and *tail* list with the *cons*(`::`) operator: (`x_h::x_t*`). Since we already handled the empty case, we can now deconstruct the map into head and tail, each denoted by the pair syntax. Case 2 here is where the key we're searching for (`K`) is at the head(`K_h`), for which we return the value (`V_h`).
+
 Case 3 is the inductive case. When the key is *not* at the head, we simply call lookup with the same key on the tail. This recursively completes the definition; if the tail is empty we go to Case 1, if the key was at position 2 we go to Case 2, and if we still fail to find the key we return to Case 3 with a smaller list.
+
 Notice the usage of `-- otherwise` here, known as the *else premise*. Else premises negate all premises from the previous rule; here it negates `-- if K_h = K` becoming `-- if K_h =/= K`. In terms of the backtracking interpreter, it is a no-op; however else premises can help make it visually explicit that a function or relation has been fully defined.
+
 Finally, we specialize the generic `$lookup_` with type parameters to get `$lookup_context` and `$lookup_env` which we used in typing and evaluation. The trailing `_` in `$lookup_` is to denote that the function is generic, thus incomplete. We discourage the use of generic functions in bodies of rules, as the presence of type parameters can be confusing when they are mixed with variables of the same type.
 
 ### Language 2: Language With Mutable Variables
@@ -336,6 +346,7 @@ rule Eval/refE:
   -- if |sto_1| = n
 ```
 Now let's take a look at the new rules one by one. These showcase some list-related syntax features of SpecTec.
+
 A reference expression is evaluated by evaluating the underlying expression first, to get `value`. We then check the length of the latest store with `|sto_1| = n`, as that will become the index for the new value. Therefore the whole expression evaluates to `LocV n`, and the new store is the latest store with `value` appended. Since we want to preserve order, instead of prepending with *cons*(`::`), we use the *list concatenation operator* `++` to concatenate `sto_1` with a singleton list `[ value ]`. The *list construction expression*(`[ x_1, x_2 ]`) can be used to construct a list type from a comma-separated list of values.
 
 ```spectec
