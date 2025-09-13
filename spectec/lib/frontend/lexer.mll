@@ -291,6 +291,14 @@ and token = parse
   | "false" { BOOLLIT false }
   | nat as s { NATLIT (nat lexbuf s) }
   | ("0x" hex) as s { HEXLIT (hex lexbuf s) }
+  | "\"{\"" { TEXT_LBRACE }
+  | "\"}\"" { TEXT_RBRACE }
+  | "\"[\"" { TEXT_LBRACK }
+  | "\"]\"" { TEXT_RBRACK }
+  | "\"<\"" { TEXT_LANGLE }
+  | "\">\"" { TEXT_RANGLE }
+  | "\"(\"" { TEXT_LPAREN }
+  | "\")\"" { TEXT_RPAREN }
   | text as s { TEXTLIT (text lexbuf s) }
   | '"'character*('\n'|eof) { error lexbuf "unclosed text literal" }
   | '"'character*['\x00'-'\x09''\x0b'-'\x1f''\x7f']

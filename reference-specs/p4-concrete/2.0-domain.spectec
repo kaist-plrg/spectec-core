@@ -6,8 +6,8 @@ syntax nameIR = text
 
 dec $name(name) : nameIR
 
-def $name(`ID t) = t
-def $name(`TID t) = t
+def $name(ID t) = t
+def $name(TID t) = t
 def $name(APPLY) = "apply"
 def $name(KEY) = "key"
 def $name(ACTIONS) = "actions"
@@ -19,8 +19,8 @@ def $name(LIST) = "list"
 
 dec $tableCustomName(tableCustomName) : nameIR
 
-def $tableCustomName(`ID t) = t
-def $tableCustomName(`TID t) = t
+def $tableCustomName(ID t) = t
+def $tableCustomName(TID t) = t
 def $tableCustomName(APPLY) = "apply"
 def $tableCustomName(STATE) = "state"
 def $tableCustomName(TYPE) = "type"

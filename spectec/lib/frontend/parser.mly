@@ -38,6 +38,7 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 %}
 
 %token<string> TICK_UPID
+%token TEXT_LBRACE TEXT_RBRACE TEXT_LPAREN TEXT_RPAREN TEXT_LANGLE TEXT_RANGLE TEXT_LBRACK TEXT_RBRACK
 %token TICK_TICK TICK_DOUBLE_QUOTE TICK_UNDERSCORE TICK_ARROW TICK_DOUBLE_ARROW
 %token TICK_DOT TICK_DOT2 TICK_DOT3
 %token TICK_COMMA TICK_SEMICOLON TICK_COLON
@@ -193,6 +194,14 @@ atom :
 atom_ :
   | atomid { Atom.Atom $1 }
   | TEXTLIT { Atom.Concrete $1 }
+  | TEXT_LBRACE { Atom.Concrete "{" }
+  | TEXT_RBRACE { Atom.Concrete "}" }
+  | TEXT_LPAREN { Atom.Concrete "(" }
+  | TEXT_RPAREN { Atom.Concrete ")" }
+  | TEXT_LBRACK { Atom.Concrete "[" }
+  | TEXT_RBRACK { Atom.Concrete "]" }
+  | TEXT_LANGLE { Atom.Concrete "<" }
+  | TEXT_RANGLE { Atom.Concrete ">" }
   | atom_escape { $1 }
 atom_escape :
   | TICK_UPID { Atom.SilentAtom $1 }
@@ -314,7 +323,9 @@ typ_prim_ :
     {
       NotationT (BrackT (Atom.LBrace @@@ $loc($1), $2, Atom.RBrace @@@ $loc($3)) @@@ $loc($1))
     }
-
+  (* Intentionally do not include TEXT_* bracket variants for types.
+     This avoids ambiguity where text brackets should be parsed as Atom.Concrete
+     (e.g., "[" | "]"). Use TICK_* forms for bracketed types. *)
 typ_seq : typ_seq_ { $1 }
 typ_seq_ :
   | typ_prim_ { $1 }
