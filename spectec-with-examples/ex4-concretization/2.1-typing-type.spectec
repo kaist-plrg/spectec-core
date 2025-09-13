@@ -1,0 +1,4 @@
+syntax type =
+  | "int"
+  | type "->" type
+  | "ref" type

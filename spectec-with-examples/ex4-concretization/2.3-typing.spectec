@@ -1,0 +1,64 @@
+dec $lookup_<K, V>(map<K, V>, K) : V?
+
+relation Type:
+  context |- expr : type
+  hint(input %0 %1)
+
+var e : expr
+var n : nat
+
+rule Type/numE:
+  C |- NUM int : "int"
+
+rule Type/varE-local:
+  C |- ID id : type
+  -- if $lookup_<id, type>(C.LOCAL, id) = type
+
+rule Type/varE-global:
+  C |- ID id : type
+  -- if $lookup_<id, type>(C.GLOBAL, id) = type
+
+rule Type/binE:
+  C |- e_l binop e_r : "int"
+  -- Type: C |- e_l: "int"
+  -- Type: C |- e_r: "int"
+
+rule Type/letE:
+  C |- "let" id "=" e_p "in" e_b : type_b
+  -- Type: C |- e_p : type_p
+  -- Type: C[.LOCAL = (id -> type_p)::C.LOCAL] |- e_b : type_b
+
+rule Type/funE:
+  C |- "fun" id ":" type_p "->" e_b : type_p "->" type_b
+  -- Type: C[.LOCAL = (id -> type_p)::C.LOCAL] |- e_b : type_b
+
+rule Type/appE:
+  C |- e_f e_a : type_b
+  -- Type: C |- e_f : type_p "->" type_b
+  -- Type: C |- e_a : type_p
+
+rule Type/refE:
+  C |- "ref" e : "ref" type
+  -- Type: C |- e : type
+
+rule Type/derefE:
+  C |- "!" e : type
+  -- Type: C |- e : "ref" type
+
+rule Type/updateE:
+  C |- e_l ":=" e_r : type
+  -- Type: C |- e_l : "ref" type
+  -- Type: C |- e_r : type
+
+relation Type_Prog:
+  context |- program : type
+  hint(input %0 %1)
+
+rule Type_Prog/decl:
+  C |- ("let" id "=" e) ";" program : type_p
+  -- Type: C |- e : type
+  -- Type_Prog: C[.GLOBAL = (id -> type)::C.GLOBAL] |- program : type_p
+
+rule Type_Prog/expr:
+  C |- e : type
+  -- Type: C |- e : type

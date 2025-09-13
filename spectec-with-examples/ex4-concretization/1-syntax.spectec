@@ -1,0 +1,23 @@
+syntax id = text
+
+syntax binop = "+" | "*"
+
+syntax type
+
+syntax expr =
+  | NUM int                         ;; n
+  | expr binop expr                 ;; e1 op e2
+  | "let" id "=" expr "in" expr     ;; let x = e1 in e2
+  | ID id                           ;; x
+  | "fun" id ":" type "->" expr     ;; λx:t.e
+  | expr expr      ;; e1 e2
+  | "ref" expr             ;; ref e
+  | "!" expr           ;; !e
+  | expr ":=" expr     ;; e1 := e2
+
+syntax globalDecl =
+  "let" id "=" expr         ;; let x = e;
+
+syntax program =
+  | globalDecl ";" program    ;; decl; program
+  | expr
