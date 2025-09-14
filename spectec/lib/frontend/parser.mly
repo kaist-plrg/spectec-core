@@ -78,7 +78,7 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 %token IF OTHERWISE DEBUG HINT_LPAREN EPS
 %token<bool> BOOLLIT
 %token<Bigint.t> NATLIT HEXLIT
-%token<string> TEXTLIT ATOMTEXTLIT
+%token<string> TEXTLIT ATOMTEXTLIT STAR_SEP PLUS_SEP
 %token<string> UPID LOID DOTID
 %token<string> UPID_LPAREN LOID_LPAREN UPID_LANGLE LOID_LANGLE
 %token EOF
@@ -95,7 +95,7 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 %right ARROW ARROW_SUB
 %left SEMICOLON
 %left DOT DOT2 DOT3
-%left PLUS MINUS PLUS2 
+%left PLUS MINUS PLUS2
 %left STAR SLASH BACKSLASH
 
 %start spec check_atom
@@ -268,6 +268,9 @@ atom_escape :
 iter :
   | QUEST { Opt }
   | STAR { List }
+  | PLUS { List }
+  | STAR_SEP { List }
+  | PLUS_SEP { List }
 
 (* Types *)
 

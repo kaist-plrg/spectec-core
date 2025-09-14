@@ -11,28 +11,25 @@ syntax plainType =
   | '(' plainType+',' ')'   (; tuple type ;)
   | plainType iterator      (; iterated type ;)
 
-syntax lowId =
-  lowercase (letter | digit)*
-syntax upId =
-  uppercase (letter | digit)*
+syntax lowId = LO text     ;; string starting with lowercase
+syntax upId  = UP text      ;; string starting with uppercase
 
-syntax typeName = lowId
-syntax idAtom = upId
+syntax typeName = SyntaxId lowId
+syntax idAtom = AtomId upId
 
 syntax relationalAtom =
   | ':' | '<:' | ':>' | '~~' | '~>' | '~>*' | '|-' | '-|'
 
 syntax infixAtom =
-  | '`.' | '..' | '...' | ';' | '\' | '->' | '->_' | '=>_' | '==>'
+  | '`.' | '..' | '...' | ';' | '\\' | '->' | '->_' | '=>_' | '==>'
 
 syntax symbolicAtom = relationalAtom | infixAtom
 
 syntax notationType =
-  | typeName | plainType
+  | SyntaxNotation typeName | PlainNotation plainType
   | idAtom                                    (; identifier atoms ;)
   | relationalAtom notationType               (; relational notation ;)
-  | notationType relationalAtom notationType
-  | notationType infixAtom notationType       (; infix notation ;)
+  | notationType symbolicAtom notationType    (; infix notation ;)
   | '`' infixAtom                             (; escaped infix atom ;)
   | '`(' notationType ')'                     (; bracket notation ;)
   | '`[' notationType ']'
@@ -44,10 +41,13 @@ syntax variantTypeCase =
   | notationType
   | typeName                (; extend existing type ;)
 
+syntax bar = '|'
 syntax variantType =
-  '|'? variantTypeCase+'|'
+  | bar? variantTypeCase+'|'
 
 ;; Record Types
+
+syntax fieldId = upId
 
 syntax recordField =
   fieldId plainType
@@ -56,15 +56,23 @@ syntax recordType =
   '{' recordField+',' '}'
 
 syntax defType =
-  | plainType           (; type alias ;)
-  | variantType
-  | recordType
+  | PlainDef plainType           (; type alias ;)
+  | VariantDef variantType
+  | RecordDef recordType
+
+;;
+;;  Expressions
+;;
+
+syntax expr
+
 
 syntax literalExpression =
   | 'true' | 'false'
-  | int
+  | INT int
   | '"' text '"'
 
+syntax variableId = VarId lowId
 syntax variableExpression =
   variableId
 
@@ -72,8 +80,8 @@ syntax logUnOp =
   '~'  (; not ;)
 
 syntax logBinOp =
-  | '/\'  (; and ;)
-  | '\/'  (; or ;)
+  | '/\\'  (; and ;)
+  | '\\/'  (; or ;)
   | '=>'  (; implies ;)
   | '<=>' (; equivalent ;)
 
@@ -81,7 +89,7 @@ syntax numUnOp =
   '+' | '-'
 
 syntax numBinOp =
-  '+' | '-' | '*' | '/' | '\'
+  '+' | '-' | '*' | '/' | '\\'
 
 syntax cmpOp =
   | '='
@@ -106,9 +114,17 @@ syntax comparisonExpr =
 syntax tupleExpr =
   '(' expr*',' ')'
 
+
+;;
+;; Premises
+;;
+
+syntax premise
+
 syntax ifPremise =
   'if' expr
 
+syntax relationId = RelId lowId
 syntax relationPremise =
   relationId ':' expr
 

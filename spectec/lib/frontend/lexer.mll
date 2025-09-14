@@ -130,8 +130,8 @@ let text = '"' character* '"'
 let sq_character =
     [^'\'''\\''\x00'-'\x1f''\x7f'-'\xff']
   | utf8enc
-  | '\\' escape
-  | '\\' hexdigit hexdigit
+  | '\\'escape
+  | '\\'hexdigit hexdigit
   | "\\u{" hex '}'
 let stringatom = '\'' sq_character* '\''
 
@@ -264,6 +264,8 @@ and token = parse
   | "]" { RBRACK }
   | "{" { LBRACE }
   | "}" { RBRACE }
+  | "+"(stringatom as s) { PLUS_SEP (text lexbuf s) }
+  | "*"(stringatom as s) { STAR_SEP (text lexbuf s) }
   | "+" { PLUS }
   | "++" { PLUS2 }
   | "-" { MINUS }
