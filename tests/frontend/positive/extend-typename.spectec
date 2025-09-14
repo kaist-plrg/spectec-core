@@ -1,0 +1,5 @@
+syntax fint = FINT int
+syntax fintExtension =
+  | fint "extension"
+  | "extension" fint
+  | fint
