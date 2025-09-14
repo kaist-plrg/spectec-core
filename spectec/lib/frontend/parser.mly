@@ -78,7 +78,7 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 %token IF OTHERWISE DEBUG HINT_LPAREN EPS
 %token<bool> BOOLLIT
 %token<Bigint.t> NATLIT HEXLIT
-%token<string> TEXTLIT
+%token<string> TEXTLIT ATOMTEXTLIT
 %token<string> UPID LOID DOTID
 %token<string> UPID_LPAREN LOID_LPAREN UPID_LANGLE LOID_LANGLE
 %token EOF
@@ -193,7 +193,7 @@ atom :
   | atom_ { $1 @@@ $sloc }
 atom_ :
   | atomid { Atom.Atom $1 }
-  | TEXTLIT { Atom.Concrete $1 }
+  | ATOMTEXTLIT { Atom.Concrete $1 }
   | TEXT_LBRACE { Atom.Concrete "{" }
   | TEXT_RBRACE { Atom.Concrete "}" }
   | TEXT_LPAREN { Atom.Concrete "(" }
@@ -323,9 +323,6 @@ typ_prim_ :
     {
       NotationT (BrackT (Atom.LBrace @@@ $loc($1), $2, Atom.RBrace @@@ $loc($3)) @@@ $loc($1))
     }
-  (* Intentionally do not include TEXT_* bracket variants for types.
-     This avoids ambiguity where text brackets should be parsed as Atom.Concrete
-     (e.g., "[" | "]"). Use TICK_* forms for bracketed types. *)
 typ_seq : typ_seq_ { $1 }
 typ_seq_ :
   | typ_prim_ { $1 }

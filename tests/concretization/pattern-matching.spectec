@@ -1,0 +1,6 @@
+syntax patternWithString = '' int | nat 'W' int | nat 'S' int
+
+dec $describe(patternWithString) : text
+def $describe('' int) = "int"
+def $describe(nat 'W' int) = "fint"
+def $describe(nat 'S' int) = "fbit"

@@ -1,0 +1,1 @@
+syntax number = '' int | nat 'W' int | nat 'S' int

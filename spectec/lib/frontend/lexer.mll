@@ -126,6 +126,15 @@ let character =
   | "\\u{" hex '}'
 let text = '"' character* '"'
 
+(* Single-quoted atom text: like character, but excludes single-quote instead of double-quote *)
+let sq_character =
+    [^'\'''\\''\x00'-'\x1f''\x7f'-'\xff']
+  | utf8enc
+  | '\\' escape
+  | '\\' hexdigit hexdigit
+  | "\\u{" hex '}'
+let stringatom = '\'' sq_character* '\''
+
 (* Indentation *)
 
 let indent = [' ''\t']
@@ -305,6 +314,7 @@ and token = parse
     { error lexbuf "illegal control character in text literal" }
   | '"'character*'\\'_
     { error_nest (Lexing.lexeme_end_p lexbuf) lexbuf "illegal escape" }
+  | stringatom as s { ATOMTEXTLIT ( text lexbuf s) }
   | upid as s { if is_var s then LOID s else UPID s }
   | loid as s { LOID s }
   | (upid as s) "(" { if is_var s then LOID_LPAREN s else UPID_LPAREN s }

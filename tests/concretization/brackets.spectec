@@ -1,0 +1,22 @@
+syntax number = '' int | nat 'W' int | nat 'S' int
+syntax brack = '[' number ']'
+syntax paren = '(' number ')'
+syntax brace = '{' number '}'
+syntax angle = '<' number '>'
+
+syntax expr = brack | paren | brace | angle
+
+relation rel:
+    expr ~> expr
+
+rule rel/brack:
+    '[' nat 'W' int ']' ~> '[' nat 'W' int ']'
+
+rule rel/paren:
+    '(' nat 'W' int ')' ~> '(' nat 'W' int ')'
+
+rule rel/brace:
+    '{' nat 'W' int '}' ~> '{' nat 'W' int '}'
+
+rule rel/angle:
+    '<' nat 'W' int '>' ~> '<' nat 'W' int '>'
