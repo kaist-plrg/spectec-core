@@ -1,0 +1,125 @@
+
+syntax primitiveType =
+  | 'bool' | 'nat' | 'int' | 'text'
+
+syntax iterator =
+  | '*'                     (; optional ;)
+  | '?'                     (; list ;)
+
+syntax plainType =
+  | primitiveType
+  | '(' plainType+',' ')'   (; tuple type ;)
+  | plainType iterator      (; iterated type ;)
+
+syntax lowId =
+  lowercase (letter | digit)*
+syntax upId =
+  uppercase (letter | digit)*
+
+syntax typeName = lowId
+syntax idAtom = upId
+
+syntax relationalAtom =
+  | ':' | '<:' | ':>' | '~~' | '~>' | '~>*' | '|-' | '-|'
+
+syntax infixAtom =
+  | '`.' | '..' | '...' | ';' | '\' | '->' | '->_' | '=>_' | '==>'
+
+syntax symbolicAtom = relationalAtom | infixAtom
+
+syntax notationType =
+  | typeName | plainType
+  | idAtom                                    (; identifier atoms ;)
+  | relationalAtom notationType               (; relational notation ;)
+  | notationType relationalAtom notationType
+  | notationType infixAtom notationType       (; infix notation ;)
+  | '`' infixAtom                             (; escaped infix atom ;)
+  | '`(' notationType ')'                     (; bracket notation ;)
+  | '`[' notationType ']'
+  | '`{' notationType '}'
+
+;; Variant Types
+
+syntax variantTypeCase =
+  | notationType
+  | typeName                (; extend existing type ;)
+
+syntax variantType =
+  '|'? variantTypeCase+'|'
+
+;; Record Types
+
+syntax recordField =
+  fieldId plainType
+
+syntax recordType =
+  '{' recordField+',' '}'
+
+syntax defType =
+  | plainType           (; type alias ;)
+  | variantType
+  | recordType
+
+syntax literalExpression =
+  | 'true' | 'false'
+  | int
+  | '"' text '"'
+
+syntax variableExpression =
+  variableId
+
+syntax logUnOp =
+  '~'  (; not ;)
+
+syntax logBinOp =
+  | '/\'  (; and ;)
+  | '\/'  (; or ;)
+  | '=>'  (; implies ;)
+  | '<=>' (; equivalent ;)
+
+syntax numUnOp =
+  '+' | '-'
+
+syntax numBinOp =
+  '+' | '-' | '*' | '/' | '\'
+
+syntax cmpOp =
+  | '='
+  | '=/=' (; not equals ;)
+  | '<' | '>' | '<=' | '>='
+
+syntax logicalUnaryExpression =
+  logUnOp expr
+
+syntax logicalBinaryExpr =
+  expr logBinOp expr
+
+syntax numericUnaryExpr =
+  numUnOp expr
+
+syntax numericBinaryExpr =
+  expr numBinOp expr
+
+syntax comparisonExpr =
+  expr cmpOp expr
+
+syntax tupleExpr =
+  '(' expr*',' ')'
+
+syntax ifPremise =
+  'if' expr
+
+syntax relationPremise =
+  relationId ':' expr
+
+syntax elsePremise =
+  'otherwise'
+
+syntax iteratedPremise =
+  '(' premise ')' '*'
+
+syntax premise =
+  | ifPremise
+  | relationPremise
+  | elsePremise
+  | iteratedPremise
