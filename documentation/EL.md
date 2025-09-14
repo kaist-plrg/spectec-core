@@ -103,7 +103,7 @@ Type definitions either define an alias to a [plain type](#plain-types), define 
 
 ### Literal Expressions
 ```spectec
-syntax literalExpression =
+syntax literalExpr =
   | 'true' | 'false'
   | int
   | '"' text '"'
@@ -111,21 +111,22 @@ syntax literalExpression =
 
 ### Variable Expressions
 ```spectec
-syntax variableExpression =
-  variableId
+syntax variableExpr =
+  varId
 ```
 *Variables* should either be [declared](#variable-declarations) or it should be possible to infer their types.
 
 ### Operations on Boolean Types
-#### Unary Expressions
+#### Logical Unary Expressions
 ```spectec
 syntax logUnOp =
   '~'  (; not ;)
 syntax logicalUnaryExpression =
   | logUnOp expr
 ```
+The logical negation can be used to negate a boolean expression.
 
-#### Binary Expressions
+#### Logical Binary Expressions
 ```spectec
 syntax logBinOp =
   | '/\'  (; and ;)
@@ -135,6 +136,7 @@ syntax logBinOp =
 syntax logicalBinaryExpr =
   expr logBinOp expr
 ```
+And, or, implies and equivalent logical operators can be used to compose two boolean expressions.
 
 ### Operations on Numeric Types
 #### Unary Expressions
@@ -146,12 +148,11 @@ syntax numericUnaryExpr =
 
 #### Binary Expressions
 ```spectec
+syntax numBinOp =
+  | '+' | '-' | '*' | '/'
+  | '\'   (; modulo ;)
 syntax numericBinaryExpr =
-  | expr '+' expr
-  | expr '-' expr
-  | expr '*' expr
-  | expr '/' expr
-  | expr '\' expr ;; Modulo
+  | expr numBinOp expr
 ```
 
 #### Comparison Expressions
@@ -163,7 +164,6 @@ syntax cmpOp =
 syntax comparisonExpr =
   | expr cmpOp expr
 ```
-Only the first two variants may appear outside arithmetic expressions.
 
 ### Operations on Tuple Types
 ```spectec
@@ -175,21 +175,21 @@ The construction of tuple expressions is the same as [tuple types](#tuple-types)
 ### Operations on Record Types
 #### Field Access Expressions
 ```spectec
-syntax fieldAccessExpression =
+syntax fieldAccessExpr =
   expr '.' id
 ```
 Access the field named `id` in `expr` of [record type](#record-types).
 
 #### Field Update Expressions
 ```spectec
-syntax fieldUpdateExpression =
+syntax fieldUpdateExpr =
   expr '[' '.' path '=' expr "]"
 ```
 For an `expr_1` with *struct type* `type_s`, creates a new value of `type_s` that has the same fields as `expr_1` except for the field `path`, which is updated to `expr_2`.
 
 #### Field List Update Expression =
 ```spectec
-syntax fieldListUpdateExpression =
+syntax fieldListUpdateExpr =
   expr '[' '.' path '[' nat "]" "=" expr "]"
 ```
 Special case of field updates, when the field is a list. Creates a new copy of the original `expr_1` with the field `path` is updated at index `nat` to `expr`. Field update expressions and field list update expressions can recursively apply to nested structs.
@@ -219,11 +219,6 @@ For expressions of type `x`, constructs a list of type `x*` with the given value
 ```spectec
 syntax listConcatExpr =
   expr '++' expr
-
-rule Elab_expr/listConcatExpr:
-  TC |- expr_l ++ expr_r : type*
-  -- Elab_expr: TC |- expr_l : type*
-  -- Elab_expr: TC |- expr_r : type*
 ```
 Concatenates two lists of the same underlying type.
 
@@ -270,12 +265,27 @@ syntax isTypeExpr =
 ```
 Checks whether `expr` is of type `plainType`.
 
-### Arithmetic Expressions
+### Formula Expressions
 ```spectec
-syntax arithExpr =
-  | '$(' expr ')'
+syntax forumlaExpr =
+  | '$(' formula ')'
+
+syntax unOp = logUnOp | numUnOp
+syntax binOp = logBinOp | numBinOp | cmpOp
+
+syntax formula =
+  | unOp formula
+  | formula binOp formula
+  | variableExpr
+  | literalExpr
+  | expr '[' formula ']'
+  | '(' formula ')'
+  | '(' formula interator ')'
+  | '|' expr '|'
+  | '$' funcId
+  | '$' '(' expr ')'
 ```
-Certain operations are allowed only inside arithmetic expressions, namely numeric binary expressions and inequality expressions.
+Because `*` and `+` are parsed as iterators by default, expressions must be enclosed by `$( ... )` to be used as arithmetic operators.
 
 ### Notation Expressions (TODO)
 
@@ -380,5 +390,3 @@ syntax functionDeclaration =
 syntax funtionDefinition =
   'def' '$' functionId typeParams? params? '=' expression ('--' premise)*
 ```
-
-
