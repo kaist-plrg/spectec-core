@@ -29,7 +29,7 @@ syntax iterator =
   | '?'                     (; list ;)
 ```
 
-Plain types recursively build upon primitive types, expressing their cartesian product (tuples) or iteration.
+Plain types recursively build upon primitive types, expressing their Cartesian product (tuples) or iteration.
 
 ### Notation Types
 Notation is at the heart of SpecTec's expressive type system. Notations allow for flexible definition of types using a mixture of *identifier atoms* and *symbolic atoms*.
@@ -139,22 +139,6 @@ syntax logicalBinaryExpr =
 And, or, implies and equivalent logical operators can be used to compose two boolean expressions.
 
 ### Operations on Numeric Types
-#### Unary Expressions
-```spectec
-syntax numUnOp = '+' | '-'
-syntax numericUnaryExpr =
-  | numUnOp expr
-```
-
-#### Binary Expressions
-```spectec
-syntax numBinOp =
-  | '+' | '-' | '*' | '/'
-  | '\'   (; modulo ;)
-syntax numericBinaryExpr =
-  | expr numBinOp expr
-```
-
 #### Comparison Expressions
 ```spectec
 syntax cmpOp =
@@ -172,29 +156,7 @@ syntax tupleExpr =
 ```
 The construction of tuple expressions is the same as [tuple types](#tuple-types). Tuples can be deconstructed with the same syntax via pattern matching.
 
-### Operations on Record Types
-#### Field Access Expressions
-```spectec
-syntax fieldAccessExpr =
-  expr '.' id
-```
-Access the field named `id` in `expr` of [record type](#record-types).
-
-#### Field Update Expressions
-```spectec
-syntax fieldUpdateExpr =
-  expr '[' '.' path '=' expr "]"
-```
-For an `expr_1` with *struct type* `type_s`, creates a new value of `type_s` that has the same fields as `expr_1` except for the field `path`, which is updated to `expr_2`.
-
-#### Field List Update Expression =
-```spectec
-syntax fieldListUpdateExpr =
-  expr '[' '.' path '[' nat "]" "=" expr "]"
-```
-Special case of field updates, when the field is a list. Creates a new copy of the original `expr_1` with the field `path` is updated at index `nat` to `expr`. Field update expressions and field list update expressions can recursively apply to nested structs.
-
-### Operation on Iterated Types
+### Operations on List Types
 #### Epsilon
 ```spectec
 syntax epsilonExpr = 'eps'
@@ -206,11 +168,11 @@ Epsilon means empty. For list iterators (`*`), epsilon is elaborated as the empt
 syntax consExpr =
   expr '::' expr
 ```
-LHS of type `x` and RHS of type `x*` are concatenated into a list of type `x*`.
+LHS of type `x` (head) and RHS of type `x*` (tail) are concatenated into a list of type `x*`.
 
-#### List Constructor
+#### List Construction
 ```spectec
-syntax listConstructorExpr =
+syntax listConstructionExpr =
   '[' expr*',' ']'
 ```
 For expressions of type `x`, constructs a list of type `x*` with the given values. Note that `expr*` can be empty, which makes `[]` semantically equivalent to `eps`.
@@ -232,21 +194,26 @@ Returns the length of an expression of *iterated type*.
 #### Index Access
 ```spectec
 syntax listIndexAccessExpr =
-  expr '[' expr ']'
+  expr '[' arith ']'
 ```
 Accessing an expression of *iterated type* with an index of `nat` type.
 
-#### Index Update
+#### Update Expression
 ```spectec
-syntax listIndexUpdateExpr =
-  expr '[' nat ']' = expr
-```
-Creates a new list with element at index(`nat`) updated to right-hand side `expr`.
+syntax path =
+  | path? '[' arith ']'             (; list index ;)
+  | path? '[' arith ':' arith ']'   (; list slice ;)
+  | path? '.' idAtom                (; record field ;)
 
-#### Slicing (TODO)
+syntax updateExpr =
+  expr '[' path '=' expr ']' = expr
+```
+Creates a new list with element at index updated to the expression inside the bracket.
+
+#### Slicing
 ```spectec
 syntax listSliceExpr =
-  expr '[' expr ':' expr ']'
+  expr '[' arith ':' arith ']'
 ```
 Slicing an expression of *iterated type* with range values of `nat` type.
 
@@ -256,7 +223,53 @@ syntax listMembershipExpr =
   | expr '<-' expr
   | expr '->' expr
 ```
-For a membership expression `expr_l '<-' expr_r`, it is checked whether `expr_l` of type `x` is an element of `expr_r` of type `x*`. It can also be written in the reverse order.
+For a membership expression `expr_l '<-' expr_r`, it is checked whether `expr_l` of type `x` is an element of `expr_r` of type `x*`. It can also be written in the reverse direction.
+
+### Operations on Record Types
+#### Record Construction
+```spectec
+syntax fieldExpr = idAtom expr
+syntax recordExpression =
+  '{' fieldExpr*',' '}'
+```
+Record expressions can be constructed and deconstructed using syntax similar to [record types](#record-types).
+
+#### Field Access Expressions
+```spectec
+syntax fieldAccessExpression =
+  expr '.' idAtom
+```
+Record fields can be accessed with their id.
+
+#### Field Update Expressions
+The third variant of [update expressions](#update-expressions) may be used to update record fields.
+
+### Arithmetic Expressions
+```spectec
+syntax numExpr =
+  | '$(' arith ')'
+
+syntax numUnOp = '+' | '-'
+syntax numBinOp =
+  | '+' | '-' | '*' | '/'
+  | '\'   (; modulo ;)
+
+syntax unOp = logUnOp | numUnOp
+syntax binOp = cmpOp | logBinOp | numBinOp
+
+syntax arith =
+  | unOp arith
+  | arith binOp arith         
+  | variableExpr
+  | literalExpr
+  | expr '[' arith ']'        (; list indexing ;)
+  | '(' arith ')'
+  | '(' arith iterator ')'
+  | '|' expr '|'              (; list length ;)
+  | '$' funcId                (; function call ;)
+  | '$' '(' expr ')'          (; escape back to expr ;)
+```
+Because `*` and `+` are parsed as iterators by default, expressions must be enclosed by `$( ... )` to be used as arithmetic operators. A subset of normal expressions plus *numeric operators* are allowed inside arithmetic expressions, and they can be escaped back to normal expressions with another enclosure.
 
 ### Other Expressions
 ```spectec
@@ -265,32 +278,9 @@ syntax isTypeExpr =
 ```
 Checks whether `expr` is of type `plainType`.
 
-### Formula Expressions
-```spectec
-syntax forumlaExpr =
-  | '$(' formula ')'
-
-syntax unOp = logUnOp | numUnOp
-syntax binOp = logBinOp | numBinOp | cmpOp
-
-syntax formula =
-  | unOp formula
-  | formula binOp formula
-  | variableExpr
-  | literalExpr
-  | expr '[' formula ']'
-  | '(' formula ')'
-  | '(' formula interator ')'
-  | '|' expr '|'
-  | '$' funcId
-  | '$' '(' expr ')'
-```
-Because `*` and `+` are parsed as iterators by default, expressions must be enclosed by `$( ... )` to be used as arithmetic operators.
-
 ### Notation Expressions (TODO)
 
 ### Hint Expressions (TODO)
-
 
 ## Premises
 ```spectec
