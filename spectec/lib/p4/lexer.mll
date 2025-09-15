@@ -19,7 +19,7 @@ open Context
 open Il.Ast
 open Util.Source
 open Parser
-open Ast_utils
+open Concrete.Ast_utils
 module F = Format
 
 exception Error of string
@@ -162,7 +162,7 @@ rule tokenize = parse
         debug_token ("\"" ^ str ^ "\"");
         end_info |> ignore;
         let value = 
-          TextV str $$$ { vid = Value.fresh (); typ = TextT }
+          TextV str $$$ { vid = Concrete.Value.fresh (); typ = TextT }
         in
         STRING_LITERAL value
       }
@@ -296,7 +296,7 @@ rule tokenize = parse
       { let text = Lexing.lexeme lexbuf in
         debug_token text;
         let value =
-          let vid = Value.fresh () in
+          let vid = Concrete.Value.fresh () in
           let typ = Il.Ast.TextT in
           TextV text $$$ { vid; typ }
         in
@@ -409,7 +409,7 @@ rule tokenize = parse
       { let text = lexeme lexbuf in
         debug_token text;
         let value =
-          let vid = Value.fresh () in
+          let vid = Concrete.Value.fresh () in
           let typ = Il.Ast.TextT in
           TextV text $$$ { vid; typ }
         in
@@ -510,7 +510,7 @@ let rec lexer (lexbuf:lexbuf): token =
         lexer_state := SRegular;
         lexer lexbuf
       | NAME value as token ->
-        let text = Value.get_text value in
+        let text = Concrete.Value.get_text value in
         lexer_state := SIdent (text, SRegular);
         token          
       | token -> 
@@ -520,7 +520,7 @@ let rec lexer (lexbuf:lexbuf): token =
     | SRegular ->
       begin match tokenize lexbuf with
       | NAME value as token ->
-        let text = Value.get_text value in
+        let text = Concrete.Value.get_text value in
         lexer_state := SIdent (text, SRegular);
         token
       | PRAGMA _ as token ->
@@ -539,7 +539,7 @@ let rec lexer (lexbuf:lexbuf): token =
       begin match tokenize lexbuf with
       | L_ANGLE info -> L_ANGLE_ARGS info
       | NAME value as token ->
-        let text = Value.get_text value in
+        let text = Concrete.Value.get_text value in
         lexer_state := SIdent (text, SRegular);
         token
       | PRAGMA _ as token ->
@@ -559,7 +559,7 @@ let rec lexer (lexbuf:lexbuf): token =
          lexer_state := SRegular;
          token
       | NAME value as token ->
-         let text = Value.get_text value in
+         let text = Concrete.Value.get_text value in
          lexer_state := SIdent(text, SPragma);
          token
       | token -> token

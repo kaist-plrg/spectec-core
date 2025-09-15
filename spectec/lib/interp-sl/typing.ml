@@ -35,7 +35,7 @@ let run_typing' (spec : spec) (includes_p4 : string list) (filename_p4 : string)
   Cache.Cache.clear !Interp.func_cache;
   Cache.Cache.clear !Interp.rule_cache;
   try
-    let value_program = Parsing.Parse.parse_file includes_p4 filename_p4 in
+    let value_program = P4.Parse.parse_file includes_p4 filename_p4 in
     let ctx = Ctx.empty filename_p4 in
     let _ctx, _values = do_typing ctx spec value_program in
     WellTyped

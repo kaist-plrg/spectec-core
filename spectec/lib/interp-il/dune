@@ -2,4 +2,4 @@
 
 (library
  (name interp_il)
- (libraries util domain xl el il runtime_static runtime_dynamic_il parsing))
+ (libraries util domain xl el il runtime_static runtime_dynamic_il p4))

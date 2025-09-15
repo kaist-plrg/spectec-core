@@ -6,7 +6,7 @@
  *)
 
 open Il.Ast
-open Ast_utils
+open Concrete.Ast_utils
 module F = Format
 
 (* Identifier extraction *)
@@ -105,7 +105,7 @@ let id_of_declaration (decl : value) : string =
   | _ ->
       failwith
         (Printf.sprintf "Invalid declaration structure: %s"
-           (F.asprintf "%a" (Pp.pp_value Hint.SMap.empty) decl))
+           (F.asprintf "%a" (Concrete.Pp.pp_value Concrete.Hint.SMap.empty) decl))
 
 let id_of_parameter (v : value) : string =
   match flatten_case_v v with
@@ -123,7 +123,7 @@ let has_type_params (v : value) : bool =
   | "typeParameterListOpt", _, _ ->
       failwith
         (F.asprintf "@has_type_params: ill-formed typeParameterListOpt:\n%a"
-           (Pp.pp_value Hint.SMap.empty)
+           (Concrete.Pp.pp_value Concrete.Hint.SMap.empty)
            v)
   | _ ->
       failwith

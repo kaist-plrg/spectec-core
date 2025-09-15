@@ -24,7 +24,7 @@ let run_typing' ?(debug : bool = false) ?(profile : bool = false) (spec : spec)
   Cache.Cache.clear !Interp.func_cache;
   Cache.Cache.clear !Interp.rule_cache;
   try
-    let value_program = Parsing.Parse.parse_file includes_p4 filename_p4 in
+    let value_program = P4.Parse.parse_file includes_p4 filename_p4 in
     let ctx = Ctx.empty ~debug ~profile filename_p4 in
     let ctx, _ = do_typing ctx spec value_program in
     Ctx.profile ctx;

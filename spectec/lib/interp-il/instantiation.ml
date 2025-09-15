@@ -33,7 +33,7 @@ let run_instantiation' ?(debug : bool = false) ?(profile : bool = false)
   Cache.Cache.clear !Interp.rule_cache;
   let typing_result =
     try
-      let value_program = Parsing.Parse.parse_file includes_p4 filename_p4 in
+      let value_program = P4.Parse.parse_file includes_p4 filename_p4 in
       let ctx = Ctx.empty ~debug ~profile filename_p4 in
       let ctx, values = Typing_concrete.do_typing ctx spec value_program in
       WellTyped (ctx, values)
