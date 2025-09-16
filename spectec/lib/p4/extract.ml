@@ -105,7 +105,9 @@ let id_of_declaration (decl : value) : string =
   | _ ->
       failwith
         (Printf.sprintf "Invalid declaration structure: %s"
-           (F.asprintf "%a" (Concrete.Pp.pp_value Concrete.Hint.SMap.empty) decl))
+           (F.asprintf "%a"
+              (Concrete.Pp.pp_value Concrete.Hint.SMap.empty)
+              decl))
 
 let id_of_parameter (v : value) : string =
   match flatten_case_v v with

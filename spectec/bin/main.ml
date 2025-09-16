@@ -35,8 +35,10 @@ let run_il_command =
     (let open Core.Command.Let_syntax in
      let open Core.Command.Param in
      let%map filenames_spec = anon (sequence ("filename" %: string))
-     and includes_target = flag "-i" (listed string) ~doc:"target file include paths"
-     and filename_target = flag "-p" (required string) ~doc:"target file to run il interpreter on"
+     and includes_target =
+       flag "-i" (listed string) ~doc:"target file include paths"
+     and filename_target =
+       flag "-p" (required string) ~doc:"target file to run il interpreter on"
      and debug = flag "-dbg" no_arg ~doc:"print debug traces"
      and profile = flag "-profile" no_arg ~doc:"profiling" in
      fun () ->
@@ -46,9 +48,12 @@ let run_il_command =
          let value_program =
            P4.Parse.parse_file includes_target filename_target
          in
-         let ctx_init = Interp_il.Typing_concrete.init ~debug ~profile filename_target in
+         let ctx_init =
+           Interp_il.Typing_concrete.init ~debug ~profile filename_target
+         in
          let _, _ =
-           Interp_il.Typing_concrete.run_relation ctx_init spec_il "Program_ok" [ value_program ]
+           Interp_il.Typing_concrete.run_relation ctx_init spec_il "Program_ok"
+             [ value_program ]
          in
          Format.printf "Interpreter succeeded\n"
        with

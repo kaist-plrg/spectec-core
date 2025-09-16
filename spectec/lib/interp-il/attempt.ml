@@ -14,7 +14,7 @@ let ( let* ) (attempt : 'a attempt) (f : 'a -> 'b) : 'b =
 
 let error_with_failtraces (failtraces : failtrace list) =
   let sfailtrace =
-        string_of_failtraces ~region_parent:no_region ~depth:0 failtraces
+    string_of_failtraces ~region_parent:no_region ~depth:0 failtraces
   in
   error no_region ("tracing backtrack logs:\n" ^ sfailtrace)
 
