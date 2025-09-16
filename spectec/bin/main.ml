@@ -48,11 +48,9 @@ let run_il_command =
          let value_program =
            P4.Parse.parse_file includes_target filename_target
          in
-         let ctx_init =
-           Interp_il.Typing_concrete.init ~debug ~profile filename_target
-         in
+         let ctx_init = Interp_il.Runner.init ~debug ~profile filename_target in
          let _, _ =
-           Interp_il.Typing_concrete.run_relation ctx_init spec_il "Program_ok"
+           Interp_il.Runner.run_relation ctx_init spec_il "Program_ok"
              [ value_program ]
          in
          Format.printf "Interpreter succeeded\n"
