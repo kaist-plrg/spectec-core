@@ -54,6 +54,8 @@ let rec free_id_exp (exp : exp) : IdSet.t =
       |> IdSet.union (free_id_exp exp_h)
   | LenE exp -> free_id_exp exp
   | MemE (exp_e, exp_s) -> free_id_exp exp_e |> IdSet.union (free_id_exp exp_s)
+  | FilterE (_exp_b, _exp_c) -> failwith
+      "free_id_exp: FilterE is not supported in this version"
   | StrE expfields -> expfields |> List.map snd |> free_id_exps
   | DotE (exp, _) -> free_id_exp exp
   | UpdE (exp_b, path, exp_f) ->

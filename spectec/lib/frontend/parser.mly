@@ -580,6 +580,7 @@ exp_atom : exp_atom_ { $1 @@@ $sloc }
 exp_atom_ :
   | exp_post_ { $1 }
   | atom { AtomE $1 }
+  | exp_atom BAR DASH DASH IF exp_atom { FilterE ($1, $6) }
   | atomid_lparen exp RPAREN
     { SeqE [
         AtomE (Atom.Atom $1 @@@ $loc($1)) @@@ $loc($1);

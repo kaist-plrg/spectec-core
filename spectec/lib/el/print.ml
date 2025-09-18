@@ -123,6 +123,8 @@ and string_of_exp exp =
       ^ string_of_exp exp_h ^ "]"
   | LenE exp -> "|" ^ string_of_exp exp ^ "|"
   | MemE (exp_e, exp_s) -> string_of_exp exp_e ^ " <- " ^ string_of_exp exp_s
+  | FilterE (exp_b, exp_c) ->
+      string_of_exp exp_b ^ " | -- if " ^ string_of_exp exp_c
   | StrE fields ->
       "{"
       ^ String.concat ", "

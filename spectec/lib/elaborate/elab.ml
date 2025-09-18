@@ -366,6 +366,7 @@ and infer_exp' (ctx : Ctx.t) (at : region) (exp : exp') :
   | IdxE (exp_b, exp_i) -> infer_idx_exp ctx exp_b exp_i
   | SliceE (exp_b, exp_l, exp_h) -> infer_slice_exp ctx exp_b exp_l exp_h
   | LenE exp -> infer_len_exp ctx exp
+  | FilterE (exp_b, exp_c) -> infer_filter_exp ctx exp_b exp_c
   | MemE (exp_e, exp_s) -> infer_mem_exp ctx exp_e exp_s
   | StrE _ -> fail_infer at "struct expression"
   | DotE (exp, atom) -> infer_dot_exp ctx exp atom
@@ -720,6 +721,20 @@ and infer_len_exp (ctx : Ctx.t) (exp : exp) :
   let exp_il = Il.Ast.LenE exp_il in
   let plaintyp = NumT `NatT in
   Ok (ctx, exp_il, plaintyp)
+
+(* Inference of filter expressions *)
+
+and infer_filter_exp (ctx : Ctx.t) (exp_b : exp) (_exp_c : exp) :
+    (Ctx.t * Il.Ast.exp' * plaintyp') attempt =
+  let* ctx, _exp_il_b, plaintyp_b = infer_exp ctx exp_b in
+  let* _plaintyp = as_list_plaintyp ctx plaintyp_b in
+  (* let* ctx, exp_il_c = *)
+  (*   elab_exp ctx (FuncT (plaintyp, BoolT) $ exp_c.at) exp_c *)
+  (* in *)
+  (* let exp_il = Il.Ast.FilterE (exp_il_b, exp_il_c) in *)
+  (* let plaintyp = IterT (plaintyp, List) in *)
+  failwith "not implemented"
+  (* Ok (ctx, exp_il, plaintyp) *)
 
 (* Inference of parenthesized expressions *)
 
