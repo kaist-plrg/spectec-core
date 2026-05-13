@@ -10,7 +10,7 @@ Full premise coverage emits a GCOV-style annotated spec with per-premise counts:
   === IL Node Coverage ===
   
   IL Premises: 34/147 attempted (23.13%), 27/147 succeeded (18.37%)
-  38 rule premises
+  38 rel premises
   60 if-premises: succeeded 12/60 (20.00%), failed 10/60 (16.67%), neither 41/60 (68.33%), total 22/120 (18.33%)
   
   def $lookup_:

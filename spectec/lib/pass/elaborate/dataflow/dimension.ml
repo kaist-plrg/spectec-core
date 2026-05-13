@@ -237,27 +237,21 @@ and annotate_prem (binds : VEnv.t) (bounds : VEnv.t) (prem : prem) :
     VEnv.t * prem =
   let at = prem.at in
   match prem.it with
-  | RulePr { relid = id; notexp } ->
+  | RelPr { relid; notexp } ->
       let mixop, exps = Mixop.split notexp in
       let occurs, exps = annotate_exps bounds exps in
       let notexp = Mixop.fill mixop exps in
-      let prem = RulePr { relid = id; notexp } $ at in
+      let prem = RelPr { relid; notexp } $ at in
       (occurs, prem)
   | IfPr { cond; role } ->
       let occurs, cond = annotate_exp bounds cond in
       let prem = IfPr { cond; role } $ at in
       (occurs, prem)
-  | IfHoldPr { relid = id; notexp } ->
+  | RelAssertPr { call = { relid; notexp }; expect } ->
       let mixop, exps = Mixop.split notexp in
       let occurs, exps = annotate_exps bounds exps in
       let notexp = Mixop.fill mixop exps in
-      let prem = IfHoldPr { relid = id; notexp } $ at in
-      (occurs, prem)
-  | IfNotHoldPr { relid = id; notexp } ->
-      let mixop, exps = Mixop.split notexp in
-      let occurs, exps = annotate_exps bounds exps in
-      let notexp = Mixop.fill mixop exps in
-      let prem = IfNotHoldPr { relid = id; notexp } $ at in
+      let prem = RelAssertPr { call = { relid; notexp }; expect } $ at in
       (occurs, prem)
   | ElsePr -> (empty, prem)
   | LetPr (exp_l, exp_r) ->

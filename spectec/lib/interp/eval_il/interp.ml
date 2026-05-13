@@ -892,17 +892,15 @@ and eval_prem (ctx : Ctx.t) (prem : prem) : Ctx.t attempt =
       fail_with exp_cond.at
         (F.asprintf "condition %s was not met" (Print.string_of_exp exp_cond))
   in
-  let eval_if_hold_prem ctx id notexp =
-    let ctx, values_input = eval_exps ctx (Mixfix.args notexp) in
-    match invoke_rel ctx id values_input with
-    | Ok _ -> Ok ctx
-    | Error _ -> fail id.at (F.asprintf "condition hold %s was not met" id.it)
-  in
-  let eval_if_not_hold_prem ctx id notexp =
-    let ctx, values_input = eval_exps ctx (Mixfix.args notexp) in
-    match invoke_rel ctx id values_input with
-    | Ok _ -> fail id.at (F.asprintf "condition not-hold %s was not met" id.it)
-    | Error _ -> Ok ctx
+  let eval_rel_assert_prem ctx (call : relcall) (expect : bool) =
+    let id = call.relid in
+    let ctx, values_input = eval_exps ctx (Mixfix.args call.notexp) in
+    match (invoke_rel ctx id values_input, expect) with
+    | Ok _, true | Error _, false -> Ok ctx
+    | Ok _, false ->
+        fail id.at (F.asprintf "condition not-hold %s was not met" id.it)
+    | Error _, true ->
+        fail id.at (F.asprintf "condition hold %s was not met" id.it)
   in
   let eval_let_prem ctx exp_l exp_r =
     let ctx, value = eval_exp ctx exp_r in
@@ -922,14 +920,13 @@ and eval_prem (ctx : Ctx.t) (prem : prem) : Ctx.t attempt =
       Instrumentation.Dispatcher.emit (Events.Prem_enter { prem; at = prem.at }));
   let result =
     match prem.it with
-    | RulePr { relid; notexp } -> eval_rule_prem ctx relid notexp
+    | RelPr { relid; notexp } -> eval_rule_prem ctx relid notexp
+    | RelAssertPr { call; expect } -> eval_rel_assert_prem ctx call expect
     | IfPr { cond; role } ->
         let fail_with =
           match role with Guard -> fail_guard | Condition -> fail
         in
         eval_cond_prem fail_with ctx cond
-    | IfHoldPr { relid; notexp } -> eval_if_hold_prem ctx relid notexp
-    | IfNotHoldPr { relid; notexp } -> eval_if_not_hold_prem ctx relid notexp
     | ElsePr -> Ok ctx
     | LetPr (exp_l, exp_r) -> eval_let_prem ctx exp_l exp_r
     | IterPr (prem, iterexp) -> eval_iter_prem ctx prem iterexp

@@ -185,12 +185,14 @@ and clause' = { args : arg list; body : exp; prems : prem list }
 
 (* Premises *)
 
+and relcall = { relid : id; notexp : notexp }
+
 and prem = prem' phrase
 and prem' =
-  | RulePr of { relid : id; notexp : notexp }  (* id `:` notexp *)
+  | RelPr of relcall               (* id `:` notexp *)
+  | RelAssertPr of { call : relcall; expect : bool }
+                                   (* `if` id `:` notexp `holds` when expect, else `does not hold` *)
   | IfPr of { cond : exp; role : if_role }  (* `if` exp *)
-  | IfHoldPr of { relid : id; notexp : notexp }  (* `if` id `:` notexp `holds` *)
-  | IfNotHoldPr of { relid : id; notexp : notexp }  (* `if` id `:` notexp `does not hold` *)
   | ElsePr                         (* `otherwise` *)
   | LetPr of exp * exp             (* `let` exp `=` exp *)
   | IterPr of prem * iterexp       (* prem iterexp *)

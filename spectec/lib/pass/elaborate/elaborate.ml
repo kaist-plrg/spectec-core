@@ -1590,11 +1590,12 @@ and elab_rule_prem (ctx : Ctx.t) (id : id) (exp : exp) : Ctx.t * Il.prem' =
   let reltyp_il = Ctx.find_rel ctx id in
   let nottyp_il = Il.Mode.notation reltyp_il.it $ reltyp_il.at in
   let+ ctx, notexp_il = elab_exp_not ctx nottyp_il exp in
+  let call = { Il.relid = id; notexp = notexp_il } in
   if Il.Mode.is_predicate reltyp_il.it then
-    let prem_il = Il.IfHoldPr { relid = id; notexp = notexp_il } in
+    let prem_il = Il.RelAssertPr { call; expect = true } in
     (ctx, prem_il)
   else
-    let prem_il = Il.RulePr { relid = id; notexp = notexp_il } in
+    let prem_il = Il.RelPr call in
     (ctx, prem_il)
 
 (* Elaboration of negated rule premises *)
@@ -1611,7 +1612,8 @@ and elab_rule_not_prem (ctx : Ctx.t) (id : id) (exp : exp) : Ctx.t * Il.prem' =
       "A negated rule premise asserts that a relation does not hold for given \
        inputs. The relation must therefore have only input positions: outputs \
        would have no value to produce when the relation fails.";
-  let prem_il = Il.IfNotHoldPr { relid = id; notexp = notexp_il } in
+  let call = { Il.relid = id; notexp = notexp_il } in
+  let prem_il = Il.RelAssertPr { call; expect = false } in
   (ctx, prem_il)
 
 (* Elaboration of if premises *)
