@@ -1,0 +1,77 @@
+(executable
+ (name main)
+ (preprocess
+  (pps ppx_let))
+ (libraries test_lib core core_unix core_unix.command_unix))
+
+; Mini-spec examples
+
+(rule
+ (target mini-spec.actual)
+ (deps
+  (source_tree ../../../examples/mini-spec))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    mini-spec.err
+    (run ./main.exe -s ../../../../../../spectec/examples/mini-spec)))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff mini-spec.expected mini-spec.actual)))
+
+; P4-old specs
+
+(rule
+ (target p4-old.actual)
+ (deps
+  (source_tree ../../../specs/p4-old))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    p4-old.err
+    (run ./main.exe -s ../../../../../../spectec/specs/p4-old)))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff p4-old.expected p4-old.actual)))
+
+; P4 specs (current)
+
+(rule
+ (target p4.actual)
+ (deps
+  (source_tree ../../../specs/p4))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    p4.err
+    (run ./main.exe -s ../../../../../../spectec/specs/p4)))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff p4.expected p4.actual)))
+
+; Impty specs
+
+(rule
+ (target impty.actual)
+ (deps
+  (source_tree ../../../specs/impty))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    impty.err
+    (run ./main.exe -s ../../../../../../spectec/specs/impty)))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff impty.expected impty.actual)))
