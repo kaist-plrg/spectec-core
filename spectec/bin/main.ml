@@ -20,6 +20,39 @@ let elab_command =
     let* spec_il = elaborate spec in
     Ok spec_il
 
+let unparse_roundtrip filenames =
+  let* spec_el = parse_spec_files filenames in
+  let printed = Lang.El.Unparse.string_of_spec spec_el in
+  let* spec_el' = parse_spec_string ~origin:"<roundtrip>" printed in
+  if Lang.El.Eq.eq_spec spec_el spec_el' then Ok ()
+  else
+    Error
+      (Error.RoundtripError
+         ( Common.Source.no_region,
+           "pretty-printed output did not reparse to the same AST" ))
+
+let unparse_command =
+  Core.Command.basic
+    ~summary:"parse a spec and print it in canonical EL form (drops comments)"
+  @@
+  let open Core.Command.Let_syntax in
+  let open Core.Command.Param in
+  let%map filenames = anon (sequence ("spec files" %: string))
+  and roundtrip =
+    flag "-r" no_arg
+      ~doc:
+        " verify the pretty-printed output reparses to the same AST (prints \
+         nothing on success)"
+  and color = Cli.Cli_args.Output.color_flag in
+  fun () ->
+    if roundtrip then
+      Cli.Error_handling.guard_unit ~color (fun () ->
+          unparse_roundtrip filenames)
+    else
+      Cli.Error_handling.guard ~color ~on_ok:(fun spec_el ->
+          Format.printf "%s" (Lang.El.Unparse.string_of_spec spec_el))
+      @@ fun () -> parse_spec_files filenames
+
 let structure_command =
   Core.Command.basic ~summary:"structure a spec"
   @@
@@ -134,6 +167,7 @@ let command =
   let module Impty = Targets_impty.Impty.Cli in
   Core.Command.group ~summary:"SpecTec command line tools"
     [
+      ("unparse", unparse_command);
       ("elab", elab_command);
       ("struct", structure_command);
       ("annotate", annotate_command);
