@@ -27,6 +27,10 @@ val with_diagnostics : (unit -> 'a) -> 'a * Diag.Bag.t
 (** {1 Pipeline transformations} *)
 
 val parse_spec_files : string list -> Lang.El.spec result
+
+(** [origin] is the label used in diagnostic messages. *)
+val parse_spec_string : origin:string -> string -> Lang.El.spec result
+
 val elaborate : Lang.El.spec -> Lang.Il.spec result
 val structure : Lang.Il.spec -> Lang.Sl.spec
 val henv_of_el_spec : Lang.El.spec -> Hints.Henv.t
