@@ -935,8 +935,16 @@ and eval_prem (ctx : Ctx.t) (prem : prem) : Ctx.t attempt =
   (match prem.it with
   | IterPr _ -> ()
   | _ ->
+      let ctx_out = Result.value ~default:ctx result in
+      let bindings =
+        Free.free_prem prem |> Common.Domain.IdSet.elements
+        |> List.filter_map (fun id ->
+               Ctx.find_value_opt ctx_out (id, [])
+               |> Option.map (fun value -> (id, value)))
+      in
       Instrumentation.Dispatcher.emit
-        (Events.Prem_exit { prem; at = prem.at; success = Result.is_ok result }));
+        (Events.Prem_exit
+           { prem; at = prem.at; success = Result.is_ok result; bindings }));
   result
 
 and eval_prems (ctx : Ctx.t) (prems : prem list) : Ctx.t attempt =
