@@ -43,15 +43,19 @@ let string_of_region region =
 
 (* Phrases *)
 
-type ('a, 'b, 'c) info = { it : 'a; note : 'b; at : 'c }
-type ('a, 'b) note_phrase = ('a, 'b, region) info
-type ('a, 'b) note = ('a, 'b, unit) info
-type 'a phrase = ('a, unit, region) info
+(* [prov] carries an optional provenance payload describing where a phrase came
+   from; [None] is the default for kinds that do not track it. *)
+type ('a, 'b, 'c, 'd) info = { it : 'a; note : 'b; at : 'c; prov : 'd option }
+type ('a, 'b) note_phrase = ('a, 'b, region, unit) info
+type ('a, 'b) note = ('a, 'b, unit, unit) info
+type 'a phrase = ('a, unit, region, unit) info
+type ('a, 'd) phrase_prov = ('a, unit, region, 'd) info
 
-let ( $ ) it at = { it; at; note = () }
-let ( $$ ) it (at, note) = { it; at; note }
-let ( $$$ ) it note = { it; at = (); note }
+let ( $ ) it at = { it; at; note = (); prov = None }
+let ( $$ ) it (at, note) = { it; at; note; prov = None }
+let ( $$$ ) it note = { it; at = (); note; prov = None }
 let ( % ) at note = (at, note)
 let it { it; _ } = it
 let at { at; _ } = at
 let note { note; _ } = note
+let prov { prov; _ } = prov

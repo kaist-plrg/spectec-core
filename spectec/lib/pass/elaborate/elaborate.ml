@@ -36,11 +36,14 @@ let valid_tid (id : id) = id.it = (Var.strip_var_suffix id).it
 
 (* Re-tag the checks synthesized from a rule/clause input pattern as guards. *)
 let rec as_guard (prem : Il.prem) : Il.prem =
-  match prem.it with
-  | Il.IfPr { cond; _ } -> Il.IfPr { cond; role = Il.Guard } $ prem.at
-  | Il.IterPr (prem_inner, iterexp) ->
-      Il.IterPr (as_guard prem_inner, iterexp) $ prem.at
-  | _ -> prem
+  let guard =
+    match prem.it with
+    | Il.IfPr { cond; _ } -> Il.IfPr { cond; role = Il.Guard } $ prem.at
+    | Il.IterPr (prem_inner, iterexp) ->
+        Il.IterPr (as_guard prem_inner, iterexp) $ prem.at
+    | _ -> prem
+  in
+  { guard with prov = Some Il.Synthesized }
 
 (* Iteration elaboration *)
 
@@ -1555,6 +1558,12 @@ and elab_prem_with_bind (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.prem list =
   | Some prem_il ->
       let ctx, prem_il, sideconditions_il =
         Dataflow.Analysis.analyze_prem ctx prem_il
+      in
+      let prem_il = { prem_il with prov = Some (Il.Source prem) } in
+      let sideconditions_il =
+        List.map
+          (fun p -> { p with prov = Some Il.Synthesized })
+          sideconditions_il
       in
       let prems_il = prem_il :: sideconditions_il in
       (ctx, prems_il)
