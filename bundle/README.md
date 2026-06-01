@@ -14,7 +14,7 @@ The binary (`spectecx`) is obtained separately -- see [Getting the tool](#gettin
 |-- Dockerfile           build-from-source fallback
 |-- tests/
 |   |-- base/             base-language programs (run as-is)
-|   `-- closure/          programs using functions (run once the stubs are filled in)
+|   `-- functions/        programs using functions (run once the stubs are filled in)
 `-- documentation/
     |-- impty.adoc        prose document source (AsciiDoc + splice directives)
     `-- docinfo.html      stylesheet for the rendered output
@@ -63,8 +63,8 @@ spectecx impty batch --batch-dir tests/base
 spectecx impty batch
 
 # debug one program at a time
-spectecx impty typecheck -p tests/closure/closure.imp
-spectecx impty eval      -p tests/closure/closure.imp
+spectecx impty typecheck -p tests/functions/closure.imp
+spectecx impty eval      -p tests/functions/closure.imp
 ```
 
 ## 3. Testing: coverage and property-based testing

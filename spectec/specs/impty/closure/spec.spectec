@@ -278,9 +278,9 @@ rule Run_prog:
 
 ;;--- Properties ---
 
-builtin generator $closure_prog : prog
+builtin generator $functions_prog : prog
 
 ;; Type soundness
-property Type_safety hint(generator $closure_prog) :
+property Type_safety hint(generator $functions_prog) :
   Eval_prog: |- prog -| env
   -- Check_prog: |- prog

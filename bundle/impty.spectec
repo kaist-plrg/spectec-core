@@ -2,7 +2,7 @@
 ;;
 ;; The complete base language plus the syntax for first-class functions. The
 ;; four function rules are left as TODO stubs; fill them in to make the
-;; programs under tests/closure run.
+;; programs under tests/functions run.
 
 ;;--------------------
 ;; Standard functions

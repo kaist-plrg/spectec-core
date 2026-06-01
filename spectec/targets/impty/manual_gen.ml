@@ -446,7 +446,7 @@ and gen_ccommand (spec : spec) (ctx : cctx) : (t * cctx) Gen.t =
         @ [ (3, decl) ]
         @ partial_app @ assign @ recursive @ [ random_case ]))
 
-let gen_closure_prog (spec : spec) : (string * value) list Gen.t =
+let gen_functions_prog (spec : spec) : (string * value) list Gen.t =
   let open Gen in
   let* cmd, _ = gen_ccommand spec [] in
   return [ ("prog", cmd) ]
@@ -457,7 +457,7 @@ let gen_closure_prog (spec : spec) : (string * value) list Gen.t =
      r : at               = f(arg_a)(arg_b)
    With the buggy rule the second call evaluates the body `p0` in the call-site
    env (which never contains p0), causing a lookup failure. *)
-let gen_closure_fun_prog (spec : spec) : (string * value) list Gen.t =
+let gen_curried_prog (spec : spec) : (string * value) list Gen.t =
   let open Gen in
   let ctx = [] in
   let p_outer = Printf.sprintf "p%d" (List.length ctx) in
@@ -490,6 +490,6 @@ let gen_closure_fun_prog (spec : spec) : (string * value) list Gen.t =
 let manual_gens : (string * (spec -> (string * value) list Gen.t)) list =
   [
     ("base_prog", Base.gen_well_typed_prog);
-    ("closure_prog", gen_closure_prog);
-    ("closure_fun_prog", gen_closure_fun_prog);
+    ("functions_prog", gen_functions_prog);
+    ("curried_prog", gen_curried_prog);
   ]
