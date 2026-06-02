@@ -384,7 +384,9 @@ let run_target ?(config = Instrumentation.Config.default) ?test_dir
         match Checkpoint.verify_and_load ~file ~spec_files ~verbose with
         | Ok checkpoint -> Some checkpoint
         | Error e ->
-            Format.printf "%s\n" (Error.string_of_error e);
+            Format.printf "%s\n"
+              (Diagnostic.Render.render_bag ~ansi:Diagnostic.Ansi.plain
+                 (Error.to_diagnostics e));
             None)
     | None -> None
   in

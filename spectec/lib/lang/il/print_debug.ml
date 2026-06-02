@@ -305,16 +305,16 @@ and string_of_clauses clauses =
 
 (* Premises *)
 
+and string_of_relcall { relid; notexp } =
+  string_of_relid relid ^ ": " ^ string_of_notexp notexp
+
 and string_of_prem prem =
   match prem.it with
-  | RulePr { relid; notexp } ->
-      string_of_relid relid ^ ": " ^ string_of_notexp notexp
-  | IfPr exp -> "if " ^ string_of_exp exp
-  | IfHoldPr { relid; notexp } ->
-      "if " ^ string_of_relid relid ^ ": " ^ string_of_notexp notexp ^ " holds"
-  | IfNotHoldPr { relid; notexp } ->
-      "if " ^ string_of_relid relid ^ ": " ^ string_of_notexp notexp
-      ^ " does not hold"
+  | RelPr call -> string_of_relcall call
+  | RelAssertPr { call; expect } ->
+      "if " ^ string_of_relcall call
+      ^ if expect then " holds" else " does not hold"
+  | IfPr { cond; _ } -> "if " ^ string_of_exp cond
   | ElsePr -> "otherwise"
   | LetPr (exp_l, exp_r) ->
       "let " ^ string_of_exp exp_l ^ " = " ^ string_of_exp exp_r

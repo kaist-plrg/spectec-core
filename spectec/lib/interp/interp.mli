@@ -5,7 +5,6 @@ type error
 type ctx_il
 type ctx_sl
 
-val error_to_string : error -> string
 val error_to_diagnostic : error -> Diag.t
 
 val eval_il :

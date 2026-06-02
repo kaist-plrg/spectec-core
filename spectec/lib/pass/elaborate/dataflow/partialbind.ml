@@ -89,7 +89,9 @@ let gen_prem_bound (dctx : Dctx.t) (to_ : To.t) (exp_from : exp)
         let exp_r = exp_from in
         CmpE (`EqOp, `BoolT, exp_l, exp_r) $$ (exp_from.at, BoolT)
   in
-  let sidecondition = IfPr exp_cond $ exp_from.at in
+  let sidecondition =
+    IfPr { cond = exp_cond; role = Condition } $ exp_from.at
+  in
   List.fold_left
     (fun sidecondition iter -> IterPr (sidecondition, (iter, [])) $ exp_from.at)
     sidecondition iters
@@ -99,7 +101,9 @@ let gen_prem_bind_match (to_ : To.t) (pattern : pattern) (exp_from : exp)
   let exp_to = To.as_exp to_ in
   let prems =
     let exp_guard_match = MatchE (exp_to, pattern) $$ (exp_from.at, BoolT) in
-    let sidecondition_guard_match = IfPr exp_guard_match $ exp_from.at in
+    let sidecondition_guard_match =
+      IfPr { cond = exp_guard_match; role = Condition } $ exp_from.at
+    in
     let prem_bind = LetPr (exp_from, exp_to) $ exp_from.at in
     [ sidecondition_guard_match; prem_bind ]
   in
@@ -115,7 +119,9 @@ let gen_prem_bind_sub (to_ : To.t) (typ_sub : typ) (exp_sub : exp)
   let exp_to = To.as_exp to_ in
   let prems =
     let exp_guard_sub = SubE (exp_to, typ_sub) $$ (exp_from.at, BoolT) in
-    let sidecondition_guard_sub = IfPr exp_guard_sub $ exp_from.at in
+    let sidecondition_guard_sub =
+      IfPr { cond = exp_guard_sub; role = Condition } $ exp_from.at
+    in
     let exp_downcast =
       DownCastE (typ_sub, exp_to) $$ (exp_from.at, typ_sub.it)
     in

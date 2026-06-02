@@ -12,6 +12,7 @@ depends: [
   "core" {>= "0.17.1"}
   "core_unix" {>= "0.17.0"}
   "ppx_let"
+  "pprint"
   "odoc" {with-doc}
 ]
 build: [

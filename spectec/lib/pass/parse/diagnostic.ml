@@ -68,7 +68,4 @@ let error ?code ?detail ?(related = []) (at : region) (msg : string) =
   in
   raise (ParseError d)
 
-let to_string (d : Diag.t) : string =
-  Common.Error.string_of_located_error d.region d.message
-
 let to_diagnostic (d : Diag.t) : Diag.t = d

@@ -176,24 +176,4 @@ let error_with_traces ?code ?detail ?(related = [])
   in
   raise (ElabError d)
 
-let rec failtrace_of_trace_node (n : Diag.trace_node) : failtrace =
-  Failtrace (n.region, n.message, List.map failtrace_of_trace_node n.children)
-
-let single_to_string (d : Diag.t) : string =
-  let failtraces =
-    [
-      Failtrace (d.region, d.message, List.map failtrace_of_trace_node d.trace);
-    ]
-  in
-  (if d.region = no_region then "" else string_of_region d.region ^ "Error:\n")
-  ^ string_of_failtraces ~region_parent:d.region ~depth:0 failtraces
-
-let to_string (errors : error) : string =
-  let sorted =
-    List.sort
-      (fun (a : Diag.t) (b : Diag.t) -> compare_region a.region b.region)
-      errors
-  in
-  String.concat "\n" (List.map single_to_string sorted)
-
 let to_diagnostics (errors : error) : Diag.Bag.t = Diag.Bag.of_list errors

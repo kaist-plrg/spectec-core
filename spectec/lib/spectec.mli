@@ -28,6 +28,9 @@ val with_diagnostics : (unit -> 'a) -> 'a * Diag.Bag.t
 
 val parse_spec_files : string list -> Lang.El.spec result
 
+(** [origin] is the label used in diagnostic messages. *)
+val parse_spec_string : origin:string -> string -> Lang.El.spec result
+
 (** The elaborator's output: the language IL spec, plus per-backend IL slices.
 *)
 type il = Pass.il = { lang : Lang.Il.spec; qc : Qc_il.spec }

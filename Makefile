@@ -94,6 +94,8 @@ bundle:
 # Individual tests (run against the new p4 spec by default):
 #   make test-elab       - Elaboration test (both p4 and p4-old)
 #   make test-struct     - Structuring test (both p4 and p4-old)
+#   make test-roundtrip-il - EL<->IL premise roundtrip test (impty base + closure, p4)
+#   make test-roundtrip-el - EL pretty-printer roundtrip test (mini-spec, p4-old, p4, impty)
 #   make test-il-pos     - IL interpreter positive tests (slow)
 #   make test-il-neg     - IL interpreter negative tests
 #   make test-sl-pos     - SL interpreter positive tests (slow)
@@ -109,7 +111,7 @@ bundle:
 #   make test-cli        - impty CLI command and instrumentation snapshots
 #
 # Grouped tests:
-#   make test-quick      - Fast tests (elab + elab-neg + interp-neg + cli + struct + impty)
+#   make test-quick      - Fast tests (elab + elab-neg + interp-neg + cli + struct + roundtrip-il + roundtrip-el + impty)
 #   make test-il         - IL tests for new p4 (pos + neg)
 #   make test-sl         - SL tests for new p4 (pos + neg)
 #   make test-il-old     - IL tests for p4-old (pos + neg)
@@ -124,7 +126,7 @@ bundle:
 #
 #   make test            - quick + new p4 il/sl
 
-.PHONY: test test-quick test-elab test-elab-neg test-interp-neg test-cli test-struct
+.PHONY: test test-quick test-elab test-elab-neg test-interp-neg test-cli test-struct test-roundtrip-il test-roundtrip-el
 .PHONY: test-il test-il-pos test-il-neg
 .PHONY: test-sl test-sl-pos test-sl-neg
 .PHONY: test-old test-il-old test-il-pos-old test-il-neg-old
@@ -142,6 +144,10 @@ test-elab:
 	@echo "#### Running elaboration test"
 	@$(DUNE) build @test/elab/runtest --profile=release && echo OK
 
+test-roundtrip-el:
+	@echo "#### Running EL pretty-printer roundtrip test"
+	@$(DUNE) build @test/roundtrip/el/runtest --profile=release && echo OK
+
 test-elab-neg:
 	@echo "#### Running elaboration negative tests"
 	@$(DUNE) build @test/elab/neg/runtest --profile=release && echo OK
@@ -157,6 +163,10 @@ test-cli:
 test-struct:
 	@echo "#### Running structuring test"
 	@$(DUNE) build @test/struct/runtest --profile=release && echo OK
+
+test-roundtrip-il:
+	@echo "#### Running EL<->IL premise roundtrip test"
+	@$(DUNE) build @test/roundtrip/il/runtest --profile=release && echo OK
 
 # $(1): target prefix (p4 / p4-old)
 # $(2): il / sl
@@ -192,7 +202,7 @@ test-sl-pos-old:
 test-sl-neg-old:
 	$(call run_interp_test,p4-old,sl,neg)
 
-test-quick: test-elab test-elab-neg test-interp-neg test-cli test-struct test-impty
+test-quick: test-elab test-elab-neg test-interp-neg test-cli test-struct test-roundtrip-il test-roundtrip-el test-impty
 	@echo "#### Quick tests passed"
 
 test-il: test-il-pos test-il-neg

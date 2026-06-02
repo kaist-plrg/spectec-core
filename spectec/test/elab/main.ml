@@ -14,8 +14,10 @@ let run specdir =
   match spec_il with
   | Ok spec_il -> Format.printf "%s\n" (Lang.Il.Print.string_of_spec spec_il)
   | Error err ->
-      Format.printf "Elaboration failed:\n  %s\n"
-        (Spectec.Error.string_of_error err)
+      Format.printf "Elaboration failed:\n%s\n"
+        (Spectec.Diagnostic.Render.render_bag
+           ~ansi:Spectec.Diagnostic.Ansi.plain
+           (Spectec.Error.to_diagnostics err))
 
 let command =
   Command.basic ~summary:"run elaboration test"

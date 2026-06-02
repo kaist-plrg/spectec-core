@@ -61,17 +61,18 @@ let eval_rule_pr (env : env) ~(bindings : bindings) (rel_id : id)
 
 let eval (env : env) ~bindings (prem : prem) : outcome =
   match prem.it with
-  | RulePr { relid = rel_id; notexp } | IfHoldPr { relid = rel_id; notexp } ->
+  | RelPr { relid = rel_id; notexp }
+  | RelAssertPr { call = { relid = rel_id; notexp }; expect = true } ->
       eval_rule_pr env ~bindings rel_id (Mixfix.args notexp)
-  | IfNotHoldPr { relid = rel_id; notexp } -> (
+  | RelAssertPr { call = { relid = rel_id; notexp }; expect = false } -> (
       match eval_rule_pr env ~bindings rel_id (Mixfix.args notexp) with
       | Holds -> Fails
       | Fails -> Holds
       | other -> other)
   | _ ->
       Unsupported
-        "only relation premises (RulePr, IfHoldPr, IfNotHoldPr) are supported \
-         in property and generator bodies"
+        "only relation premises (RelPr, RelAssertPr) are supported in property \
+         and generator bodies"
 
 let rec eval_side (env : env) ~bindings = function
   | [] -> Holds

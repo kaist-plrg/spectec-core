@@ -50,7 +50,7 @@ let gen_sidecondition (benv : Bind.BEnv.t) (id : Id.t) (ids_rename : Ids.t) :
         BinE (`AndOp, `BoolT, exp_l, exp_r) $$ (id_rename.at, BoolT))
       exp ids_rename
   in
-  let sidecondition = IfPr exp $ id.at in
+  let sidecondition = IfPr { cond = exp; role = Condition } $ id.at in
   List.fold_left
     (fun sidecondition iter -> IterPr (sidecondition, (iter, [])) $ id.at)
     sidecondition iters

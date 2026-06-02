@@ -85,9 +85,15 @@ let hint ~source region message =
 
 (* Bridge from Attempt.failtrace *)
 
-let rec trace_of_failtrace
-    (Common.Attempt.Failtrace (region, message, children)) =
-  { region; message; children = List.map trace_of_failtrace children }
+let rec trace_of_failtrace (failtrace : Common.Attempt.failtrace) =
+  let children =
+    match failtrace.kind with Common.Attempt.Failed cs -> cs | Guard -> []
+  in
+  {
+    region = failtrace.region;
+    message = failtrace.message;
+    children = List.map trace_of_failtrace children;
+  }
 
 let traces_of_failtraces = List.map trace_of_failtrace
 
@@ -97,8 +103,9 @@ let of_failtraces ~source ~fallback (failtraces : Common.Attempt.failtrace list)
   let message, trace =
     match failtraces with
     | [] -> (fallback, [])
-    | [ Common.Attempt.Failtrace (_, msg, children) ] ->
-        (msg, traces_of_failtraces children)
+    | [ failtrace ] ->
+        let { message; children; _ } = trace_of_failtrace failtrace in
+        (message, children)
     | _ -> (fallback, traces_of_failtraces failtraces)
   in
   error ~source ~trace at message

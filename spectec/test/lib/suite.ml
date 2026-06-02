@@ -50,7 +50,7 @@ let run ~(config : config) ~(exclude_set : Exclude.t) ~(filenames : string list)
                 let prefix =
                   if Stats.is_exception err then "CRASHED" else config.failure
                 in
-                Format.printf "%s: %s\n  %s\n\n" prefix filename
+                Format.printf "%s: %s\n%s\n\n" prefix filename
                   (Stats.string_of_test_error err);
                 Stats.add_fail stats ~label:filename ~duration
                   (Stats.failure_from_test_error err)
@@ -64,7 +64,7 @@ let run ~(config : config) ~(exclude_set : Exclude.t) ~(filenames : string list)
                   if Stats.is_exception err then "CRASHED (counted as failure)"
                   else config.expected_failure
                 in
-                Format.printf "%s: %s\n  %s\n\n" prefix filename
+                Format.printf "%s: %s\n%s\n\n" prefix filename
                   (Stats.string_of_test_error err);
                 Stats.add_pass stats ~label:filename ~duration
           in

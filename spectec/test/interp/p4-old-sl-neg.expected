@@ -2,27 +2,27 @@ Running typechecker test on 310 files
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/accept_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/accept_e.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:510:6-510:21:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/action-bind.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/action-bind.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:803:6-803:27:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/action-bind1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/action-bind1.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:188:6-188:24:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/action-bind2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/action-bind2.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:130:6-130:28:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/action-bind3.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/action-bind3.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:151:6-151:28:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/action-named-default-bmv2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/action-named-default-bmv2.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/action-named-default-bmv2.p4:56:12-56:19:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/actions-with-duplicate-control-plane-names1.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/actions-with-duplicate-control-plane-names1.p4
@@ -32,111 +32,111 @@ Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/annot
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/assign.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/assign.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:23:6-23:15:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/binary_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/binary_e.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:25:6-25:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/bitExtract_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/bitExtract_e.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:437:6-437:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/call-table.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/call-table.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:54:6-54:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/call1_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/call1_e.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:44:6-44:24:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/compound-assignment.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/compound-assignment.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:453:6-453:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/conditional_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/conditional_e.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:453:6-453:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/const.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/const.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:21:10-21:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/const1_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/const1_e.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:25:6-25:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/const_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/const_e.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/constructor1_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/constructor1_e.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/constructor1_e.p4:18:9-18:10:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/constructor2_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/constructor2_e.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/constructor2_e.p4:18:6-18:7:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/constructor3_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/constructor3_e.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:132:6-132:29:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/constructor_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/constructor_e.p4
-  ../../../../../spectec/specs/p4-old/5.12-typing-extern-method.spectec:87:6-87:21:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/control-inline.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/control-inline.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/control-inline.p4:34:11-34:12:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/control-verify.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/control-verify.p4
-  ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:72:6-72:22:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default-initializer-err.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default-initializer-err.p4
-  ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:684:7-684:14:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default-last-switch.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default-last-switch.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:255:6-255:26:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default-param.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default-param.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default_action.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default_action.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:803:6-803:27:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default_action1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default_action1.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:803:6-803:27:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/directionless.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/directionless.p4
-  ../../../../../spectec/specs/p4-old/5.14.2-typing-control-declaration.spectec:63:6-63:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/div.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/div.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:25:6-25:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/div0.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/div0.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:25:6-25:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/div1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/div1.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:25:6-25:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/div3.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/div3.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:25:6-25:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/dup-param.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/dup-param.p4
-  ../../../../../spectec/specs/p4-old/5.02-context.spectec:224:16-224:24:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/dup-param1.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/dup-param1.p4
@@ -146,31 +146,31 @@ Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/dup-p
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/dup-param3.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/dup-param3.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/dupConst.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/dupConst.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:26:17-26:25:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/duplicate-label.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/duplicate-label.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:453:6-453:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/enumCast.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/enumCast.p4
-  ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:354:10-354:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/equality-fail.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/equality-fail.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:182:6-182:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/expression_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/expression_e.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/expression_e.p4:21:20-21:21:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/extern.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/extern.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/extract.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/extract.p4
@@ -180,133 +180,133 @@ Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/extra
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/factory-err2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/factory-err2.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/function1_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/function1_e.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:132:6-132:29:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/function_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/function_e.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:50:6-50:20:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/function_e1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/function_e1.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/function_e2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/function_e2.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:54:6-54:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/functors2_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/functors2_e.p4
-  ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:1148:6-1148:24:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/functors3_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/functors3_e.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:44:6-44:24:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/generic-struct-self-nested.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/generic-struct-self-nested.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:21:10-21:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/generic1_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/generic1_e.p4
-  cannot transpose a matrix of value batches
+error: cannot transpose a matrix of value batches
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/globalVar_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/globalVar_e.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/globalVar_e.p4:16:6-16:7:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/header1_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/header1_e.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/header1_e.p4:18:5-18:6:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/header2_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/header2_e.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/header3.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/header3.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/implicit.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/implicit.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:441:10-441:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/incorrect-label.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/incorrect-label.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:243:6-243:26:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/init-entries-error1-bmv2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/init-entries-error1-bmv2.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:716:6-716:28:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/init-entries-error2-bmv2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/init-entries-error2-bmv2.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:716:6-716:28:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/init-entries-error3-bmv2.p4
 CRASHED (counted as failure): ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/init-entries-error3-bmv2.p4
-  uncaught exception: "Assert_failure lib/lang/xl/num.ml:88:15"
+uncaught exception: "Assert_failure lib/lang/xl/num.ml:88:15"
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/inro.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/inro.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:23:6-23:15:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/interface1_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/interface1_e.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:50:6-50:20:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/interface_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/interface_e.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:44:6-44:24:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/invalid-invalid.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/invalid-invalid.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/invalid-invalid.p4:2:1:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue-2123_e.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue-2123_e.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1006-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1006-1.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:132:6-132:29:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1059.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1059.p4
-  ../../../../../spectec/specs/p4-old/5.07.2-typing-argument.spectec:11:6-11:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1202.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1202.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1202.p4:1:19-1:22:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue122.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue122.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1230.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1230.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:891:6-891:22:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1296.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1296.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:70:6-70:24:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1331.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1331.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:54:6-54:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1336.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1336.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1336.p4:3:15-3:16:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1542.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1542.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:733:6-733:26:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1557-bmv2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1557-bmv2.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:23:6-23:15:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1580.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1580.p4
@@ -322,11 +322,11 @@ Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1932-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1932-1.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:343:17-343:42:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1932-2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1932-2.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:343:17-343:42:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1932.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1932.p4
@@ -339,114 +339,114 @@ Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1986-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1986-1.p4
-  ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:172:6-172:33:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1986.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1986.p4
-  ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:172:6-172:33:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2021.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2021.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:23:6-23:15:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2033.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2033.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:803:6-803:27:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2036-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2036-1.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:56:10-56:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2036-2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2036-2.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:132:6-132:29:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2036.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2036.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:56:10-56:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2206.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2206.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2220.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2220.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:441:10-441:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2230-1-bmv2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2230-1-bmv2.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:132:6-132:29:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2230.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2230.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:31:35-31:48:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2260-1.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2260-1.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2267.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2267.p4
-  ../../../../../spectec/specs/p4-old/5.14.2-typing-control-declaration.spectec:80:17-80:25:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2283_2-bmv2.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2283_2-bmv2.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2290.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2290.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2317.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2317.p4
-  ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:352:6-352:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2332.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2332.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:21:10-21:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2335.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2335.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:465:6-465:25:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2354-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2354-1.p4
-  ../../../../../spectec/specs/p4-old/5.14.2-typing-control-declaration.spectec:63:6-63:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2354.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2354.p4
-  ../../../../../spectec/specs/p4-old/5.14.2-typing-control-declaration.spectec:63:6-63:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2373.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2373.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2413.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2413.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:50:6-50:20:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2441.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2441.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2444-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2444-1.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:21:10-21:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2454.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2454.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:54:6-54:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2496.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2496.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2525.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2525.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:243:6-243:26:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2544_recursive.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2544_recursive.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2544_recursive.p4:2:12-2:13:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2544_self_ref.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2544_self_ref.p4
-  ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:16:6-16:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2544_shadowing1.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2544_shadowing1.p4
@@ -456,178 +456,178 @@ Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2597.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2597.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:54:6-54:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2835-bmv2.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2835-bmv2.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3045-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3045-1.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3045-2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3045-2.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3045.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3045.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3057-1.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3057-1.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue306.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue306.p4
-  ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:800:6-800:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3153.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3153.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:16:6-16:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3170-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3170-1.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3170.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3170.p4
-  cannot transpose a matrix of value batches
+error: cannot transpose a matrix of value batches
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3188.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3188.p4
-  ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:1070:6-1070:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3197-e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3197-e.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:50:6-50:20:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3210.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3210.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3210.p4:9:6-9:7:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3221.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3221.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:137:6-137:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3233.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3233.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3246.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3246.p4
-  ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:1093:6-1093:20:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3264.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3264.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:25:6-25:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3271-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3271-1.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3271-1.p4:23:8-23:9:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3271.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3271.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3271.p4:3:8-3:9:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3273.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3273.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3282.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3282.p4
-  ../../../../../spectec/specs/p4-old/5.07.2-typing-argument.spectec:11:6-11:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3285.p4
 CRASHED (counted as failure): ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3285.p4
-  uncaught exception: ("Frontend_p4__Lexer.Error(\"signed integers must have width at least 2\")")
+uncaught exception: ("Frontend_p4__Lexer.Error(\"signed integers must have width at least 2\")")
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3291.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3291.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3293.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3293.p4
-  cannot transpose a matrix of value batches
+error: cannot transpose a matrix of value batches
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3299.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3299.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3304.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3304.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:465:6-465:25:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3305.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3305.p4
-  cannot transpose a matrix of value batches
+error: cannot transpose a matrix of value batches
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3316.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3316.p4
-  ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:55:6-55:18:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3335.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3335.p4
-  ../../../../../spectec/specs/p4-old/5.13.2-typing-parser-state.spectec:20:6-20:25:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3338.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3338.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:510:6-510:21:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3345.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3345.p4
-  ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:172:6-172:33:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3346.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3346.p4
-  ../../../../../spectec/specs/p4-old/5.13.3-typing-parser-declaration.spectec:98:6-98:24:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3359.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3359.p4
-  ../../../../../spectec/specs/p4-old/5.13.3-typing-parser-declaration.spectec:98:6-98:24:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3363.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3363.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3378.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3378.p4
-  ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:55:6-55:18:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3430.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3430.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3442.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3442.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:891:6-891:22:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue345.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue345.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3522.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3522.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:437:6-437:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3534.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3534.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:144:35-144:48:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3589.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3589.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:437:6-437:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3611.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3611.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:243:6-243:26:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3613.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3613.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3622.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3622.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:243:6-243:26:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3623-2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3623-2.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:317:10-317:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3623-3.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3623-3.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:317:10-317:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3644-1.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3644-1.p4
@@ -640,87 +640,87 @@ Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3656.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3656.p4
-  ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:90:10-90:36:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3671-2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3671-2.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:803:6-803:27:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3727.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3727.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:171:6-171:20:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3750-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3750-1.p4
-  ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:55:6-55:18:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3750.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3750.p4
-  ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:55:6-55:18:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3751.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3751.p4
-  ../../../../../spectec/specs/p4-old/5.13.3-typing-parser-declaration.spectec:98:6-98:24:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3787.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3787.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3808-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3808-1.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3808.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3808.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:74:6-74:20:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3813.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3813.p4
-  ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:1065:6-1065:20:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3814.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3814.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:44:6-44:24:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3846.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3846.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:168:6-168:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3847.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3847.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:168:6-168:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue388.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue388.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:47:6-47:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue394.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue394.p4
-  ../../../../../spectec/specs/p4-old/5.14.2-typing-control-declaration.spectec:97:6-97:25:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue401.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue401.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:437:6-437:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue407-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue407-1.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue413.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue413.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:54:6-54:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4136.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4136.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:25:6-25:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4140.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4140.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:52:17-52:25:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4142.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4142.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4144.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4144.p4
@@ -730,19 +730,19 @@ Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue435.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue435.p4
-  ../../../../../spectec/specs/p4-old/5.12-typing-extern-method.spectec:140:6-140:26:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4365_no_demote_error_to_info.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4365_no_demote_error_to_info.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:510:6-510:21:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4365_no_demote_error_to_warning.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4365_no_demote_error_to_warning.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:510:6-510:21:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4365_no_disable_error.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue4365_no_disable_error.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:510:6-510:21:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue473.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue473.p4
@@ -758,65 +758,65 @@ Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue561-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue561-1.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:441:10-441:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue584.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue584.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:54:6-54:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue600.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue600.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue67.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue67.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:21:10-21:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue764.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue764.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:54:6-54:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue774-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue774-1.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:169:6-169:33:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue774-2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue774-2.p4
-  ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:52:22-52:41:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue803-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue803-1.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:70:6-70:24:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue807.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue807.p4
-  ../../../../../spectec/specs/p4-old/5.12-typing-extern-method.spectec:87:6-87:21:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue816-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue816-1.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue816.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue816.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:54:6-54:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue818.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue818.p4
-  ../../../../../spectec/specs/p4-old/5.12-typing-extern-method.spectec:140:6-140:26:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue819-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue819-1.p4
-  cannot transpose a matrix of value batches
+error: cannot transpose a matrix of value batches
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue819.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue819.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/key-name.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/key-name.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/list-error.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/list-error.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:132:6-132:29:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/loop1-err.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/loop1-err.p4
@@ -829,156 +829,156 @@ Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/loop3
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/methodArgDontcare.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/methodArgDontcare.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:70:6-70:24:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/minWidth.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/minWidth.p4
-  ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:1065:6-1065:20:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/missing_actions.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/missing_actions.p4
-  ../../../../../spectec/specs/p4-old/5.14.2-typing-control-declaration.spectec:76:6-76:14:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/missing_match.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/missing_match.p4
-  ../../../../../spectec/specs/p4-old/5.02-context.spectec:365:38-365:49:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/module_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/module_e.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:132:6-132:29:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/multicast-bmv2.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/multicast-bmv2.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/mux_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/mux_e.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:25:6-25:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/named-fail.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/named-fail.p4
-  ../../../../../spectec/specs/p4-old/5.02-context.spectec:425:10-425:26:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/named-fail1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/named-fail1.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:50:6-50:20:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/neg.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/neg.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:25:6-25:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/newtype-err.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/newtype-err.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:31:35-31:48:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/next.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/next.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:23:6-23:15:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/nostart.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/nostart.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:510:6-510:21:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/not_bound.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/not_bound.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:50:6-50:20:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/p_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/p_e.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/p_e.p4:18:1:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/package.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/package.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/param.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/param.p4
-  ../../../../../spectec/specs/p4-old/5.14.2-typing-control-declaration.spectec:63:6-63:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/parser-arg.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/parser-arg.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/persistent_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/persistent_e.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:132:6-132:29:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/pr2918.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/pr2918.p4
-  ../../../../../spectec/specs/p4-old/5.13.2-typing-parser-state.spectec:20:6-20:25:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/psa-meter2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/psa-meter2.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:132:6-132:29:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/psa-type-hdr.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/psa-type-hdr.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/push_nonconstant.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/push_nonconstant.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:132:6-132:29:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/range_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/range_e.p4
-  ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:186:6-186:33:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/scope.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/scope.p4
-  ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:41:6-41:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/select-struct.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/select-struct.p4
-  ../../../../../spectec/specs/p4-old/5.13.2-typing-parser-state.spectec:20:6-20:25:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/select-varbits.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/select-varbits.p4
-  ../../../../../spectec/specs/p4-old/5.13.2-typing-parser-state.spectec:20:6-20:25:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/self-call.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/self-call.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:44:6-44:24:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/serEnumImplCast.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/serEnumImplCast.p4
-  ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:114:10-114:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/serenum-type.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/serenum-type.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:627:35-627:48:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/serenum-typedef.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/serenum-typedef.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:627:35-627:48:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/shift-int-non-const.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/shift-int-non-const.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/shift_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/shift_e.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/shift_e.p4:20:25-20:26:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/signed.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/signed.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:31:35-31:48:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/signs.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/signs.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:441:10-441:23:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/slice_out_of_bound.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/slice_out_of_bound.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:23:6-23:15:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/spec-ex32_e.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/spec-ex32_e.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/spec-issue1297-string-cat-err-0.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/spec-issue1297-string-cat-err-0.p4
-  ../../../../../spectec/specs/p4-old/5.07.2-typing-argument.spectec:11:6-11:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/spec-issue1297-string-cat-err-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/spec-issue1297-string-cat-err-1.p4
-  ../../../../../spectec/specs/p4-old/5.07.2-typing-argument.spectec:11:6-11:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/spec-issue1297-string-cat-err-2-anno.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/spec-issue1297-string-cat-err-2-anno.p4
@@ -988,55 +988,55 @@ Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/spec-
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/spec-issue563.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/spec-issue563.p4
-  ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:16:6-16:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/stack-const-index-out-of-bounds-bmv2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/stack-const-index-out-of-bounds-bmv2.p4
-  ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:41:6-41:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/stack1_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/stack1_e.p4
-  ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:43:18-43:29:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/stack2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/stack2.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:31:35-31:48:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/stack3.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/stack3.p4
-  ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:77:6-77:17:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/stack_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/stack_e.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:465:6-465:25:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/string-e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/string-e.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/string-e1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/string-e1.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/string-e2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/string-e2.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:54:6-54:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/struct_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/struct_e.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:23:6-23:15:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/structure-valued-expr-errs-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/structure-valued-expr-errs-1.p4
-  cannot transpose a matrix of value batches
+error: cannot transpose a matrix of value batches
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/structure-valued-expr-errs-2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/structure-valued-expr-errs-2.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/structure-valued-expr-errs-2.p4:106:28-106:29:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/structured-annotation-e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/structured-annotation-e.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/structured-annotation-e.p4:1:23-1:24:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/structured-annotation-e1.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/structured-annotation-e1.p4
@@ -1049,129 +1049,129 @@ Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/struc
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-decl-order.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-decl-order.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:891:6-891:22:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-exact-ternary.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-exact-ternary.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:731:6-731:26:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-exact.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-exact.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:731:6-731:26:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-lpm-2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-lpm-2.p4
-  ../../../../../spectec/specs/p4-old/5.03-table-context.spectec:177:6-177:29:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-lpm.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-lpm.p4
-  ../../../../../spectec/specs/p4-old/5.03-table-context.spectec:177:6-177:29:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-optional-2-bmv2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-optional-2-bmv2.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:392:6-392:33:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-outside-table.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-outside-table.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-outside-table.p4:68:11-68:18:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-range.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-range.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:731:6-731:26:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-ternary.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/table-entries-ternary.p4
-  ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:392:6-392:33:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/template_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/template_e.p4
-  ../../../../../spectec/specs/p4-old/5.02-context.spectec:277:16-277:25:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/tuple-left.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/tuple-left.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/tuple-left.p4:21:12-21:13:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/tuple-newtype.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/tuple-newtype.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/tuple-to-header.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/tuple-to-header.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:31:35-31:48:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/twovarbit.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/twovarbit.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/type-field.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/type-field.p4
-  ../../../../../spectec/specs/p4-old/5.07.2-typing-argument.spectec:11:6-11:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/type-in-expr-lex0.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/type-in-expr-lex0.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/type-in-expr-lex0.p4:8:26-8:27:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/type-in-expr-lex1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/type-in-expr-lex1.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/type-in-expr-lex1.p4:8:22-8:23:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/type-in-expr.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/type-in-expr.p4
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/type-params_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/type-params_e.p4
-  ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:55:6-55:18:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/typecheck1_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/typecheck1_e.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:25:6-25:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/typecheck_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/typecheck_e.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/typedef-and-type-definitions.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/typedef-and-type-definitions.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:953:6-953:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore1_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore1_e.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore1_e.p4:17:9-17:10:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore2_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore2_e.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore2_e.p4:19:13-19:14:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore3_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore3_e.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore3_e.p4:16:11-16:12:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore_e.p4
-  ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore_e.p4:16:13-16:14:Error: syntax error
+error: syntax error
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/virtual1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/virtual1.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:144:35-144:48:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/virtual2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/virtual2.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:144:35-144:48:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/virtual3.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/virtual3.p4
-  ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:453:6-453:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/virtual4.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/virtual4.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:220:29-220:41:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/virtual5.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/virtual5.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:176:6-176:18:Error: function was not matched
+error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/virtual6.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/virtual6.p4
-  ../../../../../spectec/specs/p4-old/5.14.2-typing-control-declaration.spectec:17:6-17:13:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/width1_e.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/width1_e.p4
@@ -1181,7 +1181,7 @@ Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/width
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/wrong-cast.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/wrong-cast.p4
-  ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:16:6-16:13:Error: relation was not matched
+error: relation was not matched
 
 Typechecker (sl) summary
   Ran:        253 / 310    (81.61%)

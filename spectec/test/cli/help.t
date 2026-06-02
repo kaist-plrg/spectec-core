@@ -13,6 +13,8 @@ The impty group lists its subcommands:
     checkpoint                 . Checkpoint utilities
     eval                       . Run impty evaluator
     parse                      . parse an impty program to an IL value
+    quickcheck                 . run quickcheck properties declared in an impty
+                                 spec
     typecheck                  . Run impty typechecker
     help                       . explain a given subcommand (perhaps recursively)
   

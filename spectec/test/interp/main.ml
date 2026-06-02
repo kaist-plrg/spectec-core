@@ -52,8 +52,10 @@ let run_with_task (type i) (module T : Spectec.Task.S with type input = i)
   | Ok () -> ()
   | Error err ->
       let mode = if sl_mode then "SL" else "IL" in
-      Format.printf "Failed to run %s interpreter:\n  %s\n" mode
-        (Spectec.Error.string_of_error err)
+      Format.printf "Failed to run %s interpreter:\n%s\n" mode
+        (Spectec.Diagnostic.Render.render_bag
+           ~ansi:Spectec.Diagnostic.Ansi.plain
+           (Spectec.Error.to_diagnostics err))
 
 (** P4 Typecheck test - uses P4_Target.spec_dir *)
 let run_p4_typecheck ~p4_old ~negative ~sl_mode ~includes ~exclude_dirs

@@ -47,7 +47,7 @@ type prem_vars = { free : (id * typ) list; bound : (id * typ) list }
 let rec vars_of_prem (rel_reltyp : string -> reltyp option) (prem : prem) :
     prem_vars =
   match prem.it with
-  | RulePr { relid = rel_id; notexp } ->
+  | RelPr { relid = rel_id; notexp } ->
       let args = Mixfix.args notexp in
       let reltyp =
         match rel_reltyp rel_id.it with
@@ -61,8 +61,9 @@ let rec vars_of_prem (rel_reltyp : string -> reltyp option) (prem : prem) :
         free = List.concat_map vars_of_exp in_args;
         bound = List.concat_map vars_of_exp out_args;
       }
-  | IfPr e | DebugPr e -> { free = vars_of_exp e; bound = [] }
-  | IfHoldPr { notexp; _ } | IfNotHoldPr { notexp; _ } ->
+  | IfPr { cond; _ } -> { free = vars_of_exp cond; bound = [] }
+  | DebugPr e -> { free = vars_of_exp e; bound = [] }
+  | RelAssertPr { call = { notexp; _ }; _ } ->
       { free = List.concat_map vars_of_exp (Mixfix.args notexp); bound = [] }
   | LetPr (lhs, rhs) -> { free = vars_of_exp rhs; bound = vars_of_exp lhs }
   | ElsePr -> { free = []; bound = [] }

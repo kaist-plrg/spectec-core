@@ -14,8 +14,10 @@ let run specdir =
   in
   match spec_sl with
   | Error err ->
-      Format.printf "Structuring failed:\n  %s\n"
-        (Spectec.Error.string_of_error err)
+      Format.printf "Structuring failed:\n%s\n"
+        (Spectec.Diagnostic.Render.render_bag
+           ~ansi:Spectec.Diagnostic.Ansi.plain
+           (Spectec.Error.to_diagnostics err))
   | Ok spec_sl -> Format.printf "%s\n" (Lang.Sl.Print.string_of_spec spec_sl)
 
 let command =

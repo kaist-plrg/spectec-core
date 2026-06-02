@@ -2,27 +2,27 @@ Running typechecker test on 6 files
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_add_bool.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_add_bool.imp
-  ../../../../../spectec/specs/impty/base/spec.spectec:109:6-109:16:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_assign_mismatch.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_assign_mismatch.imp
-  ../../../../../spectec/specs/impty/base/spec.spectec:130:6-130:19:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_bad_assign.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_bad_assign.imp
-  ../../../../../spectec/specs/impty/base/spec.spectec:141:6-141:19:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_if_not_bool.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_if_not_bool.imp
-  ../../../../../spectec/specs/impty/base/spec.spectec:130:6-130:19:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_not_int.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_not_int.imp
-  ../../../../../spectec/specs/impty/base/spec.spectec:109:6-109:16:Error: relation was not matched
+error: relation was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_undeclared.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_undeclared.imp
-  ../../../../../spectec/specs/impty/base/spec.spectec:141:6-141:19:Error: relation was not matched
+error: relation was not matched
 
 Typechecker (sl) summary
   Ran:          6 / 6      (100.00%)

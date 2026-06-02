@@ -19,8 +19,8 @@ type env = {
           entries. *)
 }
 
-(** Evaluates a single premise. Only [RulePr], [IfHoldPr], and [IfNotHoldPr] are
-    handled; other premise shapes return [Unsupported]. *)
+(** Evaluates a single premise. Only [RelPr] and [RelAssertPr] are handled;
+    other premise shapes return [Unsupported]. *)
 val eval : env -> bindings:bindings -> prem -> outcome
 
 (** Evaluates a list of premises left-to-right, short-circuiting on the first

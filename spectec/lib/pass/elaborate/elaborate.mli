@@ -17,5 +17,4 @@ end
 type il = { lang : Lang.Il.spec; qc : Qc_il.spec }
 
 val elab_spec : Lang.El.spec -> il result
-val error_to_string : error -> string
 val error_to_diagnostics : error -> Diag.Bag.t

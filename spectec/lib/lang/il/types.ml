@@ -185,16 +185,25 @@ and clause' = { args : arg list; body : exp; prems : prem list }
 
 (* Premises *)
 
-and prem = prem' phrase
+and relcall = { relid : id; notexp : notexp }
+
+and prem = (prem', prem_prov) phrase_prov
+and prem_prov =
+  | Source of El.prem  (* lowered from this EL premise *)
+  | Synthesized        (* introduced by elaboration; no EL source *)
 and prem' =
-  | RulePr of { relid : id; notexp : notexp }  (* id `:` notexp *)
-  | IfPr of exp                    (* `if` exp *)
-  | IfHoldPr of { relid : id; notexp : notexp }  (* `if` id `:` notexp `holds` *)
-  | IfNotHoldPr of { relid : id; notexp : notexp }  (* `if` id `:` notexp `does not hold` *)
+  | RelPr of relcall               (* id `:` notexp *)
+  | RelAssertPr of { call : relcall; expect : bool }
+                                   (* `if` id `:` notexp `holds` when expect, else `does not hold` *)
+  | IfPr of { cond : exp; role : if_role }  (* `if` exp *)
   | ElsePr                         (* `otherwise` *)
   | LetPr of exp * exp             (* `let` exp `=` exp *)
   | IterPr of prem * iterexp       (* prem iterexp *)
   | DebugPr of exp                 (* `debug` exp *)
+
+and if_role =
+  | Condition
+  | Guard  (* failing it means the rule does not apply *)
 
 (* Definitions *)
 

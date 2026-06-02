@@ -29,7 +29,7 @@ module State = struct
   let current_test_case_id : string option ref = ref None
   let total_prems = ref 0
   let total_fallible_prems = ref 0
-  let total_rule_prems = ref 0
+  let total_rel_prems = ref 0
   let total_if_prems = ref 0
 
   let reset () =
@@ -41,7 +41,7 @@ module State = struct
     current_test_case_id := None;
     total_prems := 0;
     total_fallible_prems := 0;
-    total_rule_prems := 0;
+    total_rel_prems := 0;
     total_if_prems := 0
 
   (* Set current test case ID (called by runner before each test) *)
@@ -66,9 +66,9 @@ end
 
 let rec is_fallible prem =
   match prem.it with
-  | LetPr _ | ElsePr | DebugPr _ | IfHoldPr _ | IfNotHoldPr _ -> false
+  | LetPr _ | ElsePr | DebugPr _ | RelAssertPr _ -> false
   | IterPr (inner, _) -> is_fallible inner
-  | IfPr _ | RulePr _ -> true
+  | IfPr _ | RelPr _ -> true
 
 module M : Instrumentation_api.Handler.S = struct
   let static_dependencies =
@@ -79,18 +79,18 @@ module M : Instrumentation_api.Handler.S = struct
 
   let rec count_prem prem =
     match prem.it with
-    (* count IfPr, RulePr, and their iterations *)
-    | LetPr _ | ElsePr | DebugPr _ | IfHoldPr _ | IfNotHoldPr _ ->
+    (* count IfPr, RelPr, and their iterations *)
+    | LetPr _ | ElsePr | DebugPr _ | RelAssertPr _ ->
         State.total_prems := !State.total_prems + 1
     | IterPr (inner, _) -> count_prem inner
     | IfPr _ ->
         State.total_prems := !State.total_prems + 1;
         State.total_fallible_prems := !State.total_fallible_prems + 1;
         State.total_if_prems := !State.total_if_prems + 1
-    | RulePr _ ->
+    | RelPr _ ->
         State.total_prems := !State.total_prems + 1;
         State.total_fallible_prems := !State.total_fallible_prems + 1;
-        State.total_rule_prems := !State.total_rule_prems + 1
+        State.total_rel_prems := !State.total_rel_prems + 1
 
   let init ~spec =
     State.reset ();
@@ -131,9 +131,9 @@ module M : Instrumentation_api.Handler.S = struct
         else
           let rec incr_failures prem =
             match prem.it with
-            | LetPr _ | ElsePr | DebugPr _ | IfHoldPr _ | IfNotHoldPr _ -> ()
+            | LetPr _ | ElsePr | DebugPr _ | RelAssertPr _ -> ()
             | IterPr (inner, _) -> incr_failures inner
-            | IfPr _ | RulePr _ ->
+            | IfPr _ | RelPr _ ->
                 let key = prem_key prem in
                 State.incr_count State.prems_failed key
           in
@@ -182,7 +182,7 @@ module M : Instrumentation_api.Handler.S = struct
       let total_score = succeeded_if + failed_if in
       let twice_total_if = 2 * total_if in
 
-      Format.fprintf !fmt "%d rule premises\n" !State.total_rule_prems;
+      Format.fprintf !fmt "%d rel premises\n" !State.total_rel_prems;
       Format.fprintf !fmt
         "%d if-premises: succeeded %d/%d (%.2f%%), failed %d/%d (%.2f%%), \
          neither %d/%d (%.2f%%), total %d/%d (%.2f%%)\n"

@@ -6,7 +6,9 @@ open Core
 type test_error = Runner_error of Spectec.Error.t | Exception of exn
 
 let string_of_test_error = function
-  | Runner_error err -> Spectec.Error.string_of_error err
+  | Runner_error err ->
+      Spectec.Diagnostic.Render.render_bag_trace
+        (Spectec.Error.to_diagnostics err)
   | Exception exn -> "uncaught exception: " ^ Exn.to_string exn
 
 let is_exception = function Exception _ -> true | Runner_error _ -> false

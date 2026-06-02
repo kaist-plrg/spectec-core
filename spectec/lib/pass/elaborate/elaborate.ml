@@ -34,6 +34,17 @@ let groupby (eq : 'a -> 'a -> bool) (xs : 'a list) : 'a list list =
 
 let valid_tid (id : id) = id.it = (Var.strip_var_suffix id).it
 
+(* Re-tag the checks synthesized from a rule/clause input pattern as guards. *)
+let rec as_guard (prem : Il.prem) : Il.prem =
+  let guard =
+    match prem.it with
+    | Il.IfPr { cond; _ } -> Il.IfPr { cond; role = Il.Guard } $ prem.at
+    | Il.IterPr (prem_inner, iterexp) ->
+        Il.IterPr (as_guard prem_inner, iterexp) $ prem.at
+    | _ -> prem
+  in
+  { guard with prov = Some Il.Synthesized }
+
 (* Iteration elaboration *)
 
 let elab_iter (iter : iter) : Il.iter =
@@ -936,7 +947,7 @@ and elab_exp (ctx : Ctx.t) (typ_il_expect : Il.typ) (exp : exp) :
   elab_exp' ctx typ_il_expect exp
   |> nest exp.at
        (Format.asprintf "elaboration of expression %s as type %s failed"
-          (El.Print.string_of_exp exp)
+          (El.Unparse.string_of_exp exp)
           (Il.Print.string_of_typ typ_il_expect))
 
 and elab_exp' (ctx : Ctx.t) (typ_il_expect : Il.typ) (exp : exp) :
@@ -1085,7 +1096,7 @@ and elab_exp_plain' (ctx : Ctx.t) (at : region) (typ_il_expect : Il.typ)
   | BoolE _ | NumE _ | TextE _ | VarE _ ->
       fail_elab_plain at
         (Format.asprintf "the type of %s should have been inferred"
-           (El.Print.string_of_exp (exp $ at)))
+           (El.Unparse.string_of_exp (exp $ at)))
   | EpsE -> elab_eps_exp ctx typ_il_expect
   | ListE exps -> elab_list_exp ctx typ_il_expect exps
   | ConsE (exp_h, exp_t) -> elab_cons_exp ctx typ_il_expect exp_h exp_t
@@ -1096,7 +1107,7 @@ and elab_exp_plain' (ctx : Ctx.t) (at : region) (typ_il_expect : Il.typ)
   | _ ->
       fail at
         (Format.asprintf "cannot elaborate expression %s as type %s"
-           (El.Print.string_of_exp (exp $ at))
+           (El.Unparse.string_of_exp (exp $ at))
            (Il.Print.string_of_typ typ_il_expect))
 
 (* Elaboration of episilon expressions *)
@@ -1548,6 +1559,12 @@ and elab_prem_with_bind (ctx : Ctx.t) (prem : prem) : Ctx.t * Il.prem list =
       let ctx, prem_il, sideconditions_il =
         Dataflow.Analysis.analyze_prem ctx prem_il
       in
+      let prem_il = { prem_il with prov = Some (Il.Source prem) } in
+      let sideconditions_il =
+        List.map
+          (fun p -> { p with prov = Some Il.Synthesized })
+          sideconditions_il
+      in
       let prems_il = prem_il :: sideconditions_il in
       (ctx, prems_il)
   | None -> (ctx, [])
@@ -1582,11 +1599,12 @@ and elab_rule_prem (ctx : Ctx.t) (id : id) (exp : exp) : Ctx.t * Il.prem' =
   let reltyp_il = Ctx.find_rel ctx id in
   let nottyp_il = Il.Mode.notation reltyp_il.it $ reltyp_il.at in
   let+ ctx, notexp_il = elab_exp_not ctx nottyp_il exp in
+  let call = { Il.relid = id; notexp = notexp_il } in
   if Il.Mode.is_predicate reltyp_il.it then
-    let prem_il = Il.IfHoldPr { relid = id; notexp = notexp_il } in
+    let prem_il = Il.RelAssertPr { call; expect = true } in
     (ctx, prem_il)
   else
-    let prem_il = Il.RulePr { relid = id; notexp = notexp_il } in
+    let prem_il = Il.RelPr call in
     (ctx, prem_il)
 
 (* Elaboration of negated rule premises *)
@@ -1603,14 +1621,15 @@ and elab_rule_not_prem (ctx : Ctx.t) (id : id) (exp : exp) : Ctx.t * Il.prem' =
       "A negated rule premise asserts that a relation does not hold for given \
        inputs. The relation must therefore have only input positions: outputs \
        would have no value to produce when the relation fails.";
-  let prem_il = Il.IfNotHoldPr { relid = id; notexp = notexp_il } in
+  let call = { Il.relid = id; notexp = notexp_il } in
+  let prem_il = Il.RelAssertPr { call; expect = false } in
   (ctx, prem_il)
 
 (* Elaboration of if premises *)
 
 and elab_if_prem (ctx : Ctx.t) (exp : exp) : Ctx.t * Il.prem' =
   let+ ctx, exp_il = elab_exp ctx (Il.BoolT $ exp.at) exp in
-  let prem_il = Il.IfPr exp_il in
+  let prem_il = Il.IfPr { cond = exp_il; role = Il.Condition } in
   (ctx, prem_il)
 
 (* Elaboration of else premises *)
@@ -1824,7 +1843,7 @@ and elab_rule_def (ctx : Ctx.t) (at : region) (id_rel : id) (id_rule : id)
     Dataflow.Analysis.analyze_exps_as_bind ctx_local exps_il_input
   in
   let ctx_local, prems_il = elab_prems_with_bind ctx_local prems in
-  let prems_il = sideconditions_il @ prems_il in
+  let prems_il = List.map as_guard sideconditions_il @ prems_il in
   let exps_il_output =
     Dataflow.Analysis.analyze_exps_as_bound ctx_local exps_il_output
   in
@@ -1962,7 +1981,7 @@ and elab_def_def (ctx : Ctx.t) (at : region) (id : id) (tparams : tparam list)
     elab_def_input_with_bind ctx_local at params_il args
   in
   let ctx_local, prems_il = elab_prems_with_bind ctx_local prems in
-  let prems_il = sideconditions_il @ prems_il in
+  let prems_il = List.map as_guard sideconditions_il @ prems_il in
   let _ctx_local, exp_il = elab_def_output_with_bind ctx_local typ_il exp in
   let clause_il = { Il.args = args_il; body = exp_il; prems = prems_il } $ at in
   Ctx.add_defined_clause ctx id clause_il
@@ -2132,5 +2151,4 @@ let elab_spec (spec : spec) : il Diagnostic.result =
 type error = Diagnostic.error
 type 'a result = 'a Diagnostic.result
 
-let error_to_string = Diagnostic.to_string
 let error_to_diagnostics = Diagnostic.to_diagnostics

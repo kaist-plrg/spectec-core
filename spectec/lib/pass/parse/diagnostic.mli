@@ -63,7 +63,3 @@ val error :
 (** {1 Boundary - payload to {!Diag.t}} *)
 
 val to_diagnostic : error -> Diag.t
-
-(** {1 Plain-text fallback} *)
-
-val to_string : error -> string

@@ -104,11 +104,10 @@ let analyze_args_as_bind (dctx : Dctx.t) (args : arg list) :
 let rec analyze_prem (dctx : Dctx.t) (prem : prem) :
     Dctx.t * VEnv.t * prem * prem list =
   match prem.it with
-  | RulePr { relid; notexp } -> analyze_rule_prem dctx prem.at relid notexp
-  | IfPr exp -> analyze_if_prem dctx prem.at exp
-  | IfHoldPr { relid; notexp } -> analyze_if_hold_prem dctx prem.at relid notexp
-  | IfNotHoldPr { relid; notexp } ->
-      analyze_if_not_hold_prem dctx prem.at relid notexp
+  | RelPr { relid; notexp } -> analyze_rule_prem dctx prem.at relid notexp
+  | RelAssertPr { call; expect } ->
+      analyze_rel_assert_prem dctx prem.at call expect
+  | IfPr { cond; _ } -> analyze_if_prem dctx prem.at cond
   | ElsePr -> (dctx, VEnv.empty, prem, [])
   | LetPr _ ->
       (* unreachable: analyze_let_prem produces LetPr within this pass. *)
@@ -128,7 +127,7 @@ and analyze_rule_prem (dctx : Dctx.t) (at : region) (id : id) (notexp : notexp)
   in
   let exps = Mode.interleave reltyp.it ~ins:exps_input ~outs:exps_output in
   let notexp = Mixop.fill mixop exps in
-  let prem = RulePr { relid = id; notexp } $ at in
+  let prem = RelPr { relid = id; notexp } $ at in
   (dctx, venv, prem, sideconditions)
 
 and analyze_if_eq_prem (dctx : Dctx.t) (at : region) (note : typ')
@@ -138,7 +137,13 @@ and analyze_if_eq_prem (dctx : Dctx.t) (at : region) (note : typ')
   let binds_r = Collectbind.collect_exp dctx exp_r in
   match (BEnv.is_empty binds_l, BEnv.is_empty binds_r) with
   | true, true ->
-      let prem = IfPr (CmpE (`EqOp, optyp, exp_l, exp_r) $$ (at, note)) in
+      let prem =
+        IfPr
+          {
+            cond = CmpE (`EqOp, optyp, exp_l, exp_r) $$ (at, note);
+            role = Condition;
+          }
+      in
       (dctx, VEnv.empty, prem, [])
   | false, true -> analyze_let_prem dctx exp_l binds_l exp_r
   | true, false -> analyze_let_prem dctx exp_r binds_r exp_l
@@ -164,21 +169,13 @@ and analyze_if_prem (dctx : Dctx.t) (at : region) (exp : exp) :
       (dctx, venv, prem, prems)
   | _ ->
       analyze_exp_as_bound dctx exp;
-      let prem = IfPr exp $ at in
+      let prem = IfPr { cond = exp; role = Condition } $ at in
       (dctx, VEnv.empty, prem, [])
 
-and analyze_if_hold_prem (dctx : Dctx.t) (at : region) (id : id)
-    (notexp : notexp) : Dctx.t * VEnv.t * prem * prem list =
-  let exps = Mixop.args notexp in
-  analyze_exps_as_bound dctx exps;
-  let prem = IfHoldPr { relid = id; notexp } $ at in
-  (dctx, VEnv.empty, prem, [])
-
-and analyze_if_not_hold_prem (dctx : Dctx.t) (at : region) (id : id)
-    (notexp : notexp) : Dctx.t * VEnv.t * prem * prem list =
-  let exps = Mixop.args notexp in
-  analyze_exps_as_bound dctx exps;
-  let prem = IfNotHoldPr { relid = id; notexp } $ at in
+and analyze_rel_assert_prem (dctx : Dctx.t) (at : region) (call : relcall)
+    (expect : bool) : Dctx.t * VEnv.t * prem * prem list =
+  analyze_exps_as_bound dctx (Mixop.args call.notexp);
+  let prem = RelAssertPr { call; expect } $ at in
   (dctx, VEnv.empty, prem, [])
 
 and analyze_let_prem (dctx : Dctx.t) (exp_l : exp) (binds_l : BEnv.t)

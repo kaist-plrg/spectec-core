@@ -135,10 +135,3 @@ val error_with_traces :
 (** {1 Boundary - payload to {!Diag.Bag.t}} *)
 
 val to_diagnostics : error -> Diag.Bag.t
-
-(** {1 Plain-text fallback}
-
-    Round-trips the {!Diag.t} back through {!failtrace} for the historical CLI
-    text format. *)
-
-val to_string : error -> string

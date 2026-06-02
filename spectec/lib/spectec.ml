@@ -25,6 +25,10 @@ let with_diagnostics f =
 let parse_spec_files filenames =
   Pass.parse_files filenames |> Result.map_error (fun e -> Error.PassError e)
 
+let parse_spec_string ~origin source =
+  Pass.parse_string ~origin source
+  |> Result.map_error (fun e -> Error.PassError e)
+
 type il = Pass.il = { lang : Lang.Il.spec; qc : Qc_il.spec }
 
 let elaborate spec_el =

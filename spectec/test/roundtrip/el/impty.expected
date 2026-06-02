@@ -1,0 +1,491 @@
+;; === base/spec.spectec ===
+syntax pair<K, V> =
+  | K -> V
+
+syntax map<K, V> = (pair<K, V>)*
+
+dec $lookup_<K, V>(map<K, V>, K) : V?
+  hint(prose_in "lookup of" %1 "in" %0)
+
+def $lookup_<K, V>(eps, K) = eps
+
+def $lookup_<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K) = V_h
+  -- if K_h = K
+
+def $lookup_<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K)
+  = $lookup_<K, V>((K_t -> V_t)*, K)
+  -- otherwise
+
+syntax type =
+  | INT
+  | BOOL
+
+syntax literal =
+  | `NUM int hint(prose "the integer" %0)
+  | `BOOL bool hint(prose "the boolean" %0)
+
+syntax id =
+  | `ID text
+
+syntax expr =
+  | literal
+  | id
+  | expr `+ expr
+  | expr `<= expr
+  | `! expr
+  | expr `&& expr
+
+syntax command =
+  | SKIP
+  | id `= expr
+  | command `; command
+  | IF expr THEN command ELSE command END
+  | WHILE expr DO command END
+  | type id `= expr
+
+syntax prog = command
+
+var n : int
+
+var b : bool
+
+var x : id
+
+var e : expr
+
+var c : command
+
+syntax tenv = map<id, type>
+
+relation Check_expr: tenv |- expr : type
+  hint(input %0 %1)
+  hint(prose_in "typechecking" %1 "under context" %0)
+
+rule Check_expr/num:
+  tenv |- (`NUM n) : INT
+
+rule Check_expr/boollit:
+  tenv |- (`BOOL b) : BOOL
+
+rule Check_expr/id:
+  tenv |- x : type
+  -- if $lookup_<id, type>(tenv, x) = type
+
+rule Check_expr/add:
+  tenv |- e_l `+ e_r : INT
+  -- Check_expr: tenv |- e_l : INT
+  -- Check_expr: tenv |- e_r : INT
+
+rule Check_expr/leq:
+  tenv |- e_l `<= e_r : BOOL
+  -- Check_expr: tenv |- e_l : INT
+  -- Check_expr: tenv |- e_r : INT
+
+rule Check_expr/not:
+  tenv |- `! e : BOOL
+  -- Check_expr: tenv |- e : BOOL
+
+rule Check_expr/and:
+  tenv |- e_l `&& e_r : BOOL
+  -- Check_expr: tenv |- e_l : BOOL
+  -- Check_expr: tenv |- e_r : BOOL
+
+relation Check_command: tenv |- command -| tenv
+  hint(input %0 %1)
+  hint(prose_in "typechecking" %1 "under context" %0)
+
+rule Check_command/skip:
+  tenv |- SKIP -| tenv
+
+rule Check_command/decl:
+  tenv |- (type x `= e) -| (x -> type) :: tenv
+  -- Check_expr: tenv |- e : type
+
+rule Check_command/assign:
+  tenv |- (x `= e) -| tenv
+  -- Check_expr: tenv |- e : type
+  -- if $lookup_<id, type>(tenv, x) = type
+
+rule Check_command/ite:
+  tenv |- (IF e THEN c_1 ELSE c_2 END) -| tenv
+  -- Check_expr: tenv |- e : BOOL
+  -- Check_command: tenv |- c_1 -| tenv_1
+  -- Check_command: tenv |- c_2 -| tenv_2
+
+rule Check_command/while:
+  tenv |- (WHILE e DO c END) -| tenv
+  -- Check_expr: tenv |- e : BOOL
+  -- Check_command: tenv |- c -| tenv_1
+
+rule Check_command/seq:
+  tenv |- (c_1 `; c_2) -| tenv_2
+  -- Check_command: tenv |- c_1 -| tenv_1
+  -- Check_command: tenv_1 |- c_2 -| tenv_2
+
+relation Check_prog: |- prog
+  hint(input %0)
+  hint(prose_true "program" %0 "is well-typed")
+
+rule Check_prog:
+  |- command
+  -- Check_command: eps |- command -| tenv
+
+syntax value = literal
+
+syntax env = map<id, value>
+
+var v : value
+
+relation Eval_expr: env |- expr `=> value
+  hint(input %0 %1)
+  hint(prose_in "evaluating" %1 "in environment" %0)
+
+rule Eval_expr/num:
+  env |- (`NUM n) `=> (`NUM n)
+
+rule Eval_expr/boollit:
+  env |- (`BOOL b) `=> (`BOOL b)
+
+rule Eval_expr/id:
+  env |- x `=> v
+  -- if $lookup_<id, value>(env, x) = v
+
+rule Eval_expr/add:
+  env |- (e_l `+ e_r) `=> (`NUM n)
+  -- Eval_expr: env |- e_l `=> (`NUM n_l)
+  -- Eval_expr: env |- e_r `=> (`NUM n_r)
+  -- if n = $(n_l + n_r)
+
+rule Eval_expr/leq:
+  env |- (e_l `<= e_r) `=> (`BOOL b)
+  -- Eval_expr: env |- e_l `=> (`NUM n_l)
+  -- Eval_expr: env |- e_r `=> (`NUM n_r)
+  -- if b = $(n_l <= n_r)
+
+rule Eval_expr/not:
+  env |- (`! e) `=> (`BOOL b)
+  -- Eval_expr: env |- e `=> (`BOOL b_e)
+  -- if b = ~b_e
+
+rule Eval_expr/and:
+  env |- (e_l `&& e_r) `=> (`BOOL b)
+  -- Eval_expr: env |- e_l `=> (`BOOL b_l)
+  -- Eval_expr: env |- e_r `=> (`BOOL b_r)
+  -- if b = (b_l /\ b_r)
+
+relation Eval_command: env |- command -| env
+  hint(input %0 %1)
+  hint(prose_in "executing" %1 "in environment" %0)
+
+rule Eval_command/skip:
+  env |- SKIP -| env
+
+rule Eval_command/decl:
+  env |- (type x `= e) -| (x -> v) :: env
+  -- Eval_expr: env |- e `=> v
+
+rule Eval_command/assign:
+  env |- (x `= e) -| (x -> v) :: env
+  -- Eval_expr: env |- e `=> v
+
+rule Eval_command/ite-true:
+  env |- (IF e THEN c_1 ELSE c_2 END) -| env_1
+  -- Eval_expr: env |- e `=> (`BOOL true)
+  -- Eval_command: env |- c_1 -| env_1
+
+rule Eval_command/ite-false:
+  env |- (IF e THEN c_1 ELSE c_2 END) -| env_2
+  -- Eval_expr: env |- e `=> (`BOOL false)
+  -- Eval_command: env |- c_2 -| env_2
+
+rule Eval_command/while-false:
+  env |- (WHILE e DO c END) -| env
+  -- Eval_expr: env |- e `=> (`BOOL false)
+
+rule Eval_command/while-true:
+  env |- (WHILE e DO c END) -| env_2
+  -- Eval_expr: env |- e `=> (`BOOL true)
+  -- Eval_command: env |- c -| env_1
+  -- Eval_command: env_1 |- (WHILE e DO c END) -| env_2
+
+rule Eval_command/seq:
+  env |- (c_1 `; c_2) -| env_2
+  -- Eval_command: env |- c_1 -| env_1
+  -- Eval_command: env_1 |- c_2 -| env_2
+
+relation Eval_prog: |- prog -| env
+  hint(input %0)
+  hint(prose_in "executing program" %0)
+
+rule Eval_prog:
+  |- command -| env
+  -- Eval_command: eps |- command -| env
+
+relation Run_prog: |- prog -| env
+  hint(input %0)
+  hint(prose_in "running program" %0)
+
+rule Run_prog:
+  |- command -| env
+  -- Check_prog: |- command
+  -- Eval_prog: |- command -| env
+
+builtin generator $base_prog : prog
+
+property Type_safety hint(generator $base_prog):
+  Eval_prog: |- prog -| env
+  -- Check_prog: |- prog
+;; === closure/spec.spectec ===
+syntax pair<K, V> =
+  | K -> V
+
+syntax map<K, V> = (pair<K, V>)*
+
+dec $lookup_<K, V>(map<K, V>, K) : V?
+
+def $lookup_<K, V>(eps, K) = eps
+
+def $lookup_<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K) = V_h
+  -- if K_h = K
+
+def $lookup_<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K)
+  = $lookup_<K, V>((K_t -> V_t)*, K)
+  -- otherwise
+
+syntax type =
+  | INT
+  | BOOL
+  | type -> type
+
+syntax literal =
+  | `NUM int
+  | `BOOL bool
+
+syntax id =
+  | `ID text
+
+syntax expr =
+  | literal
+  | id
+  | expr `+ expr
+  | expr `<= expr
+  | `! expr
+  | expr `&& expr
+  | FUN `(type id) -> type `{expr}
+  | expr `(expr)
+
+syntax command =
+  | SKIP
+  | id `= expr
+  | command `; command
+  | IF expr THEN command ELSE command END
+  | WHILE expr DO command END
+  | type id `= expr
+
+syntax prog = command
+
+var n : int
+
+var b : bool
+
+var x : id
+
+var e : expr
+
+var c : command
+
+syntax tenv = map<id, type>
+
+relation Check_expr: tenv |- expr : type
+  hint(input %0 %1)
+
+rule Check_expr/num:
+  tenv |- (`NUM n) : INT
+
+rule Check_expr/boollit:
+  tenv |- (`BOOL b) : BOOL
+
+rule Check_expr/id:
+  tenv |- x : type
+  -- if $lookup_<id, type>(tenv, x) = type
+
+rule Check_expr/add:
+  tenv |- e_l `+ e_r : INT
+  -- Check_expr: tenv |- e_l : INT
+  -- Check_expr: tenv |- e_r : INT
+
+rule Check_expr/leq:
+  tenv |- e_l `<= e_r : BOOL
+  -- Check_expr: tenv |- e_l : INT
+  -- Check_expr: tenv |- e_r : INT
+
+rule Check_expr/not:
+  tenv |- `! e : BOOL
+  -- Check_expr: tenv |- e : BOOL
+
+rule Check_expr/and:
+  tenv |- e_l `&& e_r : BOOL
+  -- Check_expr: tenv |- e_l : BOOL
+  -- Check_expr: tenv |- e_r : BOOL
+
+rule Check_expr/fun:
+  tenv |- FUN `(type_arg x_arg) -> type_ret `{e} : type_arg -> type_ret
+  -- Check_expr: ((x_arg -> type_arg) :: tenv) |- e : type_ret
+
+rule Check_expr/call:
+  tenv |- (e_f `(e_a)) : type_ret
+  -- Check_expr: tenv |- e_f : type_arg -> type_ret
+  -- Check_expr: tenv |- e_a : type_arg
+
+relation Check_command: tenv |- command -| tenv
+  hint(input %0 %1)
+
+rule Check_command/skip:
+  tenv |- SKIP -| tenv
+
+rule Check_command/decl:
+  tenv |- (type x `= e) -| (x -> type) :: tenv
+  -- Check_expr: tenv |- e : type
+
+rule Check_command/assign:
+  tenv |- (x `= e) -| tenv
+  -- Check_expr: tenv |- e : type
+  -- if $lookup_<id, type>(tenv, x) = type
+
+rule Check_command/ite:
+  tenv |- (IF e THEN c_1 ELSE c_2 END) -| tenv
+  -- Check_expr: tenv |- e : BOOL
+  -- Check_command: tenv |- c_1 -| tenv_1
+  -- Check_command: tenv |- c_2 -| tenv_2
+
+rule Check_command/while:
+  tenv |- (WHILE e DO c END) -| tenv
+  -- Check_expr: tenv |- e : BOOL
+  -- Check_command: tenv |- c -| tenv_1
+
+rule Check_command/seq:
+  tenv |- (c_1 `; c_2) -| tenv_2
+  -- Check_command: tenv |- c_1 -| tenv_1
+  -- Check_command: tenv_1 |- c_2 -| tenv_2
+
+relation Check_prog: |- prog
+  hint(input %0)
+
+rule Check_prog:
+  |- command
+  -- Check_command: eps |- command -| tenv
+
+syntax value, env
+
+syntax value =
+  | literal
+  | CLO id expr env
+
+syntax env = map<id, value>
+
+var v : value
+
+relation Eval_expr: env |- expr `=> value
+  hint(input %0 %1)
+
+rule Eval_expr/num:
+  env |- (`NUM n) `=> (`NUM n)
+
+rule Eval_expr/boollit:
+  env |- (`BOOL b) `=> (`BOOL b)
+
+rule Eval_expr/id:
+  env |- x `=> v
+  -- if $lookup_<id, value>(env, x) = v
+
+rule Eval_expr/add:
+  env |- (e_l `+ e_r) `=> (`NUM n)
+  -- Eval_expr: env |- e_l `=> (`NUM n_l)
+  -- Eval_expr: env |- e_r `=> (`NUM n_r)
+  -- if n = $(n_l + n_r)
+
+rule Eval_expr/leq:
+  env |- (e_l `<= e_r) `=> (`BOOL b)
+  -- Eval_expr: env |- e_l `=> (`NUM n_l)
+  -- Eval_expr: env |- e_r `=> (`NUM n_r)
+  -- if b = $(n_l <= n_r)
+
+rule Eval_expr/not:
+  env |- (`! e) `=> (`BOOL b)
+  -- Eval_expr: env |- e `=> (`BOOL b_e)
+  -- if b = ~b_e
+
+rule Eval_expr/and:
+  env |- (e_l `&& e_r) `=> (`BOOL b)
+  -- Eval_expr: env |- e_l `=> (`BOOL b_l)
+  -- Eval_expr: env |- e_r `=> (`BOOL b_r)
+  -- if b = (b_l /\ b_r)
+
+rule Eval_expr/fun:
+  env |- (FUN `(type_arg x_arg) -> type_ret `{e}) `=> (CLO x_arg e env)
+
+rule Eval_expr/call:
+  env |- (e_f `(e_a)) `=> v_ret
+  -- Eval_expr: env |- e_f `=> (CLO x_a e_body env_clo)
+  -- Eval_expr: env |- e_a `=> v
+  -- Eval_expr: ((x_a -> v) :: env_clo) |- e_body `=> v_ret
+
+relation Eval_command: env |- command -| env
+  hint(input %0 %1)
+
+rule Eval_command/skip:
+  env |- SKIP -| env
+
+rule Eval_command/decl:
+  env |- (type x `= e) -| (x -> v) :: env
+  -- Eval_expr: env |- e `=> v
+
+rule Eval_command/assign:
+  env |- (x `= e) -| (x -> v) :: env
+  -- Eval_expr: env |- e `=> v
+
+rule Eval_command/ite-true:
+  env |- (IF e THEN c_1 ELSE c_2 END) -| env_1
+  -- Eval_expr: env |- e `=> (`BOOL true)
+  -- Eval_command: env |- c_1 -| env_1
+
+rule Eval_command/ite-false:
+  env |- (IF e THEN c_1 ELSE c_2 END) -| env_2
+  -- Eval_expr: env |- e `=> (`BOOL false)
+  -- Eval_command: env |- c_2 -| env_2
+
+rule Eval_command/while-false:
+  env |- (WHILE e DO c END) -| env
+  -- Eval_expr: env |- e `=> (`BOOL false)
+
+rule Eval_command/while-true:
+  env |- (WHILE e DO c END) -| env_2
+  -- Eval_expr: env |- e `=> (`BOOL true)
+  -- Eval_command: env |- c -| env_1
+  -- Eval_command: env_1 |- (WHILE e DO c END) -| env_2
+
+rule Eval_command/seq:
+  env |- (c_1 `; c_2) -| env_2
+  -- Eval_command: env |- c_1 -| env_1
+  -- Eval_command: env_1 |- c_2 -| env_2
+
+relation Eval_prog: |- prog -| env
+  hint(input %0)
+
+rule Eval_prog:
+  |- command -| env
+  -- Eval_command: eps |- command -| env
+
+relation Run_prog: |- prog -| env
+  hint(input %0)
+
+rule Run_prog:
+  |- command -| env
+  -- Check_prog: |- command
+  -- Eval_prog: |- command -| env
+
+builtin generator $functions_prog : prog
+
+property Type_safety hint(generator $functions_prog):
+  Eval_prog: |- prog -| env
+  -- Check_prog: |- prog

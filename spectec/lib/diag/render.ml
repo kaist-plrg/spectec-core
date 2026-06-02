@@ -299,3 +299,31 @@ let render_bag ~ansi bag =
   Record.Bag.to_sorted_list bag
   |> List.map (render ~ansi ~cache)
   |> String.concat "\n\n"
+
+let rec render_trace_branch ~indent ~is_last (node : Record.trace_node) : string
+    =
+  let { Record.message; children; _ } = node in
+  let connector = if is_last then "└── " else "├── " in
+  let child_indent = indent ^ if is_last then "    " else "│   " in
+  String.concat "\n"
+    ((indent ^ connector ^ message)
+    :: render_trace_branches ~indent:child_indent children)
+
+and render_trace_branches ~indent children =
+  let n = List.length children in
+  List.mapi
+    (fun i c -> render_trace_branch ~indent ~is_last:(i = n - 1) c)
+    children
+
+let render_trace_only (d : Record.t) : string =
+  let render_root (node : Record.trace_node) =
+    String.concat "\n"
+      (node.message :: render_trace_branches ~indent:"" node.children)
+  in
+  String.concat "\n"
+    ((severity_label d.severity ^ ": " ^ d.message)
+    :: List.map render_root d.trace)
+
+let render_bag_trace bag =
+  Record.Bag.to_sorted_list bag
+  |> List.map render_trace_only |> String.concat "\n\n"

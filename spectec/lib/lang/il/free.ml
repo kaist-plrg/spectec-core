@@ -67,12 +67,13 @@ and free_args (args : arg list) : t =
 
 (* Premises *)
 
+let free_relcall ({ notexp; _ } : relcall) : t = free_exps (Mixfix.args notexp)
+
 let rec free_prem (prem : prem) : t =
   match prem.it with
-  | RulePr { notexp; _ } -> free_exps (Mixfix.args notexp)
-  | IfPr exp -> free_exp exp
-  | IfHoldPr { notexp; _ } -> free_exps (Mixfix.args notexp)
-  | IfNotHoldPr { notexp; _ } -> free_exps (Mixfix.args notexp)
+  | RelPr call -> free_relcall call
+  | RelAssertPr { call; _ } -> free_relcall call
+  | IfPr { cond; _ } -> free_exp cond
   | LetPr (exp_l, exp_r) -> free_exp exp_l + free_exp exp_r
   | ElsePr -> empty
   | IterPr (prem, _) -> free_prem prem

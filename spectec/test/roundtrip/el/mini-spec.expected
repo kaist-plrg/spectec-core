@@ -1,0 +1,497 @@
+;; === ex1-func-and-var/1-syntax.spectec ===
+syntax id = text
+
+syntax binop =
+  | ADD
+  | MUL
+
+syntax type
+
+syntax expr =
+  | NumE int
+  | BinE binop expr expr
+  | LetE id expr expr
+  | VarE id
+  | FuncE id type expr
+  | ApplyE expr expr
+;; === ex1-func-and-var/2.1-typing-type.spectec ===
+syntax type =
+  | INT
+  | type -> type
+;; === ex1-func-and-var/2.2-typing-context.spectec ===
+syntax pair<K, V> =
+  | K -> V
+
+syntax map<K, V> = (pair<K, V>)*
+
+syntax context = map<id, type>
+
+dec $lookup_context(context, id) : type?
+
+var C : context
+;; === ex1-func-and-var/2.3-typing.spectec ===
+relation Type: context |- expr : type
+  hint(input %0 %1)
+
+var e : expr
+
+var i : int
+
+rule Type/numE:
+  C |- NumE i : INT
+
+rule Type/binE:
+  C |- BinE _ e_l e_r : INT
+  -- Type: C |- e_l : INT
+  -- Type: C |- e_r : INT
+
+rule Type/letE:
+  C |- LetE id e_p e_b : type_b
+  -- Type: C |- e_p : type_p
+  -- Type: (id -> type_p) :: C |- e_b : type_b
+
+rule Type/varE:
+  C |- VarE id : type
+  -- if $lookup_context(C, id) = type
+
+rule Type/funcE:
+  C |- FuncE id type_p e_b : type_p -> type_b
+  -- Type: (id -> type_p) :: C |- e_b : type_b
+
+rule Type/applyE:
+  C |- ApplyE e_f e_a : type_b
+  -- Type: C |- e_f : type_p -> type_b
+  -- Type: C |- e_a : type_p
+;; === ex1-func-and-var/3.1-evaluation-value.spectec ===
+syntax env
+
+syntax value =
+  | NumV int
+  | CloV id expr env
+
+syntax env = map<id, value>
+
+dec $lookup_env(env, id) : value?
+;; === ex1-func-and-var/3.2-evaluation.spectec ===
+relation Eval: env |- expr ==> value
+  hint(input %0 %1)
+
+rule Eval/numE:
+  env |- NumE i ==> NumV i
+
+rule Eval/binE-add:
+  env |- BinE ADD e_l e_r ==> NumV $(i_l + i_r)
+  -- Eval: env |- e_l ==> NumV i_l
+  -- Eval: env |- e_r ==> NumV i_r
+
+rule Eval/binE-mul:
+  env |- BinE MUL e_l e_r ==> NumV $(i_l * i_r)
+  -- Eval: env |- e_l ==> NumV i_l
+  -- Eval: env |- e_r ==> NumV i_r
+
+rule Eval/letE:
+  env |- LetE id e_p e_b ==> value_b
+  -- Eval: env |- e_p ==> value_p
+  -- Eval: (id -> value_p) :: env |- e_b ==> value_b
+
+rule Eval/varE:
+  env |- VarE id ==> value
+  -- if $lookup_env(env, id) = value
+
+rule Eval/funcE:
+  env |- FuncE id _ e ==> CloV id e env
+
+rule Eval/applyE:
+  env |- ApplyE e_f e_a ==> value_r
+  -- Eval: env |- e_f ==> CloV id e_b env_clo
+  -- Eval: env |- e_a ==> value_a
+  -- Eval: (id -> value_a) :: env_clo |- e_b ==> value_r
+;; === ex1-func-and-var/4-aux.spectec ===
+dec $lookup_<K, V>(map<K, V>, K) : V?
+
+def $lookup_<K, V>(eps, K) = eps
+
+def $lookup_<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K) = V_h
+  -- if K_h = K_query
+
+def $lookup_<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K)
+  = $lookup_<K, V>((K_t -> V_t)*, K)
+  -- otherwise
+
+def $lookup_context(context, id) = $lookup_<id, type>(context, id)
+
+def $lookup_env(env, id) = $lookup_<id, value>(env, id)
+;; === ex2-mutation/1-syntax.spectec ===
+syntax id = text
+
+syntax binop =
+  | ADD
+  | MUL
+
+syntax type
+
+syntax expr =
+  | NumE int
+  | BinE binop expr expr
+  | LetE id expr expr
+  | VarE id
+  | FuncE id type expr
+  | ApplyE expr expr
+  | RefE expr
+  | DerefE expr
+  | UpdateE expr expr
+;; === ex2-mutation/2.1-typing-type.spectec ===
+syntax type =
+  | INT
+  | type -> type
+  | REF type
+;; === ex2-mutation/2.2-typing-context.spectec ===
+syntax pair<K, V> =
+  | K -> V
+
+syntax map<K, V> = (pair<K, V>)*
+
+syntax context = map<id, type>
+
+dec $lookup_context(context, id) : type?
+
+var C : context
+;; === ex2-mutation/2.3-typing.spectec ===
+relation Type: context |- expr : type
+  hint(input %0 %1)
+
+var e : expr
+
+var i : int
+
+rule Type/numE:
+  C |- NumE i : INT
+
+rule Type/binE:
+  C |- BinE _ e_l e_r : INT
+  -- Type: C |- e_l : INT
+  -- Type: C |- e_r : INT
+
+rule Type/letE:
+  C |- LetE id e_p e_b : type_b
+  -- Type: C |- e_p : type_p
+  -- Type: (id -> type_p) :: C |- e_b : type_b
+
+rule Type/varE:
+  C |- VarE id : type
+  -- if $lookup_context(C, id) = type
+
+rule Type/funcE:
+  C |- FuncE id type_p e_b : type_p -> type_b
+  -- Type: (id -> type_p) :: C |- e_b : type_b
+
+rule Type/applyE:
+  C |- ApplyE e_f e_a : type_b
+  -- Type: C |- e_f : type_p -> type_b
+  -- Type: C |- e_a : type_p
+
+rule Type/refE:
+  C |- RefE e : REF type
+  -- Type: C |- e : type
+
+rule Type/derefE:
+  C |- DerefE e : type
+  -- Type: C |- e : REF type
+
+rule Type/updateE:
+  C |- UpdateE e_l e_r : type
+  -- Type: C |- e_l : REF type
+  -- Type: C |- e_r : type
+;; === ex2-mutation/3.1-evaluation-value.spectec ===
+syntax env
+
+syntax value =
+  | NumV int
+  | CloV id expr env
+  | LocV nat
+
+syntax env = map<id, value>
+
+dec $lookup_env(env, id) : value?
+
+syntax sto = value*
+;; === ex2-mutation/3.2-evaluation.spectec ===
+relation Eval: env ; sto |- expr ==> value ; sto
+  hint(input %0 %1 %2)
+
+var n : nat
+
+rule Eval/numE:
+  env ; sto |- NumE i ==> NumV i ; sto
+
+rule Eval/binE-add:
+  env ; sto |- BinE ADD e_l e_r ==> NumV $(i_l + i_r) ; sto_2
+  -- Eval: env ; sto |- e_l ==> NumV i_l ; sto_1
+  -- Eval: env ; sto_1 |- e_r ==> NumV i_r ; sto_2
+
+rule Eval/binE-mul:
+  env ; sto |- BinE MUL e_l e_r ==> NumV $(i_l * i_r) ; sto_2
+  -- Eval: env ; sto |- e_l ==> NumV i_l ; sto_1
+  -- Eval: env ; sto_1 |- e_r ==> NumV i_r ; sto_2
+
+rule Eval/letE:
+  env ; sto |- LetE id e_p e_b ==> value_b ; sto_2
+  -- Eval: env ; sto |- e_p ==> value_p ; sto_1
+  -- Eval: ((id -> value_p) :: env) ; sto_1 |- e_b ==> value_b ; sto_2
+
+rule Eval/varE:
+  env ; sto |- VarE id ==> value ; sto
+  -- if $lookup_env(env, id) = value
+
+rule Eval/funcE:
+  env ; sto |- FuncE id _ e ==> CloV id e env ; sto
+
+rule Eval/applyE:
+  env ; sto |- ApplyE e_f e_a ==> value_r ; sto_3
+  -- Eval: env ; sto |- e_f ==> CloV id e_b env_clo ; sto_1
+  -- Eval: env ; sto_1 |- e_a ==> value_a ; sto_2
+  -- Eval: ((id -> value_a) :: env_clo) ; sto_2 |- e_b ==> value_r ; sto_3
+
+rule Eval/refE:
+  env ; sto |- RefE e ==> LocV n ; sto_1 ++ [value]
+  -- Eval: env ; sto |- e ==> value ; sto_1
+  -- if |sto_1| = n
+
+rule Eval/derefE:
+  env ; sto |- DerefE e ==> value ; sto_1
+  -- Eval: env ; sto |- e ==> LocV n ; sto_1
+  -- if sto_1[n] = value
+
+rule Eval/updateE:
+  env ; sto |- UpdateE e_l e_r ==> value_r ; sto_3
+  -- Eval: env ; sto |- e_l ==> LocV n ; sto_1
+  -- Eval: env ; sto_1 |- e_r ==> value_r ; sto_2
+  -- if sto_2[[n] = value_r] = sto_3
+;; === ex2-mutation/4-aux.spectec ===
+dec $lookup_<K, V>(map<K, V>, K) : V?
+
+def $lookup_<K, V>(eps, K) = eps
+
+def $lookup_<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K) = V_h
+  -- if K_h = K_query
+
+def $lookup_<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K)
+  = $lookup_<K, V>((K_t -> V_t)*, K)
+  -- otherwise
+
+def $lookup_context(context, id) = $lookup_<id, type>(context, id)
+
+def $lookup_env(env, id) = $lookup_<id, value>(env, id)
+;; === ex3-global-and-decl/1-syntax.spectec ===
+syntax id = text
+
+syntax binop =
+  | ADD
+  | MUL
+
+syntax type
+
+syntax expr =
+  | NumE int
+  | BinE binop expr expr
+  | LetE id expr expr
+  | VarE id
+  | FuncE id type expr
+  | ApplyE expr expr
+  | RefE expr
+  | DerefE expr
+  | UpdateE expr expr
+
+syntax globalDecl =
+  | GlobalD id expr
+
+syntax program =
+  | globalDecl ; program
+  | expr
+;; === ex3-global-and-decl/2.1-typing-type.spectec ===
+syntax type =
+  | INT
+  | type -> type
+  | REF type
+;; === ex3-global-and-decl/2.2-typing-context.spectec ===
+syntax pair<K, V> =
+  | K -> V
+
+syntax map<K, V> = (pair<K, V>)*
+
+syntax contextLayer = map<id, type>
+
+dec $lookup_context(contextLayer, id) : type?
+
+syntax context = {GLOBAL contextLayer, LOCAL contextLayer}
+
+var C : context
+;; === ex3-global-and-decl/2.3-typing.spectec ===
+relation Type: context |- expr : type
+  hint(input %0 %1)
+
+var e : expr
+
+var i : int
+
+rule Type/numE:
+  C |- NumE i : INT
+
+rule Type/binE:
+  C |- BinE _ e_l e_r : INT
+  -- Type: C |- e_l : INT
+  -- Type: C |- e_r : INT
+
+rule Type/letE:
+  C |- LetE id e_p e_b : type_b
+  -- Type: C |- e_p : type_p
+  -- Type: C[.LOCAL = (id -> type_p) :: C.LOCAL] |- e_b : type_b
+
+rule Type/varE-local:
+  C |- VarE id : type
+  -- if $lookup_context(C.LOCAL, id) = type
+
+rule Type/varE-global:
+  C |- VarE id : type
+  -- if $lookup_context(C.GLOBAL, id) = type
+
+rule Type/funcE:
+  C |- FuncE id type_p e_b : type_p -> type_b
+  -- Type: C[.LOCAL = (id -> type_p) :: C.LOCAL] |- e_b : type_b
+
+rule Type/applyE:
+  C |- ApplyE e_f e_a : type_b
+  -- Type: C |- e_f : type_p -> type_b
+  -- Type: C |- e_a : type_p
+
+rule Type/refE:
+  C |- RefE e : REF type
+  -- Type: C |- e : type
+
+rule Type/derefE:
+  C |- DerefE e : type
+  -- Type: C |- e : REF type
+
+rule Type/updateE:
+  C |- UpdateE e_l e_r : type
+  -- Type: C |- e_l : REF type
+  -- Type: C |- e_r : type
+
+relation Type_Prog: context |- program : type
+  hint(input %0 %1)
+
+rule Type_Prog/expr:
+  C |- e : type
+  -- Type: C |- e : type
+
+rule Type_Prog/decl:
+  C |- GlobalD id e ; program : type_p
+  -- Type: C |- e : type
+  -- Type_Prog: C[.GLOBAL = (id -> type) :: C.GLOBAL] |- program : type_p
+;; === ex3-global-and-decl/3.1-evaluation-value.spectec ===
+syntax env
+
+syntax value =
+  | NumV nat
+  | CloV id expr env
+  | LocV nat
+;; === ex3-global-and-decl/3.2-evaluation-env.spectec ===
+syntax envLayer = map<id, value>
+
+syntax env = {GLOBAL envLayer, LOCAL envLayer}
+
+dec $lookup_env(envLayer, id) : value?
+
+syntax sto = value*
+;; === ex3-global-and-decl/3.3-evaluation.spectec ===
+relation Eval: env ; sto |- expr ==> value ; sto
+  hint(input %0 %1 %2)
+
+var n : nat
+
+rule Eval/numE:
+  env ; sto |- NumE n ==> NumV n ; sto
+
+rule Eval/binE-add:
+  env ; sto |- BinE ADD e_l e_r ==> NumV $(n_l + n_r) ; sto_2
+  -- Eval: env ; sto |- e_l ==> NumV n_l ; sto_1
+  -- Eval: env ; sto_1 |- e_r ==> NumV n_r ; sto_2
+
+rule Eval/binE-mul:
+  env ; sto |- BinE MUL e_l e_r ==> NumV $(n_l * n_r) ; sto_2
+  -- Eval: env ; sto |- e_l ==> NumV n_l ; sto_1
+  -- Eval: env ; sto_1 |- e_r ==> NumV n_r ; sto_2
+
+rule Eval/letE:
+  env ; sto |- LetE id e_p e_b ==> value_b ; sto_2
+  -- Eval: env ; sto |- e_p ==> value_p ; sto_1
+  -- Eval:
+       env[.LOCAL = (id -> value_p) :: env.LOCAL] ; sto_1
+         |- e_b
+         ==> value_b ; sto_2
+
+rule Eval/varE-local:
+  env ; sto |- VarE id ==> value ; sto
+  -- if $lookup_env(env.LOCAL, id) = value
+
+rule Eval/varE-global:
+  env ; sto |- VarE id ==> value ; sto
+  -- if $lookup_env(env.GLOBAL, id) = value
+
+rule Eval/funcE:
+  env ; sto |- FuncE id _ e ==> CloV id e env ; sto
+
+rule Eval/applyE:
+  env ; sto |- ApplyE e_f e_a ==> value_r ; sto_3
+  -- Eval: env ; sto |- e_f ==> CloV id e_b env_clo ; sto_1
+  -- Eval: env ; sto_1 |- e_a ==> value_a ; sto_2
+  -- Eval:
+       env_clo[.LOCAL = (id -> value_a) :: env_clo.LOCAL] ; sto_2
+         |- e_b
+         ==> value_r ; sto_3
+
+rule Eval/refE:
+  env ; sto |- RefE e ==> LocV n ; sto_1 ++ [value]
+  -- Eval: env ; sto |- e ==> value ; sto_1
+  -- if |sto_1| = n
+
+rule Eval/derefE:
+  env ; sto |- DerefE e ==> value ; sto_1
+  -- Eval: env ; sto |- e ==> LocV n ; sto_1
+  -- if sto_1[n] = value
+
+rule Eval/updateE:
+  env ; sto |- UpdateE e_l e_r ==> value_r ; sto_3
+  -- Eval: env ; sto |- e_l ==> LocV n ; sto_1
+  -- Eval: env ; sto_1 |- e_r ==> value_r ; sto_2
+  -- if sto_2[[n] = value_r] = sto_3
+
+relation Eval_Prog: env ; sto |- program ==> value ; sto
+  hint(input %0 %1 %2)
+
+rule Eval_Prog/decl:
+  env ; sto |- GlobalD id e ; program ==> value_p ; sto_2
+  -- Eval: env ; sto |- e ==> value ; sto_1
+  -- Eval_Prog:
+       env[.GLOBAL = (id -> value) :: env.GLOBAL] ; sto_1
+         |- program
+         ==> value_p ; sto_2
+
+rule Eval_Prog/expr:
+  env ; sto |- e ==> value ; sto_1
+  -- Eval: env ; sto |- e ==> value ; sto_1
+;; === ex3-global-and-decl/4-aux.spectec ===
+dec $lookup_<K, V>(map<K, V>, K) : V?
+
+def $lookup_<K, V>(eps, K) = eps
+
+def $lookup_<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K) = V_h
+  -- if K_h = K_query
+
+def $lookup_<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K)
+  = $lookup_<K, V>((K_t -> V_t)*, K)
+  -- otherwise
+
+def $lookup_context(contextLayer, id) = $lookup_<id, type>(contextLayer, id)
+
+def $lookup_env(envLayer, id) = $lookup_<id, value>(envLayer, id)

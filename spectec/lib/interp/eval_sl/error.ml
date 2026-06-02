@@ -36,8 +36,4 @@ let check (b : bool) (at : region) (msg : string) : unit =
 let guard (b : bool) (at : region) (msg : string) : unit =
   if not b then warn at msg
 
-(* Formatting *)
-
 type error = region * string
-
-let to_string ((at, msg) : error) = Common.Error.string_of_located_error at msg

@@ -23,6 +23,10 @@ let parse_file file : Lang.El.spec result =
   | Sys_error msg ->
       Error (Diag.error ~source:"io" (Source.region_of_file file) msg)
 
+let parse_string ~origin source : Lang.El.spec result =
+  try Ok (with_lexbuf origin (Lexing.from_string source) Parser.spec)
+  with ParseError e -> Error e
+
 let parse_files filenames : Lang.El.spec result =
   let rec parse_files' acc = function
     | [] -> Ok (List.concat (List.rev acc))
@@ -36,5 +40,4 @@ let parse_files filenames : Lang.El.spec result =
 type error = Diagnostic.error
 type 'a result = 'a Diagnostic.result
 
-let error_to_string = Diagnostic.to_string
 let error_to_diagnostic = Diagnostic.to_diagnostic

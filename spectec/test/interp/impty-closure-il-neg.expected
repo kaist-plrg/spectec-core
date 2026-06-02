@@ -2,399 +2,83 @@ Running typechecker test on 8 files
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_add_bool.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_add_bool.imp
-  tracing backtrack logs:
-invocation of relation Check_prog failed
-└── application of rule Check_prog/ failed
-    └── ../../../../../spectec/specs/impty/closure/spec.spectec:149:6-149:19:
-        invocation of relation Check_command failed
-        ├── 1. application of rule Check_command/skip failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:114:11-114:15:
-        │       condition command matches `SKIP` was not met
-        ├── 2. application of rule Check_command/decl failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:118:6-118:16:
-        │       invocation of relation Check_expr failed
-        │       ├── 1. application of rule Check_expr/num failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:69:12-69:18:
-        │       │       condition expr <: literal was not met
-        │       ├── 2. application of rule Check_expr/boollit failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:72:12-72:19:
-        │       │       condition expr <: literal was not met
-        │       ├── 3. application of rule Check_expr/id failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:75:11-75:12:
-        │       │       condition expr <: id was not met
-        │       ├── 4. application of rule Check_expr/add failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:80:32-80:35:
-        │       │       condition type matches `INT` was not met
-        │       ├── 5. application of rule Check_expr/leq failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:84:11-84:22:
-        │       │       condition expr matches `% <= %` was not met
-        │       ├── 6. application of rule Check_expr/not failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:89:11-89:15:
-        │       │       condition expr matches `! %` was not met
-        │       ├── 7. application of rule Check_expr/and failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:93:11-93:22:
-        │       │       condition expr matches `% && %` was not met
-        │       ├── 8. application of rule Check_expr/fun failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:98:11-98:53:
-        │       │       condition expr matches `FUN (% %) -> % {%}` was not met
-        │       └── 9. application of rule Check_expr/call failed
-        │           └── ../../../../../spectec/specs/impty/closure/spec.spectec:102:12-102:24:
-        │               condition expr matches `% (%)` was not met
-        ├── 3. application of rule Check_command/assign failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:121:12-121:18:
-        │       condition command matches `% = %` was not met
-        ├── 4. application of rule Check_command/ite failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:126:12-126:38:
-        │       condition command matches `IF % THEN % ELSE % END` was not met
-        ├── 5. application of rule Check_command/while failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:132:12-132:28:
-        │       condition command matches `WHILE % DO % END` was not met
-        └── 6. application of rule Check_command/seq failed
-            └── ../../../../../spectec/specs/impty/closure/spec.spectec:137:12-137:22:
-                condition command matches `% ; %` was not met
-
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/decl failed
+        └── invocation of relation Check_expr failed
+            └── application of rule Check_expr/add failed
+                └── condition type matches `INT` was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_assign_mismatch.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_assign_mismatch.imp
-  tracing backtrack logs:
-invocation of relation Check_prog failed
-└── application of rule Check_prog/ failed
-    └── ../../../../../spectec/specs/impty/closure/spec.spectec:149:6-149:19:
-        invocation of relation Check_command failed
-        ├── 1. application of rule Check_command/skip failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:114:11-114:15:
-        │       condition command matches `SKIP` was not met
-        ├── 2. application of rule Check_command/decl failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:117:12-117:23:
-        │       condition command matches `% % = %` was not met
-        ├── 3. application of rule Check_command/assign failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:121:12-121:18:
-        │       condition command matches `% = %` was not met
-        ├── 4. application of rule Check_command/ite failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:126:12-126:38:
-        │       condition command matches `IF % THEN % ELSE % END` was not met
-        ├── 5. application of rule Check_command/while failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:132:12-132:28:
-        │       condition command matches `WHILE % DO % END` was not met
-        └── 6. application of rule Check_command/seq failed
-            └── ../../../../../spectec/specs/impty/closure/spec.spectec:139:6-139:19:
-                invocation of relation Check_command failed
-                ├── 1. application of rule Check_command/skip failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:114:11-114:15:
-                │       condition command matches `SKIP` was not met
-                ├── 2. application of rule Check_command/decl failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:117:12-117:23:
-                │       condition command matches `% % = %` was not met
-                ├── 3. application of rule Check_command/assign failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:123:9-123:43:
-                │       condition ($lookup_<id, type>(tenv, x) = ?(type)) was not met
-                ├── 4. application of rule Check_command/ite failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:126:12-126:38:
-                │       condition command matches `IF % THEN % ELSE % END` was not met
-                ├── 5. application of rule Check_command/while failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:132:12-132:28:
-                │       condition command matches `WHILE % DO % END` was not met
-                └── 6. application of rule Check_command/seq failed
-                    └── ../../../../../spectec/specs/impty/closure/spec.spectec:137:12-137:22:
-                        condition command matches `% ; %` was not met
-
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/seq failed
+        └── invocation of relation Check_command failed
+            └── application of rule Check_command/assign failed
+                └── condition ($lookup_<id, type>(tenv, x) = ?(type)) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_bad_assign.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_bad_assign.imp
-  tracing backtrack logs:
-invocation of relation Check_prog failed
-└── application of rule Check_prog/ failed
-    └── ../../../../../spectec/specs/impty/closure/spec.spectec:149:6-149:19:
-        invocation of relation Check_command failed
-        ├── 1. application of rule Check_command/skip failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:114:11-114:15:
-        │       condition command matches `SKIP` was not met
-        ├── 2. application of rule Check_command/decl failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:118:30-118:34:
-        │       condition (type' = type) was not met
-        ├── 3. application of rule Check_command/assign failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:121:12-121:18:
-        │       condition command matches `% = %` was not met
-        ├── 4. application of rule Check_command/ite failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:126:12-126:38:
-        │       condition command matches `IF % THEN % ELSE % END` was not met
-        ├── 5. application of rule Check_command/while failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:132:12-132:28:
-        │       condition command matches `WHILE % DO % END` was not met
-        └── 6. application of rule Check_command/seq failed
-            └── ../../../../../spectec/specs/impty/closure/spec.spectec:137:12-137:22:
-                condition command matches `% ; %` was not met
-
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/decl failed
+        └── condition (type' = type) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_if_not_bool.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_if_not_bool.imp
-  tracing backtrack logs:
-invocation of relation Check_prog failed
-└── application of rule Check_prog/ failed
-    └── ../../../../../spectec/specs/impty/closure/spec.spectec:149:6-149:19:
-        invocation of relation Check_command failed
-        ├── 1. application of rule Check_command/skip failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:114:11-114:15:
-        │       condition command matches `SKIP` was not met
-        ├── 2. application of rule Check_command/decl failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:117:12-117:23:
-        │       condition command matches `% % = %` was not met
-        ├── 3. application of rule Check_command/assign failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:121:12-121:18:
-        │       condition command matches `% = %` was not met
-        ├── 4. application of rule Check_command/ite failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:126:12-126:38:
-        │       condition command matches `IF % THEN % ELSE % END` was not met
-        ├── 5. application of rule Check_command/while failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:132:12-132:28:
-        │       condition command matches `WHILE % DO % END` was not met
-        └── 6. application of rule Check_command/seq failed
-            └── ../../../../../spectec/specs/impty/closure/spec.spectec:139:6-139:19:
-                invocation of relation Check_command failed
-                ├── 1. application of rule Check_command/skip failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:114:11-114:15:
-                │       condition command matches `SKIP` was not met
-                ├── 2. application of rule Check_command/decl failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:117:12-117:23:
-                │       condition command matches `% % = %` was not met
-                ├── 3. application of rule Check_command/assign failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:121:12-121:18:
-                │       condition command matches `% = %` was not met
-                ├── 4. application of rule Check_command/ite failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:127:30-127:34:
-                │       condition type matches `BOOL` was not met
-                ├── 5. application of rule Check_command/while failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:132:12-132:28:
-                │       condition command matches `WHILE % DO % END` was not met
-                └── 6. application of rule Check_command/seq failed
-                    └── ../../../../../spectec/specs/impty/closure/spec.spectec:137:12-137:22:
-                        condition command matches `% ; %` was not met
-
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/seq failed
+        └── invocation of relation Check_command failed
+            └── application of rule Check_command/ite failed
+                └── condition type matches `BOOL` was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_not_int.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_not_int.imp
-  tracing backtrack logs:
-invocation of relation Check_prog failed
-└── application of rule Check_prog/ failed
-    └── ../../../../../spectec/specs/impty/closure/spec.spectec:149:6-149:19:
-        invocation of relation Check_command failed
-        ├── 1. application of rule Check_command/skip failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:114:11-114:15:
-        │       condition command matches `SKIP` was not met
-        ├── 2. application of rule Check_command/decl failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:118:6-118:16:
-        │       invocation of relation Check_expr failed
-        │       ├── 1. application of rule Check_expr/num failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:69:12-69:18:
-        │       │       condition expr <: literal was not met
-        │       ├── 2. application of rule Check_expr/boollit failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:72:12-72:19:
-        │       │       condition expr <: literal was not met
-        │       ├── 3. application of rule Check_expr/id failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:75:11-75:12:
-        │       │       condition expr <: id was not met
-        │       ├── 4. application of rule Check_expr/add failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:79:11-79:21:
-        │       │       condition expr matches `% + %` was not met
-        │       ├── 5. application of rule Check_expr/leq failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:84:11-84:22:
-        │       │       condition expr matches `% <= %` was not met
-        │       ├── 6. application of rule Check_expr/not failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:90:30-90:34:
-        │       │       condition type matches `BOOL` was not met
-        │       ├── 7. application of rule Check_expr/and failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:93:11-93:22:
-        │       │       condition expr matches `% && %` was not met
-        │       ├── 8. application of rule Check_expr/fun failed
-        │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:98:11-98:53:
-        │       │       condition expr matches `FUN (% %) -> % {%}` was not met
-        │       └── 9. application of rule Check_expr/call failed
-        │           └── ../../../../../spectec/specs/impty/closure/spec.spectec:102:12-102:24:
-        │               condition expr matches `% (%)` was not met
-        ├── 3. application of rule Check_command/assign failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:121:12-121:18:
-        │       condition command matches `% = %` was not met
-        ├── 4. application of rule Check_command/ite failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:126:12-126:38:
-        │       condition command matches `IF % THEN % ELSE % END` was not met
-        ├── 5. application of rule Check_command/while failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:132:12-132:28:
-        │       condition command matches `WHILE % DO % END` was not met
-        └── 6. application of rule Check_command/seq failed
-            └── ../../../../../spectec/specs/impty/closure/spec.spectec:137:12-137:22:
-                condition command matches `% ; %` was not met
-
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/decl failed
+        └── invocation of relation Check_expr failed
+            └── application of rule Check_expr/not failed
+                └── condition type matches `BOOL` was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_undeclared.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_undeclared.imp
-  tracing backtrack logs:
-invocation of relation Check_prog failed
-└── application of rule Check_prog/ failed
-    └── ../../../../../spectec/specs/impty/closure/spec.spectec:149:6-149:19:
-        invocation of relation Check_command failed
-        ├── 1. application of rule Check_command/skip failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:114:11-114:15:
-        │       condition command matches `SKIP` was not met
-        ├── 2. application of rule Check_command/decl failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:117:12-117:23:
-        │       condition command matches `% % = %` was not met
-        ├── 3. application of rule Check_command/assign failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:123:9-123:43:
-        │       condition ($lookup_<id, type>(tenv, x) = ?(type)) was not met
-        ├── 4. application of rule Check_command/ite failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:126:12-126:38:
-        │       condition command matches `IF % THEN % ELSE % END` was not met
-        ├── 5. application of rule Check_command/while failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:132:12-132:28:
-        │       condition command matches `WHILE % DO % END` was not met
-        └── 6. application of rule Check_command/seq failed
-            └── ../../../../../spectec/specs/impty/closure/spec.spectec:137:12-137:22:
-                condition command matches `% ; %` was not met
-
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/assign failed
+        └── condition ($lookup_<id, type>(tenv, x) = ?(type)) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/closure/_errors_arg_type.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/closure/_errors_arg_type.imp
-  tracing backtrack logs:
-invocation of relation Check_prog failed
-└── application of rule Check_prog/ failed
-    └── ../../../../../spectec/specs/impty/closure/spec.spectec:149:6-149:19:
-        invocation of relation Check_command failed
-        ├── 1. application of rule Check_command/skip failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:114:11-114:15:
-        │       condition command matches `SKIP` was not met
-        ├── 2. application of rule Check_command/decl failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:117:12-117:23:
-        │       condition command matches `% % = %` was not met
-        ├── 3. application of rule Check_command/assign failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:121:12-121:18:
-        │       condition command matches `% = %` was not met
-        ├── 4. application of rule Check_command/ite failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:126:12-126:38:
-        │       condition command matches `IF % THEN % ELSE % END` was not met
-        ├── 5. application of rule Check_command/while failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:132:12-132:28:
-        │       condition command matches `WHILE % DO % END` was not met
-        └── 6. application of rule Check_command/seq failed
-            └── ../../../../../spectec/specs/impty/closure/spec.spectec:139:6-139:19:
-                invocation of relation Check_command failed
-                ├── 1. application of rule Check_command/skip failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:114:11-114:15:
-                │       condition command matches `SKIP` was not met
-                ├── 2. application of rule Check_command/decl failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:118:6-118:16:
-                │       invocation of relation Check_expr failed
-                │       ├── 1. application of rule Check_expr/num failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:69:12-69:18:
-                │       │       condition expr <: literal was not met
-                │       ├── 2. application of rule Check_expr/boollit failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:72:12-72:19:
-                │       │       condition expr <: literal was not met
-                │       ├── 3. application of rule Check_expr/id failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:75:11-75:12:
-                │       │       condition expr <: id was not met
-                │       ├── 4. application of rule Check_expr/add failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:79:11-79:21:
-                │       │       condition expr matches `% + %` was not met
-                │       ├── 5. application of rule Check_expr/leq failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:84:11-84:22:
-                │       │       condition expr matches `% <= %` was not met
-                │       ├── 6. application of rule Check_expr/not failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:89:11-89:15:
-                │       │       condition expr matches `! %` was not met
-                │       ├── 7. application of rule Check_expr/and failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:93:11-93:22:
-                │       │       condition expr matches `% && %` was not met
-                │       ├── 8. application of rule Check_expr/fun failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:98:11-98:53:
-                │       │       condition expr matches `FUN (% %) -> % {%}` was not met
-                │       └── 9. application of rule Check_expr/call failed
-                │           └── ../../../../../spectec/specs/impty/closure/spec.spectec:104:32-104:40:
-                │               condition (type' = type_arg) was not met
-                ├── 3. application of rule Check_command/assign failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:121:12-121:18:
-                │       condition command matches `% = %` was not met
-                ├── 4. application of rule Check_command/ite failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:126:12-126:38:
-                │       condition command matches `IF % THEN % ELSE % END` was not met
-                ├── 5. application of rule Check_command/while failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:132:12-132:28:
-                │       condition command matches `WHILE % DO % END` was not met
-                └── 6. application of rule Check_command/seq failed
-                    └── ../../../../../spectec/specs/impty/closure/spec.spectec:137:12-137:22:
-                        condition command matches `% ; %` was not met
-
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/seq failed
+        └── invocation of relation Check_command failed
+            └── application of rule Check_command/decl failed
+                └── invocation of relation Check_expr failed
+                    └── application of rule Check_expr/call failed
+                        └── condition (type' = type_arg) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/closure/_errors_call_non_function.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/closure/_errors_call_non_function.imp
-  tracing backtrack logs:
-invocation of relation Check_prog failed
-└── application of rule Check_prog/ failed
-    └── ../../../../../spectec/specs/impty/closure/spec.spectec:149:6-149:19:
-        invocation of relation Check_command failed
-        ├── 1. application of rule Check_command/skip failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:114:11-114:15:
-        │       condition command matches `SKIP` was not met
-        ├── 2. application of rule Check_command/decl failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:117:12-117:23:
-        │       condition command matches `% % = %` was not met
-        ├── 3. application of rule Check_command/assign failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:121:12-121:18:
-        │       condition command matches `% = %` was not met
-        ├── 4. application of rule Check_command/ite failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:126:12-126:38:
-        │       condition command matches `IF % THEN % ELSE % END` was not met
-        ├── 5. application of rule Check_command/while failed
-        │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:132:12-132:28:
-        │       condition command matches `WHILE % DO % END` was not met
-        └── 6. application of rule Check_command/seq failed
-            └── ../../../../../spectec/specs/impty/closure/spec.spectec:139:6-139:19:
-                invocation of relation Check_command failed
-                ├── 1. application of rule Check_command/skip failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:114:11-114:15:
-                │       condition command matches `SKIP` was not met
-                ├── 2. application of rule Check_command/decl failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:118:6-118:16:
-                │       invocation of relation Check_expr failed
-                │       ├── 1. application of rule Check_expr/num failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:69:12-69:18:
-                │       │       condition expr <: literal was not met
-                │       ├── 2. application of rule Check_expr/boollit failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:72:12-72:19:
-                │       │       condition expr <: literal was not met
-                │       ├── 3. application of rule Check_expr/id failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:75:11-75:12:
-                │       │       condition expr <: id was not met
-                │       ├── 4. application of rule Check_expr/add failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:79:11-79:21:
-                │       │       condition expr matches `% + %` was not met
-                │       ├── 5. application of rule Check_expr/leq failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:84:11-84:22:
-                │       │       condition expr matches `% <= %` was not met
-                │       ├── 6. application of rule Check_expr/not failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:89:11-89:15:
-                │       │       condition expr matches `! %` was not met
-                │       ├── 7. application of rule Check_expr/and failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:93:11-93:22:
-                │       │       condition expr matches `% && %` was not met
-                │       ├── 8. application of rule Check_expr/fun failed
-                │       │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:98:11-98:53:
-                │       │       condition expr matches `FUN (% %) -> % {%}` was not met
-                │       └── 9. application of rule Check_expr/call failed
-                │           └── ../../../../../spectec/specs/impty/closure/spec.spectec:103:32-103:52:
-                │               condition type matches `% -> %` was not met
-                ├── 3. application of rule Check_command/assign failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:121:12-121:18:
-                │       condition command matches `% = %` was not met
-                ├── 4. application of rule Check_command/ite failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:126:12-126:38:
-                │       condition command matches `IF % THEN % ELSE % END` was not met
-                ├── 5. application of rule Check_command/while failed
-                │   └── ../../../../../spectec/specs/impty/closure/spec.spectec:132:12-132:28:
-                │       condition command matches `WHILE % DO % END` was not met
-                └── 6. application of rule Check_command/seq failed
-                    └── ../../../../../spectec/specs/impty/closure/spec.spectec:137:12-137:22:
-                        condition command matches `% ; %` was not met
-
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/seq failed
+        └── invocation of relation Check_command failed
+            └── application of rule Check_command/decl failed
+                └── invocation of relation Check_expr failed
+                    └── application of rule Check_expr/call failed
+                        └── condition type matches `% -> %` was not met
 
 Typechecker (il) summary
   Ran:          8 / 8      (100.00%)
