@@ -187,7 +187,10 @@ and clause' = { args : arg list; body : exp; prems : prem list }
 
 and relcall = { relid : id; notexp : notexp }
 
-and prem = prem' phrase
+and prem = (prem', prem_prov) phrase_prov
+and prem_prov =
+  | Source of El.prem  (* lowered from this EL premise *)
+  | Synthesized        (* introduced by elaboration; no EL source *)
 and prem' =
   | RelPr of relcall               (* id `:` notexp *)
   | RelAssertPr of { call : relcall; expect : bool }
