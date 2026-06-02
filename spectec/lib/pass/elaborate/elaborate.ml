@@ -947,7 +947,7 @@ and elab_exp (ctx : Ctx.t) (typ_il_expect : Il.typ) (exp : exp) :
   elab_exp' ctx typ_il_expect exp
   |> nest exp.at
        (Format.asprintf "elaboration of expression %s as type %s failed"
-          (El.Print.string_of_exp exp)
+          (El.Unparse.string_of_exp exp)
           (Il.Print.string_of_typ typ_il_expect))
 
 and elab_exp' (ctx : Ctx.t) (typ_il_expect : Il.typ) (exp : exp) :
@@ -1096,7 +1096,7 @@ and elab_exp_plain' (ctx : Ctx.t) (at : region) (typ_il_expect : Il.typ)
   | BoolE _ | NumE _ | TextE _ | VarE _ ->
       fail_elab_plain at
         (Format.asprintf "the type of %s should have been inferred"
-           (El.Print.string_of_exp (exp $ at)))
+           (El.Unparse.string_of_exp (exp $ at)))
   | EpsE -> elab_eps_exp ctx typ_il_expect
   | ListE exps -> elab_list_exp ctx typ_il_expect exps
   | ConsE (exp_h, exp_t) -> elab_cons_exp ctx typ_il_expect exp_h exp_t
@@ -1107,7 +1107,7 @@ and elab_exp_plain' (ctx : Ctx.t) (at : region) (typ_il_expect : Il.typ)
   | _ ->
       fail at
         (Format.asprintf "cannot elaborate expression %s as type %s"
-           (El.Print.string_of_exp (exp $ at))
+           (El.Unparse.string_of_exp (exp $ at))
            (Il.Print.string_of_typ typ_il_expect))
 
 (* Elaboration of episilon expressions *)

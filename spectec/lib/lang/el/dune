@@ -1,4 +1,4 @@
 (library
  (name el)
  (public_name spectec.lang.el)
- (libraries spectec.common xl))
+ (libraries spectec.common xl pprint))
