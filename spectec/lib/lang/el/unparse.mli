@@ -57,7 +57,7 @@ val string_of_path : path -> string
 val string_of_param : param -> string
 val string_of_tparam : tparam -> string
 val string_of_arg : arg -> string
-val string_of_prem : prem -> string
+val string_of_prem : ?values:(id -> string option) -> prem -> string
 val string_of_hint : hint -> string
 val string_of_def : def -> string
 val string_of_spec : spec -> string
