@@ -46,11 +46,12 @@ syntax prog = command
 ;;--------------------
 ;; Meta-variables
 
-var n : int
+var i : int
 var b : bool
 var x : id
 var e : expr
 var c : command
+var t : type
 
 ;;--------------------
 ;; Typing
@@ -66,14 +67,14 @@ relation Check_expr:
   hint(input %0 %1)
 
 rule Check_expr/num:
-  tenv |- (`NUM n) : INT
+  tenv |- (`NUM i) : INT
 
 rule Check_expr/boollit:
   tenv |- (`BOOL b) : BOOL
 
 rule Check_expr/id:
-  tenv |- x : type
-  -- if $lookup_<id, type>(tenv, x) = type
+  tenv |- x : t
+  -- if $lookup_<id, type>(tenv, x) = t
 
 rule Check_expr/add:
   tenv |- e_l `+ e_r : INT
@@ -95,13 +96,13 @@ rule Check_expr/and:
   -- Check_expr: tenv |- e_r : BOOL
 
 rule Check_expr/fun:
-  tenv |- FUN `( type_arg x_arg ) `-> type_ret `{ e } : type_arg `-> type_ret
-  -- Check_expr: ((x_arg -> type_arg)::tenv) |- e : type_ret
+  tenv |- FUN `( t_arg x_arg ) `-> t_ret `{ e } : t_arg `-> t_ret
+  -- Check_expr: ((x_arg -> t_arg)::tenv) |- e : t_ret
 
 rule Check_expr/call:
-  tenv |- (e_f `( e_a )) : type_ret
-  -- Check_expr: tenv |- e_f : type_arg `-> type_ret
-  -- Check_expr: tenv |- e_a : type_arg
+  tenv |- (e_f `( e_a )) : t_ret
+  -- Check_expr: tenv |- e_f : t_arg `-> t_ret
+  -- Check_expr: tenv |- e_a : t_arg
 
 ;;--- Commands ---
 
@@ -114,13 +115,13 @@ rule Check_command/skip:
   tenv |- SKIP -| tenv
 
 rule Check_command/decl:
-  tenv |- (type x `= e) -| (x -> type)::tenv
-  -- Check_expr: tenv |- e : type
+  tenv |- (t x `= e) -| (x -> t)::tenv
+  -- Check_expr: tenv |- e : t
 
 rule Check_command/assign:
   tenv |- (x `= e) -| tenv
-  -- Check_expr: tenv |- e : type
-  -- if $lookup_<id, type>(tenv, x) = type
+  -- Check_expr: tenv |- e : t
+  -- if $lookup_<id, type>(tenv, x) = t
 
 rule Check_command/ite:
   tenv |- (IF e THEN c_1 ELSE c_2 END) -| tenv
@@ -170,7 +171,7 @@ relation Eval_expr:
   hint(input %0 %1)
 
 rule Eval_expr/num:
-  env |- (`NUM n) ==> (`NUM n)
+  env |- (`NUM i) ==> (`NUM i)
 
 rule Eval_expr/boollit:
   env |- (`BOOL b) ==> (`BOOL b)
@@ -180,16 +181,16 @@ rule Eval_expr/id:
   -- if $lookup_<id, value>(env, x) = v
 
 rule Eval_expr/add:
-  env |- (e_l `+ e_r) ==> (`NUM n)
-  -- Eval_expr: env |- e_l ==> (`NUM n_l)
-  -- Eval_expr: env |- e_r ==> (`NUM n_r)
-  -- if n = $(n_l + n_r)
+  env |- (e_l `+ e_r) ==> (`NUM i)
+  -- Eval_expr: env |- e_l ==> (`NUM i_l)
+  -- Eval_expr: env |- e_r ==> (`NUM i_r)
+  -- if i = $(i_l + i_r)
 
 rule Eval_expr/leq:
   env |- (e_l `<= e_r) ==> (`BOOL b)
-  -- Eval_expr: env |- e_l ==> (`NUM n_l)
-  -- Eval_expr: env |- e_r ==> (`NUM n_r)
-  -- if b = $(n_l <= n_r)
+  -- Eval_expr: env |- e_l ==> (`NUM i_l)
+  -- Eval_expr: env |- e_r ==> (`NUM i_r)
+  -- if b = $(i_l <= i_r)
 
 rule Eval_expr/not:
   env |- (`! e) ==> (`BOOL b)
@@ -203,7 +204,7 @@ rule Eval_expr/and:
   -- if b = (b_l /\ b_r)
 
 rule Eval_expr/fun:
-  env |- (FUN `( type_arg x_arg ) `-> type_ret `{ e }) ==> (CLO x_arg e env)
+  env |- (FUN `( t_arg x_arg ) `-> t_ret `{ e }) ==> (CLO x_arg e env)
 
 ;; Bug: change env_clo to env
 rule Eval_expr/call:
@@ -222,7 +223,7 @@ rule Eval_command/skip:
   env |- SKIP -| env
 
 rule Eval_command/decl:
-  env |- (type x `= e) -| (x -> v)::env
+  env |- (t x `= e) -| (x -> v)::env
   -- Eval_expr: env |- e ==> v
 
 rule Eval_command/assign:
