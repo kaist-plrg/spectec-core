@@ -32,13 +32,14 @@ let init ~spec ~handlers =
   init_handlers ~spec [] handlers;
   session := Active handlers
 
+let dispatch hs (ev : Instrumentation_api.Event.t) : unit =
+  List.iter (fun (module H : Instrumentation_api.Handler.S) -> H.handle ev) hs
+
 let emit (ev : Instrumentation_api.Event.t) : unit =
-  match !session with
-  | Active hs ->
-      List.iter
-        (fun (module H : Instrumentation_api.Handler.S) -> H.handle ev)
-        hs
-  | Idle -> ()
+  match !session with Active hs -> dispatch hs ev | Idle -> ()
+
+let emit_on_demand (make : unit -> Instrumentation_api.Event.t) : unit =
+  match !session with Active hs -> dispatch hs (make ()) | Idle -> ()
 
 let finish () =
   match !session with

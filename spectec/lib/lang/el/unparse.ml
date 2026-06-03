@@ -157,13 +157,20 @@ and to_doc_targs = function
 
 (* Expressions *)
 
-and to_doc_exp exp = to_doc_exp_ctx ~ctx:Notation exp
-and to_doc_exp_arith exp = to_doc_exp_ctx ~ctx:Arith exp
+and to_doc_exp ?(values = fun _ -> None) exp =
+  to_doc_exp_ctx ~values ~ctx:Notation exp
 
-and to_doc_exp_ctx ~ctx (exp : exp) =
+and to_doc_exp_arith ?(values = fun _ -> None) exp =
+  to_doc_exp_ctx ~values ~ctx:Arith exp
+
+and to_doc_exp_ctx ?(values = fun _ -> None) ~ctx (exp : exp) =
+  let to_doc_exp = to_doc_exp ~values in
+  let to_doc_exp_arith = to_doc_exp_arith ~values in
+  let to_doc_path = to_doc_path ~values in
+  let to_doc_args = to_doc_args ~values in
   let in_arith = to_doc_exp_arith in
   let in_notation = to_doc_exp in
-  let in_atom = to_doc_exp_ctx ~ctx:Atom in
+  let in_atom = to_doc_exp_ctx ~values ~ctx:Atom in
   let lift_binop op = ctx = Atom || (ctx = Notation && is_arith_binop op) in
   let lift_cmpop op = ctx = Atom || (ctx = Notation && is_arith_cmpop op) in
   let lift_unop () = ctx = Atom in
@@ -174,7 +181,8 @@ and to_doc_exp_ctx ~ctx (exp : exp) =
       P.string (Printf.sprintf "0x%X" (Bigint.to_int_exn n))
   | NumE (_, n) -> to_doc_num n
   | TextE text -> to_doc_text text
-  | VarE id -> to_doc_varid id
+  | VarE id -> (
+      match values id with Some s -> P.string s | None -> to_doc_varid id)
   | UnE (op, e) when lift_unop () ->
       P.string "$(" ^^ to_doc_unop op ^^ in_arith e ^^ P.string ")"
   | UnE (op, e) -> to_doc_unop op ^^ in_arith e
@@ -239,7 +247,9 @@ and to_doc_exp_ctx ~ctx (exp : exp) =
 
 (* Paths *)
 
-and to_doc_path (path : path) =
+and to_doc_path ?(values = fun _ -> None) (path : path) =
+  let to_doc_exp_arith = to_doc_exp_arith ~values in
+  let to_doc_path = to_doc_path ~values in
   match path.it with
   | RootP -> P.empty
   | IdxP (p, e) -> to_doc_path p ^^ P.brackets (to_doc_exp_arith e)
@@ -269,18 +279,20 @@ and to_doc_tparams = function
 
 (* Arguments *)
 
-and to_doc_arg (arg : arg) =
+and to_doc_arg ?(values = fun _ -> None) (arg : arg) =
   match arg.it with
-  | ExpA exp -> to_doc_exp exp
+  | ExpA exp -> to_doc_exp ~values exp
   | DefA defid -> P.string "def " ^^ to_doc_defid defid
 
-and to_doc_args = function
+and to_doc_args ?(values = fun _ -> None) = function
   | [] -> P.empty
-  | args -> P.parens (comma_list to_doc_arg args)
+  | args -> P.parens (comma_list (to_doc_arg ~values) args)
 
 (* Premises *)
 
-and to_doc_prem (prem : prem) =
+and to_doc_prem ?(values = fun _ -> None) (prem : prem) =
+  let to_doc_exp = to_doc_exp ~values in
+  let to_doc_prem = to_doc_prem ~values in
   match prem.it with
   | VarPr (id, plaintyp) ->
       to_doc_varid id ^^ P.string " : " ^^ to_doc_plaintyp plaintyp
@@ -439,7 +451,10 @@ let string_of_path = string_of_doc to_doc_path
 let string_of_param = string_of_doc to_doc_param
 let string_of_tparam = string_of_doc to_doc_tparam
 let string_of_arg = string_of_doc to_doc_arg
-let string_of_prem = string_of_doc to_doc_prem
+
+let string_of_prem ?(values = fun _ -> None) prem =
+  string_of_doc (to_doc_prem ~values) prem
+
 let string_of_hint = string_of_doc to_doc_hint
 let string_of_def = string_of_doc to_doc_def
 let string_of_spec = string_of_doc to_doc_spec

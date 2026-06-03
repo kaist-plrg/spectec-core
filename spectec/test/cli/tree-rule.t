@@ -1,12 +1,12 @@
-impty CLI: tree rules against hello.imp.
+impty CLI: tree rule against hello.imp.
 
   $ SPEC=../../specs/impty/base/spec.spectec
   $ HELLO=../../testdata/interp/impty/base/hello.imp
 
-The rules level renders the derivation as an ASCII tree of relation and
-function calls:
+The rule level renders the derivation as an ASCII tree of relation nodes, each
+tagged with the rule that fired:
 
-  $ spectec impty eval --spec $SPEC -p $HELLO --color never --tree.level rules
+  $ spectec impty eval --spec $SPEC -p $HELLO --color never --tree.level rule
   Run_prog
   -- Check_prog
      -- Check_command/seq
@@ -15,7 +15,6 @@ function calls:
         -- Check_command/decl
            -- Check_expr/leq
               -- Check_expr/id
-                 -- $lookup_
               -- Check_expr/num
   -- Eval_prog
      -- Eval_command/seq
@@ -24,7 +23,6 @@ function calls:
         -- Eval_command/decl
            -- Eval_expr/leq
               -- Eval_expr/id
-                 -- $lookup_
               -- Eval_expr/num
   [
     y -> true,
