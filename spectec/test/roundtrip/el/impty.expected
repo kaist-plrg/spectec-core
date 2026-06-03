@@ -249,7 +249,7 @@ def $lookup_<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K)
 syntax type =
   | INT
   | BOOL
-  | type -> type
+  | type `-> type
 
 syntax literal =
   | `NUM int
@@ -265,7 +265,7 @@ syntax expr =
   | expr `<= expr
   | `! expr
   | expr `&& expr
-  | FUN `(type id) -> type `{expr}
+  | FUN `(type id) `-> type `{expr}
   | expr `(expr)
 
 syntax command =
@@ -323,12 +323,12 @@ rule Check_expr/and:
   -- Check_expr: tenv |- e_r : BOOL
 
 rule Check_expr/fun:
-  tenv |- FUN `(type_arg x_arg) -> type_ret `{e} : type_arg -> type_ret
+  tenv |- FUN `(type_arg x_arg) `-> type_ret `{e} : type_arg `-> type_ret
   -- Check_expr: ((x_arg -> type_arg) :: tenv) |- e : type_ret
 
 rule Check_expr/call:
   tenv |- (e_f `(e_a)) : type_ret
-  -- Check_expr: tenv |- e_f : type_arg -> type_ret
+  -- Check_expr: tenv |- e_f : type_arg `-> type_ret
   -- Check_expr: tenv |- e_a : type_arg
 
 relation Check_command: tenv |- command -| tenv
@@ -416,7 +416,7 @@ rule Eval_expr/and:
   -- if b = (b_l /\ b_r)
 
 rule Eval_expr/fun:
-  env |- (FUN `(type_arg x_arg) -> type_ret `{e}) `=> (CLO x_arg e env)
+  env |- (FUN `(type_arg x_arg) `-> type_ret `{e}) `=> (CLO x_arg e env)
 
 rule Eval_expr/call:
   env |- (e_f `(e_a)) `=> v_ret

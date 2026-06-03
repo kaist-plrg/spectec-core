@@ -18,7 +18,7 @@ def $lookup_<K, V>((K_h -> V_h):: (K_t -> V_t)*, K)
 syntax type =
   | INT
   | BOOL
-  | type -> type                         ;; (new) function type
+  | type `-> type                        ;; (new) function type
 
 syntax literal = `NUM int | `BOOL bool
 syntax id = `ID text
@@ -30,7 +30,7 @@ syntax expr =
   | expr `<= expr
   | `! expr
   | expr `&& expr
-  | FUN `( type id ) -> type `{ expr }   ;; (new) anonymous function (returning a value)
+  | FUN `( type id ) `-> type `{ expr }  ;; (new) anonymous function (returning a value)
   | expr `( expr )                       ;; (new) function call
 
 syntax command =
@@ -95,12 +95,12 @@ rule Check_expr/and:
   -- Check_expr: tenv |- e_r : BOOL
 
 rule Check_expr/fun:
-  tenv |- FUN `( type_arg x_arg ) -> type_ret `{ e } : type_arg -> type_ret
+  tenv |- FUN `( type_arg x_arg ) `-> type_ret `{ e } : type_arg `-> type_ret
   -- Check_expr: ((x_arg -> type_arg)::tenv) |- e : type_ret
 
 rule Check_expr/call:
   tenv |- (e_f `( e_a )) : type_ret
-  -- Check_expr: tenv |- e_f : type_arg -> type_ret
+  -- Check_expr: tenv |- e_f : type_arg `-> type_ret
   -- Check_expr: tenv |- e_a : type_arg
 
 ;;--- Commands ---
@@ -203,7 +203,7 @@ rule Eval_expr/and:
   -- if b = (b_l /\ b_r)
 
 rule Eval_expr/fun:
-  env |- (FUN `( type_arg x_arg ) -> type_ret `{ e }) `=> (CLO x_arg e env)
+  env |- (FUN `( type_arg x_arg ) `-> type_ret `{ e }) `=> (CLO x_arg e env)
 
 ;; Bug: change env_clo to env
 rule Eval_expr/call:
