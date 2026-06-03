@@ -9,8 +9,8 @@
     on top, its sub-derivations below as premises led by [--].
 
     Levels:
-    - [Rules]: each relation node tagged with the rule that matched.
-    - [Conclusion]: [Rules] + the conclusion judgment under each tag (e.g.
+    - [Rule]: each relation node tagged with the rule that matched.
+    - [Conclusion]: [Rule] + the conclusion judgment under each tag (e.g.
       [[ x -> int ] |- 5 : int]).
     - [Premise]: [Conclusion] + each rule's premises in source order,
       concretized with runtime values. IL only. *)
@@ -21,11 +21,11 @@ module Ansi = Diag.Ansi
 open Util
 open Common.Source
 
-type level = Rules | Conclusion | Premise
+type level = Rule | Conclusion | Premise
 type config = { level : level; output : Instrumentation_api.Output.t }
 
 let default_config =
-  { level = Rules; output = Instrumentation_api.Output.stdout }
+  { level = Rule; output = Instrumentation_api.Output.stdout }
 
 let config = ref default_config
 let fmt = ref Format.std_formatter
@@ -224,7 +224,7 @@ let rec print_node ~first_lead ~rest_prefix node out =
                 (render_prem ~binding_env:node.binding_env entry))
         (List.rev node.prems_rev);
       List.iter print_child (List.rev node.children_rev)
-  | Rules | Conclusion ->
+  | Rule | Conclusion ->
       List.rev node.children_rev
       |> List.iter (fun child ->
              match child.kind with Rel -> print_child child | Func -> ())
@@ -289,20 +289,20 @@ module Spec : Instrumentation_spec.Spec.S = struct
 
   let params =
     [
-      ("level", "LEVEL verbosity level: rules|conclusion|premise");
+      ("level", "LEVEL verbosity level: rule|conclusion|premise");
       Instrumentation_spec.Param_utils.output_param;
     ]
 
   let parse_level = function
-    | "rules" -> Rules
+    | "rule" -> Rule
     | "conclusion" -> Conclusion
     | "premise" -> Premise
     | s ->
         failwith
-          ("Invalid tree level: " ^ s ^ " (expected: rules|conclusion|premise)")
+          ("Invalid tree level: " ^ s ^ " (expected: rule|conclusion|premise)")
 
   (* Premises are IL-only. *)
-  let mode_of_level = function Premise -> `IL | Rules | Conclusion -> `Both
+  let mode_of_level = function Premise -> `IL | Rule | Conclusion -> `Both
 
   let parse alist =
     match Instrumentation_spec.Param_utils.get alist "level" with
