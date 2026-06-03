@@ -1,7 +1,7 @@
-# Typed Imp tutorial - prose build helpers.
+# Typed Imp tutorial - command helpers.
 #
-# Everything except the prose build is a plain `spectecx impty ...` command
-# (see README.md); this Makefile only wraps the splice -> asciidoctor pipeline.
+# Wraps the test suite and the prose splice pipeline; everything else is a
+# plain `spectecx impty ...` command (see README.md).
 
 SPECTECX ?= spectecx
 SPEC      = impty.spectec
@@ -9,14 +9,22 @@ SPEC      = impty.spectec
 DOC_DIR   = documentation
 DOC_BUILD = $(DOC_DIR)/_build
 
-.PHONY: splice splice-html splice-pdf clean help
+.PHONY: test test-base splice splice-html splice-pdf clean help
 
 help:
-	@echo "Prose build (everything else is a plain 'spectecx impty ...' command):"
+	@echo "Tutorial helpers (see README.md for the full 'spectecx impty ...' set):"
+	@echo "  make test          run the full test suite (tests/)"
+	@echo "  make test-base     run the base-language tests only (tests/base/)"
 	@echo "  make splice-html   render the prose document to documentation/impty.html"
 	@echo "  make splice-pdf    render the prose document as documentation/impty.pdf"
 	@echo "  make clean         remove the build dir and rendered output"
 	@echo "Override the tool with SPECTECX=... (default: $(SPECTECX))."
+
+test:
+	$(SPECTECX) impty batch
+
+test-base:
+	$(SPECTECX) impty batch --batch-dir tests/base
 
 # splice-html needs asciidoctor; splice-pdf needs asciidoctor-pdf.
 

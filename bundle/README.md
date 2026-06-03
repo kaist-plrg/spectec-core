@@ -10,7 +10,7 @@ The binary (`spectecx`) is obtained separately -- see [Getting the tool](#gettin
 .
 |-- impty.spectec        the language spec: base + first-class-function stubs
 |-- spectecx.config      project-local CLI defaults
-|-- Makefile             prose-build helpers (`make help`)
+|-- Makefile             command helpers: tests + prose (`make help`)
 |-- Dockerfile           build-from-source fallback
 |-- tests/
 |   |-- base/             base-language programs (run as-is)
@@ -59,8 +59,8 @@ spectecx impty eval -p tests/base/hello.imp --tree.level conclusion
 
 ```sh
 # base programs pass; the full suite has the 4 function programs failing
-spectecx impty batch --batch-dir tests/base
-spectecx impty batch
+make test-base
+make test
 
 # debug one program at a time
 spectecx impty typecheck -p tests/functions/closure.imp
