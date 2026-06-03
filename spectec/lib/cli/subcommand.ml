@@ -47,13 +47,11 @@ let make_task (module Tgt : Spectec.Target.S) ~name ~summary
       | true, None ->
           Batch.run_and_print_batch
             (module TC.Task)
-            ~config ~ansi ~sl_mode ~spec_il ~verbose (TC.Task.collect ());
-          Ok ()
+            ~config ~ansi ~sl_mode ~spec_il ~verbose (TC.Task.collect ())
       | _, Some dir ->
           Batch.run_and_print_batch
             (module TC.Task)
-            ~config ~ansi ~sl_mode ~spec_il ~verbose (TC.Task.collect ~dir ());
-          Ok ()
+            ~config ~ansi ~sl_mode ~spec_il ~verbose (TC.Task.collect ~dir ())
   in
   (name, cmd)
 
@@ -133,7 +131,7 @@ let make_batch (module Tgt : Spectec.Target.S) ~name
           save_interval = checkpoint.save_interval;
         }
       in
-      let results =
+      let* results =
         Batch.run_target ~config ?test_dir:batch_dir ~checkpoint_config ~verbose
           ~sl_mode ~spec_files spec_il packed_tasks
       in

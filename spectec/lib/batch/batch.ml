@@ -355,18 +355,31 @@ let run_and_print_single (type i) (module T : Task.S with type input = i)
       Ok ()
   | Task.Fail err | Task.ExpectedFail err -> Error err
 
+let empty_inputs_error ?dir () =
+  Error.DirectoryError
+    (Printf.sprintf
+       "batch run collected no inputs%s; pass --batch-dir or set the target's \
+        batch_dir in spectecx.config"
+       (match dir with Some dir -> " under " ^ dir | None -> ""))
+
 let run_and_print_batch (type i) (module T : Task.S with type input = i) ?config
     ~ansi ~sl_mode ~spec_il ~verbose (inputs : i list) =
-  let results =
-    run_batch_with_outcomes (module T) ?config ~sl_mode ~spec_il ~verbose inputs
-  in
-  if not verbose then
-    List.iter
-      (fun { source; outcome; _ } ->
-        Format.printf ">>> Running %s on %s\n" T.name source;
-        print_outcome (module T) ~ansi source outcome)
-      results;
-  print_summary (summarize_outcomes results)
+  match inputs with
+  | [] -> Error (empty_inputs_error ())
+  | _ ->
+      let results =
+        run_batch_with_outcomes
+          (module T)
+          ?config ~sl_mode ~spec_il ~verbose inputs
+      in
+      if not verbose then
+        List.iter
+          (fun { source; outcome; _ } ->
+            Format.printf ">>> Running %s on %s\n" T.name source;
+            print_outcome (module T) ~ansi source outcome)
+          results;
+      print_summary (summarize_outcomes results);
+      Ok ()
 
 (* --- Target batch runner --- *)
 
@@ -400,14 +413,13 @@ let run_target ?(config = Instrumentation.Config.default) ?test_dir
     Checkpoint.save ~spec_files ~completed_inputs:!all_completed_inputs
       ~output_file:checkpoint_config.output_file
   in
-  let results =
-    List.map
-      (fun (Task.Pack (module T)) ->
-        let all_inputs =
-          match test_dir with
-          | Some dir -> T.collect ~dir ()
-          | None -> T.collect ()
-        in
+  let run_one_task (Task.Pack (module T)) =
+    let all_inputs =
+      match test_dir with Some dir -> T.collect ~dir () | None -> T.collect ()
+    in
+    match all_inputs with
+    | [] -> Error (empty_inputs_error ?dir:test_dir ())
+    | _ ->
         let total_all = List.length all_inputs in
         let inputs =
           match loaded_checkpoint with
@@ -435,8 +447,16 @@ let run_target ?(config = Instrumentation.Config.default) ?test_dir
               result)
             inputs
         in
-        { task_name = T.name; summary = summarize_outcomes task_results })
-      tasks
+        Ok { task_name = T.name; summary = summarize_outcomes task_results }
   in
+  let ( let* ) = Result.bind in
+  let rec run_tasks = function
+    | [] -> Ok []
+    | task :: rest ->
+        let* result = run_one_task task in
+        let* results = run_tasks rest in
+        Ok (result :: results)
+  in
+  let result = run_tasks tasks in
   save_current_checkpoint ();
-  results
+  result
