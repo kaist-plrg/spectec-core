@@ -72,8 +72,6 @@ let eval_classify filename =
 module Task_common = struct
   module Target = Target
 
-  let test_dir = test_base_dir
-
   type nonrec input = input
 
   let unparse = Parse.unparse
