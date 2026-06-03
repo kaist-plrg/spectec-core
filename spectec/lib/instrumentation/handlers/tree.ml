@@ -10,9 +10,9 @@
 
     Levels:
     - [Rules]: each relation node tagged with the rule that matched.
-    - [Conclusion]: above + the conclusion judgment under each tag (e.g.
-      [[ x -> int ] |- 5 : int]); functions show [$id(args) = output].
-    - [Premise]: like [Conclusion], plus each rule's premises in source order,
+    - [Conclusion]: [Rules] + the conclusion judgment under each tag (e.g.
+      [[ x -> int ] |- 5 : int]).
+    - [Premise]: [Conclusion] + each rule's premises in source order,
       concretized with runtime values. IL only. *)
 
 module Il = Lang.Il
@@ -188,7 +188,7 @@ let render_lines node =
         dim (render_bar (measure_width notation));
       ]
   | Rel, _, _ -> [ accent (render_tag node) ]
-  | Func, (Conclusion | Premise), Func_ok v ->
+  | Func, Premise, Func_ok v ->
       [ Format.sprintf "%s = %s" (render_call node) (summarize_value v) ]
   | Func, _, _ -> [ "$" ^ node.id ]
 
@@ -224,7 +224,10 @@ let rec print_node ~first_lead ~rest_prefix node out =
                 (render_prem ~binding_env:node.binding_env entry))
         (List.rev node.prems_rev);
       List.iter print_child (List.rev node.children_rev)
-  | Rules | Conclusion -> List.iter print_child (List.rev node.children_rev)
+  | Rules | Conclusion ->
+      List.rev node.children_rev
+      |> List.iter (fun child ->
+             match child.kind with Rel -> print_child child | Func -> ())
 
 let print_root node =
   print_node ~first_lead:"" ~rest_prefix:"" node !fmt;

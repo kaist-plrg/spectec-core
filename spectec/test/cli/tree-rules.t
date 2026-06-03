@@ -15,7 +15,6 @@ function calls:
         -- Check_command/decl
            -- Check_expr/leq
               -- Check_expr/id
-                 -- $lookup_
               -- Check_expr/num
   -- Eval_prog
      -- Eval_command/seq
@@ -24,7 +23,6 @@ function calls:
         -- Eval_command/decl
            -- Eval_expr/leq
               -- Eval_expr/id
-                 -- $lookup_
               -- Eval_expr/num
   [
     y -> true,

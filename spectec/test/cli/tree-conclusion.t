@@ -30,7 +30,6 @@ The conclusion level renders each relation's conclusion as an inference figure:
               -- Check_expr/id:
                  [ x -> int ] |- x : int
                  ───────────────────────
-                 -- $lookup_([ x -> int ], x) = Some(int)
               -- Check_expr/num:
                  [ x -> int ] |- 10 : int
                  ────────────────────────
@@ -55,7 +54,6 @@ The conclusion level renders each relation's conclusion as an inference figure:
               -- Eval_expr/id:
                  [ x -> 5 ] |- x => 5
                  ────────────────────
-                 -- $lookup_([ x -> 5 ], x) = Some(5)
               -- Eval_expr/num:
                  [ x -> 5 ] |- 10 => 10
                  ──────────────────────
