@@ -4,12 +4,12 @@
 syntax pair<K,V> = K -> V
 syntax map<K,V> = (pair<K,V>)*
 
-dec $lookup_<K, V>(map<K, V>, K) : V?
-def $lookup_<K, V>(eps, K) = eps
-def $lookup_<K, V>((K_h -> V_h)::(K_t -> V_t)*, K) = V_h
+dec $lookup<K, V>(map<K, V>, K) : V?
+def $lookup<K, V>(eps, K) = eps
+def $lookup<K, V>((K_h -> V_h)::(K_t -> V_t)*, K) = V_h
   -- if K_h = K
-def $lookup_<K, V>((K_h -> V_h):: (K_t -> V_t)*, K)
-  = $lookup_<K, V>((K_t -> V_t)*, K)
+def $lookup<K, V>((K_h -> V_h):: (K_t -> V_t)*, K)
+  = $lookup<K, V>((K_t -> V_t)*, K)
   -- otherwise
 
 ;;--------------------
@@ -74,7 +74,7 @@ rule Check_expr/boollit:
 
 rule Check_expr/id:
   tenv |- x : t
-  -- if $lookup_<id, type>(tenv, x) = t
+  -- if $lookup<id, type>(tenv, x) = t
 
 rule Check_expr/add:
   tenv |- e_l `+ e_r : INT
@@ -121,7 +121,7 @@ rule Check_command/decl:
 rule Check_command/assign:
   tenv |- (x `= e) -| tenv
   -- Check_expr: tenv |- e : t
-  -- if $lookup_<id, type>(tenv, x) = t
+  -- if $lookup<id, type>(tenv, x) = t
 
 rule Check_command/ite:
   tenv |- (IF e THEN c_1 ELSE c_2 END) -| tenv
@@ -178,7 +178,7 @@ rule Eval_expr/boollit:
 
 rule Eval_expr/id:
   env |- x ==> v
-  -- if $lookup_<id, value>(env, x) = v
+  -- if $lookup<id, value>(env, x) = v
 
 rule Eval_expr/add:
   env |- (e_l `+ e_r) ==> (`NUM i)
