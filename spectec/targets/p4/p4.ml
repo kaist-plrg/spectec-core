@@ -3,13 +3,8 @@
 module Builtins = Builtins_p4
 module Frontend = Frontend_p4
 
-(* Paths are relative to the repo root (where the binary runs from) *)
-let includes_dir = "tests/interp/p4/p4c/includes"
-let excludes_dir = "tests/interp/p4/excludes"
-let test_base_dir = "tests/interp/p4/tests"
-
-(* Directories to skip during file collection *)
-let skip_dirs = [ "include" ]
+(* Files that are includes, not test inputs *)
+let skip_dirs = [ "include"; "includes" ]
 
 (* Simple substring check *)
 let contains_substring s sub =
@@ -135,26 +130,29 @@ module Typecheck = struct
 
   module Target = Target
 
-  let test_dir = test_base_dir
-
   type input = {
     includes : string list;
     filename : string;
     expect : Spectec.Task.expectation;
   }
 
-  (* Collect inputs from directory, uses test_dir if not specified *)
   let collect ?dir () =
-    let test_dir = Option.value dir ~default:test_dir in
-    let excludes = load_excludes excludes_dir in
-    collect_files_recursive ~suffix:".p4" test_dir
-    |> List.filter (fun filename -> not (is_excluded excludes filename))
-    |> List.map (fun filename ->
-           let expect =
-             if contains_substring filename "_errors" then Spectec.Task.Negative
-             else Spectec.Task.Positive
-           in
-           { includes = [ includes_dir ]; filename; expect })
+    match dir with
+    | None -> []
+    | Some base ->
+        (* includes live under the corpus base; excludes sit beside it *)
+        let includes_dir = Filename.concat base "includes" in
+        let excludes_dir = Filename.concat (Filename.dirname base) "excludes" in
+        let excludes = load_excludes excludes_dir in
+        collect_files_recursive ~suffix:".p4" base
+        |> List.filter (fun filename -> not (is_excluded excludes filename))
+        |> List.map (fun filename ->
+               let expect =
+                 if contains_substring filename "_errors" then
+                   Spectec.Task.Negative
+                 else Spectec.Task.Positive
+               in
+               { includes = [ includes_dir ]; filename; expect })
 
   let unparse = Frontend.unparse
   let parse_string = Frontend.parse_string
@@ -175,8 +173,6 @@ module Typecheck_old = struct
 
   module Target = Target_old
 
-  let test_dir = test_base_dir
-
   type input = {
     includes : string list;
     filename : string;
@@ -184,16 +180,22 @@ module Typecheck_old = struct
   }
 
   let collect ?dir () =
-    let test_dir = Option.value dir ~default:test_dir in
-    let excludes = load_excludes excludes_dir in
-    collect_files_recursive ~suffix:".p4" test_dir
-    |> List.filter (fun filename -> not (is_excluded excludes filename))
-    |> List.map (fun filename ->
-           let expect =
-             if contains_substring filename "_errors" then Spectec.Task.Negative
-             else Spectec.Task.Positive
-           in
-           { includes = [ includes_dir ]; filename; expect })
+    match dir with
+    | None -> []
+    | Some base ->
+        (* includes live under the corpus base; excludes sit beside it *)
+        let includes_dir = Filename.concat base "includes" in
+        let excludes_dir = Filename.concat (Filename.dirname base) "excludes" in
+        let excludes = load_excludes excludes_dir in
+        collect_files_recursive ~suffix:".p4" base
+        |> List.filter (fun filename -> not (is_excluded excludes filename))
+        |> List.map (fun filename ->
+               let expect =
+                 if contains_substring filename "_errors" then
+                   Spectec.Task.Negative
+                 else Spectec.Task.Positive
+               in
+               { includes = [ includes_dir ]; filename; expect })
 
   let unparse = Frontend.unparse
   let parse_string = Frontend.parse_string
