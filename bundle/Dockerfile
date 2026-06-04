@@ -1,21 +1,24 @@
-# Typed Imp tutorial - build-from-source fallback: an image with `spectecx`
-# plus asciidoctor, so participants need no host toolchain. Run from this
-# directory, with it mounted at /work:
+# Typed Imp tutorial - a self-contained image: `spectecx`, the tutorial
+# materials, an editor, and asciidoctor, so participants need no host
+# toolchain. Build it, then work entirely inside the container:
 #
 #   docker build -t spectecx-tutorial .
-#   docker run --rm -v "$PWD":/work spectecx-tutorial \
-#     spectecx impty batch --batch-dir tests/base
-#   docker run --rm -v "$PWD":/work spectecx-tutorial make splice-html
+#   docker run -it spectecx-tutorial          # shell in /work; edit and run here
+#
+# Inside, every README command runs as written (./spectecx ..., make test, ...).
+# To keep edits across sessions, drop --rm and reuse a named container, or
+# mount your spec: -v "$PWD/impty.spectec":/work/impty.spectec
 #
 # Override the revision with --build-arg SPECTECX_REF=<tag-or-branch>.
 
 FROM ocaml/opam:debian-12-ocaml-5.1
 
-# opam deps need GMP (bignum); asciidoctor needs Ruby.
+# opam deps need GMP (bignum); asciidoctor needs Ruby; vim/nano to edit the spec.
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
       libgmp-dev pkg-config m4 \
       ruby ruby-dev build-essential \
+      vim nano \
  && gem install --no-document asciidoctor asciidoctor-pdf \
  && rm -rf /var/lib/apt/lists/*
 USER opam
@@ -30,6 +33,11 @@ RUN opam install -y --deps-only . \
  && opam exec -- dune build bin/main.exe \
  && sudo install _build/default/bin/main.exe /usr/local/bin/spectecx
 
+# Bake the tutorial materials in, and expose the binary as ./spectecx so the
+# README commands run unchanged from /work.
+COPY --chown=opam . /work
+RUN ln -sf /usr/local/bin/spectecx /work/spectecx
+
 WORKDIR /work
 ENTRYPOINT []
-CMD ["spectecx", "impty", "help"]
+CMD ["bash"]

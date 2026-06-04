@@ -46,11 +46,11 @@ docker run --rm -v "$PWD":/work spectecx-tutorial \
 
 ```sh
 # typecheck, then run hello.imp
-spectecx impty typecheck -p tests/base/hello.imp
-spectecx impty eval      -p tests/base/hello.imp
+./spectecx impty typecheck -p tests/base/hello.imp
+./spectecx impty eval      -p tests/base/hello.imp
 
 # show the derivation tree the run was built from, in spec syntax
-spectecx impty eval -p tests/base/hello.imp --tree.level conclusion
+./spectecx impty eval -p tests/base/hello.imp --tree.level conclusion
 ```
 
 ## 2. Adding first-class functions (test-driven)
@@ -63,20 +63,20 @@ make test-base
 make test
 
 # debug one program at a time
-spectecx impty typecheck -p tests/functions/closure.imp
-spectecx impty eval      -p tests/functions/closure.imp
+./spectecx impty typecheck -p tests/functions/closure.imp
+./spectecx impty eval      -p tests/functions/closure.imp
 ```
 
 ## 3. Testing: coverage and property-based testing
 
 ```sh
 # coverage: which rules the suite exercises (summary lists the uncovered ones)
-spectecx impty batch --branch-coverage.level summary
+./spectecx impty batch --branch-coverage.level summary
 
 # property-based testing of type safety
-spectecx impty quickcheck
-spectecx impty quickcheck --generalize
-spectecx impty quickcheck --num-tests 400 --branch-coverage.level summary
+./spectecx impty quickcheck
+./spectecx impty quickcheck --generalize
+./spectecx impty quickcheck --num-tests 400 --branch-coverage.level summary
 ```
 
 ## 4. Documentation: generated prose

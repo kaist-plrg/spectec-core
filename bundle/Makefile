@@ -3,7 +3,7 @@
 # Wraps the test suite and the prose splice pipeline; everything else is a
 # plain `spectecx impty ...` command (see README.md).
 
-SPECTECX ?= spectecx
+SPECTECX ?= ./spectecx
 SPEC      = impty.spectec
 
 DOC_DIR   = documentation
