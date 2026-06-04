@@ -5,14 +5,19 @@
 # --spec and --batch-dir defaults.
 
 SPECTECX ?= ./spectecx
+SPEC      = recursion.spectec
 
-.PHONY: test-rec test-base help
+.PHONY: check test-rec test-base help
 
 help:
 	@echo "Recursion exercise helpers (see README.md):"
+	@echo "  make check       type-check the spec (errors and warnings, no IL)"
 	@echo "  make test-rec    run the whole suite (tests/: base + functions + recursion)"
 	@echo "  make test-base   run the base-language tests only (tests/base/)"
 	@echo "Override the tool with SPECTECX=... (default: $(SPECTECX))."
+
+check:
+	$(SPECTECX) elab --check $(SPEC)
 
 test-rec:
 	$(SPECTECX) impty batch

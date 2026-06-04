@@ -42,8 +42,8 @@ page, the same release you downloaded this bundle from.
 ./spectecx impty typecheck -p tests/base/hello.imp
 ./spectecx impty eval      -p tests/base/hello.imp
 
-# show the derivation tree the run was built from, in spec syntax
-./spectecx impty eval -p tests/base/hello.imp --tree.level conclusion
+# show the full derivation tree (premises and all) the run was built from
+./spectecx impty eval -p tests/base/hello.imp --tree.level premise
 ```
 
 ## 2. Documentation: generated prose
@@ -51,8 +51,8 @@ page, the same release you downloaded this bundle from.
 The prose document splices straight from `impty.spectec`. Needs [asciidoctor](https://asciidoctor.org/) (`gem install asciidoctor asciidoctor-pdf`), or use Docker (see the release page).
 
 ```sh
-make splice-html    # -> documentation/impty.html
-make splice-pdf     # -> documentation/impty.pdf
+make doc-html    # -> documentation/impty.html
+make doc-pdf     # -> documentation/impty.pdf
 ```
 
 Then open `documentation/impty.html` (or `documentation/impty.pdf`).
@@ -65,6 +65,9 @@ Then open `documentation/impty.html` (or `documentation/impty.pdf`).
 # base programs pass; the full suite has the 4 function programs failing
 make test-base
 make test
+
+# after editing a rule, type-check the spec: errors and warnings, no IL dump
+./spectecx elab --check impty.spectec
 
 # debug one program at a time
 ./spectecx impty typecheck -p tests/functions/closure.imp
