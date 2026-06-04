@@ -114,6 +114,7 @@ let make_batch (module Tgt : Spectec.Target.S) ~name
     fun () ->
       guard_errors_only ~color @@ fun () ->
       let open Spectec in
+      let ansi = resolve_ansi color in
       let* () = validate_config config ~sl_mode in
       let* cfg = Config_file.load ~target:Tgt.name () in
       let source =
@@ -132,18 +133,31 @@ let make_batch (module Tgt : Spectec.Target.S) ~name
         }
       in
       let* results =
-        Batch.run_target ~config ?test_dir:batch_dir ~checkpoint_config ~verbose
-          ~sl_mode ~spec_files spec_il packed_tasks
+        Batch.run_target ~config ?test_dir:batch_dir ~ansi ~checkpoint_config
+          ~verbose ~sl_mode ~spec_files spec_il packed_tasks
       in
       List.iter
         (fun Batch.{ task_name; summary; failures } ->
           let passed = Batch.summary_passed summary in
           let failed = Batch.summary_failed summary in
-          Format.printf "%s: %d/%d passed, %d failed\n" task_name passed
-            summary.total failed;
+          let passed_str =
+            Diagnostic.Ansi.style ansi [ Diagnostic.Ansi.Green ]
+              (Printf.sprintf "%d/%d passed" passed summary.total)
+          in
+          let failed_str = Printf.sprintf "%d failed" failed in
+          let failed_str =
+            if failed > 0 then
+              Diagnostic.Ansi.style ansi [ Diagnostic.Ansi.Red ] failed_str
+            else failed_str
+          in
+          Format.printf "%s: %s, %s\n" task_name passed_str failed_str;
           List.iter
             (fun Batch.{ source; kind } ->
-              Format.printf "  %-16s %s\n" (Batch.failure_label kind) source)
+              let label =
+                Diagnostic.Ansi.style ansi [ Diagnostic.Ansi.Red ]
+                  (Printf.sprintf "%-16s" (Batch.failure_label kind))
+              in
+              Format.printf "  %s %s\n" label source)
             failures)
         results;
       Ok ()

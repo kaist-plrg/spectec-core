@@ -255,14 +255,25 @@ let run_with_outcome (type i) (module T : Task.S with type input = i) ~sl_mode
   Instrumentation.Dispatcher.emit (Events.Test_end { test_case_id });
   Task.compute_outcome (T.expectation input) result
 
-let print_outcome_tag = function
-  | Task.Pass _ -> Format.printf "PASS\n%!"
-  | Task.ExpectedFail _ -> Format.printf "EXPECTED FAIL\n%!"
-  | Task.Fail _ -> Format.printf "FAIL\n%!"
-  | Task.UnexpectedPass _ -> Format.printf "UNEXPECTED PASS\n%!"
+let outcome_label = function
+  | Task.Pass _ -> "pass"
+  | Task.ExpectedFail _ -> "expected fail"
+  | Task.Fail _ -> "fail"
+  | Task.UnexpectedPass _ -> "unexpected pass"
 
-let run_one_input (type i) (module T : Task.S with type input = i) ~sl_mode
-    ~spec_il ~verbose (input : i) =
+(* Green when the result matched its expectation, red when it did not. *)
+let outcome_color = function
+  | Task.Pass _ | Task.ExpectedFail _ -> Diagnostic.Ansi.Green
+  | Task.Fail _ | Task.UnexpectedPass _ -> Diagnostic.Ansi.Red
+
+let print_outcome_tag ansi outcome =
+  Format.printf "%s\n%!"
+    (Diagnostic.Ansi.style ansi
+       [ outcome_color outcome ]
+       (outcome_label outcome))
+
+let run_one_input (type i) (module T : Task.S with type input = i) ~ansi
+    ~sl_mode ~spec_il ~verbose (input : i) =
   let source = T.source input in
   let outcome =
     try run_with_outcome (module T) ~sl_mode ~spec_il input
@@ -270,7 +281,7 @@ let run_one_input (type i) (module T : Task.S with type input = i) ~sl_mode
       let error = UnhandledException (Printexc.to_string exn) in
       Task.compute_outcome (T.expectation input) (Error error)
   in
-  if verbose then print_outcome_tag outcome;
+  if verbose then print_outcome_tag ansi outcome;
   { input; source; outcome }
 
 (* --- Batch summary --- *)
@@ -343,7 +354,7 @@ let print_summary summary =
 (* --- Batch runner --- *)
 
 let run_batch_with_outcomes (type i) (module T : Task.S with type input = i)
-    ?(config = Instrumentation.Config.default) ~sl_mode ~spec_il
+    ?(config = Instrumentation.Config.default) ~ansi ~sl_mode ~spec_il
     ?(verbose = false) (inputs : i list) =
   let total = List.length inputs in
   Instrumentation.with_instrumentation config
@@ -353,7 +364,7 @@ let run_batch_with_outcomes (type i) (module T : Task.S with type input = i)
     (fun idx input ->
       if verbose then
         Format.printf "[%d/%d] %s... %!" (idx + 1) total (T.source input);
-      run_one_input (module T) ~sl_mode ~spec_il ~verbose input)
+      run_one_input (module T) ~ansi ~sl_mode ~spec_il ~verbose input)
     inputs
 
 (* --- Composed run + print --- *)
@@ -386,7 +397,7 @@ let run_and_print_batch (type i) (module T : Task.S with type input = i) ?config
       let results =
         run_batch_with_outcomes
           (module T)
-          ?config ~sl_mode ~spec_il ~verbose inputs
+          ?config ~ansi ~sl_mode ~spec_il ~verbose inputs
       in
       if not verbose then
         List.iter
@@ -405,7 +416,7 @@ type task_result = {
   failures : failure list;
 }
 
-let run_target ?(config = Instrumentation.Config.default) ?test_dir
+let run_target ?(config = Instrumentation.Config.default) ?test_dir ~ansi
     ~(checkpoint_config : Checkpoint.config) ~verbose ~sl_mode ~spec_files
     spec_il tasks =
   Instrumentation.with_instrumentation config
@@ -459,7 +470,7 @@ let run_target ?(config = Instrumentation.Config.default) ?test_dir
                   (completed_count + index + 1)
                   total_all (T.source input);
               let result =
-                run_one_input (module T) ~sl_mode ~spec_il ~verbose input
+                run_one_input (module T) ~ansi ~sl_mode ~spec_il ~verbose input
               in
               all_completed_inputs := result.source :: !all_completed_inputs;
               if (index + 1) mod checkpoint_config.save_interval = 0 then

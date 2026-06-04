@@ -68,6 +68,7 @@ val run_with_outcome_with_instrumentation :
 val run_batch_with_outcomes :
   (module Spectec.Task.S with type input = 'i) ->
   ?config:Instrumentation.Config.t ->
+  ansi:Spectec.Diagnostic.Ansi.t ->
   sl_mode:bool ->
   spec_il:Lang.Il.spec ->
   ?verbose:bool ->
@@ -137,6 +138,7 @@ type task_result = {
 val run_target :
   ?config:Instrumentation.Config.t ->
   ?test_dir:string ->
+  ansi:Spectec.Diagnostic.Ansi.t ->
   checkpoint_config:Checkpoint.config ->
   verbose:bool ->
   sl_mode:bool ->
