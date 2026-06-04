@@ -4,8 +4,6 @@
     - [specs/impty/base] — imperative core (arithmetic, conditionals, loops).
     - [specs/impty/closure] — adds function values and call expressions. *)
 
-let test_base_dir = "spectec/testdata/interp/impty"
-
 let collect_files_recursive ~suffix dir =
   let rec gather acc path =
     if Sys.file_exists path && Sys.is_directory path then (
@@ -51,9 +49,11 @@ end
 type input = { filename : string; expect : Spectec.Task.expectation }
 
 let collect_with ~classify ?dir () =
-  let test_dir = Option.value dir ~default:test_base_dir in
-  collect_files_recursive ~suffix:".imp" test_dir
-  |> List.map (fun filename -> { filename; expect = classify filename })
+  match dir with
+  | None -> []
+  | Some test_dir ->
+      collect_files_recursive ~suffix:".imp" test_dir
+      |> List.map (fun filename -> { filename; expect = classify filename })
 
 (* [_errors_X.imp] = static error (Check_prog fails); [_errors_runtime_X.imp] =
    runtime error (Check_prog succeeds, Eval_prog fails). The eval task gates on
@@ -71,8 +71,6 @@ let eval_classify filename =
 
 module Task_common = struct
   module Target = Target
-
-  let test_dir = test_base_dir
 
   type nonrec input = input
 
