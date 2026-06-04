@@ -7,7 +7,19 @@ let preprocess includes filename =
       @ List.map ~f:(Printf.sprintf "-I%s") includes
       @ [ "-undef"; "-nostdinc"; "-E"; "-x"; "c"; filename ])
   in
-  let in_chan = Core_unix.open_process_in cmd in
-  let program = In_channel.input_all in_chan in
-  let _ = Core_unix.close_process_in in_chan in
-  program
+  let channels =
+    Core_unix.open_process_full cmd ~env:(Core_unix.environment ())
+  in
+  let program =
+    In_channel.input_all channels.Core_unix.Process_channels.stdout
+  in
+  let diagnostics =
+    In_channel.input_all channels.Core_unix.Process_channels.stderr
+  in
+  match Core_unix.close_process_full channels with
+  | Ok () -> program
+  | Error _ ->
+      Out_channel.(
+        output_string stderr diagnostics;
+        flush stderr);
+      program
