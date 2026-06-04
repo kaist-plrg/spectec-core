@@ -12,17 +12,17 @@ instructions:
   
   SL Instructions: 65/149 (43.62%)
   
-  def $lookup_:
+  def $lookup:
       2   Case on pair<K, V>*
       -     Case (% matches pattern []):
    ####       Return ?()
       -     Case (% matches pattern _ :: _):
       2       Let (K_h -> V_h) :: (K_t -> V_t)* = pair<K, V>*
-      2         If ((K_h = K))
+      2         If ((K_h = K_query))
       2           Return ?(V_h)
    ####   If ((pair<K, V>* matches pattern _ :: _))
    ####     Let (K_h -> V_h) :: (K_t -> V_t)* = pair<K, V>*
-   ####       Return $lookup_<K, V>((K_t -> V_t)*, K)
+   ####       Return $lookup<K, V>((K_t -> V_t)*, K_query)
   
   relation Check_expr:
       4   Case on expr
@@ -30,18 +30,23 @@ instructions:
       2       Let literal = (expr as literal)
       2         Case on literal
       -           Case (% matches pattern ``NUM %`):
-      2             Let (n) = literal
+      2             Let (i) = literal
       2               Result (int)
       -           Case (% matches pattern ``BOOL %`):
    ####             Let (b) = literal
    ####               Result (bool)
       -     Case (% has type id):
       1       Let x = (expr as id)
-      1         Let type'? = $lookup_<id, type>(tenv, x)
-      1           If ((type'? matches pattern (_)))
-      1             Let ?(type) = type'?
-      1               Result type
+      1         Let type? = $lookup<id, type>(tenv, x)
+      1           If ((type? matches pattern (_)))
+      1             Let ?(t) = type?
+      1               Result t
       1   Case on expr
+      -     Case (% matches pattern `! %`):
+   ####       Let (! e) = expr
+   ####         Check_expr: tenv |- e : type
+   ####           If ((type matches pattern `BOOL`))
+   ####             Result (bool)
       -     Case (% matches pattern `% + %`):
    ####       Let (e_l + e_r) = expr
    ####         Check_expr: tenv |- e_l : type
@@ -56,11 +61,6 @@ instructions:
       1             Check_expr: tenv |- e_r : type'
       1               If ((type' matches pattern `INT`))
       1                 Result (bool)
-      -     Case (% matches pattern `! %`):
-   ####       Let (! e) = expr
-   ####         Check_expr: tenv |- e : type
-   ####           If ((type matches pattern `BOOL`))
-   ####             Result (bool)
       -     Case (% matches pattern `% && %`):
    ####       Let (e_l && e_r) = expr
    ####         Check_expr: tenv |- e_l : type
@@ -74,14 +74,14 @@ instructions:
       -     Case (% matches pattern `SKIP`):
    ####       Result tenv
       -     Case (% matches pattern `% % = %`):
-      2       Let (type x = e) = command
-      2         Check_expr: tenv |- e : type'
-      2           If ((type' = type))
-      2             Result (x -> type) :: tenv
+      2       Let (t x = e) = command
+      2         Check_expr: tenv |- e : type
+      2           If ((type = t))
+      2             Result (x -> t) :: tenv
       -     Case (% matches pattern `% = %`):
    ####       Let (x = e) = command
-   ####         Check_expr: tenv |- e : type
-   ####           If (($lookup_<id, type>(tenv, x) = ?(type)))
+   ####         Check_expr: tenv |- e : t
+   ####           If (($lookup<id, type>(tenv, x) = ?(t)))
    ####             Result tenv
       -     Case (% matches pattern `IF % THEN % ELSE % END`):
    ####       Let (if e then c_1 else c_2 end) = command
@@ -112,51 +112,51 @@ instructions:
       2       Let literal = (expr as literal)
       2         Case on literal
       -           Case (% matches pattern ``NUM %`):
-      2             Let (n) = literal
-      2               Result (n)
+      2             Let (i) = literal
+      2               Result (i)
       -           Case (% matches pattern ``BOOL %`):
    ####             Let (b) = literal
    ####               Result (b)
       -     Case (% has type id):
       1       Let x = (expr as id)
-      1         Let value? = $lookup_<id, value>(env, x)
+      1         Let value? = $lookup<id, value>(env, x)
       1           If ((value? matches pattern (_)))
       1             Let ?(v) = value?
       1               Result v
       1   Case on expr
-      -     Case (% matches pattern `% + %`):
-   ####       Let (e_l + e_r) = expr
-   ####         Eval_expr: env |- e_l => literal
-   ####           If ((literal matches pattern ``NUM %`))
-   ####             Let (n_l) = literal
-   ####               Eval_expr: env |- e_r => literal'
-   ####                 If ((literal' matches pattern ``NUM %`))
-   ####                   Let (n_r) = literal'
-   ####                     Let n = (n_l + n_r)
-   ####                       Result (n)
-      -     Case (% matches pattern `% <= %`):
-      1       Let (e_l <= e_r) = expr
-      1         Eval_expr: env |- e_l => literal
-      1           If ((literal matches pattern ``NUM %`))
-      1             Let (n_l) = literal
-      1               Eval_expr: env |- e_r => literal'
-      1                 If ((literal' matches pattern ``NUM %`))
-      1                   Let (n_r) = literal'
-      1                     Let b = (n_l <= n_r)
-      1                       Result (b)
       -     Case (% matches pattern `! %`):
    ####       Let (! e) = expr
-   ####         Eval_expr: env |- e => literal
+   ####         Eval_expr: env |- e ==> literal
    ####           If ((literal matches pattern ``BOOL %`))
    ####             Let (b_e) = literal
    ####               Let b = ~b_e
    ####                 Result (b)
+      -     Case (% matches pattern `% + %`):
+   ####       Let (e_l + e_r) = expr
+   ####         Eval_expr: env |- e_l ==> literal
+   ####           If ((literal matches pattern ``NUM %`))
+   ####             Let (i_l) = literal
+   ####               Eval_expr: env |- e_r ==> literal'
+   ####                 If ((literal' matches pattern ``NUM %`))
+   ####                   Let (i_r) = literal'
+   ####                     Let i = (i_l + i_r)
+   ####                       Result (i)
+      -     Case (% matches pattern `% <= %`):
+      1       Let (e_l <= e_r) = expr
+      1         Eval_expr: env |- e_l ==> literal
+      1           If ((literal matches pattern ``NUM %`))
+      1             Let (i_l) = literal
+      1               Eval_expr: env |- e_r ==> literal'
+      1                 If ((literal' matches pattern ``NUM %`))
+      1                   Let (i_r) = literal'
+      1                     Let b = (i_l <= i_r)
+      1                       Result (b)
       -     Case (% matches pattern `% && %`):
    ####       Let (e_l && e_r) = expr
-   ####         Eval_expr: env |- e_l => literal
+   ####         Eval_expr: env |- e_l ==> literal
    ####           If ((literal matches pattern ``BOOL %`))
    ####             Let (b_l) = literal
-   ####               Eval_expr: env |- e_r => literal'
+   ####               Eval_expr: env |- e_r ==> literal'
    ####                 If ((literal' matches pattern ``BOOL %`))
    ####                   Let (b_r) = literal'
    ####                     Let b = (b_l /\ b_r)
@@ -167,16 +167,16 @@ instructions:
       -     Case (% matches pattern `SKIP`):
    ####       Result env
       -     Case (% matches pattern `% % = %`):
-      2       Let (type x = e) = command
-      2         Eval_expr: env |- e => v
+      2       Let (t x = e) = command
+      2         Eval_expr: env |- e ==> v
       2           Result (x -> v) :: env
       -     Case (% matches pattern `% = %`):
    ####       Let (x = e) = command
-   ####         Eval_expr: env |- e => v
+   ####         Eval_expr: env |- e ==> v
    ####           Result (x -> v) :: env
       -     Case (% matches pattern `IF % THEN % ELSE % END`):
    ####       Let (if e then c_1 else c_2 end) = command
-   ####         Eval_expr: env |- e => literal
+   ####         Eval_expr: env |- e ==> literal
    ####           If ((literal = (true)))
    ####             Eval_command: env |- c_1 -| env_1
    ####               Result env_1
@@ -185,7 +185,7 @@ instructions:
    ####               Result env_2
       -     Case (% matches pattern `WHILE % DO % END`):
    ####       Let (while e do c end) = command
-   ####         Eval_expr: env |- e => literal
+   ####         Eval_expr: env |- e ==> literal
    ####           If ((literal = (false)))
    ####             Result env
    ####           If ((literal = (true)))

@@ -31,7 +31,7 @@ author syntax with runtime values substituted at variable leaves. It is IL only.
               -- Check_expr/id:
                  [ x -> int ] |- x : int
                  ───────────────────────
-                 -- if $lookup_<id, type>([ x -> int ], x) = int
+                 -- if $lookup<id, type>([ x -> int ], x) = int
               -- Check_expr/num:
                  [ x -> int ] |- 10 : int
                  ────────────────────────
@@ -45,21 +45,21 @@ author syntax with runtime values substituted at variable leaves. It is IL only.
            [] |- int x = 5 -| [ x -> 5 ]
            ─────────────────────────────
            -- Eval_expr/num:
-              [] |- 5 => 5
-              ────────────
+              [] |- 5 ==> 5
+              ─────────────
         -- Eval_command/decl:
            [ x -> 5 ] |- bool y = x <= 10 -| [ y -> true, x -> 5 ]
            ───────────────────────────────────────────────────────
            -- Eval_expr/leq:
-              [ x -> 5 ] |- x <= 10 => true
-              ─────────────────────────────
+              [ x -> 5 ] |- x <= 10 ==> true
+              ──────────────────────────────
               -- Eval_expr/id:
-                 [ x -> 5 ] |- x => 5
-                 ────────────────────
-                 -- if $lookup_<id, value>([ x -> 5 ], x) = 5
+                 [ x -> 5 ] |- x ==> 5
+                 ─────────────────────
+                 -- if $lookup<id, value>([ x -> 5 ], x) = 5
               -- Eval_expr/num:
-                 [ x -> 5 ] |- 10 => 10
-                 ──────────────────────
+                 [ x -> 5 ] |- 10 ==> 10
+                 ───────────────────────
               -- if true = $(5 <= 10)
   [
     y -> true,

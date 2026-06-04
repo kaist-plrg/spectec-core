@@ -18,8 +18,8 @@ IL interpreter:
     Check_command/ite
     Check_command/while
     Check_expr/boollit
-    Check_expr/add
     Check_expr/not
+    Check_expr/add
     Check_expr/and
     Eval_command/skip
     Eval_command/assign
@@ -28,15 +28,15 @@ IL interpreter:
     Eval_command/while-false
     Eval_command/while-true
     Eval_expr/boollit
-    Eval_expr/add
     Eval_expr/not
+    Eval_expr/add
     Eval_expr/and
   
   Clauses: 1/3 (33.33%)
   
   Uncovered clauses:
-    $lookup_/0
-    $lookup_/2
+    $lookup/0
+    $lookup/2
   [
     y -> true,
     x -> 5

@@ -45,8 +45,8 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 4]         ← Check_command/skip [fail]
   [ 4]         → Check_command/decl
   [ 4]           | -- if command matches `% % = %`
-  [ 4]           | -- let type x = e = command
-  [ 4]           | -- rel Check_expr: tenv |- e : type'
+  [ 4]           | -- let t x = e = command
+  [ 4]           | -- rel Check_expr: tenv |- e : type
   [ 4]         → Check_expr
   [ 4]             []
   [ 4]             5
@@ -54,11 +54,11 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 5]             | -- if expr <: literal
   [ 5]             | -- let literal = expr as literal
   [ 5]             | -- if literal matches ``NUM %`
-  [ 5]             | -- let n = literal
+  [ 5]             | -- let i = literal
   [ 5]           ← Check_expr/num [ok]
   [ 4]         ← Check_expr [ok]
   [ 4]             int
-  [ 4]           | -- if (type' = type)
+  [ 4]           | -- if (type = t)
   [ 4]         ← Check_command/decl [ok]
   [ 3]       ← Check_command [ok]
   [ 3]           [ x -> int ]
@@ -71,8 +71,8 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 4]         ← Check_command/skip [fail]
   [ 4]         → Check_command/decl
   [ 4]           | -- if command matches `% % = %`
-  [ 4]           | -- let type x = e = command
-  [ 4]           | -- rel Check_expr: tenv |- e : type'
+  [ 4]           | -- let t x = e = command
+  [ 4]           | -- rel Check_expr: tenv |- e : type
   [ 4]         → Check_expr
   [ 4]             [ x -> int ]
   [ 4]             x <= 10
@@ -85,6 +85,9 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 5]           → Check_expr/id
   [ 5]             | -- if expr <: id
   [ 5]           ← Check_expr/id [fail]
+  [ 5]           → Check_expr/not
+  [ 5]             | -- if expr matches `! %`
+  [ 5]           ← Check_expr/not [fail]
   [ 5]           → Check_expr/add
   [ 5]             | -- if expr matches `% + %`
   [ 5]           ← Check_expr/add [fail]
@@ -104,22 +107,22 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 6]             → Check_expr/id
   [ 6]               | -- if expr <: id
   [ 6]               | -- let x = expr as id
-  [ 6]               | -- let type'?{type' <- type'?} = $lookup_<id, type>(tenv, x)
-  [ 6]             → $lookup_
+  [ 6]               | -- let type?{type <- type?} = $lookup<id, type>(tenv, x)
+  [ 6]             → $lookup
   [ 6]                 [ x -> int ]
   [ 6]                 x
-  [ 7]               → $lookup_/0
+  [ 7]               → $lookup/0
   [ 7]                 | -- if pair<K, V>*{pair<K, V> <- pair<K, V>*} matches []
-  [ 7]               ← $lookup_
-  [ 7]               → $lookup_/1
+  [ 7]               ← $lookup
+  [ 7]               → $lookup/1
   [ 7]                 | -- if pair<K, V>*{pair<K, V> <- pair<K, V>*} matches _ :: _
   [ 7]                 | -- let K_h -> V_h :: K_t -> V_t*{K_t <- K_t*, V_t <- V_t*} = pair<K, V>*{pair<K, V> <- pair<K, V>*}
-  [ 7]                 | -- if (K_h = K)
-  [ 7]               ← $lookup_
-  [ 6]             ← $lookup_
+  [ 7]                 | -- if (K_h = K_query)
+  [ 7]               ← $lookup
+  [ 6]             ← $lookup
   [ 6]                 Some(int)
-  [ 6]               | -- if type'?{type' <- type'?} matches (_)
-  [ 6]               | -- let ?(type) = type'?{type' <- type'?}
+  [ 6]               | -- if type?{type <- type?} matches (_)
+  [ 6]               | -- let ?(t) = type?{type <- type?}
   [ 6]             ← Check_expr/id [ok]
   [ 5]           ← Check_expr [ok]
   [ 5]               int
@@ -132,7 +135,7 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 6]               | -- if expr <: literal
   [ 6]               | -- let literal = expr as literal
   [ 6]               | -- if literal matches ``NUM %`
-  [ 6]               | -- let n = literal
+  [ 6]               | -- let i = literal
   [ 6]             ← Check_expr/num [ok]
   [ 5]           ← Check_expr [ok]
   [ 5]               int
@@ -140,7 +143,7 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 5]           ← Check_expr/leq [ok]
   [ 4]         ← Check_expr [ok]
   [ 4]             bool
-  [ 4]           | -- if (type' = type)
+  [ 4]           | -- if (type = t)
   [ 4]         ← Check_command/decl [ok]
   [ 3]       ← Check_command [ok]
   [ 3]           [ y -> bool, x -> int ]
@@ -190,8 +193,8 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 4]         ← Eval_command/skip [fail]
   [ 4]         → Eval_command/decl
   [ 4]           | -- if command matches `% % = %`
-  [ 4]           | -- let type x = e = command
-  [ 4]           | -- rel Eval_expr: env |- e => v
+  [ 4]           | -- let t x = e = command
+  [ 4]           | -- rel Eval_expr: env |- e ==> v
   [ 4]         → Eval_expr
   [ 4]             []
   [ 4]             5
@@ -199,7 +202,7 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 5]             | -- if expr <: literal
   [ 5]             | -- let literal = expr as literal
   [ 5]             | -- if literal matches ``NUM %`
-  [ 5]             | -- let n = literal
+  [ 5]             | -- let i = literal
   [ 5]           ← Eval_expr/num [ok]
   [ 4]         ← Eval_expr [ok]
   [ 4]             5
@@ -215,8 +218,8 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 4]         ← Eval_command/skip [fail]
   [ 4]         → Eval_command/decl
   [ 4]           | -- if command matches `% % = %`
-  [ 4]           | -- let type x = e = command
-  [ 4]           | -- rel Eval_expr: env |- e => v
+  [ 4]           | -- let t x = e = command
+  [ 4]           | -- rel Eval_expr: env |- e ==> v
   [ 4]         → Eval_expr
   [ 4]             [ x -> 5 ]
   [ 4]             x <= 10
@@ -229,13 +232,16 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 5]           → Eval_expr/id
   [ 5]             | -- if expr <: id
   [ 5]           ← Eval_expr/id [fail]
+  [ 5]           → Eval_expr/not
+  [ 5]             | -- if expr matches `! %`
+  [ 5]           ← Eval_expr/not [fail]
   [ 5]           → Eval_expr/add
   [ 5]             | -- if expr matches `% + %`
   [ 5]           ← Eval_expr/add [fail]
   [ 5]           → Eval_expr/leq
   [ 5]             | -- if expr matches `% <= %`
   [ 5]             | -- let e_l <= e_r = expr
-  [ 5]             | -- rel Eval_expr: env |- e_l => literal
+  [ 5]             | -- rel Eval_expr: env |- e_l ==> literal
   [ 5]           → Eval_expr
   [ 5]               [ x -> 5 ]
   [ 5]               x
@@ -248,19 +254,19 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 6]             → Eval_expr/id
   [ 6]               | -- if expr <: id
   [ 6]               | -- let x = expr as id
-  [ 6]               | -- let value?{value <- value?} = $lookup_<id, value>(env, x)
-  [ 6]             → $lookup_
+  [ 6]               | -- let value?{value <- value?} = $lookup<id, value>(env, x)
+  [ 6]             → $lookup
   [ 6]                 [ x -> 5 ]
   [ 6]                 x
-  [ 7]               → $lookup_/0
+  [ 7]               → $lookup/0
   [ 7]                 | -- if pair<K, V>*{pair<K, V> <- pair<K, V>*} matches []
-  [ 7]               ← $lookup_
-  [ 7]               → $lookup_/1
+  [ 7]               ← $lookup
+  [ 7]               → $lookup/1
   [ 7]                 | -- if pair<K, V>*{pair<K, V> <- pair<K, V>*} matches _ :: _
   [ 7]                 | -- let K_h -> V_h :: K_t -> V_t*{K_t <- K_t*, V_t <- V_t*} = pair<K, V>*{pair<K, V> <- pair<K, V>*}
-  [ 7]                 | -- if (K_h = K)
-  [ 7]               ← $lookup_
-  [ 6]             ← $lookup_
+  [ 7]                 | -- if (K_h = K_query)
+  [ 7]               ← $lookup
+  [ 6]             ← $lookup
   [ 6]                 Some(5)
   [ 6]               | -- if value?{value <- value?} matches (_)
   [ 6]               | -- let ?(v) = value?{value <- value?}
@@ -268,8 +274,8 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 5]           ← Eval_expr [ok]
   [ 5]               5
   [ 5]             | -- if literal matches ``NUM %`
-  [ 5]             | -- let n_l = literal
-  [ 5]             | -- rel Eval_expr: env |- e_r => literal'
+  [ 5]             | -- let i_l = literal
+  [ 5]             | -- rel Eval_expr: env |- e_r ==> literal'
   [ 5]           → Eval_expr
   [ 5]               [ x -> 5 ]
   [ 5]               10
@@ -277,13 +283,13 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 6]               | -- if expr <: literal
   [ 6]               | -- let literal = expr as literal
   [ 6]               | -- if literal matches ``NUM %`
-  [ 6]               | -- let n = literal
+  [ 6]               | -- let i = literal
   [ 6]             ← Eval_expr/num [ok]
   [ 5]           ← Eval_expr [ok]
   [ 5]               10
   [ 5]             | -- if literal' matches ``NUM %`
-  [ 5]             | -- let n_r = literal'
-  [ 5]             | -- let b = (n_l <= n_r)
+  [ 5]             | -- let i_r = literal'
+  [ 5]             | -- let b = (i_l <= i_r)
   [ 5]           ← Eval_expr/leq [ok]
   [ 4]         ← Eval_expr [ok]
   [ 4]             true
