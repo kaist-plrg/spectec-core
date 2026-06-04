@@ -1,6 +1,13 @@
 # Typed Imp tutorial - a self-contained image: `spectecx`, the tutorial
 # materials, an editor, and asciidoctor, so participants need no host
-# toolchain. Build it, then work entirely inside the container:
+# toolchain.
+#
+# A prebuilt image is published, so most people can skip this build:
+#
+#   docker pull kaist-plrg/spectecx:tutorial
+#   docker run -it kaist-plrg/spectecx:tutorial
+#
+# To build the image yourself instead, work entirely inside the container:
 #
 #   docker build -t spectecx-tutorial .
 #   docker run -it spectecx-tutorial          # shell in /work; edit and run here

@@ -134,13 +134,13 @@ jobs:
 
             ### Alternatives
 
-            **Docker** -- a self-contained image (tool, materials, an editor,
-            and asciidoctor), for anyone without a native binary. From the
-            unpacked bundle directory:
+            **Docker** -- a prebuilt, self-contained image (tool, materials, an
+            editor, and asciidoctor), for anyone without a native binary. No
+            download needed -- pull and run:
 
             ```bash
-            docker build -t spectecx-tutorial .
-            docker run -it spectecx-tutorial
+            docker pull kaist-plrg/spectecx:tutorial
+            docker run -it kaist-plrg/spectecx:tutorial
             ```
 
             This opens a shell in the bundle; from there step 3 and the whole
