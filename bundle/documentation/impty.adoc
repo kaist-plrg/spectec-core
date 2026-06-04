@@ -25,13 +25,13 @@ Lookup over an association list is shared by the static and dynamic
 semantics. Given a list of `(key, value)` pairs, it returns the first
 value bound to the requested key.
 
-${func-title-source: lookup_}
+${func-title-source: lookup}
 
-${func-title-prose: lookup_}
+${func-title-prose: lookup}
 
-${func-source: lookup_}
+${func-source: lookup}
 
-${func-prose: lookup_}
+${func-prose: lookup}
 
 == Static semantics
 
