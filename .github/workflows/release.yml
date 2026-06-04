@@ -96,6 +96,7 @@ jobs:
             README, and prose document) and unpack it:
 
             ```bash
+            curl -L -O https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/spectecx-tutorial.tar.gz
             tar -xzf spectecx-tutorial.tar.gz && cd spectecx-tutorial
             ```
 
