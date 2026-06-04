@@ -299,6 +299,22 @@ let summarize_outcomes results =
   in
   { pass; expected_fail; fail; unexpected_pass; total = List.length results }
 
+type failure_kind = Unexpected_failure | Unexpected_pass
+type failure = { source : string; kind : failure_kind }
+
+let failure_label = function
+  | Unexpected_failure -> "fail"
+  | Unexpected_pass -> "unexpected pass"
+
+let collect_failures results =
+  List.filter_map
+    (fun { source; outcome; _ } ->
+      match outcome with
+      | Task.Fail _ -> Some { source; kind = Unexpected_failure }
+      | Task.UnexpectedPass _ -> Some { source; kind = Unexpected_pass }
+      | _ -> None)
+    results
+
 (* --- Presentation --- *)
 
 let print_outcome (type i) (module T : Task.S with type input = i) ~ansi source
@@ -383,7 +399,11 @@ let run_and_print_batch (type i) (module T : Task.S with type input = i) ?config
 
 (* --- Target batch runner --- *)
 
-type task_result = { task_name : string; summary : batch_summary }
+type task_result = {
+  task_name : string;
+  summary : batch_summary;
+  failures : failure list;
+}
 
 let run_target ?(config = Instrumentation.Config.default) ?test_dir
     ~(checkpoint_config : Checkpoint.config) ~verbose ~sl_mode ~spec_files
@@ -447,7 +467,12 @@ let run_target ?(config = Instrumentation.Config.default) ?test_dir
               result)
             inputs
         in
-        Ok { task_name = T.name; summary = summarize_outcomes task_results }
+        Ok
+          {
+            task_name = T.name;
+            summary = summarize_outcomes task_results;
+            failures = collect_failures task_results;
+          }
   in
   let ( let* ) = Result.bind in
   let rec run_tasks = function

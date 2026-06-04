@@ -19,3 +19,30 @@ reporting 0/0 passed:
     source: config
   [1]
 
+
+Running the base spec over both variants leaves the closure tests failing;
+each is listed by name under the tally:
+
+  $ spectec impty batch --spec $SPEC --batch-dir ../../testdata/interp/impty --color never
+  typechecker: 16/20 passed, 4 failed
+    fail             ../../testdata/interp/impty/closure/closure.imp
+    fail             ../../testdata/interp/impty/closure/curried.imp
+    fail             ../../testdata/interp/impty/closure/higher_order.imp
+    fail             ../../testdata/interp/impty/closure/static-vs-dynamic.imp
+  evaluator: 16/20 passed, 4 failed
+    fail             ../../testdata/interp/impty/closure/closure.imp
+    fail             ../../testdata/interp/impty/closure/curried.imp
+    fail             ../../testdata/interp/impty/closure/higher_order.imp
+    fail             ../../testdata/interp/impty/closure/static-vs-dynamic.imp
+
+A valid program named like an expected-fail case is reported as an unexpected
+pass:
+
+  $ mkdir corpus
+  $ cp ../../testdata/interp/impty/base/hello.imp corpus/_errors_valid.imp
+  $ spectec impty batch --spec $SPEC --batch-dir corpus --color never
+  typechecker: 0/1 passed, 1 failed
+    unexpected pass  corpus/_errors_valid.imp
+  evaluator: 0/1 passed, 1 failed
+    unexpected pass  corpus/_errors_valid.imp
+

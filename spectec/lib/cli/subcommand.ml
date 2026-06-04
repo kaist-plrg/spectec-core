@@ -112,7 +112,7 @@ let make_batch (module Tgt : Spectec.Target.S) ~name
     and config = Cli_args.Interpreter.config_flags
     and color = Cli_args.Output.color_flag in
     fun () ->
-      guard_unit ~color @@ fun () ->
+      guard_errors_only ~color @@ fun () ->
       let open Spectec in
       let* () = validate_config config ~sl_mode in
       let* cfg = Config_file.load ~target:Tgt.name () in
@@ -136,11 +136,15 @@ let make_batch (module Tgt : Spectec.Target.S) ~name
           ~sl_mode ~spec_files spec_il packed_tasks
       in
       List.iter
-        (fun Batch.{ task_name; summary } ->
+        (fun Batch.{ task_name; summary; failures } ->
           let passed = Batch.summary_passed summary in
           let failed = Batch.summary_failed summary in
           Format.printf "%s: %d/%d passed, %d failed\n" task_name passed
-            summary.total failed)
+            summary.total failed;
+          List.iter
+            (fun Batch.{ source; kind } ->
+              Format.printf "  %-16s %s\n" (Batch.failure_label kind) source)
+            failures)
         results;
       Ok ()
   in
