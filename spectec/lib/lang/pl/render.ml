@@ -24,6 +24,10 @@ let adoc_subscript (s : string) = "~" ^ s ^ "~"
 let adoc_superscript (s : string) = "^" ^ s ^ "^"
 let adoc_mono (s : string) = "``" ^ s ^ "``"
 
+(* Unconstrained (triple `+`): the constrained single-`+` form only pairs at
+   word boundaries, so a bracket abutting other markup leaks its delimiters. *)
+let adoc_passthrough (s : string) = "+++" ^ s ^ "+++"
+
 let adoc_as_code (ctx : context) (s : string) : string =
   if ctx.in_code then s else adoc_mono s
 
@@ -69,7 +73,7 @@ let string_of_relid = Sl.Print.string_of_relid
 let string_of_defid = Sl.Print.string_of_defid
 
 let render_varid (ctx : context) (id_var : id) =
-  if is_underscored id_var then "++_++" |> adoc_as_code ctx
+  if is_underscored id_var then adoc_passthrough "_" |> adoc_as_code ctx
   else
     let slices = String.split_on_char '_' id_var.it in
     match slices with
@@ -106,7 +110,7 @@ let code_of_atom (atom : Mixfix.atom) =
   | a -> (
       match unicode_of_atom a with
       | Some s -> s
-      | None -> "+" ^ Xl.Atom.string_of_atom a ^ "+")
+      | None -> adoc_passthrough (Xl.Atom.string_of_atom a))
 
 let code_of_mixop (mixop : mixop) : string =
   let arity = Mixfix.arity mixop in
@@ -222,19 +226,21 @@ let rec render_exp (ctx : context) (exp : exp) : string =
             |> adoc_as_link ctx ~link:tid.it
         | _ -> code_of_notexp ctx notexp)
   | StrE expfields ->
-      "+{+"
+      adoc_passthrough "{"
       ^ String.concat ", "
           (List.map
              (fun (atom, exp_f) ->
                code_of_atom atom ^ " " ^ render_exp ctx exp_f)
              expfields)
-      ^ "+}+"
+      ^ adoc_passthrough "}"
   | OptE (Some exp_inner) -> render_exp ctx exp_inner
   | OptE None -> "·" |> adoc_as_code ctx
   | ListE [] -> "·" |> adoc_as_code ctx
   | ListE [ exp_inner ] -> render_exp in_code_ctx exp_inner |> adoc_as_code ctx
   | ListE exps ->
-      "+[+ " ^ render_exps in_code_ctx ~sep:", " exps ^ " +]+"
+      adoc_passthrough "[" ^ " "
+      ^ render_exps in_code_ctx ~sep:", " exps
+      ^ " " ^ adoc_passthrough "]"
       |> adoc_as_code ctx
   | ConsE (exp_h, exp_t) ->
       render_exp in_code_ctx exp_h
@@ -429,14 +435,15 @@ let render_iterexp_suffix (ctx : context) (iterexps : iterexp list) : string =
         let render_in_var ({ varid; iters; _ } : var) =
           let it_ctx = in_code in
           let var_text =
-            if is_underscored varid then "++_++" |> adoc_as_code ctx
+            if is_underscored varid then
+              adoc_passthrough "_" |> adoc_as_code ctx
             else
               render_varid it_ctx varid
               ^ String.concat "" (List.map code_of_iter iters)
               |> adoc_as_code ctx
           in
           let list_text =
-            (if is_underscored varid then "++_++"
+            (if is_underscored varid then adoc_passthrough "_"
              else
                render_varid it_ctx varid
                ^ String.concat "" (List.map code_of_iter iters)
