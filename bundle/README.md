@@ -1,8 +1,8 @@
-# Materials for MechSpec@PLDI26
+# SpecTecX hands-on session
 
-Materials for part 3 of the MechSpec tutorial session, at PLDI'26. Contains a small typed imperative language ("Typed Imp"), specified in SpecTecX. Follow the tutorial and copy-paste commands from this file when necessary.
+A small typed imperative language ("Typed Imp"), specified in SpecTecX. Follow along and copy-paste commands from this file as you go.
 
-The binary (`spectecx`) is obtained separately -- see [Getting the tool](#getting-the-tool). The commands below assume it is on your `PATH`; otherwise prefix with `./`.
+The `spectecx` binary is obtained separately -- see [Getting the tool](#getting-the-tool). Run every command from this directory; they invoke the binary as `./spectecx`.
 
 ## Layout
 
@@ -24,21 +24,9 @@ The commands below read `spectecx.config` from the current directory for their `
 
 ## Getting the tool
 
-```sh
-# 1. Prebuilt binary: download from the project's GitHub Releases, then
-chmod +x spectecx && sudo mv spectecx /usr/local/bin/    # or keep it here and use ./spectecx
-
-# 2. Build from source (opam, OCaml >= 5.1, GMP headers):
-git clone https://github.com/kaist-plrg/spectecx.git && cd spectecx
-opam switch create spectecx 5.1.0
-opam install -y --switch=spectecx --deps-only ./spectec
-make exe                                                 # produces ./spectecx
-
-# 3. Docker (no host toolchain; also includes asciidoctor):
-docker build -t spectecx-tutorial .                      # run from this directory
-docker run --rm -v "$PWD":/work spectecx-tutorial \
-  spectecx impty batch --batch-dir tests/base
-```
+Installation -- prebuilt binary, Docker, or build from source -- is on the
+project's [GitHub Releases](https://github.com/kaist-plrg/spectecx/releases)
+page, the same release you downloaded this bundle from.
 
 ## 1. Typed Imp: executable inference rules
 
@@ -81,7 +69,7 @@ make test
 
 ## 4. Documentation: generated prose
 
-The prose document splices straight from `impty.spectec`. Needs [asciidoctor](https://asciidoctor.org/) (`gem install asciidoctor asciidoctor-pdf`), or use the Docker image above.
+The prose document splices straight from `impty.spectec`. Needs [asciidoctor](https://asciidoctor.org/) (`gem install asciidoctor asciidoctor-pdf`), or use Docker (see the release page).
 
 ```sh
 make splice-html    # -> documentation/impty.html
