@@ -1,12 +1,8 @@
-(** Tree: buffered derivation-tree renderer for a successful evaluation.
-
-    Unlike {!Trace} (which streams every event), Tree accumulates events inside
-    a top-level relation invocation and emits a single ASCII tree once that
-    invocation completes. Failed rule attempts are pruned: only the rule that
-    actually fired at each relation invocation remains visible.
-
-    Each relation is drawn as a derivation tree in spec syntax: its conclusion
-    on top, its sub-derivations below as premises led by [--].
+(** Tree: buffers a top-level relation invocation and emits one ASCII derivation
+    tree when it completes -- conclusion on top, sub-derivations below as
+    premises led by [--]. Unlike {!Trace}, backtracking is pruned to the rules
+    that applied. On failure the premise level renders each applied-but-failed
+    rule as a branch under the goal, crossing the premise that defeated it.
 
     Levels:
     - [Rule]: each relation node tagged with the rule that matched.
@@ -37,11 +33,8 @@ let summarize_value (v : Il.Value.t) : string =
 (* === Tree representation =========================================== *)
 
 type kind = Rel | Func
-
-type outcome =
-  | Failed
-  | Rel_ok of (Il.Value.t option, Il.Value.t option) Il.Mode.t
-  | Func_ok of Il.Value.t
+type judgment = (Il.Value.t option, Il.Value.t option) Il.Mode.t
+type outcome = Failed | Rel_ok | Func_ok of Il.Value.t
 
 type node = {
   kind : kind;
@@ -49,18 +42,38 @@ type node = {
   inputs : Il.Value.t list;
   mutable rule : string option;
   mutable outcome : outcome;
+  mutable judgment : judgment option;
   mutable children_rev : node list;
-  mutable rollback_children : node list option;
   (* Premise level only. *)
   mutable prems_rev : prem_entry list;
   mutable pending_prem : prem_entry option;
-  mutable rollback_prems : prem_entry list option;
   (* Variable values across all the rule's premises; synthesized sideconditions
      are included because they bind an author premise's output variables. *)
   mutable binding_env : (Il.id * Il.Value.t) list;
+  (* [Some] only between this node's [Rule_enter] and [Rule_exit]. *)
+  mutable attempt : attempt option;
+  (* Applied-but-failed rules; guard failures are dropped to mirror the pruned
+     IL failtrace. *)
+  mutable failures_rev : derivation list;
 }
 
 and prem_entry = { prem : Il.prem; mutable subderiv : node option }
+
+and attempt = {
+  saved_children : node list;
+  saved_prems : prem_entry list;
+  mutable failing : Il.prem option;
+}
+
+(* A relation node's candidate derivation: the rule that fired (success) or one
+   applied-but-failed rule. *)
+and derivation = {
+  d_rule : string option;
+  d_prems_rev : prem_entry list;
+  d_children_rev : node list;
+  d_failing : Il.prem option;
+  d_failed : bool;
+}
 
 let new_node kind id inputs =
   {
@@ -69,15 +82,21 @@ let new_node kind id inputs =
     inputs;
     rule = None;
     outcome = Failed;
+    judgment = None;
     children_rev = [];
-    rollback_children = None;
     prems_rev = [];
     pending_prem = None;
-    rollback_prems = None;
     binding_env = [];
+    attempt = None;
+    failures_rev = [];
   }
 
 let outcome_of_output = function Some v -> Func_ok v | None -> Failed
+let is_failed node = match node.outcome with Failed -> true | _ -> false
+
+let is_applied = function
+  | Some { it = Il.IfPr { role = Il.Guard; _ }; _ } -> false
+  | _ -> true
 
 (* === Mutable state ================================================= *)
 
@@ -87,6 +106,7 @@ module State = struct
   let reset () = stack := []
   let push node = stack := node :: !stack
   let with_current f = match !stack with [] -> () | current :: _ -> f current
+  let set_judgment j = with_current (fun current -> current.judgment <- Some j)
 
   let attach ~parent node =
     match (!config.level, parent.pending_prem, node.kind) with
@@ -109,21 +129,34 @@ module State = struct
 
   let begin_rule_attempt () =
     with_current (fun current ->
-        current.rollback_children <- Some current.children_rev;
-        current.rollback_prems <- Some current.prems_rev)
+        current.attempt <-
+          Some
+            {
+              saved_children = current.children_rev;
+              saved_prems = current.prems_rev;
+              failing = None;
+            })
 
   let end_rule_attempt ~rule_id ~success =
     with_current (fun current ->
-        if success then current.rule <- Some rule_id
-        else (
-          Option.iter
-            (fun saved -> current.children_rev <- saved)
-            current.rollback_children;
-          Option.iter
-            (fun saved -> current.prems_rev <- saved)
-            current.rollback_prems);
-        current.rollback_children <- None;
-        current.rollback_prems <- None)
+        Option.iter
+          (fun a ->
+            if success then current.rule <- Some rule_id
+            else (
+              if is_applied a.failing then
+                current.failures_rev <-
+                  {
+                    d_rule = Some rule_id;
+                    d_prems_rev = current.prems_rev;
+                    d_children_rev = current.children_rev;
+                    d_failing = a.failing;
+                    d_failed = true;
+                  }
+                  :: current.failures_rev;
+              current.children_rev <- a.saved_children;
+              current.prems_rev <- a.saved_prems);
+            current.attempt <- None)
+          current.attempt)
 
   let enter_premise prem =
     with_current (fun current ->
@@ -139,12 +172,20 @@ module State = struct
   let record_bindings ~bindings =
     with_current (fun current ->
         current.binding_env <- bindings @ current.binding_env)
+
+  let record_failing_prem prem =
+    with_current (fun current ->
+        Option.iter (fun a -> a.failing <- Some prem) current.attempt)
 end
+
+let is_authored_prem prem =
+  match prov prem with Some Il.Synthesized -> false | _ -> true
 
 (* === Rendering ===================================================== *)
 
 let dim s = Ansi.style !ansi [ Dim ] s
 let accent s = Ansi.style !ansi [ Yellow ] s
+let alarm s = Ansi.style !ansi [ Bold; Red ] s
 
 let render_judgment c =
   let string_of_atom a =
@@ -160,8 +201,8 @@ let render_call node =
   let args = List.map summarize_value node.inputs |> String.concat ", " in
   Format.sprintf "$%s(%s)" node.id args
 
-let render_tag node =
-  match node.rule with Some r when r <> "" -> node.id ^ "/" ^ r | _ -> node.id
+let render_tag node ~rule =
+  match rule with Some r when r <> "" -> node.id ^ "/" ^ r | _ -> node.id
 
 (* Count code points, not bytes, and skip ANSI escapes, so the bar matches the
    conclusion's visible width. *)
@@ -180,56 +221,135 @@ let measure_width s =
 (* Box-drawing glyph so that the bar consistently renders connected. *)
 let render_bar n = String.concat "" (List.init n (fun _ -> "─"))
 
-let render_lines node =
-  match (node.kind, !config.level, node.outcome) with
-  | Rel, (Conclusion | Premise), Rel_ok c ->
+(* The cross is padded to the width of [--] so crossed and uncrossed siblings
+   stay aligned. *)
+let connector marked = if marked then alarm "✗" ^ "  " else dim "--" ^ " "
+
+let rel_head node ~rule =
+  match (!config.level, node.judgment) with
+  | (Conclusion | Premise), Some c ->
       let notation = render_judgment c in
       [
-        accent (render_tag node ^ ":");
+        accent (render_tag node ~rule ^ ":");
         notation;
         dim (render_bar (measure_width notation));
       ]
-  | Rel, _, _ -> [ accent (render_tag node) ]
-  | Func, Premise, Func_ok v ->
-      [ Format.sprintf "%s = %s" (render_call node) (summarize_value v) ]
-  | Func, _, _ -> [ "$" ^ node.id ]
+  | _ -> [ accent (render_tag node ~rule) ]
+
+let render_lines node =
+  match node.kind with
+  | Rel -> rel_head node ~rule:node.rule
+  | Func -> (
+      match (!config.level, node.outcome) with
+      | Premise, Func_ok v ->
+          [ Format.sprintf "%s = %s" (render_call node) (summarize_value v) ]
+      | _ -> [ "$" ^ node.id ])
 
 let render_prem ~binding_env entry =
+  (* Returning [None] would let the unparser print the variable's name; show [?]
+     for an unbound variable instead. *)
   let values varid =
-    List.find_opt (fun (id, _) -> id.it = varid.it) binding_env
-    |> Option.map (fun (_, v) -> summarize_value v)
+    match List.find_opt (fun (id, _) -> id.it = varid.it) binding_env with
+    | Some (_, v) -> Some (summarize_value v)
+    | None -> Some (dim "?")
   in
   match prov entry.prem with
   | Some (Il.Source el_prem) -> El.Unparse.string_of_prem ~values el_prem
   | _ -> Il.Print.string_of_prem entry.prem
 
-let rec print_node ~first_lead ~rest_prefix node out =
-  (match render_lines node with
+let derivations_of node =
+  if not (is_failed node) then
+    [
+      {
+        d_rule = node.rule;
+        d_prems_rev = node.prems_rev;
+        d_children_rev = node.children_rev;
+        d_failing = None;
+        d_failed = false;
+      };
+    ]
+  else
+    match List.rev node.failures_rev with
+    | [] ->
+        (* No rule applied. *)
+        [
+          {
+            d_rule = None;
+            d_prems_rev = [];
+            d_children_rev = [];
+            d_failing = None;
+            d_failed = true;
+          };
+        ]
+    | ds -> ds
+
+let print_lines out ~first_lead ~rest_prefix = function
   | [] -> ()
   | head :: rest ->
       Format.fprintf out "%s%s\n" first_lead head;
-      List.iter (fun l -> Format.fprintf out "%s%s\n" rest_prefix l) rest);
-  let child_lead = rest_prefix ^ dim "--" ^ " " in
-  let child_rest = rest_prefix ^ "   " in
-  let print_child child =
-    print_node ~first_lead:child_lead ~rest_prefix:child_rest child out
-  in
-  match !config.level with
-  | Premise ->
+      List.iter (fun l -> Format.fprintf out "%s%s\n" rest_prefix l) rest
+
+let rec print_node ~first_lead ~rest_prefix node out =
+  match (node.kind, !config.level) with
+  | Rel, Premise -> print_rel_premise ~first_lead ~rest_prefix node out
+  | _ -> (
+      print_lines out ~first_lead ~rest_prefix (render_lines node);
+      let print_child child =
+        print_node
+          ~first_lead:(rest_prefix ^ connector (is_failed child))
+          ~rest_prefix:(rest_prefix ^ "   ") child out
+      in
+      match !config.level with
+      | Premise -> List.iter print_child (List.rev node.children_rev)
+      | Rule | Conclusion ->
+          List.rev node.children_rev
+          |> List.iter (fun child ->
+                 match child.kind with Rel -> print_child child | Func -> ()))
+
+and print_rel_premise ~first_lead ~rest_prefix node out =
+  match derivations_of node with
+  | [ d ] ->
+      print_lines out ~first_lead ~rest_prefix (rel_head node ~rule:d.d_rule);
+      print_derivation_body ~rest_prefix node d out
+  | ds ->
+      (* Several rules applied: show the goal once, then each as a crossed branch. *)
+      print_lines out ~first_lead ~rest_prefix (rel_head node ~rule:None);
       List.iter
-        (fun entry ->
-          match (entry.prem.it, entry.subderiv) with
-          | (Il.RelPr _ | Il.RelAssertPr { expect = true; _ }), Some subderiv ->
-              print_child subderiv
-          | _ ->
-              Format.fprintf out "%s%s\n" child_lead
-                (render_prem ~binding_env:node.binding_env entry))
-        (List.rev node.prems_rev);
-      List.iter print_child (List.rev node.children_rev)
-  | Rule | Conclusion ->
-      List.rev node.children_rev
-      |> List.iter (fun child ->
-             match child.kind with Rel -> print_child child | Func -> ())
+        (fun d ->
+          Format.fprintf out "%s%s\n"
+            (rest_prefix ^ connector true)
+            (accent (render_tag node ~rule:d.d_rule));
+          print_derivation_body ~rest_prefix:(rest_prefix ^ "   ") node d out)
+        ds
+
+and print_derivation_body ~rest_prefix node d out =
+  let print_child child =
+    print_node
+      ~first_lead:(rest_prefix ^ connector (is_failed child))
+      ~rest_prefix:(rest_prefix ^ "   ") child out
+  in
+  let print_prem ?(marked = false) entry =
+    let text = render_prem ~binding_env:node.binding_env entry in
+    Format.fprintf out "%s%s\n" (rest_prefix ^ connector marked) text
+  in
+  (* A synthesized failure has no surface form, so its culprit is shown as the
+     authored premise it came from, printed as text rather than recursed. *)
+  let synth_failure =
+    match d.d_failing with Some p -> not (is_authored_prem p) | None -> false
+  in
+  let entries = List.rev d.d_prems_rev in
+  let last = List.length entries - 1 in
+  List.iteri
+    (fun i entry ->
+      let is_culprit = d.d_failed && i = last in
+      let show_as_text = is_culprit && synth_failure in
+      match (entry.prem.it, entry.subderiv) with
+      | (Il.RelPr _ | Il.RelAssertPr { expect = true; _ }), Some subderiv
+        when not show_as_text ->
+          print_child subderiv
+      | _ -> print_prem ~marked:is_culprit entry)
+    entries;
+  List.iter print_child (List.rev d.d_children_rev)
 
 let print_root node =
   print_node ~first_lead:"" ~rest_prefix:"" node !fmt;
@@ -237,13 +357,11 @@ let print_root node =
 
 let pop_and_maybe_print ~outcome =
   match State.pop ~outcome with
-  | Some { outcome = Failed; _ } | None -> ()
+  | None -> ()
+  | Some { outcome = Failed; _ } when !config.level <> Premise -> ()
   | Some root -> print_root root
 
 (* === Handler module ================================================ *)
-
-let is_authored_prem prem =
-  match prov prem with Some Il.Synthesized -> false | _ -> true
 
 module M : Instrumentation_api.Handler.S = struct
   let static_dependencies = []
@@ -254,8 +372,8 @@ module M : Instrumentation_api.Handler.S = struct
     | Test_start _ | Test_end _ -> State.reset ()
     | Rel_enter { id; at = _; inputs } -> State.push (new_node Rel id inputs)
     | Rel_exit { id = _; at = _; success; conclusion } ->
-        pop_and_maybe_print
-          ~outcome:(if success then Rel_ok conclusion else Failed)
+        State.set_judgment conclusion;
+        pop_and_maybe_print ~outcome:(if success then Rel_ok else Failed)
     | Rule_enter _ -> State.begin_rule_attempt ()
     | Rule_exit { id = _; rule_id; at = _; success } ->
         State.end_rule_attempt ~rule_id ~success
@@ -269,8 +387,9 @@ module M : Instrumentation_api.Handler.S = struct
     | Prem_enter { prem; at = _ } ->
         if !config.level = Premise && is_authored_prem prem then
           State.enter_premise prem
-    | Prem_exit { prem; at = _; success = _; bindings } ->
+    | Prem_exit { prem; at = _; success; bindings } ->
         if !config.level = Premise then (
+          if not success then State.record_failing_prem prem;
           State.record_bindings ~bindings;
           if is_authored_prem prem then State.record_premise ())
     | Instr _ -> ()
