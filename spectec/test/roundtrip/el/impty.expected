@@ -7,13 +7,13 @@ syntax map<K, V> = (pair<K, V>)*
 dec $lookup<K, V>(map<K, V>, K) : V?
   hint(prose_in "lookup of" %1 "in" %0)
 
-def $lookup<K, V>(eps, K) = eps
+def $lookup<K, V>(eps, K_query) = eps
 
-def $lookup<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K) = V_h
-  -- if K_h = K
+def $lookup<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K_query) = V_h
+  -- if K_h = K_query
 
-def $lookup<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K)
-  = $lookup<K, V>((K_t -> V_t)*, K)
+def $lookup<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K_query)
+  = $lookup<K, V>((K_t -> V_t)*, K_query)
   -- otherwise
 
 syntax type =
@@ -30,18 +30,18 @@ syntax id =
 syntax expr =
   | literal
   | id
+  | `! expr
   | expr `+ expr
   | expr `<= expr
-  | `! expr
   | expr `&& expr
 
 syntax command =
   | SKIP
+  | type id `= expr
   | id `= expr
-  | command `; command
   | IF expr THEN command ELSE command END
   | WHILE expr DO command END
-  | type id `= expr
+  | command `; command
 
 syntax prog = command
 
@@ -73,6 +73,10 @@ rule Check_expr/id:
   tenv |- x : t
   -- if $lookup<id, type>(tenv, x) = t
 
+rule Check_expr/not:
+  tenv |- `! e : BOOL
+  -- Check_expr: tenv |- e : BOOL
+
 rule Check_expr/add:
   tenv |- e_l `+ e_r : INT
   -- Check_expr: tenv |- e_l : INT
@@ -82,10 +86,6 @@ rule Check_expr/leq:
   tenv |- e_l `<= e_r : BOOL
   -- Check_expr: tenv |- e_l : INT
   -- Check_expr: tenv |- e_r : INT
-
-rule Check_expr/not:
-  tenv |- `! e : BOOL
-  -- Check_expr: tenv |- e : BOOL
 
 rule Check_expr/and:
   tenv |- e_l `&& e_r : BOOL
@@ -152,6 +152,11 @@ rule Eval_expr/id:
   env |- x ==> v
   -- if $lookup<id, value>(env, x) = v
 
+rule Eval_expr/not:
+  env |- (`! e) ==> (`BOOL b)
+  -- Eval_expr: env |- e ==> (`BOOL b_e)
+  -- if b = ~b_e
+
 rule Eval_expr/add:
   env |- (e_l `+ e_r) ==> (`NUM i)
   -- Eval_expr: env |- e_l ==> (`NUM i_l)
@@ -163,11 +168,6 @@ rule Eval_expr/leq:
   -- Eval_expr: env |- e_l ==> (`NUM i_l)
   -- Eval_expr: env |- e_r ==> (`NUM i_r)
   -- if b = $(i_l <= i_r)
-
-rule Eval_expr/not:
-  env |- (`! e) ==> (`BOOL b)
-  -- Eval_expr: env |- e ==> (`BOOL b_e)
-  -- if b = ~b_e
 
 rule Eval_expr/and:
   env |- (e_l `&& e_r) ==> (`BOOL b)
@@ -239,13 +239,13 @@ syntax map<K, V> = (pair<K, V>)*
 
 dec $lookup<K, V>(map<K, V>, K) : V?
 
-def $lookup<K, V>(eps, K) = eps
+def $lookup<K, V>(eps, K_query) = eps
 
-def $lookup<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K) = V_h
-  -- if K_h = K
+def $lookup<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K_query) = V_h
+  -- if K_h = K_query
 
-def $lookup<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K)
-  = $lookup<K, V>((K_t -> V_t)*, K)
+def $lookup<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K_query)
+  = $lookup<K, V>((K_t -> V_t)*, K_query)
   -- otherwise
 
 syntax type =
@@ -263,20 +263,20 @@ syntax id =
 syntax expr =
   | literal
   | id
+  | `! expr
   | expr `+ expr
   | expr `<= expr
-  | `! expr
   | expr `&& expr
   | FUN `(type id) `-> type `{expr}
   | expr `(expr)
 
 syntax command =
   | SKIP
+  | type id `= expr
   | id `= expr
-  | command `; command
   | IF expr THEN command ELSE command END
   | WHILE expr DO command END
-  | type id `= expr
+  | command `; command
 
 syntax prog = command
 
@@ -307,6 +307,10 @@ rule Check_expr/id:
   tenv |- x : t
   -- if $lookup<id, type>(tenv, x) = t
 
+rule Check_expr/not:
+  tenv |- `! e : BOOL
+  -- Check_expr: tenv |- e : BOOL
+
 rule Check_expr/add:
   tenv |- e_l `+ e_r : INT
   -- Check_expr: tenv |- e_l : INT
@@ -316,10 +320,6 @@ rule Check_expr/leq:
   tenv |- e_l `<= e_r : BOOL
   -- Check_expr: tenv |- e_l : INT
   -- Check_expr: tenv |- e_r : INT
-
-rule Check_expr/not:
-  tenv |- `! e : BOOL
-  -- Check_expr: tenv |- e : BOOL
 
 rule Check_expr/and:
   tenv |- e_l `&& e_r : BOOL
@@ -396,6 +396,11 @@ rule Eval_expr/id:
   env |- x ==> v
   -- if $lookup<id, value>(env, x) = v
 
+rule Eval_expr/not:
+  env |- (`! e) ==> (`BOOL b)
+  -- Eval_expr: env |- e ==> (`BOOL b_e)
+  -- if b = ~b_e
+
 rule Eval_expr/add:
   env |- (e_l `+ e_r) ==> (`NUM i)
   -- Eval_expr: env |- e_l ==> (`NUM i_l)
@@ -407,11 +412,6 @@ rule Eval_expr/leq:
   -- Eval_expr: env |- e_l ==> (`NUM i_l)
   -- Eval_expr: env |- e_r ==> (`NUM i_r)
   -- if b = $(i_l <= i_r)
-
-rule Eval_expr/not:
-  env |- (`! e) ==> (`BOOL b)
-  -- Eval_expr: env |- e ==> (`BOOL b_e)
-  -- if b = ~b_e
 
 rule Eval_expr/and:
   env |- (e_l `&& e_r) ==> (`BOOL b)
