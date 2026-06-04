@@ -66,6 +66,27 @@ author syntax with runtime values substituted at variable leaves. It is IL only.
     x -> 5
   ]
 
+On failure the premise level still renders the partial derivation, crossing the
+premise that defeated the rule. The failtrace is covered elsewhere, so only the
+tree is captured here:
+
+  $ ERR=../../testdata/interp/impty/base/_errors_not_int.imp
+  $ spectec impty eval --spec $SPEC -p $ERR --color never --tree.level premise 2>/dev/null
+  Run_prog:
+  |- bool b = ! 5 -| ?
+  ────────────────────
+  ✗  Check_prog:
+     |- bool b = ! 5
+     ───────────────
+     ✗  Check_command/decl:
+        [] |- bool b = ! 5 -| ?
+        ───────────────────────
+        ✗  Check_expr/not:
+           [] |- ! 5 : ?
+           ─────────────
+           ✗  Check_expr: [] |- 5 : BOOL
+  [1]
+
 The SL interpreter reports no premises, so the premise level is refused rather
 than silently falling back to a coarser view:
 
