@@ -25,5 +25,10 @@ type t =
   | Iter_prem_enter of { prem : Il.prem; at : region }
   | Iter_prem_exit of { at : region }
   | Prem_enter of { prem : Il.prem; at : region }
-  | Prem_exit of { prem : Il.prem; at : region; success : bool }
+  | Prem_exit of {
+      prem : Il.prem;
+      at : region;
+      success : bool;
+      bindings : (Il.id * Il.Value.t) list;
+    }
   | Instr of { instr : Sl.instr; at : region }

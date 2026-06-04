@@ -26,7 +26,7 @@ let expr_fun ta xa tr e =
       arg ta;
       arg xa;
       atom ")";
-      atom "->";
+      atom "`->";
       arg tr;
       atom "{";
       arg e;
@@ -198,7 +198,7 @@ let rec ctype_val = function
   | CInt -> case_v ~var:"type" [ atom "INT" ]
   | CBool -> case_v ~var:"type" [ atom "BOOL" ]
   | CFun (t1, t2) ->
-      case_v ~var:"type" [ arg (ctype_val t1); atom "->"; arg (ctype_val t2) ]
+      case_v ~var:"type" [ arg (ctype_val t1); atom "`->"; arg (ctype_val t2) ]
 
 let cvars_of (ctx : cctx) ty =
   List.filter_map (fun (name, t) -> if t = ty then Some name else None) ctx

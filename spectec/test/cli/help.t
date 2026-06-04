@@ -54,7 +54,7 @@ eval shares this exact set:
                                  recursively; mutually exclusive with --spec
     [--trace.level LEVEL]      . verbosity level: summary|rules|inputs|full
     [--trace.output FILE]      . output destination file
-    [--tree.level LEVEL]       . verbosity level: rules|conclusion
+    [--tree.level LEVEL]       . verbosity level: rule|conclusion|premise
     [--tree.output FILE]       . output destination file
     [-v]                       . verbose output
     [-help], -?                . print this help text and exit
@@ -113,7 +113,7 @@ batch drops -p and adds the checkpoint-persistence flags:
                                  recursively; mutually exclusive with --spec
     [--trace.level LEVEL]      . verbosity level: summary|rules|inputs|full
     [--trace.output FILE]      . output destination file
-    [--tree.level LEVEL]       . verbosity level: rules|conclusion
+    [--tree.level LEVEL]       . verbosity level: rule|conclusion|premise
     [--tree.output FILE]       . output destination file
     [-v]                       . verbose: print progress for each test
     [-help], -?                . print this help text and exit

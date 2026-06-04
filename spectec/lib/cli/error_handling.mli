@@ -16,3 +16,6 @@ val guard :
 
 val guard_unit :
   color:Cli_args.color -> (unit -> (unit, Spectec.Error.t) result) -> unit
+
+val guard_errors_only :
+  color:Cli_args.color -> (unit -> (unit, Spectec.Error.t) result) -> unit

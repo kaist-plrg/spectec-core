@@ -16,8 +16,8 @@ Summary trace prints relation and function enter/exit only:
   [ 3]       → Check_command
   [ 4]         → Check_expr
   [ 5]           → Check_expr
-  [ 6]             → $lookup_
-  [ 6]             ← $lookup_
+  [ 6]             → $lookup
+  [ 6]             ← $lookup
   [ 5]           ← Check_expr [ok]
   [ 5]           → Check_expr
   [ 5]           ← Check_expr [ok]
@@ -34,8 +34,8 @@ Summary trace prints relation and function enter/exit only:
   [ 3]       → Eval_command
   [ 4]         → Eval_expr
   [ 5]           → Eval_expr
-  [ 6]             → $lookup_
-  [ 6]             ← $lookup_
+  [ 6]             → $lookup
+  [ 6]             ← $lookup
   [ 5]           ← Eval_expr [ok]
   [ 5]           → Eval_expr
   [ 5]           ← Eval_expr [ok]

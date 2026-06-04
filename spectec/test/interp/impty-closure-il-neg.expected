@@ -18,7 +18,7 @@ application of rule Check_prog/ failed
     └── application of rule Check_command/seq failed
         └── invocation of relation Check_command failed
             └── application of rule Check_command/assign failed
-                └── condition ($lookup_<id, type>(tenv, x) = ?(type)) was not met
+                └── condition ($lookup<id, type>(tenv, x) = ?(t)) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_bad_assign.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_bad_assign.imp
@@ -26,7 +26,7 @@ error: invocation of relation Check_prog failed
 application of rule Check_prog/ failed
 └── invocation of relation Check_command failed
     └── application of rule Check_command/decl failed
-        └── condition (type' = type) was not met
+        └── condition (type = t) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_if_not_bool.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_if_not_bool.imp
@@ -54,7 +54,7 @@ error: invocation of relation Check_prog failed
 application of rule Check_prog/ failed
 └── invocation of relation Check_command failed
     └── application of rule Check_command/assign failed
-        └── condition ($lookup_<id, type>(tenv, x) = ?(type)) was not met
+        └── condition ($lookup<id, type>(tenv, x) = ?(t)) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/closure/_errors_arg_type.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/closure/_errors_arg_type.imp
@@ -66,7 +66,7 @@ application of rule Check_prog/ failed
             └── application of rule Check_command/decl failed
                 └── invocation of relation Check_expr failed
                     └── application of rule Check_expr/call failed
-                        └── condition (type' = type_arg) was not met
+                        └── condition (type' = t_arg) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/closure/_errors_call_non_function.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/closure/_errors_call_non_function.imp

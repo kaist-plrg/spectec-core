@@ -13,7 +13,7 @@ lists only the uncovered SL instructions:
   SL Instructions: 65/149 (43.62%)
   
   Uncovered SL instructions:
-    lookup_:
+    lookup:
       If ((pair<K, V>* matches pattern _ :: _))
   [
     y -> true,

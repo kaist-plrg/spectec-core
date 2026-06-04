@@ -1442,14 +1442,14 @@ and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
     | Ok values_output -> Some (ctx, values_output)
     | Error _ -> None
   in
-  let conclusion =
-    match result with
-    | Some (_, values_output) ->
-        Some (Lang.Il.Mode.fill mode ~ins:values_input ~outs:values_output)
-    | None -> None
-  in
-  Instrumentation.Dispatcher.emit
-    (Events.Rel_exit { id = id.it; at = id.at; conclusion });
+  Instrumentation.Dispatcher.emit_on_demand (fun () ->
+      let conclusion =
+        match result with
+        | Some (_, values_output) ->
+            Some (Lang.Il.Mode.fill mode ~ins:values_input ~outs:values_output)
+        | None -> None
+      in
+      Events.Rel_exit { id = id.it; at = id.at; conclusion });
   result
 
 (* Invoke a function *)

@@ -59,7 +59,7 @@ annotations, not just the uncovered ones:
   
   -- Functions --
   
-  def $lookup_: (1/3 = 33.33%)
+  def $lookup: (1/3 = 33.33%)
     ####  clause 0
        2  clause 1
     ####  clause 2

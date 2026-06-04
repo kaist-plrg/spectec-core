@@ -44,6 +44,8 @@ tried and failed before the one that fired:
   [ 5]           ← Check_expr/boollit [fail]
   [ 5]           → Check_expr/id
   [ 5]           ← Check_expr/id [fail]
+  [ 5]           → Check_expr/not
+  [ 5]           ← Check_expr/not [fail]
   [ 5]           → Check_expr/add
   [ 5]           ← Check_expr/add [fail]
   [ 5]           → Check_expr/leq
@@ -53,8 +55,8 @@ tried and failed before the one that fired:
   [ 6]             → Check_expr/boollit
   [ 6]             ← Check_expr/boollit [fail]
   [ 6]             → Check_expr/id
-  [ 6]             → $lookup_
-  [ 6]             ← $lookup_
+  [ 6]             → $lookup
+  [ 6]             ← $lookup
   [ 6]             ← Check_expr/id [ok]
   [ 5]           ← Check_expr [ok]
   [ 5]           → Check_expr
@@ -108,6 +110,8 @@ tried and failed before the one that fired:
   [ 5]           ← Eval_expr/boollit [fail]
   [ 5]           → Eval_expr/id
   [ 5]           ← Eval_expr/id [fail]
+  [ 5]           → Eval_expr/not
+  [ 5]           ← Eval_expr/not [fail]
   [ 5]           → Eval_expr/add
   [ 5]           ← Eval_expr/add [fail]
   [ 5]           → Eval_expr/leq
@@ -117,8 +121,8 @@ tried and failed before the one that fired:
   [ 6]             → Eval_expr/boollit
   [ 6]             ← Eval_expr/boollit [fail]
   [ 6]             → Eval_expr/id
-  [ 6]             → $lookup_
-  [ 6]             ← $lookup_
+  [ 6]             → $lookup
+  [ 6]             ← $lookup
   [ 6]             ← Eval_expr/id [ok]
   [ 5]           ← Eval_expr [ok]
   [ 5]           → Eval_expr

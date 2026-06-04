@@ -123,7 +123,7 @@ module M : Instrumentation_api.Handler.S = struct
         let key = prem_key prem in
         State.incr_count State.prems_attempted key;
         State.record_premise_coverage key
-    | Prem_exit { prem; at = _; success } ->
+    | Prem_exit { prem; at = _; success; bindings = _ } ->
         let key = prem_key prem in
         if success then (
           State.incr_count State.prems_succeeded key;

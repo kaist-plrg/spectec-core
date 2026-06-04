@@ -57,6 +57,8 @@ The inputs level adds the input values on enter and the output on exit:
   [ 5]           ← Check_expr/boollit [fail]
   [ 5]           → Check_expr/id
   [ 5]           ← Check_expr/id [fail]
+  [ 5]           → Check_expr/not
+  [ 5]           ← Check_expr/not [fail]
   [ 5]           → Check_expr/add
   [ 5]           ← Check_expr/add [fail]
   [ 5]           → Check_expr/leq
@@ -68,10 +70,10 @@ The inputs level adds the input values on enter and the output on exit:
   [ 6]             → Check_expr/boollit
   [ 6]             ← Check_expr/boollit [fail]
   [ 6]             → Check_expr/id
-  [ 6]             → $lookup_
+  [ 6]             → $lookup
   [ 6]                 [ x -> int ]
   [ 6]                 x
-  [ 6]             ← $lookup_
+  [ 6]             ← $lookup
   [ 6]                 Some(int)
   [ 6]             ← Check_expr/id [ok]
   [ 5]           ← Check_expr [ok]
@@ -146,6 +148,8 @@ The inputs level adds the input values on enter and the output on exit:
   [ 5]           ← Eval_expr/boollit [fail]
   [ 5]           → Eval_expr/id
   [ 5]           ← Eval_expr/id [fail]
+  [ 5]           → Eval_expr/not
+  [ 5]           ← Eval_expr/not [fail]
   [ 5]           → Eval_expr/add
   [ 5]           ← Eval_expr/add [fail]
   [ 5]           → Eval_expr/leq
@@ -157,10 +161,10 @@ The inputs level adds the input values on enter and the output on exit:
   [ 6]             → Eval_expr/boollit
   [ 6]             ← Eval_expr/boollit [fail]
   [ 6]             → Eval_expr/id
-  [ 6]             → $lookup_
+  [ 6]             → $lookup
   [ 6]                 [ x -> 5 ]
   [ 6]                 x
-  [ 6]             ← $lookup_
+  [ 6]             ← $lookup
   [ 6]                 Some(5)
   [ 6]             ← Eval_expr/id [ok]
   [ 5]           ← Eval_expr [ok]

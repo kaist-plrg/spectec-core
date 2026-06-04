@@ -68,6 +68,7 @@ val run_with_outcome_with_instrumentation :
 val run_batch_with_outcomes :
   (module Spectec.Task.S with type input = 'i) ->
   ?config:Instrumentation.Config.t ->
+  ansi:Spectec.Diagnostic.Ansi.t ->
   sl_mode:bool ->
   spec_il:Lang.Il.spec ->
   ?verbose:bool ->
@@ -117,19 +118,31 @@ val run_and_print_batch :
   spec_il:Lang.Il.spec ->
   verbose:bool ->
   'i list ->
-  unit
+  (unit, Spectec.Error.t) result
 
 (** {1 Per-target run} *)
 
-type task_result = { task_name : string; summary : batch_summary }
+type failure_kind = Unexpected_failure | Unexpected_pass
+type failure = { source : string; kind : failure_kind }
 
+val failure_label : failure_kind -> string
+
+type task_result = {
+  task_name : string;
+  summary : batch_summary;
+  failures : failure list;
+}
+
+(** The empty-input check runs before checkpoint filtering, so resuming a
+    completed run is not mistaken for an empty collection. *)
 val run_target :
   ?config:Instrumentation.Config.t ->
   ?test_dir:string ->
+  ansi:Spectec.Diagnostic.Ansi.t ->
   checkpoint_config:Checkpoint.config ->
   verbose:bool ->
   sl_mode:bool ->
   spec_files:string list ->
   Lang.Il.spec ->
   Spectec.Task.packed_task list ->
-  task_result list
+  (task_result list, Spectec.Error.t) result
