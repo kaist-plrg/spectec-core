@@ -752,8 +752,8 @@ def_ :
       RuleD ($2, id @@@ $loc($3), $5, $6) }
   | BUILTIN GENERATOR DOLLAR defid COLON plaintyp hint*
     { BuiltinGeneratorD ($4, $6, $7) }
-  | PROPERTY relid hint* COLON prem prem_list
-    { PropertyD ($2, $6, $5, $3) }
+  | PROPERTY relid COLON prem prem_list hint*
+    { PropertyD ($2, $5, $4, $6) }
   | BUILTIN DEC DOLLAR defid COLON plaintyp hint*
     { BuiltinDecD ($4, [], [], $6, $7) }
   | BUILTIN DEC DOLLAR defid_lparen enter_scope comma_list(param) RPAREN COLON plaintyp hint* exit_scope
