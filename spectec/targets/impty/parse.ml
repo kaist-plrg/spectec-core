@@ -95,7 +95,7 @@ let rec parse_type c : value =
   if Cursor.peek c = Lexer.Arrow then (
     Cursor.advance c;
     let rhs = parse_type c in
-    [ arg lhs; atom "->"; arg rhs ] |> case_v ~var:"type")
+    [ arg lhs; atom "`->"; arg rhs ] |> case_v ~var:"type")
   else lhs
 
 and parse_type_atom c : value =
@@ -186,7 +186,7 @@ and parse_primary c : value =
         arg t_arg;
         arg (v_id id_str);
         atom ")";
-        atom "->";
+        atom "`->";
         arg t_ret;
         atom "{";
         arg body;
