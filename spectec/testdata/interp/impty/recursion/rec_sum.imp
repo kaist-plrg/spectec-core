@@ -1,0 +1,3 @@
+int limit = 3 ;
+rec sum (int i) -> int { (limit <= i) ? 0 : (i + sum(i + 1)) } ;
+int r = sum(0)

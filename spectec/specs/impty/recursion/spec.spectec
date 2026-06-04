@@ -1,0 +1,317 @@
+;;--------------------
+;; Standard functions
+
+syntax pair<K,V> = K -> V
+syntax map<K,V> = (pair<K,V>)*
+
+dec $lookup<K, V>(map<K, V>, K) : V?
+def $lookup<K, V>(eps, K_query) = eps
+def $lookup<K, V>((K_h -> V_h)::(K_t -> V_t)*, K_query) = V_h
+  -- if K_h = K_query
+def $lookup<K, V>((K_h -> V_h):: (K_t -> V_t)*, K_query)
+  = $lookup<K, V>((K_t -> V_t)*, K_query)
+  -- otherwise
+
+;;--------------------
+;; Syntax
+
+syntax type =
+  | INT
+  | BOOL
+  | type `-> type                        ;; (new) function type
+
+syntax literal = `NUM int | `BOOL bool
+syntax id = `ID text
+
+syntax expr =
+  | literal
+  | id
+  | `! expr
+  | expr `+ expr
+  | expr `<= expr
+  | expr `&& expr
+  | expr `? expr `: expr                 ;; (rec) conditional expression
+  | FUN `( type id ) `-> type `{ expr }  ;; (new) anonymous function (returning a value)
+  | expr `( expr )                       ;; (new) function call
+
+syntax command =
+  | SKIP
+  | type id `= expr                      ;; decl-init
+  | id `= expr                           ;; assignment
+  | IF expr THEN command ELSE command END
+  | WHILE expr DO command END
+  | command `; command
+  | REC id `( type id ) `-> type `{ expr }  ;; (rec) recursive function declaration
+
+syntax prog = command
+
+;;--------------------
+;; Meta-variables
+
+var i : int
+var b : bool
+var x : id
+var f : id
+var e : expr
+var c : command
+var t : type
+
+;;--------------------
+;; Typing
+
+;;--- Contexts ---
+
+syntax tenv = map<id, type>
+
+;;--- Expressions ---
+
+relation Check_expr:
+  tenv |- expr : type
+  hint(input %0 %1)
+
+rule Check_expr/num:
+  tenv |- (`NUM i) : INT
+
+rule Check_expr/boollit:
+  tenv |- (`BOOL b) : BOOL
+
+rule Check_expr/id:
+  tenv |- x : t
+  -- if $lookup<id, type>(tenv, x) = t
+
+rule Check_expr/not:
+  tenv |- `! e : BOOL
+  -- Check_expr: tenv |- e : BOOL
+
+rule Check_expr/add:
+  tenv |- e_l `+ e_r : INT
+  -- Check_expr: tenv |- e_l : INT
+  -- Check_expr: tenv |- e_r : INT
+
+rule Check_expr/leq:
+  tenv |- e_l `<= e_r : BOOL
+  -- Check_expr: tenv |- e_l : INT
+  -- Check_expr: tenv |- e_r : INT
+
+rule Check_expr/and:
+  tenv |- e_l `&& e_r : BOOL
+  -- Check_expr: tenv |- e_l : BOOL
+  -- Check_expr: tenv |- e_r : BOOL
+
+rule Check_expr/cond:
+  tenv |- (e_1 `? e_2 `: e_3) : t
+  -- Check_expr: tenv |- e_1 : BOOL
+  -- Check_expr: tenv |- e_2 : t
+  -- Check_expr: tenv |- e_3 : t
+
+rule Check_expr/fun:
+  tenv |- FUN `( t_arg x_arg ) `-> t_ret `{ e } : t_arg `-> t_ret
+  -- Check_expr: ((x_arg -> t_arg)::tenv) |- e : t_ret
+
+rule Check_expr/call:
+  tenv |- (e_f `( e_a )) : t_ret
+  -- Check_expr: tenv |- e_f : t_arg `-> t_ret
+  -- Check_expr: tenv |- e_a : t_arg
+
+;;--- Commands ---
+
+
+relation Check_command:
+  tenv |- command -| tenv
+  hint(input %0 %1)
+
+rule Check_command/skip:
+  tenv |- SKIP -| tenv
+
+rule Check_command/decl:
+  tenv |- (t x `= e) -| (x -> t)::tenv
+  -- Check_expr: tenv |- e : t
+
+rule Check_command/assign:
+  tenv |- (x `= e) -| tenv
+  -- Check_expr: tenv |- e : t
+  -- if $lookup<id, type>(tenv, x) = t
+
+rule Check_command/ite:
+  tenv |- (IF e THEN c_1 ELSE c_2 END) -| tenv
+  -- Check_expr: tenv |- e : BOOL
+  -- Check_command: tenv |- c_1 -| tenv_1
+  -- Check_command: tenv |- c_2 -| tenv_2
+
+rule Check_command/while:
+  tenv |- (WHILE e DO c END) -| tenv
+  -- Check_expr: tenv |- e : BOOL
+  -- Check_command: tenv |- c -| tenv_1
+
+rule Check_command/seq:
+  tenv |- (c_1 `; c_2) -| tenv_2
+  -- Check_command: tenv |- c_1 -| tenv_1
+  -- Check_command: tenv_1 |- c_2 -| tenv_2
+
+rule Check_command/rec:
+  tenv |- (REC f `( t_arg x_arg ) `-> t_ret `{ e }) -| (f -> (t_arg `-> t_ret))::tenv
+  -- Check_expr: (x_arg -> t_arg)::(f -> (t_arg `-> t_ret))::tenv |- e : t_ret
+
+;;--- Program ---
+
+relation Check_prog:
+  |- prog
+  hint(input %0)
+
+rule Check_prog:
+  |- command
+  -- Check_command: eps |- command -| tenv
+
+;;--------------------
+;; Evaluation
+
+;;--- Contexts ---
+
+syntax value, env
+
+syntax value =
+  | literal
+  | CLO id expr env                     ;; (parameter, body, captured env)
+  | RECCLO id id expr env               ;; (rec) self-name, parameter, body, captured env
+
+syntax env = map<id, value>
+
+var v : value
+
+;;--- Expressions ---
+
+relation Eval_expr:
+  env |- expr ==> value
+  hint(input %0 %1)
+
+rule Eval_expr/num:
+  env |- (`NUM i) ==> (`NUM i)
+
+rule Eval_expr/boollit:
+  env |- (`BOOL b) ==> (`BOOL b)
+
+rule Eval_expr/id:
+  env |- x ==> v
+  -- if $lookup<id, value>(env, x) = v
+
+rule Eval_expr/not:
+  env |- (`! e) ==> (`BOOL b)
+  -- Eval_expr: env |- e ==> (`BOOL b_e)
+  -- if b = ~ b_e
+
+rule Eval_expr/add:
+  env |- (e_l `+ e_r) ==> (`NUM i)
+  -- Eval_expr: env |- e_l ==> (`NUM i_l)
+  -- Eval_expr: env |- e_r ==> (`NUM i_r)
+  -- if i = $(i_l + i_r)
+
+rule Eval_expr/leq:
+  env |- (e_l `<= e_r) ==> (`BOOL b)
+  -- Eval_expr: env |- e_l ==> (`NUM i_l)
+  -- Eval_expr: env |- e_r ==> (`NUM i_r)
+  -- if b = $(i_l <= i_r)
+
+rule Eval_expr/and:
+  env |- (e_l `&& e_r) ==> (`BOOL b)
+  -- Eval_expr: env |- e_l ==> (`BOOL b_l)
+  -- Eval_expr: env |- e_r ==> (`BOOL b_r)
+  -- if b = (b_l /\ b_r)
+
+rule Eval_expr/cond-true:
+  env |- (e_1 `? e_2 `: e_3) ==> v
+  -- Eval_expr: env |- e_1 ==> (`BOOL true)
+  -- Eval_expr: env |- e_2 ==> v
+
+rule Eval_expr/cond-false:
+  env |- (e_1 `? e_2 `: e_3) ==> v
+  -- Eval_expr: env |- e_1 ==> (`BOOL false)
+  -- Eval_expr: env |- e_3 ==> v
+
+rule Eval_expr/fun:
+  env |- (FUN `( t_arg x_arg ) `-> t_ret `{ e }) ==> (CLO x_arg e env)
+
+rule Eval_expr/call:
+  env |- (e_f `( e_a )) ==> v_ret
+  -- Eval_expr: env |- e_f ==> (CLO x_a e_body env_clo)
+  -- Eval_expr: env |- e_a ==> v
+  -- Eval_expr: ((x_a -> v)::env_clo) |- e_body ==> v_ret
+
+rule Eval_expr/call-rec:
+  env |- (e_f `( e_a )) ==> v_ret
+  -- Eval_expr: env |- e_f ==> (RECCLO f x_arg e_body env_clo)
+  -- Eval_expr: env |- e_a ==> v
+  -- Eval_expr: ((x_arg -> v)::(f -> RECCLO f x_arg e_body env_clo)::env_clo) |- e_body ==> v_ret
+
+;;--- Commands ---
+
+relation Eval_command:
+  env |- command -| env
+  hint(input %0 %1)
+
+rule Eval_command/skip:
+  env |- SKIP -| env
+
+rule Eval_command/decl:
+  env |- (t x `= e) -| (x -> v)::env
+  -- Eval_expr: env |- e ==> v
+
+rule Eval_command/assign:
+  env |- (x `= e) -| (x -> v)::env
+  -- Eval_expr: env |- e ==> v
+
+rule Eval_command/ite-true:
+  env |- (IF e THEN c_1 ELSE c_2 END) -| env_1
+  -- Eval_expr: env |- e ==> (`BOOL true)
+  -- Eval_command: env |- c_1 -| env_1
+
+rule Eval_command/ite-false:
+  env |- (IF e THEN c_1 ELSE c_2 END) -| env_2
+  -- Eval_expr: env |- e ==> (`BOOL false)
+  -- Eval_command: env |- c_2 -| env_2
+
+rule Eval_command/while-false:
+  env |- (WHILE e DO c END) -| env
+  -- Eval_expr: env |- e ==> (`BOOL false)
+
+rule Eval_command/while-true:
+  env |- (WHILE e DO c END) -| env_2
+  -- Eval_expr: env |- e ==> (`BOOL true)
+  -- Eval_command: env |- c -| env_1
+  -- Eval_command: env_1 |- (WHILE e DO c END) -| env_2
+
+rule Eval_command/seq:
+  env |- (c_1 `; c_2) -| env_2
+  -- Eval_command: env |- c_1 -| env_1
+  -- Eval_command: env_1 |- c_2 -| env_2
+
+rule Eval_command/rec:
+  env |- (REC f `( t_arg x_arg ) `-> t_ret `{ e }) -| (f -> RECCLO f x_arg e env)::env
+
+;;--- Program ---
+
+relation Eval_prog:
+  |- prog -| env
+  hint(input %0)
+
+rule Eval_prog:
+  |- command -| env
+  -- Eval_command: eps |- command -| env
+
+;; Typecheck-then-evaluate.
+relation Run_prog:
+  |- prog -| env
+  hint(input %0)
+
+rule Run_prog:
+  |- command -| env
+  -- Check_prog: |- command
+  -- Eval_prog: |- command -| env
+
+;;--- Properties ---
+
+builtin generator $functions_prog : prog
+
+;; Type soundness
+property Type_safety hint(generator $functions_prog) :
+  Eval_prog: |- prog -| env
+  -- Check_prog: |- prog

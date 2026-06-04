@@ -24,16 +24,20 @@ Running the base spec over both variants leaves the closure tests failing;
 each is listed by name under the tally:
 
   $ spectec impty batch --spec $SPEC --batch-dir ../../testdata/interp/impty --color never
-  typechecker: 16/20 passed, 4 failed
+  typechecker: 17/23 passed, 6 failed
     fail             ../../testdata/interp/impty/closure/closure.imp
     fail             ../../testdata/interp/impty/closure/curried.imp
     fail             ../../testdata/interp/impty/closure/higher_order.imp
     fail             ../../testdata/interp/impty/closure/static-vs-dynamic.imp
-  evaluator: 16/20 passed, 4 failed
+    fail             ../../testdata/interp/impty/recursion/rec_countup.imp
+    fail             ../../testdata/interp/impty/recursion/rec_sum.imp
+  evaluator: 17/23 passed, 6 failed
     fail             ../../testdata/interp/impty/closure/closure.imp
     fail             ../../testdata/interp/impty/closure/curried.imp
     fail             ../../testdata/interp/impty/closure/higher_order.imp
     fail             ../../testdata/interp/impty/closure/static-vs-dynamic.imp
+    fail             ../../testdata/interp/impty/recursion/rec_countup.imp
+    fail             ../../testdata/interp/impty/recursion/rec_sum.imp
 
 A valid program named like an expected-fail case is reported as an unexpected
 pass:

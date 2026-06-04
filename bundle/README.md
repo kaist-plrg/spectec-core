@@ -15,6 +15,11 @@ The `spectecx` binary is obtained separately -- see [Getting the tool](#getting-
 |-- tests/
 |   |-- base/             base-language programs (run as-is)
 |   `-- functions/        programs using functions (run once the stubs are filled in)
+|-- recursion/           optional exercise for early finishers (self-contained -- see its README)
+|   |-- recursion.spectec  a separate skeleton adding conditionals + recursion
+|   |-- README.md          the exercise
+|   |-- Makefile           `make test-rec`
+|   `-- tests/             base + functions + recursion programs
 `-- documentation/
     |-- impty.adoc        prose document source (AsciiDoc + splice directives)
     `-- docinfo.html      stylesheet for the rendered output
@@ -41,7 +46,18 @@ page, the same release you downloaded this bundle from.
 ./spectecx impty eval -p tests/base/hello.imp --tree.level conclusion
 ```
 
-## 2. Adding first-class functions (test-driven)
+## 2. Documentation: generated prose
+
+The prose document splices straight from `impty.spectec`. Needs [asciidoctor](https://asciidoctor.org/) (`gem install asciidoctor asciidoctor-pdf`), or use Docker (see the release page).
+
+```sh
+make splice-html    # -> documentation/impty.html
+make splice-pdf     # -> documentation/impty.pdf
+```
+
+Then open `documentation/impty.html` (or `documentation/impty.pdf`).
+
+## 3-a. Adding first-class functions (test-driven)
 
 `impty.spectec` has the syntax for functions but leaves four rules as `-- TODO` stubs. The base programs already pass; the function programs fail until the stubs are filled in. Fill in a rule, re-run, repeat.
 
@@ -53,9 +69,18 @@ make test
 # debug one program at a time
 ./spectecx impty typecheck -p tests/functions/closure.imp
 ./spectecx impty eval      -p tests/functions/closure.imp
+
+```
+## 3-b. Optional: recursion (for early finishers)
+
+Finished early? `recursion/` is a separate, self-contained exercise that extends the language with a conditional expression and recursive function declarations. It builds on the function rules you just wrote. `cd` into it and follow its README:
+
+```sh
+cd recursion
+make test-rec      # runs base + functions + recursion programs
 ```
 
-## 3. Testing: coverage and property-based testing
+## 4. Testing: coverage and property-based testing
 
 ```sh
 # coverage: which rules the suite exercises (summary lists the uncovered ones)
@@ -67,13 +92,3 @@ make test
 ./spectecx impty quickcheck --num-tests 400 --branch-coverage.level summary
 ```
 
-## 4. Documentation: generated prose
-
-The prose document splices straight from `impty.spectec`. Needs [asciidoctor](https://asciidoctor.org/) (`gem install asciidoctor asciidoctor-pdf`), or use Docker (see the release page).
-
-```sh
-make splice-html    # -> documentation/impty.html
-make splice-pdf     # -> documentation/impty.pdf
-```
-
-Then open `documentation/impty.html` (or `documentation/impty.pdf`).

@@ -19,6 +19,7 @@ help:
 	@echo "  make splice-pdf    render the prose document as documentation/impty.pdf"
 	@echo "  make clean         remove the build dir and rendered output"
 	@echo "Override the tool with SPECTECX=... (default: $(SPECTECX))."
+	@echo "Early finishers: an optional recursion exercise lives in recursion/ (see recursion/README.md)."
 
 test:
 	$(SPECTECX) impty batch

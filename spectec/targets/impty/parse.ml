@@ -116,10 +116,24 @@ and parse_type_atom c : value =
 (* Expressions                                                        *)
 (* ----------------------------------------------------------------- *)
 
-(* Precedence (loose to tight): && , <= , + , unary ! , postfix call, primary.
-   No operator is right-associative; we fold left at each layer. *)
+(* Precedence (loose to tight): ?: , && , <= , + , unary ! , postfix call,
+   primary. Binary operators fold left; the ternary is looser than all of them,
+   and its else-branch recurses so `a ? b : c ? d : e` reads as
+   `a ? b : (c ? d : e)`. The `?`/`:` atoms are Quest and Colon `Tick, matching
+   the spec's `expr `? expr `: expr`. *)
 
-let rec parse_expr c : value = parse_and c
+let rec parse_expr c : value = parse_ternary c
+
+and parse_ternary c : value =
+  let cond = parse_and c in
+  if Cursor.peek c = Lexer.Question then (
+    Cursor.advance c;
+    let e_then = parse_expr c in
+    Cursor.expect c Lexer.Colon;
+    let e_else = parse_ternary c in
+    [ arg cond; atom "?"; arg e_then; atom "`:"; arg e_else ]
+    |> case_v ~var:"expr")
+  else cond
 
 and parse_and c =
   left_assoc ~op_token:Lexer.And ~op_atom:"&&" ~var:"expr" ~next:parse_leq c
@@ -237,6 +251,35 @@ and parse_stmt_atom c : value =
       let body = parse_stmt c in
       Cursor.expect c Lexer.KwEnd;
       [ atom "WHILE"; arg cond; atom "DO"; arg body; atom "END" ]
+      |> case_v ~var:"command"
+  | Lexer.KwRec ->
+      Cursor.advance c;
+      let fname = Cursor.expect_ident c in
+      let t_arg, x_str =
+        surrounded ~left:Lexer.Lparen ~right:Lexer.Rparen
+          (fun c ->
+            let t = parse_type c in
+            (t, Cursor.expect_ident c))
+          c
+      in
+      Cursor.expect c Lexer.Arrow;
+      let t_ret = parse_type c in
+      let body =
+        surrounded ~left:Lexer.Lbrace ~right:Lexer.Rbrace parse_expr c
+      in
+      [
+        atom "REC";
+        arg (v_id fname);
+        atom "(";
+        arg t_arg;
+        arg (v_id x_str);
+        atom ")";
+        atom "`->";
+        arg t_ret;
+        atom "{";
+        arg body;
+        atom "}";
+      ]
       |> case_v ~var:"command"
   | Lexer.KwInt | Lexer.KwBool -> parse_var_decl c
   | Lexer.Lparen

@@ -73,16 +73,32 @@ IMPTY_TESTS = spectec/testdata/interp/impty
 bundle:
 	rm -rf $(BUNDLE_DIR)
 	mkdir -p $(BUNDLE_DIR)/tests/base \
-	         $(BUNDLE_DIR)/tests/functions $(BUNDLE_DIR)/documentation
+	         $(BUNDLE_DIR)/tests/functions \
+	         $(BUNDLE_DIR)/recursion/tests/base \
+	         $(BUNDLE_DIR)/recursion/tests/functions \
+	         $(BUNDLE_DIR)/recursion/tests/recursion \
+	         $(BUNDLE_DIR)/documentation
 	cp $(BUNDLE_SRC)/README.md $(BUNDLE_SRC)/Makefile $(BUNDLE_SRC)/Dockerfile \
 	   $(BUNDLE_SRC)/spectecx.config $(BUNDLE_DIR)/
 	cp LICENSE $(BUNDLE_DIR)/
 	cp $(BUNDLE_SRC)/impty.spectec $(BUNDLE_DIR)/impty.spectec
+	# The recursion exercise is a self-contained sub-bundle: its own spec,
+	# config, Makefile, README, and a spectecx symlink to the parent binary.
+	cp $(BUNDLE_SRC)/recursion/recursion.spectec \
+	   $(BUNDLE_SRC)/recursion/spectecx.config \
+	   $(BUNDLE_SRC)/recursion/Makefile \
+	   $(BUNDLE_SRC)/recursion/README.md $(BUNDLE_DIR)/recursion/
+	ln -sf ../spectecx $(BUNDLE_DIR)/recursion/spectecx
 	for f in $(IMPTY_TESTS)/base/*.imp; do \
-	  case $$f in *_errors_*) ;; *) cp "$$f" $(BUNDLE_DIR)/tests/base/ ;; esac; \
+	  case $$f in *_errors_*) ;; *) cp "$$f" $(BUNDLE_DIR)/tests/base/ ; \
+	    cp "$$f" $(BUNDLE_DIR)/recursion/tests/base/ ;; esac; \
 	done
 	for f in $(IMPTY_TESTS)/closure/*.imp; do \
-	  case $$f in *_errors_*) ;; *) cp "$$f" $(BUNDLE_DIR)/tests/functions/ ;; esac; \
+	  case $$f in *_errors_*) ;; *) cp "$$f" $(BUNDLE_DIR)/tests/functions/ ; \
+	    cp "$$f" $(BUNDLE_DIR)/recursion/tests/functions/ ;; esac; \
+	done
+	for f in $(IMPTY_TESTS)/recursion/*.imp; do \
+	  case $$f in *_errors_*) ;; *) cp "$$f" $(BUNDLE_DIR)/recursion/tests/recursion/ ;; esac; \
 	done
 	cp $(BUNDLE_SRC)/documentation/impty.adoc \
 	   $(BUNDLE_SRC)/documentation/docinfo.html $(BUNDLE_DIR)/documentation/
