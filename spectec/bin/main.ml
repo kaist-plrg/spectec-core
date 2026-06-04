@@ -11,11 +11,16 @@ let elab_command =
   let open Core.Command.Let_syntax in
   let open Core.Command.Param in
   let%map filenames = anon (sequence ("spec files" %: string))
+  and check =
+    flag "--check" no_arg
+      ~doc:" report errors and warnings without printing the elaborated IL"
   and color = Cli.Cli_args.Output.color_flag in
   fun () ->
-    Cli.Error_handling.guard ~color ~on_ok:(fun spec_il ->
-        Format.printf "%s\n" (Lang.Il.Print.string_of_spec spec_il))
-    @@ fun () ->
+    let on_ok spec_il =
+      if not check then
+        Format.printf "%s\n" (Lang.Il.Print.string_of_spec spec_il)
+    in
+    Cli.Error_handling.guard ~color ~on_ok @@ fun () ->
     let* spec = parse_spec_files filenames in
     let* { lang; _ } = elaborate spec in
     Ok lang
