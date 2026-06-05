@@ -4,8 +4,8 @@
 #
 # A prebuilt image is published, so most people can skip this build:
 #
-#   docker pull kaist-plrg/spectecx:tutorial
-#   docker run -it kaist-plrg/spectecx:tutorial
+#   docker pull kunjeong/spectecx:tutorial
+#   docker run -it kunjeong/spectecx:tutorial
 #
 # To build the image yourself instead, work entirely inside the container:
 #

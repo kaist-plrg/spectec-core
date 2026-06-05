@@ -89,17 +89,14 @@ bundle:
 	   $(BUNDLE_SRC)/recursion/Makefile \
 	   $(BUNDLE_SRC)/recursion/README.md $(BUNDLE_DIR)/recursion/
 	ln -sf ../spectecx $(BUNDLE_DIR)/recursion/spectecx
-	for f in $(IMPTY_TESTS)/base/*.imp; do \
-	  case $$f in *_errors_*) ;; *) cp "$$f" $(BUNDLE_DIR)/tests/base/ ; \
-	    cp "$$f" $(BUNDLE_DIR)/recursion/tests/base/ ;; esac; \
-	done
-	for f in $(IMPTY_TESTS)/closure/*.imp; do \
-	  case $$f in *_errors_*) ;; *) cp "$$f" $(BUNDLE_DIR)/tests/functions/ ; \
-	    cp "$$f" $(BUNDLE_DIR)/recursion/tests/functions/ ;; esac; \
-	done
-	for f in $(IMPTY_TESTS)/recursion/*.imp; do \
-	  case $$f in *_errors_*) ;; *) cp "$$f" $(BUNDLE_DIR)/recursion/tests/recursion/ ;; esac; \
-	done
+	# Ship the whole corpus, including the negative (_errors_) cases: `impty
+	# batch` classifies those as expected failures, and they drive error paths
+	# (e.g. lookup-not-found) that the positive tests never reach.
+	cp $(IMPTY_TESTS)/base/*.imp $(BUNDLE_DIR)/tests/base/
+	cp $(IMPTY_TESTS)/base/*.imp $(BUNDLE_DIR)/recursion/tests/base/
+	cp $(IMPTY_TESTS)/closure/*.imp $(BUNDLE_DIR)/tests/functions/
+	cp $(IMPTY_TESTS)/closure/*.imp $(BUNDLE_DIR)/recursion/tests/functions/
+	cp $(IMPTY_TESTS)/recursion/*.imp $(BUNDLE_DIR)/recursion/tests/recursion/
 	cp $(BUNDLE_SRC)/documentation/impty.adoc \
 	   $(BUNDLE_SRC)/documentation/docinfo.html $(BUNDLE_DIR)/documentation/
 	tar -czf dist/$(BUNDLE_NAME).tar.gz -C dist $(BUNDLE_NAME)
