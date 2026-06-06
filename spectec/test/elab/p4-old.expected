@@ -367,7 +367,7 @@ def $flatten_typeParameterListOpt(typeParameterListOpt) : typeParameter* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:188:1-188:48:
    clause 0(typeParameterListOpt) = []
-      -- if typeParameterListOpt matches ``EMPTY`
+      -- if typeParameterListOpt matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:189:1-190:50:
    clause 1(typeParameterListOpt) = $flatten_typeParameterList(typeParameterList)
@@ -394,7 +394,7 @@ def $flatten_parameterList(parameterList) : parameter* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:210:1-210:41:
    clause 0(parameterList) = []
-      -- if parameterList matches ``EMPTY`
+      -- if parameterList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:211:1-211:50:
    clause 1(parameterList) = [parameter]
@@ -424,7 +424,7 @@ def $flatten_constructorParameterListOpt(constructorParameterListOpt) : construc
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:230:1-230:55:
    clause 0(constructorParameterListOpt) = []
-      -- if constructorParameterListOpt matches ``EMPTY`
+      -- if constructorParameterListOpt matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:231:1-232:42:
    clause 1(constructorParameterListOpt) = $flatten_parameterList(parameterList)
@@ -662,7 +662,7 @@ def $flatten_expressionList(expressionList) : expression* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:400:1-400:42:
    clause 0(expressionList) = []
-      -- if expressionList matches ``EMPTY`
+      -- if expressionList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:401:1-401:53:
    clause 1(expressionList) = [expression]
@@ -1268,7 +1268,7 @@ def $flatten_typeArgumentList(typeArgumentList) : typeArgument* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:565:1-565:44:
    clause 0(typeArgumentList) = []
-      -- if typeArgumentList matches ``EMPTY`
+      -- if typeArgumentList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:566:1-566:59:
    clause 1(typeArgumentList) = [typeArgument]
@@ -1396,7 +1396,7 @@ def $flatten_argumentList(argumentList) : argument* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:589:1-589:40:
    clause 0(argumentList) = []
-      -- if argumentList matches ``EMPTY`
+      -- if argumentList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:590:1-590:47:
    clause 1(argumentList) = [argument]
@@ -1608,7 +1608,7 @@ def $flatten_switchCaseList(switchCaseList) : switchCase* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:731:1-731:42:
    clause 0(switchCaseList) = []
-      -- if switchCaseList matches ``EMPTY`
+      -- if switchCaseList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:732:1-733:62:
    clause 1(switchCaseList') = $flatten_switchCaseList(switchCaseList) ++ [switchCase]
@@ -1696,7 +1696,7 @@ def $flatten_blockElementStatementList(blockElementStatementList) : blockElement
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:794:1-794:53:
    clause 0(blockElementStatementList) = []
-      -- if blockElementStatementList matches ``EMPTY`
+      -- if blockElementStatementList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:795:1-799:30:
    clause 1(blockElementStatementList') = $flatten_blockElementStatementList(blockElementStatementList) ++ [blockElementStatement]
@@ -1740,7 +1740,7 @@ def $flatten_objectDeclarationList(objectDeclarationList) : objectDeclaration* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:840:1-840:49:
    clause 0(objectDeclarationList) = []
-      -- if objectDeclarationList matches ``EMPTY`
+      -- if objectDeclarationList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:841:1-845:29:
    clause 1(objectDeclarationList') = $flatten_objectDeclarationList(objectDeclarationList) ++ [objectDeclaration]
@@ -1774,7 +1774,7 @@ def $flatten_typeFieldList(typeFieldList) : typeField* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:882:1-882:41:
    clause 0(typeFieldList) = []
-      -- if typeFieldList matches ``EMPTY`
+      -- if typeFieldList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:883:1-884:59:
    clause 1(typeFieldList') = $flatten_typeFieldList(typeFieldList) ++ [typeField]
@@ -1852,7 +1852,7 @@ def $flatten_methodPrototypeList(methodPrototypeList) : methodPrototype* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:930:1-930:47:
    clause 0(methodPrototypeList) = []
-      -- if methodPrototypeList matches ``EMPTY`
+      -- if methodPrototypeList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:931:1-934:77:
    clause 1(methodPrototypeList') = $flatten_methodPrototypeList(methodPrototypeList) ++ [methodPrototype]
@@ -1882,7 +1882,7 @@ def $flatten_selectCaseList(selectCaseList) : selectCase* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:958:1-958:42:
    clause 0(selectCaseList) = []
-      -- if selectCaseList matches ``EMPTY`
+      -- if selectCaseList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:959:1-960:62:
    clause 1(selectCaseList') = $flatten_selectCaseList(selectCaseList) ++ [selectCase]
@@ -1956,7 +1956,7 @@ def $flatten_parserStatementList(parserStatementList) : parserStatement* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1018:1-1018:47:
    clause 0(parserStatementList) = []
-      -- if parserStatementList matches ``EMPTY`
+      -- if parserStatementList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1019:1-1020:77:
    clause 1(parserStatementList') = $flatten_parserStatementList(parserStatementList) ++ [parserStatement]
@@ -2003,7 +2003,7 @@ def $flatten_parserLocalDeclarationList(parserLocalDeclarationList) : parserLoca
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1046:1-1046:54:
    clause 0(parserLocalDeclarationList) = []
-      -- if parserLocalDeclarationList matches ``EMPTY`
+      -- if parserLocalDeclarationList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1047:1-1051:34:
    clause 1(parserLocalDeclarationList') = $flatten_parserLocalDeclarationList(parserLocalDeclarationList) ++ [parserLocalDeclaration]
@@ -2028,7 +2028,7 @@ def $flatten_constOpt(constOpt) : const? =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1073:1-1073:36:
    clause 0(constOpt) = ?()
-      -- if constOpt matches ``EMPTY`
+      -- if constOpt matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1074:1-1074:37:
    clause 1(constOpt) = ?(const)
@@ -2049,7 +2049,7 @@ def $flatten_tableKeyList(tableKeyList) : tableKey* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1087:1-1087:40:
    clause 0(tableKeyList) = []
-      -- if tableKeyList matches ``EMPTY`
+      -- if tableKeyList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1088:1-1089:56:
    clause 1(tableKeyList') = $flatten_tableKeyList(tableKeyList) ++ [tableKey]
@@ -2083,7 +2083,7 @@ def $flatten_tableActionList(tableActionList) : tableAction* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1106:1-1106:43:
    clause 0(tableActionList) = []
-      -- if tableActionList matches ``EMPTY`
+      -- if tableActionList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1107:1-1108:63:
    clause 1(tableActionList') = $flatten_tableActionList(tableActionList) ++ [tableAction]
@@ -2110,7 +2110,7 @@ def $flatten_tableEntryList(tableEntryList) : tableEntry* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1127:1-1127:42:
    clause 0(tableEntryList) = []
-      -- if tableEntryList matches ``EMPTY`
+      -- if tableEntryList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1128:1-1129:62:
    clause 1(tableEntryList') = $flatten_tableEntryList(tableEntryList) ++ [tableEntry]
@@ -2134,7 +2134,7 @@ def $flatten_tablePropertyList(tablePropertyList) : tableProperty* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1146:1-1146:45:
    clause 0(tablePropertyList) = []
-      -- if tablePropertyList matches ``EMPTY`
+      -- if tablePropertyList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1147:1-1148:69:
    clause 1(tablePropertyList') = $flatten_tablePropertyList(tablePropertyList) ++ [tableProperty]
@@ -2171,7 +2171,7 @@ def $flatten_controlLocalDeclarationList(controlLocalDeclarationList) : controlL
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1180:1-1180:55:
    clause 0(controlLocalDeclarationList) = []
-      -- if controlLocalDeclarationList matches ``EMPTY`
+      -- if controlLocalDeclarationList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1181:1-1185:32:
    clause 1(controlLocalDeclarationList') = $flatten_controlLocalDeclarationList(controlLocalDeclarationList) ++ [controlLocalDeclaration]
@@ -2362,7 +2362,7 @@ def $flatten_p4program(p4program) : declaration* =
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1282:1-1282:37:
    clause 0(p4program) = []
-      -- if p4program matches ``EMPTY`
+      -- if p4program matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1283:1-1284:53:
    clause 1(p4program') = $flatten_p4program(p4program) ++ [declaration]
@@ -2504,7 +2504,7 @@ def $pids(parameterList) : pid* =
 
    ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:66:1-66:24:
    clause 0(parameterList) = []
-      -- if parameterList matches ``EMPTY`
+      -- if parameterList matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:67:1-67:39:
    clause 1(parameterList) = [$pid(parameter)]
@@ -2523,7 +2523,7 @@ def $pid(parameter) : pid =
 
    ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:71:1-71:51:
    clause 0(_annotationList _direction _type name initializerOpt) = $name(name) # false
-      -- if initializerOpt matches ``EMPTY`
+      -- if initializerOpt matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:72:1-72:55:
    clause 1(_annotationList _direction _type name initializerOpt) = $name(name) # true
@@ -2538,7 +2538,7 @@ def $cid(name, constructorParameterListOpt) : cid =
 
    ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:82:1-82:46:
    clause 0(name, constructorParameterListOpt) = $name(name) ( [] )
-      -- if constructorParameterListOpt matches ``EMPTY`
+      -- if constructorParameterListOpt matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:83:1-84:42:
    clause 1(name, constructorParameterListOpt) = $name(name) ( $pids(parameterList) )
@@ -6769,7 +6769,7 @@ def $prefixedNonTypeName(prefixedNonTypeName) : prefixedNameIR =
 
    ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:11:1-11:69:
    clause 1(prefixedNonTypeName) = . $name(nonTypeName as name)
-      -- if prefixedNonTypeName matches ``ID . %`
+      -- if prefixedNonTypeName matches `_ID . %`
       -- let . nonTypeName = prefixedNonTypeName
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:13:1-13:57:
@@ -6782,7 +6782,7 @@ def $prefixedTypeName(prefixedTypeName) : prefixedNameIR =
 
    ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:15:1-15:61:
    clause 1(prefixedTypeName) = . $name(typeName as name)
-      -- if prefixedTypeName matches ``TID . %`
+      -- if prefixedTypeName matches `_TID . %`
       -- let . typeName = prefixedTypeName
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:17:1-17:53:
@@ -7993,7 +7993,7 @@ def $add_parameter(cursor, typingContext, parameterTypeIR) : typingContext =
 
    ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:222:1-224:50:
    clause 0(cursor, TC, direction typeIR id value?{value <- value?}) = TC'
-      -- if direction matches ``EMPTY`
+      -- if direction matches `_EMPTY`
       -- let varTypeIR = typeIR ctk value?{value <- value?}
       -- let TC' = $add_var(cursor, TC, id, varTypeIR)
 
@@ -8953,7 +8953,7 @@ relation ParameterType_wf: bound |- parameterTypeIR
 
    ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:49:1-52:49:
    rule default-empty-extern: bound |- direction typeIR _id value?{value <- value?}
-      -- if direction matches ``EMPTY`
+      -- if direction matches `_EMPTY`
       -- if value?{value <- value?} matches ()
       -- if Type_wf: bound |- typeIR holds
       -- if $is_extern_object_typeIR($canon(typeIR))
@@ -8966,7 +8966,7 @@ relation ParameterType_wf: bound |- parameterTypeIR
 
    ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:59:1-62:49:
    rule default-some-extern: bound |- direction typeIR _id value'?{value' <- value'?}
-      -- if direction matches ``EMPTY`
+      -- if direction matches `_EMPTY`
       -- if value'?{value' <- value'?} matches (_)
       -- let ?(value) = value'?{value' <- value'?}
       -- if Type_wf: bound |- typeIR holds
@@ -9120,7 +9120,7 @@ relation ConstructorParameterType_wf: bound |- parameterTypeIR
 
    ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:694:1-696:30:
    rule : bound |- direction typeIR _id _value?{_value <- _value?}
-      -- if direction matches ``EMPTY`
+      -- if direction matches `_EMPTY`
       -- if Type_wf: bound |- typeIR holds
 
 ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:33:1-35:20:
@@ -10181,14 +10181,14 @@ def $directionless_trailing'(bool, direction*) : bool =
       -- if (bool = true)
       -- if direction'*{direction' <- direction'*} matches _ :: _
       -- let direction :: direction_t*{direction_t <- direction_t*} = direction'*{direction' <- direction'*}
-      -- if direction matches ``EMPTY`
+      -- if direction matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:507:1-507:68:
    clause 2(bool, direction'*{direction' <- direction'*}) = false
       -- if (bool = false)
       -- if direction'*{direction' <- direction'*} matches _ :: _
       -- let direction :: direction_t*{direction_t <- direction_t*} = direction'*{direction' <- direction'*}
-      -- if direction matches ``EMPTY`
+      -- if direction matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:508:1-510:31:
    clause 3(_bool, direction*{direction <- direction*}) = $directionless_trailing'(false, direction_t*{direction_t <- direction_t*})
@@ -11236,7 +11236,7 @@ relation Type_ok: cursor typingContext |- typeOrVoid : typeIR # tid*
    rule specializedType-mono: p TC |- typeOrVoid : typeIR # []
       -- if typeOrVoid <: specializedType
       -- let prefixedTypeName < typeArgumentList > = typeOrVoid as specializedType
-      -- if typeArgumentList matches ``EMPTY`
+      -- if typeArgumentList matches `_EMPTY`
       -- let prefixedNameIR = $prefixedTypeName(prefixedTypeName)
       -- let typeDefIR'?{typeDefIR' <- typeDefIR'?} = $find_type(p, TC, prefixedNameIR)
       -- if typeDefIR'?{typeDefIR' <- typeDefIR'?} matches (_)
@@ -13201,7 +13201,7 @@ relation BlockElementStmt_ok: typingContext flow |- blockElementStatement : typi
    rule variableDeclaration-empty: TC_0 f |- blockElementStatement : TC_1 f variableDeclarationIR as blockElementStatementIR
       -- if blockElementStatement <: variableDeclaration
       -- let annotationList type name initializerOpt ; = blockElementStatement as variableDeclaration
-      -- if initializerOpt matches ``EMPTY`
+      -- if initializerOpt matches `_EMPTY`
       -- rel Type_ok: local TC_0 |- type as typeOrVoid : typeIR # tid*{tid <- tid*}
       -- if tid*{tid <- tid*} matches []
       -- if Type_wf: $bound(local, TC_0) |- typeIR holds
@@ -13264,7 +13264,7 @@ relation Parameter_ok: cursor typingContext |- parameter : parameterIR # tid*
 
    ;; ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:12:1-19:29:
    rule empty: p TC |- annotationList direction type name initializerOpt : annotationList direction typeIR nameIR ?() # tid_fresh*{tid_fresh <- tid_fresh*}
-      -- if initializerOpt matches ``EMPTY`
+      -- if initializerOpt matches `_EMPTY`
       -- rel Type_ok: p TC |- type as typeOrVoid : typeIR # tid_fresh*{tid_fresh <- tid_fresh*}
       -- let bound = $union_set<tid>($bound(p, TC), { tid_fresh*{tid_fresh <- tid_fresh*} })
       -- if Type_wf: bound |- typeIR holds
@@ -13440,7 +13440,7 @@ relation ParserTransition_ok: typingContext nameIR* |- transitionStatement : tra
 
    ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:11:1-15:7:
    rule empty: TC_0 nameIR_state*{nameIR_state <- nameIR_state*} |- transitionStatement : transition "reject" ;
-      -- if transitionStatement matches ``EMPTY`
+      -- if transitionStatement matches `_EMPTY`
 
    ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:19:1-26:55:
    rule name: TC_0 nameIR_state*{nameIR_state <- nameIR_state*} |- transitionStatement : transitionStatementIR
@@ -13481,7 +13481,7 @@ relation ParserStmt_ok: typingContext |- parserStatement : typingContext parserS
    rule variableDeclaration-empty: TC_0 |- parserStatement : TC_1 variableDeclarationIR as parserStatementIR
       -- if parserStatement <: variableDeclaration
       -- let annotationList type name initializerOpt ; = parserStatement as variableDeclaration
-      -- if initializerOpt matches ``EMPTY`
+      -- if initializerOpt matches `_EMPTY`
       -- rel Type_ok: local TC_0 |- type as typeOrVoid : typeIR # tid*{tid <- tid*}
       -- if tid*{tid <- tid*} matches []
       -- if Type_wf: $bound(local, TC_0) |- typeIR holds
@@ -13627,7 +13627,7 @@ relation ParserLocalDecl_ok: typingContext |- parserLocalDeclaration : typingCon
    rule variableDeclaration-empty: TC_0 |- parserLocalDeclaration : TC_1 variableDeclarationIR as parserLocalDeclarationIR
       -- if parserLocalDeclaration <: variableDeclaration
       -- let annotationList type name initializerOpt ; = parserLocalDeclaration as variableDeclaration
-      -- if initializerOpt matches ``EMPTY`
+      -- if initializerOpt matches `_EMPTY`
       -- rel Type_ok: block TC_0 |- type as typeOrVoid : typeIR # tid*{tid <- tid*}
       -- if tid*{tid <- tid*} matches []
       -- if Type_wf: $bound(block, TC_0) |- typeIR holds
@@ -14295,7 +14295,7 @@ relation ControlLocalDecl_ok: typingContext |- controlLocalDeclaration : typingC
    rule variableDeclaration-empty: TC_0 |- controlLocalDeclaration : TC_1 variableDeclarationIR as controlLocalDeclarationIR
       -- if controlLocalDeclaration <: variableDeclaration
       -- let annotationList type name initializerOpt ; = controlLocalDeclaration as variableDeclaration
-      -- if initializerOpt matches ``EMPTY`
+      -- if initializerOpt matches `_EMPTY`
       -- rel Type_ok: block TC_0 |- type as typeOrVoid : typeIR # tid*{tid <- tid*}
       -- if tid*{tid <- tid*} matches []
       -- if Type_wf: $bound(block, TC_0) |- typeIR holds
@@ -14600,7 +14600,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- if cursor matches `GLOBAL`
       -- if declaration <: parserDeclaration
       -- let annotationList parser name typeParameterListOpt ( parameterList ) constructorParameterListOpt { parserLocalDeclarationList parserStateList } = declaration as parserDeclaration
-      -- if typeParameterListOpt matches ``EMPTY`
+      -- if typeParameterListOpt matches `_EMPTY`
       -- let TC_1 = TC_0[block.kind = parser]
       -- let constructorParameter*{constructorParameter <- constructorParameter*} = $flatten_constructorParameterListOpt(constructorParameterListOpt)
       -- rel ConstructorParameters_ok: block TC_1 |- constructorParameter*{constructorParameter <- constructorParameter*} : constructorParameterIR*{constructorParameterIR <- constructorParameterIR*} # tid*{tid <- tid*}
@@ -14634,7 +14634,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- if cursor matches `GLOBAL`
       -- if declaration <: controlDeclaration
       -- let annotationList control name typeParameterListOpt ( parameterList ) constructorParameterListOpt { controlLocalDeclarationList apply controlBody } = declaration as controlDeclaration
-      -- if typeParameterListOpt matches ``EMPTY`
+      -- if typeParameterListOpt matches `_EMPTY`
       -- let TC_1 = TC_0[block.kind = control]
       -- let constructorParameter*{constructorParameter <- constructorParameter*} = $flatten_constructorParameterListOpt(constructorParameterListOpt)
       -- rel ConstructorParameters_ok: block TC_1 |- constructorParameter*{constructorParameter <- constructorParameter*} : constructorParameterIR*{constructorParameterIR <- constructorParameterIR*} # tid*{tid <- tid*}
@@ -14958,7 +14958,7 @@ relation Call_convention_expr_ok: cursor typingContext actctxt |- parameterTypeI
    ;; ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:109:1-114:59:
    rule empty-action: p TC actctxt |- direction typeIR_param _id _value?{_value <- _value?} @ typedExpressionIR_arg : typedExpressionIR_arg_cast
       -- if actctxt matches `ACTION`
-      -- if direction matches ``EMPTY`
+      -- if direction matches `_EMPTY`
       -- let typedExpressionIR?{typedExpressionIR <- typedExpressionIR?} = $coerce_unary(typedExpressionIR_arg, typeIR_param)
       -- if typedExpressionIR?{typedExpressionIR <- typedExpressionIR?} matches (_)
       -- let ?(typedExpressionIR_arg_cast) = typedExpressionIR?{typedExpressionIR <- typedExpressionIR?}
@@ -14966,7 +14966,7 @@ relation Call_convention_expr_ok: cursor typingContext actctxt |- parameterTypeI
    ;; ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:116:1-123:24:
    rule empty-not-action: p TC actctxt |- direction typeIR_param _id _value?{_value <- _value?} @ typedExpressionIR_arg : typedExpressionIR_arg
       -- if actctxt matches `NOACTION`
-      -- if direction matches ``EMPTY`
+      -- if direction matches `_EMPTY`
       -- let _expressionIR # ( typeIR_arg ctk_arg ) = typedExpressionIR_arg
       -- if Type_alpha: typeIR_param ~~ typeIR_arg holds
       -- if (ctk_arg =/= dyn)
@@ -17048,7 +17048,7 @@ def $split_dataplane_parameters(parameterTypeIR*) : (parameterTypeIR*, parameter
       -- if parameterTypeIR*{parameterTypeIR <- parameterTypeIR*} matches _ :: _
       -- let parameterTypeIR_h :: parameterTypeIR_t*{parameterTypeIR_t <- parameterTypeIR_t*} = parameterTypeIR*{parameterTypeIR <- parameterTypeIR*}
       -- let direction _typeIR _id _value?{_value <- _value?} = parameterTypeIR_h
-      -- if direction matches ``EMPTY`
+      -- if direction matches `_EMPTY`
       -- let (parameterTypeIR_data*{parameterTypeIR_data <- parameterTypeIR_data*}, parameterTypeIR_control*{parameterTypeIR_control <- parameterTypeIR_control*}) = $split_dataplane_parameters(parameterTypeIR_t*{parameterTypeIR_t <- parameterTypeIR_t*})
 
    ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:96:1-101:56:

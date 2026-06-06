@@ -9,12 +9,12 @@ syntax prefixedNameIR =
 dec $prefixedNonTypeName(prefixedNonTypeName) : prefixedNameIR
   hint(prose_in "the prefixed name of " %0)
 def $prefixedNonTypeName(nonTypeName) = `` $name(nonTypeName)
-def $prefixedNonTypeName(`ID `. nonTypeName) = `. $name(nonTypeName)
+def $prefixedNonTypeName(_ID `. nonTypeName) = `. $name(nonTypeName)
 
 dec $prefixedTypeName(prefixedTypeName) : prefixedNameIR
   hint(prose_in "the prefixed name of " %0)
 def $prefixedTypeName(typeName) = `` $name(typeName)
-def $prefixedTypeName(`TID `. typeName) = `. $name(typeName)
+def $prefixedTypeName(_TID `. typeName) = `. $name(typeName)
 
 dec $flatten_prefixedNameIR(prefixedNameIR) : nameIR
   hint(prose_in "the string form of " %0)

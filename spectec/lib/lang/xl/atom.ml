@@ -124,7 +124,7 @@ let closer_of : t -> t option = function
 (* Lossy pretty-printing, omitting backticks on escaped atoms. *)
 let string_of_atom = function
   | Atom id -> id
-  | SilentAtom id -> "`" ^ id
+  | SilentAtom id -> "_" ^ id
   | Sub -> "<:"
   | Sup -> ":>"
   | Turnstile -> "|-"
@@ -202,7 +202,7 @@ let string_of_atom = function
    parser production is via a TICK_* token. Round-trips with the lexer. *)
 let string_of_atom_exact : t -> string = function
   | Atom id -> id
-  | SilentAtom id -> "`" ^ id
+  | SilentAtom id -> "_" ^ id
   | Sub -> "<:"
   | Sup -> ":>"
   | Turnstile -> "|-"
@@ -374,6 +374,6 @@ let of_string : string -> t = function
   | "|+|=" -> SPlusEq
   | "|-|" -> SMinus
   | "|-|=" -> SMinusEq
-  | s when String.length s > 0 && s.[0] = '`' ->
+  | s when String.length s > 0 && s.[0] = '_' ->
       SilentAtom (String.sub s 1 (String.length s - 1))
   | s -> Atom s

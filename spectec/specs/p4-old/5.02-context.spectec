@@ -21,7 +21,7 @@ syntax globalTypingLayer =
 ;; Block layer
 
 syntax blockKind =
-  | `EMPTY
+  | _EMPTY
   | EXTERN
   | PARSER
   | CONTROL
@@ -49,7 +49,7 @@ syntax blockTypingLayer =
 ;; Local layer
 
 syntax localKind =
-  | `EMPTY
+  | _EMPTY
   | FUNCTION `-> typeIR
   | EXTERN_FUNCTION `-> typeIR
   | ACTION
@@ -140,13 +140,13 @@ def $empty_typingContext = TC
           FRAME $empty_frame }
   -- if blockTypingLayer
       = { ID "",
-          KIND `EMPTY,
+          KIND _EMPTY,
           TDENV $empty_tdenv,
           RDENV $empty_rdenv,
           FRAME $empty_frame }
   -- if localTypingLayer
       = { ID "",
-          KIND `EMPTY,
+          KIND _EMPTY,
           TDENV $empty_tdenv,
           FRAMES ([ $empty_frame ]) }
   -- if TC
@@ -219,8 +219,8 @@ def $add_vars(p, TC, id_h :: id_t*, varTypeIR_h :: varTypeIR_t*) = TC''
 dec $add_parameter(cursor, typingContext, parameterTypeIR) : typingContext
 dec $add_parameters(cursor, typingContext, parameterTypeIR*) : typingContext
 
-def $add_parameter(cursor, TC, `EMPTY typeIR id value?) = TC'
-  -- if varTypeIR = `EMPTY typeIR CTK value?
+def $add_parameter(cursor, TC, _EMPTY typeIR id value?) = TC'
+  -- if varTypeIR = _EMPTY typeIR CTK value?
   -- if TC' = $add_var(cursor, TC, id, varTypeIR)
 def $add_parameter(cursor, TC, direction typeIR id value?) = TC'
   -- if direction = IN \/ direction = OUT \/ direction = INOUT

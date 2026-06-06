@@ -113,7 +113,7 @@ rule CallableType_ok/stack-push-pop-front:
   -- if typeIR `[ _ ] = $unroll_typeIR(typeIR_base)
   ---- ;; (TODO) check if the argument is named
   ---- ;; create callable type
-  -- if parameterIR = `EMPTY `EMPTY INT "count" eps
+  -- if parameterIR = _EMPTY _EMPTY INT "count" eps
   -- if methodTypeIR = BUILTIN_METHOD nameIR `( parameterIR ) `: INT
 
 rule CallableType_ok/header-isValid:

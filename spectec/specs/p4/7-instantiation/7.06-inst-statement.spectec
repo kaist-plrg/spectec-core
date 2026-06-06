@@ -47,7 +47,7 @@ rule DirectApplicationStmt_inst:
   -- if STO_2 = $add_store(STO_1, objectId, object)
   ---- ;; replace with constant declaration and call statement
   -- if constantDeclarationIR
-      = `EMPTY CONST typeIR nameIR (`= `VALUE (REF objectId)) `;
+      = _EMPTY CONST typeIR nameIR (`= _VALUE (REF objectId)) `;
   -- if typedExpressionIR_base
       = (`` nameIR) `# `( typeIR CTK )
   -- if callableTargetIR
@@ -62,7 +62,7 @@ rule Stmt_inst/directApplicationStatementIR:
       p IC STO_0 |- directApplicationStatementIR
                   : STO_1 constantDeclarationIR callStatementIR
   -- if blockStatementIR
-      = `EMPTY `{ [ constantDeclarationIR, callStatementIR ] }
+      = _EMPTY `{ [ constantDeclarationIR, callStatementIR ] }
 
 ;;; returnStatementIR
 

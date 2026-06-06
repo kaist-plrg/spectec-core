@@ -23,7 +23,7 @@ rule Decl_ok/constantDeclaration:
   -- Eval_static: p TC_0 |- typedExpressionIR_value_cast ~> value
   ---- ;; update the context
   -- if nameIR = $name(name) 
-  -- if TC_1 = $add_var(p, TC_0, nameIR, `EMPTY typeIR LCTK value)
+  -- if TC_1 = $add_var(p, TC_0, nameIR, _EMPTY typeIR LCTK value)
   ---- ;; create IR
   -- if constantDeclarationIR
       = annotationList CONST typeIR nameIR (`= value) `;
@@ -49,7 +49,7 @@ rule Decl_ok/instantiation-prefixedTypeName-non-objectInitializer:
                     : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; update the context with the instantiated object
   -- if nameIR = $name(name)
-  -- if TC_1 = $add_var(p, TC_0, nameIR, `EMPTY typeIR_object CTK eps)
+  -- if TC_1 = $add_var(p, TC_0, nameIR, _EMPTY typeIR_object CTK eps)
   ---- ;; create IR
   -- if instantiationIR
       = annotationList typeIR_object prefixedNameIR
@@ -77,7 +77,7 @@ rule Decl_ok/instantiation-specializedType-non-objectInitializer:
                     : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; update the context with the instantiated object
   -- if nameIR = $name(name)
-  -- if TC_1 = $add_var(p, TC_0, nameIR, `EMPTY typeIR_object CTK eps)
+  -- if TC_1 = $add_var(p, TC_0, nameIR, _EMPTY typeIR_object CTK eps)
   ---- ;; create IR
   -- if instantiationIR
       = annotationList typeIR_object prefixedNameIR
@@ -208,7 +208,7 @@ rule Decl_ok/instantiation-prefixedTypeName-objectInitializer:
       = ((EXTERN tid_extern rdenv_extern) `< tid_expl* `, tid_impl* >)
         `< typeIR_arg* >
   ---- ;; temporarily add "this" to the context
-  -- if TC_1 = $add_var(LOCAL, TC_0, "this", `EMPTY typeIR_object CTK eps)
+  -- if TC_1 = $add_var(LOCAL, TC_0, "this", _EMPTY typeIR_object CTK eps)
   ---- ;; check object initializer
   -- if objectDeclaration* = $flatten_objectDeclarationList(objectDeclarationList)
   -- Decls_object_ok:
@@ -225,7 +225,7 @@ rule Decl_ok/instantiation-prefixedTypeName-objectInitializer:
   -- if $is_concrete_extern_object(typeIR_object_init)
   ---- ;; update the context with the instantiated object
   -- if nameIR = $name(name)
-  -- if TC_2 = $add_var(p, TC_0, nameIR, `EMPTY typeIR_object_init CTK eps)
+  -- if TC_2 = $add_var(p, TC_0, nameIR, _EMPTY typeIR_object_init CTK eps)
   ---- ;; create IR
   -- if instantiationIR
       = annotationList typeIR_object_init prefixedNameIR
@@ -257,7 +257,7 @@ rule Decl_ok/instantiation-specializedType-objectInitializer:
       = ((EXTERN tid_extern rdenv_extern) `< tid_expl* `, tid_impl* >)
         `< typeIR_arg* >
   ---- ;; temporarily add "this" to the context
-  -- if TC_1 = $add_var(LOCAL, TC_0, "this", `EMPTY typeIR_object CTK eps)
+  -- if TC_1 = $add_var(LOCAL, TC_0, "this", _EMPTY typeIR_object CTK eps)
   ---- ;; check object initializer
   -- if objectDeclaration* = $flatten_objectDeclarationList(objectDeclarationList)
   -- Decls_object_ok:
@@ -274,7 +274,7 @@ rule Decl_ok/instantiation-specializedType-objectInitializer:
   -- if $is_concrete_extern_object(typeIR_object_init)
   ---- ;; update the context with the instantiated object
   -- if nameIR = $name(name)
-  -- if TC_2 = $add_var(p, TC_0, nameIR, `EMPTY typeIR_object_init CTK eps)
+  -- if TC_2 = $add_var(p, TC_0, nameIR, _EMPTY typeIR_object_init CTK eps)
   ---- ;; create IR
   -- if instantiationIR
       = annotationList typeIR_object_init prefixedNameIR
@@ -359,7 +359,7 @@ rule Decl_ok/errorDeclaration:
   ---- ;; update the context
   -- if (nameIR_error = "error." ++ nameIR)*
   -- if (value_error = ERROR `. nameIR)*
-  -- if TC_1 = $add_vars(GLOBAL, TC_0, nameIR_error*, (`EMPTY ERROR LCTK value_error)*)
+  -- if TC_1 = $add_vars(GLOBAL, TC_0, nameIR_error*, (_EMPTY ERROR LCTK value_error)*)
 
 ;;; matchKindDeclaration
 ;;; syntax matchKindDeclaration = MATCH_KIND `{ nameList trailingCommaOpt }
@@ -373,7 +373,7 @@ rule Decl_ok/matchKindDeclaration:
   -- if $distinct_<nameIR>(nameIR*)
   ---- ;; update the context
   -- if (value_match_kind = MATCH_KIND `. nameIR)*
-  -- if TC_1 = $add_vars(GLOBAL, TC_0, nameIR*, (`EMPTY MATCH_KIND LCTK value_match_kind)*)
+  -- if TC_1 = $add_vars(GLOBAL, TC_0, nameIR*, (_EMPTY MATCH_KIND LCTK value_match_kind)*)
 
 ;;; externDeclaration
 ;;; syntax externDeclaration
@@ -479,7 +479,7 @@ rule Decl_ok/externDeclaration-externObjectDeclaration:
 ;;;     `{ parserLocalDeclarationList parserStateList }
 
 rule Decl_ok/parserDeclaration:
-  GLOBAL TC_0 |- annotationList PARSER name `EMPTY
+  GLOBAL TC_0 |- annotationList PARSER name _EMPTY
                  `( parameterList ) constructorParameterListOpt
                  `{ parserLocalDeclarationList parserStateList }
                : TC_6 parserDeclarationIR
@@ -534,7 +534,7 @@ rule Decl_ok/parserDeclaration:
 ;;;     `{ controlLocalDeclarationList APPLY controlBody }
 
 rule Decl_ok/controlDeclaration:
-  GLOBAL TC_0 |- annotationList CONTROL name `EMPTY
+  GLOBAL TC_0 |- annotationList CONTROL name _EMPTY
                  `( parameterList ) constructorParameterListOpt
                  `{ controlLocalDeclarationList APPLY controlBody }
                : TC_6 controlDeclarationIR
@@ -606,7 +606,7 @@ rule Decl_ok/typeDeclaration-derivedTypeDeclaration-enumTypeDeclaration:
   -- if (id_field = nameIR ++ "." ++ nameIR_field)*
   -- if (value_field = nameIR `. nameIR_field)*
   -- if TC_2
-      = $add_vars(GLOBAL, TC_1, id_field*, (`EMPTY typeIR_enum LCTK value_field)*)
+      = $add_vars(GLOBAL, TC_1, id_field*, (_EMPTY typeIR_enum LCTK value_field)*)
   ---- ;; create IR
   -- if enumTypeDeclarationIR
       = annotationList ENUM nameIR `{ nameIR_field* }
@@ -633,7 +633,7 @@ rule Enum_serializable_field_ok:
   -- if typeIR_enum = ENUM nameIR_enum `# typeIR `{ eps }
   -- if value_enum = nameIR_enum `. nameIR `# value
   -- if TC_1
-      = $add_var(BLOCK, TC_0, nameIR, `EMPTY typeIR_enum LCTK value_enum)
+      = $add_var(BLOCK, TC_0, nameIR, _EMPTY typeIR_enum LCTK value_enum)
 
 relation Enum_serializable_fields_ok:
   typingContext nameIR typeIR |- namedExpression*
@@ -672,7 +672,7 @@ rule Decl_ok/typeDeclaration-derivedTypeDeclaration-enumTypeDeclaration-serializ
   -- if (id_field = nameIR ++ "." ++ nameIR_field)*
   -- if typeIR_enum = ENUM nameIR `# typeIR `{ (nameIR_field `= value_field `;)* }
   -- if TC_2
-      = $add_vars(GLOBAL, TC_0, id_field*, (`EMPTY typeIR_enum LCTK value_field)*)
+      = $add_vars(GLOBAL, TC_0, id_field*, (_EMPTY typeIR_enum LCTK value_field)*)
   ---- ;; add enum type to context
   -- TypeDef_wf: $bound(GLOBAL, TC_0) |- typeIR_enum
   -- if TC_3 = $add_type(GLOBAL, TC_2, nameIR, typeIR_enum)

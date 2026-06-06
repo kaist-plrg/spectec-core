@@ -21,7 +21,7 @@ rule ControlLocalDecl_ok/instantiation:
 ;;;   annotationList type name initializerOpt `;
 
 rule ControlLocalDecl_ok/variableDeclaration-empty:
-  TC_0 |- annotationList type name `EMPTY `;
+  TC_0 |- annotationList type name _EMPTY `;
         : TC_1 variableDeclarationIR
   ---- ;; check type
   -- Type_ok: BLOCK TC_0 |- type : typeIR `# eps
@@ -77,7 +77,7 @@ rule ControlLocalDecl_ok/tableDeclaration:
   ---- ;; update the context with synthesized table
   -- if nameIR = $name(name)
   -- TableType_ok: TC_1 TBLC |- name : TC_2 typeIR_table
-  -- if TC_3 = $add_var(BLOCK, TC_2, nameIR, `EMPTY typeIR_table DYN eps)
+  -- if TC_3 = $add_var(BLOCK, TC_2, nameIR, _EMPTY typeIR_table DYN eps)
   ---- ;; create IR
   -- if tableDeclarationIR
       = annotationList TABLE typeIR_table nameIR `{ tablePropertyIR* }

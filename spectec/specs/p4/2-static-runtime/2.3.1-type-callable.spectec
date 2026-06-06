@@ -9,7 +9,7 @@
 syntax typedExpressionIR
 
 syntax initializerIR = `= typedExpressionIR
-syntax constantInitializerIR = `= `VALUE value
+syntax constantInitializerIR = `= _VALUE value
 
 syntax parameterInitializerIR =
   | initializerIR

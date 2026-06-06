@@ -14,8 +14,8 @@ syntax nameIR = text
 
 dec $name(name) : nameIR
   hint(prose_in "the name of" %0)
-def $name(`ID text) = text
-def $name(`TID text) = text
+def $name(_ID text) = text
+def $name(_TID text) = text
 def $name(APPLY) = "apply"
 def $name(KEY) = "key"
 def $name(ACTIONS) = "actions"
@@ -27,8 +27,8 @@ def $name(LIST) = "list"
 
 dec $tableCustomName(tableCustomName) : nameIR
   hint(prose_in "the name of" %0)
-def $tableCustomName(`ID text) = text
-def $tableCustomName(`TID text) = text
+def $tableCustomName(_ID text) = text
+def $tableCustomName(_TID text) = text
 def $tableCustomName(APPLY) = "apply"
 def $tableCustomName(STATE) = "state"
 def $tableCustomName(TYPE) = "type"
@@ -76,10 +76,10 @@ dec $constructorId(name, constructorParameterListOpt) : constructorId
 def $callableId(name, parameterList)
   = $name(name) `( $callableId'(parameterList) )
 
-def $constructorId(name, `EMPTY) = $name(name) `( eps )
+def $constructorId(name, _EMPTY) = $name(name) `( eps )
 def $constructorId(name, `( parameterList )) = $callableId(name, parameterList)
 
-def $callableId'(`EMPTY) = eps
+def $callableId'(_EMPTY) = eps
 def $callableId'(_ _ _ name _) = $name(name)
 def $callableId'(nonEmptyParameterList `, (_ _ _ name _))
   = $callableId'(nonEmptyParameterList) ++ [ $name(name) ]

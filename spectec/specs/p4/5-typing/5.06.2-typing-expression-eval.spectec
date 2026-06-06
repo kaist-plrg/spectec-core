@@ -17,7 +17,7 @@
 rule Expr_eval_lctk/booleanLiteral:
   p TC |- booleanLiteral `# _ ~> boolValue
   -- if boolValue
-      = $ite<boolValue>(booleanLiteral = TRUE, `B true, `B false)
+      = $ite<boolValue>(booleanLiteral = TRUE, _B true, _B false)
 
 rule Expr_eval_lctk/integerLiteral:
   p TC |- integerLiteral `# _ ~> integerLiteral
@@ -60,24 +60,24 @@ rule Expr_eval_lctk/non-short-circuit:
 
 rule Expr_eval_lctk/land-false:
   p TC |- (typedExpressionIR_l `&& typedExpressionIR_r) `# _
-       ~> (`B false)
-  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (`B false)
+       ~> (_B false)
+  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (_B false)
 
 rule Expr_eval_lctk/land-true:
   p TC |- (typedExpressionIR_l `&& typedExpressionIR_r) `# _
        ~> value_r
-  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (`B true)
+  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (_B true)
   -- Expr_eval_lctk: p TC |- typedExpressionIR_r ~> value_r
 
 rule Expr_eval_lctk/lor-true:
   p TC |- (typedExpressionIR_l `|| typedExpressionIR_r) `# _
-       ~> (`B true)
-  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (`B true)
+       ~> (_B true)
+  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (_B true)
 
 rule Expr_eval_lctk/lor-false:
   p TC |- (typedExpressionIR_l `|| typedExpressionIR_r) `# _
        ~> value_r
-  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (`B false)
+  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (_B false)
   -- Expr_eval_lctk: p TC |- typedExpressionIR_r ~> value_r
 
 ;;;; ternaryExpressionIR
@@ -89,14 +89,14 @@ rule Expr_eval_lctk/true:
   p TC |- (typedExpressionIR_cond `? typedExpressionIR_true `: typedExpressionIR_false)
           `# _
        ~> value_true
-  -- Expr_eval_lctk: p TC |- typedExpressionIR_cond ~> (`B true)
+  -- Expr_eval_lctk: p TC |- typedExpressionIR_cond ~> (_B true)
   -- Expr_eval_lctk: p TC |- typedExpressionIR_true ~> value_true
 
 rule Expr_eval_lctk/false:
   p TC |- (typedExpressionIR_cond `? typedExpressionIR_true `: typedExpressionIR_false)
           `# _
        ~> value_false
-  -- Expr_eval_lctk: p TC |- typedExpressionIR_cond ~> (`B false)
+  -- Expr_eval_lctk: p TC |- typedExpressionIR_cond ~> (_B false)
   -- Expr_eval_lctk: p TC |- typedExpressionIR_false ~> value_false
 
 
@@ -312,7 +312,7 @@ rule Expr_eval_lctk/static_assert:
   -- ExternFunctionCall_eval_lctk:
       TC_callee_1 |- "static_assert" `( nameIR_param* ) ~> boolValue
   ---- ;; static_assert should return true
-  -- if `B true = boolValue
+  -- if _B true = boolValue
 
 rule Expr_eval_lctk/size-expression:
   p TC |- ((typedExpressionIR_base `. nameIR) `< _ > `( _ )) `# _

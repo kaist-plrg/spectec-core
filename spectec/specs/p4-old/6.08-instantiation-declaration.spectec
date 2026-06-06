@@ -75,7 +75,7 @@ rule Decl_inst/instantiationIR-extern:
   ---- ;; add reference to object in value environment
   -- if $add_value_inst(p, Ci_0, nameIR, `! oid) = Ci_1
   ---- ;; replace declaration with constant declaration holding the reference
-  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
+  -- if _EMPTY CONST typeIR nameIR (`= (`! oid)) `;
       = constantDeclarationIR
 
 dec $is_extern_object(objDyn) : bool
@@ -98,7 +98,7 @@ rule Decl_inst/instantiationIR-non-extern:
   ---- ;; add reference to object in value environment
   -- if $add_value_inst(p, Ci_0, nameIR, `! oid) = Ci_1
   ---- ;; replace declaration with constant declaration holding the reference
-  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
+  -- if _EMPTY CONST typeIR nameIR (`= (`! oid)) `;
       = constantDeclarationIR
 
 ;;; functionDeclarationIR

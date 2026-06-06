@@ -76,13 +76,13 @@ let left_assoc ~op_token ~op_atom ~var ~next c =
 (* IL value constructors                                              *)
 (* ----------------------------------------------------------------- *)
 
-let v_id (s : string) : value = [ atom "`ID"; arg (text s) ] |> case_v ~var:"id"
+let v_id (s : string) : value = [ atom "_ID"; arg (text s) ] |> case_v ~var:"id"
 
 let v_lit_num (n : int) : value =
-  [ atom "`NUM"; arg (nat (Bigint.of_int n)) ] |> case_v ~var:"literal"
+  [ atom "_NUM"; arg (nat (Bigint.of_int n)) ] |> case_v ~var:"literal"
 
 let v_lit_bool (b : bool) : value =
-  [ atom "`BOOL"; arg (bool b) ] |> case_v ~var:"literal"
+  [ atom "_BOOL"; arg (bool b) ] |> case_v ~var:"literal"
 
 (* ----------------------------------------------------------------- *)
 (* Types                                                              *)

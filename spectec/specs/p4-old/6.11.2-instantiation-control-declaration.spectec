@@ -45,7 +45,7 @@ rule ControlLocalDecl_inst/tableDeclarationIR:
   ---- ;; add reference to object in value environment
   -- if $add_value_inst(BLOCK, Ci_0, nameIR, `! oid) = Ci_1
   ---- ;; replace declaration with constant declaration holding the reference
-  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `;
+  -- if _EMPTY CONST typeIR nameIR (`= (`! oid)) `;
       = constantDeclarationIR
 ;;
 ;; Control local declaration list instantiation

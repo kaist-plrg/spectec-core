@@ -9,7 +9,7 @@
 ;;;   annotationList CONST typeIR nameIR initializerIR `;
 
 rule ConstDecl_inst:
-  p IC_0 |- annotationList CONST typeIR nameIR (`= `VALUE value) `;
+  p IC_0 |- annotationList CONST typeIR nameIR (`= _VALUE value) `;
           : IC_1
   -- if IC_1 = $add_var_i(p, IC_0, nameIR, value)
 
@@ -136,7 +136,7 @@ rule InstDecl_inst/extern:
   -- if IC_1 = $add_var_i(p, IC_0, nameIR, REF objectId)
   ---- ;; replace declaration with constant declaration holding the reference
   -- if constantDeclarationIR
-      = `EMPTY CONST typeIR nameIR (`= `VALUE (REF objectId)) `;
+      = _EMPTY CONST typeIR nameIR (`= _VALUE (REF objectId)) `;
 
 rule InstDecl_inst/non-extern:
   p IC_0 STO_0 |- annotationList typeIR constructorTargetIR
@@ -163,7 +163,7 @@ rule InstDecl_inst/non-extern:
   -- if IC_1 = $add_var_i(p, IC_0, nameIR, REF objectId)
   ---- ;; replace declaration with constant declaration holding the reference
   -- if constantDeclarationIR
-      = `EMPTY CONST typeIR nameIR (`= `VALUE (REF objectId)) `;
+      = _EMPTY CONST typeIR nameIR (`= _VALUE (REF objectId)) `;
 
 
 rule Decl_inst/instantiationIR:

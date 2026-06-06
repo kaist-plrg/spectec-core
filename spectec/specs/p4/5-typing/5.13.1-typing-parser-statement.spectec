@@ -288,13 +288,13 @@ rule ParserSelect_ok:
 
 ;;; syntax stateExpression
 
-;;;; `EMPTY
+;;;; _EMPTY
 ;;;; name `;
 ;;;; selectExpression
 
 
 rule ParserTransition_ok/empty:
-  TC_0 nameIR_state* |- `EMPTY
+  TC_0 nameIR_state* |- _EMPTY
                       : TRANSITION ("reject" `;)
   ---- ;; if transition is omitted, it is implicitly a
   ---- ;; transition to the reject state

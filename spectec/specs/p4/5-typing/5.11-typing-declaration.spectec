@@ -5,7 +5,7 @@
 
 
 rule VarDecl_ok/non-initializer:
-  p TC_0 |- annotationList type name `EMPTY `;
+  p TC_0 |- annotationList type name _EMPTY `;
           : TC_1 variableDeclarationIR
   ---- ;; check type
   -- Type_ok: p TC_0 |- type : typeIR `# eps
@@ -68,10 +68,10 @@ rule ConstDecl_ok:
   -- Expr_eval_lctk: p TC_0 |- typedExpressionIR_value_cast ~> value
   ---- ;; update the context
   -- if nameIR = $name(name)
-  -- if TC_1 = $add_var_t(p, TC_0, nameIR, `EMPTY typeIR LCTK value)
+  -- if TC_1 = $add_var_t(p, TC_0, nameIR, _EMPTY typeIR LCTK value)
   ---- ;; create IR
   -- if constantDeclarationIR
-      = annotationList CONST typeIR nameIR (`= `VALUE value) `;
+      = annotationList CONST typeIR nameIR (`= _VALUE value) `;
 
 rule Decl_ok/constantDeclaration:
   TC_0 |- constantDeclaration
@@ -117,7 +117,7 @@ rule InstDecl_non_objectInitializer_ok:
                     : typeIR_object `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; update the context with the instantiated object
   -- if nameIR = $name(name)
-  -- if TC_1 = $add_var_t(p, TC_0, nameIR, `EMPTY typeIR_object CTK eps)
+  -- if TC_1 = $add_var_t(p, TC_0, nameIR, _EMPTY typeIR_object CTK eps)
   ---- ;; create IR
   -- if constructorTargetIR_inferred = prefixedNameIR `< typeArgumentIR_inferred* >
   -- if instantiationIR
@@ -316,7 +316,7 @@ rule InstDecl_objectInitializer_ok:
   -- if EXTERN typeId_extern `< typeIR_arg* > externMethodTypeDefEnv_extern
       = $unroll_typeIR(typeIR_object)
   ---- ;; temporarily add "this" to the context
-  -- if TC_1 = $add_var_t(LOCAL, TC_0, "this", `EMPTY typeIR_object CTK eps)
+  -- if TC_1 = $add_var_t(LOCAL, TC_0, "this", _EMPTY typeIR_object CTK eps)
   ---- ;; check object initializer
   -- ObjectDeclList_ok:
       p TC_1 |- objectDeclarationList
@@ -331,7 +331,7 @@ rule InstDecl_objectInitializer_ok:
   -- if $is_concrete_extern_object(typeIR_object_init)
   ---- ;; update the context with the instantiated object
   -- if nameIR = $name(name)
-  -- if TC_2 = $add_var_t(p, TC_0, nameIR, `EMPTY typeIR_object_init CTK eps)
+  -- if TC_2 = $add_var_t(p, TC_0, nameIR, _EMPTY typeIR_object_init CTK eps)
   ---- ;; create IR
   -- if constructorTargetIR_inferred = prefixedNameIR `< typeArgumentIR_inferred* >
   -- if instantiationIR
@@ -345,7 +345,7 @@ rule InstDecl_ok/non-objectInitializer-prefixedTypeName:
           : TC_1 instantiationIR
   -- InstDecl_non_objectInitializer_ok:
       p TC_0 |- annotationList
-                  prefixedTypeName `< `EMPTY > `( argumentList ) name `;
+                  prefixedTypeName `< _EMPTY > `( argumentList ) name `;
               : TC_1 instantiationIR
 
 rule InstDecl_ok/non-objectInitializer-specializedType:
@@ -363,7 +363,7 @@ rule InstDecl_ok/objectInitializer-prefixedTypeName:
           : TC_1 instantiationIR
   -- InstDecl_objectInitializer_ok:
       p TC_0 |- annotationList
-                  prefixedTypeName `< `EMPTY > `( argumentList ) name
+                  prefixedTypeName `< _EMPTY > `( argumentList ) name
                   `= `{ objectDeclarationList } `;
               : TC_1 instantiationIR
 
@@ -478,7 +478,7 @@ rule Decl_ok/errorDeclaration:
   ---- ;; update the context
   -- if (nameIR_error = "error." ++ nameIR)*
   -- if (value_error = ERROR `. nameIR)*
-  -- if (varTypeIR = `EMPTY ERROR LCTK value_error)*
+  -- if (varTypeIR = _EMPTY ERROR LCTK value_error)*
   -- if TC_1 = $add_vars_t(GLOBAL, TC_0, nameIR_error*, varTypeIR*)
 
 ;;; matchKindDeclaration
@@ -493,7 +493,7 @@ rule Decl_ok/matchKindDeclaration:
   -- if $distinct_<nameIR>(nameIR*)
   ---- ;; update the context
   -- if (value_match_kind = MATCH_KIND `. nameIR)*
-  -- if (varTypeIR = `EMPTY MATCH_KIND LCTK value_match_kind)*
+  -- if (varTypeIR = _EMPTY MATCH_KIND LCTK value_match_kind)*
   -- if TC_1 = $add_vars_t(GLOBAL, TC_0, nameIR*, varTypeIR*)
 
 ;;; externDeclaration
@@ -646,7 +646,7 @@ rule Decl_ok/parserDeclaration:
   ---- ;; set block context
   -- if TC_1 = TC_0[ .BLOCK.KIND = PARSER ]
   ---- ;; a parser declaration cannot be generic
-  -- if typeParameterListOpt = `EMPTY
+  -- if typeParameterListOpt = _EMPTY
   ---- ;; check constructor parameters
   -- ConstructorParameterListOpt_ok:
       TC_1 |- constructorParameterListOpt
@@ -699,7 +699,7 @@ rule Decl_ok/controlDeclaration:
   ---- ;; set block context
   -- if TC_1 = TC_0[ .BLOCK.KIND = CONTROL ]
   ---- ;; a parser declaration cannot be generic
-  -- if typeParameterListOpt = `EMPTY
+  -- if typeParameterListOpt = _EMPTY
   ---- ;; check constructor parameters
   -- ConstructorParameterListOpt_ok:
       TC_1 |- constructorParameterListOpt
@@ -761,7 +761,7 @@ rule Decl_ok/enumTypeDeclaration-non-serializable:
   ---- ;; add enum field values to the context
   -- if (id_field = nameIR ++ "." ++ nameIR_field)*
   -- if (value_field = nameIR `. nameIR_field)*
-  -- if (varTypeIR = `EMPTY enumTypeDefIR LCTK value_field)*
+  -- if (varTypeIR = _EMPTY enumTypeDefIR LCTK value_field)*
   -- if TC_2
       = $add_vars_t(GLOBAL, TC_1, id_field*, varTypeIR*)
   ---- ;; create IR
@@ -790,7 +790,7 @@ rule Enum_serializable_field_ok:
   -- Expr_eval_lctk: BLOCK TC_0 |- typedExpressionIR_cast ~> value
   ---- ;; temporarily add value to block context
   -- if nameIR = $name(name)
-  -- if varTypeIR = `EMPTY typeIR LCTK value
+  -- if varTypeIR = _EMPTY typeIR LCTK value
   -- if TC_1 = $add_var_t(BLOCK, TC_0, nameIR, varTypeIR)
 
 relation Enum_serializable_fields_ok:
@@ -849,7 +849,7 @@ rule Decl_ok/enumTypeDeclaration-serializable:
   -- if (id_field = nameIR ++ "." ++ nameIR_field)*
   -- if enumTypeDefIR
       = ENUM nameIR `< typeIR > `{ (nameIR_field `= value_field `;)* }
-  -- if (varTypeIR = `EMPTY enumTypeDefIR LCTK value_field)*
+  -- if (varTypeIR = _EMPTY enumTypeDefIR LCTK value_field)*
   -- if TC_2
       = $add_vars_t(GLOBAL, TC_0, id_field*, varTypeIR*)
   ---- ;; add enum type to context

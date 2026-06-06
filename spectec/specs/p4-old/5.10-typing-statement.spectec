@@ -99,16 +99,16 @@ rule Stmt_ok/directApplicationStatement-prefixedTypeName:
   p TC_0 f |- namedType `. APPLY `( argumentList ) `;
             : TC_0 f directApplicationStatementIR
   ---- ;; check instantiation
-  -- Expr_ok: p TC_0 |- namedType `( `EMPTY )
+  -- Expr_ok: p TC_0 |- namedType `( _EMPTY )
                       : ((prefixedNameIR `< eps >) `( eps )) 
                           `# `( typeIR_object _ )
   ---- ;; only parser and controls can be direclty invoked
   -- if $compat_direct_application(typeIR_object)
   ---- ;; insert temporary variable for the constructed type
   -- if nameIR_object = "__direct_application"
-  -- if TC_1 = $add_var(p, TC_0, nameIR_object, `EMPTY typeIR_object CTK eps)
+  -- if TC_1 = $add_var(p, TC_0, nameIR_object, _EMPTY typeIR_object CTK eps)
   ---- ;; check apply method
-  -- if lvalue = (`ID nameIR_object) `. (`ID "apply")
+  -- if lvalue = (_ID nameIR_object) `. (_ID "apply")
   -- Stmt_ok: p TC_1 f |- lvalue `( argumentList ) `; : _ _ callStatementIR
   -- if (((`` nameIR_object) `# `( typeIR_object CTK )) `. "apply")
           `< eps > `( argumentIR_cast* ) `;
@@ -411,7 +411,7 @@ rule BlockElementStmt_ok/constantDeclaration:
 ;;;   annotationList type name initializerOpt `;
 
 rule BlockElementStmt_ok/variableDeclaration-empty:
-  TC_0 f |- annotationList type name `EMPTY `;
+  TC_0 f |- annotationList type name _EMPTY `;
           : TC_1 f variableDeclarationIR
   ---- ;; check type
   -- Type_ok: LOCAL TC_0 |- type : typeIR `# eps

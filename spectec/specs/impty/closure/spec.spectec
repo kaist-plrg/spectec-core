@@ -20,8 +20,8 @@ syntax type =
   | BOOL
   | type `-> type                        ;; (new) function type
 
-syntax literal = `NUM int | `BOOL bool
-syntax id = `ID text
+syntax literal = _NUM int | _BOOL bool
+syntax id = _ID text
 
 syntax expr =
   | literal
@@ -67,10 +67,10 @@ relation Check_expr:
   hint(input %0 %1)
 
 rule Check_expr/num:
-  tenv |- (`NUM i) : INT
+  tenv |- (_NUM i) : INT
 
 rule Check_expr/boollit:
-  tenv |- (`BOOL b) : BOOL
+  tenv |- (_BOOL b) : BOOL
 
 rule Check_expr/id:
   tenv |- x : t
@@ -171,36 +171,36 @@ relation Eval_expr:
   hint(input %0 %1)
 
 rule Eval_expr/num:
-  env |- (`NUM i) ==> (`NUM i)
+  env |- (_NUM i) ==> (_NUM i)
 
 rule Eval_expr/boollit:
-  env |- (`BOOL b) ==> (`BOOL b)
+  env |- (_BOOL b) ==> (_BOOL b)
 
 rule Eval_expr/id:
   env |- x ==> v
   -- if $lookup<id, value>(env, x) = v
 
 rule Eval_expr/not:
-  env |- (`! e) ==> (`BOOL b)
-  -- Eval_expr: env |- e ==> (`BOOL b_e)
+  env |- (`! e) ==> (_BOOL b)
+  -- Eval_expr: env |- e ==> (_BOOL b_e)
   -- if b = ~ b_e
 
 rule Eval_expr/add:
-  env |- (e_l `+ e_r) ==> (`NUM i)
-  -- Eval_expr: env |- e_l ==> (`NUM i_l)
-  -- Eval_expr: env |- e_r ==> (`NUM i_r)
+  env |- (e_l `+ e_r) ==> (_NUM i)
+  -- Eval_expr: env |- e_l ==> (_NUM i_l)
+  -- Eval_expr: env |- e_r ==> (_NUM i_r)
   -- if i = $(i_l + i_r)
 
 rule Eval_expr/leq:
-  env |- (e_l `<= e_r) ==> (`BOOL b)
-  -- Eval_expr: env |- e_l ==> (`NUM i_l)
-  -- Eval_expr: env |- e_r ==> (`NUM i_r)
+  env |- (e_l `<= e_r) ==> (_BOOL b)
+  -- Eval_expr: env |- e_l ==> (_NUM i_l)
+  -- Eval_expr: env |- e_r ==> (_NUM i_r)
   -- if b = $(i_l <= i_r)
 
 rule Eval_expr/and:
-  env |- (e_l `&& e_r) ==> (`BOOL b)
-  -- Eval_expr: env |- e_l ==> (`BOOL b_l)
-  -- Eval_expr: env |- e_r ==> (`BOOL b_r)
+  env |- (e_l `&& e_r) ==> (_BOOL b)
+  -- Eval_expr: env |- e_l ==> (_BOOL b_l)
+  -- Eval_expr: env |- e_r ==> (_BOOL b_r)
   -- if b = (b_l /\ b_r)
 
 rule Eval_expr/fun:
@@ -232,21 +232,21 @@ rule Eval_command/assign:
 
 rule Eval_command/ite-true:
   env |- (IF e THEN c_1 ELSE c_2 END) -| env_1
-  -- Eval_expr: env |- e ==> (`BOOL true)
+  -- Eval_expr: env |- e ==> (_BOOL true)
   -- Eval_command: env |- c_1 -| env_1
 
 rule Eval_command/ite-false:
   env |- (IF e THEN c_1 ELSE c_2 END) -| env_2
-  -- Eval_expr: env |- e ==> (`BOOL false)
+  -- Eval_expr: env |- e ==> (_BOOL false)
   -- Eval_command: env |- c_2 -| env_2
 
 rule Eval_command/while-false:
   env |- (WHILE e DO c END) -| env
-  -- Eval_expr: env |- e ==> (`BOOL false)
+  -- Eval_expr: env |- e ==> (_BOOL false)
 
 rule Eval_command/while-true:
   env |- (WHILE e DO c END) -| env_2
-  -- Eval_expr: env |- e ==> (`BOOL true)
+  -- Eval_expr: env |- e ==> (_BOOL true)
   -- Eval_command: env |- c -| env_1
   -- Eval_command: env_1 |- (WHILE e DO c END) -| env_2
 

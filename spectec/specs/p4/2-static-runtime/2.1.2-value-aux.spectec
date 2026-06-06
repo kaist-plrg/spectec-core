@@ -131,7 +131,7 @@ def $write_value_from_bits(value, n_var, b*) = value_updated
   -- if (value_updated, eps)
       = $write_value_from_bits'(value, n_var, b*)
 
-def $write_value_from_bits'(`B _, n_var, b_h :: b_t*) = (`B b_h, b_t*)
+def $write_value_from_bits'(_B _, n_var, b_h :: b_t*) = (_B b_h, b_t*)
 def $write_value_from_bits'(w W _, n_var, b*) = (w W i, b_t*)
   -- if $(|b*| >= w)
   -- if b_h* = b*[0 : w]
@@ -203,7 +203,7 @@ def $write_value_from_bits'(
 
 dec $write_bits_from_value(value) : bool*
 
-def $write_bits_from_value(`B b) = [ b ]
+def $write_bits_from_value(_B b) = [ b ]
 def $write_bits_from_value(w S i)
   = $int_to_bits_signed(w, i)
 def $write_bits_from_value(w W i)

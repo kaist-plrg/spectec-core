@@ -90,13 +90,13 @@ dec $split_dataplane_parameters(parameterTypeIR*)
 def $split_dataplane_parameters(eps) = (eps, eps)
 def $split_dataplane_parameters(parameterTypeIR_h :: parameterTypeIR_t*)
   = (parameterTypeIR_data*, parameterTypeIR_h :: parameterTypeIR_control*)
-  -- if `EMPTY _ _ _ = parameterTypeIR_h
+  -- if _EMPTY _ _ _ = parameterTypeIR_h
   -- if (parameterTypeIR_data*, parameterTypeIR_control*)
       = $split_dataplane_parameters(parameterTypeIR_t*)
 def $split_dataplane_parameters(parameterTypeIR_h :: parameterTypeIR_t*)
   = (parameterTypeIR_h :: parameterTypeIR_data*, parameterTypeIR_control*)
   -- if direction _ _ _ = parameterTypeIR_h
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
   -- if (parameterTypeIR_data*, parameterTypeIR_control*)
       = $split_dataplane_parameters(parameterTypeIR_t*)
 
@@ -944,7 +944,7 @@ rule TableType_ok:
   ---- ;; add enum fields to context
   -- if (value_enum_field = TABLE_ENUM tid_enum `. id_enum_field)*
   -- if (varTypeIR_enum_field
-        = `EMPTY typeIR_table_enum LCTK value_enum_field)*
+        = _EMPTY typeIR_table_enum LCTK value_enum_field)*
   -- if TC_1
       = $add_vars(
           BLOCK, TC_0,

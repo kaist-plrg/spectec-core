@@ -6,7 +6,7 @@
 ;;;; Base values
 ;;
 
-syntax boolValue = `B bool
+syntax boolValue = _B bool
 syntax errorValue = ERROR `. nameIR
 syntax matchKindValue = MATCH_KIND `. nameIR
 syntax stringValue = stringLiteral

@@ -6,8 +6,8 @@ syntax nameIR = text
 
 dec $name(name) : nameIR
 
-def $name(`ID t) = t
-def $name(`TID t) = t
+def $name(_ID t) = t
+def $name(_TID t) = t
 def $name(APPLY) = "apply"
 def $name(KEY) = "key"
 def $name(ACTIONS) = "actions"
@@ -19,8 +19,8 @@ def $name(LIST) = "list"
 
 dec $tableCustomName(tableCustomName) : nameIR
 
-def $tableCustomName(`ID t) = t
-def $tableCustomName(`TID t) = t
+def $tableCustomName(_ID t) = t
+def $tableCustomName(_TID t) = t
 def $tableCustomName(APPLY) = "apply"
 def $tableCustomName(STATE) = "state"
 def $tableCustomName(TYPE) = "type"
@@ -63,12 +63,12 @@ dec $pid(parameter) : pid
 def $rid(name, parameterList)
   = $name(name) `( $pids(parameterList) )
 
-def $pids(`EMPTY) = eps
+def $pids(_EMPTY) = eps
 def $pids(parameter) = $pid(parameter)
 def $pids(nonEmptyParameterList `, parameter)
   = $pids(nonEmptyParameterList) ++ [ $pid(parameter) ]
 
-def $pid(_ _ _ name `EMPTY) = $name(name) `# false
+def $pid(_ _ _ name _EMPTY) = $name(name) `# false
 def $pid(_ _ _ name initializer) = $name(name) `# true
 
 ;;
@@ -79,7 +79,7 @@ syntax cid = rid
 
 dec $cid(name, constructorParameterListOpt) : cid
 
-def $cid(name, `EMPTY) = $name(name) `( eps )
+def $cid(name, _EMPTY) = $name(name) `( eps )
 def $cid(name, `( parameterList ))
   = $name(name) `( $pids(parameterList) )
 

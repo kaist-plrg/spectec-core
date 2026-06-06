@@ -131,7 +131,7 @@ rule TableProperty_inst/custom:
   -- if IC_inner = $enter_path_i(IC, nameIR)
   -- Expr_inst: LOCAL IC_inner STO_0 |- typedExpressionIR : STO_1 value
   -- if tableCustomPropertyIR_inst
-      = annotationList constOptIR CUSTOM_CONST nameIR (`= `VALUE value) `;
+      = annotationList constOptIR CUSTOM_CONST nameIR (`= _VALUE value) `;
 
 rule TableProperty_inst/custom-const:
   IC STO |- annotationList constOptIR CUSTOM_CONST nameIR constantInitializerIR `;
@@ -184,7 +184,7 @@ def $init_tableEntries(tablePropertyIR*) = tableEntriesPropertyIR
           tablePropertyIR*,
           (tablePropertyIR <: tableEntriesPropertyIR)*)
 def $init_tableEntries(tablePropertyIR*)
-  = `EMPTY eps ENTRIES `= `{ eps }
+  = _EMPTY eps ENTRIES `= `{ eps }
   -- if eps
       = $filter_<tablePropertyIR>(
           tablePropertyIR*,

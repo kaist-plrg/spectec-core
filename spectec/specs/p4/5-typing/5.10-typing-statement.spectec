@@ -80,7 +80,7 @@ rule Stmt_ok/callStatement-no-typeArgumentList-static_assert:
       = callableTargetIR `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   -- if expressionNoteIR = `( typeIR_ret LCTK )
   -- Expr_eval_lctk:
-      p TC |- (callExpressionIR `# expressionNoteIR) ~> (`B true)
+      p TC |- (callExpressionIR `# expressionNoteIR) ~> (_B true)
   -- if emptyStatementIR = `;
 
 rule Stmt_ok/callStatement-no-typeArgumentList:
@@ -139,7 +139,7 @@ rule Stmt_ok/directApplicationStatement:
   p TC_0 f l |- namedType `. APPLY `( argumentList ) `;
               : TC_0 f directApplicationStatementIR
   ---- ;; check instantiation
-  -- Expr_ok: p TC_0 |- namedType `( `EMPTY )
+  -- Expr_ok: p TC_0 |- namedType `( _EMPTY )
                       : (constructorTargetIR `( eps ))
                           `# `( typeIR_object _ )
   -- if prefixedNameIR `< typeArgumentIR* >
@@ -150,9 +150,9 @@ rule Stmt_ok/directApplicationStatement:
         \/ (typeIR_object_unroll <: controlObjectTypeIR)
   ---- ;; insert temporary variable for the constructed type
   -- if nameIR_object = "__direct_application"
-  -- if TC_1 = $add_var_t(p, TC_0, nameIR_object, `EMPTY typeIR_object CTK eps)
+  -- if TC_1 = $add_var_t(p, TC_0, nameIR_object, _EMPTY typeIR_object CTK eps)
   ---- ;; check apply method
-  -- if lvalue = (`ID nameIR_object) `. (`ID "apply")
+  -- if lvalue = (_ID nameIR_object) `. (_ID "apply")
   -- Stmt_ok: p TC_1 f l |- lvalue `( argumentList ) `;
                           : _ _ callStatementIR
   -- if (typedExpressionIR_base `. "apply")
@@ -312,7 +312,7 @@ relation ForInitStmt_ok:
 
 
 rule ForInitStmt_ok/variableDeclaration-non-initializer:
-  TC_0 |- annotationList type name `EMPTY
+  TC_0 |- annotationList type name _EMPTY
         : TC_1 (annotationList typeIR nameIR eps)
   ---- ;; check type
   -- Type_ok: LOCAL TC_0 |- type : typeIR `# eps

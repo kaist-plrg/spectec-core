@@ -71,18 +71,18 @@ rule Call_convention_expr_ok/out-inout:
   ---- ;; for copy-out, the expression must be a l-value
   -- Expr_lvalue_ok: p TC |- typedExpressionIR_arg
 
-;;; `EMPTY
+;;; _EMPTY
 
 
 rule Call_convention_expr_ok/action:
-  p TC ACTION |- (_ `EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
+  p TC ACTION |- (_ _EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
                : typedExpressionIR_arg_cast
   ---- ;; may insert implicit casts for directionless action argument
   -- if typedExpressionIR_arg_cast
       = $cast_unary(typedExpressionIR_arg, typeIR_param)
 
 rule Call_convention_expr_ok/non-action:
-  p TC NOACTION |- (_ `EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
+  p TC NOACTION |- (_ _EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
                  : typedExpressionIR_arg_cast
   ---- ;; may insert implicit casts for directionless non-action argument
   -- if typedExpressionIR_arg_cast

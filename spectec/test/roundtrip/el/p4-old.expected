@@ -98,7 +98,7 @@ builtin dec $adds_map<K, V>(map<K, V>, K*, V*) : map<K, V>
 builtin dec $update_map<K, V>(map<K, V>, K, V) : map<K, V>
 ;; === 1-syntax.spectec ===
 syntax trailingCommaOpt =
-  | `EMPTY
+  | _EMPTY
   | `,
 
 syntax number =
@@ -110,10 +110,10 @@ syntax stringLiteral =
   | `" text `" hint(print `"#%#`")
 
 syntax identifier =
-  | `ID text
+  | _ID text
 
 syntax typeIdentifier =
-  | `TID text
+  | _TID text
 
 syntax nonTypeName =
   | identifier
@@ -127,13 +127,13 @@ syntax nonTypeName =
 
 syntax prefixedNonTypeName =
   | nonTypeName
-  | `ID `. nonTypeName
+  | _ID `. nonTypeName
 
 syntax typeName = typeIdentifier
 
 syntax prefixedTypeName =
   | typeName
-  | `TID `. typeName
+  | _TID `. typeName
 
 syntax tableCustomName =
   | identifier
@@ -161,7 +161,7 @@ def $flatten_nameList(nameList `, name) = $flatten_nameList(nameList) ++ [name]
 syntax member = name
 
 syntax direction =
-  | `EMPTY
+  | _EMPTY
   | IN
   | OUT
   | INOUT
@@ -228,12 +228,12 @@ def $flatten_typeParameterList(typeParameterList `, typeParameter)
   = $flatten_typeParameterList(typeParameterList) ++ [typeParameter]
 
 syntax typeParameterListOpt =
-  | `EMPTY
+  | _EMPTY
   | `<typeParameterList>
 
 dec $flatten_typeParameterListOpt(typeParameterListOpt) : typeParameter*
 
-def $flatten_typeParameterListOpt(`EMPTY) = eps
+def $flatten_typeParameterListOpt(_EMPTY) = eps
 
 def $flatten_typeParameterListOpt(`<typeParameterList>)
   = $flatten_typeParameterList(typeParameterList)
@@ -248,12 +248,12 @@ syntax nonEmptyParameterList =
   | nonEmptyParameterList `, parameter
 
 syntax parameterList =
-  | `EMPTY
+  | _EMPTY
   | nonEmptyParameterList
 
 dec $flatten_parameterList(parameterList) : parameter*
 
-def $flatten_parameterList(`EMPTY) = eps
+def $flatten_parameterList(_EMPTY) = eps
 
 def $flatten_parameterList(parameter) = parameter
 
@@ -265,13 +265,13 @@ syntax constructorParameter = parameter
 syntax constructorParameterList = parameterList
 
 syntax constructorParameterListOpt =
-  | `EMPTY
+  | _EMPTY
   | `(parameterList)
 
 dec $flatten_constructorParameterListOpt(constructorParameterListOpt)
   : constructorParameter*
 
-def $flatten_constructorParameterListOpt(`EMPTY) = eps
+def $flatten_constructorParameterListOpt(_EMPTY) = eps
 
 def $flatten_constructorParameterListOpt(`(parameterList))
   = $flatten_parameterList(parameterList)
@@ -424,13 +424,13 @@ syntax expression =
   | parenthesizedExpression
 
 syntax expressionList =
-  | `EMPTY
+  | _EMPTY
   | expression
   | expressionList `, expression
 
 dec $flatten_expressionList(expressionList) : expression*
 
-def $flatten_expressionList(`EMPTY) = eps
+def $flatten_expressionList(_EMPTY) = eps
 
 def $flatten_expressionList(expression) = expression
 
@@ -590,13 +590,13 @@ syntax typeArgument =
   | nonTypeName
 
 syntax typeArgumentList =
-  | `EMPTY
+  | _EMPTY
   | typeArgument
   | typeArgumentList `, typeArgument
 
 dec $flatten_typeArgumentList(typeArgumentList) : typeArgument*
 
-def $flatten_typeArgumentList(`EMPTY) = eps
+def $flatten_typeArgumentList(_EMPTY) = eps
 
 def $flatten_typeArgumentList(typeArgument) = typeArgument
 
@@ -614,12 +614,12 @@ syntax argumentListNonEmpty =
   | argumentListNonEmpty `, argument
 
 syntax argumentList =
-  | `EMPTY
+  | _EMPTY
   | argumentListNonEmpty
 
 dec $flatten_argumentList(argumentList) : argument*
 
-def $flatten_argumentList(`EMPTY) = eps
+def $flatten_argumentList(_EMPTY) = eps
 
 def $flatten_argumentList(argument) = argument
 
@@ -692,7 +692,7 @@ syntax forInitStatementListNonEmpty =
   | forInitStatementListNonEmpty `, forInitStatement
 
 syntax forInitStatementList =
-  | `EMPTY
+  | _EMPTY
   | forInitStatementListNonEmpty
 
 syntax forUpdateStatement = forInitStatement
@@ -702,7 +702,7 @@ syntax forUpdateStatementListNonEmpty =
   | forUpdateStatementListNonEmpty `, forUpdateStatement
 
 syntax forUpdateStatementList =
-  | `EMPTY
+  | _EMPTY
   | forUpdateStatementListNonEmpty
 
 syntax forCollectionExpression =
@@ -729,12 +729,12 @@ syntax switchCase =
   | switchLabel `:
 
 syntax switchCaseList =
-  | `EMPTY
+  | _EMPTY
   | switchCaseList switchCase
 
 dec $flatten_switchCaseList(switchCaseList) : switchCase*
 
-def $flatten_switchCaseList(`EMPTY) = eps
+def $flatten_switchCaseList(_EMPTY) = eps
 
 def $flatten_switchCaseList(switchCaseList switchCase)
   = $flatten_switchCaseList(switchCaseList) ++ [switchCase]
@@ -769,7 +769,7 @@ syntax constantDeclaration =
   | annotationList CONST type name initializer `;
 
 syntax initializerOpt =
-  | `EMPTY
+  | _EMPTY
   | initializer
 
 syntax variableDeclaration =
@@ -781,13 +781,13 @@ syntax blockElementStatement =
   | statement
 
 syntax blockElementStatementList =
-  | `EMPTY
+  | _EMPTY
   | blockElementStatementList blockElementStatement
 
 dec $flatten_blockElementStatementList(blockElementStatementList)
   : blockElementStatement*
 
-def $flatten_blockElementStatementList(`EMPTY) = eps
+def $flatten_blockElementStatementList(_EMPTY) = eps
 
 def $flatten_blockElementStatementList(blockElementStatementList
                                        blockElementStatement)
@@ -816,12 +816,12 @@ syntax objectDeclaration =
   | instantiation
 
 syntax objectDeclarationList =
-  | `EMPTY
+  | _EMPTY
   | objectDeclarationList objectDeclaration
 
 dec $flatten_objectDeclarationList(objectDeclarationList) : objectDeclaration*
 
-def $flatten_objectDeclarationList(`EMPTY) = eps
+def $flatten_objectDeclarationList(_EMPTY) = eps
 
 def $flatten_objectDeclarationList(objectDeclarationList objectDeclaration)
   = $flatten_objectDeclarationList(objectDeclarationList) ++ [objectDeclaration]
@@ -840,12 +840,12 @@ syntax typeField =
   | annotationList type name `;
 
 syntax typeFieldList =
-  | `EMPTY
+  | _EMPTY
   | typeFieldList typeField
 
 dec $flatten_typeFieldList(typeFieldList) : typeField*
 
-def $flatten_typeFieldList(`EMPTY) = eps
+def $flatten_typeFieldList(_EMPTY) = eps
 
 def $flatten_typeFieldList(typeFieldList typeField)
   = $flatten_typeFieldList(typeFieldList) ++ [typeField]
@@ -882,12 +882,12 @@ syntax methodPrototype =
   | annotationList ABSTRACT functionPrototype `;
 
 syntax methodPrototypeList =
-  | `EMPTY
+  | _EMPTY
   | methodPrototypeList methodPrototype
 
 dec $flatten_methodPrototypeList(methodPrototypeList) : methodPrototype*
 
-def $flatten_methodPrototypeList(`EMPTY) = eps
+def $flatten_methodPrototypeList(_EMPTY) = eps
 
 def $flatten_methodPrototypeList(methodPrototypeList methodPrototype)
   = $flatten_methodPrototypeList(methodPrototypeList) ++ [methodPrototype]
@@ -907,12 +907,12 @@ syntax selectCase =
   | keysetExpression `: name `;
 
 syntax selectCaseList =
-  | `EMPTY
+  | _EMPTY
   | selectCaseList selectCase
 
 dec $flatten_selectCaseList(selectCaseList) : selectCase*
 
-def $flatten_selectCaseList(`EMPTY) = eps
+def $flatten_selectCaseList(_EMPTY) = eps
 
 def $flatten_selectCaseList(selectCaseList selectCase)
   = $flatten_selectCaseList(selectCaseList) ++ [selectCase]
@@ -925,7 +925,7 @@ syntax stateExpression =
   | selectExpression
 
 syntax transitionStatement =
-  | `EMPTY
+  | _EMPTY
   | TRANSITION stateExpression
 
 syntax valueSetType =
@@ -955,12 +955,12 @@ syntax parserStatement =
   | conditionalStatement
 
 syntax parserStatementList =
-  | `EMPTY
+  | _EMPTY
   | parserStatementList parserStatement
 
 dec $flatten_parserStatementList(parserStatementList) : parserStatement*
 
-def $flatten_parserStatementList(`EMPTY) = eps
+def $flatten_parserStatementList(_EMPTY) = eps
 
 def $flatten_parserStatementList(parserStatementList parserStatement)
   = $flatten_parserStatementList(parserStatementList) ++ [parserStatement]
@@ -986,13 +986,13 @@ syntax parserLocalDeclaration =
   | valueSetDeclaration
 
 syntax parserLocalDeclarationList =
-  | `EMPTY
+  | _EMPTY
   | parserLocalDeclarationList parserLocalDeclaration
 
 dec $flatten_parserLocalDeclarationList(parserLocalDeclarationList)
   : parserLocalDeclaration*
 
-def $flatten_parserLocalDeclarationList(`EMPTY) = eps
+def $flatten_parserLocalDeclarationList(_EMPTY) = eps
 
 def $flatten_parserLocalDeclarationList(parserLocalDeclarationList
                                         parserLocalDeclaration)
@@ -1011,12 +1011,12 @@ syntax const =
   | CONST
 
 syntax constOpt =
-  | `EMPTY
+  | _EMPTY
   | const
 
 dec $flatten_constOpt(constOpt) : const?
 
-def $flatten_constOpt(`EMPTY) = eps
+def $flatten_constOpt(_EMPTY) = eps
 
 def $flatten_constOpt(const) = const
 
@@ -1024,12 +1024,12 @@ syntax tableKey =
   | expression `: name annotationList `;
 
 syntax tableKeyList =
-  | `EMPTY
+  | _EMPTY
   | tableKeyList tableKey
 
 dec $flatten_tableKeyList(tableKeyList) : tableKey*
 
-def $flatten_tableKeyList(`EMPTY) = eps
+def $flatten_tableKeyList(_EMPTY) = eps
 
 def $flatten_tableKeyList(tableKeyList tableKey)
   = $flatten_tableKeyList(tableKeyList) ++ [tableKey]
@@ -1042,12 +1042,12 @@ syntax tableAction =
   | annotationList tableActionReference `;
 
 syntax tableActionList =
-  | `EMPTY
+  | _EMPTY
   | tableActionList tableAction
 
 dec $flatten_tableActionList(tableActionList) : tableAction*
 
-def $flatten_tableActionList(`EMPTY) = eps
+def $flatten_tableActionList(_EMPTY) = eps
 
 def $flatten_tableActionList(tableActionList tableAction)
   = $flatten_tableActionList(tableActionList) ++ [tableAction]
@@ -1067,12 +1067,12 @@ syntax tableEntry =
   | constOpt keysetExpression `: tableActionReference annotationList `;
 
 syntax tableEntryList =
-  | `EMPTY
+  | _EMPTY
   | tableEntryList tableEntry
 
 dec $flatten_tableEntryList(tableEntryList) : tableEntry*
 
-def $flatten_tableEntryList(`EMPTY) = eps
+def $flatten_tableEntryList(_EMPTY) = eps
 
 def $flatten_tableEntryList(tableEntryList tableEntry)
   = $flatten_tableEntryList(tableEntryList) ++ [tableEntry]
@@ -1084,12 +1084,12 @@ syntax tableProperty =
   | annotationList constOpt tableCustomName initializer `;
 
 syntax tablePropertyList =
-  | `EMPTY
+  | _EMPTY
   | tablePropertyList tableProperty
 
 dec $flatten_tablePropertyList(tablePropertyList) : tableProperty*
 
-def $flatten_tablePropertyList(`EMPTY) = eps
+def $flatten_tablePropertyList(_EMPTY) = eps
 
 def $flatten_tablePropertyList(tablePropertyList tableProperty)
   = $flatten_tablePropertyList(tablePropertyList) ++ [tableProperty]
@@ -1110,13 +1110,13 @@ syntax controlLocalDeclaration =
   | tableDeclaration
 
 syntax controlLocalDeclarationList =
-  | `EMPTY
+  | _EMPTY
   | controlLocalDeclarationList controlLocalDeclaration
 
 dec $flatten_controlLocalDeclarationList(controlLocalDeclarationList)
   : controlLocalDeclaration*
 
-def $flatten_controlLocalDeclarationList(`EMPTY) = eps
+def $flatten_controlLocalDeclarationList(_EMPTY) = eps
 
 def $flatten_controlLocalDeclarationList(controlLocalDeclarationList
                                          controlLocalDeclaration)
@@ -1245,7 +1245,7 @@ syntax annotationToken =
   | `@
 
 syntax annotationBody =
-  | `EMPTY
+  | _EMPTY
   | annotationBody `(annotationBody)
   | annotationBody annotationToken
 
@@ -1263,17 +1263,17 @@ syntax annotationListNonEmpty =
   | annotationListNonEmpty annotation
 
 syntax annotationList =
-  | `EMPTY
+  | _EMPTY
   | annotationListNonEmpty
 
 syntax p4program =
-  | `EMPTY
+  | _EMPTY
   | p4program declaration
   | p4program `;
 
 dec $flatten_p4program(p4program) : declaration*
 
-def $flatten_p4program(`EMPTY) = eps
+def $flatten_p4program(_EMPTY) = eps
 
 def $flatten_p4program(p4program declaration)
   = $flatten_p4program(p4program) ++ [declaration]
@@ -1284,9 +1284,9 @@ syntax nameIR = text
 
 dec $name(name) : nameIR
 
-def $name(`ID t) = t
+def $name(_ID t) = t
 
-def $name(`TID t) = t
+def $name(_TID t) = t
 
 def $name(APPLY) = "apply"
 
@@ -1306,9 +1306,9 @@ def $name(LIST) = "list"
 
 dec $tableCustomName(tableCustomName) : nameIR
 
-def $tableCustomName(`ID t) = t
+def $tableCustomName(_ID t) = t
 
-def $tableCustomName(`TID t) = t
+def $tableCustomName(_TID t) = t
 
 def $tableCustomName(APPLY) = "apply"
 
@@ -1345,14 +1345,14 @@ dec $pid(parameter) : pid
 
 def $rid(name, parameterList) = $name(name) `($pids(parameterList))
 
-def $pids(`EMPTY) = eps
+def $pids(_EMPTY) = eps
 
 def $pids(parameter) = $pid(parameter)
 
 def $pids(nonEmptyParameterList `, parameter)
   = $pids(nonEmptyParameterList) ++ [$pid(parameter)]
 
-def $pid(_ _ _ name `EMPTY) = $name(name) `# false
+def $pid(_ _ _ name _EMPTY) = $name(name) `# false
 
 def $pid(_ _ _ name initializer) = $name(name) `# true
 
@@ -1360,7 +1360,7 @@ syntax cid = rid
 
 dec $cid(name, constructorParameterListOpt) : cid
 
-def $cid(name, `EMPTY) = $name(name) `(eps)
+def $cid(name, _EMPTY) = $name(name) `(eps)
 
 def $cid(name, `(parameterList)) = $name(name) `($pids(parameterList))
 
@@ -3334,13 +3334,13 @@ dec $prefixedNonTypeName(prefixedNonTypeName) : prefixedNameIR
 
 def $prefixedNonTypeName(nonTypeName) = `` $name(nonTypeName)
 
-def $prefixedNonTypeName(`ID `. nonTypeName) = `. $name(nonTypeName)
+def $prefixedNonTypeName(_ID `. nonTypeName) = `. $name(nonTypeName)
 
 dec $prefixedTypeName(prefixedTypeName) : prefixedNameIR
 
 def $prefixedTypeName(typeName) = `` $name(typeName)
 
-def $prefixedTypeName(`TID `. typeName) = `. $name(typeName)
+def $prefixedTypeName(_TID `. typeName) = `. $name(typeName)
 
 dec $flatten_prefixedNameIR(prefixedNameIR) : nameIR
 
@@ -4123,7 +4123,7 @@ var p : cursor
 syntax globalTypingLayer = {CDENV cdenv, TDENV tdenv, RDENV rdenv, FRAME frame}
 
 syntax blockKind =
-  | `EMPTY
+  | _EMPTY
   | EXTERN
   | PARSER
   | CONTROL
@@ -4149,7 +4149,7 @@ syntax blockTypingLayer =
   {ID id, KIND blockKind, TDENV tdenv, RDENV rdenv, FRAME frame}
 
 syntax localKind =
-  | `EMPTY
+  | _EMPTY
   | FUNCTION `-> typeIR
   | EXTERN_FUNCTION `-> typeIR
   | ACTION
@@ -4232,12 +4232,12 @@ def $empty_typingContext = TC
            FRAME $empty_frame}
   -- if blockTypingLayer
         = {ID "",
-           KIND `EMPTY,
+           KIND _EMPTY,
            TDENV $empty_tdenv,
            RDENV $empty_rdenv,
            FRAME $empty_frame}
   -- if localTypingLayer
-        = {ID "", KIND `EMPTY, TDENV $empty_tdenv, FRAMES ([$empty_frame])}
+        = {ID "", KIND _EMPTY, TDENV $empty_tdenv, FRAMES ([$empty_frame])}
   -- if TC
         = {GLOBAL globalTypingLayer,
            BLOCK blockTypingLayer,
@@ -4299,8 +4299,8 @@ dec $add_parameter(cursor, typingContext, parameterTypeIR) : typingContext
 
 dec $add_parameters(cursor, typingContext, parameterTypeIR*) : typingContext
 
-def $add_parameter(cursor, TC, `EMPTY typeIR id value?) = TC'
-  -- if varTypeIR = `EMPTY typeIR CTK value?
+def $add_parameter(cursor, TC, _EMPTY typeIR id value?) = TC'
+  -- if varTypeIR = _EMPTY typeIR CTK value?
   -- if TC' = $add_var(cursor, TC, id, varTypeIR)
 
 def $add_parameter(cursor, TC, direction typeIR id value?) = TC'
@@ -4763,7 +4763,7 @@ relation ConstructorTypeDef_wf: bound |- constructorTypeDefIR
   hint(input %0 %1)
 
 rule ParameterType_wf/default-empty-extern:
-  bound |- `EMPTY typeIR _ eps
+  bound |- _EMPTY typeIR _ eps
   -- Type_wf: bound |- typeIR
   -- if $is_extern_object_typeIR($canon(typeIR))
 
@@ -4773,7 +4773,7 @@ rule ParameterType_wf/default-none-not-extern:
   -- if ~$is_extern_object_typeIR($canon(typeIR))
 
 rule ParameterType_wf/default-some-extern:
-  bound |- `EMPTY typeIR _ value
+  bound |- _EMPTY typeIR _ value
   -- Type_wf: bound |- typeIR
   -- if $is_extern_object_typeIR($canon(typeIR))
 
@@ -4781,7 +4781,7 @@ rule ParameterType_wf/default-some-not-extern:
   bound |- direction typeIR _ value
   -- Type_wf: bound |- typeIR
   -- if ~$is_extern_object_typeIR($canon(typeIR))
-  -- if direction = IN \/ direction = `EMPTY
+  -- if direction = IN \/ direction = _EMPTY
 
 rule ParameterTypes_wf:
   bound |- parameterTypeIR*
@@ -5317,10 +5317,10 @@ def $nestable_function(direction, typeIR)
   = $nestable_function'(direction, $canon(typeIR))
 
 def $nestable_function'(direction, STRING) = false
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
 
 def $nestable_function'(direction, INT) = false
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
 
 def $nestable_function'(direction, objectTypeIR) = false
 
@@ -5343,14 +5343,14 @@ def $directionless_trailing(direction*)
 
 def $directionless_trailing'(_, eps) = true
 
-def $directionless_trailing'(true, `EMPTY :: direction_t*)
+def $directionless_trailing'(true, _EMPTY :: direction_t*)
   = $directionless_trailing'(true, direction_t*)
 
-def $directionless_trailing'(false, `EMPTY :: direction_t*) = false
+def $directionless_trailing'(false, _EMPTY :: direction_t*) = false
 
 def $directionless_trailing'(_, direction_h :: direction_t*)
   = $directionless_trailing'(false, direction_t*)
-  -- if direction_h =/= `EMPTY
+  -- if direction_h =/= _EMPTY
 
 dec $nestable_action(direction, typeIR) : bool
 
@@ -5360,7 +5360,7 @@ def $nestable_action(direction, typeIR)
   = $nestable_action'(direction, $canon(typeIR))
 
 def $nestable_action'(direction, STRING) = false
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
 
 def $nestable_action'(_, INT) = false
 
@@ -5384,10 +5384,10 @@ def $nestable_externfunction(direction, typeIR)
   = $nestable_externfunction'(direction, $canon(typeIR))
 
 def $nestable_externfunction'(direction, STRING) = false
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
 
 def $nestable_externfunction'(direction, INT) = false
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
 
 def $nestable_externfunction'(direction, PARSER `(_)) = false
 
@@ -5420,10 +5420,10 @@ def $nestable_externmethod(direction, typeIR)
   = $nestable_externmethod'(direction, $canon(typeIR))
 
 def $nestable_externmethod'(direction, STRING) = false
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
 
 def $nestable_externmethod'(direction, INT) = false
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
 
 def $nestable_externmethod'(direction, PARSER `(_)) = false
 
@@ -5451,10 +5451,10 @@ def $nestable_externabstractmethod(direction, typeIR)
   = $nestable_externabstractmethod'(direction, $canon(typeIR))
 
 def $nestable_externabstractmethod'(direction, STRING) = false
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
 
 def $nestable_externabstractmethod'(direction, INT) = false
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
 
 def $nestable_externabstractmethod'(direction, PARSER `(_)) = false
 
@@ -5482,10 +5482,10 @@ def $nestable_parserapplymethod(direction, typeIR)
   = $nestable_parserapplymethod'(direction, $canon(typeIR))
 
 def $nestable_parserapplymethod'(direction, STRING) = false
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
 
 def $nestable_parserapplymethod'(direction, INT) = false
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
 
 def $nestable_parserapplymethod'(direction, PARSER `(_)) = false
 
@@ -5512,10 +5512,10 @@ def $nestable_controlapplymethod(direction, typeIR)
   = $nestable_controlapplymethod'(direction, $canon(typeIR))
 
 def $nestable_controlapplymethod'(direction, STRING) = false
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
 
 def $nestable_controlapplymethod'(direction, INT) = false
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
 
 def $nestable_controlapplymethod'(direction, PARSER `(_)) = false
 
@@ -5578,7 +5578,7 @@ rule RoutineTypeDef_wf/poly:
   -- RoutineType_wf: bound_inner |- routineTypeIR
 
 rule ConstructorParameterType_wf:
-  bound |- `EMPTY typeIR _ _
+  bound |- _EMPTY typeIR _ _
   -- Type_wf: bound |- typeIR
 
 rule ConstructorParameterTypes_wf:
@@ -6071,7 +6071,7 @@ rule Type_ok/prefixedTypeName-poly:
   -- if polyTypeDefIR = $find_type(p, TC, prefixedNameIR)
 
 rule Type_ok/specializedType-mono:
-  p TC |- prefixedTypeName `<`EMPTY> : typeIR `# eps
+  p TC |- prefixedTypeName `<_EMPTY> : typeIR `# eps
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
   -- if typeIR = $find_type(p, TC, prefixedNameIR)
 
@@ -7971,7 +7971,7 @@ rule Lvalue_ok/parenthesized:
 ;; === 5.09-typing-parameter.spectec ===
 rule Parameter_ok/empty:
   p TC
-    |- annotationList direction type name `EMPTY
+    |- annotationList direction type name _EMPTY
     : (annotationList direction typeIR nameIR eps) `# tid_fresh*
   -- Type_ok: p TC |- type : typeIR `# tid_fresh*
   -- if bound = $union_set<tid>($bound(p, TC), `{tid_fresh*})
@@ -8082,12 +8082,12 @@ rule Stmt_ok/directApplicationStatement-prefixedTypeName:
     : TC_0 f directApplicationStatementIR
   -- Expr_ok:
        p TC_0
-         |- namedType `(`EMPTY)
+         |- namedType `(_EMPTY)
          : ((prefixedNameIR `<eps>) `(eps)) `# `(typeIR_object _)
   -- if $compat_direct_application(typeIR_object)
   -- if nameIR_object = "__direct_application"
-  -- if TC_1 = $add_var(p, TC_0, nameIR_object, `EMPTY typeIR_object CTK eps)
-  -- if lvalue = (`ID nameIR_object) `. (`ID "apply")
+  -- if TC_1 = $add_var(p, TC_0, nameIR_object, _EMPTY typeIR_object CTK eps)
+  -- if lvalue = (_ID nameIR_object) `. (_ID "apply")
   -- Stmt_ok: p TC_1 f |- lvalue `(argumentList) `; : _ _ callStatementIR
   -- if (((`` nameIR_object) `# `(typeIR_object CTK)) `. "apply")
         `<eps>
@@ -8304,7 +8304,7 @@ rule BlockElementStmt_ok/constantDeclaration:
   -- Decl_ok: LOCAL TC_0 |- constantDeclaration : TC_1 constantDeclarationIR
 
 rule BlockElementStmt_ok/variableDeclaration-empty:
-  TC_0 f |- annotationList type name `EMPTY `; : TC_1 f variableDeclarationIR
+  TC_0 f |- annotationList type name _EMPTY `; : TC_1 f variableDeclarationIR
   -- Type_ok: LOCAL TC_0 |- type : typeIR `# eps
   -- Type_wf: $bound(LOCAL, TC_0) |- typeIR
   -- if $is_assignable_typeIR(typeIR)
@@ -8369,7 +8369,7 @@ rule Decl_ok/constantDeclaration:
         = $coerce_unary(typedExpressionIR_value, typeIR)
   -- Eval_static: p TC_0 |- typedExpressionIR_value_cast ~> value
   -- if nameIR = $name(name)
-  -- if TC_1 = $add_var(p, TC_0, nameIR, `EMPTY typeIR LCTK value)
+  -- if TC_1 = $add_var(p, TC_0, nameIR, _EMPTY typeIR LCTK value)
   -- if constantDeclarationIR = annotationList CONST typeIR nameIR (`= value) `;
 
 rule Decl_ok/instantiation-prefixedTypeName-non-objectInitializer:
@@ -8388,7 +8388,7 @@ rule Decl_ok/instantiation-prefixedTypeName-non-objectInitializer:
          |- constructorTypeIR `<eps `# tid_impl*> `(argumentIR* `# id_default*)
          : typeIR_object `<typeArgumentIR_inferred*> `(argumentIR_cast*)
   -- if nameIR = $name(name)
-  -- if TC_1 = $add_var(p, TC_0, nameIR, `EMPTY typeIR_object CTK eps)
+  -- if TC_1 = $add_var(p, TC_0, nameIR, _EMPTY typeIR_object CTK eps)
   -- if instantiationIR
         = annotationList
           typeIR_object
@@ -8424,7 +8424,7 @@ rule Decl_ok/instantiation-specializedType-non-objectInitializer:
             `(argumentIR* `# id_default*)
          : typeIR_object `<typeArgumentIR_inferred*> `(argumentIR_cast*)
   -- if nameIR = $name(name)
-  -- if TC_1 = $add_var(p, TC_0, nameIR, `EMPTY typeIR_object CTK eps)
+  -- if TC_1 = $add_var(p, TC_0, nameIR, _EMPTY typeIR_object CTK eps)
   -- if instantiationIR
         = annotationList
           typeIR_object
@@ -8550,7 +8550,7 @@ rule Decl_ok/instantiation-prefixedTypeName-objectInitializer:
   -- if typeIR_object
         = ((EXTERN tid_extern rdenv_extern) `<tid_expl* `, tid_impl*>)
           `<typeIR_arg*>
-  -- if TC_1 = $add_var(LOCAL, TC_0, "this", `EMPTY typeIR_object CTK eps)
+  -- if TC_1 = $add_var(LOCAL, TC_0, "this", _EMPTY typeIR_object CTK eps)
   -- if objectDeclaration*
         = $flatten_objectDeclarationList(objectDeclarationList)
   -- Decls_object_ok:
@@ -8565,7 +8565,7 @@ rule Decl_ok/instantiation-prefixedTypeName-objectInitializer:
           `<typeIR_arg*>
   -- if $is_concrete_extern_object(typeIR_object_init)
   -- if nameIR = $name(name)
-  -- if TC_2 = $add_var(p, TC_0, nameIR, `EMPTY typeIR_object_init CTK eps)
+  -- if TC_2 = $add_var(p, TC_0, nameIR, _EMPTY typeIR_object_init CTK eps)
   -- if instantiationIR
         = annotationList
           typeIR_object_init
@@ -8605,7 +8605,7 @@ rule Decl_ok/instantiation-specializedType-objectInitializer:
   -- if typeIR_object
         = ((EXTERN tid_extern rdenv_extern) `<tid_expl* `, tid_impl*>)
           `<typeIR_arg*>
-  -- if TC_1 = $add_var(LOCAL, TC_0, "this", `EMPTY typeIR_object CTK eps)
+  -- if TC_1 = $add_var(LOCAL, TC_0, "this", _EMPTY typeIR_object CTK eps)
   -- if objectDeclaration*
         = $flatten_objectDeclarationList(objectDeclarationList)
   -- Decls_object_ok:
@@ -8620,7 +8620,7 @@ rule Decl_ok/instantiation-specializedType-objectInitializer:
           `<typeIR_arg*>
   -- if $is_concrete_extern_object(typeIR_object_init)
   -- if nameIR = $name(name)
-  -- if TC_2 = $add_var(p, TC_0, nameIR, `EMPTY typeIR_object_init CTK eps)
+  -- if TC_2 = $add_var(p, TC_0, nameIR, _EMPTY typeIR_object_init CTK eps)
   -- if instantiationIR
         = annotationList
           typeIR_object_init
@@ -8688,7 +8688,7 @@ rule Decl_ok/errorDeclaration:
         = $add_vars(GLOBAL,
                     TC_0,
                     nameIR_error*,
-                    (`EMPTY ERROR LCTK value_error)*)
+                    (_EMPTY ERROR LCTK value_error)*)
 
 rule Decl_ok/matchKindDeclaration:
   GLOBAL TC_0 |- MATCH_KIND `{nameList _} : TC_1 (MATCH_KIND `{nameIR*})
@@ -8700,7 +8700,7 @@ rule Decl_ok/matchKindDeclaration:
         = $add_vars(GLOBAL,
                     TC_0,
                     nameIR*,
-                    (`EMPTY MATCH_KIND LCTK value_match_kind)*)
+                    (_EMPTY MATCH_KIND LCTK value_match_kind)*)
 
 rule Decl_ok/externDeclaration-externFunctionDeclaration:
   GLOBAL TC_0
@@ -8795,7 +8795,7 @@ rule Decl_ok/parserDeclaration:
     |- annotationList
        PARSER
        name
-       `EMPTY
+       _EMPTY
        `(parameterList)
        constructorParameterListOpt
        `{parserLocalDeclarationList parserStateList}
@@ -8844,7 +8844,7 @@ rule Decl_ok/controlDeclaration:
     |- annotationList
        CONTROL
        name
-       `EMPTY
+       _EMPTY
        `(parameterList)
        constructorParameterListOpt
        `{controlLocalDeclarationList APPLY controlBody}
@@ -8903,7 +8903,7 @@ rule Decl_ok/typeDeclaration-derivedTypeDeclaration-enumTypeDeclaration:
         = $add_vars(GLOBAL,
                     TC_1,
                     id_field*,
-                    (`EMPTY typeIR_enum LCTK value_field)*)
+                    (_EMPTY typeIR_enum LCTK value_field)*)
   -- if enumTypeDeclarationIR = annotationList ENUM nameIR `{nameIR_field*}
 
 relation Enum_serializable_field_ok:
@@ -8923,7 +8923,7 @@ rule Enum_serializable_field_ok:
   -- if nameIR = $name(name)
   -- if typeIR_enum = ENUM nameIR_enum `# typeIR `{eps}
   -- if value_enum = nameIR_enum `. nameIR `# value
-  -- if TC_1 = $add_var(BLOCK, TC_0, nameIR, `EMPTY typeIR_enum LCTK value_enum)
+  -- if TC_1 = $add_var(BLOCK, TC_0, nameIR, _EMPTY typeIR_enum LCTK value_enum)
 
 relation Enum_serializable_fields_ok:
   typingContext nameIR typeIR
@@ -8969,7 +8969,7 @@ rule Decl_ok/typeDeclaration-derivedTypeDeclaration-enumTypeDeclaration-serializ
         = $add_vars(GLOBAL,
                     TC_0,
                     id_field*,
-                    (`EMPTY typeIR_enum LCTK value_field)*)
+                    (_EMPTY typeIR_enum LCTK value_field)*)
   -- TypeDef_wf: $bound(GLOBAL, TC_0) |- typeIR_enum
   -- if TC_3 = $add_type(GLOBAL, TC_2, nameIR, typeIR_enum)
   -- if enumTypeDeclarationIR
@@ -9306,7 +9306,7 @@ rule ExternConstructors_ok/cons:
        TC_1 tid_extern |- methodPrototype_t* : TC_2 methodPrototypeIR_t*
 ;; === 5.13.1-typing-parser-statement.spectec ===
 rule ParserTransition_ok/empty:
-  TC_0 nameIR_state* |- `EMPTY : TRANSITION ("reject" `;)
+  TC_0 nameIR_state* |- _EMPTY : TRANSITION ("reject" `;)
 
 rule ParserTransition_ok/name:
   TC_0 nameIR_state* |- TRANSITION (name `;) : transitionStatementIR
@@ -9544,7 +9544,7 @@ rule ParserStmt_ok/constantDeclaration:
   -- Decl_ok: LOCAL TC_0 |- constantDeclaration : TC_1 constantDeclarationIR
 
 rule ParserStmt_ok/variableDeclaration-empty:
-  TC_0 |- annotationList type name `EMPTY `; : TC_1 variableDeclarationIR
+  TC_0 |- annotationList type name _EMPTY `; : TC_1 variableDeclarationIR
   -- Type_ok: LOCAL TC_0 |- type : typeIR `# eps
   -- Type_wf: $bound(LOCAL, TC_0) |- typeIR
   -- if $is_assignable_typeIR(typeIR)
@@ -9648,7 +9648,7 @@ rule ParserLocalDecl_ok/instantiation:
   -- Decl_ok: BLOCK TC_0 |- instantiation : TC_1 instantiationIR
 
 rule ParserLocalDecl_ok/variableDeclaration-empty:
-  TC_0 |- annotationList type name `EMPTY `; : TC_1 variableDeclarationIR
+  TC_0 |- annotationList type name _EMPTY `; : TC_1 variableDeclarationIR
   -- Type_ok: BLOCK TC_0 |- type : typeIR `# eps
   -- Type_wf: $bound(BLOCK, TC_0) |- typeIR
   -- if $is_assignable_typeIR(typeIR)
@@ -9681,7 +9681,7 @@ rule ParserLocalDecl_ok/valueSetDeclaration:
   -- if _ `# `(_ ctk) = typedExpressionIR
   -- if ctk =/= DYN
   -- if nameIR = $name(name)
-  -- if TC_1 = $add_var(BLOCK, TC_0, nameIR, `EMPTY (SET `<typeIR>) CTK eps)
+  -- if TC_1 = $add_var(BLOCK, TC_0, nameIR, _EMPTY (SET `<typeIR>) CTK eps)
   -- if valueSetDeclarationIR
         = annotationList VALUE_SET `<typeIR> `(typedExpressionIR) nameIR `;
 
@@ -9782,14 +9782,14 @@ def $split_dataplane_parameters(eps) = (eps, eps)
 
 def $split_dataplane_parameters(parameterTypeIR_h :: parameterTypeIR_t*)
   = (parameterTypeIR_data*, parameterTypeIR_h :: parameterTypeIR_control*)
-  -- if `EMPTY _ _ _ = parameterTypeIR_h
+  -- if _EMPTY _ _ _ = parameterTypeIR_h
   -- if (parameterTypeIR_data*, parameterTypeIR_control*)
         = $split_dataplane_parameters(parameterTypeIR_t*)
 
 def $split_dataplane_parameters(parameterTypeIR_h :: parameterTypeIR_t*)
   = (parameterTypeIR_h :: parameterTypeIR_data*, parameterTypeIR_control*)
   -- if direction _ _ _ = parameterTypeIR_h
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
   -- if (parameterTypeIR_data*, parameterTypeIR_control*)
         = $split_dataplane_parameters(parameterTypeIR_t*)
 
@@ -10419,7 +10419,7 @@ rule TableType_ok:
   -- (if (id_enum_field = $flatten_prefixedNameIR(prefixedNameIR_action)))*
   -- if typeIR_table_enum = TABLE_ENUM tid_enum `{id_enum_field*}
   -- (if (value_enum_field = TABLE_ENUM tid_enum `. id_enum_field))*
-  -- (if (varTypeIR_enum_field = `EMPTY typeIR_table_enum LCTK value_enum_field))*
+  -- (if (varTypeIR_enum_field = _EMPTY typeIR_table_enum LCTK value_enum_field))*
   -- if TC_1
         = $add_vars(BLOCK,
                     TC_0,
@@ -10443,7 +10443,7 @@ rule ControlLocalDecl_ok/instantiation:
   -- Decl_ok: BLOCK TC_0 |- instantiation : TC_1 instantiationIR
 
 rule ControlLocalDecl_ok/variableDeclaration-empty:
-  TC_0 |- annotationList type name `EMPTY `; : TC_1 variableDeclarationIR
+  TC_0 |- annotationList type name _EMPTY `; : TC_1 variableDeclarationIR
   -- Type_ok: BLOCK TC_0 |- type : typeIR `# eps
   -- Type_wf: $bound(BLOCK, TC_0) |- typeIR
   -- if $is_assignable_typeIR(typeIR)
@@ -10479,7 +10479,7 @@ rule ControlLocalDecl_ok/tableDeclaration:
   -- Table_ok: TC_1 |- tableProperty* : TBLC tablePropertyIR*
   -- if nameIR = $name(name)
   -- TableType_ok: TC_1 TBLC |- name : TC_2 typeIR_table
-  -- if TC_3 = $add_var(BLOCK, TC_2, nameIR, `EMPTY typeIR_table DYN eps)
+  -- if TC_3 = $add_var(BLOCK, TC_2, nameIR, _EMPTY typeIR_table DYN eps)
   -- if tableDeclarationIR
         = annotationList TABLE typeIR_table nameIR `{tablePropertyIR*}
 
@@ -10585,14 +10585,14 @@ rule Call_convention_expr_ok/out-inout:
 
 rule Call_convention_expr_ok/empty-action:
   p TC ACTION
-    |- (`EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
+    |- (_EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
     : typedExpressionIR_arg_cast
   -- if typedExpressionIR_arg_cast
         = $coerce_unary(typedExpressionIR_arg, typeIR_param)
 
 rule Call_convention_expr_ok/empty-not-action:
   p TC NOACTION
-    |- (`EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
+    |- (_EMPTY typeIR_param _ _) `@ typedExpressionIR_arg
     : typedExpressionIR_arg
   -- if _ `# `(typeIR_arg ctk_arg) = typedExpressionIR_arg
   -- Type_alpha: typeIR_param ~~ typeIR_arg
@@ -11152,7 +11152,7 @@ rule RoutineType_ok/typedExpressionIR-nameIR-builtin-method-stack-push-pop-front
   -- if nameIR <- ["push_front", "pop_front"]
   -- if _ `# `(typeIR_base _) = typedExpressionIR_base
   -- if typeIR `[_] = $canon(typeIR_base)
-  -- if parameterTypeIR = `EMPTY INT "count" eps
+  -- if parameterTypeIR = _EMPTY INT "count" eps
   -- if methodTypeIR = BUILTIN_METHOD `(parameterTypeIR) `-> INT
 
 rule RoutineType_ok/typedExpressionIR-nameIR-builtin-method-header-isValid:
@@ -12169,7 +12169,7 @@ rule Constructor_inst/parser:
        Ci_callee_3 sto_1
          |- parserLocalDeclarationIR*
          ==> Ci_local sto_2 parserLocalDeclarationIR_inst*
-  -- if stateDyn_empty = `EMPTY `{eps}
+  -- if stateDyn_empty = _EMPTY `{eps}
   -- if $add_state_inst(BLOCK, Ci_local, "accept", stateDyn_empty) = Ci_local_1
   -- if $add_state_inst(BLOCK, Ci_local_1, "reject", stateDyn_empty)
         = Ci_local_2
@@ -12650,10 +12650,10 @@ rule Stmt_inst/directApplicationStatementIR:
   -- if $concat_text([tid, "_", tid_fresh]) = nameIR
   -- if Ci.PATH ++ nameIR = oid
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
-  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
+  -- if _EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
   -- if ((`` tid) `# `(typeIR CTK)) `. "apply" = routineTargetIR
   -- if routineTargetIR `<eps> `(argumentListIR) `; = callStatementIR
-  -- if `EMPTY `{[constantDeclarationIR, callStatementIR]} = blockStatementIR
+  -- if _EMPTY `{[constantDeclarationIR, callStatementIR]} = blockStatementIR
 
 rule Stmt_inst/returnStatementIR:
   p Ci sto |- returnStatementIR ==> Ci sto returnStatementIR
@@ -12828,7 +12828,7 @@ rule Decl_inst/instantiationIR-extern:
   -- if Ci_0.PATH ++ nameIR = oid
   -- if $add_sto(sto_2, oid, objDyn_1) = sto_3
   -- if $add_value_inst(p, Ci_0, nameIR, `! oid) = Ci_1
-  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
+  -- if _EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
 
 dec $is_extern_object(objDyn) : bool
 
@@ -12858,7 +12858,7 @@ rule Decl_inst/instantiationIR-non-extern:
   -- if Ci_0.PATH ++ nameIR = oid
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
   -- if $add_value_inst(p, Ci_0, nameIR, `! oid) = Ci_1
-  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
+  -- if _EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
 
 dec $rid_IR(nameIR, parameterListIR) : rid
 
@@ -13379,10 +13379,10 @@ rule ParserStmt_inst/directApplicationStatementIR:
   -- if Ci.PATH ++ nameIR = oid
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
   -- if TID tid = typeIR
-  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
+  -- if _EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
   -- if ((`` tid) `# `(typeIR CTK)) `. "apply" = routineTargetIR
   -- if routineTargetIR `<eps> `(argumentListIR) `; = callStatementIR
-  -- if `EMPTY `{[constantDeclarationIR, callStatementIR]}
+  -- if _EMPTY `{[constantDeclarationIR, callStatementIR]}
         = parserBlockStatementIR
 
 rule ParserStmt_inst/parserBlockStatementIR:
@@ -13579,7 +13579,7 @@ rule ControlLocalDecl_inst/tableDeclarationIR:
   -- if Ci_0.PATH ++ nameIR = oid
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
   -- if $add_value_inst(BLOCK, Ci_0, nameIR, `! oid) = Ci_1
-  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
+  -- if _EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
 
 rule ControlLocalDecls_inst/nil:
   Ci sto |- eps ==> Ci sto eps

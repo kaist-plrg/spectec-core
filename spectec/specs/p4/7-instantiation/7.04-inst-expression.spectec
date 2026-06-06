@@ -17,7 +17,7 @@
 rule Expr_inst/booleanLiteral:
   p IC STO |- booleanLiteral `# _ : STO boolValue
   -- if boolValue
-      = $ite<boolValue>(booleanLiteral = TRUE, `B true, `B false)
+      = $ite<boolValue>(booleanLiteral = TRUE, _B true, _B false)
 
 rule Expr_inst/integerLiteral:
   p IC STO |- integerLiteral `# _ : STO integerLiteral
@@ -59,24 +59,24 @@ rule Expr_inst/non-short-circuit:
 
 rule Expr_inst/land-false:
   p IC STO_0 |- (typedExpressionIR_l `&& typedExpressionIR_r) `# _
-            : STO_1 (`B false)
-  -- Expr_inst: p IC STO_0 |- typedExpressionIR_l : STO_1 (`B false)
+            : STO_1 (_B false)
+  -- Expr_inst: p IC STO_0 |- typedExpressionIR_l : STO_1 (_B false)
 
 rule Expr_inst/land-true:
   p IC STO_0 |- (typedExpressionIR_l `&& typedExpressionIR_r) `# _
             : STO_2 value_r
-  -- Expr_inst: p IC STO_0 |- typedExpressionIR_l : STO_1 (`B true)
+  -- Expr_inst: p IC STO_0 |- typedExpressionIR_l : STO_1 (_B true)
   -- Expr_inst: p IC STO_1 |- typedExpressionIR_r : STO_2 value_r
 
 rule Expr_inst/lor-true:
   p IC STO_0 |- (typedExpressionIR_l `|| typedExpressionIR_r) `# _
-            : STO_1 (`B true)
-  -- Expr_inst: p IC STO_0 |- typedExpressionIR_l : STO_1 (`B true)
+            : STO_1 (_B true)
+  -- Expr_inst: p IC STO_0 |- typedExpressionIR_l : STO_1 (_B true)
 
 rule Expr_inst/lor-false:
   p IC STO_0 |- (typedExpressionIR_l `|| typedExpressionIR_r) `# _
             : STO_2 value_r
-  -- Expr_inst: p IC STO_0 |- typedExpressionIR_l : STO_1 (`B false)
+  -- Expr_inst: p IC STO_0 |- typedExpressionIR_l : STO_1 (_B false)
   -- Expr_inst: p IC STO_1 |- typedExpressionIR_r : STO_2 value_r
 
 
@@ -89,14 +89,14 @@ rule Expr_inst/true:
   p IC STO_0 |- (typedExpressionIR_cond `? typedExpressionIR_true
                                         `: typedExpressionIR_false) `# _
             : STO_2 value_true
-  -- Expr_inst: p IC STO_0 |- typedExpressionIR_cond : STO_1 (`B true)
+  -- Expr_inst: p IC STO_0 |- typedExpressionIR_cond : STO_1 (_B true)
   -- Expr_inst: p IC STO_1 |- typedExpressionIR_true : STO_2 value_true
 
 rule Expr_inst/false:
   p IC STO_0 |- (typedExpressionIR_cond `? typedExpressionIR_true
                                         `: typedExpressionIR_false) `# _
             : STO_2 value_false
-  -- Expr_inst: p IC STO_0 |- typedExpressionIR_cond : STO_1 (`B false)
+  -- Expr_inst: p IC STO_0 |- typedExpressionIR_cond : STO_1 (_B false)
   -- Expr_inst: p IC STO_1 |- typedExpressionIR_false : STO_2 value_false
 
 

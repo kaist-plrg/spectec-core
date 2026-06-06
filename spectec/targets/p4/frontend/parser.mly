@@ -220,7 +220,7 @@ int:
 (* Misc *)
 trailingCommaOpt:
 	| (* empty *)
-    { [ atom "`EMPTY" ] |> case_v ~var:"trailingCommaOpt" }
+    { [ atom "_EMPTY" ] |> case_v ~var:"trailingCommaOpt" }
 	| COMMA
     { [ atom "," ] |> case_v ~var:"trailingCommaOpt" }
 ;
@@ -243,12 +243,12 @@ stringLiteral:
 (* Names *)
 identifier:
 	| text = NAME IDENTIFIER
-    { [ atom "`ID"; arg text ] |> case_v ~var:"identifier" }
+    { [ atom "_ID"; arg text ] |> case_v ~var:"identifier" }
 ;
 
 typeIdentifier:
 	| text = NAME TYPENAME
-    { [ atom "`TID"; arg text ] |> case_v ~var:"typeIdentifier" }
+    { [ atom "_TID"; arg text ] |> case_v ~var:"typeIdentifier" }
 ;
 
 (* >> Non-type names *)
@@ -266,7 +266,7 @@ nonTypeName:
 prefixedNonTypeName:
 	| n = nonTypeName { n }
 	| DOT go_toplevel n = nonTypeName go_local
-    { [ atom "`ID"; atom "`."; arg n ] |> case_v ~var:"prefixedNonTypeName" }
+    { [ atom "_ID"; atom "`."; arg n ] |> case_v ~var:"prefixedNonTypeName" }
 ;
 
 (* >> Type names *)
@@ -277,7 +277,7 @@ typeName:
 prefixedTypeName:
 	| n = typeName { n }
 	| DOT go_toplevel tid = typeName go_local
-		{ [ atom "`TID"; atom "`."; arg tid ] |> case_v ~var:"prefixedType" }
+		{ [ atom "_TID"; atom "`."; arg tid ] |> case_v ~var:"prefixedType" }
 ;
 
 (* >> Table custom property names *)
@@ -312,7 +312,7 @@ member:
 
 (* Directions *)
 direction:
-	| (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"direction" }
+	| (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"direction" }
 	| IN { [ atom "IN" ] |> case_v ~var:"direction" }
 	| OUT { [ atom "OUT" ] |> case_v ~var:"direction" }
 	| INOUT { [ atom "INOUT" ] |> case_v ~var:"direction" }
@@ -391,8 +391,8 @@ typeOrVoid:
   (* From Petr4: HACK for generic return type *)
 	| id = identifier
     { match flatten_case_v id with
-      | "identifier", ["`ID"], [ value_text ]  ->
-        [ atom "`TID"; arg value_text ] |> case_v ~var:"typeIdentifier"
+      | "identifier", ["_ID"], [ value_text ]  ->
+        [ atom "_TID"; arg value_text ] |> case_v ~var:"typeIdentifier"
       | _ -> failwith "@typeOrVoid: expected identifier" }
 ;
 
@@ -407,7 +407,7 @@ typeParameterList:
 ;
 
 typeParameterListOpt:
-	| (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"typeParameterListOpt" }
+	| (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"typeParameterListOpt" }
 	| l_angle tps = typeParameterList r_angle
     { declare_types_of_il tps;
       [ atom "<"; arg tps; atom ">" ] |> case_v ~var:"typeParameterListOpt" }
@@ -427,13 +427,13 @@ nonEmptyParameterList:
 ;
 
 parameterList:
-	| (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"parameterList" }
+	| (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"parameterList" }
 	| ps = nonEmptyParameterList { ps }
 ;
 
 (* Constructor parameters *)
 constructorParameterListOpt:
-	| (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"constructorParameterListOpt" }
+	| (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"constructorParameterListOpt" }
 	| L_PAREN ps = parameterList R_PAREN
     { [ atom "("; arg ps; atom ")" ] |> case_v ~var:"constructorParameterListOpt" }
 ;
@@ -646,7 +646,7 @@ expression:
 ;
 
 expressionList:
-	| (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"expressionList" }
+	| (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"expressionList" }
 	| e = expression { e }
 	| el = expressionList COMMA e = expression
 		{ [ arg el; atom ","; arg e ] |> case_v ~var:"expressionList" }
@@ -767,7 +767,7 @@ typeArgument:
 ;
 
 typeArgumentList:
-	| (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"typeArgumentList" }
+	| (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"typeArgumentList" }
 	| targ = typeArgument { targ }
 	| targs = typeArgumentList COMMA targ = typeArgument
     { [ arg targs; atom ","; arg targ ] |> case_v ~var:"typeArgumentList" }
@@ -791,7 +791,7 @@ argumentListNonEmpty:
 ;
 
 argumentList:
-	| (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"argumentList" }
+	| (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"argumentList" }
 	| args = argumentListNonEmpty { args }
 ;
 
@@ -905,7 +905,7 @@ forInitStatementListNonEmpty:
 ;
 
 forInitStatementList:
-	| (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"forInitStatementList" }
+	| (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"forInitStatementList" }
 	| sl = forInitStatementListNonEmpty { sl }
 ;
 
@@ -920,7 +920,7 @@ forUpdateStatementListNonEmpty:
 ;
 
 forUpdateStatementList:
-	| (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"forUpdateStatementList" }
+	| (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"forUpdateStatementList" }
 	| sl = forUpdateStatementListNonEmpty { sl }
 ;
 
@@ -961,7 +961,7 @@ switchCase:
 
 switchCaseList:
   | (* empty *)
-    { [ atom "`EMPTY" ] |> case_v ~var:"switchCaseList" }
+    { [ atom "_EMPTY" ] |> case_v ~var:"switchCaseList" }
   | cs = switchCaseList c = switchCase
     { [ arg cs; arg c ] |> case_v ~var:"switchCaseList" }
 ;
@@ -1015,7 +1015,7 @@ constantDeclaration:
 
 initializerOpt:
 	| (* empty *)
-		{ [ atom "`EMPTY" ] |> case_v ~var:"initializerOpt" }
+		{ [ atom "_EMPTY" ] |> case_v ~var:"initializerOpt" }
 	| i = initialValue { i }
 ;
 
@@ -1034,7 +1034,7 @@ blockElementStatement:
 
 blockElementStatementList:
   | (* empty *)
-    { [ atom "`EMPTY" ] |> case_v ~var:"blockElementStatementList" }
+    { [ atom "_EMPTY" ] |> case_v ~var:"blockElementStatementList" }
   | sl = blockElementStatementList s = blockElementStatement
     { [ arg sl; arg s ] |> case_v ~var:"blockElementStatementList" }
 ;
@@ -1082,7 +1082,7 @@ objectDeclaration:
 ;
 
 objectDeclarationList:
-	| (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"objectDeclarationList" }
+	| (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"objectDeclarationList" }
 	| ds = objectDeclarationList d = objectDeclaration
     { [ arg ds; arg d ] |> case_v ~var:"objectDeclarationList" }
 ;
@@ -1121,7 +1121,7 @@ typeField:
 ;
 
 typeFieldList:
-  | (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"typeFieldList" }
+  | (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"typeFieldList" }
   | fl = typeFieldList f = typeField
     { [ arg fl; arg f ] |> case_v ~var:"typeFieldList" }
 ;
@@ -1190,7 +1190,7 @@ methodPrototype:
 ;
 
 methodPrototypeList:
-  | (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"methodPrototypeList" }
+  | (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"methodPrototypeList" }
   | ps = methodPrototypeList p = methodPrototype
     { [ arg ps; arg p ] |> case_v ~var:"methodPrototypeList" }
 ;
@@ -1220,7 +1220,7 @@ selectCase:
 ;
 
 selectCaseList:
-  | (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"selectCaseList" }
+  | (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"selectCaseList" }
   | cl = selectCaseList c = selectCase
     { [ arg cl; arg c ] |> case_v ~var:"selectCaseList" }
 ;
@@ -1240,7 +1240,7 @@ stateExpression:
 ;
 
 transitionStatement:
-  | (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"transitionStatement" }
+  | (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"transitionStatement" }
   | TRANSITION e = stateExpression
     { [ atom "TRANSITION"; arg e ] |> case_v ~var:"transitionStatement" }
 ;
@@ -1287,7 +1287,7 @@ parserStatement:
 ;
 
 parserStatementList:
-  | (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"parserStatementList" }
+  | (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"parserStatementList" }
   | sl = parserStatementList s = parserStatement
     { [ arg sl; arg s ] |> case_v ~var:"parserStatementList" }
 ;
@@ -1313,7 +1313,7 @@ parserLocalDeclaration:
 ;
 
 parserLocalDeclarationList:
-  | (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"parserLocalDeclarationList" }
+  | (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"parserLocalDeclarationList" }
   | dl = parserLocalDeclarationList d = parserLocalDeclaration
     { [ arg dl; arg d ] |> case_v ~var:"parserLocalDeclarationList" }
 ;
@@ -1329,7 +1329,7 @@ parserDeclaration:
 (* >> Control statements and declarations *)
 (* >>>> Table declarations *)
 constOpt:
-  | (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"constOpt" }
+  | (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"constOpt" }
   | CONST { [ atom "CONST" ] |> case_v ~var:"constOpt" }
 ;
 
@@ -1340,7 +1340,7 @@ tableKey:
 ;
 
 tableKeyList:
-  | (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"tableKeyList" }
+  | (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"tableKeyList" }
   | kl = tableKeyList k = tableKey
     { [ arg kl; arg k ] |> case_v ~var:"tableKeyList" }
 ;
@@ -1359,7 +1359,7 @@ tableAction:
 ;
 
 tableActionList:
-  | (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"tableActionList" }
+  | (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"tableActionList" }
   | acl = tableActionList ac = tableAction
     { [ arg acl; arg ac ] |> case_v ~var:"tableActionList" }
 ;
@@ -1380,7 +1380,7 @@ tableEntry:
 ;
 
 tableEntryList:
-  | (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"tableEntryList" }
+  | (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"tableEntryList" }
   | el = tableEntryList e = tableEntry
     { [ arg el; arg e ] |> case_v ~var:"tableEntryList" }
 ;
@@ -1398,7 +1398,7 @@ tableProperty:
 ;
 
 tablePropertyList:
-  | (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"tablePropertyList" }
+  | (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"tablePropertyList" }
   | pl = tablePropertyList p = tableProperty
     { [ arg pl; arg p ] |> case_v ~var:"tablePropertyList" }
 ;
@@ -1432,7 +1432,7 @@ controlLocalDeclaration:
 ;
 
 controlLocalDeclarationList:
-  | (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"controlLocalDeclarationList" }
+  | (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"controlLocalDeclarationList" }
   | dl = controlLocalDeclarationList d = controlLocalDeclaration
     { [ arg dl; arg d ] |> case_v ~var:"controlLocalDeclarationList" }
 ;
@@ -1672,7 +1672,7 @@ annotationToken:
 ;
 
 annotationBody:
-	| (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"annotationBody" }
+	| (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"annotationBody" }
 	| ab = annotationBody L_PAREN ab_in = annotationBody R_PAREN
     { [ arg ab; atom "("; arg ab_in; atom ")" ] |> case_v ~var:"annotationBody" }
 	| ab = annotationBody at = annotationToken
@@ -1703,13 +1703,13 @@ annotationListNonEmpty:
 ;
 
 %inline annotationList:
-	| (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"annotationList" }
+	| (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"annotationList" }
 	| al = annotationListNonEmpty { al }
 ;
 
 (******** P4 program ********)
 declarationList:
-  | (* empty *) { [ atom "`EMPTY" ] |> case_v ~var:"p4program" }
+  | (* empty *) { [ atom "_EMPTY" ] |> case_v ~var:"p4program" }
   | ds = declarationList d = declaration
     { [ arg ds; arg d ] |> case_v ~var:"p4program" }
   | ds = declarationList SEMICOLON

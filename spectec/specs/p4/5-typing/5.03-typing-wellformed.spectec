@@ -411,7 +411,7 @@ rule ParameterType_wf/non-default:
   -- if ((typeIR_unroll = INT)
         \/ (typeIR_unroll <: stringTypeIR)
         \/ (typeIR_unroll <: objectTypeIR))
-        => direction = `EMPTY
+        => direction = _EMPTY
 
 rule ParameterType_wf/default:
   B |- annotationList direction typeIR _ parameterInitializerIR
@@ -421,8 +421,8 @@ rule ParameterType_wf/default:
   -- if ((typeIR_unroll = INT)
         \/ (typeIR_unroll <: stringTypeIR)
         \/ (typeIR_unroll <: objectTypeIR))
-        => direction = `EMPTY
-  -- if direction = IN \/ direction = `EMPTY
+        => direction = _EMPTY
+  -- if direction = IN \/ direction = _EMPTY
   -- if ~$optional_annotation_of_parameterIR'(annotationList)
 
 
@@ -453,12 +453,12 @@ def $directionless_trailing(direction*)
   = $directionless_trailing'(true, $rev_<direction>(direction*))
 
 def $directionless_trailing'(_, eps) = true
-def $directionless_trailing'(true, `EMPTY :: direction_t*)
+def $directionless_trailing'(true, _EMPTY :: direction_t*)
   = $directionless_trailing'(true, direction_t*)
-def $directionless_trailing'(false, `EMPTY :: direction_t*) = false
+def $directionless_trailing'(false, _EMPTY :: direction_t*) = false
 def $directionless_trailing'(_, direction_h :: direction_t*)
   = $directionless_trailing'(false, direction_t*)
-  -- if direction_h =/= `EMPTY
+  -- if direction_h =/= _EMPTY
 
 dec $nestable_action(typeIR) : bool
   hint(prose_true %0 "can be used in an action type")
@@ -612,7 +612,7 @@ rule CallableTypeDef_wf:
 
 rule ConstructorParameterType_wf:
   B |- constructorParameterIR
-  -- if _ `EMPTY _ _ _ = constructorParameterIR
+  -- if _ _EMPTY _ _ _ = constructorParameterIR
   -- ParameterType_wf: B |- constructorParameterIR
 
 ;;

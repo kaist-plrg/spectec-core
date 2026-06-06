@@ -10,8 +10,8 @@ dec $name_annotation(annotationList) : nameIR*
 dec $name_annotation_opt(annotation) : nameIR?
 dec $name_annotation_default(annotationList, nameIR) : nameIR
 
-def $name_annotationToken(`ID text) = text
-def $name_annotationToken(`TID text) = text
+def $name_annotationToken(_ID text) = text
+def $name_annotationToken(_TID text) = text
 def $name_annotationToken(`" text `") = "\"" ++ text ++ "\""
 def $name_annotationToken(D i) = $int_to_text(i)
 def $name_annotationToken(n W i) = $int_to_text(n) ++ "w" ++ $int_to_text(i)
@@ -112,7 +112,7 @@ def $name_annotation(annotationList)
 def $name_annotation_opt(`@ name `( annotationBody ))
   = $strip_prefix($strip_suffix(nameIR, "\""), "\"")
   -- if "name" = $name(name)
-  -- if `EMPTY annotationToken = annotationBody
+  -- if _EMPTY annotationToken = annotationBody
   -- if nameIR = $name_annotationToken(annotationToken)
 def $name_annotation_opt(annotation) = eps
   -- otherwise
@@ -125,7 +125,7 @@ def $name_annotation_default(annotationList, nameIR) = nameIR
 ;;; Finding name annotation
 
 dec $find_name_annotation_opt(annotationList) : annotation?
-def $find_name_annotation_opt(`EMPTY) = eps
+def $find_name_annotation_opt(_EMPTY) = eps
 def $find_name_annotation_opt(annotation) = annotation
   -- if `@ name `( annotationBody ) = annotation
   -- if "name" = $name(name)
@@ -146,6 +146,6 @@ def $find_name_annotation_opt(_) = eps
 dec $add_annotationList(annotationList, annotation?) : annotationList
 
 def $add_annotationList(annotationList, eps) = annotationList
-def $add_annotationList(`EMPTY, annotation) = annotation
+def $add_annotationList(_EMPTY, annotation) = annotation
 def $add_annotationList(annotationListNonEmpty, annotation)
   = annotationListNonEmpty annotation

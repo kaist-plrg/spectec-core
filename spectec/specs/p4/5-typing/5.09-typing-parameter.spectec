@@ -7,12 +7,12 @@
 
 ;;; syntax initializerOpt
 
-;;;; `EMPTY
+;;;; _EMPTY
 ;;;; initializer
 
 
 rule Parameter_ok/non-initializer:
-  p TC_0 |- annotationList direction type name `EMPTY
+  p TC_0 |- annotationList direction type name _EMPTY
           : TC_1 parameterIR `# typeId_fresh*
   ---- ;; check parameter type
   -- Type_ok: p TC_0 |- type : typeIR `# typeId_fresh*
@@ -67,7 +67,7 @@ rule Parameter_ok/initializer-lctk:
   ---- ;; evaluate the initializer
   -- Expr_eval_lctk: p TC_0 |- typedExpressionIR_init_cast ~> value_init
   ---- ;; construct parameter IR and add to context
-  -- if parameterInitializerIR = `= `VALUE value_init
+  -- if parameterInitializerIR = `= _VALUE value_init
   -- if parameterIR
       = annotationList direction typeIR nameIR parameterInitializerIR
   -- if TC_1 = $add_parameter_t(p, TC_0, parameterIR)

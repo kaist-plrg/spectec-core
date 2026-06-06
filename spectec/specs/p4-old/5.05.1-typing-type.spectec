@@ -90,7 +90,7 @@ rule Type_ok/prefixedTypeName-poly:
 ;;;;; syntax specializedType = prefixedTypeName `< typeArgumentList >
 
 rule Type_ok/specializedType-mono:
-  p TC |- prefixedTypeName `< `EMPTY > : typeIR `# eps
+  p TC |- prefixedTypeName `< _EMPTY > : typeIR `# eps
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
   -- if typeIR = $find_type(p, TC, prefixedNameIR)
 

@@ -50,7 +50,7 @@ rule ParserLocalDecl_inst/valueSetDeclarationIR:
   ---- ;; create the constant declaration
   -- if typeIR_set = SET `< typeIR >
   -- if constantDeclarationIR
-      = `EMPTY CONST typeIR_set nameIR (`= `VALUE (REF objectId)) `;
+      = _EMPTY CONST typeIR_set nameIR (`= _VALUE (REF objectId)) `;
 
 ;;
 ;; Parser local declaration list instantiation

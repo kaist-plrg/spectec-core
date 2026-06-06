@@ -131,7 +131,7 @@ rule Constructor_inst/parser:
   -- if $add_values_inst(p_callee, Ci_callee_2, id_cparam_default*, value_default*) = Ci_callee_3
   -- ParserLocalDecls_inst: Ci_callee_3 sto_1 |- parserLocalDeclarationIR* ==> Ci_local sto_2 parserLocalDeclarationIR_inst*
   ---- ;; add accept and reject states
-  -- if stateDyn_empty = `EMPTY `{ eps }
+  -- if stateDyn_empty = _EMPTY `{ eps }
   -- if $add_state_inst(BLOCK, Ci_local, "accept", stateDyn_empty) = Ci_local_1
   -- if $add_state_inst(BLOCK, Ci_local_1, "reject", stateDyn_empty) = Ci_local_2
   ---- ;; instantiate parser states

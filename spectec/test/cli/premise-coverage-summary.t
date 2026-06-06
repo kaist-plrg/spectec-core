@@ -28,7 +28,7 @@ premises that never succeeded:
     Check_expr/boollit:
       let literal = expr as literal
     Check_expr/boollit:
-      if literal matches ``BOOL %`
+      if literal matches `_BOOL %`
     Check_expr/boollit:
       let b = literal
     Check_expr/not:
@@ -100,7 +100,7 @@ premises that never succeeded:
     Eval_expr/num:
       let literal = expr as literal
     Eval_expr/num:
-      if literal matches ``NUM %`
+      if literal matches `_NUM %`
     Eval_expr/num:
       let i = literal
     Eval_expr/boollit:
@@ -108,7 +108,7 @@ premises that never succeeded:
     Eval_expr/boollit:
       let literal = expr as literal
     Eval_expr/boollit:
-      if literal matches ``BOOL %`
+      if literal matches `_BOOL %`
     Eval_expr/boollit:
       let b = literal
     Eval_expr/id:
@@ -128,7 +128,7 @@ premises that never succeeded:
     Eval_expr/not:
       rel Eval_expr: env |- e ==> literal
     Eval_expr/not:
-      if literal matches ``BOOL %`
+      if literal matches `_BOOL %`
     Eval_expr/not:
       let b_e = literal
     Eval_expr/not:
@@ -140,13 +140,13 @@ premises that never succeeded:
     Eval_expr/add:
       rel Eval_expr: env |- e_l ==> literal
     Eval_expr/add:
-      if literal matches ``NUM %`
+      if literal matches `_NUM %`
     Eval_expr/add:
       let i_l = literal
     Eval_expr/add:
       rel Eval_expr: env |- e_r ==> literal'
     Eval_expr/add:
-      if literal' matches ``NUM %`
+      if literal' matches `_NUM %`
     Eval_expr/add:
       let i_r = literal'
     Eval_expr/add:
@@ -158,13 +158,13 @@ premises that never succeeded:
     Eval_expr/leq:
       rel Eval_expr: env |- e_l ==> literal
     Eval_expr/leq:
-      if literal matches ``NUM %`
+      if literal matches `_NUM %`
     Eval_expr/leq:
       let i_l = literal
     Eval_expr/leq:
       rel Eval_expr: env |- e_r ==> literal'
     Eval_expr/leq:
-      if literal' matches ``NUM %`
+      if literal' matches `_NUM %`
     Eval_expr/leq:
       let i_r = literal'
     Eval_expr/leq:
@@ -176,13 +176,13 @@ premises that never succeeded:
     Eval_expr/and:
       rel Eval_expr: env |- e_l ==> literal
     Eval_expr/and:
-      if literal matches ``BOOL %`
+      if literal matches `_BOOL %`
     Eval_expr/and:
       let b_l = literal
     Eval_expr/and:
       rel Eval_expr: env |- e_r ==> literal'
     Eval_expr/and:
-      if literal' matches ``BOOL %`
+      if literal' matches `_BOOL %`
     Eval_expr/and:
       let b_r = literal'
     Eval_expr/and:

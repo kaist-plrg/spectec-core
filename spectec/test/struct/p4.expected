@@ -719,7 +719,7 @@ dec $flatten_typeParameterListOpt(typeParameterListOpt)
 
 1. Case analysis on typeParameterListOpt
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -747,7 +747,7 @@ syntax parameterList =
 ;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:220:1-221:32:
 dec $flatten_parameterList(parameterList)
 
-1. If ((parameterList matches pattern ``EMPTY`)), then
+1. If ((parameterList matches pattern `_EMPTY`)), then
 
   1. Return []
 
@@ -791,7 +791,7 @@ dec $flatten_constructorParameterListOpt(constructorParameterListOpt)
 
 1. Case analysis on constructorParameterListOpt
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -1058,7 +1058,7 @@ dec $flatten_expressionList(expressionList'')
 
 1. Case analysis on expressionList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -1731,7 +1731,7 @@ dec $flatten_typeArgumentList(typeArgumentList'')
 
 1. Case analysis on typeArgumentList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -1868,7 +1868,7 @@ syntax argumentList =
 ;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:622:1-623:32:
 dec $flatten_argumentList(argumentList)
 
-1. If ((argumentList matches pattern ``EMPTY`)), then
+1. If ((argumentList matches pattern `_EMPTY`)), then
 
   1. Return []
 
@@ -2196,7 +2196,7 @@ syntax forUpdateStatementList =
 ;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:779:1-780:24:
 dec $flatten_forUpdateStatementList(forUpdateStatementList)
 
-1. If ((forUpdateStatementList matches pattern ``EMPTY`)), then
+1. If ((forUpdateStatementList matches pattern `_EMPTY`)), then
 
   1. Return []
 
@@ -2251,7 +2251,7 @@ syntax forInitStatementList =
 ;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:801:1-801:76:
 dec $flatten_forInitStatementList(forInitStatementList)
 
-1. If ((forInitStatementList matches pattern ``EMPTY`)), then
+1. If ((forInitStatementList matches pattern `_EMPTY`)), then
 
   1. Return []
 
@@ -2367,7 +2367,7 @@ dec $flatten_switchCaseList(switchCaseList'')
 
 1. Case analysis on switchCaseList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2458,7 +2458,7 @@ dec $flatten_blockElementStatementList(blockElementStatementList'')
 
 1. Case analysis on blockElementStatementList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2505,7 +2505,7 @@ dec $flatten_objectDeclarationList(objectDeclarationList'')
 
 1. Case analysis on objectDeclarationList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2542,7 +2542,7 @@ dec $flatten_typeFieldList(typeFieldList'')
 
 1. Case analysis on typeFieldList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2650,7 +2650,7 @@ dec $flatten_externConstructorOrMethodPrototypeList(externConstructorOrMethodPro
 
 1. Case analysis on externConstructorOrMethodPrototypeList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2683,7 +2683,7 @@ dec $flatten_selectCaseList(selectCaseList'')
 
 1. Case analysis on selectCaseList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2765,7 +2765,7 @@ dec $flatten_parserStatementList(parserStatementList'')
 
 1. Case analysis on parserStatementList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2821,7 +2821,7 @@ dec $flatten_parserLocalDeclarationList(parserLocalDeclarationList'')
 
 1. Case analysis on parserLocalDeclarationList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2847,7 +2847,7 @@ syntax constOpt =
 ;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1223:1-1224:54:
 dec $flatten_constOpt(constOpt)
 
-1. If ((constOpt matches pattern ``EMPTY`)), then
+1. If ((constOpt matches pattern `_EMPTY`)), then
 
   1. Return ?()
 
@@ -2875,7 +2875,7 @@ dec $flatten_tableKeyList(tableKeyList'')
 
 1. Case analysis on tableKeyList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2912,7 +2912,7 @@ dec $flatten_tableActionList(tableActionList'')
 
 1. Case analysis on tableActionList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2942,7 +2942,7 @@ dec $flatten_tableEntryList(tableEntryList'')
 
 1. Case analysis on tableEntryList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2969,7 +2969,7 @@ dec $flatten_tablePropertyList(tablePropertyList'')
 
 1. Case analysis on tablePropertyList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -3009,7 +3009,7 @@ dec $flatten_controlLocalDeclarationList(controlLocalDeclarationList'')
 
 1. Case analysis on controlLocalDeclarationList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -3195,7 +3195,7 @@ syntax annotationList =
 ;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1431:1-1432:32:
 dec $flatten_annotationList(annotationList)
 
-1. If ((annotationList matches pattern ``EMPTY`)), then
+1. If ((annotationList matches pattern `_EMPTY`)), then
 
   1. Return []
 
@@ -3234,7 +3234,7 @@ dec $flatten_p4program(p4program'')
 
 1. Case analysis on p4program''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -3403,7 +3403,7 @@ dec $callableId(name, parameterList)
 ;; ../../../../../spectec/specs/p4/2-static-runtime/2.0-domain.spectec:71:1-71:38:
 dec $callableId'(parameterList)
 
-1. If ((parameterList matches pattern ``EMPTY`)), then
+1. If ((parameterList matches pattern `_EMPTY`)), then
 
   1. Return []
 
@@ -3436,7 +3436,7 @@ dec $constructorId(name, constructorParameterListOpt)
 
 1. Case analysis on constructorParameterListOpt
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return ($name(name) ( [] ))
 
@@ -10459,7 +10459,7 @@ dec $prefixedNonTypeName(prefixedNonTypeName)
 
 1. Else Phantom#482
 
-2. If ((prefixedNonTypeName matches pattern ``ID . %`)), then
+2. If ((prefixedNonTypeName matches pattern `_ID . %`)), then
 
   1. (Let (. nonTypeName) be prefixedNonTypeName)
 
@@ -10478,7 +10478,7 @@ dec $prefixedTypeName(prefixedTypeName)
 
 1. Else Phantom#484
 
-2. If ((prefixedTypeName matches pattern ``TID . %`)), then
+2. If ((prefixedTypeName matches pattern `_TID . %`)), then
 
   1. (Let (. typeName) be prefixedTypeName)
 
@@ -12308,7 +12308,7 @@ dec $name_annotation_opt(annotation)
 
       1. (Let (annotationBody' annotationToken) be annotationBody)
 
-      2. If ((annotationBody' matches pattern ``EMPTY`)), then
+      2. If ((annotationBody' matches pattern `_EMPTY`)), then
 
         1. (Let nameIR be $name_annotationToken(annotationToken))
 
@@ -12340,7 +12340,7 @@ dec $name_annotation_default(annotationList, nameIR)
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.3-annotation.spectec:127:1-127:60:
 dec $find_name_annotation_opt(annotationList')
 
-1. If ((annotationList' matches pattern ``EMPTY`)), then
+1. If ((annotationList' matches pattern `_EMPTY`)), then
 
   1. Return ?()
 
@@ -12395,7 +12395,7 @@ dec $add_annotationList(annotationList, annotation''?)
 
 1. Else Phantom#532
 
-2. If ((annotationList matches pattern ``EMPTY`)), then
+2. If ((annotationList matches pattern `_EMPTY`)), then
 
   1. If ((annotation''? matches pattern (_))), then
 
@@ -12847,7 +12847,7 @@ dec $add_vars_t(p, TC, id*, varTypeIR*)
 ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:173:1-174:52:
 dec $add_parameter_t(cursor, TC, (_annotationList direction typeIR id _parameterInitializerOptIR))
 
-1. Case analysis on (direction matches pattern ``EMPTY`)
+1. Case analysis on (direction matches pattern `_EMPTY`)
 
   1. Case true
 
@@ -14563,7 +14563,7 @@ relation ConstructorParameterType_wf: B, constructorParameterIR
 
 1. (Let (_annotationList direction _typeIR _id _parameterInitializerOptIR) be constructorParameterIR)
 
-2. If ((direction matches pattern ``EMPTY`)), then
+2. If ((direction matches pattern `_EMPTY`)), then
 
   1. If (ParameterType_wf: B |- constructorParameterIR holds), then
 
@@ -15537,7 +15537,7 @@ dec $directionless_trailing'(_bool', direction''*)
 
     1. (Let direction_h :: direction_t* be direction''*)
 
-    2. If (~(direction_h matches pattern ``EMPTY`)), then
+    2. If (~(direction_h matches pattern `_EMPTY`)), then
 
       1. Return $directionless_trailing'(false, direction_t*)
 
@@ -15551,7 +15551,7 @@ dec $directionless_trailing'(_bool', direction''*)
 
       1. (Let direction :: direction_t* be direction''*)
 
-      2. If ((direction matches pattern ``EMPTY`)), then
+      2. If ((direction matches pattern `_EMPTY`)), then
 
         1. Return $directionless_trailing'(true, direction_t*)
 
@@ -15565,7 +15565,7 @@ dec $directionless_trailing'(_bool', direction''*)
 
       1. (Let direction :: direction_t* be direction''*)
 
-      2. If ((direction matches pattern ``EMPTY`)), then
+      2. If ((direction matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -20398,7 +20398,7 @@ relation Block_ok: TC_0, f, l, (annotationList { blockElementStatementList })
 ;; ../../../../../spectec/specs/p4/5-typing/5.04-typing-relation.spectec:175:1-180:70:
 relation Parameter_ok: p, TC_0, (annotationList direction type name initializerOpt)
 
-1. If ((initializerOpt matches pattern ``EMPTY`)), then
+1. If ((initializerOpt matches pattern `_EMPTY`)), then
 
   1. (Type_ok: p TC_0 |- (type as typeOrVoid) : typeIR # typeId_fresh*)
 
@@ -20699,7 +20699,7 @@ relation ParserTransition_ok: TC_0, nameIR_state*, transitionStatement
 
 1. Case analysis on transitionStatement
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Result in (transition ("reject" ;))
 
@@ -21919,7 +21919,7 @@ relation ControlLocalDeclList_ok: TC_0, controlLocalDeclarationList
 ;; ../../../../../spectec/specs/p4/5-typing/5.04-typing-relation.spectec:428:1-433:40:
 relation VarDecl_ok: p, TC_0, (annotationList type name initializerOpt ;)
 
-1. If ((initializerOpt matches pattern ``EMPTY`)), then
+1. If ((initializerOpt matches pattern `_EMPTY`)), then
 
   1. (Type_ok: p TC_0 |- (type as typeOrVoid) : typeIR # typeId*)
 
@@ -22302,7 +22302,7 @@ relation Decl_ok: TC_0, declaration
 
     2. (Let TC_1 be TC_0[block.kind = (parser)])
 
-    3. If ((typeParameterListOpt matches pattern ``EMPTY`)), then
+    3. If ((typeParameterListOpt matches pattern `_EMPTY`)), then
 
       1. (ConstructorParameterListOpt_ok: TC_1 |- constructorParameterListOpt : TC_2 constructorParameterIR* # typeId*)
 
@@ -22356,7 +22356,7 @@ relation Decl_ok: TC_0, declaration
 
     2. (Let TC_1 be TC_0[block.kind = (control)])
 
-    3. If ((typeParameterListOpt matches pattern ``EMPTY`)), then
+    3. If ((typeParameterListOpt matches pattern `_EMPTY`)), then
 
       1. (ConstructorParameterListOpt_ok: TC_1 |- constructorParameterListOpt : TC_2 constructorParameterIR* # typeId*)
 
@@ -22912,7 +22912,7 @@ relation Call_convention_expr_ok: p, TC, actctxt, (_annotationList direction typ
 
   1. Case (% matches pattern `ACTION`)
 
-    1. If ((direction matches pattern ``EMPTY`)), then
+    1. If ((direction matches pattern `_EMPTY`)), then
 
       1. (Let typedExpressionIR? be $cast_unary(typedExpressionIR_arg, typeIR_param))
 
@@ -22928,7 +22928,7 @@ relation Call_convention_expr_ok: p, TC, actctxt, (_annotationList direction typ
 
   2. Case (% matches pattern `NOACTION`)
 
-    1. If ((direction matches pattern ``EMPTY`)), then
+    1. If ((direction matches pattern `_EMPTY`)), then
 
       1. (Let typedExpressionIR? be $cast_unary(typedExpressionIR_arg, typeIR_param))
 
@@ -25105,7 +25105,7 @@ relation ForInitStmt_ok: TC_0', forInitStatement
 
   1. (Let (annotationList type name initializerOpt) be forInitStatement)
 
-  2. If ((initializerOpt matches pattern ``EMPTY`)), then
+  2. If ((initializerOpt matches pattern `_EMPTY`)), then
 
     1. (Type_ok: (local) TC_0' |- (type as typeOrVoid) : typeIR # typeId*)
 
@@ -26679,7 +26679,7 @@ dec $name_expression(expression'')
 
   1. (Let prefixedNonTypeName be (expression'' as prefixedNonTypeName))
 
-  2. If ((prefixedNonTypeName matches pattern ``ID . %`)), then
+  2. If ((prefixedNonTypeName matches pattern `_ID . %`)), then
 
     1. (Let (. nonTypeName) be prefixedNonTypeName)
 
@@ -26704,7 +26704,7 @@ dec $split_dataplane_parameters(parameterIR*)
 
     2. (Let (_annotationList direction _typeIR _id _parameterInitializerOptIR) be parameterIR_h)
 
-    3. Case analysis on (direction matches pattern ``EMPTY`)
+    3. Case analysis on (direction matches pattern `_EMPTY`)
 
       1. Case true
 
@@ -26954,7 +26954,7 @@ relation TableEntry_keyset_simple_ok: TC, TBLC, (typeIR_key : text'), simpleKeys
 
             1. (Let expression_elem be (sequenceOrRecordElementExpression as expression))
 
-            2. If ((trailingCommaOpt matches pattern ``EMPTY`)), then
+            2. If ((trailingCommaOpt matches pattern `_EMPTY`)), then
 
               1. (Expr_ok: (local) TC |- expression_elem : typedExpressionIR)
 
@@ -27039,7 +27039,7 @@ dec $is_singleton_list_expression(expression)
 
     1. (Let expression_elem be (sequenceOrRecordElementExpression as expression))
 
-    2. If ((trailingCommaOpt matches pattern ``EMPTY`)), then
+    2. If ((trailingCommaOpt matches pattern `_EMPTY`)), then
 
       1. Return true
 

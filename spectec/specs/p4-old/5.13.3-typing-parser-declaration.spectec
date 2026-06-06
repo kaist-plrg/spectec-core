@@ -25,7 +25,7 @@ rule ParserLocalDecl_ok/instantiation:
 ;;;   annotationList type name initializerOpt `;
 
 rule ParserLocalDecl_ok/variableDeclaration-empty:
-  TC_0 |- annotationList type name `EMPTY `;
+  TC_0 |- annotationList type name _EMPTY `;
         : TC_1 variableDeclarationIR
   ---- ;; check type
   -- Type_ok: BLOCK TC_0 |- type : typeIR `# eps
@@ -78,7 +78,7 @@ rule ParserLocalDecl_ok/valueSetDeclaration:
   -- if ctk =/= DYN
   ---- ;; add the value set to the context
   -- if nameIR = $name(name)
-  -- if TC_1 = $add_var(BLOCK, TC_0, nameIR, `EMPTY (SET `< typeIR >) CTK eps)
+  -- if TC_1 = $add_var(BLOCK, TC_0, nameIR, _EMPTY (SET `< typeIR >) CTK eps)
   ---- ;; create IR
   -- if valueSetDeclarationIR
       = annotationList VALUE_SET `< typeIR > `( typedExpressionIR ) nameIR `;

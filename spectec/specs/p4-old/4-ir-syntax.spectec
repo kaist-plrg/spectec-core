@@ -8,11 +8,11 @@ syntax prefixedNameIR =
 
 dec $prefixedNonTypeName(prefixedNonTypeName) : prefixedNameIR
 def $prefixedNonTypeName(nonTypeName) = `` $name(nonTypeName)
-def $prefixedNonTypeName(`ID `. nonTypeName) = `. $name(nonTypeName)
+def $prefixedNonTypeName(_ID `. nonTypeName) = `. $name(nonTypeName)
 
 dec $prefixedTypeName(prefixedTypeName) : prefixedNameIR
 def $prefixedTypeName(typeName) = `` $name(typeName)
-def $prefixedTypeName(`TID `. typeName) = `. $name(typeName)
+def $prefixedTypeName(_TID `. typeName) = `. $name(typeName)
 
 dec $flatten_prefixedNameIR(prefixedNameIR) : nameIR
 def $flatten_prefixedNameIR(`` nameIR) = nameIR

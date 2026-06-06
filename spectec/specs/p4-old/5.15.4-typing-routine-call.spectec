@@ -112,7 +112,7 @@ rule RoutineType_ok/typedExpressionIR-nameIR-builtin-method-stack-push-pop-front
   -- if typeIR `[ _ ] = $canon(typeIR_base)
   ---- ;; (TODO) check if the argument is named
   ---- ;; create routine type
-  -- if parameterTypeIR = `EMPTY INT "count" eps
+  -- if parameterTypeIR = _EMPTY INT "count" eps
   -- if methodTypeIR = BUILTIN_METHOD `( parameterTypeIR ) `-> INT
 
 rule RoutineType_ok/typedExpressionIR-nameIR-builtin-method-header-isValid:

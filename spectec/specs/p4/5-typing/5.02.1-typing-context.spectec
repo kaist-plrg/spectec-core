@@ -13,7 +13,7 @@ syntax globalTypingLayer =
 ;; Block layer
 
 syntax blockKind =
-  | `EMPTY
+  | _EMPTY
   | EXTERN
   | PARSER
   | CONTROL
@@ -50,7 +50,7 @@ syntax methodLocalKind =
   | TABLE_APPLY_METHOD
 
 syntax localKind =
-  | `EMPTY
+  | _EMPTY
   | actionLocalKind
   | functionLocalKind
   | methodLocalKind
@@ -85,12 +85,12 @@ def $empty_typingContext = TC
           CALLABLE $empty_callableTypeDefEnv,
           FRAME $empty_typeFrame }
   -- if blockTypingLayer
-      = { KIND `EMPTY,
+      = { KIND _EMPTY,
           TYPE $empty_typeDefEnv,
           CALLABLE $empty_callableTypeDefEnv,
           FRAME $empty_typeFrame }
   -- if localTypingLayer
-      = { KIND `EMPTY,
+      = { KIND _EMPTY,
           TYPE $empty_typeDefEnv,
           FRAMES ([ $empty_typeFrame ]) }
   -- if TC
@@ -173,11 +173,11 @@ def $add_vars_t(p, TC, id_h :: id_t*, varTypeIR_h :: varTypeIR_t*) = TC''
 dec $add_parameter_t(cursor, typingContext, parameterIR) : typingContext
   hint(prose_in %2 "added to the" %0 "layer of" %1)
 
-def $add_parameter_t(cursor, TC, _ `EMPTY typeIR id _) = TC'
-  -- if varTypeIR = `EMPTY typeIR CTK eps
+def $add_parameter_t(cursor, TC, _ _EMPTY typeIR id _) = TC'
+  -- if varTypeIR = _EMPTY typeIR CTK eps
   -- if TC' = $add_var_t(cursor, TC, id, varTypeIR)
 def $add_parameter_t(cursor, TC, _ direction typeIR id _) = TC'
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
   -- if varTypeIR = direction typeIR DYN eps
   -- if TC' = $add_var_t(cursor, TC, id, varTypeIR)
 

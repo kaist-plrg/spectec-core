@@ -52,7 +52,7 @@ rule Copy_in_argument_inst_default/constantInitializerIR:
   STO p_caller IC_caller
    `@ p_callee IC_callee_0 parameterIR
   ~> STO IC_callee_1
-  -- if _ _ _ id (`= `VALUE value) = parameterIR
+  -- if _ _ _ id (`= _VALUE value) = parameterIR
   -- if IC_callee_1 = $add_var_i(p_callee, IC_callee_0, id, value)
 
 

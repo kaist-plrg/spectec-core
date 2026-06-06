@@ -56,7 +56,7 @@ def $name_expression(`" text `") = "\"" ++ text ++ "\""
 ;; reference expressions
 def $name_expression(THIS) = "this"
 def $name_expression(nonTypeName) = $name(nonTypeName)
-def $name_expression(`ID `. nonTypeName) = "." ++ $name(nonTypeName)
+def $name_expression(_ID `. nonTypeName) = "." ++ $name(nonTypeName)
 
 ;; access expressions
 def $name_expression(ERROR `. member) = "error." ++ $name(member)
@@ -143,13 +143,13 @@ dec $split_dataplane_parameters(parameterIR*)
 def $split_dataplane_parameters(eps) = (eps, eps)
 def $split_dataplane_parameters(parameterIR_h :: parameterIR_t*)
   = (parameterIR_data*, parameterIR_h :: parameterIR_control*)
-  -- if _ `EMPTY _ _ _ = parameterIR_h
+  -- if _ _EMPTY _ _ _ = parameterIR_h
   -- if (parameterIR_data*, parameterIR_control*)
       = $split_dataplane_parameters(parameterIR_t*)
 def $split_dataplane_parameters(parameterIR_h :: parameterIR_t*)
   = (parameterIR_h :: parameterIR_data*, parameterIR_control*)
   -- if _ direction _ _ _ = parameterIR_h
-  -- if direction =/= `EMPTY
+  -- if direction =/= _EMPTY
   -- if (parameterIR_data*, parameterIR_control*)
       = $split_dataplane_parameters(parameterIR_t*)
 
@@ -339,7 +339,7 @@ dec $is_singleton_list_expression(expression) : bool
   hint(prose_false %0 "is not a singleton list expression")
 
 def $is_singleton_list_expression(expression) = true
-  -- if expression = `{ expression_elem `EMPTY }
+  -- if expression = `{ expression_elem _EMPTY }
 def $is_singleton_list_expression(expression) = false
   -- otherwise
 
@@ -367,7 +367,7 @@ rule TableEntry_keyset_simple_ok/non-lpm-singleton-seq:
   -- if nameIR_matchkind =/= "lpm"
   ---- ;; if a singleton sequence
   -- if $is_singleton_list_expression(expression)
-  -- if `{ expression_elem `EMPTY } = expression
+  -- if `{ expression_elem _EMPTY } = expression
   ---- ;; check expression
   -- Expr_ok: LOCAL TC |- expression_elem : typedExpressionIR
   -- if typeIR = $type_of_typedExpressionIR(typedExpressionIR)
@@ -843,7 +843,7 @@ rule TableProperty_ok/largest-priority-wins:
   -- if LCTK = $ctk_of_typedExpressionIR(typedExpressionIR)
   -- if BOOL = $unroll_typeIR(typeIR)
   -- Expr_eval_lctk:
-      LOCAL TC |- typedExpressionIR ~> `B b_lw
+      LOCAL TC |- typedExpressionIR ~> _B b_lw
   ---- ;; update table context
   -- if TBLC_1
       = TBLC_0 [ .PRIORITIES.LARGEST_WINS = b_lw ]
@@ -851,7 +851,7 @@ rule TableProperty_ok/largest-priority-wins:
   -- if constOptIR = $flatten_constOpt(constOpt)
   -- if tablePropertyIR
       = annotationList constOptIR CUSTOM_CONST
-          "largest_priority_wins" (`= `VALUE (`B b_lw)) `;
+          "largest_priority_wins" (`= _VALUE (_B b_lw)) `;
 
 rule TableProperty_ok/priority-delta:
   TC TBLC_0 |- annotationList constOpt tableCustomName (`= expression) `;
@@ -875,7 +875,7 @@ rule TableProperty_ok/priority-delta:
   -- if constOptIR = $flatten_constOpt(constOpt)
   -- if tablePropertyIR
       = annotationList constOptIR CUSTOM_CONST
-          "priority_delta" (`= `VALUE (D n_delta)) `;
+          "priority_delta" (`= _VALUE (D n_delta)) `;
 
 
 
@@ -973,7 +973,7 @@ def $insert_NoAction_tablePropertyIR(
   ---- ;; insert NoAction to table context and table properties
   -- if TBLC_1 = $add_action_tbl(TBLC_0, `. "NoAction", eps, eps)
   -- if tableActionIR_NoAction
-      = `EMPTY tableActionReferenceIR_NoAction `# `( eps `, eps ) `;
+      = _EMPTY tableActionReferenceIR_NoAction `# `( eps `, eps ) `;
   -- if tablePropertyIR_h_updated
       = ACTIONS `= `{ tableActionIR* ++ [ tableActionIR_NoAction ] }
 def $insert_NoAction_tablePropertyIR(
@@ -1012,7 +1012,7 @@ rule Table_ok/zero-default-action:
   -- TableProperties_ok: TC TBLC_0 |- tableProperty* : TBLC_1 tablePropertyIR*
   ---- ;; insert NoAction as default_action
   -- if tablePropertyIR_default_action
-      = `EMPTY eps DEFAULT_ACTION `= ((`` "NoAction") eps `( eps )) `;
+      = _EMPTY eps DEFAULT_ACTION `= ((`` "NoAction") eps `( eps )) `;
   -- if (TBLC_2, tablePropertyIR_updated*)
       = $insert_NoAction_tablePropertyIR(TBLC_1, tablePropertyIR*)
 
@@ -1043,7 +1043,7 @@ rule TableType_ok:
   ---- ;; add enum fields to context
   -- if (value_enum_field = TABLE_ENUM typeId_enum `. nameIR_enum_field)*
   -- if (varTypeIR_enum_field
-        = `EMPTY tableMetadataEnumTypeIR LCTK value_enum_field)*
+        = _EMPTY tableMetadataEnumTypeIR LCTK value_enum_field)*
   -- if TC_1
       = $add_vars_t(
           BLOCK, TC_0,

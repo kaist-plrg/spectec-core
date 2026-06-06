@@ -45,7 +45,7 @@ rule ParserLocalDecl_ok/valueSetDeclaration:
   -- if DYN =/= $ctk_of_typedExpressionIR(typedExpressionIR)
   ---- ;; add the value set to the context
   -- if nameIR = $name(name)
-  -- if varTypeIR = `EMPTY (SET `< typeIR >) CTK eps
+  -- if varTypeIR = _EMPTY (SET `< typeIR >) CTK eps
   -- if TC_1 = $add_var_t(BLOCK, TC_0, nameIR, varTypeIR)
   ---- ;; create IR
   -- if valueSetDeclarationIR

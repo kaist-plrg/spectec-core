@@ -52,7 +52,7 @@ dec $un_lnot(value) : value
   hint(prose_in `! %0)
   hint(testgen_ignore)
 
-def $un_lnot(`B b) = `B (~b)
+def $un_lnot(_B b) = _B (~b)
 
 def $un_op(`!, value) = $un_lnot(value)
 
@@ -326,7 +326,7 @@ def $bin_le(w S i_l, w S i_r) = $(i_l' <= i_r')
   -- if i_l' = $bitstr_to_int(w, i_l)
   -- if i_r' = $bitstr_to_int(w, i_r)
 
-def $bin_op(`<=, value_l, value_r) = `B $bin_le(value_l, value_r)
+def $bin_op(`<=, value_l, value_r) = _B $bin_le(value_l, value_r)
 
 ;;; Binary greater than or equal
 
@@ -341,7 +341,7 @@ def $bin_ge(w S i_l, w S i_r) = $(i_l' >= i_r')
   -- if i_l' = $bitstr_to_int(w, i_l)
   -- if i_r' = $bitstr_to_int(w, i_r)
 
-def $bin_op(`>=, value_l, value_r) = `B $bin_ge(value_l, value_r)
+def $bin_op(`>=, value_l, value_r) = _B $bin_ge(value_l, value_r)
 
 ;;; Binary less than
 
@@ -356,7 +356,7 @@ def $bin_lt(w S i_l, w S i_r) = $(i_l' < i_r')
   -- if i_l' = $bitstr_to_int(w, i_l)
   -- if i_r' = $bitstr_to_int(w, i_r)
 
-def $bin_op(``<, value_l, value_r) = `B $bin_lt(value_l, value_r)
+def $bin_op(``<, value_l, value_r) = _B $bin_lt(value_l, value_r)
 
 ;;; Binary greater than
 
@@ -371,7 +371,7 @@ def $bin_gt(w S i_l, w S i_r) = $(i_l' > i_r')
   -- if i_l' = $bitstr_to_int(w, i_l)
   -- if i_r' = $bitstr_to_int(w, i_r)
 
-def $bin_op(``>, value_l, value_r) = `B $bin_gt(value_l, value_r)
+def $bin_op(``>, value_l, value_r) = _B $bin_gt(value_l, value_r)
 
 ;;; Binary equals
 
@@ -380,7 +380,7 @@ dec $bin_eq(value, value) : bool
   hint(prose_false "not" %0 `== %1)
   hint(testgen_ignore)
 
-def $bin_eq(`B b_a, `B b_b) = (b_a = b_b)
+def $bin_eq(_B b_a, _B b_b) = (b_a = b_b)
 def $bin_eq(ERROR `. id_a, ERROR `. id_b) = (id_a = id_b)
 def $bin_eq(MATCH_KIND `. id_a, MATCH_KIND `. id_b) = (id_a = id_b)
 def $bin_eq(stringValue_a, stringValue_b)
@@ -441,7 +441,7 @@ def $bin_eq(
   = (typeId_a = typeId_b) /\ $bin_eq(value_field_a, value_field_b)
 def $bin_eq(`{#}, `{#}) = true
 
-def $bin_op(`==, value_l, value_r) = `B $bin_eq(value_l, value_r)
+def $bin_op(`==, value_l, value_r) = _B $bin_eq(value_l, value_r)
 
 ;;; Binary not equals
 
@@ -452,7 +452,7 @@ dec $bin_ne(value, value) : bool
 
 def $bin_ne(value_l, value_r) = ~$bin_eq(value_l, value_r)
 
-def $bin_op(`!=, value_l, value_r) = `B $bin_ne(value_l, value_r)
+def $bin_op(`!=, value_l, value_r) = _B $bin_ne(value_l, value_r)
 
 ;;; Binary bitwise and
 
@@ -572,9 +572,9 @@ dec $cast_bool(typeIR, boolValue) : value
   hint(prose_in %1 "casted to type" %0)
   hint(testgen_ignore)
 
-def $cast_bool(BOOL, `B b) = `B b
-def $cast_bool(BIT `< w >, `B true) = w W 1
-def $cast_bool(BIT `< w >, `B false) = w W 0
+def $cast_bool(BOOL, _B b) = _B b
+def $cast_bool(BIT `< w >, _B true) = w W 1
+def $cast_bool(BIT `< w >, _B false) = w W 0
 def $cast_bool(TYPE _ typeIR, boolValue) = $cast_bool(typeIR, boolValue)
 def $cast_bool(SET `< typeIR >, boolValue) = SET `{ $cast_bool(typeIR, boolValue) }
 
@@ -587,8 +587,8 @@ dec $cast_int(typeIR, integerValue) : value
   hint(prose_in %1 "casted to type" %0)
   hint(testgen_ignore)
 
-def $cast_int(BOOL, D i) = `B (i =/= 0)
-def $cast_int(BOOL, w W i) = `B (i =/= 0)
+def $cast_int(BOOL, D i) = _B (i =/= 0)
+def $cast_int(BOOL, w W i) = _B (i =/= 0)
 
 def $cast_int(INT, D i) = D i
 def $cast_int(INT, _ W i) = D i
@@ -812,7 +812,7 @@ def $cast_op(typeIR, setValue) = $cast_set(typeIR_unroll, setValue)
 ;; (TODO) This should be target-specific
 ;;
 
-def $default(BOOL) = `B false
+def $default(BOOL) = _B false
 def $default(ERROR) = ERROR `. "NoError"
 def $default(STRING) = `" text_empty `"
   -- if text_empty = ""

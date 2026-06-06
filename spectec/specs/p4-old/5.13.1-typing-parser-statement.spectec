@@ -6,10 +6,10 @@
 
 ;;; syntax stateExpression
 
-;;;; `EMPTY
+;;;; _EMPTY
 
 rule ParserTransition_ok/empty:
-  TC_0 nameIR_state* |- `EMPTY
+  TC_0 nameIR_state* |- _EMPTY
                       : TRANSITION ("reject" `;)
   ---- ;; if transition is omitted, it is implicitly a
   ---- ;; transition to the reject state
@@ -324,7 +324,7 @@ rule ParserStmt_ok/constantDeclaration:
 ;;;   annotationList type name initializerOpt `;
 
 rule ParserStmt_ok/variableDeclaration-empty:
-  TC_0 |- annotationList type name `EMPTY `;
+  TC_0 |- annotationList type name _EMPTY `;
         : TC_1 variableDeclarationIR
   ---- ;; check type
   -- Type_ok: LOCAL TC_0 |- type : typeIR `# eps

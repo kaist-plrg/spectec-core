@@ -92,12 +92,12 @@ rule Type_ok/expression:
 
 ;;;;; prefixedTypeName
 ;;; identifier
-;;; syntax identifier = `ID text
+;;; syntax identifier = _ID text
 
 
 rule Type_ok/identifier:
-  p TC |- `ID typeId : typeIR `# typeId_fresh*
-  -- Type_ok: p TC |- `TID typeId : typeIR `# typeId_fresh*
+  p TC |- _ID typeId : typeIR `# typeId_fresh*
+  -- Type_ok: p TC |- _TID typeId : typeIR `# typeId_fresh*
 
 rule Type_ok/monomorphic:
   p TC |- prefixedTypeName : typeIR `# eps

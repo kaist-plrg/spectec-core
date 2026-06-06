@@ -639,7 +639,7 @@ rule Expr_ok/single-non-default:
   -- if typeIR_f = $type_of_typedExpressionIR(typedExpressionIR_f)
   -- if ctk_f = $ctk_of_typedExpressionIR(typedExpressionIR_f)
   ---- ;; create typed expression
-  -- if typeIR = RECORD `{ (`EMPTY typeIR_f nameIR_f `;) }
+  -- if typeIR = RECORD `{ (_EMPTY typeIR_f nameIR_f `;) }
   -- if expressionNoteIR = `( typeIR ctk_f )
 
 rule Expr_ok/single-default:
@@ -653,7 +653,7 @@ rule Expr_ok/single-default:
   -- if typeIR_f = $type_of_typedExpressionIR(typedExpressionIR_f)
   -- if ctk_f = $ctk_of_typedExpressionIR(typedExpressionIR_f)
   ---- ;; create typed expression
-  -- if typeIR = RECORD `{ (`EMPTY typeIR_f nameIR_f `;) `, `... }
+  -- if typeIR = RECORD `{ (_EMPTY typeIR_f nameIR_f `;) `, `... }
   -- if expressionNoteIR = `( typeIR ctk_f )
 
 rule Expr_ok/multiple-non-default:
@@ -671,7 +671,7 @@ rule Expr_ok/multiple-non-default:
   -- if (typeIR_f = $type_of_typedExpressionIR(typedExpressionIR_f))*
   -- if (ctk_f = $ctk_of_typedExpressionIR(typedExpressionIR_f))*
   ---- ;; create typed expression
-  -- if typeIR = RECORD `{ (`EMPTY typeIR_f nameIR_f `;)* }
+  -- if typeIR = RECORD `{ (_EMPTY typeIR_f nameIR_f `;)* }
   -- if ctk = $joins_ctk(ctk_f*)
   -- if expressionNoteIR = `( typeIR ctk )
 
@@ -690,7 +690,7 @@ rule Expr_ok/multiple-default:
   -- if (typeIR_f = $type_of_typedExpressionIR(typedExpressionIR_f))*
   -- if (ctk_f = $ctk_of_typedExpressionIR(typedExpressionIR_f))*
   ---- ;; create typed expression
-  -- if typeIR = RECORD `{ (`EMPTY typeIR_f nameIR_f `;)* `, `... }
+  -- if typeIR = RECORD `{ (_EMPTY typeIR_f nameIR_f `;)* `, `... }
   -- if ctk = $joins_ctk(ctk_f*)
   -- if expressionNoteIR = `( typeIR ctk )
 
@@ -1247,7 +1247,7 @@ rule Expr_ok/non-typeArgumentList-static_assert:
       = callableTargetIR `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   -- if expressionNoteIR = `( typeIR_ret ctk )
   -- Expr_eval_lctk:
-      p TC |- (callExpressionIR `# expressionNoteIR) ~> (`B true)
+      p TC |- (callExpressionIR `# expressionNoteIR) ~> (_B true)
   -- if literalExpressionIR = TRUE
 
 rule Expr_ok/non-typeArgumentList:
