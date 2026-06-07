@@ -172,6 +172,139 @@ let quickcheck_command =
       ~target:(module T)
       ~generalize ~max_steps ~num_tests ~manual_gens:Manual_gen.manual_gens lang
       qc
+    |> Result.map ignore
+    |> Result.map_error (fun e ->
+           Error.QuickcheckError (Quickcheck.Driver.error_to_string e))
+
+(* Create [dir] and any missing parents, like `mkdir -p`. *)
+let rec ensure_dir dir =
+  if dir = "" || dir = "." || dir = Filename.dirname dir then ()
+  else if Sys.file_exists dir then ()
+  else (
+    ensure_dir (Filename.dirname dir);
+    try Sys.mkdir dir 0o755 with Sys_error _ -> ())
+
+(* Replace characters unsafe in a file name with '_'. *)
+let sanitize_name =
+  String.map (fun c ->
+      if
+        (c >= 'a' && c <= 'z')
+        || (c >= 'A' && c <= 'Z')
+        || (c >= '0' && c <= '9')
+        || c = '_' || c = '-'
+      then c
+      else '_')
+
+(* Render the [prog] of [env] to [.imp] source, but only if it round-trips back
+   into a program that still fails the property. Generators can emit IL values
+   that differ from {!Parse}'s representation (e.g. atom variants the lexer
+   normalises differently); rendering "repairs" those, so a counterexample that
+   stops reproducing after re-parsing would be a misleading regression test. *)
+let render_reproducing_imp name env recheck : (string, string) result =
+  let binding =
+    match List.assoc_opt "prog" env with
+    | Some v -> Some ("prog", v)
+    | None -> ( match env with b :: _ -> Some b | [] -> None)
+  in
+  match binding with
+  | None -> Error "no input to render"
+  | Some (key, v) -> (
+      match Print_surface.string_of_prog v with
+      | exception Print_surface.Unsupported what ->
+          Error (Printf.sprintf "no surface syntax (%s)" what)
+      | text -> (
+          match Parse.parse_string_exn ~filename:name text with
+          | exception _ -> Error "rendering did not re-parse"
+          | v' ->
+              let env' =
+                List.map (fun (k, vv) -> (k, if k = key then v' else vv)) env
+              in
+              if recheck env' then Ok text
+              else Error "rendering no longer reproduces"))
+
+(* Lowest-numbered [counter_<name>[_k].imp] slot in [dir] not already taken. *)
+let rec free_slot dir base i =
+  let candidate =
+    if i = 0 then base ^ ".imp" else Printf.sprintf "%s_%d.imp" base i
+  in
+  if Sys.file_exists (Filename.concat dir candidate) then
+    free_slot dir base (i + 1)
+  else candidate
+
+let save_counterexample ~out_dir name env recheck =
+  match render_reproducing_imp name env recheck with
+  | Error reason -> Printf.eprintf "fuzz: %s: %s; not saved\n%!" name reason
+  | Ok text ->
+      ensure_dir out_dir;
+      let content =
+        Printf.sprintf "// quickcheck counterexample for %s\n%s\n" name text
+      in
+      (* Skip exact duplicates already on disk, and never overwrite an existing
+         file: each distinct counterexample lands in its own numbered slot. *)
+      let read f =
+        try Some (Parse.read_file (Filename.concat out_dir f)) with _ -> None
+      in
+      let entries = try Sys.readdir out_dir with Sys_error _ -> [||] in
+      if
+        Array.exists
+          (fun f -> Filename.check_suffix f ".imp" && read f = Some content)
+          entries
+      then Printf.printf "  counterexample for %s already saved\n%!" name
+      else
+        let file =
+          Filename.concat out_dir
+            (free_slot out_dir ("counter_" ^ sanitize_name name) 0)
+        in
+        let oc = open_out file in
+        output_string oc content;
+        close_out oc;
+        Printf.printf "  saved counterexample to %s\n%!" file
+
+let fuzz_command =
+  Core.Command.basic
+    ~summary:
+      "run quickcheck properties and save counterexamples as .imp test files"
+  @@
+  let open Core.Command.Let_syntax in
+  let open Core.Command.Param in
+  let%map filenames_spec = Cli.Cli_args.Spec.files_flag
+  and max_steps =
+    flag "--max-steps"
+      (optional_with_default 100 int)
+      ~doc:"N max steps per relation evaluation (default 100)"
+  and num_tests =
+    flag "--num-tests"
+      (optional_with_default 100 int)
+      ~doc:"N number of test cases to generate (default 100)"
+  and out_dir =
+    flag "--out-dir"
+      (optional_with_default "tests/fuzz" string)
+      ~doc:"DIR directory for counterexample .imp files (default tests/fuzz)"
+  and color = Cli.Cli_args.Output.color_flag in
+  fun () ->
+    Cli.Error_handling.guard_unit ~color @@ fun () ->
+    let module T = Target in
+    let open Spectec in
+    let ( let* ) = Result.bind in
+    let* filenames =
+      match filenames_spec with
+      | [] -> Cli.Spec_source.files (Cli.Spec_source.Dir T.spec_dir)
+      | files -> Ok files
+    in
+    let* spec = parse_spec_files filenames in
+    let* { lang; qc } = elaborate spec in
+    (* Premise evaluation drives the instrumentation dispatcher, so a session
+       must be active even though fuzzing registers no coverage handlers. *)
+    Instrumentation.with_instrumentation Instrumentation.Config.default
+      (Instrumentation.Static.IlSpec lang)
+    @@ fun () ->
+    Quickcheck.Driver.check
+      ~target:(module T)
+      ~generalize:false ~max_steps ~num_tests
+      ~manual_gens:Manual_gen.manual_gens lang qc
+    |> Result.map
+         (List.iter (fun (cx : Quickcheck.Driver.counterexample) ->
+              save_counterexample ~out_dir cx.name cx.env cx.recheck))
     |> Result.map_error (fun e ->
            Error.QuickcheckError (Quickcheck.Driver.error_to_string e))
 
@@ -197,5 +330,6 @@ module Cli : Cli.Target_cli.S = struct
           [ (module Typecheck_cli); (module Eval_cli) ];
         Subcommand.make_checkpoint target ~name:"checkpoint";
         ("quickcheck", quickcheck_command);
+        ("fuzz", fuzz_command);
       ]
 end

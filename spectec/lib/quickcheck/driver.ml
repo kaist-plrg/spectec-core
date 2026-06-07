@@ -61,7 +61,9 @@ let gen_free_vars_manual ~(manual_gens : (string * manual_gen) list)
 let run_property ~target ~generalize ~max_steps ~num_tests
     ~(manual_gens : (string * manual_gen) list) (core_spec : spec)
     ~(side_prems : prem list) ~(goal : prem) ~(hints : hint list) :
-    (Test.outcome, error) Stdlib.result =
+    ( Test.outcome * (id' * value) list option * ((id' * value) list -> bool),
+      error )
+    Stdlib.result =
   let config = { Test.default_config with Test.num_tests } in
   let generator = find_generator_hint hints in
   let inputs = Free_vars.of_premises ~core_spec (side_prems @ [ goal ]) in
@@ -76,6 +78,10 @@ let run_property ~target ~generalize ~max_steps ~num_tests
       let generalize_fn =
         if generalize then Some (Generalize.generalize_env core_spec) else None
       in
+      (* Holds the most recent failing assignment. Shrinking re-runs the body
+         on smaller inputs, so by the time [Test.run] returns this is the
+         minimal counterexample. *)
+      let captured : (id' * value) list option ref = ref None in
       let prop =
         Property.for_all ~shrink:(shrink_env core_spec)
           ?generalize:generalize_fn ~show:show_env gen (fun bindings ->
@@ -90,7 +96,9 @@ let run_property ~target ~generalize ~max_steps ~num_tests
               | Premise_eval.Holds -> (
                   match Premise_eval.eval eval_env ~bindings goal with
                   | Premise_eval.Holds -> Property.Verdict.pass
-                  | Premise_eval.Fails -> Property.Verdict.fail
+                  | Premise_eval.Fails ->
+                      captured := Some bindings;
+                      Property.Verdict.fail
                   | Premise_eval.StepLimit | Premise_eval.Unsupported _ ->
                       Property.Verdict.discard)
               | Premise_eval.Fails | Premise_eval.StepLimit
@@ -104,17 +112,33 @@ let run_property ~target ~generalize ~max_steps ~num_tests
                 Instrumentation.Node_coverage_il.restore premise_snapshot);
             Property.of_verdict verdict)
       in
-      Ok (Test.run ~config prop)
+      (* [true] iff [bindings] still reproduces: side premises hold, goal fails. *)
+      let recheck (bindings : (id' * value) list) : bool =
+        match Premise_eval.eval_side eval_env ~bindings side_prems with
+        | Premise_eval.Holds -> (
+            match Premise_eval.eval eval_env ~bindings goal with
+            | Premise_eval.Fails -> true
+            | _ -> false)
+        | _ -> false
+      in
+      let outcome = Test.run ~config prop in
+      Ok (outcome, !captured, recheck)
+
+type counterexample = {
+  name : string;
+  env : (id' * value) list;
+  recheck : (id' * value) list -> bool;
+}
 
 let check ~target ~generalize ~max_steps ~num_tests ~manual_gens
-    (spec_il : spec) (qc_spec : Qc_il.spec) : unit result =
+    (spec_il : spec) (qc_spec : Qc_il.spec) : counterexample list result =
   List.fold_left
     (fun acc qc_def ->
       match acc with
       | Error _ -> acc
-      | Ok () -> (
+      | Ok counterexamples -> (
           match qc_def with
-          | Qc_il.BuiltinGeneratorD _ -> Ok ()
+          | Qc_il.BuiltinGeneratorD _ -> Ok counterexamples
           | Qc_il.PropertyD (name_id, side_prems, goal, hints) -> (
               let name = name_id.it in
               Printf.printf "[Quickcheck %s: Test]\n" name;
@@ -123,7 +147,12 @@ let check ~target ~generalize ~max_steps ~num_tests ~manual_gens
                   ~manual_gens spec_il ~side_prems ~goal ~hints
               with
               | Error _ as e -> e
-              | Ok outcome ->
+              | Ok (outcome, captured, recheck) ->
                   Test.print_outcome outcome;
-                  Ok ())))
-    (Ok ()) qc_spec
+                  Ok
+                    (match (outcome, captured) with
+                    | Test.Fail _, Some env ->
+                        { name; env; recheck } :: counterexamples
+                    | _ -> counterexamples))))
+    (Ok []) qc_spec
+  |> Result.map List.rev
