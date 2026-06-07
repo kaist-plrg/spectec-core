@@ -12,6 +12,8 @@ The impty group lists its subcommands:
     batch                      . Run batch over all impty input specs
     checkpoint                 . Checkpoint utilities
     eval                       . Run impty evaluator
+    fuzz                       . run quickcheck properties and save
+                                 counterexamples as .imp test files
     parse                      . parse an impty program to an IL value
     quickcheck                 . run quickcheck properties declared in an impty
                                  spec
