@@ -396,10 +396,10 @@ let to_doc_def (def : def) =
         ~body:(P.string ": " ^^ to_doc_plaintyp plaintyp)
       ^^ to_doc_hints_block hints
   | PropertyD (relid, prems, goal, hints) ->
-      P.string "property " ^^ to_doc_relid relid ^^ to_doc_hints hints
-      ^^ P.string ":" ^^ P.hardline ^^ P.string "  "
+      P.string "property " ^^ to_doc_relid relid ^^ P.string ":" ^^ P.hardline
+      ^^ P.string "  "
       ^^ P.align (to_doc_prem goal)
-      ^^ to_doc_prems prems
+      ^^ to_doc_prems prems ^^ to_doc_hints_block hints
   | SepD -> P.empty
 
 (* [SepD] is dropped; one blank line between every pair of remaining defs. *)
