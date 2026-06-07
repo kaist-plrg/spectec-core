@@ -143,8 +143,8 @@ let quickcheck_command =
       ~doc:"N max steps per relation evaluation (default 100)"
   and num_tests =
     flag "--num-tests"
-      (optional_with_default 100 int)
-      ~doc:"N number of test cases to generate (default 100)"
+      (optional_with_default 500 int)
+      ~doc:"N number of test cases to generate (default 500)"
   and config = Cli.Cli_args.Interpreter.config_flags
   and color = Cli.Cli_args.Output.color_flag in
   fun () ->
