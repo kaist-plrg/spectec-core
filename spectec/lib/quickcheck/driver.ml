@@ -62,7 +62,6 @@ let run_property ~target ~generalize ~max_steps ~num_tests
     ~(manual_gens : (string * manual_gen) list) (core_spec : spec)
     ~(side_prems : prem list) ~(goal : prem) ~(hints : hint list) :
     (Test.outcome, error) Stdlib.result =
-  let config = { Test.default_config with Test.num_tests } in
   let generator = find_generator_hint hints in
   let inputs = Free_vars.of_premises ~core_spec (side_prems @ [ goal ]) in
   let eval_env = Premise_eval.{ target; core_spec; max_steps } in
@@ -104,7 +103,7 @@ let run_property ~target ~generalize ~max_steps ~num_tests
                 Instrumentation.Node_coverage_il.restore premise_snapshot);
             Property.of_verdict verdict)
       in
-      Ok (Test.run ~config prop)
+      Ok (Test.run ~num_tests prop)
 
 let check ~target ~generalize ~max_steps ~num_tests ~manual_gens
     (spec_il : spec) (qc_spec : Qc_il.spec) : unit result =
