@@ -12,6 +12,8 @@ module Value = struct
   let to_string t = Print.string_of_value ~short:false ~level:0 t
 end
 
+module Case = Case
+
 module Typ = struct
   include Typ
 

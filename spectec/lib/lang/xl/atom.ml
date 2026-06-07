@@ -143,25 +143,26 @@ let string_of_atom_exact : t -> string = function
   | LBrace -> "`{"
   | RBrace -> "}"
 
-(* Internal atom builder, used by target frontends. *)
-let of_string : string -> t = function
-  | "<" -> LAngle
-  | ">" -> RAngle
-  | "(" -> LParen
-  | ")" -> RParen
-  | "[" -> LBrack
-  | "]" -> RBrack
-  | "{" -> LBrace
-  | "}" -> RBrace
-  | "``<" -> Operator "<"
-  | "``>" -> Operator ">"
-  | "``[" -> Operator "["
-  | "``]" -> Operator "]"
-  | "``{" -> Operator "{"
-  | "``}" -> Operator "}"
-  (* `_` + upper-case word is a silent atom; a lone `_` is the concrete
-     underscore terminal, so it must fall through to Operator. *)
-  | s when String.length s > 1 && s.[0] = '_' && s.[1] >= 'A' && s.[1] <= 'Z' ->
-      Tag (String.sub s 1 (String.length s - 1))
-  | s when String.length s > 0 && s.[0] >= 'A' && s.[0] <= 'Z' -> Keyword s
-  | s -> Operator s
+let is_upid (s : string) : bool =
+  String.length s > 0
+  && (match s.[0] with 'A' .. 'Z' -> true | _ -> false)
+  && String.for_all
+       (function
+         | 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' | '_' | '\'' -> true
+         | _ -> false)
+       s
+
+(* Keyword payload is an upper identifier (upid in pass/parse/lexer.mll). *)
+let keyword (s : string) : t =
+  if is_upid s then Keyword s
+  else invalid_arg ("Atom.keyword: expected upid: " ^ s)
+
+(* Tag name is an upper identifier; the silencing underscore is not part of it. *)
+let tag (s : string) : t =
+  if is_upid s then Tag s else invalid_arg ("Atom.tag: expected upid: " ^ s)
+
+(* Operator payload is any run with no single quote or newline. *)
+let operator (s : string) : t =
+  if String.contains s '\'' || String.contains s '\n' then
+    invalid_arg ("Atom.operator: unquotable operator: " ^ s)
+  else Operator s

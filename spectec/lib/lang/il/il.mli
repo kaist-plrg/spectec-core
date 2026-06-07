@@ -16,6 +16,9 @@ module Value : sig
   val to_string : t -> string
 end
 
+(** Convenience constructors for CaseV values, used by target frontends. *)
+module Case : module type of Case
+
 (** Constructors and operations on IL Types. *)
 module Typ : sig
   include module type of Typ

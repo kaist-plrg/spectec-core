@@ -184,16 +184,6 @@ let tuple (vs : t list) : t =
 let opt (typ : typ) (v : t option) : t = OptV v |> make_val (Typ.opt typ)
 let list (typ : typ) (vs : t list) : t = ListV vs |> make_val (Typ.list typ)
 
-(* CaseV construction helpers *)
-
-let atom ?(at = no_region) (s : string) : t Mixfix.mixeme =
-  Mixfix.Atom (Xl.Atom.of_string s $ at)
-
-let arg (v : t) : t Mixfix.mixeme = Mixfix.Arg v
-
-let case_v ~(var : string) (mixemes : t Mixfix.t) : t =
-  CaseV mixemes |> make_val (Typ.var var [])
-
 let id_of_case_v (v : t) : string =
   match (v.it, v.note.typ) with
   | CaseV _, VarT { synid; _ } -> synid.it
