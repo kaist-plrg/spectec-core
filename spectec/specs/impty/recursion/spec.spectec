@@ -312,6 +312,7 @@ rule Run_prog:
 builtin generator $functions_prog : prog
 
 ;; Type soundness
-property Type_safety hint(generator $functions_prog) :
+property Type_safety :
   Eval_prog: |- prog -| env
   -- Check_prog: |- prog
+  hint(generator $functions_prog)
