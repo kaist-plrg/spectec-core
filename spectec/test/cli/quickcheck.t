@@ -52,15 +52,15 @@ so a program like `1 <= false` typechecks but gets stuck in evaluation:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 500 --color never
   [Quickcheck Type_safety: Test]
-  Falsifiable, after 14 tests:
-    prog=bool x0 = +1 <= false
+  Falsifiable, after 56 tests:
+    prog=while +1 <= false do skip end
 
 With --generalize, the shrunk counterexample is widened to the family of
 programs that exhibit the bug:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 500 --generalize --color never
   [Quickcheck Type_safety: Test]
-  Falsifiable, after 14 tests:
-    prog=int g = +2 <= false
+  Falsifiable, after 56 tests:
+    prog=while -3 <= true do skip end
     (Generalized)
-    prog=[type] [id] = [int] <= [bool]
+    prog=while [int] <= [bool] do [command] end

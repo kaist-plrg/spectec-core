@@ -70,7 +70,7 @@ let run ~num_tests ?(config = default_config) prop =
     else if discarded > num_tests * 10 then Gave_up { num_tests = i }
     else
       let size =
-        if config.max_size = 0 then 0 else i * config.max_size / num_tests
+        if config.max_size = 0 then 0 else i mod (config.max_size + 1)
       in
       let trial_rand, next_rand = Random.split rand in
       let verdict = Gen.run prop ~size ~rand:trial_rand in
