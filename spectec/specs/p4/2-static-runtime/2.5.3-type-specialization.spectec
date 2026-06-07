@@ -21,7 +21,7 @@ def $specialize_typeDefIR(typeDefIR_base, typeArgumentIR*)
   ---- ;; check arity
   -- if |typeParameterIR*| = |typeArgumentIR*|
   ---- ;; specialize
-  -- if theta = `{ (typeParameterIR `: typeArgumentIR)* }
+  -- if theta = `{ (typeParameterIR ':' typeArgumentIR)* }
   -- if typeIR_base = $typeIR_of_typeDefIR(typeDefIR_base)
   -- if typeIR_spec = $subst_typeIR(theta, typeIR_base)
 
@@ -47,8 +47,8 @@ def $specialize_callableTypeDefIR(callableTypeDefIR_base, typeArgumentIR*)
   -- if (typeArgumentIR_impl = _NAME typeId_fresh)*
   ---- ;; specialize
   -- if theta
-      = `{ (typeParameterIR_expl `: typeArgumentIR)*
-           ++ (typeParameterIR_impl `: typeArgumentIR_impl)* }
+      = `{ (typeParameterIR_expl ':' typeArgumentIR)*
+           ++ (typeParameterIR_impl ':' typeArgumentIR_impl)* }
   -- if callableTypeIR_base
       = $callableTypeIR_of_callableTypeDefIR(callableTypeDefIR_base)
   -- if callableTypeIR_spec
@@ -66,7 +66,7 @@ def $specialize_callableTypeDefIR(callableTypeDefIR_base, typeArgumentIR*)
   -- if typeId_fresh* = $fresh_typeIds(|typeParameterIR*|)
   -- if (typeArgumentIR_fresh = _NAME typeId_fresh)*
   ---- ;; specialize
-  -- if theta = `{ (typeParameterIR `: typeArgumentIR_fresh)* }
+  -- if theta = `{ (typeParameterIR ':' typeArgumentIR_fresh)* }
   -- if callableTypeIR_base
       = $callableTypeIR_of_callableTypeDefIR(callableTypeDefIR_base)
   -- if callableTypeIR_spec
@@ -81,8 +81,8 @@ dec $specialize_constructorTypeDefIR(constructorTypeDefIR, typeIR*)
   hint(prose_in %0 "specialized by" %1)
 
 def $specialize_constructorTypeDefIR(
-    CONSTRUCTOR `< typeParameterIR_expl* `, typeParameterIR_impl* >
-      `( constructorParameterIR* ) `: typeIR,
+    CONSTRUCTOR `< typeParameterIR_expl* ',' typeParameterIR_impl* >
+      `( constructorParameterIR* ) ':' typeIR,
     typeArgumentIR*)
   = (constructorTypeIR_spec, typeId_fresh*)
   ---- ;; retrieve type parameters
@@ -95,16 +95,16 @@ def $specialize_constructorTypeDefIR(
   -- if (typeArgumentIR_impl = _NAME typeId_fresh)*
   ---- ;; specialize
   -- if theta
-      = `{ (typeParameterIR_expl `: typeArgumentIR)*
-           ++ (typeParameterIR_impl `: typeArgumentIR_impl)* }
+      = `{ (typeParameterIR_expl ':' typeArgumentIR)*
+           ++ (typeParameterIR_impl ':' typeArgumentIR_impl)* }
   -- if constructorTypeIR_spec
       = $subst_constructorTypeIR(
           theta,
-          CONSTRUCTOR `( constructorParameterIR* ) `: typeIR)
+          CONSTRUCTOR `( constructorParameterIR* ) ':' typeIR)
 
 def $specialize_constructorTypeDefIR(
-    CONSTRUCTOR `< typeParameterIR_expl* `, typeParameterIR_impl* >
-      `( constructorParameterIR* ) `: typeIR,
+    CONSTRUCTOR `< typeParameterIR_expl* ',' typeParameterIR_impl* >
+      `( constructorParameterIR* ) ':' typeIR,
     typeArgumentIR*)
   = (constructorTypeIR_spec, typeId_fresh*)
   ---- ;; retrieve type parameters
@@ -115,8 +115,8 @@ def $specialize_constructorTypeDefIR(
   -- if typeId_fresh* = $fresh_typeIds(|typeParameterIR*|)
   -- if (typeArgumentIR_fresh = _NAME typeId_fresh)*
   ---- ;; specialize
-  -- if theta = `{ (typeParameterIR `: typeArgumentIR_fresh)* }
+  -- if theta = `{ (typeParameterIR ':' typeArgumentIR_fresh)* }
   -- if constructorTypeIR_spec
       = $subst_constructorTypeIR(
           theta,
-          CONSTRUCTOR `( constructorParameterIR* ) `: typeIR)
+          CONSTRUCTOR `( constructorParameterIR* ) ':' typeIR)

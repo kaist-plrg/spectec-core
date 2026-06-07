@@ -47,7 +47,7 @@ rule ParserStmt_inst/callStatementIR:
 
 ;;; directApplicationStatementIR
 ;;; syntax directApplicationStatementIR =
-;;;   prefixedNameIR `. APPLY `( argumentListIR ) `;
+;;;   prefixedNameIR '.' APPLY `( argumentListIR ) ';'
 
 rule ParserStmt_inst/directApplicationStatementIR:
   IC STO_0 |- directApplicationStatementIR

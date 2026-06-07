@@ -81,7 +81,7 @@ def $constructorId(name, `( parameterList )) = $callableId(name, parameterList)
 
 def $callableId'(_EMPTY) = eps
 def $callableId'(_ _ _ name _) = $name(name)
-def $callableId'(nonEmptyParameterList `, (_ _ _ name _))
+def $callableId'(nonEmptyParameterList ',' (_ _ _ name _))
   = $callableId'(nonEmptyParameterList) ++ [ $name(name) ]
 
 ;;

@@ -1,94 +1,51 @@
 [@@@ocamlformat "disable"]
 
-(* Tick-payload conventions:
-   - `Plain  : bare form     (e.g. `.`)
-   - `Tick   : one-backtick  (e.g. `` `. ``)
-   - `Tick2  : two-backtick  (e.g. `` ``< ``)
-   Each constructor admits only the tick depths its source-level token set
-   actually produces, so an unparseable depth is unrepresentable. *)
+(* Concrete operators are written in single quotes ('+', '->', ';') and carried
+   by the generic [Operator] atom. The curated notation operators (Arrow, Dot,
+   ...) are abstract mixfix atoms written bare, and carry precedence in [kind].
+
+   The matched grouping brackets keep dedicated constructors so [kind] can give
+   them bracket precedence, and spelled with a leading backtick on the opener
+   (`` `( ``, `` `< ``). *)
 
 type t =
-  | Atom of string                  (* atomid *)
-  | SilentAtom of string            (* `atomid *)
-  | Sub                             (* `<:` *)
-  | Sup                             (* `:>` *)
-  | Turnstile                       (* `|-` *)
-  | Tilesturn                       (* `-|` *)
-  | DoubleQuote                     (* ``''` *)
-  | Underscore                      (* ``_` *)
-  | Arrow of [ `Plain | `Tick ]     (* `->` or ``->` *)
-  | ArrowSub                        (* `->_` *)
-  | DoubleArrow                     (* ``=>` *)
-  | DoubleArrowSub                  (* ``=>_` *)
-  | DoubleArrowLong                 (* ``==>` *)
-  | SqArrow                         (* `~>` *)
-  | SqArrowStar                     (* `~>*` *)
-  | Dot of [ `Plain | `Tick ]       (* `.` or ``.` *)
-  | Dot2 of [ `Plain | `Tick ]      (* `..` or ``..` *)
-  | Dot3 of [ `Plain | `Tick ]      (* `...` or ``...` *)
-  | Comma                           (* ``,` *)
-  | Semicolon of [ `Plain | `Tick ] (* `;` or ``;` *)
-  | Colon of [ `Plain | `Tick ]     (* `:` or ``:` *)
-  | ColonEq of [ `Plain | `Tick ]   (* `:=` or ``:=` *)
-  | Hash                            (* ``#` *)
-  | Dollar                          (* ``$` *)
-  | At                              (* ``@` *)
-  | Quest                           (* ``?` *)
-  | Bang                            (* ``!` *)
-  | BangEq                          (* ``!=` *)
-  | Tilde                           (* ``~` *)
-  | Tilde2 of [ `Plain | `Tick ]    (* `~~` or ``~~` *)
-  | LAngle of [ `Tick | `Tick2 ]    (* ``<` or ```<` *)
-  | LAngle2                         (* `<<` *)
-  | LAngleEq                        (* ``<=` *)
-  | LAngle2Eq                       (* `<<=` *)
-  | RAngle of [ `Plain | `Tick2 ]   (* `>` or ```>` *)
-  | RAngle2                         (* `>>` *)
-  | RAngleEq                        (* ``>=` *)
-  | RAngle2Eq                       (* `>>=` *)
-  | LParen                          (* ``(` *)
-  | RParen                          (* ``)` *)
-  | LBrack of [ `Tick | `Tick2 ]    (* ``[` or ```[` *)
-  | RBrack of [ `Plain | `Tick2 ]   (* `]` or ```]` *)
-  | LBrace of [ `Tick | `Tick2 ]    (* ``{` or ```{` *)
-  | LBraceHashRBrace                (* `{#}` *)
-  | RBrace of [ `Plain | `Tick2 ]   (* `}` or ```}` *)
-  | Plus                            (* ``+` *)
-  | Plus2                           (* ``++` *)
-  | PlusEq                          (* ``+=` *)
-  | Minus                           (* ``-` *)
-  | MinusEq                         (* ``-=` *)
-  | Star                            (* ``*` *)
-  | StarEq                          (* ``*=` *)
-  | Slash                           (* ``/` *)
-  | SlashEq                         (* ``/=` *)
-  | Backslash                       (* ``\` *)
-  | Percent                         (* ``%` *)
-  | PercentEq                       (* ``%=` *)
-  | Eq                              (* ``=` *)
-  | Eq2                             (* `==` *)
-  | Amp                             (* ``&` *)
-  | Amp2                            (* ``&&` *)
-  | Amp3                            (* ``&&&` *)
-  | AmpEq                           (* ``&=` *)
-  | Up                              (* ``^` *)
-  | UpEq                            (* ``^=` *)
-  | Bar                             (* ``|` *)
-  | Bar2                            (* ``||` *)
-  | BarEq                           (* ``|=` *)
-  | SPlus                           (* ``|+|` *)
-  | SPlusEq                         (* ``|+|=` *)
-  | SMinus                          (* ``|-|` *)
-  | SMinusEq                        (* ``|-|=` *)
+  | Atom of string                  (* concrete upper-case word: INT *)
+  | SilentAtom of string            (* abstract upper-case word: _NUM *)
+  | Operator of string              (* concrete operator: '+', '->', ';' *)
+  | Sub                             (* <: *)
+  | Sup                             (* :> *)
+  | Turnstile                       (* |- *)
+  | Tilesturn                       (* -| *)
+  | Arrow                           (* -> *)
+  | ArrowSub                        (* ->_ *)
+  | DoubleArrowSub                  (* =>_ *)
+  | DoubleArrowLong                 (* ==> *)
+  | SqArrow                         (* ~> *)
+  | SqArrowStar                     (* ~>* *)
+  | Dot                             (* . *)
+  | Dot2                            (* .. *)
+  | Dot3                            (* ... *)
+  | Semicolon                       (* ; *)
+  | Colon                           (* : *)
+  | ColonEq                         (* := *)
+  | Tilde2                          (* ~~ *)
+  | Backslash                       (* \ *)
+  | LAngle                          (* `< *)
+  | RAngle                          (* > *)
+  | LParen                          (* `( *)
+  | RParen                          (* ) *)
+  | LBrack                          (* `[ *)
+  | RBrack                          (* ] *)
+  | LBrace                          (* `{ *)
+  | RBrace                          (* } *)
 [@@@ocamlformat "enable"]
 
 let compare atom_a atom_b = compare atom_a atom_b
 let eq atom_a atom_b = compare atom_a atom_b = 0
 
 (* Precedence mirrors parser.mly: relop atoms (levels 1-4) are looser than
-   infixop atoms (levels 5-9). Higher level = tighter. Ticked forms of infix
-   atoms fall through to Plain kind, since escape syntax suppresses the
-   operator role. *)
+   infixop atoms (levels 5-9). Higher level = tighter. An [Operator] atom is a
+   literal terminal with no precedence, so it is Plain. *)
 
 type assoc = Left | Right | Non
 
@@ -99,277 +56,112 @@ type kind =
   | BracketR
 
 let kind : t -> kind = function
-  | LAngle `Tick | LParen | LBrack `Tick | LBrace `Tick -> BracketL
-  | RAngle `Plain | RParen | RBrack `Plain | RBrace `Plain -> BracketR
+  | LAngle | LParen | LBrack | LBrace -> BracketL
+  | RAngle | RParen | RBrack | RBrace -> BracketR
   | Turnstile -> Infix { assoc = Non; level = 1 }
   | Tilesturn -> Infix { assoc = Non; level = 2 }
   | SqArrow | SqArrowStar -> Infix { assoc = Right; level = 3 }
-  | Colon `Plain | Tilde2 `Plain -> Infix { assoc = Left; level = 4 }
-  | ColonEq `Plain | DoubleArrowSub | DoubleArrowLong ->
+  | Colon | Tilde2 -> Infix { assoc = Left; level = 4 }
+  | ColonEq | DoubleArrowSub | DoubleArrowLong ->
       Infix { assoc = Right; level = 5 }
-  | Arrow `Plain | ArrowSub -> Infix { assoc = Right; level = 6 }
-  | Semicolon `Plain -> Infix { assoc = Left; level = 7 }
-  | Dot `Plain | Dot2 `Plain | Dot3 `Plain -> Infix { assoc = Left; level = 8 }
+  | Arrow | ArrowSub -> Infix { assoc = Right; level = 6 }
+  | Semicolon -> Infix { assoc = Left; level = 7 }
+  | Dot | Dot2 | Dot3 -> Infix { assoc = Left; level = 8 }
   | Backslash -> Infix { assoc = Left; level = 9 }
   | _ -> Plain
 
 let closer_of : t -> t option = function
-  | LAngle `Tick -> Some (RAngle `Plain)
+  | LAngle -> Some RAngle
   | LParen -> Some RParen
-  | LBrack `Tick -> Some (RBrack `Plain)
-  | LBrace `Tick -> Some (RBrace `Plain)
+  | LBrack -> Some RBrack
+  | LBrace -> Some RBrace
   | _ -> None
 
-(* Lossy pretty-printing, omitting backticks on escaped atoms. *)
+(* Lossy pretty-printing, canonical glyph. Drives the IL/elab/struct output;
+   SilentAtom is suppressed by the IL printer. *)
 let string_of_atom = function
   | Atom id -> id
   | SilentAtom id -> "_" ^ id
+  | Operator s -> s
   | Sub -> "<:"
   | Sup -> ":>"
   | Turnstile -> "|-"
   | Tilesturn -> "-|"
-  | DoubleQuote -> "\""
-  | Underscore -> "_"
-  | Arrow _ -> "->"
+  | Arrow -> "->"
   | ArrowSub -> "->_"
-  | DoubleArrow -> "=>"
   | DoubleArrowSub -> "=>_"
   | DoubleArrowLong -> "==>"
   | SqArrow -> "~>"
   | SqArrowStar -> "~>*"
-  | Dot _ -> "."
-  | Dot2 _ -> ".."
-  | Dot3 _ -> "..."
-  | Comma -> ","
-  | Semicolon _ -> ";"
-  | Colon _ -> ":"
-  | ColonEq _ -> ":="
-  | Hash -> "#"
-  | Dollar -> "$"
-  | At -> "@"
-  | Quest -> "?"
-  | Bang -> "!"
-  | BangEq -> "!="
-  | Tilde -> "~"
-  | Tilde2 _ -> "~~"
-  | LAngle _ -> "<"
-  | LAngle2 -> "<<"
-  | LAngleEq -> "<="
-  | LAngle2Eq -> "<<="
-  | RAngle _ -> ">"
-  | RAngle2 -> ">>"
-  | RAngleEq -> ">="
-  | RAngle2Eq -> ">>="
+  | Dot -> "."
+  | Dot2 -> ".."
+  | Dot3 -> "..."
+  | Semicolon -> ";"
+  | Colon -> ":"
+  | ColonEq -> ":="
+  | Tilde2 -> "~~"
+  | Backslash -> "\\"
+  | LAngle -> "<"
+  | RAngle -> ">"
   | LParen -> "("
   | RParen -> ")"
-  | LBrack _ -> "["
-  | RBrack _ -> "]"
-  | LBrace _ -> "{"
-  | LBraceHashRBrace -> "{#}"
-  | RBrace _ -> "}"
-  | Plus -> "+"
-  | Plus2 -> "++"
-  | PlusEq -> "+="
-  | Minus -> "-"
-  | MinusEq -> "-="
-  | Star -> "*"
-  | StarEq -> "*="
-  | Slash -> "/"
-  | SlashEq -> "/="
-  | Backslash -> "\\"
-  | Percent -> "%"
-  | PercentEq -> "%="
-  | Eq -> "="
-  | Eq2 -> "=="
-  | Amp -> "&"
-  | Amp2 -> "&&"
-  | Amp3 -> "&&&"
-  | AmpEq -> "&="
-  | Up -> "^"
-  | UpEq -> "^="
-  | Bar -> "|"
-  | Bar2 -> "||"
-  | BarEq -> "|="
-  | SPlus -> "|+|"
-  | SPlusEq -> "|+|="
-  | SMinus -> "|-|"
-  | SMinusEq -> "|-|="
+  | LBrack -> "["
+  | RBrack -> "]"
+  | LBrace -> "{"
+  | RBrace -> "}"
 
-(* Faithful source-form printer: every atom emits the syntax the parser
-   produced it from, including backtick escapes for atoms whose only
-   parser production is via a TICK_* token. Round-trips with the lexer. *)
+(* Faithful source-form printer: emits the surface syntax the parser reads, so
+   it round-trips through the lexer. Used by the EL unparser. *)
 let string_of_atom_exact : t -> string = function
   | Atom id -> id
   | SilentAtom id -> "_" ^ id
+  | Operator s -> "'" ^ s ^ "'"
   | Sub -> "<:"
   | Sup -> ":>"
   | Turnstile -> "|-"
   | Tilesturn -> "-|"
-  | DoubleQuote -> "`\""
-  | Underscore -> "`_"
-  | Arrow `Plain -> "->"
-  | Arrow `Tick -> "`->"
+  | Arrow -> "->"
   | ArrowSub -> "->_"
-  | DoubleArrow -> "`=>"
   | DoubleArrowSub -> "=>_"
   | DoubleArrowLong -> "==>"
   | SqArrow -> "~>"
   | SqArrowStar -> "~>*"
-  | Dot `Plain -> "."
-  | Dot `Tick -> "`."
-  | Dot2 `Plain -> ".."
-  | Dot2 `Tick -> "`.."
-  | Dot3 `Plain -> "..."
-  | Dot3 `Tick -> "`..."
-  | Comma -> "`,"
-  | Semicolon `Plain -> ";"
-  | Semicolon `Tick -> "`;"
-  | Colon `Plain -> ":"
-  | Colon `Tick -> "`:"
-  | ColonEq `Plain -> ":="
-  | ColonEq `Tick -> "`:="
-  | Hash -> "`#"
-  | Dollar -> "`$"
-  | At -> "`@"
-  | Quest -> "`?"
-  | Bang -> "`!"
-  | BangEq -> "`!="
-  | Tilde -> "`~"
-  | Tilde2 `Plain -> "~~"
-  | Tilde2 `Tick -> "`~~"
-  | LAngle `Tick -> "`<"
-  | LAngle `Tick2 -> "``<"
-  | LAngle2 -> "`<<"
-  | LAngleEq -> "`<="
-  | LAngle2Eq -> "`<<="
-  | RAngle `Plain -> ">"
-  | RAngle `Tick2 -> "``>"
-  | RAngle2 -> "`>>"
-  | RAngleEq -> "`>="
-  | RAngle2Eq -> "`>>="
+  | Dot -> "."
+  | Dot2 -> ".."
+  | Dot3 -> "..."
+  | Semicolon -> ";"
+  | Colon -> ":"
+  | ColonEq -> ":="
+  | Tilde2 -> "~~"
+  | Backslash -> "\\"
+  | LAngle -> "`<"
+  | RAngle -> ">"
   | LParen -> "`("
   | RParen -> ")"
-  | LBrack `Tick -> "`["
-  | LBrack `Tick2 -> "``["
-  | RBrack `Plain -> "]"
-  | RBrack `Tick2 -> "``]"
-  | LBrace `Tick -> "`{"
-  | LBrace `Tick2 -> "``{"
-  | LBraceHashRBrace -> "`{#}"
-  | RBrace `Plain -> "}"
-  | RBrace `Tick2 -> "``}"
-  | Plus -> "`+"
-  | Plus2 -> "`++"
-  | PlusEq -> "`+="
-  | Minus -> "`-"
-  | MinusEq -> "`-="
-  | Star -> "`*"
-  | StarEq -> "`*="
-  | Slash -> "`/"
-  | SlashEq -> "`/="
-  | Backslash -> "\\"
-  | Percent -> "`%"
-  | PercentEq -> "`%="
-  | Eq -> "`="
-  | Eq2 -> "`=="
-  | Amp -> "`&"
-  | Amp2 -> "`&&"
-  | Amp3 -> "`&&&"
-  | AmpEq -> "`&="
-  | Up -> "`^"
-  | UpEq -> "`^="
-  | Bar -> "`|"
-  | Bar2 -> "`||"
-  | BarEq -> "`|="
-  | SPlus -> "`|+|"
-  | SPlusEq -> "`|+|="
-  | SMinus -> "`|-|"
-  | SMinusEq -> "`|-|="
+  | LBrack -> "`["
+  | RBrack -> "]"
+  | LBrace -> "`{"
+  | RBrace -> "}"
 
+(* Internal atom builder, used by target frontends. *)
 let of_string : string -> t = function
-  | "<:" -> Sub
-  | ":>" -> Sup
-  | "|-" -> Turnstile
-  | "-|" -> Tilesturn
-  | "\"" -> DoubleQuote
-  | "_" -> Underscore
-  | "->" -> Arrow `Plain
-  | "`->" -> Arrow `Tick
-  | "->_" -> ArrowSub
-  | "=>" -> DoubleArrow
-  | "=>_" -> DoubleArrowSub
-  | "~>" -> SqArrow
-  | "~>*" -> SqArrowStar
-  | "." -> Dot `Plain
-  | "`." -> Dot `Tick
-  | ".." -> Dot2 `Plain
-  | "`.." -> Dot2 `Tick
-  | "..." -> Dot3 `Plain
-  | "`..." -> Dot3 `Tick
-  | "," -> Comma
-  | ";" -> Semicolon `Plain
-  | "`;" -> Semicolon `Tick
-  | ":" -> Colon `Plain
-  | "`:" -> Colon `Tick
-  | ":=" -> ColonEq `Plain
-  | "`:=" -> ColonEq `Tick
-  | "#" -> Hash
-  | "$" -> Dollar
-  | "@" -> At
-  | "?" -> Quest
-  | "!" -> Bang
-  | "!=" -> BangEq
-  | "~" -> Tilde
-  | "~~" -> Tilde2 `Plain
-  | "`~~" -> Tilde2 `Tick
-  | "<" -> LAngle `Tick
-  | "``<" -> LAngle `Tick2
-  | "<<" -> LAngle2
-  | "<=" -> LAngleEq
-  | "<<=" -> LAngle2Eq
-  | ">" -> RAngle `Plain
-  | "``>" -> RAngle `Tick2
-  | ">>" -> RAngle2
-  | ">=" -> RAngleEq
-  | ">>=" -> RAngle2Eq
+  | "<" -> LAngle
+  | ">" -> RAngle
   | "(" -> LParen
   | ")" -> RParen
-  | "[" -> LBrack `Tick
-  | "``[" -> LBrack `Tick2
-  | "]" -> RBrack `Plain
-  | "``]" -> RBrack `Tick2
-  | "{" -> LBrace `Tick
-  | "``{" -> LBrace `Tick2
-  | "{#}" -> LBraceHashRBrace
-  | "}" -> RBrace `Plain
-  | "``}" -> RBrace `Tick2
-  | "+" -> Plus
-  | "++" -> Plus2
-  | "+=" -> PlusEq
-  | "-" -> Minus
-  | "-=" -> MinusEq
-  | "*" -> Star
-  | "*=" -> StarEq
-  | "/" -> Slash
-  | "/=" -> SlashEq
-  | "\\" -> Backslash
-  | "%" -> Percent
-  | "%=" -> PercentEq
-  | "=" -> Eq
-  | "==" -> Eq2
-  | "&" -> Amp
-  | "&&" -> Amp2
-  | "&&&" -> Amp3
-  | "&=" -> AmpEq
-  | "^" -> Up
-  | "^=" -> UpEq
-  | "|" -> Bar
-  | "||" -> Bar2
-  | "|=" -> BarEq
-  | "|+|" -> SPlus
-  | "|+|=" -> SPlusEq
-  | "|-|" -> SMinus
-  | "|-|=" -> SMinusEq
-  | s when String.length s > 0 && s.[0] = '_' ->
+  | "[" -> LBrack
+  | "]" -> RBrack
+  | "{" -> LBrace
+  | "}" -> RBrace
+  | "``<" -> Operator "<"
+  | "``>" -> Operator ">"
+  | "``[" -> Operator "["
+  | "``]" -> Operator "]"
+  | "``{" -> Operator "{"
+  | "``}" -> Operator "}"
+  (* `_` + upper-case word is a silent atom; a lone `_` is the concrete
+     underscore terminal, so it must fall through to Operator. *)
+  | s when String.length s > 1 && s.[0] = '_' && s.[1] >= 'A' && s.[1] <= 'Z' ->
       SilentAtom (String.sub s 1 (String.length s - 1))
-  | s -> Atom s
+  | s when String.length s > 0 && s.[0] >= 'A' && s.[0] <= 'Z' -> Atom s
+  | s -> Operator s

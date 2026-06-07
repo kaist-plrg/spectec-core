@@ -1,4 +1,4 @@
-;; The `##` unparenthesize operator appears in regular expression
+;; The '#'#` unparenthesize operator appears in regular expression
 ;; position rather than inside a hint expression.
 
 dec $f : nat

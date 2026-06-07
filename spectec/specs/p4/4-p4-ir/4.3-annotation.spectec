@@ -12,7 +12,7 @@ dec $name_annotation_default(annotationList, nameIR) : nameIR
 
 def $name_annotationToken(_ID text) = text
 def $name_annotationToken(_TID text) = text
-def $name_annotationToken(`" text `") = "\"" ++ text ++ "\""
+def $name_annotationToken('"' text '"') = "\"" ++ text ++ "\""
 def $name_annotationToken(D i) = $int_to_text(i)
 def $name_annotationToken(n W i) = $int_to_text(n) ++ "w" ++ $int_to_text(i)
 def $name_annotationToken(n S i) = $int_to_text(n) ++ "s" ++ $int_to_text(i)
@@ -65,42 +65,42 @@ def $name_annotationToken(VARBIT) = "varbit"
 def $name_annotationToken(VALUE_SET) = "value_set"
 def $name_annotationToken(LIST) = "list"
 def $name_annotationToken(VOID) = "void"
-def $name_annotationToken(`_) = "_"
-def $name_annotationToken(`&&&) = "&&&"
-def $name_annotationToken(`..) = ".."
-def $name_annotationToken(`<<) = "<<"
-def $name_annotationToken(`&&) = "&&"
-def $name_annotationToken(`||) = "||"
-def $name_annotationToken(`==) = "=="
-def $name_annotationToken(`!=) = "!="
-def $name_annotationToken(`>=) = ">="
-def $name_annotationToken(`<=) = "<="
-def $name_annotationToken(`++) = "++"
-def $name_annotationToken(`+) = "+"
-def $name_annotationToken(`|+|) = "|+|"
-def $name_annotationToken(`-) = "-"
-def $name_annotationToken(`|-|) = "|-|"
-def $name_annotationToken(`*) = "*"
-def $name_annotationToken(`/) = "/"
-def $name_annotationToken(`%) = "%"
-def $name_annotationToken(`|) = "|"
-def $name_annotationToken(`&) = "&"
-def $name_annotationToken(`^) = "^"
-def $name_annotationToken(`~) = "~"
-def $name_annotationToken(``[) = "["
-def $name_annotationToken(``]) = "]"
-def $name_annotationToken(``{) = "{"
-def $name_annotationToken(``}) = "}"
-def $name_annotationToken(``<) = "<"
-def $name_annotationToken(``>) = ">"
-def $name_annotationToken(`!) = "!"
-def $name_annotationToken(`:) = ":"
-def $name_annotationToken(`,) = ","
-def $name_annotationToken(`?) = "?"
-def $name_annotationToken(`.) = "."
-def $name_annotationToken(`=) = "="
-def $name_annotationToken(`;) = ";"
-def $name_annotationToken(`@) = "@"
+def $name_annotationToken('_') = "_"
+def $name_annotationToken('&&&') = "&&&"
+def $name_annotationToken('..') = ".."
+def $name_annotationToken('<<') = "<<"
+def $name_annotationToken('&&') = "&&"
+def $name_annotationToken('||') = "||"
+def $name_annotationToken('==') = "=="
+def $name_annotationToken('!=') = "!="
+def $name_annotationToken('>=') = ">="
+def $name_annotationToken('<=') = "<="
+def $name_annotationToken('++') = "++"
+def $name_annotationToken('+') = "+"
+def $name_annotationToken('|+|') = "|+|"
+def $name_annotationToken('-') = "-"
+def $name_annotationToken('|-|') = "|-|"
+def $name_annotationToken('*') = "*"
+def $name_annotationToken('/') = "/"
+def $name_annotationToken('%') = "%"
+def $name_annotationToken('|') = "|"
+def $name_annotationToken('&') = "&"
+def $name_annotationToken('^') = "^"
+def $name_annotationToken('~') = "~"
+def $name_annotationToken('[') = "["
+def $name_annotationToken(']') = "]"
+def $name_annotationToken('{') = "{"
+def $name_annotationToken('}') = "}"
+def $name_annotationToken('<') = "<"
+def $name_annotationToken('>') = ">"
+def $name_annotationToken('!') = "!"
+def $name_annotationToken(':') = ":"
+def $name_annotationToken(',') = ","
+def $name_annotationToken('?') = "?"
+def $name_annotationToken('.') = "."
+def $name_annotationToken('=') = "="
+def $name_annotationToken(';') = ";"
+def $name_annotationToken('@') = "@"
 
 def $name_annotation(annotationList)
   = $concat_<nameIR>(nameIR_found**)
@@ -109,7 +109,7 @@ def $name_annotation(annotationList)
   -- if nameIR_found**
       = $opt_as_seq_<nameIR>(nameIR_opt?)*
 
-def $name_annotation_opt(`@ name `( annotationBody ))
+def $name_annotation_opt('@' name `( annotationBody ))
   = $strip_prefix($strip_suffix(nameIR, "\""), "\"")
   -- if "name" = $name(name)
   -- if _EMPTY annotationToken = annotationBody
@@ -127,10 +127,10 @@ def $name_annotation_default(annotationList, nameIR) = nameIR
 dec $find_name_annotation_opt(annotationList) : annotation?
 def $find_name_annotation_opt(_EMPTY) = eps
 def $find_name_annotation_opt(annotation) = annotation
-  -- if `@ name `( annotationBody ) = annotation
+  -- if '@' name `( annotationBody ) = annotation
   -- if "name" = $name(name)
 def $find_name_annotation_opt(annotation) = eps
-  -- if `@ name `( annotationBody ) = annotation
+  -- if '@' name `( annotationBody ) = annotation
   -- if "name" =/= $name(name)
 def $find_name_annotation_opt(annotationListNonEmpty annotation)
   = $find_name_annotation_opt(annotationListNonEmpty)

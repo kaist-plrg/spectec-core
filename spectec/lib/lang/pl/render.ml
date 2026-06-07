@@ -79,25 +79,18 @@ let render_varid (ctx : context) (id_var : id) =
         var_type ^ (subs |> String.concat "_" |> adoc_subscript)
         |> adoc_as_code ctx
 
-(* Math-symbol atoms render as Unicode in both code and prose contexts; the
-   passthrough wrap stays for atoms whose textual form clashes with AsciiDoc
-   markup (e.g. `+`, `*`, `_`). *)
+(* Curated notation atoms only; concrete operators render literally. *)
 let unicode_of_atom : Xl.Atom.t -> string option = function
   | Turnstile -> Some "\xE2\x8A\xA2" (* U+22A2 RIGHT TACK *)
   | Tilesturn -> Some "\xE2\x8A\xA3" (* U+22A3 LEFT TACK *)
   | Sub -> Some "\xE2\x8A\x91" (* U+2291 SQUARE IMAGE OF OR EQUAL TO *)
   | Sup -> Some "\xE2\x8A\x92" (* U+2292 SQUARE ORIGINAL OF OR EQUAL TO *)
-  | Arrow _ | ArrowSub -> Some "\xE2\x86\x92" (* U+2192 RIGHTWARDS ARROW *)
-  | DoubleArrow | DoubleArrowSub ->
-      Some "\xE2\x87\x92" (* U+21D2 RIGHTWARDS DOUBLE ARROW *)
+  | Arrow | ArrowSub -> Some "\xE2\x86\x92" (* U+2192 RIGHTWARDS ARROW *)
+  | DoubleArrowSub -> Some "\xE2\x87\x92" (* U+21D2 RIGHTWARDS DOUBLE ARROW *)
   | DoubleArrowLong ->
       Some "\xE2\x9F\xB9" (* U+27F9 LONG RIGHTWARDS DOUBLE ARROW *)
   | SqArrow -> Some "\xE2\x86\x9D" (* U+219D RIGHTWARDS WAVE ARROW *)
   | SqArrowStar -> Some "\xE2\x86\x9D*"
-  | LAngleEq -> Some "\xE2\x89\xA4" (* U+2264 LESS-THAN OR EQUAL TO *)
-  | RAngleEq -> Some "\xE2\x89\xA5" (* U+2265 GREATER-THAN OR EQUAL TO *)
-  | BangEq -> Some "\xE2\x89\xA0" (* U+2260 NOT EQUAL TO *)
-  | Eq2 -> Some "\xE2\x89\xA1" (* U+2261 IDENTICAL TO *)
   | _ -> None
 
 let code_of_atom (atom : Mixfix.atom) =

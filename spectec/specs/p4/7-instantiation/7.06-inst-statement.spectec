@@ -21,22 +21,22 @@ rule Stmt_inst/callStatementIR:
 
 ;;; directApplicationStatementIR
 ;;; syntax directApplicationStatementIR =
-;;;   prefixedNameIR `< typeArgumentListIR > `. APPLY `( argumentListIR ) `;
+;;;   prefixedNameIR `< typeArgumentListIR > '.' APPLY `( argumentListIR ) ';'
 
 rule DirectApplicationStmt_inst:
-  p IC STO_0 |- constructorTargetIR `. APPLY `( argumentListIR ) `;
+  p IC STO_0 |- constructorTargetIR '.' APPLY `( argumentListIR ) ';'
               : STO_2 constantDeclarationIR callStatementIR
   ---- ;; find and instantiate constructor
   -- if prefixedNameIR `< typeArgumentListIR >
       = constructorTargetIR
   -- Constructor_inst:
       p IC |- prefixedNameIR `< typeArgumentListIR > `( eps )
-            : constructorDef `< typeArgumentListIR_inst > `( `# id_default* `# id_optional* )
+            : constructorDef `< typeArgumentListIR_inst > `( '#' id_default* '#' id_optional* )
   -- if typeId = $flatten_prefixedNameIR(prefixedNameIR)
   -- if IC_callee = $enter_path_i(IC, typeId)
   -- Constructor_call:
       p IC_callee STO_0 |- constructorDef `< typeArgumentListIR_inst >
-                            `( eps `# id_default* `# id_optional* )
+                            `( eps '#' id_default* '#' id_optional* )
                          : STO_1 object
   ---- ;; assign new typeId with random string appended
   -- if typeId_fresh = $fresh_typeId()
@@ -47,13 +47,13 @@ rule DirectApplicationStmt_inst:
   -- if STO_2 = $add_store(STO_1, objectId, object)
   ---- ;; replace with constant declaration and call statement
   -- if constantDeclarationIR
-      = _EMPTY CONST typeIR nameIR (`= _VALUE (REF objectId)) `;
+      = _EMPTY CONST typeIR nameIR ('=' _VALUE (REF objectId)) ';'
   -- if typedExpressionIR_base
-      = (_NAME nameIR) `# `( typeIR CTK )
+      = (_NAME nameIR) '#' `( typeIR CTK )
   -- if callableTargetIR
-      = typedExpressionIR_base `. "apply"
+      = typedExpressionIR_base '.' "apply"
   -- if callStatementIR
-      = callableTargetIR `< typeArgumentListIR_inst > `( argumentListIR ) `;
+      = callableTargetIR `< typeArgumentListIR_inst > `( argumentListIR ) ';'
 
 rule Stmt_inst/directApplicationStatementIR:
   p IC STO_0 |- directApplicationStatementIR
@@ -118,18 +118,18 @@ rule Stmt_inst/else:
 ;;; syntax forStatementIR
 
 ;;;; annotationList FOR
-;;;;   `( forInitStatementListIR `; typedExpressionIR `; forUpdateStatementListIR )
+;;;;   `( forInitStatementListIR ';' typedExpressionIR ';' forUpdateStatementListIR )
 ;;;;   statementIR
 
 rule Stmt_inst/forStatementIR-three-clause:
   p IC STO_0 |- annotationList FOR
-                  `( forInitStatementListIR `;
-                     typedExpressionIR `;
+                  `( forInitStatementListIR ';'
+                     typedExpressionIR ';'
                      forUpdateStatementListIR ) statementIR
               : IC STO_1 forStatementIR
   -- Stmt_inst: p IC STO_0 |- statementIR : IC_body STO_1 statementIR_body
   -- if forStatementIR
-      = annotationList FOR `( forInitStatementListIR `; typedExpressionIR `;
+      = annotationList FOR `( forInitStatementListIR ';' typedExpressionIR ';'
           forUpdateStatementListIR ) statementIR_body
 
 ;;;; annotationList FOR
@@ -184,19 +184,19 @@ relation SwitchCase_inst:
                 ", under context" %1 "and store" %2 "at" %0)
   hint(prose_out "store" %4 "and" %5)
 
-;;;;; switchLabelIR `: blockStatementIR
-;;;;; switchLabelIR `:
+;;;;; switchLabelIR ':' blockStatementIR
+;;;;; switchLabelIR ':'
 
 
 rule SwitchCase_inst/blockStatementIR:
-  p IC STO_0 |- switchLabelIR `: blockStatementIR
-              : STO_1 (switchLabelIR `: blockStatementIR_inst)
+  p IC STO_0 |- switchLabelIR ':' blockStatementIR
+              : STO_1 (switchLabelIR ':' blockStatementIR_inst)
   -- Stmt_inst: p IC STO_0 |- blockStatementIR
                             : IC_switch STO_1 blockStatementIR_inst
 
 rule SwitchCase_inst/non-blockStatementIR:
-  p IC STO |- switchLabelIR `:
-            : STO (switchLabelIR `:)
+  p IC STO |- switchLabelIR ':'
+            : STO (switchLabelIR ':')
 
 
 ;;;; syntax switchCaseListIR

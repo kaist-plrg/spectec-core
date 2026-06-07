@@ -37,7 +37,7 @@ def $optional_annotation_of_parameterIR(parameterIR)
 def $optional_annotation_of_parameterIR'(annotationList) = $exists_(b*)
   -- if annotation* = $flatten_annotationList(annotationList)
   -- if (b = $optional_annotation_of_parameterIR''(annotation))*
-def $optional_annotation_of_parameterIR''(`@ name) = true
+def $optional_annotation_of_parameterIR''('@' name) = true
   -- if "optional" = $name(name)
 def $optional_annotation_of_parameterIR''(annotation) = false
   -- otherwise

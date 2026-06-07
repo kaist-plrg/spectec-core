@@ -10,24 +10,24 @@
 ;;;;  type
 
 rule TypeArgument_ok/type:
-  p TC |- type : typeIR `# typeId_impl*
-  -- Type_ok: p TC |- type : typeIR `# typeId_impl*
+  p TC |- type : typeIR '#' typeId_impl*
+  -- Type_ok: p TC |- type : typeIR '#' typeId_impl*
 
 ;;;;  VOID
 
 rule TypeArgument_ok/void:
-  p TC |- VOID : VOID `# eps
+  p TC |- VOID : VOID '#' eps
 
-;;;;  `_
+;;;;  '_'
 
 rule TypeArgument_ok/dontcare:
-  p TC |- `_ : (_NAME typeId_impl) `# typeId_impl
+  p TC |- '_' : (_NAME typeId_impl) '#' typeId_impl
   -- if typeId_impl = $fresh_typeId()
 
 ;;; nonTypeName
 
 rule TypeArgument_ok/nonTypeName:
-  p TC |- nonTypeName : (_NAME typeId) `# eps
+  p TC |- nonTypeName : (_NAME typeId) '#' eps
   -- if typeId = $name(nonTypeName)
 
 ;;
@@ -38,20 +38,20 @@ rule TypeArgument_ok/nonTypeName:
 
 
 rule TypeArguments_ok/nil:
-  p TC |- eps : eps `# eps
+  p TC |- eps : eps '#' eps
 
 rule TypeArguments_ok/cons:
   p TC |- typeArgument_h :: typeArgument_t*
-        : (typeArgumentIR_h :: typeArgumentIR_t*) `# typeId_impl*
+        : (typeArgumentIR_h :: typeArgumentIR_t*) '#' typeId_impl*
   -- TypeArgument_ok: p TC |- typeArgument_h
-                            : typeArgumentIR_h `# typeId_impl_h*
+                            : typeArgumentIR_h '#' typeId_impl_h*
   -- TypeArguments_ok: p TC |- typeArgument_t*
-                             : typeArgumentIR_t* `# typeId_impl_t*
+                             : typeArgumentIR_t* '#' typeId_impl_t*
   -- if typeId_impl* = typeId_impl_h* ++ typeId_impl_t*
 
 
 rule TypeArgumentList_ok:
-  p TC |- typeArgumentList : typeArgumentIR* `# typeId_impl*
+  p TC |- typeArgumentList : typeArgumentIR* '#' typeId_impl*
   -- if typeArgument* = $flatten_typeArgumentList(typeArgumentList)
   -- TypeArguments_ok:
-      p TC |- typeArgument* : typeArgumentIR* `# typeId_impl*
+      p TC |- typeArgument* : typeArgumentIR* '#' typeId_impl*

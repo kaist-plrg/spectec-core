@@ -1,4 +1,4 @@
-;; Token-concatenation `#` appears in regular expression position
+;; Token-concatenation '#'` appears in regular expression position
 ;; rather than inside a hint expression.
 
 dec $f : nat

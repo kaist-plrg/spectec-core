@@ -5,41 +5,41 @@
 ;;
 
 ;;; emptyStatement
-;;; syntax emptyStatement = `;
+;;; syntax emptyStatement = ';'
 
 rule Stmt_ok/emptyStatement:
-  p TC f |- `; : TC f `;
+  p TC f |- ';' : TC f ';'
 
 ;;; assignmentStatement
-;;; syntax assignmentStatement = lvalue assignop expression `;
+;;; syntax assignmentStatement = lvalue assignop expression ';'
 ;;;; syntax assignop
 
-;;;;; `=
+;;;;; '='
 
 rule Stmt_ok/assignmentStatement-eq:
-  p TC f |- lvalue `= expression `;
-          : TC f (typedLvalueIR `= typedExpressionIR_cast `;)
+  p TC f |- lvalue '=' expression ';'
+          : TC f (typedLvalueIR '=' typedExpressionIR_cast ';')
   ---- ;; check lvalue
   -- Lvalue_ok: p TC |- lvalue : typedLvalueIR
   ---- ;; check expression
   -- Expr_ok: p TC |- expression : typedExpressionIR
   ---- ;; fetch annotations
-  -- if _ `# `( typeIR_l ) = typedLvalueIR
-  -- if _ `# `( typeIR_r _ ) = typedExpressionIR
+  -- if _ '#' `( typeIR_l ) = typedLvalueIR
+  -- if _ '#' `( typeIR_r _ ) = typedExpressionIR
   ---- ;; check type compatibility
   ---- ;; while inserting implicit casts if necessary
   -- if typedExpressionIR_cast = $coerce_unary(typedExpressionIR, typeIR_l)
 
-;;;;; `+= | `-= | `|+|= | `|-|= | `*=
-;;;;; | `/= | `%= | `<<= | `>>= | `&= | `^= | `|=
+;;;;; '+=' | '-=' | '|+|=' | '|-|=' | '*='
+;;;;; | '/=' | '%=' | '<<=' | '>>=' | '&=' | '^=' | '|='
 
 ;;; callStatement
 ;;; syntax callStatement
 
-;;;; lvalue `( argumentList ) `;
+;;;; lvalue `( argumentList ) ';'
 
 rule Stmt_ok/callStatement-no-typeArgumentList:
-  p TC f |- lvalue_routine `( argumentList ) `;
+  p TC f |- lvalue_routine `( argumentList ) ';'
           : TC f callStatementIR
   ---- ;; check base lvalue
   -- RoutineTarget_lvalue_ok: p TC |- lvalue_routine : routineTargetIR
@@ -49,41 +49,41 @@ rule Stmt_ok/callStatement-no-typeArgumentList:
   ---- ;; check lvalue as routine
   -- RoutineType_ok:
       p TC |- routineTargetIR `< eps > `( argumentIR* )
-            : routineTypeIR `< `# tid_impl* > `( `# id_default* )
+            : routineTypeIR `< '#' tid_impl* > `( '#' id_default* )
   ---- ;; check calling convention
-  -- Call_ok: p TC |- routineTypeIR `< eps `# tid_impl* > `( argumentIR* `# id_default* )
+  -- Call_ok: p TC |- routineTypeIR `< eps '#' tid_impl* > `( argumentIR* '#' id_default* )
                     : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; create IR
   -- if callStatementIR
-      = routineTargetIR `< typeArgumentIR_inferred* > `( argumentIR_cast* ) `;
+      = routineTargetIR `< typeArgumentIR_inferred* > `( argumentIR_cast* ) ';'
 
-;;;; lvalue `< typeArgumentList > `( argumentList ) `;
+;;;; lvalue `< typeArgumentList > `( argumentList ) ';'
 
 rule Stmt_ok/callStatement-typeArgumentList:
-  p TC f |- lvalue_routine `< typeArgumentList > `( argumentList ) `;
+  p TC f |- lvalue_routine `< typeArgumentList > `( argumentList ) ';'
           : TC f callStatementIR
   ---- ;; check base lvalue
   -- RoutineTarget_lvalue_ok: p TC |- lvalue_routine : routineTargetIR
   ---- ;; check type arguments
   -- if typeArgument* = $flatten_typeArgumentList(typeArgumentList)
-  -- TypeArguments_ok: p TC |- typeArgument* : typeArgumentIR* `# tid_impl*
+  -- TypeArguments_ok: p TC |- typeArgument* : typeArgumentIR* '#' tid_impl*
   ---- ;; check arguments
   -- if argument* = $flatten_argumentList(argumentList)
   -- (Argument_ok: p TC |- argument : argumentIR)*
   ---- ;; check lvalue as routine
   -- RoutineType_ok:
       p TC |- routineTargetIR `< typeArgumentIR* > `( argumentIR* )
-            : routineTypeIR `< `# tid_inserted* > `( `# id_default* )
+            : routineTypeIR `< '#' tid_inserted* > `( '#' id_default* )
   ---- ;; check calling convention
   -- if tid_infer* = tid_impl* ++ tid_inserted*
-  -- Call_ok: p TC |- routineTypeIR `< eps `# tid_infer* > `( argumentIR* `# id_default* )
+  -- Call_ok: p TC |- routineTypeIR `< eps '#' tid_infer* > `( argumentIR* '#' id_default* )
                     : typeIR_ret `< typeArgumentIR_inferred* > `( argumentIR_cast* )
   ---- ;; create IR
   -- if callStatementIR
-      = routineTargetIR `< typeArgumentIR_inferred* > `( argumentIR_cast* ) `;
+      = routineTargetIR `< typeArgumentIR_inferred* > `( argumentIR_cast* ) ';'
 
 ;;; directApplicationStatement
-;;; syntax directApplicationStatement = namedType `. APPLY `( argumentList ) `;
+;;; syntax directApplicationStatement = namedType '.' APPLY `( argumentList ) ';'
 
 dec $compat_direct_application(typeIR) : bool
 dec $compat'_direct_application(typeIR) : bool
@@ -96,47 +96,47 @@ def $compat'_direct_application(typeIR) = false
   -- otherwise
 
 rule Stmt_ok/directApplicationStatement-prefixedTypeName:
-  p TC_0 f |- namedType `. APPLY `( argumentList ) `;
+  p TC_0 f |- namedType '.' APPLY `( argumentList ) ';'
             : TC_0 f directApplicationStatementIR
   ---- ;; check instantiation
   -- Expr_ok: p TC_0 |- namedType `( _EMPTY )
                       : ((prefixedNameIR `< eps >) `( eps )) 
-                          `# `( typeIR_object _ )
+                          '#' `( typeIR_object _ )
   ---- ;; only parser and controls can be direclty invoked
   -- if $compat_direct_application(typeIR_object)
   ---- ;; insert temporary variable for the constructed type
   -- if nameIR_object = "__direct_application"
   -- if TC_1 = $add_var(p, TC_0, nameIR_object, _EMPTY typeIR_object CTK eps)
   ---- ;; check apply method
-  -- if lvalue = (_ID nameIR_object) `. (_ID "apply")
-  -- Stmt_ok: p TC_1 f |- lvalue `( argumentList ) `; : _ _ callStatementIR
-  -- if (((_NAME nameIR_object) `# `( typeIR_object CTK )) `. "apply")
-          `< eps > `( argumentIR_cast* ) `;
+  -- if lvalue = (_ID nameIR_object) '.' (_ID "apply")
+  -- Stmt_ok: p TC_1 f |- lvalue `( argumentList ) ';' : _ _ callStatementIR
+  -- if (((_NAME nameIR_object) '#' `( typeIR_object CTK )) '.' "apply")
+          `< eps > `( argumentIR_cast* ) ';'
       = callStatementIR
   ---- ;; create IR
   -- if directApplicationStatementIR
-      = prefixedNameIR `. APPLY `( argumentIR_cast* ) `;
+      = prefixedNameIR '.' APPLY `( argumentIR_cast* ) ';'
 
 ;;; returnStatement
 ;;; syntax returnStatement
 
-;;;; RETURN `;
+;;;; RETURN ';'
 
 rule Stmt_ok/returnStatement-empty:
-  LOCAL TC f |- RETURN `;
-              : TC RET (RETURN `;)
+  LOCAL TC f |- RETURN ';'
+              : TC RET (RETURN ';')
   ---- ;; check that the return type in the context is VOID
   -- if VOID = $find_return_type(TC)
 
-;;;; RETURN expression `;
+;;;; RETURN expression ';'
 
 rule Stmt_ok/returnStatement-expression:
-  LOCAL TC f |- RETURN expression `;
-              : TC RET (RETURN typedExpressionIR_cast `;)
+  LOCAL TC f |- RETURN expression ';'
+              : TC RET (RETURN typedExpressionIR_cast ';')
   ---- ;; check expression
   -- Expr_ok: LOCAL TC |- expression : typedExpressionIR
   ---- ;; fetch annotation
-  -- if _ `# `( typeIR _ ) = typedExpressionIR
+  -- if _ '#' `( typeIR _ ) = typedExpressionIR
   ---- ;; check the return type in the context
   -- if typeIR_ret = $find_return_type(TC)
   ---- ;; check type compatibility
@@ -144,10 +144,10 @@ rule Stmt_ok/returnStatement-expression:
   -- if typedExpressionIR_cast = $coerce_unary(typedExpressionIR, typeIR_ret)
 
 ;;; exitStatement
-;;; syntax exitStatement = EXIT `;
+;;; syntax exitStatement = EXIT ';'
 
 rule Stmt_ok/exitStatement:
-  p TC f |- EXIT `; : TC f (EXIT `;)
+  p TC f |- EXIT ';' : TC f (EXIT ';')
 
 ;;; blockStatement
 
@@ -168,7 +168,7 @@ rule Stmt_ok/conditionalStatement-non-else:
   -- Expr_ok: p TC |- expression_cond : typedExpressionIR_cond
   ---- ;; fetch annotation
   ---- ;; the condition must be a boolean type
-  -- if _ `# `( BOOL _ ) = typedExpressionIR_cond
+  -- if _ '#' `( BOOL _ ) = typedExpressionIR_cond
   ---- ;; check then statement
   -- Stmt_ok: p TC f |- statement_then : TC_then f_then statementIR_then
 
@@ -182,7 +182,7 @@ rule Stmt_ok/conditionalStatement-else:
   -- Expr_ok: p TC |- expression_cond : typedExpressionIR_cond
   ---- ;; fetch annotation
   ---- ;; the condition must be a boolean type
-  -- if _ `# `( BOOL _ ) = typedExpressionIR_cond
+  -- if _ '#' `( BOOL _ ) = typedExpressionIR_cond
   ---- ;; check then and else statements
   -- Stmt_ok: p TC f |- statement_then : TC_then f_then statementIR_then
   -- Stmt_ok: p TC f |- statement_else : TC_else f_else statementIR_else
@@ -221,72 +221,72 @@ rule SwitchLabel_table_ok/expressionNonBrace-prefixedNonTypeName:
   -- if _ typeIR_label ctk_label value_label
       = $find_var(LOCAL, TC, _NAME id_label)
   -- if value_label
-      = TABLE_ENUM tid_table_enum `. nameIR_label
+      = TABLE_ENUM tid_table_enum '.' nameIR_label
   ---- ;; create typed switch label
   -- if typedExpressionIR_label
-      = (_NAME nameIR_label) `# `( typeIR_label ctk_label )
+      = (_NAME nameIR_label) '#' `( typeIR_label ctk_label )
 
 ;;;;;;; (TODO) handle parenthesizedExpression
 
 ;;;;; syntax switchCase
 
 relation SwitchCase_table_ok:
-  typingContext flow tid bool |- switchCase : flow switchCaseIR `# switchLabel
+  typingContext flow tid bool |- switchCase : flow switchCaseIR '#' switchLabel
   hint(input %0 %1 %2 %3 %4)
 
-;;;;;; switchLabel `: blockStatement
+;;;;;; switchLabel ':' blockStatement
 
 rule SwitchCase_table_ok/switchLabel-blockStatement:
-  TC f tid_table b_last |- switchLabel `: blockStatement
-                         : f_post switchCaseIR `# switchLabel
+  TC f tid_table b_last |- switchLabel ':' blockStatement
+                         : f_post switchCaseIR '#' switchLabel
   ---- ;; check switch label
   -- SwitchLabel_table_ok: TC tid_table b_last |- switchLabel : switchLabelIR
   ---- ;; check block statement
   -- Block_ok: TC f |- blockStatement : TC_post f_post blockStatementIR
   ---- ;; create IR
-  -- if switchCaseIR = switchLabelIR `: blockStatementIR
+  -- if switchCaseIR = switchLabelIR ':' blockStatementIR
 
-;;;;;; switchLabel `: 
+;;;;;; switchLabel ':' 
 
 rule SwitchCase_table_ok/switchLabel:
-  TC f tid_table b_last |- switchLabel `:
-                         : f switchCaseIR `# switchLabel
+  TC f tid_table b_last |- switchLabel ':'
+                         : f switchCaseIR '#' switchLabel
   ---- ;; check switch label
   -- SwitchLabel_table_ok: TC tid_table b_last |- switchLabel : switchLabelIR
   ---- ;; create IR
-  -- if switchCaseIR = switchLabelIR `:
+  -- if switchCaseIR = switchLabelIR ':'
 
 ;;;;; syntax switchCaseList
 
 relation SwitchCases_table_ok:
-  typingContext flow tid |- switchCase* : flow switchCaseListIR `# switchLabel*
+  typingContext flow tid |- switchCase* : flow switchCaseListIR '#' switchLabel*
   hint(input %0 %1 %2 %3)
 
 rule SwitchCases_table_ok/nil:
-  TC f tid_table |- eps : f eps `# eps
+  TC f tid_table |- eps : f eps '#' eps
 
 rule SwitchCases_table_ok/cons:
   TC f tid_table |- switchCase_h :: switchCase_t*
-                  : f_t (switchCaseIR_h :: switchCaseIR_t*) `# (switchLabel_h :: switchLabel_t*)
+                  : f_t (switchCaseIR_h :: switchCaseIR_t*) '#' (switchLabel_h :: switchLabel_t*)
   -- if b_last = (switchCase_t* = eps)
   -- SwitchCase_table_ok:
-      TC f tid_table b_last |- switchCase_h : f_h switchCaseIR_h `# switchLabel_h
+      TC f tid_table b_last |- switchCase_h : f_h switchCaseIR_h '#' switchLabel_h
   -- SwitchCases_table_ok:
-      TC f_h tid_table |- switchCase_t* : f_t switchCaseIR_t* `# switchLabel_t*
+      TC f_h tid_table |- switchCase_t* : f_t switchCaseIR_t* '#' switchLabel_t*
 
 rule Stmt_ok/switch-table-apply:
   LOCAL TC f |- SWITCH `( expression_switch ) `{ switchCaseList }
               : TC f_post switchStatementIR
   ---- ;; check expression
   -- Expr_ok: LOCAL TC |- expression_switch : typedExpressionIR_switch
-  -- if _ `# `( typeIR_switch _ ) = typedExpressionIR_switch
+  -- if _ '#' `( typeIR_switch _ ) = typedExpressionIR_switch
   ---- ;; if the expression is the result of table apply method
   -- if TABLE_ENUM tid_table_enum `{ _ } = $canon(typeIR_switch)
   -- if tid_table = $strip_prefix($strip_suffix(tid_table_enum, ")"), "action_list(")
   ---- ;; check switch cases
   -- if switchCase* = $flatten_switchCaseList(switchCaseList)
   -- SwitchCases_table_ok:
-      TC f tid_table |- switchCase* : f_post switchCaseIR* `# switchLabel*
+      TC f tid_table |- switchCase* : f_post switchCaseIR* '#' switchLabel*
   ---- ;; switch labels must be unique
   -- if $distinct_<switchLabel>(switchLabel*)
   ---- ;; create typed statement
@@ -316,54 +316,54 @@ rule SwitchLabel_general_ok/expressionNonBrace:
   -- if typedExpressionIR_label_cast
       = $coerce_unary(typedExpressionIR_label, typeIR_switch)
   ---- ;; switch label must be compile-time known
-  -- if _ `# `( _ LCTK ) = typedExpressionIR_label_cast
+  -- if _ '#' `( _ LCTK ) = typedExpressionIR_label_cast
 
 ;;;;; syntax switchCase
 
 relation SwitchCase_general_ok:
-  typingContext flow typeIR bool |- switchCase : flow switchCaseIR `# switchLabel
+  typingContext flow typeIR bool |- switchCase : flow switchCaseIR '#' switchLabel
   hint(input %0 %1 %2 %3 %4)
 
-;;;;;; switchLabel `: blockStatement
+;;;;;; switchLabel ':' blockStatement
 
 rule SwitchCase_general_ok/switchLabel-blockStatement:
-  TC f typeIR_switch b_last |- switchLabel `: blockStatement
-                             : f_post switchCaseIR `# switchLabel
+  TC f typeIR_switch b_last |- switchLabel ':' blockStatement
+                             : f_post switchCaseIR '#' switchLabel
   ---- ;; check switch label
   -- SwitchLabel_general_ok: TC typeIR_switch b_last |- switchLabel : switchLabelIR
   ---- ;; check block statement
   -- Block_ok: TC f |- blockStatement : TC_post f_post blockStatementIR
   ---- ;; create IR
-  -- if switchCaseIR = switchLabelIR `: blockStatementIR
+  -- if switchCaseIR = switchLabelIR ':' blockStatementIR
 
-;;;;;; switchLabel `: 
+;;;;;; switchLabel ':' 
 
 rule SwitchCase_general_ok/switchLabel:
-  TC f typeIR_switch b_last |- switchLabel `:
-                             : f switchCaseIR `# switchLabel
+  TC f typeIR_switch b_last |- switchLabel ':'
+                             : f switchCaseIR '#' switchLabel
   ---- ;; check switch label
   -- SwitchLabel_general_ok: TC typeIR_switch b_last |- switchLabel : switchLabelIR
   ---- ;; create IR
-  -- if switchCaseIR = switchLabelIR `:
+  -- if switchCaseIR = switchLabelIR ':'
 
 ;;;;; syntax switchCaseList
 
 relation SwitchCases_general_ok:
-  typingContext flow typeIR |- switchCase* : flow switchCaseListIR `# switchLabel*
+  typingContext flow typeIR |- switchCase* : flow switchCaseListIR '#' switchLabel*
   hint(input %0 %1 %2 %3)
 
 rule SwitchCases_general_ok/nil:
-  TC f typeIR_switch |- eps : f eps `# eps
+  TC f typeIR_switch |- eps : f eps '#' eps
 
 rule SwitchCases_general_ok/cons:
   TC f typeIR_switch |- switchCase_h :: switchCase_t*
                       : f_t (switchCaseIR_h :: switchCaseIR_t*)
-                          `# (switchLabel_h :: switchLabel_t*)
+                          '#' (switchLabel_h :: switchLabel_t*)
   -- if b_last = (switchCase_t* = eps)
   -- SwitchCase_general_ok:
-      TC f typeIR_switch b_last |- switchCase_h : f_h switchCaseIR_h `# switchLabel_h
+      TC f typeIR_switch b_last |- switchCase_h : f_h switchCaseIR_h '#' switchLabel_h
   -- SwitchCases_general_ok:
-      TC f_h typeIR_switch |- switchCase_t* : f_t switchCaseIR_t* `# switchLabel_t*
+      TC f_h typeIR_switch |- switchCase_t* : f_t switchCaseIR_t* '#' switchLabel_t*
 
 dec $compat_switch(typeIR) : bool
 dec $compat'_switch(typeIR) : bool
@@ -374,7 +374,7 @@ def $compat'_switch(ERROR) = true
 def $compat'_switch(INT `< _ >) = true
 def $compat'_switch(BIT `< _ >) = true
 def $compat'_switch(ENUM _ `{ _ }) = true
-def $compat'_switch(ENUM _ `# _ `{ _ }) = true
+def $compat'_switch(ENUM _ '#' _ `{ _ }) = true
 def $compat'_switch(typeIR) = false
   -- otherwise
 
@@ -383,13 +383,13 @@ rule Stmt_ok/switch-general:
               : TC f_post switchStatementIR
   ---- ;; check expression
   -- Expr_ok: LOCAL TC |- expression_switch : typedExpressionIR_switch
-  -- if _ `# `( typeIR_switch _ ) = typedExpressionIR_switch
+  -- if _ '#' `( typeIR_switch _ ) = typedExpressionIR_switch
   ---- ;; if the expression is error, numeric or enumerated type
   -- if $compat_switch(typeIR_switch)
   ---- ;; check switch cases
   -- if switchCase* = $flatten_switchCaseList(switchCaseList)
   -- SwitchCases_general_ok:
-      TC f typeIR_switch |- switchCase* : f_post switchCaseIR* `# switchLabel*
+      TC f typeIR_switch |- switchCase* : f_post switchCaseIR* '#' switchLabel*
   ---- ;; switch labels must be unique
   -- if $distinct_<switchLabel>(switchLabel*)
   ---- ;; create typed statement
@@ -408,13 +408,13 @@ rule BlockElementStmt_ok/constantDeclaration:
 
 ;;; variableDeclaration
 ;;; syntax variableDeclaration =
-;;;   annotationList type name initializerOpt `;
+;;;   annotationList type name initializerOpt ';'
 
 rule BlockElementStmt_ok/variableDeclaration-empty:
-  TC_0 f |- annotationList type name _EMPTY `;
+  TC_0 f |- annotationList type name _EMPTY ';'
           : TC_1 f variableDeclarationIR
   ---- ;; check type
-  -- Type_ok: LOCAL TC_0 |- type : typeIR `# eps
+  -- Type_ok: LOCAL TC_0 |- type : typeIR '#' eps
   -- Type_wf: $bound(LOCAL, TC_0) |- typeIR
   ---- ;; check that the type is assignable
   -- if $is_assignable_typeIR(typeIR)
@@ -423,13 +423,13 @@ rule BlockElementStmt_ok/variableDeclaration-empty:
   -- if TC_1 = $add_var(LOCAL, TC_0, nameIR, INOUT typeIR DYN eps)
   ---- ;; create IR
   -- if variableDeclarationIR
-      = annotationList typeIR nameIR eps `;
+      = annotationList typeIR nameIR eps ';'
 
 rule BlockElementStmt_ok/variableDeclaration-initializer:
-  TC_0 f |- annotationList type name (`= expression_init) `;
+  TC_0 f |- annotationList type name ('=' expression_init) ';'
           : TC_1 f variableDeclarationIR
   ---- ;; check type
-  -- Type_ok: LOCAL TC_0 |- type : typeIR `# eps
+  -- Type_ok: LOCAL TC_0 |- type : typeIR '#' eps
   -- Type_wf: $bound(LOCAL, TC_0) |- typeIR
   ---- ;; check that the type is assignable
   -- if $is_assignable_typeIR(typeIR)
@@ -444,7 +444,7 @@ rule BlockElementStmt_ok/variableDeclaration-initializer:
   -- if TC_1 = $add_var(LOCAL, TC_0, nameIR, INOUT typeIR DYN eps)
   ---- ;; create IR
   -- if variableDeclarationIR
-      = annotationList typeIR nameIR (`= typedExpressionIR_init_cast) `;
+      = annotationList typeIR nameIR ('=' typedExpressionIR_init_cast) ';'
 
 ;;; statement
 

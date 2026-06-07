@@ -28,7 +28,7 @@ dec $subexpressions_of_argumentListIR(argumentListIR)
 
 def $subexpressions_of_typedExpressionIR(typedExpressionIR)
   = typedExpressionIR :: $subexpressions_of_expressionIR(expressionIR)
-  -- if expressionIR `# _ = typedExpressionIR
+  -- if expressionIR '#' _ = typedExpressionIR
 
 def $subexpressions_of_expressionIR(unop typedExpressionIR)
   = $subexpressions_of_typedExpressionIR(typedExpressionIR)
@@ -40,7 +40,7 @@ def $subexpressions_of_expressionIR(
 
 def $subexpressions_of_expressionIR(
     typedExpressionIR_cond
-      `? typedExpressionIR_then `: typedExpressionIR_else)
+      '?' typedExpressionIR_then ':' typedExpressionIR_else)
   = $subexpressions_of_typedExpressionIR(typedExpressionIR_cond)
     ++ $subexpressions_of_typedExpressionIR(typedExpressionIR_then)
     ++ $subexpressions_of_typedExpressionIR(typedExpressionIR_else)
@@ -54,19 +54,19 @@ def $subexpressions_of_expressionIR(
   = $subexpressions_of_typedExpressionListIR(typedExpressionListIR)
 
 def $subexpressions_of_expressionIR(
-    SEQ `{ typedExpressionListIR `, `... })
+    SEQ `{ typedExpressionListIR ',' '...' })
   = $subexpressions_of_typedExpressionListIR(typedExpressionListIR)
 
 def $subexpressions_of_expressionIR(
-    RECORD `{ (nameIR `= typedExpressionIR)* })
+    RECORD `{ (nameIR '=' typedExpressionIR)* })
   = $subexpressions_of_typedExpressionListIR(typedExpressionIR*)
 
 def $subexpressions_of_expressionIR(
-    RECORD `{ (nameIR `= typedExpressionIR)* `, `... })
+    RECORD `{ (nameIR '=' typedExpressionIR)* ',' '...' })
   = $subexpressions_of_typedExpressionListIR(typedExpressionIR*)
 
 def $subexpressions_of_expressionIR(
-    typedExpressionIR `. nameIR)
+    typedExpressionIR '.' nameIR)
   = $subexpressions_of_typedExpressionIR(typedExpressionIR)
 
 def $subexpressions_of_expressionIR(
@@ -76,7 +76,7 @@ def $subexpressions_of_expressionIR(
 
 def $subexpressions_of_expressionIR(
     typedExpressionIR_base
-      `[ typedExpressionIR_hi `: typedExpressionIR_lo ])
+      `[ typedExpressionIR_hi ':' typedExpressionIR_lo ])
   = $subexpressions_of_typedExpressionIR(typedExpressionIR_base)
     ++ $subexpressions_of_typedExpressionIR(typedExpressionIR_hi)
     ++ $subexpressions_of_typedExpressionIR(typedExpressionIR_lo)
@@ -108,7 +108,7 @@ def $subexpressions_of_argumentIR(typedExpressionIR)
   = $subexpressions_of_typedExpressionIR(typedExpressionIR)
 
 def $subexpressions_of_argumentIR(
-    nameIR `= typedExpressionIR)
+    nameIR '=' typedExpressionIR)
   = $subexpressions_of_typedExpressionIR(typedExpressionIR)
 
 def $subexpressions_of_argumentIR(_) = eps

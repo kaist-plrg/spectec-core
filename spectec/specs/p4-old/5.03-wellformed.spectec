@@ -170,7 +170,7 @@ def $nestable'_tuple(HEADER _ `{ _ }) = true
 def $nestable'_tuple(HEADER_UNION _ `{ _ }) = true
 def $nestable'_tuple(STRUCT _ `{ _ }) = true
 def $nestable'_tuple(ENUM _ `{ _ }) = true
-def $nestable'_tuple(ENUM _ `# _ `{ _ }) = true
+def $nestable'_tuple(ENUM _ '#' _ `{ _ }) = true
 def $nestable'_tuple(_) = false
   -- otherwise
 
@@ -211,12 +211,12 @@ def $nestable'_struct(STRUCT _ `{ _ }) = true
 def $nestable'_struct(HEADER _ `{ _ }) = true
 def $nestable'_struct(HEADER_UNION _ `{ _ }) = true
 def $nestable'_struct(ENUM _ `{ _ }) = true
-def $nestable'_struct(ENUM _ `# _ `{ _ }) = true
+def $nestable'_struct(ENUM _ '#' _ `{ _ }) = true
 def $nestable'_struct(_) = false
   -- otherwise
 
 rule Type_wf/structtype:
-  bound |- STRUCT _ `{ (typeIR id `;)* }
+  bound |- STRUCT _ `{ (typeIR id ';')* }
   -- if $distinct_<id>(id*)
   -- if $nestable_struct(typeIR)*
   -- (Type_wf: bound |- typeIR)*
@@ -233,8 +233,8 @@ def $nestable'_header(BIT `< _ >) = true
 def $nestable'_header(VARBIT `< _ >) = true
 def $nestable'_header(TID _) = true
 def $nestable'_header(TYPE _ _) = true
-def $nestable'_header(ENUM _ `# _ `{ _ }) = true
-def $nestable'_header(STRUCT _ `{ (typeIR _ `;)* }) = true
+def $nestable'_header(ENUM _ '#' _ `{ _ }) = true
+def $nestable'_header(STRUCT _ `{ (typeIR _ ';')* }) = true
   -- if $nestable_struct_in_header(typeIR)*
 def $nestable'_header(_) = false
   -- otherwise
@@ -246,14 +246,14 @@ def $nestable'_struct_in_header(INT `< _ >) = true
 def $nestable'_struct_in_header(BIT `< _ >) = true
 def $nestable'_struct_in_header(TID _) = true
 def $nestable'_struct_in_header(TYPE _ _) = true
-def $nestable'_struct_in_header(ENUM _ `# _ `{ _ }) = true
-def $nestable'_struct_in_header(STRUCT _ `{ (typeIR _ `;)* }) = true
+def $nestable'_struct_in_header(ENUM _ '#' _ `{ _ }) = true
+def $nestable'_struct_in_header(STRUCT _ `{ (typeIR _ ';')* }) = true
   -- if $nestable_struct_in_header(typeIR)*
 def $nestable'_struct_in_header(_) = false
   -- otherwise
 
 rule Type_wf/headertype:
-  bound |- HEADER _ `{ (typeIR id `;)* }
+  bound |- HEADER _ `{ (typeIR id ';')* }
   -- if $distinct_<id>(id*)
   -- if $nestable_header(typeIR)*
   -- (Type_wf: bound |- typeIR)*
@@ -270,7 +270,7 @@ def $nestable'_headerunion(_) = false
   -- otherwise
 
 rule Type_wf/headeruniontype:
-  bound |- HEADER_UNION _ `{ (typeIR id `;)* }
+  bound |- HEADER_UNION _ `{ (typeIR id ';')* }
   -- if $distinct_<id>(id*)
   -- if $nestable_headerunion(typeIR)*
   -- (Type_wf: bound |- typeIR)*
@@ -304,7 +304,7 @@ def $nestable_new_in_serenum'(_) = false
   -- otherwise
 
 rule Type_wf/serenumtype:
-  bound |- ENUM _ `# typeIR `{ (id `= _ `;)* }
+  bound |- ENUM _ '#' typeIR `{ (id '=' _ ';')* }
   -- if $distinct_<id>(id*)
   -- if $nestable_serenum(typeIR)
   -- Type_wf: bound |- typeIR
@@ -312,7 +312,7 @@ rule Type_wf/serenumtype:
 ;;; Object types
 
 rule Type_wf/externtype:
-  bound |- EXTERN _ (`{ (_ `: routineTypeDefIR)* })
+  bound |- EXTERN _ (`{ (_ ':' routineTypeDefIR)* })
   -- (RoutineTypeDef_wf: bound |- routineTypeDefIR)*
 
 rule Type_wf/parsertype:
@@ -328,7 +328,7 @@ rule Type_wf/packagetype:
   -- (Type_wf: bound |- typeIR)*
 
 rule Type_wf/tabletype:
-  bound |- TABLE _ `# typeIR
+  bound |- TABLE _ '#' typeIR
   -- if TABLE_STRUCT _ `{ _ } = $canon(typeIR)
   -- Type_wf: bound |- typeIR
 
@@ -342,16 +342,16 @@ rule Type_wf/sequencetype:
   -- (Type_wf: bound |- typeIR)*
 
 rule Type_wf/sequencedefaulttype:
-  bound |- SEQ `< typeIR* `, `... >
+  bound |- SEQ `< typeIR* ',' '...' >
   -- (Type_wf: bound |- typeIR)*
 
 rule Type_wf/recordtype:
-  bound |- RECORD `{ (typeIR id `;)* }
+  bound |- RECORD `{ (typeIR id ';')* }
   -- if $distinct_<id>(id*)
   -- (Type_wf: bound |- typeIR)*
 
 rule Type_wf/recorddefaulttype:
-  bound |- RECORD `{ (typeIR id `;)* `, `... }
+  bound |- RECORD `{ (typeIR id ';')* ',' '...' }
   -- if $distinct_<id>(id*)
   -- (Type_wf: bound |- typeIR)*
 
@@ -375,7 +375,7 @@ def $nestable'_set(TYPE _ _) = true
 def $nestable'_set(TUPLE `< typeIR* >) = true
   -- if $nestable_tuple_in_set(typeIR)*
 def $nestable'_set(ENUM _ `{ _ }) = true
-def $nestable'_set(ENUM _ `# _ `{ _ }) = true
+def $nestable'_set(ENUM _ '#' _ `{ _ }) = true
 def $nestable'_set(SEQ `< typeIR* >) = true
   -- if $nestable_sequence_in_set(typeIR)*
 def $nestable'_set(_) = false
@@ -391,7 +391,7 @@ def $nestable'_tuple_in_set(TYPE _ _) = true
 def $nestable'_tuple_in_set(TUPLE `< typeIR* >) = true
   -- if $nestable_tuple_in_set(typeIR)*
 def $nestable'_tuple_in_set(ENUM _ `{ _ }) = true
-def $nestable'_tuple_in_set(ENUM _ `# _ `{ _ }) = true
+def $nestable'_tuple_in_set(ENUM _ '#' _ `{ _ }) = true
 def $nestable'_tuple_in_set(_) = false
   -- otherwise
 
@@ -405,7 +405,7 @@ def $nestable'_sequence_in_set(TYPE _ _) = true
 def $nestable'_sequence_in_set(TUPLE `< typeIR* >) = true
   -- if $nestable_sequence_in_set(typeIR)*
 def $nestable'_sequence_in_set(ENUM _ `{ _ }) = true
-def $nestable'_sequence_in_set(ENUM _ `# _ `{ _ }) = true
+def $nestable'_sequence_in_set(ENUM _ '#' _ `{ _ }) = true
 def $nestable'_sequence_in_set(SEQ `< typeIR* >) = true
   -- if $nestable_sequence_in_set(typeIR)*
 def $nestable'_sequence_in_set(_) = false
@@ -432,8 +432,8 @@ dec $definable_type_mono(typeIR) : bool
 def $definable_type_mono(TID _) = true
 def $definable_type_mono(aliasTypeIR) = true
 def $definable_type_mono(ENUM _ `{ _ }) = true
-def $definable_type_mono(ENUM _ `# _ `{ _ }) = true
-def $definable_type_mono(TABLE _ `# _) = true
+def $definable_type_mono(ENUM _ '#' _ `{ _ }) = true
+def $definable_type_mono(TABLE _ '#' _) = true
 def $definable_type_mono(_) = false
   -- otherwise
 
@@ -457,7 +457,7 @@ def $definable_type_poly(_) = false
   -- otherwise
 
 rule TypeDef_wf/poly:
-  bound |- typeIR `< tid_expl* `, tid_impl* >
+  bound |- typeIR `< tid_expl* ',' tid_impl* >
   -- if $definable_type_poly(typeIR)
   -- if $distinct_<tid>(tid_expl* ++ tid_impl*)
   -- if bound_inner
@@ -471,7 +471,7 @@ rule TypeDef_wf/poly:
 ;;; Function types
 
 rule RoutineType_wf/builtinfunction:
-  bound |- BUILTIN_FUNCTION `( parameterTypeIR* ) `-> typeIR_ret
+  bound |- BUILTIN_FUNCTION `( parameterTypeIR* ) '->' typeIR_ret
   -- ParameterTypes_wf: bound |- parameterTypeIR*
   -- Type_wf: bound |- typeIR_ret
 
@@ -489,7 +489,7 @@ def $nestable_function'(_, _) = true
   -- otherwise
 
 rule RoutineType_wf/functiontype:
-  bound |- FUNCTION `( parameterTypeIR* ) `-> typeIR_ret
+  bound |- FUNCTION `( parameterTypeIR* ) '->' typeIR_ret
   -- ParameterTypes_wf: bound |- parameterTypeIR*
   -- if (direction typeIR _ _ = parameterTypeIR)* 
   -- if $nestable_function(direction, typeIR)*
@@ -540,12 +540,12 @@ def $nestable_externfunction'(direction, INT) = false
 def $nestable_externfunction'(direction, PARSER `( _ )) = false
 def $nestable_externfunction'(direction, CONTROL `( _ )) = false
 def $nestable_externfunction'(direction, PACKAGE `< _ >) = false
-def $nestable_externfunction'(direction, TABLE _ `# _) = false
+def $nestable_externfunction'(direction, TABLE _ '#' _) = false
 def $nestable_externfunction'(_, _) = true
   -- otherwise
 
 rule RoutineType_wf/externfunctiontype:
-  bound |- EXTERN_FUNCTION `( parameterTypeIR* ) `-> typeIR_ret
+  bound |- EXTERN_FUNCTION `( parameterTypeIR* ) '->' typeIR_ret
   -- ParameterTypes_wf: bound |- parameterTypeIR*
   -- if (direction typeIR _ _ = parameterTypeIR)* 
   -- if $nestable_externfunction(direction, typeIR)*
@@ -554,7 +554,7 @@ rule RoutineType_wf/externfunctiontype:
 ;;; Method types
 
 rule RoutineType_wf/builtinmethod:
-  bound |- BUILTIN_METHOD `( parameterTypeIR* ) `-> typeIR_ret
+  bound |- BUILTIN_METHOD `( parameterTypeIR* ) '->' typeIR_ret
   -- ParameterTypes_wf: bound |- parameterTypeIR*
   -- Type_wf: bound |- typeIR_ret
 
@@ -570,12 +570,12 @@ def $nestable_externmethod'(direction, INT) = false
 def $nestable_externmethod'(direction, PARSER `( _ )) = false
 def $nestable_externmethod'(direction, CONTROL `( _ )) = false
 def $nestable_externmethod'(direction, PACKAGE `< _ >) = false
-def $nestable_externmethod'(direction, TABLE _ `# _) = false
+def $nestable_externmethod'(direction, TABLE _ '#' _) = false
 def $nestable_externmethod'(_, _) = true
   -- otherwise
 
 rule RoutineType_wf/externmethod:
-  bound |- EXTERN_METHOD `( parameterTypeIR* ) `-> typeIR_ret
+  bound |- EXTERN_METHOD `( parameterTypeIR* ) '->' typeIR_ret
   -- ParameterTypes_wf: bound |- parameterTypeIR*
   -- if (direction typeIR _ _ = parameterTypeIR)* 
   -- if $nestable_externmethod(direction, typeIR)*
@@ -593,12 +593,12 @@ def $nestable_externabstractmethod'(direction, INT) = false
 def $nestable_externabstractmethod'(direction, PARSER `( _ )) = false
 def $nestable_externabstractmethod'(direction, CONTROL `( _ )) = false
 def $nestable_externabstractmethod'(direction, PACKAGE `< _ >) = false
-def $nestable_externabstractmethod'(direction, TABLE _ `# _) = false
+def $nestable_externabstractmethod'(direction, TABLE _ '#' _) = false
 def $nestable_externabstractmethod'(_, _) = true
   -- otherwise
 
 rule RoutineType_wf/externabstractmethod:
-  bound |- EXTERN_METHOD ABSTRACT `( parameterTypeIR* ) `-> typeIR_ret
+  bound |- EXTERN_METHOD ABSTRACT `( parameterTypeIR* ) '->' typeIR_ret
   -- ParameterTypes_wf: bound |- parameterTypeIR*
   -- if (direction typeIR _ _ = parameterTypeIR)* 
   -- if $nestable_externabstractmethod(direction, typeIR)*
@@ -616,7 +616,7 @@ def $nestable_parserapplymethod'(direction, INT) = false
 def $nestable_parserapplymethod'(direction, PARSER `( _ )) = false
 def $nestable_parserapplymethod'(direction, CONTROL `( _ )) = false
 def $nestable_parserapplymethod'(direction, PACKAGE `< _ >) = false
-def $nestable_parserapplymethod'(direction, TABLE _ `# _) = false
+def $nestable_parserapplymethod'(direction, TABLE _ '#' _) = false
 def $nestable_parserapplymethod'(_, _) = true
   -- otherwise
 
@@ -637,7 +637,7 @@ def $nestable_controlapplymethod'(direction, INT) = false
   -- if direction =/= _EMPTY
 def $nestable_controlapplymethod'(direction, PARSER `( _ )) = false
 def $nestable_controlapplymethod'(direction, PACKAGE `< _ >) = false
-def $nestable_controlapplymethod'(direction, TABLE _ `# _) = false
+def $nestable_controlapplymethod'(direction, TABLE _ '#' _) = false
 def $nestable_controlapplymethod'(_, _) = true
   -- otherwise
 
@@ -648,7 +648,7 @@ rule RoutineType_wf/controlapplymethod:
   -- if $nestable_controlapplymethod(direction, typeIR)*
 
 rule RoutineType_wf/tableapplymethod:
-  bound |- TABLE_APPLY `-> (TABLE_STRUCT _ `{ _ })
+  bound |- TABLE_APPLY '->' (TABLE_STRUCT _ `{ _ })
 
 ;;
 ;;;; Well-formedness of routine type definitions
@@ -656,12 +656,12 @@ rule RoutineType_wf/tableapplymethod:
 
 dec $definable_routine_mono(routineTypeIR) : bool
 
-def $definable_routine_mono(BUILTIN_FUNCTION `( _ ) `-> _) = true
+def $definable_routine_mono(BUILTIN_FUNCTION `( _ ) '->' _) = true
 def $definable_routine_mono(ACTION `( _ )) = true
-def $definable_routine_mono(BUILTIN_METHOD `( _ ) `-> _) = true
+def $definable_routine_mono(BUILTIN_METHOD `( _ ) '->' _) = true
 def $definable_routine_mono(PARSER_APPLY `( _ )) = true
 def $definable_routine_mono(CONTROL_APPLY `( _ )) = true
-def $definable_routine_mono(TABLE_APPLY `-> _) = true
+def $definable_routine_mono(TABLE_APPLY '->' _) = true
 def $definable_routine_mono(_) = false
   -- otherwise
 
@@ -672,15 +672,15 @@ rule RoutineTypeDef_wf/mono:
 
 dec $definable_routine_poly(routineTypeIR) : bool
 
-def $definable_routine_poly(FUNCTION `( _ ) `-> _) = true
-def $definable_routine_poly(EXTERN_FUNCTION `( _ ) `-> _) = true
-def $definable_routine_poly(EXTERN_METHOD `( _ ) `-> _) = true
-def $definable_routine_poly(EXTERN_METHOD ABSTRACT `( _ ) `-> _) = true
+def $definable_routine_poly(FUNCTION `( _ ) '->' _) = true
+def $definable_routine_poly(EXTERN_FUNCTION `( _ ) '->' _) = true
+def $definable_routine_poly(EXTERN_METHOD `( _ ) '->' _) = true
+def $definable_routine_poly(EXTERN_METHOD ABSTRACT `( _ ) '->' _) = true
 def $definable_routine_poly(_) = false
   -- otherwise
 
 rule RoutineTypeDef_wf/poly:
-  bound |- routineTypeIR `< tid_expl* `, tid_impl* >
+  bound |- routineTypeIR `< tid_expl* ',' tid_impl* >
   -- if $definable_routine_poly(routineTypeIR)
   -- if $distinct_<tid>(tid_expl* ++ tid_impl*)
   -- if bound_inner
@@ -713,12 +713,12 @@ def $nestable_constructor_extern(typeIR)
 def $nestable_constructor_extern(PARSER `( _ )) = false
 def $nestable'_constructor_extern(CONTROL `( _ )) = false
 def $nestable'_constructor_extern(PACKAGE `< _ >) = false
-def $nestable'_constructor_extern(TABLE _ `# _) = false
+def $nestable'_constructor_extern(TABLE _ '#' _) = false
 def $nestable'_constructor_extern(_) = true
   -- otherwise
 
 rule ConstructorType_wf/externtype:
-  bound |- CONSTRUCTOR `( parameterTypeIR* ) `-> typeIR_object
+  bound |- CONSTRUCTOR `( parameterTypeIR* ) '->' typeIR_object
   -- ConstructorParameterTypes_wf: bound |- parameterTypeIR*
   -- Type_wf: bound |- typeIR_object
   -- if EXTERN _ _ = $canon(typeIR_object)
@@ -732,12 +732,12 @@ def $nestable_constructor_parser(typeIR)
   = $nestable'_constructor_parser($canon(typeIR))
 def $nestable'_constructor_parser(CONTROL `( _ )) = false
 def $nestable'_constructor_parser(PACKAGE `< _ >) = false
-def $nestable'_constructor_parser(TABLE _ `# _) = false
+def $nestable'_constructor_parser(TABLE _ '#' _) = false
 def $nestable'_constructor_parser(_) = true
   -- otherwise
 
 rule ConstructorType_wf/parsertype:
-  bound |- CONSTRUCTOR `( parameterTypeIR* ) `-> typeIR_object
+  bound |- CONSTRUCTOR `( parameterTypeIR* ) '->' typeIR_object
   -- ConstructorParameterTypes_wf: bound |- parameterTypeIR*
   -- Type_wf: bound |- typeIR_object
   -- if PARSER `( _ ) = $canon(typeIR_object)
@@ -751,12 +751,12 @@ def $nestable_constructor_control(typeIR)
   = $nestable'_constructor_control($canon(typeIR))
 def $nestable'_constructor_control(PARSER `( _ )) = false
 def $nestable'_constructor_control(PACKAGE `< _ >) = false
-def $nestable'_constructor_control(TABLE _ `# _) = false
+def $nestable'_constructor_control(TABLE _ '#' _) = false
 def $nestable'_constructor_control(_) = true
   -- otherwise
 
 rule ConstructorType_wf/controltype:
-  bound |- CONSTRUCTOR `( parameterTypeIR* ) `-> typeIR_object
+  bound |- CONSTRUCTOR `( parameterTypeIR* ) '->' typeIR_object
   -- ConstructorParameterTypes_wf: bound |- parameterTypeIR*
   -- Type_wf: bound |- typeIR_object
   -- if CONTROL `( _ ) = $canon(typeIR_object)
@@ -768,12 +768,12 @@ dec $nestable'_constructor_package(typeIR) : bool
 
 def $nestable_constructor_package(typeIR)
   = $nestable'_constructor_package($canon(typeIR))
-def $nestable'_constructor_package(TABLE _ `# _) = false
+def $nestable'_constructor_package(TABLE _ '#' _) = false
 def $nestable'_constructor_package(_) = true
   -- otherwise
 
 rule ConstructorType_wf/packagetype:
-  bound |- CONSTRUCTOR `( parameterTypeIR* ) `-> typeIR_object
+  bound |- CONSTRUCTOR `( parameterTypeIR* ) '->' typeIR_object
   -- ConstructorParameterTypes_wf: bound |- parameterTypeIR*
   -- Type_wf: bound |- typeIR_object
   -- if PACKAGE `< _ > = $canon(typeIR_object)
@@ -797,8 +797,8 @@ def $definable'_constructor(_) = false
   -- otherwise
 
 rule ConstructorTypeDef_wf:
-  bound |- constructorTypeIR `< tid_expl* `, tid_impl* >
-  -- if CONSTRUCTOR `( _ ) `-> typeIR_object = constructorTypeIR
+  bound |- constructorTypeIR `< tid_expl* ',' tid_impl* >
+  -- if CONSTRUCTOR `( _ ) '->' typeIR_object = constructorTypeIR
   -- if $definable_constructor(typeIR_object)
   -- if $distinct_<tid>(tid_expl* ++ tid_impl*)
   -- if bound_inner

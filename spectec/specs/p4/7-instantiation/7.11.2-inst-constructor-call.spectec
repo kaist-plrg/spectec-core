@@ -8,7 +8,7 @@
 
 rule Copy_in_argument_inst:
   STO_0 p_caller IC_caller argumentIR
-     `@ p_callee IC_callee_0 id
+     '@' p_callee IC_callee_0 id
   ~> STO_1 IC_callee_1
   -- if IC_caller_inner = $enter_path_i(IC_caller, id)
   -- Argument_inst:
@@ -19,29 +19,29 @@ rule Copy_in_argument_inst:
 
 rule Copy_in_inst/nil:
   STO p_caller IC_caller eps
-   `@ p_callee IC_callee eps
+   '@' p_callee IC_callee eps
   ~> STO IC_callee
 
 rule Copy_in_inst/cons:
   STO_0 p_caller IC_caller (argumentIR_h :: argumentIR_t*)
-     `@ p_callee IC_callee_0 (id_h :: id_t*)
+     '@' p_callee IC_callee_0 (id_h :: id_t*)
   ~> STO_2 IC_callee_2
   -- Copy_in_argument_inst:
       STO_0 p_caller IC_caller argumentIR_h
-         `@ p_callee IC_callee_0 id_h
+         '@' p_callee IC_callee_0 id_h
       ~> STO_1 IC_callee_1
   -- Copy_in_inst:
       STO_1 p_caller IC_caller argumentIR_t*
-         `@ p_callee IC_callee_1 id_t*
+         '@' p_callee IC_callee_1 id_t*
       ~> STO_2 IC_callee_2
 
 
 
 rule Copy_in_argument_inst_default/initializerIR:
   STO_0 p_caller IC_caller
-     `@ p_callee IC_callee_0 parameterIR
+     '@' p_callee IC_callee_0 parameterIR
   ~> STO_1 IC_callee_1
-  -- if _ _ _ id (`= typedExpressionIR) = parameterIR
+  -- if _ _ _ id ('=' typedExpressionIR) = parameterIR
   -- if IC_caller_inner = $enter_path_i(IC_caller, id)
   -- Expr_inst:
       p_caller IC_caller_inner STO_0 |- typedExpressionIR
@@ -50,29 +50,29 @@ rule Copy_in_argument_inst_default/initializerIR:
 
 rule Copy_in_argument_inst_default/constantInitializerIR:
   STO p_caller IC_caller
-   `@ p_callee IC_callee_0 parameterIR
+   '@' p_callee IC_callee_0 parameterIR
   ~> STO IC_callee_1
-  -- if _ _ _ id (`= _VALUE value) = parameterIR
+  -- if _ _ _ id ('=' _VALUE value) = parameterIR
   -- if IC_callee_1 = $add_var_i(p_callee, IC_callee_0, id, value)
 
 
 
 rule Copy_in_inst_default/nil:
   STO p_caller IC_caller
-   `@ p_callee IC_callee eps
+   '@' p_callee IC_callee eps
   ~> STO IC_callee
 
 rule Copy_in_inst_default/cons:
   STO_0 p_caller IC_caller
-     `@ p_callee IC_callee_0 (parameterIR_h :: parameterIR_t*)
+     '@' p_callee IC_callee_0 (parameterIR_h :: parameterIR_t*)
   ~> STO_2 IC_callee_2
   -- Copy_in_argument_inst_default:
       STO_0 p_caller IC_caller
-         `@ p_callee IC_callee_0 parameterIR_h
+         '@' p_callee IC_callee_0 parameterIR_h
       ~> STO_1 IC_callee_1
   -- Copy_in_inst_default:
       STO_1 p_caller IC_caller
-         `@ p_callee IC_callee_1 parameterIR_t*
+         '@' p_callee IC_callee_1 parameterIR_t*
       ~> STO_2 IC_callee_2
 
 
@@ -89,7 +89,7 @@ rule Copy_in_inst_default/cons:
 
 rule Constructor_call/externConstructorDef:
   p IC STO_0 |- externObjectConstructorDef
-                  `< typeArgumentIR* > `( argumentIR* `# id_default* `# id_optional* )
+                  `< typeArgumentIR* > `( argumentIR* '#' id_default* '#' id_optional* )
               : STO_2 object_extern
   -- if EXTERN nameIR `< typeParameterIR* >
                   `( constructorParameterIR* ) `{ externMethodPrototypeIR* }
@@ -98,7 +98,7 @@ rule Constructor_call/externConstructorDef:
   -- if p_callee = BLOCK
   -- if IC_callee_0 = $inherit_i(GLOBAL, IC)
   ---- ;; bind type arguments to the callee context
-  -- if theta = `{ (typeParameterIR `: typeArgumentIR)* }
+  -- if theta = `{ (typeParameterIR ':' typeArgumentIR)* }
   -- if IC_callee_1 = IC_callee_0[ .BLOCK.TYPE = theta ]
   ---- ;; align constructor parameters with arguments
   -- if GIVEN constructorParameterIR_aligned*
@@ -108,18 +108,18 @@ rule Constructor_call/externConstructorDef:
   ---- ;; bind non-default arguments to the callee context
   -- if (_ _ _ id_aligned _ = constructorParameterIR_aligned)*
   -- Copy_in_inst:
-      STO_0 p IC argumentIR* `@ p_callee IC_callee_1 id_aligned*
+      STO_0 p IC argumentIR* '@' p_callee IC_callee_1 id_aligned*
       ~> STO_1 IC_callee_2
   ---- ;; bind default values to the callee context
   -- Copy_in_inst_default:
       STO_0 p IC
-         `@ p_callee IC_callee_2 constructorParameterIR_default*
+         '@' p_callee IC_callee_2 constructorParameterIR_default*
       ~> STO_2 IC_callee_3
   ---- ;; instantiate method prototypes
   -- ExternMethods_inst:
       IC_callee_3 |- externMethodPrototypeIR* : IC_callee_4
   ---- ;; create an extern object with the final callee context
-  -- if `{ (callableId `: externMethodDef)* } = IC_callee_4.BLOCK.CALLABLE
+  -- if `{ (callableId ':' externMethodDef)* } = IC_callee_4.BLOCK.CALLABLE
   ---- ;; initialize extern state
   -- if (_ _ _ id_cparam _ = constructorParameterIR)*
   -- if (value_cparam = $find_map<id, value>(IC_callee_4.BLOCK.FRAME, id_cparam))*
@@ -127,7 +127,7 @@ rule Constructor_call/externConstructorDef:
   ---- ;; create extern object
   -- if theta_extern = IC_callee_4.BLOCK.TYPE
   -- if frame_extern = IC_callee_4.BLOCK.FRAME
-  -- if externMethodDefEnv_extern = `{ (callableId `: externMethodDef)* }
+  -- if externMethodDefEnv_extern = `{ (callableId ':' externMethodDef)* }
   -- if object_extern
       = EXTERN nameIR `< theta_extern >
                       `{ objectState frame_extern
@@ -142,7 +142,7 @@ rule Constructor_call/externConstructorDef:
 
 rule Constructor_call/parserConstructorDef:
   p IC STO_0 |- parserObjectConstructorDef
-                  `< typeArgumentIR* > `( argumentIR* `# id_default* `# id_optional* )
+                  `< typeArgumentIR* > `( argumentIR* '#' id_default* '#' id_optional* )
               : STO_4 object_parser
   ---- ;; initialize callee context
   -- if PARSER `< typeParameterIR* >
@@ -152,7 +152,7 @@ rule Constructor_call/parserConstructorDef:
   -- if p_callee = BLOCK
   -- if IC_callee_0 = $inherit_i(GLOBAL, IC)
   ---- ;; bind type arguments to the callee context
-  -- if theta_parser = `{ (typeParameterIR `: typeArgumentIR)* }
+  -- if theta_parser = `{ (typeParameterIR ':' typeArgumentIR)* }
   -- if IC_callee_1 = IC_callee_0[ .BLOCK.TYPE = theta_parser ]
   ---- ;; align constructor parameters with arguments
   -- if GIVEN constructorParameterIR_aligned*
@@ -162,12 +162,12 @@ rule Constructor_call/parserConstructorDef:
   ---- ;; bind non-default arguments to callee context
   -- if (_ _ _ id_aligned _ = constructorParameterIR_aligned)*
   -- Copy_in_inst:
-      STO_0 p IC argumentIR* `@ p_callee IC_callee_1 id_aligned*
+      STO_0 p IC argumentIR* '@' p_callee IC_callee_1 id_aligned*
       ~> STO_1 IC_callee_2
   ---- ;; bind default values to the callee context
   -- Copy_in_inst_default:
       STO_0 p IC
-         `@ p_callee IC_callee_2 constructorParameterIR_default*
+         '@' p_callee IC_callee_2 constructorParameterIR_default*
       ~> STO_2 IC_callee_3
   ---- ;; instantiate local declarations
   -- ParserLocalDecls_inst:
@@ -195,7 +195,7 @@ rule Constructor_call/parserConstructorDef:
 
 rule Constructor_call/controlConstructorDef:
   p IC STO_0 |- controlObjectConstructorDef
-                  `< typeArgumentIR* > `( argumentIR* `# id_default* `# id_optional* )
+                  `< typeArgumentIR* > `( argumentIR* '#' id_default* '#' id_optional* )
               : STO_4 object_control
   -- if CONTROL `< typeParameterIR* >
           `( parameterIR* ) `( constructorParameterIR* )
@@ -205,7 +205,7 @@ rule Constructor_call/controlConstructorDef:
   -- if p_callee = BLOCK
   -- if IC_callee_0 = $inherit_i(GLOBAL, IC)
   ---- ;; bind type arguments to the callee context
-  -- if theta_control = `{ (typeParameterIR `: typeArgumentIR)* }
+  -- if theta_control = `{ (typeParameterIR ':' typeArgumentIR)* }
   -- if IC_callee_1 = IC_callee_0[ .BLOCK.TYPE = theta_control ]
   ---- ;; align constructor parameters with arguments
   -- if GIVEN constructorParameterIR_aligned*
@@ -215,12 +215,12 @@ rule Constructor_call/controlConstructorDef:
   ---- ;; bind non-default arguments to the callee context
   -- if (_ _ _ id_aligned _ = constructorParameterIR_aligned)*
   -- Copy_in_inst:
-      STO_0 p IC argumentIR* `@ p_callee IC_callee_1 id_aligned*
+      STO_0 p IC argumentIR* '@' p_callee IC_callee_1 id_aligned*
       ~> STO_1 IC_callee_2
   ---- ;; bind default values to the callee context
   -- Copy_in_inst_default:
       STO_0 p IC
-         `@ p_callee IC_callee_2 constructorParameterIR_default*
+         '@' p_callee IC_callee_2 constructorParameterIR_default*
       ~> STO_2 IC_callee_3
   ---- ;; instantiate local declarations
   -- ControlLocalDecls_inst:
@@ -233,13 +233,13 @@ rule Constructor_call/controlConstructorDef:
   ---- ;; create control object with callee value environment
   ---- ;; and local action definition environment
   -- if frame_control = IC_callee_3.BLOCK.FRAME
-  -- if `{ (callableId `: actionDef)* } = IC_local_1.BLOCK.CALLABLE
-  -- if actionDefEnv_control = `{ (callableId `: actionDef)* }
+  -- if `{ (callableId ':' actionDef)* } = IC_local_1.BLOCK.CALLABLE
+  -- if actionDefEnv_control = `{ (callableId ':' actionDef)* }
   -- if object_control
       = CONTROL `< theta_control > `( parameterIR* )
           `{ frame_control
              controlLocalDeclarationIR_inst*
-             `{ (callableId `: actionDef)* }
+             `{ (callableId ':' actionDef)* }
              controlBodyIR_inst }
 
 ;;; packageObjectConstructorDef
@@ -248,7 +248,7 @@ rule Constructor_call/controlConstructorDef:
 
 rule Constructor_call/packageConstructorDef:
   p IC STO_0 |- packageObjectConstructorDef
-                  `< typeArgumentIR* > `( argumentIR* `# id_default* `# id_optional* )
+                  `< typeArgumentIR* > `( argumentIR* '#' id_default* '#' id_optional* )
               : STO_2 object_package
   -- if PACKAGE `< typeParameterIR* >
                   `( constructorParameterIR* )
@@ -258,7 +258,7 @@ rule Constructor_call/packageConstructorDef:
   -- if IC_callee_0 = $inherit_i(GLOBAL, IC)
   ---- ;; bind type arguments to the callee context
   -- if IC_callee_1
-      = IC_callee_0[ .BLOCK.TYPE = `{ (typeParameterIR `: typeArgumentIR)* } ]
+      = IC_callee_0[ .BLOCK.TYPE = `{ (typeParameterIR ':' typeArgumentIR)* } ]
   ---- ;; align constructor parameters with arguments
   -- if GIVEN constructorParameterIR_aligned*
         DEFAULT constructorParameterIR_default*
@@ -267,12 +267,12 @@ rule Constructor_call/packageConstructorDef:
   ---- ;; bind non-default arguments to callee context
   -- if (_ _ _ id_aligned _ = constructorParameterIR_aligned)*
   -- Copy_in_inst:
-      STO_0 p IC argumentIR* `@ p_callee IC_callee_1 id_aligned*
+      STO_0 p IC argumentIR* '@' p_callee IC_callee_1 id_aligned*
       ~> STO_1 IC_callee_2
   ---- ;; bind default values to callee context
   -- Copy_in_inst_default:
       STO_1 p IC
-         `@ p_callee IC_callee_2 constructorParameterIR_default*
+         '@' p_callee IC_callee_2 constructorParameterIR_default*
       ~> STO_2 IC_callee_3
   ---- ;; create package object with final callee context
   -- if theta_package = IC_callee_3.BLOCK.TYPE

@@ -9,19 +9,19 @@ relation Eval_static:
 
 ;;
 ;;;; Type evaluation
-;;;; Inserts fresh type variables (`# tid*) for don't care type arguments (`_)
+;;;; Inserts fresh type variables ('#' tid*) for don't care type arguments ('_')
 ;;
 
 relation Type_ok:
-  cursor typingContext |- typeOrVoid : typeIR `# tid*
+  cursor typingContext |- typeOrVoid : typeIR '#' tid*
   hint(input %0 %1 %2)
 
 relation TypeArgument_ok:
-  cursor typingContext |- typeArgument : typeArgumentIR `# tid*
+  cursor typingContext |- typeArgument : typeArgumentIR '#' tid*
   hint(input %0 %1 %2)
 
 relation TypeArguments_ok:
-  cursor typingContext |- typeArgument* : typeArgumentListIR `# tid*
+  cursor typingContext |- typeArgument* : typeArgumentListIR '#' tid*
   hint(input %0 %1 %2)
 
 ;;
@@ -93,27 +93,27 @@ relation Block_ok:
 ;;
 
 relation Parameter_ok:
-  cursor typingContext |- parameter : parameterIR `# tid*
+  cursor typingContext |- parameter : parameterIR '#' tid*
   hint(input %0 %1 %2)
 
 relation Parameters_ok:
-  cursor typingContext |- parameter* : parameterListIR `# tid*
+  cursor typingContext |- parameter* : parameterListIR '#' tid*
   hint(input %0 %1 %2)
 
 dec $parameterIR(parameterIR) : parameterTypeIR
 def $parameterIR(_ direction typeIR nameIR eps)
   = direction typeIR nameIR eps
-def $parameterIR(_ direction typeIR nameIR (`= value))
+def $parameterIR(_ direction typeIR nameIR ('=' value))
   = direction typeIR nameIR value
 
 relation ConstructorParameter_ok:
   cursor typingContext |- constructorParameter
-                  : constructorParameterIR `# tid*
+                  : constructorParameterIR '#' tid*
   hint(input %0 %1 %2)
 
 relation ConstructorParameters_ok:
   cursor typingContext |- constructorParameter*
-                  : constructorParameterListIR `# tid*
+                  : constructorParameterListIR '#' tid*
   hint(input %0 %1 %2)
 
 dec $constructorParameterIR(constructorParameterIR) : constructorParameterTypeIR
@@ -187,8 +187,8 @@ relation TableKeys_ok:
   hint(input %0 %1 %2)
 
 relation Call_action_partial_ok:
-  typingContext |- parameterTypeIR* `@ argumentListIR
-                 : parameterTypeIR* `, parameterTypeIR* `@ argumentListIR
+  typingContext |- parameterTypeIR* '@' argumentListIR
+                 : parameterTypeIR* ',' parameterTypeIR* '@' argumentListIR
   hint(input %0 %1 %2)
 
 relation TableAction_ok:
@@ -200,8 +200,8 @@ relation TableActions_ok:
   hint(input %0 %1 %2)
 
 relation Call_action_default_ok:
-  typingContext |- parameterTypeIR* `@ argumentListIR
-                 : parameterTypeIR* `, parameterTypeIR* `@ argumentListIR
+  typingContext |- parameterTypeIR* '@' argumentListIR
+                 : parameterTypeIR* ',' parameterTypeIR* '@' argumentListIR
   hint(input %0 %1 %2)
 
 relation TableDefaultAction_ok:
@@ -282,17 +282,17 @@ relation Program_ok:
 syntax actctxt = ACTION | NOACTION
 
 relation Call_convention_expr_ok:
-  cursor typingContext actctxt |- parameterTypeIR `@ typedExpressionIR
+  cursor typingContext actctxt |- parameterTypeIR '@' typedExpressionIR
                                 : typedExpressionIR
   hint(input %0 %1 %2 %3 %4)
 
 relation Call_convention_argument_ok:
-  cursor typingContext actctxt |- parameterTypeIR `@ argumentIR
+  cursor typingContext actctxt |- parameterTypeIR '@' argumentIR
                                 : argumentIR
   hint(input %0 %1 %2 %3 %4)
 
 relation Call_convention_ok:
-  cursor typingContext actctxt |- parameterTypeIR* `@ argumentListIR
+  cursor typingContext actctxt |- parameterTypeIR* '@' argumentListIR
                                 : argumentListIR
   hint(input %0 %1 %2 %3 %4)
 
@@ -306,10 +306,10 @@ relation Call_convention_ok:
 
 dec $is_static_routineTarget(routineTargetIR) : ctk
 
-def $is_static_routineTarget(_ `. nameIR) = LCTK
+def $is_static_routineTarget(_ '.' nameIR) = LCTK
   -- if nameIR <- [ "minSizeInBits", "minSizeInBytes",
                     "maxSizeInBits", "maxSizeInBytes" ]
-def $is_static_routineTarget(TYPE _ `. nameIR) = LCTK
+def $is_static_routineTarget(TYPE _ '.' nameIR) = LCTK
   -- if nameIR <- [ "minSizeInBits", "minSizeInBytes",
                     "maxSizeInBits", "maxSizeInBytes" ]
 def $is_static_routineTarget(_) = DYN
@@ -325,7 +325,7 @@ relation RoutineTarget_lvalue_ok:
 
 relation RoutineType_ok:
   cursor typingContext |- routineTargetIR `< typeArgumentListIR > `( argumentIR* )
-                        : routineTypeIR `< `# tid* > `( `# id* )
+                        : routineTypeIR `< '#' tid* > `( '#' id* )
   hint(input %0 %1 %2 %3 %4)
 
 ;; Checks that an action/function/method invocation is valid,
@@ -334,8 +334,8 @@ relation RoutineType_ok:
 ;; and inserts implicit casts for arguments, if necessary
 
 relation Call_ok:
-  cursor typingContext |- routineTypeIR `< typeArgumentListIR `# tid* >
-                                  `( argumentListIR `# id* )
+  cursor typingContext |- routineTypeIR `< typeArgumentListIR '#' tid* >
+                                  `( argumentListIR '#' id* )
                         : typeIR `< typeArgumentListIR > `( argumentListIR )
   hint(input %0 %1 %2 %3 %4 %5 %6)
 
@@ -349,7 +349,7 @@ relation Call_ok:
 
 relation ConstructorType_ok:
   cursor typingContext |- prefixedNameIR `< typeArgumentListIR > `( argumentIR* )
-                        : constructorTypeIR `< `# tid* > `( `# id* )
+                        : constructorTypeIR `< '#' tid* > `( '#' id* )
   hint(input %0 %1 %2 %3 %4)
 
 ;; Checks that a constructor invocation is valid,
@@ -361,8 +361,8 @@ syntax instctxt = NAMED | ANON
 
 relation Inst_ok:
   cursor typingContext instctxt |- constructorTypeIR
-                                    `< typeArgumentListIR `# tid* >
-                                    `( argumentListIR `# id* )
+                                    `< typeArgumentListIR '#' tid* >
+                                    `( argumentListIR '#' id* )
                                  : typeIR
                                     `< typeArgumentListIR >
                                     `( argumentListIR )

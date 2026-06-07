@@ -53,7 +53,7 @@ def $fresh_tids(n) = $fresh_tid() :: $fresh_tids($(n - 1))
 ;; a default value
 ;;
 
-syntax pid = id `# bool
+syntax pid = id '#' bool
 syntax rid = id `( pid* )
 
 dec $rid(name, parameterList) : rid
@@ -65,11 +65,11 @@ def $rid(name, parameterList)
 
 def $pids(_EMPTY) = eps
 def $pids(parameter) = $pid(parameter)
-def $pids(nonEmptyParameterList `, parameter)
+def $pids(nonEmptyParameterList ',' parameter)
   = $pids(nonEmptyParameterList) ++ [ $pid(parameter) ]
 
-def $pid(_ _ _ name _EMPTY) = $name(name) `# false
-def $pid(_ _ _ name initializer) = $name(name) `# true
+def $pid(_ _ _ name _EMPTY) = $name(name) '#' false
+def $pid(_ _ _ name initializer) = $name(name) '#' true
 
 ;;
 ;; Constructor names
@@ -88,7 +88,7 @@ def $cid(name, `( parameterList ))
 dec $expression_as_lvalue(expression) : lvalue?
 
 def $expression_as_lvalue(referenceExpression) = referenceExpression
-def $expression_as_lvalue(expression `. member) = lvalue `. member
+def $expression_as_lvalue(expression '.' member) = lvalue '.' member
   -- if lvalue = $expression_as_lvalue(expression)
 def $expression_as_lvalue(`( expression )) = `( lvalue )
   -- if lvalue = $expression_as_lvalue(expression)

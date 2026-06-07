@@ -266,7 +266,7 @@ nonTypeName:
 prefixedNonTypeName:
 	| n = nonTypeName { n }
 	| DOT go_toplevel n = nonTypeName go_local
-    { [ atom "_ID"; atom "`."; arg n ] |> case_v ~var:"prefixedNonTypeName" }
+    { [ atom "_ID"; atom "."; arg n ] |> case_v ~var:"prefixedNonTypeName" }
 ;
 
 (* >> Type names *)
@@ -277,7 +277,7 @@ typeName:
 prefixedTypeName:
 	| n = typeName { n }
 	| DOT go_toplevel tid = typeName go_local
-		{ [ atom "_TID"; atom "`."; arg tid ] |> case_v ~var:"prefixedType" }
+		{ [ atom "_TID"; atom "."; arg tid ] |> case_v ~var:"prefixedType" }
 ;
 
 (* >> Table custom property names *)
@@ -465,7 +465,7 @@ namedExpressionList:
 
 (* >> Default expressions *)
 %inline defaultExpression:
-	| DOTS { [ atom "`..." ] |> case_v ~var:"defaultExpression" }
+	| DOTS { [ atom "..." ] |> case_v ~var:"defaultExpression" }
 ;
 
 (* >> Unary, binary, and ternary expressions *)
@@ -517,12 +517,12 @@ namedExpressionList:
 
 %inline ternaryExpression:
 	| c = expression QUESTION t = expression COLON f = expression
-		{ [ arg c; atom "?"; arg t; atom "`:"; arg f ] |> case_v ~var:"ternaryExpression" }
+		{ [ arg c; atom "?"; arg t; atom ":"; arg f ] |> case_v ~var:"ternaryExpression" }
 ;
 
 %inline ternaryExpressionNonBrace:
 	| c = expressionNonBrace QUESTION t = expression COLON f = expression
-		{ [ arg c; atom "?"; arg t; atom "`:"; arg f ] |> case_v ~var:"ternaryExpressionNonBrace" }
+		{ [ arg c; atom "?"; arg t; atom ":"; arg f ] |> case_v ~var:"ternaryExpressionNonBrace" }
 ;
 
 (* >> Cast expressions *)
@@ -541,19 +541,19 @@ namedExpressionList:
 (* >> Member and index access expressions *)
 %inline errorAccessExpression:
 	| ERROR DOT m = member
-		{ [ atom "ERROR"; atom "`."; arg m ] |> case_v ~var:"errorAccessExpression" }
+		{ [ atom "ERROR"; atom "."; arg m ] |> case_v ~var:"errorAccessExpression" }
 ;
 
 %inline memberAccessExpression:
 	| e = memberAccessBase DOT m = member %prec DOT
-		{ [ arg e; atom "`."; arg m ] |> case_v ~var:"memberAccessExpression" }
+		{ [ arg e; atom "."; arg m ] |> case_v ~var:"memberAccessExpression" }
 ;
 
 %inline indexAccessExpression:
 	| a = expression L_BRACKET i = expression R_BRACKET
 		{ [ arg a; atom "["; arg i; atom "]" ] |> case_v ~var:"indexAccessExpression" }
 	| a = expression L_BRACKET h = expression COLON l = expression R_BRACKET
-		{ [ arg a; atom "["; arg h; atom "`:"; arg l; atom "]" ] |> case_v ~var:"indexAccessExpression" }
+		{ [ arg a; atom "["; arg h; atom ":"; arg l; atom "]" ] |> case_v ~var:"indexAccessExpression" }
 ;
 
 %inline accessExpression:
@@ -565,14 +565,14 @@ namedExpressionList:
 
 %inline memberAccessExpressionNonBrace:
 	| e = memberAccessBaseNonBrace DOT m = member %prec DOT
-		{ [ arg e; atom "`."; arg m ] |> case_v ~var:"memberAccessExpressionNonBrace" }
+		{ [ arg e; atom "."; arg m ] |> case_v ~var:"memberAccessExpressionNonBrace" }
 ;
 
 %inline indexAccessExpressionNonBrace:
 	| a = expressionNonBrace L_BRACKET i = expression R_BRACKET
 		{ [ arg a; atom "["; arg i; atom "]" ] |> case_v ~var:"indexAccessExpressionNonBrace" }
 	| a = expressionNonBrace L_BRACKET h = expression COLON l = expression R_BRACKET
-		{ [ arg a; atom "["; arg h; atom "`:"; arg l; atom "]" ] |> case_v ~var:"indexAccessExpressionNonBrace" }
+		{ [ arg a; atom "["; arg h; atom ":"; arg l; atom "]" ] |> case_v ~var:"indexAccessExpressionNonBrace" }
 ;
 
 %inline accessExpressionNonBrace:
@@ -667,13 +667,13 @@ expressionList:
     { [ arg n; atom "="; arg e ]
       |> case_v ~var:"recordElementExpression" }
   | n = name ASSIGN e = expression COMMA DOTS
-    { [ arg n; atom "="; arg e; atom ","; atom "`..." ]
+    { [ arg n; atom "="; arg e; atom ","; atom "..." ]
       |> case_v ~var:"recordElementExpression" }
 	| n = name ASSIGN e = expression COMMA el = namedExpressionList
     { [ arg n; atom "="; arg e; atom ","; arg el ]
       |> case_v ~var:"recordElementExpression" }
   | n = name ASSIGN e = expression COMMA el = namedExpressionList COMMA DOTS
-    { [ arg n; atom "="; arg e; atom ","; arg el; atom ","; atom "`..." ]
+    { [ arg n; atom "="; arg e; atom ","; arg el; atom ","; atom "..." ]
       |> case_v ~var:"recordElementExpression" }
 ;
 
@@ -709,7 +709,7 @@ simpleKeysetExpression:
 	| b = expression MASK m = expression
     { [ arg b; atom "&&&"; arg m ] |> case_v ~var:"simpleKeysetExpression" }
 	| l = expression RANGE h = expression
-    { [ arg l; atom "`.."; arg h ] |> case_v ~var:"simpleKeysetExpression" }
+    { [ arg l; atom ".."; arg h ] |> case_v ~var:"simpleKeysetExpression" }
 	| DEFAULT
     { [ atom "DEFAULT" ] |> case_v ~var:"simpleKeysetExpression" }
 	| DONTCARE
@@ -726,7 +726,7 @@ tupleKeysetExpression:
 	| L_PAREN b = expression MASK m = expression R_PAREN
 		{ [ atom "("; arg b; atom "&&&"; arg m; atom ")" ] |> case_v ~var:"tupleKeysetExpression" }
 	| L_PAREN l = expression RANGE h = expression R_PAREN
-		{ [ atom "("; arg l; atom "`.."; arg h; atom ")" ] |> case_v ~var:"tupleKeysetExpression" }
+		{ [ atom "("; arg l; atom ".."; arg h; atom ")" ] |> case_v ~var:"tupleKeysetExpression" }
 	| L_PAREN DEFAULT R_PAREN
 		{ [ atom "("; atom "DEFAULT"; atom ")" ] |> case_v ~var:"tupleKeysetExpression" }
 	| L_PAREN DONTCARE R_PAREN
@@ -799,11 +799,11 @@ argumentList:
 lvalue:
 	| e = referenceExpression { e }
 	| lv = lvalue DOT m = member %prec DOT
-		{ [ arg lv; atom "`."; arg m ] |> case_v ~var:"lvalue" }
+		{ [ arg lv; atom "."; arg m ] |> case_v ~var:"lvalue" }
 	| lv = lvalue L_BRACKET i = expression R_BRACKET
 		{ [ arg lv; atom "["; arg i; atom "]" ] |> case_v ~var:"lvalue" }
 	| lv = lvalue L_BRACKET h = expression COLON l = expression R_BRACKET
-		{ [ arg lv; atom "["; arg h; atom "`:"; arg l; atom "]" ] |> case_v ~var:"lvalue" }
+		{ [ arg lv; atom "["; arg h; atom ":"; arg l; atom "]" ] |> case_v ~var:"lvalue" }
 	| L_PAREN lv = lvalue R_PAREN
 		{ [ atom "("; arg lv; atom ")" ] |> case_v ~var:"lvalue" }
 ;
@@ -811,7 +811,7 @@ lvalue:
 (* Statements *)
 (* >> Empty statements *)
 emptyStatement:
-	| SEMICOLON { [ atom "`;" ] |> case_v ~var:"emptyStatement" }
+	| SEMICOLON { [ atom ";" ] |> case_v ~var:"emptyStatement" }
 ;
 
 (* >> Assignment statements *)
@@ -833,37 +833,37 @@ assignop:
 
 assignmentStatement:
 	| lv = lvalue o = assignop e = expression SEMICOLON
-		{ [ arg lv; arg o; arg e; atom "`;" ] |> case_v ~var:"assignmentStatement" }
+		{ [ arg lv; arg o; arg e; atom ";" ] |> case_v ~var:"assignmentStatement" }
 ;
 
 (* >> Call statements *)
 callStatement:
 	| lv = lvalue L_PAREN args = argumentList R_PAREN SEMICOLON
-		{ [ arg lv; atom "("; arg args; atom ")"; atom "`;" ] |> case_v ~var:"callStatement" }
+		{ [ arg lv; atom "("; arg args; atom ")"; atom ";" ] |> case_v ~var:"callStatement" }
 	| lv = lvalue l_angle targs = typeArgumentList r_angle L_PAREN args = argumentList R_PAREN SEMICOLON
-		{ [ arg lv; atom "<"; arg targs; atom ">"; atom "("; arg args; atom ")"; atom "`;" ]
+		{ [ arg lv; atom "<"; arg targs; atom ">"; atom "("; arg args; atom ")"; atom ";" ]
       |> case_v ~var:"callStatement" }
 ;
 
 (* >> Direct application statements *)
 directApplicationStatement:
 	| t = namedType DOT APPLY L_PAREN args = argumentList R_PAREN SEMICOLON
-    { [ arg t; atom "`."; atom "APPLY"; atom "("; arg args; atom ")"; atom "`;" ]
+    { [ arg t; atom "."; atom "APPLY"; atom "("; arg args; atom ")"; atom ";" ]
       |> case_v ~var:"directApplicationStatement" }
 ;
 
 (* >> Return statements *)
 returnStatement:
 	| RETURN SEMICOLON
-    { [ atom "RETURN"; atom "`;" ] |> case_v ~var:"returnStatement" }
+    { [ atom "RETURN"; atom ";" ] |> case_v ~var:"returnStatement" }
 	| RETURN e = expression SEMICOLON
-    { [ atom "RETURN"; arg e; atom "`;" ] |> case_v ~var:"returnStatement" }
+    { [ atom "RETURN"; arg e; atom ";" ] |> case_v ~var:"returnStatement" }
 ;
 
 (* >> Exit statements *)
 exitStatement:
 	| EXIT SEMICOLON
-    { [ atom "EXIT"; atom "`;" ] |> case_v ~var:"exitStatement" }
+    { [ atom "EXIT"; atom ";" ] |> case_v ~var:"exitStatement" }
 ;
 
 (* >> Block statements *)
@@ -927,12 +927,12 @@ forUpdateStatementList:
 forCollectionExpression:
 	| e = expression { e }
 	| l = expression RANGE h = expression
-    { [ arg l; atom "`.."; arg h ] |> case_v ~var:"forCollectionExpr" }
+    { [ arg l; atom ".."; arg h ] |> case_v ~var:"forCollectionExpr" }
 ;
 
 forStatement:
   | al = annotationList FOR L_PAREN il = forInitStatementList SEMICOLON c = expression SEMICOLON ul = forUpdateStatementList R_PAREN b = statement
-		{ [ arg al; atom "FOR"; atom "("; arg il; atom "`;"; arg c; atom "`;"; arg ul; atom ")"; arg b ]
+		{ [ arg al; atom "FOR"; atom "("; arg il; atom ";"; arg c; atom ";"; arg ul; atom ")"; arg b ]
       |> case_v ~var:"forStatement" }
   | al = annotationList FOR L_PAREN
     t = typeRef n = name IN e = forCollectionExpression R_PAREN b = statement
@@ -954,9 +954,9 @@ switchLabel:
 
 switchCase:
   | l = switchLabel COLON s = blockStatement
-    { [ arg l; atom "`:"; arg s ] |> case_v ~var:"switchCase" }
+    { [ arg l; atom ":"; arg s ] |> case_v ~var:"switchCase" }
   | l = switchLabel COLON
-    { [ arg l; atom "`:" ] |> case_v ~var:"switchCase" }
+    { [ arg l; atom ":" ] |> case_v ~var:"switchCase" }
 ;
 
 switchCaseList:
@@ -974,12 +974,12 @@ switchStatement:
 (* >> Break and continue statements *)
 breakStatement:
   | BREAK SEMICOLON
-    { [ atom "BREAK"; atom "`;" ] |> case_v ~var:"breakStatement" }
+    { [ atom "BREAK"; atom ";" ] |> case_v ~var:"breakStatement" }
 ;
 
 continueStatement:
   | CONTINUE SEMICOLON
-    { [ atom "CONTINUE"; atom "`;" ] |> case_v ~var:"continueStatement" }
+    { [ atom "CONTINUE"; atom ";" ] |> case_v ~var:"continueStatement" }
 ;
 
 (* >> Statements *)
@@ -1010,7 +1010,7 @@ initialValue:
 
 constantDeclaration:
   | al = annotationList CONST t = typeRef n = name i = initialValue SEMICOLON
-    { [ arg al; atom "CONST"; arg t; arg n; arg i; atom "`;" ] |> case_v ~var:"constantDeclaration" }
+    { [ arg al; atom "CONST"; arg t; arg n; arg i; atom ";" ] |> case_v ~var:"constantDeclaration" }
 ;
 
 initializerOpt:
@@ -1022,7 +1022,7 @@ initializerOpt:
 variableDeclaration:
   | al = annotationList t = typeRef n = name i = initializerOpt SEMICOLON
     { declare_var_of_il n false;
-      [ arg al; arg t; arg n; arg i; atom "`;" ] |> case_v ~var:"variableDeclaration" }
+      [ arg al; arg t; arg n; arg i; atom ";" ] |> case_v ~var:"variableDeclaration" }
 ;
 
 blockElementStatement:
@@ -1068,10 +1068,10 @@ objectInitializer:
 
 instantiation:
 	| al = annotationList t = typeRef L_PAREN args = argumentList R_PAREN n = name SEMICOLON
-    { [ arg al; arg t; atom "("; arg args; atom ")"; arg n; atom "`;" ]
+    { [ arg al; arg t; atom "("; arg args; atom ")"; arg n; atom ";" ]
       |> case_v ~var:"instantiation" }
 	| al = annotationList t = typeRef L_PAREN args = argumentList R_PAREN n = name i = objectInitializer SEMICOLON
-    { [ arg al; arg t; atom "("; arg args; atom ")"; arg n; arg i; atom "`;" ]
+    { [ arg al; arg t; atom "("; arg args; atom ")"; arg n; arg i; atom ";" ]
       |> case_v ~var:"instantiation" }
 ;
 
@@ -1117,7 +1117,7 @@ enumTypeDeclaration:
 (* >>>>>> Struct, header, and union type declarations *)
 typeField:
   | al = annotationList t = typeRef n = name SEMICOLON
-    { [ arg al; arg t; arg n; atom "`;" ] |> case_v ~var:"typeField" }
+    { [ arg al; arg t; arg n; atom ";" ] |> case_v ~var:"typeField" }
 ;
 
 typeFieldList:
@@ -1164,16 +1164,16 @@ typedefType:
 
 typedefDeclaration:
 	| al = annotationList TYPEDEF t = typedefType n = name SEMICOLON
-    { [ arg al; atom "TYPEDEF"; arg t; arg n; atom "`;" ] |> case_v ~var:"typedefDeclaration" }
+    { [ arg al; atom "TYPEDEF"; arg t; arg n; atom ";" ] |> case_v ~var:"typedefDeclaration" }
 	| al = annotationList TYPE t = typeRef n = name SEMICOLON
-    { [ arg al; atom "TYPE"; arg t; arg n; atom "`;" ] |> case_v ~var:"typedefDeclaration" }
+    { [ arg al; atom "TYPE"; arg t; arg n; atom ";" ] |> case_v ~var:"typedefDeclaration" }
 ;
 
 (* >> Extern declarations *)
 externFunctionDeclaration:
 	| al = annotationList EXTERN p = functionPrototype pop_scope SEMICOLON
 		{ let decl =
-        [ arg al; atom "EXTERN"; arg p; atom "`;" ] |> case_v ~var:"externFunctionDeclaration"
+        [ arg al; atom "EXTERN"; arg p; atom ";" ] |> case_v ~var:"externFunctionDeclaration"
       in
       declare_var (id_of_function_prototype p) (has_type_params_function_prototype p);
       decl }
@@ -1181,12 +1181,12 @@ externFunctionDeclaration:
 
 methodPrototype:
 	| al = annotationList tid = typeIdentifier L_PAREN pl = parameterList R_PAREN SEMICOLON
-    { [ arg al; arg tid; atom "("; arg pl; atom ")"; atom "`;" ] |> case_v ~var:"methodPrototype" }
+    { [ arg al; arg tid; atom "("; arg pl; atom ")"; atom ";" ] |> case_v ~var:"methodPrototype" }
 	| al = annotationList p = functionPrototype pop_scope SEMICOLON
-    { [ arg al; arg p; atom "`;" ] |> case_v ~var:"methodPrototype" }
+    { [ arg al; arg p; atom ";" ] |> case_v ~var:"methodPrototype" }
 	| al = annotationList ABSTRACT p = functionPrototype
     pop_scope SEMICOLON
-    { [ arg al; atom "ABSTRACT"; arg p; atom "`;" ] |> case_v ~var:"methodPrototype" }
+    { [ arg al; atom "ABSTRACT"; arg p; atom ";" ] |> case_v ~var:"methodPrototype" }
 ;
 
 methodPrototypeList:
@@ -1216,7 +1216,7 @@ externDeclaration:
 (* >>>> Select expressions *)
 selectCase:
   | k = keysetExpression COLON n = name SEMICOLON
-    { [ arg k; atom "`:"; arg n; atom "`;" ] |> case_v ~var:"selectCase" }
+    { [ arg k; atom ":"; arg n; atom ";" ] |> case_v ~var:"selectCase" }
 ;
 
 selectCaseList:
@@ -1234,7 +1234,7 @@ selectExpression:
 (* >>>> Transition statements *)
 stateExpression:
   | n = name SEMICOLON
-    { [ arg n; atom "`;" ] |> case_v ~var:"stateExpression" }
+    { [ arg n; atom ";" ] |> case_v ~var:"stateExpression" }
   | e = selectExpression
     { e }
 ;
@@ -1256,7 +1256,7 @@ valueSetType:
 valueSetDeclaration:
 	| al = annotationList VALUE_SET l_angle t = valueSetType r_angle
     L_PAREN s = expression R_PAREN n = name SEMICOLON
-    { [ arg al; atom "VALUE_SET"; atom "<"; arg t; atom ">"; atom "("; arg s; atom ")"; arg n; atom "`;" ]
+    { [ arg al; atom "VALUE_SET"; atom "<"; arg t; atom ">"; atom "("; arg s; atom ")"; arg n; atom ";" ]
       |> case_v ~var:"valueSetDeclaration" }
 ;
 
@@ -1264,7 +1264,7 @@ valueSetDeclaration:
 parserTypeDeclaration:
   | al = annotationList PARSER n = push_name tpl = typeParameterListOpt
       L_PAREN pl = parameterList R_PAREN pop_scope SEMICOLON
-    { [ arg al; atom "PARSER"; arg n; arg tpl; atom "("; arg pl; atom ")"; atom "`;" ]
+    { [ arg al; atom "PARSER"; arg n; arg tpl; atom "("; arg pl; atom ")"; atom ";" ]
       |> case_v ~var:"parserTypeDeclaration" }
 ;
 
@@ -1336,7 +1336,7 @@ constOpt:
 (* >>>>>> Table key property *)
 tableKey:
   | e = expression COLON n = name al = annotationList SEMICOLON
-    { [ arg e; atom "`:"; arg n; arg al; atom "`;" ] |> case_v ~var:"tableKey" }
+    { [ arg e; atom ":"; arg n; arg al; atom ";" ] |> case_v ~var:"tableKey" }
 ;
 
 tableKeyList:
@@ -1355,7 +1355,7 @@ tableActionReference:
 
 tableAction:
   | al = annotationList ac = tableActionReference SEMICOLON
-    { [ arg al; arg ac; atom "`;" ] |> case_v ~var:"tableAction" }
+    { [ arg al; arg ac; atom ";" ] |> case_v ~var:"tableAction" }
 ;
 
 tableActionList:
@@ -1367,16 +1367,16 @@ tableActionList:
 (* >>>>>> Table entry property *)
 tableEntryPriority:
   | PRIORITY ASSIGN num = number COLON
-    { [ atom "PRIORITY"; atom "="; arg num; atom "`:" ] |> case_v ~var:"tableEntryPriority" }
+    { [ atom "PRIORITY"; atom "="; arg num; atom ":" ] |> case_v ~var:"tableEntryPriority" }
   | PRIORITY ASSIGN L_PAREN e = expression R_PAREN COLON
-    { [ atom "PRIORITY"; atom "="; atom "("; arg e; atom ")"; atom "`:" ] |> case_v ~var:"tableEntryPriority" }
+    { [ atom "PRIORITY"; atom "="; atom "("; arg e; atom ")"; atom ":" ] |> case_v ~var:"tableEntryPriority" }
 ;
 
 tableEntry:
   | c = constOpt p = tableEntryPriority k = keysetExpression COLON ac = tableActionReference al = annotationList SEMICOLON
-    { [ arg c; arg p; arg k; atom "`:"; arg ac; arg al; atom "`;" ] |> case_v ~var:"tableEntry" }
+    { [ arg c; arg p; arg k; atom ":"; arg ac; arg al; atom ";" ] |> case_v ~var:"tableEntry" }
   | c = constOpt k = keysetExpression COLON ac = tableActionReference al = annotationList SEMICOLON
-    { [ arg c; arg k; atom "`:"; arg ac; arg al; atom "`;" ] |> case_v ~var:"tableEntry" }
+    { [ arg c; arg k; atom ":"; arg ac; arg al; atom ";" ] |> case_v ~var:"tableEntry" }
 ;
 
 tableEntryList:
@@ -1394,7 +1394,7 @@ tableProperty:
   | al = annotationList c = constOpt ENTRIES ASSIGN L_BRACE el = tableEntryList R_BRACE
     { [ arg al; arg c; atom "ENTRIES"; atom "="; atom "{"; arg el; atom "}" ] |> case_v ~var:"tableProperty" }
   | al = annotationList c = constOpt n = tableCustomName i = initialValue SEMICOLON
-    { [ arg al; arg c; arg n; arg i; atom "`;" ] |> case_v ~var:"tableProperty" }
+    { [ arg al; arg c; arg n; arg i; atom ";" ] |> case_v ~var:"tableProperty" }
 ;
 
 tablePropertyList:
@@ -1411,7 +1411,7 @@ tableDeclaration:
 controlTypeDeclaration:
   | al = annotationList CONTROL n = push_name tpl = typeParameterListOpt
     L_PAREN pl = parameterList R_PAREN pop_scope SEMICOLON
-    { [ arg al; atom "CONTROL"; arg n; arg tpl; atom "("; arg pl; atom ")"; atom "`;" ]
+    { [ arg al; atom "CONTROL"; arg n; arg tpl; atom "("; arg pl; atom ")"; atom ";" ]
       |> case_v ~var:"controlTypeDeclaration" }
 ;
 
@@ -1449,7 +1449,7 @@ controlDeclaration:
 packageTypeDeclaration:
   | al = annotationList PACKAGE n = push_name tpl = typeParameterListOpt
     L_PAREN pl = parameterList R_PAREN pop_scope SEMICOLON
-    { [ arg al; atom "PACKAGE"; arg n; arg tpl; atom "("; arg pl; atom ")"; atom "`;" ]
+    { [ arg al; atom "PACKAGE"; arg n; arg tpl; atom "("; arg pl; atom ")"; atom ";" ]
       |> case_v ~var:"packageTypeDeclaration" }
 ;
 
@@ -1602,7 +1602,7 @@ annotationToken:
     { [ atom "&&&" ] |> case_v ~var:"annotationToken" }
   (* TODO: missing DOTS "..." in spec *)
 	| RANGE
-    { [ atom "`.." ] |> case_v ~var:"annotationToken" }
+    { [ atom ".." ] |> case_v ~var:"annotationToken" }
 	| SHL
     { [ atom "<<" ] |> case_v ~var:"annotationToken" }
 	| AND
@@ -1656,17 +1656,17 @@ annotationToken:
 	| NOT
     { [ atom "!" ] |> case_v ~var:"annotationToken" }
 	| COLON
-    { [ atom "`:" ] |> case_v ~var:"annotationToken" }
+    { [ atom ":" ] |> case_v ~var:"annotationToken" }
 	| COMMA
     { [ atom "," ] |> case_v ~var:"annotationToken" }
 	| QUESTION
     { [ atom "?" ] |> case_v ~var:"annotationToken" }
 	| DOT
-    { [ atom "`." ] |> case_v ~var:"annotationToken" }
+    { [ atom "." ] |> case_v ~var:"annotationToken" }
 	| ASSIGN
     { [ atom "=" ] |> case_v ~var:"annotationToken" }
 	| SEMICOLON
-    { [ atom "`;" ] |> case_v ~var:"annotationToken" }
+    { [ atom ";" ] |> case_v ~var:"annotationToken" }
 	| AT
     { [ atom "@" ] |> case_v ~var:"annotationToken" }
 ;
@@ -1713,7 +1713,7 @@ declarationList:
   | ds = declarationList d = declaration
     { [ arg ds; arg d ] |> case_v ~var:"p4program" }
   | ds = declarationList SEMICOLON
-    { [ arg ds; atom "`;" ] |> case_v ~var:"p4program" }
+    { [ arg ds; atom ";" ] |> case_v ~var:"p4program" }
 ;
 
 p4program:

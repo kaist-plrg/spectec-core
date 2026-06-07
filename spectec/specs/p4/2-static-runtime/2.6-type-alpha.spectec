@@ -91,8 +91,8 @@ rule Type_alpha/non-serializable:
   (ENUM typeId `{ nameIR_field* }) ~~ (ENUM typeId `{ nameIR_field* })
 
 rule Type_alpha/serializable:
-  (ENUM typeId `< typeIR_a > `{ (nameIR_field `= value_field `;)* })
-  ~~ (ENUM typeId `< typeIR_b > `{ (nameIR_field `= value_field `;)* })
+  (ENUM typeId `< typeIR_a > `{ (nameIR_field '=' value_field ';')* })
+  ~~ (ENUM typeId `< typeIR_b > `{ (nameIR_field '=' value_field ';')* })
   -- Type_alpha: typeIR_a ~~ typeIR_b
 
 
@@ -131,19 +131,19 @@ rule Type_alpha/non-default:
   -- (Type_alpha: typeIR_a ~~ typeIR_b)*
 
 rule Type_alpha/default:
-  (SEQ `< typeIR_a* `, `... >) ~~ (SEQ `< typeIR_b* `, `... >)
+  (SEQ `< typeIR_a* ',' '...' >) ~~ (SEQ `< typeIR_b* ',' '...' >)
   -- (Type_alpha: typeIR_a ~~ typeIR_b)*
 
 
 
 rule Type_alpha/non-default:
-  (RECORD `{ (annotationList typeIR_field_a nameIR_field `;)* })
-  ~~ (RECORD `{ (annotationList typeIR_field_b nameIR_field `;)* })
+  (RECORD `{ (annotationList typeIR_field_a nameIR_field ';')* })
+  ~~ (RECORD `{ (annotationList typeIR_field_b nameIR_field ';')* })
   -- (Type_alpha: typeIR_field_a ~~ typeIR_field_b)*
 
 rule Type_alpha/default:
-  (RECORD `{ (annotationList typeIR_field_a nameIR_field `;)* `, `... })
-  ~~ (RECORD `{ (annotationList typeIR_field_b nameIR_field `;)* `, `... })
+  (RECORD `{ (annotationList typeIR_field_a nameIR_field ';')* ',' '...' })
+  ~~ (RECORD `{ (annotationList typeIR_field_b nameIR_field ';')* ',' '...' })
   -- (Type_alpha: typeIR_field_a ~~ typeIR_field_b)*
 
 
@@ -168,15 +168,15 @@ rule ParameterType_alpha:
 
 
 rule ExternMethodType_alpha/non-abstract:
-  (EXTERN_METHOD nameIR `( parameterIR_a* ) `: typeIR_a)
-  ~~ (EXTERN_METHOD nameIR `( parameterIR_b* ) `: typeIR_b)
+  (EXTERN_METHOD nameIR `( parameterIR_a* ) ':' typeIR_a)
+  ~~ (EXTERN_METHOD nameIR `( parameterIR_b* ) ':' typeIR_b)
   -- (ParameterType_alpha:
         parameterIR_a ~~ parameterIR_b)*
   -- Type_alpha: typeIR_a ~~ typeIR_b
 
 rule ExternMethodType_alpha/abstract:
-  (EXTERN_METHOD ABSTRACT nameIR `( parameterIR_a* ) `: typeIR_a)
-  ~~ (EXTERN_METHOD ABSTRACT nameIR `( parameterIR_b* ) `: typeIR_b)
+  (EXTERN_METHOD ABSTRACT nameIR `( parameterIR_a* ) ':' typeIR_a)
+  ~~ (EXTERN_METHOD ABSTRACT nameIR `( parameterIR_b* ) ':' typeIR_b)
   -- (ParameterType_alpha:
         parameterIR_a ~~ parameterIR_b)*
   -- Type_alpha: typeIR_a ~~ typeIR_b
@@ -201,14 +201,14 @@ rule ExternMethodTypeDef_alpha:
       = $fresh_typeIds(|typeParameterIR_expl_a* ++ typeParameterIR_impl_a*|)
   ---- ;; substitute the left hand side
   -- if typeParameterIR_a* = typeParameterIR_expl_a* ++ typeParameterIR_impl_a*
-  -- if theta_a = `{ (typeParameterIR_a `: (_NAME typeParameterIR_fresh))* }
+  -- if theta_a = `{ (typeParameterIR_a ':' (_NAME typeParameterIR_fresh))* }
   -- if externMethodTypeIR_a
       = $callableTypeIR_of_callableTypeDefIR(externMethodTypeDefIR_a)
   -- if externMethodTypeIR_a_subst
       = $subst_callableTypeIR(theta_a, externMethodTypeIR_a)
   ---- ;; substitute the right hand side
   -- if typeParameterIR_b* = typeParameterIR_expl_b* ++ typeParameterIR_impl_b*
-  -- if theta_b = `{ (typeParameterIR_b `: (_NAME typeParameterIR_fresh))* }
+  -- if theta_b = `{ (typeParameterIR_b ':' (_NAME typeParameterIR_fresh))* }
   -- if externMethodTypeIR_b
       = $callableTypeIR_of_callableTypeDefIR(externMethodTypeDefIR_b)
   -- if externMethodTypeIR_b_subst

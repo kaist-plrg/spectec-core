@@ -9,7 +9,7 @@ syntax infer =
 syntax constraint = map<tid, infer>
 
 dec $empty_constraint(tid*) : constraint
-def $empty_constraint(tid*) = `{ (tid `: UNKNOWN)* }
+def $empty_constraint(tid*) = `{ (tid ':' UNKNOWN)* }
 
 syntax inference = map<tid, typeIR>
 
@@ -54,16 +54,16 @@ def $infer(tid_infer*, parameterTypeIR*, argumentIR*)
 def $infer'(constraint, parameterTypeIR, typedExpressionIR)
   = $gen_constraint_type(constraint, typeIR_param, typeIR_arg)
   -- if _ typeIR_param _ _ = parameterTypeIR
-  -- if _ `# `( typeIR_arg _ ) = typedExpressionIR
+  -- if _ '#' `( typeIR_arg _ ) = typedExpressionIR
 
-def $infer'(constraint, parameterTypeIR, nameIR `= typedExpressionIR)
+def $infer'(constraint, parameterTypeIR, nameIR '=' typedExpressionIR)
   = $gen_constraint_type(constraint, typeIR_param, typeIR_arg)
   -- if _ typeIR_param _ _ = parameterTypeIR
-  -- if _ `# `( typeIR_arg _ ) = typedExpressionIR
+  -- if _ '#' `( typeIR_arg _ ) = typedExpressionIR
 
-def $infer'(constraint, parameterTypeIR, nameIR `= `_) = constraint
+def $infer'(constraint, parameterTypeIR, nameIR '=' '_') = constraint
 
-def $infer'(constraint, parameterTypeIR, `_) = constraint
+def $infer'(constraint, parameterTypeIR, '_') = constraint
 
 ;;
 ;;;; Constraint generation
@@ -152,22 +152,22 @@ def $gen_constraint_type(
 
 def $gen_constraint_type(
     constraint,
-    STRUCT tid `{ (typeIR_param id_field `;)* },
-    STRUCT tid `{ (typeIR_arg id_field `;)* }
+    STRUCT tid `{ (typeIR_param id_field ';')* },
+    STRUCT tid `{ (typeIR_arg id_field ';')* }
   )
   = $gen_constraint_types(constraint, typeIR_param*, typeIR_arg*)
 
 def $gen_constraint_type(
     constraint,
-    HEADER tid `{ (typeIR_param id_field `;)* },
-    HEADER tid `{ (typeIR_arg id_field `;)* }
+    HEADER tid `{ (typeIR_param id_field ';')* },
+    HEADER tid `{ (typeIR_arg id_field ';')* }
   )
   = $gen_constraint_types(constraint, typeIR_param*, typeIR_arg*)
 
 def $gen_constraint_type(
     constraint,
-    HEADER_UNION tid `{ (typeIR_param id_field `;)* },
-    HEADER_UNION tid `{ (typeIR_arg id_field `;)* }
+    HEADER_UNION tid `{ (typeIR_param id_field ';')* },
+    HEADER_UNION tid `{ (typeIR_arg id_field ';')* }
   )
   = $gen_constraint_types(constraint, typeIR_param*, typeIR_arg*)
 
@@ -175,8 +175,8 @@ def $gen_constraint_type(
 
 def $gen_constraint_type(
     constraint,
-    EXTERN tid `{ (rid `: routineTypeDefIR_param)* },
-    EXTERN tid `{ (rid `: routineTypeDefIR_arg)* }
+    EXTERN tid `{ (rid ':' routineTypeDefIR_param)* },
+    EXTERN tid `{ (rid ':' routineTypeDefIR_arg)* }
   )
   = $gen_constraint_routines(
       constraint,
@@ -226,8 +226,8 @@ def $gen_constraint_types(constraint, typeIR_param*, typeIR_arg*)
 
 def $gen_constraint_routine(
     constraint_0,
-    (EXTERN_METHOD `( parameterTypeIR_param* ) `-> typeIR_ret_param) `< _ `, _ >,
-    (EXTERN_METHOD `( parameterTypeIR_arg* ) `-> typeIR_ret_arg) `< _ `, _ >
+    (EXTERN_METHOD `( parameterTypeIR_param* ) '->' typeIR_ret_param) `< _ ',' _ >,
+    (EXTERN_METHOD `( parameterTypeIR_arg* ) '->' typeIR_ret_arg) `< _ ',' _ >
   )
   = constraint_2
   -- if (direction typeIR_param _ _ = parameterTypeIR_param)*
@@ -239,8 +239,8 @@ def $gen_constraint_routine(
 
 def $gen_constraint_routine(
     constraint_0,
-    (EXTERN_METHOD ABSTRACT `( parameterTypeIR_param* ) `-> typeIR_ret_param) `< _ `, _ >,
-    (EXTERN_METHOD ABSTRACT `( parameterTypeIR_arg* ) `-> typeIR_ret_arg) `< _ `, _ >
+    (EXTERN_METHOD ABSTRACT `( parameterTypeIR_param* ) '->' typeIR_ret_param) `< _ ',' _ >,
+    (EXTERN_METHOD ABSTRACT `( parameterTypeIR_arg* ) '->' typeIR_ret_arg) `< _ ',' _ >
   )
   = constraint_2
   -- if (direction typeIR_param _ _ = parameterTypeIR_param)*
@@ -354,6 +354,6 @@ def $merge_constraints(
 ;;;; Constraint resolution
 ;;
 
-def $resolve_constraint(`{ (tid `: infer)* })
-  = `{ (tid `: typeIR)* }
+def $resolve_constraint(`{ (tid ':' infer)* })
+  = `{ (tid ':' typeIR)* }
   -- if (KNOWN AS typeIR = infer)*

@@ -26,11 +26,11 @@ relation Argument_eval_lctk:
 
 ;;
 ;;;; Type evaluation
-;;;; Inserts fresh type variables (`# typeId*) for don't care type arguments (`_)
+;;;; Inserts fresh type variables ('#' typeId*) for don't care type arguments ('_')
 ;;
 
 relation Type_ok:
-  cursor typingContext |- typeOrVoid : typeIR `# typeId*
+  cursor typingContext |- typeOrVoid : typeIR '#' typeId*
   hint(input %0 %1 %2)
   hint(prose_in "typing" %2#", under context" %1 "at" %0)
   hint(prose_out %3 "and fresh type variables" %4)
@@ -42,19 +42,19 @@ relation TypeParameterListOpt_ok:
   hint(prose_out "context" %3 "and type parameters" %4)
 
 relation TypeArgument_ok:
-  cursor typingContext |- typeArgument : typeArgumentIR `# typeId*
+  cursor typingContext |- typeArgument : typeArgumentIR '#' typeId*
   hint(input %0 %1 %2)
   hint(prose_in "typing" %2#", under context" %1 "at" %0)
   hint(prose_out %3 "and fresh type variables" %4)
 
 relation TypeArguments_ok:
-  cursor typingContext |- typeArgument* : typeArgumentListIR `# typeId*
+  cursor typingContext |- typeArgument* : typeArgumentListIR '#' typeId*
   hint(input %0 %1 %2)
   hint(prose_in "typing" %2#", under context" %1 "at" %0)
   hint(prose_out %3 "and fresh type variables" %4)
 
 relation TypeArgumentList_ok:
-  cursor typingContext |- typeArgumentList : typeArgumentListIR `# typeId*
+  cursor typingContext |- typeArgumentList : typeArgumentListIR '#' typeId*
   hint(input %0 %1 %2)
   hint(prose_in "typing" %2#", under context" %1 "at" %0)
   hint(prose_out %3 "and fresh type variables" %4)
@@ -174,21 +174,21 @@ relation Block_ok:
 
 relation Parameter_ok:
   cursor typingContext |- parameter
-                        : typingContext parameterIR `# typeId*
+                        : typingContext parameterIR '#' typeId*
   hint(input %0 %1 %2)
   hint(prose_in "typing" %2#", under context" %1 "at" %0)
   hint(prose_out "context" %3#"," %4#", and fresh type variables" %5)
 
 relation ParameterList_ok:
   cursor typingContext |- parameterList
-                        : typingContext parameterListIR `# typeId*
+                        : typingContext parameterListIR '#' typeId*
   hint(input %0 %1 %2)
   hint(prose_in "typing" %2#", under context" %1 "at" %0)
   hint(prose_out "context" %3#"," %4#", and fresh type variables" %5)
 
 relation ConstructorParameterListOpt_ok:
   typingContext |- constructorParameterListOpt
-                 : typingContext constructorParameterListIR `# typeId*
+                 : typingContext constructorParameterListIR '#' typeId*
   hint(input %0 %1)
   hint(prose_in "typing" %1 "under context" %0)
   hint(prose_out "context" %2#"," %3#", and fresh type variables" %4)
@@ -203,10 +203,10 @@ dec $callableId_of_externMethodPrototype(
   hint(prose_in "callable id of " %0)
 
 def $callableId_of_externMethodPrototype(
-    _ (_ name _ `( parameterList )) `;)
+    _ (_ name _ `( parameterList )) ';')
   = $callableId(name, parameterList)
 def $callableId_of_externMethodPrototype(
-    _ ABSTRACT (_ name _ `( parameterList )) `;)
+    _ ABSTRACT (_ name _ `( parameterList )) ';')
   = $callableId(name, parameterList)
 
 dec $type_of_externMethodPrototypeIR(externMethodPrototypeIR)
@@ -215,22 +215,22 @@ dec $type_of_externMethodPrototypeIR(externMethodPrototypeIR)
 
 def $type_of_externMethodPrototypeIR(
     _ (typeIR_ret nameIR
-      `< typeParameterListIR_expl `, typeParameterListIR_impl >
-      `( parameterIR* )) `;)
+      `< typeParameterListIR_expl ',' typeParameterListIR_impl >
+      `( parameterIR* )) ';')
   = externMethodTypeDefIR
   -- if externMethodTypeDefIR
       = EXTERN_METHOD nameIR
-          `< typeParameterListIR_expl `, typeParameterListIR_impl >
-          `( parameterIR* ) `: typeIR_ret
+          `< typeParameterListIR_expl ',' typeParameterListIR_impl >
+          `( parameterIR* ) ':' typeIR_ret
 def $type_of_externMethodPrototypeIR(
     _ ABSTRACT (typeIR_ret nameIR
-      `< typeParameterListIR_expl `, typeParameterListIR_impl >
-      `( parameterIR* )) `;)
+      `< typeParameterListIR_expl ',' typeParameterListIR_impl >
+      `( parameterIR* )) ';')
   = externMethodTypeDefIR
   -- if externMethodTypeDefIR
       = EXTERN_METHOD ABSTRACT nameIR
-          `< typeParameterListIR_expl `, typeParameterListIR_impl >
-          `( parameterIR* ) `: typeIR_ret
+          `< typeParameterListIR_expl ',' typeParameterListIR_impl >
+          `( parameterIR* ) ':' typeIR_ret
 
 dec $constructorId_of_externConstructorPrototype(
     externConstructorPrototype)
@@ -238,7 +238,7 @@ dec $constructorId_of_externConstructorPrototype(
   hint(prose_in "constructor id of " %0)
 
 def $constructorId_of_externConstructorPrototype(
-    _ typeIdentifier `( parameterList ) `;)
+    _ typeIdentifier `( parameterList ) ';')
   = $callableId(typeIdentifier, parameterList)
 
 relation ExternMethod_ok:
@@ -326,8 +326,8 @@ relation TableKeys_ok:
   hint(prose_out "table context" %3 "and" %4)
 
 relation Call_action_partial_ok:
-  typingContext |- parameterIR* `@ argumentListIR
-                 : parameterIR* `, parameterIR* `@ argumentListIR
+  typingContext |- parameterIR* '@' argumentListIR
+                 : parameterIR* ',' parameterIR* '@' argumentListIR
   hint(input %0 %1 %2)
   hint(prose_in "typing partial action call on" %1 "with" %2#", under context" %0)
   hint(prose_out "parameters" %3 "for data-plane," %4 "for control-plane,"
@@ -346,8 +346,8 @@ relation TableActions_ok:
   hint(prose_out "table context" %3 "and" %4)
 
 relation Call_action_default_ok:
-  typingContext |- parameterIR* `@ argumentListIR
-                 : parameterIR* `, parameterIR* `@ argumentListIR
+  typingContext |- parameterIR* '@' argumentListIR
+                 : parameterIR* ',' parameterIR* '@' argumentListIR
   hint(input %0 %1 %2)
   hint(prose_in "typing action call on" %1 "with" %2#", under context" %0)
   hint(prose_out "parameters" %3 "for data-plane," %4 "for control-plane,"#
@@ -489,21 +489,21 @@ relation Program_ok:
 syntax actctxt = ACTION | NOACTION
 
 relation Call_convention_expr_ok:
-  cursor typingContext actctxt |- parameterIR `@ typedExpressionIR
+  cursor typingContext actctxt |- parameterIR '@' typedExpressionIR
                                 : typedExpressionIR
   hint(input %0 %1 %2 %3 %4)
   hint(prose_in "checking calling convention of" %4 "applied to" %3
              #", under context" %1 "and action context" %2 "at" %0)
 
 relation Call_convention_argument_ok:
-  cursor typingContext actctxt |- parameterIR `@ argumentIR
+  cursor typingContext actctxt |- parameterIR '@' argumentIR
                                 : argumentIR
   hint(input %0 %1 %2 %3 %4)
   hint(prose_in "checking calling convention of" %4 "applied to parameter type" %3
              #", under context" %1 "and action context" %2 "at" %0)
 
 relation Call_convention_ok:
-  cursor typingContext actctxt |- parameterIR* `@ argumentListIR
+  cursor typingContext actctxt |- parameterIR* '@' argumentListIR
                                 : argumentListIR
   hint(input %0 %1 %2 %3 %4)
   hint(prose_in "checking calling convention of" %4 "applied on" %3#
@@ -520,9 +520,9 @@ relation Call_convention_ok:
 
 dec $is_static_callableTypeIR(callableTypeIR) : ctk
   hint(prose_in "compile-time known-ness of" %0)
-def $is_static_callableTypeIR(EXTERN_FUNCTION "static_assert" `( _ ) `: _)
+def $is_static_callableTypeIR(EXTERN_FUNCTION "static_assert" `( _ ) ':' _)
   = LCTK
-def $is_static_callableTypeIR(BUILTIN_METHOD nameIR `( _ ) `: _) = LCTK
+def $is_static_callableTypeIR(BUILTIN_METHOD nameIR `( _ ) ':' _) = LCTK
   -- if nameIR <- [ "minSizeInBits", "minSizeInBytes",
                     "maxSizeInBits", "maxSizeInBytes" ]
 def $is_static_callableTypeIR(_) = DYN
@@ -531,7 +531,7 @@ def $is_static_callableTypeIR(_) = DYN
 dec $is_static_assert_callableTypeIR(callableTypeIR) : bool
   hint(prose_true %0 "is a static_assert call")
   hint(prose_false %0 "is not a static_assert call")
-def $is_static_assert_callableTypeIR(EXTERN_FUNCTION "static_assert" `( _ ) `: _)
+def $is_static_assert_callableTypeIR(EXTERN_FUNCTION "static_assert" `( _ ) ':' _)
   = true
 def $is_static_assert_callableTypeIR(_) = false
   -- otherwise
@@ -550,7 +550,7 @@ relation CallableTarget_lvalue_ok:
 
 relation CallableType_ok:
   cursor typingContext |- callableTargetIR `< typeArgumentListIR > `( argumentIR* )
-                        : callableTypeIR `< `# typeId* > `( `# id* `# id* )
+                        : callableTypeIR `< '#' typeId* > `( '#' id* '#' id* )
   hint(input %0 %1 %2 %3 %4)
   hint(prose_in "finding type of callable call" %2 `< %3 > `( %4 )#
                 ", under cursor" %0 "and context" %1)
@@ -563,8 +563,8 @@ relation CallableType_ok:
 ;; and inserts implicit casts for arguments, if necessary
 
 relation Call_ok:
-  cursor typingContext |- callableTypeIR `< typeArgumentListIR `# typeId* >
-                            `( argumentListIR `# id* `# id* )
+  cursor typingContext |- callableTypeIR `< typeArgumentListIR '#' typeId* >
+                            `( argumentListIR '#' id* '#' id* )
                         : typeIR `< typeArgumentListIR > `( argumentListIR )
   hint(input %0 %1 %2 %3 %4 %5 %6 %7)
   hint(prose_in "typing invocation" %2 `< %3 > `( %5 ) "with omitted type arguments"
@@ -582,7 +582,7 @@ relation Call_ok:
 
 relation ConstructorType_ok:
   cursor typingContext |- constructorTargetIR `( argumentIR* )
-                        : constructorTypeIR `< `# typeId* > `( `# id* `# id* )
+                        : constructorTypeIR `< '#' typeId* > `( '#' id* '#' id* )
   hint(input %0 %1 %2 %3)
   hint(prose_in "finding type of constructor call"
                 %2 `( %3 ) #", under cursor" %0 "and context" %1)
@@ -598,8 +598,8 @@ syntax instctxt = NAMED | ANON
 
 relation Inst_ok:
   cursor typingContext instctxt
-  |- constructorTypeIR `< typeArgumentListIR `# typeId* >
-      `( argumentListIR `# id* `# id* )
+  |- constructorTypeIR `< typeArgumentListIR '#' typeId* >
+      `( argumentListIR '#' id* '#' id* )
   : typeIR `< typeArgumentListIR > `( argumentListIR )
   hint(input %0 %1 %2 %3 %4 %5 %6 %7 %8)
   hint(prose_in "typing instantiation" %3 `< %4 > `( %6 ) "with omitted type arguments"

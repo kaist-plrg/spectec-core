@@ -60,9 +60,8 @@ let is_arith_cmpop : cmpop -> bool = function
    `->`, ...): preferred break points. *)
 let is_breakable_atom (a : Atom.t) : bool =
   match a with
-  | Turnstile | Tilesturn | SqArrow | SqArrowStar | Sub | Sup | Colon _
-  | ColonEq _ | Tilde2 _ | Arrow _ | ArrowSub | DoubleArrow | DoubleArrowSub
-  | DoubleArrowLong ->
+  | Turnstile | Tilesturn | SqArrow | SqArrowStar | Sub | Sup | Colon | ColonEq
+  | Tilde2 | Arrow | ArrowSub | DoubleArrowSub | DoubleArrowLong ->
       true
   | _ -> false
 

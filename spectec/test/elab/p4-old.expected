@@ -99,7 +99,7 @@ builtin dec $sub_set<K>(set<K>, set<K>) : bool
 ;; ../../../../../spectec/specs/p4-old/0-aux.spectec:83:1-83:46:
 builtin dec $eq_set<K>(set<K>, set<K>) : bool
 
-;; ../../../../../spectec/specs/p4-old/0-aux.spectec:89:21-89:27:
+;; ../../../../../spectec/specs/p4-old/0-aux.spectec:89:21-89:28:
 syntax pair<K, V> = 
    | K : V (from pair<K, V>)
 
@@ -115,7 +115,7 @@ def $empty_map<K, V> : map<K, V> =
 ;; ../../../../../spectec/specs/p4-old/0-aux.spectec:96:1-96:39:
 def $dom_map<K, V>(map<K, V>) : set<K> =
 
-   ;; ../../../../../spectec/specs/p4-old/0-aux.spectec:97:1-97:45:
+   ;; ../../../../../spectec/specs/p4-old/0-aux.spectec:97:1-97:46:
    clause 0({ K : V*{K <- K*, V <- V*} }) = { K*{K <- K*} }
 
 ;; ../../../../../spectec/specs/p4-old/0-aux.spectec:99:1-99:47:
@@ -133,7 +133,7 @@ builtin dec $adds_map<K, V>(map<K, V>, K*, V*) : map<K, V>
 ;; ../../../../../spectec/specs/p4-old/0-aux.spectec:107:1-107:59:
 builtin dec $update_map<K, V>(map<K, V>, K, V) : map<K, V>
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:6:1-7:7:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:6:1-7:8:
 syntax trailingCommaOpt = 
    |  (from trailingCommaOpt)
    | , (from trailingCommaOpt)
@@ -144,7 +144,7 @@ syntax number =
    | nat w int (from number) hint(print %#W#%)
    | nat s int (from number) hint(print %#S#%)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:22:24-22:57:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:22:24-22:61:
 syntax stringLiteral = 
    | " text " (from stringLiteral) hint(print "#%#")
 
@@ -167,7 +167,7 @@ syntax nonTypeName =
    | type (from nonTypeName)
    | priority (from nonTypeName)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:48:1-49:23:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:48:1-49:24:
 syntax prefixedNonTypeName = 
    | text (from identifier)
    | apply (from nonTypeName)
@@ -182,7 +182,7 @@ syntax prefixedNonTypeName =
 ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:55:19-55:33:
 syntax typeName = typeIdentifier
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:58:1-59:21:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:58:1-59:22:
 syntax prefixedTypeName = 
    | text (from typeIdentifier)
    | . typeName (from prefixedTypeName)
@@ -209,7 +209,7 @@ syntax name =
    | text (from typeIdentifier)
    | list (from name)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:80:1-81:21:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:80:1-81:22:
 syntax nameList = 
    | text (from identifier)
    | apply (from nonTypeName)
@@ -330,7 +330,7 @@ syntax typeOrVoid =
 ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:172:24-172:28:
 syntax typeParameter = name
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:175:1-176:39:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:175:1-176:40:
 syntax typeParameterList = 
    | text (from identifier)
    | apply (from nonTypeName)
@@ -378,7 +378,7 @@ def $flatten_typeParameterListOpt(typeParameterListOpt) : typeParameter* =
 syntax parameter = 
    | annotationList direction type name initializerOpt (from parameter)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:202:1-203:39:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:202:1-203:40:
 syntax nonEmptyParameterList = 
    | annotationList direction type name initializerOpt (from parameter)
    | nonEmptyParameterList , parameter (from nonEmptyParameterList)
@@ -431,11 +431,11 @@ def $flatten_constructorParameterListOpt(constructorParameterListOpt) : construc
       -- if constructorParameterListOpt matches `(%)`
       -- let ( parameterList ) = constructorParameterListOpt
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:238:26-238:44:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:238:26-238:45:
 syntax namedExpression = 
    | name = expression (from namedExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:241:1-242:43:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:241:1-242:44:
 syntax namedExpressionList = 
    | name = expression (from namedExpression)
    | namedExpressionList , namedExpression (from namedExpressionList)
@@ -475,11 +475,11 @@ syntax referenceExpression =
    | . nonTypeName (from prefixedNonTypeName)
    | this (from referenceExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:274:28-274:32:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:274:28-274:33:
 syntax defaultExpression = 
    | ... (from defaultExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:282:15-282:32:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:282:15-282:36:
 syntax unop = 
    | ! (from unop)
    | ~ (from unop)
@@ -490,7 +490,7 @@ syntax unop =
 syntax unaryExpression = 
    | unop expression (from unaryExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:287:1-289:35:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:287:1-289:41:
 syntax binop = 
    | * (from binop)
    | / (from binop)
@@ -522,11 +522,11 @@ syntax binaryExpression =
 syntax binaryExpressionNonBrace = 
    | expressionNonBrace binop expression (from binaryExpressionNonBrace)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:297:3-297:41:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:297:3-297:43:
 syntax ternaryExpression = 
    | expression ? expression : expression (from ternaryExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:300:3-300:49:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:300:3-300:51:
 syntax ternaryExpressionNonBrace = 
    | expressionNonBrace ? expression : expression (from ternaryExpressionNonBrace)
 
@@ -539,15 +539,15 @@ syntax dataExpression =
    | {#} (from dataExpression)
    | { dataElementExpression trailingCommaOpt } (from dataExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:325:3-325:18:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:325:3-325:19:
 syntax errorAccessExpression = 
    | error . member (from errorAccessExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:328:3-328:29:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:328:3-328:30:
 syntax memberAccessExpression = 
    | memberAccessBase . member (from memberAccessExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:331:1-332:45:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:331:1-332:46:
 syntax indexAccessExpression = 
    | expression [ expression ] (from indexAccessExpression)
    | expression [ expression : expression ] (from indexAccessExpression)
@@ -559,11 +559,11 @@ syntax accessExpression =
    | expression [ expression ] (from indexAccessExpression)
    | expression [ expression : expression ] (from indexAccessExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:340:3-340:37:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:340:3-340:38:
 syntax memberAccessExpressionNonBrace = 
    | memberAccessBaseNonBrace . member (from memberAccessExpressionNonBrace)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:343:1-344:53:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:343:1-344:54:
 syntax indexAccessExpressionNonBrace = 
    | expressionNonBrace [ expression ] (from indexAccessExpressionNonBrace)
    | expressionNonBrace [ expression : expression ] (from indexAccessExpressionNonBrace)
@@ -622,7 +622,7 @@ syntax expression =
    | routineTarget < realTypeArgumentList > ( argumentList ) (from callExpression)
    | ( expression ) (from parenthesizedExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:395:1-397:33:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:395:1-397:34:
 syntax expressionList = 
    |  (from expressionList)
    | true (from literalExpression)
@@ -712,7 +712,7 @@ syntax memberAccessBase =
 ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:409:36-409:50:
 syntax sequenceElementExpression = expressionList
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:412:1-415:54:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:412:1-415:58:
 syntax recordElementExpression = 
    | name = expression (from recordElementExpression)
    | name = expression , ... (from recordElementExpression)
@@ -938,7 +938,7 @@ def $expressionNonBrace(expressionNonBrace) : expression =
       -- if expressionNonBrace <: errorAccessExpression
       -- let errorAccessExpression = expressionNonBrace as errorAccessExpression
 
-   ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:469:1-470:31:
+   ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:469:1-470:32:
    clause 7(expressionNonBrace) = prefixedTypeName as memberAccessBase . member as expression
       -- if expressionNonBrace <: memberAccessExpressionNonBrace
       -- let memberAccessBaseNonBrace . member = expressionNonBrace as memberAccessExpressionNonBrace
@@ -1001,7 +1001,7 @@ def $expressionNonBrace(expressionNonBrace) : expression =
       -- if expressionNonBrace <: parenthesizedExpression
       -- let parenthesizedExpression = expressionNonBrace as parenthesizedExpression
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:505:1-509:7:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:505:1-509:8:
 syntax simpleKeysetExpression = 
    | true (from literalExpression)
    | false (from literalExpression)
@@ -1038,7 +1038,7 @@ syntax simpleKeysetExpression =
    | default (from simpleKeysetExpression)
    | _ (from simpleKeysetExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:512:1-513:57:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:512:1-513:58:
 syntax simpleKeysetExpressionList = 
    | true (from literalExpression)
    | false (from literalExpression)
@@ -1089,7 +1089,7 @@ def $flatten_simpleKeysetExpressionList(simpleKeysetExpressionList) : simpleKeys
       -- if simpleKeysetExpressionList' matches `% , %`
       -- let simpleKeysetExpressionList , simpleKeysetExpression = simpleKeysetExpressionList'
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:526:1-530:62:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:526:1-530:63:
 syntax tupleKeysetExpression = 
    | ( expression &&& expression ) (from tupleKeysetExpression)
    | ( expression .. expression ) (from tupleKeysetExpression)
@@ -1139,7 +1139,7 @@ syntax keysetExpression =
    | ( _ ) (from tupleKeysetExpression)
    | ( simpleKeysetExpression , simpleKeysetExpressionList ) (from tupleKeysetExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:541:1-543:7:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:541:1-543:8:
 syntax realTypeArgument = 
    | bool (from baseType)
    | error (from baseType)
@@ -1162,7 +1162,7 @@ syntax realTypeArgument =
    | void (from realTypeArgument)
    | _ (from realTypeArgument)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:546:1-547:45:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:546:1-547:46:
 syntax realTypeArgumentList = 
    | bool (from baseType)
    | error (from baseType)
@@ -1230,7 +1230,7 @@ syntax typeArgument =
    | type (from nonTypeName)
    | priority (from nonTypeName)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:560:1-562:37:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:560:1-562:38:
 syntax typeArgumentList = 
    |  (from typeArgumentList)
    | bool (from baseType)
@@ -1280,7 +1280,7 @@ def $flatten_typeArgumentList(typeArgumentList) : typeArgument* =
       -- if typeArgumentList' matches `% , %`
       -- let typeArgumentList , typeArgument = typeArgumentList'
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:575:1-578:7:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:575:1-578:8:
 syntax argument = 
    | true (from literalExpression)
    | false (from literalExpression)
@@ -1316,7 +1316,7 @@ syntax argument =
    | name = _ (from argument)
    | _ (from argument)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:581:1-582:37:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:581:1-582:38:
 syntax argumentListNonEmpty = 
    | true (from literalExpression)
    | false (from literalExpression)
@@ -1427,11 +1427,11 @@ syntax lvalue =
    | lvalue [ expression : expression ] (from lvalue)
    | ( lvalue ) (from lvalue)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:613:25-613:27:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:613:25-613:28:
 syntax emptyStatement = 
    | ; (from emptyStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:620:1-622:34:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:620:1-622:39:
 syntax assignop = 
    | = (from assignop)
    | += (from assignop)
@@ -1447,25 +1447,25 @@ syntax assignop =
    | ^= (from assignop)
    | |= (from assignop)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:624:30-624:59:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:624:30-624:60:
 syntax assignmentStatement = 
    | lvalue assignop expression ; (from assignmentStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:631:1-632:54:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:631:1-632:55:
 syntax callStatement = 
    | lvalue ( argumentList ) ; (from callStatement)
    | lvalue < typeArgumentList > ( argumentList ) ; (from callStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:638:37-638:76:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:638:37-638:78:
 syntax directApplicationStatement = 
    | namedType . apply ( argumentList ) ; (from directApplicationStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:645:1-646:25:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:645:1-646:26:
 syntax returnStatement = 
    | return ; (from returnStatement)
    | return expression ; (from returnStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:652:24-652:31:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:652:24-652:32:
 syntax exitStatement = 
    | exit ; (from exitStatement)
 
@@ -1485,7 +1485,7 @@ syntax forInitStatement =
    | lvalue < typeArgumentList > ( argumentList ) (from forInitStatement)
    | lvalue assignop expression (from forInitStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:685:1-686:53:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:685:1-686:54:
 syntax forInitStatementListNonEmpty = 
    | annotationList type name initializerOpt (from forInitStatement)
    | lvalue ( argumentList ) (from forInitStatement)
@@ -1505,7 +1505,7 @@ syntax forInitStatementList =
 ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:692:29-692:45:
 syntax forUpdateStatement = forInitStatement
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:695:1-696:57:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:695:1-696:58:
 syntax forUpdateStatementListNonEmpty = 
    | annotationList type name initializerOpt (from forInitStatement)
    | lvalue ( argumentList ) (from forInitStatement)
@@ -1522,7 +1522,7 @@ syntax forUpdateStatementList =
    | lvalue assignop expression (from forInitStatement)
    | forUpdateStatementListNonEmpty , forUpdateStatement (from forUpdateStatementListNonEmpty)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:703:1-704:30:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:703:1-704:31:
 syntax forCollectionExpression = 
    | true (from literalExpression)
    | false (from literalExpression)
@@ -1593,7 +1593,7 @@ syntax switchLabel =
    | routineTargetNonBrace < realTypeArgumentList > ( argumentList ) (from callExpressionNonBrace)
    | ( expression ) (from parenthesizedExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:723:1-724:19:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:723:1-724:20:
 syntax switchCase = 
    | switchLabel : blockStatement (from switchCase)
    | switchLabel : (from switchCase)
@@ -1619,11 +1619,11 @@ def $flatten_switchCaseList(switchCaseList) : switchCase* =
 syntax switchStatement = 
    | switch ( expression ) { switchCaseList } (from switchStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:741:25-741:33:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:741:25-741:34:
 syntax breakStatement = 
    | break ; (from breakStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:743:28-743:39:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:743:28-743:40:
 syntax continueStatement = 
    | continue ; (from continueStatement)
 
@@ -1647,11 +1647,11 @@ syntax statement =
    | continue ; (from continueStatement)
    | switch ( expression ) { switchCaseList } (from switchStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:771:22-771:35:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:771:22-771:36:
 syntax initializer = 
    | = expression (from initializer)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:774:3-774:48:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:774:3-774:49:
 syntax constantDeclaration = 
    | annotationList const type name initializer ; (from constantDeclaration)
 
@@ -1660,7 +1660,7 @@ syntax initializerOpt =
    |  (from initializerOpt)
    | = expression (from initializer)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:781:3-781:45:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:781:3-781:46:
 syntax variableDeclaration = 
    | annotationList type name initializerOpt ; (from variableDeclaration)
 
@@ -1715,11 +1715,11 @@ syntax functionDeclaration =
 syntax actionDeclaration = 
    | annotationList action name ( parameterList ) blockStatement (from actionDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:824:28-824:57:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:824:28-824:58:
 syntax objectInitializer = 
    | = { objectDeclarationList } (from objectInitializer)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:828:1-829:68:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:828:1-829:69:
 syntax instantiation = 
    | annotationList type ( argumentList ) name ; (from instantiation)
    | annotationList type ( argumentList ) name objectInitializer ; (from instantiation)
@@ -1760,7 +1760,7 @@ syntax enumTypeDeclaration =
    | annotationList enum name { nameList trailingCommaOpt } (from enumTypeDeclaration)
    | annotationList enum type name { namedExpressionList trailingCommaOpt } (from enumTypeDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:875:20-875:47:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:875:20-875:48:
 syntax typeField = 
    | annotationList type name ; (from typeField)
 
@@ -1827,16 +1827,16 @@ syntax typedefType =
    | annotationList header name typeParameterListOpt { typeFieldList } (from headerTypeDeclaration)
    | annotationList header_union name typeParameterListOpt { typeFieldList } (from headerUnionTypeDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:910:1-911:37:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:910:1-911:38:
 syntax typedefDeclaration = 
    | annotationList typedef typedefType name ; (from typedefDeclaration)
    | annotationList type type name ; (from typedefDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:918:3-918:45:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:918:3-918:46:
 syntax externFunctionDeclaration = 
    | annotationList extern functionPrototype ; (from externFunctionDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:921:1-923:49:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:921:1-923:50:
 syntax methodPrototype = 
    | annotationList typeIdentifier ( parameterList ) ; (from methodPrototype)
    | annotationList functionPrototype ; (from methodPrototype)
@@ -1868,7 +1868,7 @@ syntax externDeclaration =
    | annotationList extern functionPrototype ; (from externFunctionDeclaration)
    | annotationList extern nonTypeName typeParameterListOpt { methodPrototypeList } (from externObjectDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:951:21-951:48:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:951:21-951:50:
 syntax selectCase = 
    | keysetExpression : name ; (from selectCase)
 
@@ -1921,11 +1921,11 @@ syntax valueSetType =
    | text (from typeIdentifier)
    | . typeName (from prefixedTypeName)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:986:3-986:69:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:986:3-986:70:
 syntax valueSetDeclaration = 
    | annotationList value_set < valueSetType > ( expression ) name ; (from valueSetDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:993:3-993:72:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:993:3-993:73:
 syntax parserTypeDeclaration = 
    | annotationList parser name typeParameterListOpt ( parameterList ) ; (from parserTypeDeclaration)
 
@@ -2035,7 +2035,7 @@ def $flatten_constOpt(constOpt) : const? =
       -- if constOpt <: const
       -- let const = constOpt as const
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1080:19-1080:55:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1080:19-1080:57:
 syntax tableKey = 
    | expression : name annotationList ; (from tableKey)
 
@@ -2069,7 +2069,7 @@ syntax tableActionReference =
    | . nonTypeName (from prefixedNonTypeName)
    | prefixedNonTypeName ( argumentList ) (from tableActionReference)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1099:22-1099:60:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1099:22-1099:61:
 syntax tableAction = 
    | annotationList tableActionReference ; (from tableAction)
 
@@ -2090,12 +2090,12 @@ def $flatten_tableActionList(tableActionList) : tableAction* =
       -- if tableActionList' matches `% %`
       -- let tableActionList tableAction = tableActionList'
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1115:1-1116:35:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1115:1-1116:37:
 syntax tableEntryPriority = 
    | priority = number : (from tableEntryPriority)
    | priority = ( expression ) : (from tableEntryPriority)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1119:1-1120:72:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1119:1-1120:74:
 syntax tableEntry = 
    | constOpt tableEntryPriority keysetExpression : tableActionReference annotationList ; (from tableEntry)
    | constOpt keysetExpression : tableActionReference annotationList ; (from tableEntry)
@@ -2117,7 +2117,7 @@ def $flatten_tableEntryList(tableEntryList) : tableEntry* =
       -- if tableEntryList' matches `% %`
       -- let tableEntryList tableEntry = tableEntryList'
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1136:1-1139:59:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1136:1-1139:60:
 syntax tableProperty = 
    | key = { tableKeyList } (from tableProperty)
    | actions = { tableActionList } (from tableProperty)
@@ -2145,7 +2145,7 @@ def $flatten_tablePropertyList(tablePropertyList) : tableProperty* =
 syntax tableDeclaration = 
    | annotationList table name { tablePropertyList } (from tableDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1158:3-1158:73:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1158:3-1158:74:
 syntax controlTypeDeclaration = 
    | annotationList control name typeParameterListOpt ( parameterList ) ; (from controlTypeDeclaration)
 
@@ -2182,7 +2182,7 @@ def $flatten_controlLocalDeclarationList(controlLocalDeclarationList) : controlL
 syntax controlDeclaration = 
    | annotationList control name typeParameterListOpt ( parameterList ) constructorParameterListOpt { controlLocalDeclarationList apply controlBody } (from controlDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1197:3-1197:73:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1197:3-1197:74:
 syntax packageTypeDeclaration = 
    | annotationList package name typeParameterListOpt ( parameterList ) ; (from packageTypeDeclaration)
 
@@ -2223,7 +2223,7 @@ syntax declaration =
    | annotationList control name typeParameterListOpt ( parameterList ) ; (from controlTypeDeclaration)
    | annotationList package name typeParameterListOpt ( parameterList ) ; (from packageTypeDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1231:1-1248:27:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1231:1-1248:32:
 syntax annotationToken = 
    | unexpected_token (from annotationToken)
    | abstract (from annotationToken)
@@ -2327,7 +2327,7 @@ syntax annotationBody =
 syntax structuredAnnotationBody = 
    | dataElementExpression trailingCommaOpt (from structuredAnnotationBody)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1259:1-1262:74:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1259:1-1262:75:
 syntax annotation = 
    | @ name (from annotation) hint(print "@"#%0)
    | @ name ( annotationBody ) (from annotation) hint(print "@"#%0#"("#%1#")")
@@ -2351,7 +2351,7 @@ syntax annotationList =
    | @ pragma name annotationBody (from annotation) hint(print "@pragma" %0 %1)
    | annotationListNonEmpty annotation (from annotationListNonEmpty)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1277:1-1279:17:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1277:1-1279:18:
 syntax p4program = 
    |  (from p4program)
    | p4program declaration (from p4program)
@@ -2485,7 +2485,7 @@ def $fresh_tids(nat) : tid* =
    clause 1(n) = $fresh_tid :: $fresh_tids((n - 1))
       -- otherwise
 
-;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:56:14-56:24:
+;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:56:14-56:25:
 syntax pid = 
    | id # bool (from pid)
 
@@ -2521,11 +2521,11 @@ def $pids(parameterList) : pid* =
 ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:61:1-61:26:
 def $pid(parameter) : pid =
 
-   ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:71:1-71:51:
+   ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:71:1-71:52:
    clause 0(_annotationList _direction _type name initializerOpt) = $name(name) # false
       -- if initializerOpt matches `_EMPTY`
 
-   ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:72:1-72:55:
+   ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:72:1-72:56:
    clause 1(_annotationList _direction _type name initializerOpt) = $name(name) # true
       -- if initializerOpt <: initializer
       -- let initializer = initializerOpt as initializer
@@ -2574,14 +2574,14 @@ def $expression_as_lvalue(expression) : lvalue? =
 ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:99:14-99:17:
 syntax oid = id*
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:14:1-17:15:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:14:1-17:17:
 syntax primitiveValue = 
    | b bool (from primitiveValue)
    | error . id (from primitiveValue)
    | match_kind . id (from primitiveValue)
    | " text " (from primitiveValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:24:1-25:21:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:24:1-25:22:
 syntax numberValue = 
    | d int (from number) hint(print %)
    | nat w int (from number) hint(print %#W#%)
@@ -2607,11 +2607,11 @@ syntax listValue =
 syntax tupleValue = 
    | ( value* ) (from tupleValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:37:27-37:55:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:37:27-37:56:
 syntax headerStackValue = 
    | [ value* # ( nat ; nat ) ] (from headerStackValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:39:21-39:32:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:39:21-39:33:
 syntax fieldValue = 
    | value id ; (from fieldValue)
 
@@ -2627,7 +2627,7 @@ syntax headerValue =
 syntax headerUnionValue = 
    | header_union tid { fieldValue* } (from headerUnionValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:46:1-47:23:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:46:1-47:25:
 syntax enumValue = 
    | tid . id (from enumValue)
    | tid . id # value (from enumValue)
@@ -2647,21 +2647,21 @@ syntax dataValue =
 syntax defaultValue = 
    | default (from defaultValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:64:29-64:33:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:64:29-64:34:
 syntax invalidHeaderValue = 
    | {#} (from invalidHeaderValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:67:1-68:28:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:67:1-68:30:
 syntax sequenceValue = 
    | seq ( value* ) (from sequenceValue)
    | seq ( value* , ... ) (from sequenceValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:71:1-72:36:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:71:1-72:38:
 syntax recordValue = 
    | record { fieldValue* } (from recordValue)
    | record { fieldValue* , ... } (from recordValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:75:1-77:29:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:75:1-77:30:
 syntax setValue = 
    | set { value } (from setValue)
    | set { value &&& value } (from setValue)
@@ -2686,7 +2686,7 @@ syntax synthesizedValue =
    | table_enum tid . id (from tableValue)
    | table_struct tid { fieldValue* } (from tableValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:95:31-95:37:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:95:31-95:38:
 syntax objectReferenceValue = 
    | ! oid (from objectReferenceValue)
 
@@ -2751,7 +2751,7 @@ def $to_number(value) : int =
       -- if number matches `% W %`
       -- let w w i = number
 
-   ;; ../../../../../spectec/specs/p4-old/2.1.2-value-aux.spectec:23:1-23:31:
+   ;; ../../../../../spectec/specs/p4-old/2.1.2-value-aux.spectec:23:1-23:32:
    clause 3(value) = i
       -- if value <: numberValue
       -- let numberValue = value as numberValue
@@ -2807,7 +2807,7 @@ syntax tupleTypeIR =
 syntax headerStackTypeIR = 
    | typeIR [ nat ] (from headerStackTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:63:22-63:34:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:63:22-63:35:
 syntax fieldTypeIR = 
    | typeIR id ; (from fieldTypeIR)
 
@@ -2823,11 +2823,11 @@ syntax headerTypeIR =
 syntax headerUnionTypeIR = 
    | header_union tid { fieldTypeIR* } (from headerUnionTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:69:23-69:37:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:69:23-69:39:
 syntax valueFieldIR = 
    | id = value ; (from valueFieldIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:72:1-73:42:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:72:1-73:43:
 syntax enumTypeIR = 
    | enum tid { id* } (from enumTypeIR)
    | enum tid # typeIR { valueFieldIR* } (from enumTypeIR)
@@ -2859,7 +2859,7 @@ syntax controlObjectTypeIR =
 syntax packageObjectTypeIR = 
    | package < typeIR* > (from packageObjectTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:96:28-96:47:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:96:28-96:48:
 syntax tableObjectTypeIR = 
    | table tid # typeIR (from tableObjectTypeIR)
 
@@ -2897,12 +2897,12 @@ syntax defaultTypeIR =
 syntax invalidHeaderTypeIR = 
    | header_invalid (from invalidHeaderTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:119:1-120:29:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:119:1-120:31:
 syntax sequenceTypeIR = 
    | seq < typeIR* > (from sequenceTypeIR)
    | seq < typeIR* , ... > (from sequenceTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:123:1-124:37:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:123:1-124:39:
 syntax recordTypeIR = 
    | record { fieldTypeIR* } (from recordTypeIR)
    | record { fieldTypeIR* , ... } (from recordTypeIR)
@@ -2969,7 +2969,7 @@ syntax typeIR =
 ;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:154:24-154:30:
 syntax monoTypeDefIR = typeIR
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:156:24-156:48:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:156:24-156:49:
 syntax polyTypeDefIR = 
    | typeIR < tid* , tid* > (from polyTypeDefIR)
 
@@ -3023,7 +3023,7 @@ syntax functionTypeIR =
    | extern_function ( parameterTypeIR* ) -> typeIR (from functionTypeIR)
    | action ( parameterTypeIR* ) (from functionTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:177:1-182:27:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:177:1-182:28:
 syntax methodTypeIR = 
    | builtin_method ( parameterTypeIR* ) -> typeIR (from methodTypeIR)
    | extern_method ( parameterTypeIR* ) -> typeIR (from methodTypeIR)
@@ -3048,7 +3048,7 @@ syntax routineTypeIR =
 ;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:192:31-192:44:
 syntax monoRoutineTypeDefIR = routineTypeIR
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:194:31-194:62:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:194:31-194:63:
 syntax polyRoutineTypeDefIR = 
    | routineTypeIR < tid* , tid* > (from polyRoutineTypeDefIR)
 
@@ -3069,11 +3069,11 @@ syntax routineTypeDefIR =
 ;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:204:37-204:52:
 syntax constructorParameterTypeIR = parameterTypeIR
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:211:3-211:58:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:211:3-211:59:
 syntax constructorTypeIR = 
    | constructor ( constructorParameterTypeIR* ) -> typeIR (from constructorTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:217:31-217:66:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:217:31-217:67:
 syntax constructorTypeDefIR = 
    | constructorTypeIR < tid* , tid* > (from constructorTypeDefIR)
 
@@ -3420,7 +3420,7 @@ def $free_type(typeIR) : bound =
       -- if enumTypeIR matches `ENUM % {%}`
       -- let enum _tid { _id*{_id <- _id*} } = enumTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/2.2.3-type-subst.spectec:70:1-70:61:
+   ;; ../../../../../spectec/specs/p4-old/2.2.3-type-subst.spectec:70:1-70:62:
    clause 12(typeIR') = $free_type(typeIR)
       -- if typeIR' <: enumTypeIR
       -- let enumTypeIR = typeIR' as enumTypeIR
@@ -3449,7 +3449,7 @@ def $free_type(typeIR) : bound =
       -- if typeIR' <: packageObjectTypeIR
       -- let package < typeIR*{typeIR <- typeIR*} > = typeIR' as packageObjectTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/2.2.3-type-subst.spectec:90:1-90:55:
+   ;; ../../../../../spectec/specs/p4-old/2.2.3-type-subst.spectec:90:1-90:56:
    clause 17(typeIR') = $free_type(typeIR)
       -- if typeIR' <: tableObjectTypeIR
       -- let table _tid # typeIR = typeIR' as tableObjectTypeIR
@@ -4023,7 +4023,7 @@ def $specialize_typeDef(typeDefIR, typeIR*) : typeIR =
       -- let typeIR = typeDefIR as typeIR
       -- if typeIR'*{typeIR' <- typeIR'*} matches []
 
-   ;; ../../../../../spectec/specs/p4-old/2.2.3-type-subst.spectec:565:1-568:49:
+   ;; ../../../../../spectec/specs/p4-old/2.2.3-type-subst.spectec:565:1-568:50:
    clause 1(typeDefIR, typeIR_arg*{typeIR_arg <- typeIR_arg*}) = $subst_type(theta, typeIR_base)
       -- if typeDefIR <: polyTypeDefIR
       -- let typeIR_base < tid*{tid <- tid*} , tid_hidden*{tid_hidden <- tid_hidden*} > = typeDefIR as polyTypeDefIR
@@ -4039,7 +4039,7 @@ def $specialize_routineTypeDef(routineTypeDefIR, typeIR*) : (routineTypeDefIR, t
       -- let routineTypeIR = routineTypeDefIR as routineTypeIR
       -- if typeIR*{typeIR <- typeIR*} matches []
 
-   ;; ../../../../../spectec/specs/p4-old/2.2.3-type-subst.spectec:580:1-587:49:
+   ;; ../../../../../spectec/specs/p4-old/2.2.3-type-subst.spectec:580:1-587:50:
    clause 1(routineTypeDefIR, typeIR_arg*{typeIR_arg <- typeIR_arg*}) = ($subst_routineType(theta, routineTypeIR) as routineTypeDefIR, [])
       -- if routineTypeDefIR <: polyRoutineTypeDefIR
       -- let routineTypeIR < tid*{tid <- tid*} , tid_hidden*{tid_hidden <- tid_hidden*} > = routineTypeDefIR as polyRoutineTypeDefIR
@@ -4047,7 +4047,7 @@ def $specialize_routineTypeDef(routineTypeDefIR, typeIR*) : (routineTypeDefIR, t
       -- if (|tid_tparam*{tid_tparam <- tid_tparam*}| = |typeIR_arg*{typeIR_arg <- typeIR_arg*}|)
       -- let theta = { tid_tparam : typeIR_arg*{tid_tparam <- tid_tparam*, typeIR_arg <- typeIR_arg*} }
 
-   ;; ../../../../../spectec/specs/p4-old/2.2.3-type-subst.spectec:589:1-597:54:
+   ;; ../../../../../spectec/specs/p4-old/2.2.3-type-subst.spectec:589:1-597:55:
    clause 2(routineTypeDefIR, typeIR_arg*{typeIR_arg <- typeIR_arg*}) = ($subst_routineType(theta, routineTypeIR), tid_fresh*{tid_fresh <- tid_fresh*}) as (routineTypeDefIR, tid*)
       -- if routineTypeDefIR <: polyRoutineTypeDefIR
       -- let routineTypeIR < tid*{tid <- tid*} , tid_hidden*{tid_hidden <- tid_hidden*} > = routineTypeDefIR as polyRoutineTypeDefIR
@@ -4056,7 +4056,7 @@ def $specialize_routineTypeDef(routineTypeDefIR, typeIR*) : (routineTypeDefIR, t
       -- let tid_fresh*{tid_fresh <- tid_fresh*} = $fresh_tids(|tid_tparam*{tid_tparam <- tid_tparam*}|)
       -- let theta = { tid_tparam : tid tid_fresh as typeIR*{tid_fresh <- tid_fresh*, tid_tparam <- tid_tparam*} }
 
-   ;; ../../../../../spectec/specs/p4-old/2.2.3-type-subst.spectec:599:1-610:53:
+   ;; ../../../../../spectec/specs/p4-old/2.2.3-type-subst.spectec:599:1-610:54:
    clause 3(routineTypeDefIR, typeIR_arg*{typeIR_arg <- typeIR_arg*}) = ($subst_routineType(theta, routineTypeIR), tid_fresh*{tid_fresh <- tid_fresh*}) as (routineTypeDefIR, tid*)
       -- if routineTypeDefIR <: polyRoutineTypeDefIR
       -- let routineTypeIR < tid*{tid <- tid*} , tid_hidden*{tid_hidden <- tid_hidden*} > = routineTypeDefIR as polyRoutineTypeDefIR
@@ -4153,7 +4153,7 @@ def $is_nominal_typeIR'(typeIR) : bool =
       -- if enumTypeIR matches `ENUM % {%}`
       -- let enum _tid { _id*{_id <- _id*} } = enumTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/2.2.4-type-util.spectec:17:1-17:51:
+   ;; ../../../../../spectec/specs/p4-old/2.2.4-type-util.spectec:17:1-17:52:
    clause 5(typeIR) = true
       -- if typeIR <: enumTypeIR
       -- let enumTypeIR = typeIR as enumTypeIR
@@ -4165,7 +4165,7 @@ def $is_nominal_typeIR'(typeIR) : bool =
       -- if typeIR <: externObjectTypeIR
       -- let extern _tid _map<rid, routineTypeDefIR> = typeIR as externObjectTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/2.2.4-type-util.spectec:19:1-19:45:
+   ;; ../../../../../spectec/specs/p4-old/2.2.4-type-util.spectec:19:1-19:46:
    clause 7(typeIR) = true
       -- if typeIR <: tableObjectTypeIR
       -- let table _tid # _typeIR = typeIR as tableObjectTypeIR
@@ -4302,7 +4302,7 @@ def $is_equalable_typeIR'(typeIR) : bool =
       -- if typeIR <: packageObjectTypeIR
       -- let package < _typeIR*{_typeIR <- _typeIR*} > = typeIR as packageObjectTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/2.2.4-type-util.spectec:65:1-65:48:
+   ;; ../../../../../spectec/specs/p4-old/2.2.4-type-util.spectec:65:1-65:49:
    clause 6(typeIR) = false
       -- if typeIR <: tableObjectTypeIR
       -- let table _tid # _typeIR = typeIR as tableObjectTypeIR
@@ -4313,14 +4313,14 @@ def $is_equalable_typeIR'(typeIR) : bool =
       -- let defaultTypeIR = typeIR as defaultTypeIR
       -- if (defaultTypeIR = default)
 
-   ;; ../../../../../spectec/specs/p4-old/2.2.4-type-util.spectec:67:1-67:54:
+   ;; ../../../../../spectec/specs/p4-old/2.2.4-type-util.spectec:67:1-67:56:
    clause 8(typeIR) = false
       -- if typeIR <: sequenceTypeIR
       -- let sequenceTypeIR = typeIR as sequenceTypeIR
       -- if sequenceTypeIR matches `SEQ <% , ...>`
       -- let seq < _typeIR*{_typeIR <- _typeIR*} , ... > = sequenceTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/2.2.4-type-util.spectec:68:1-68:57:
+   ;; ../../../../../spectec/specs/p4-old/2.2.4-type-util.spectec:68:1-68:59:
    clause 9(typeIR) = false
       -- if typeIR <: recordTypeIR
       -- let recordTypeIR = typeIR as recordTypeIR
@@ -5686,7 +5686,7 @@ def $bin_eq(value, value) : bool =
       -- if number' matches `% S %`
       -- let w_b s i_b = number'
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:248:1-248:73:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:248:1-248:75:
    clause 4(value, value') = ((w_a = w_b) /\ (i_a = i_b))
       -- if value <: numberValue
       -- let numberValue = value as numberValue
@@ -5761,7 +5761,7 @@ def $bin_eq(value, value) : bool =
       -- if enumValue' matches `% . % # %`
       -- let tid_b . id_f_b # value_f_b = enumValue'
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:278:1-278:31:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:278:1-278:33:
    clause 13(value, value') = true
       -- if value <: invalidHeaderValue
       -- let invalidHeaderValue = value as invalidHeaderValue
@@ -6057,7 +6057,7 @@ def $cast_op(typeIR, value) : value =
       -- if value <: headerValue
       -- let header tid { value_f id_f ;*{id_f <- id_f*, value_f <- value_f*} } = value as headerValue
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:481:1-481:64:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:481:1-481:66:
    clause 6(typeIR, value') = $cast_op(typeIR, value)
       -- if value' <: enumValue
       -- let enumValue = value' as enumValue
@@ -6120,7 +6120,7 @@ def $default'(typeIR) : value =
       -- let primitiveTypeIR = typeIR as primitiveTypeIR
       -- if primitiveTypeIR matches `BOOL`
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:597:1-597:42:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:597:1-597:43:
    clause 1(typeIR) = error . "NoError" as value
       -- if typeIR <: primitiveTypeIR
       -- let primitiveTypeIR = typeIR as primitiveTypeIR
@@ -6153,7 +6153,7 @@ def $default'(typeIR) : value =
       -- if numberTypeIR matches `INT <%>`
       -- let int < w > = numberTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:604:1-604:42:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:604:1-604:43:
    clause 6(typeIR) = w v 0 as int # 0 as value
       -- if typeIR <: numberTypeIR
       -- let numberTypeIR = typeIR as numberTypeIR
@@ -6171,22 +6171,22 @@ def $default'(typeIR) : value =
       -- let typeIR [ n_s ] = typeIR' as headerStackTypeIR
       -- let value*{value <- value*} = $repeat_<value>($default(typeIR), n_s)
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:611:1-612:50:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:611:1-612:51:
    clause 9(typeIR) = struct tid { $default(typeIR_f) id_f ;*{id_f <- id_f*, typeIR_f <- typeIR_f*} } as value
       -- if typeIR <: structTypeIR
       -- let struct tid { typeIR_f id_f ;*{id_f <- id_f*, typeIR_f <- typeIR_f*} } = typeIR as structTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:614:1-615:50:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:614:1-615:51:
    clause 10(typeIR) = header tid { $default(typeIR_f) id_f ;*{id_f <- id_f*, typeIR_f <- typeIR_f*} } as value
       -- if typeIR <: headerTypeIR
       -- let header tid { typeIR_f id_f ;*{id_f <- id_f*, typeIR_f <- typeIR_f*} } = typeIR as headerTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:617:1-618:56:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:617:1-618:57:
    clause 11(typeIR) = header_union tid { $default(typeIR_f) id_f ;*{id_f <- id_f*, typeIR_f <- typeIR_f*} } as value
       -- if typeIR <: headerUnionTypeIR
       -- let header_union tid { typeIR_f id_f ;*{id_f <- id_f*, typeIR_f <- typeIR_f*} } = typeIR as headerUnionTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:620:1-620:57:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:620:1-620:58:
    clause 12(typeIR) = tid . id_f_h as value
       -- if typeIR <: enumTypeIR
       -- let enumTypeIR = typeIR as enumTypeIR
@@ -6408,7 +6408,7 @@ def $cast_struct(typeIR, tid, (value, id)*) : value =
 ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:454:1-454:53:
 def $cast_struct'(typeIR, tid, (value, id)*) : value =
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:459:1-460:39:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:459:1-460:40:
    clause 0(typeIR, tid', (value_f, id_f)*{id_f <- id_f*, value_f <- value_f*}) = struct tid { value_f id_f ;*{id_f <- id_f*, value_f <- value_f*} } as value
       -- if typeIR <: structTypeIR
       -- let struct tid { _fieldTypeIR*{_fieldTypeIR <- _fieldTypeIR*} } = typeIR as structTypeIR
@@ -6423,7 +6423,7 @@ def $cast_header(typeIR, tid, (value, id)*) : value =
 ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:468:1-468:53:
 def $cast_header'(typeIR, tid, (value, id)*) : value =
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:473:1-474:39:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:473:1-474:40:
    clause 0(typeIR, tid', (value_f, id_f)*{id_f <- id_f*, value_f <- value_f*}) = header tid { value_f id_f ;*{id_f <- id_f*, value_f <- value_f*} } as value
       -- if typeIR <: headerTypeIR
       -- let header tid { _fieldTypeIR*{_fieldTypeIR <- _fieldTypeIR*} } = typeIR as headerTypeIR
@@ -6627,7 +6627,7 @@ def $sizeof_minSizeInBits''(typeIR) : nat =
       -- if aliasTypeIR matches `TYPE % %`
       -- let type _tid typeIR = aliasTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:674:1-674:86:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:674:1-674:87:
    clause 5(typeIR') = $sizeof_minSizeInBits'(typeIR)
       -- if typeIR' <: enumTypeIR
       -- let enumTypeIR = typeIR' as enumTypeIR
@@ -6644,17 +6644,17 @@ def $sizeof_minSizeInBits''(typeIR) : nat =
       -- if typeIR' <: headerStackTypeIR
       -- let typeIR [ n_size ] = typeIR' as headerStackTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:677:1-677:98:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:677:1-677:99:
    clause 8(typeIR') = $sum($sizeof_minSizeInBits'(typeIR)*{typeIR <- typeIR*})
       -- if typeIR' <: structTypeIR
       -- let struct _tid { typeIR _id ;*{_id <- _id*, typeIR <- typeIR*} } = typeIR' as structTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:678:1-678:98:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:678:1-678:99:
    clause 9(typeIR') = $sum($sizeof_minSizeInBits'(typeIR)*{typeIR <- typeIR*})
       -- if typeIR' <: headerTypeIR
       -- let header _tid { typeIR _id ;*{_id <- _id*, typeIR <- typeIR*} } = typeIR' as headerTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:679:1-679:104:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:679:1-679:105:
    clause 10(typeIR') = $min($sizeof_minSizeInBits'(typeIR)*{typeIR <- typeIR*})
       -- if typeIR' <: headerUnionTypeIR
       -- let header_union _tid { typeIR _id ;*{_id <- _id*, typeIR <- typeIR*} } = typeIR' as headerUnionTypeIR
@@ -6715,7 +6715,7 @@ def $sizeof_maxSizeInBits''(typeIR) : nat =
       -- if aliasTypeIR matches `TYPE % %`
       -- let type _tid typeIR = aliasTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:700:1-700:86:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:700:1-700:87:
    clause 5(typeIR') = $sizeof_maxSizeInBits'(typeIR)
       -- if typeIR' <: enumTypeIR
       -- let enumTypeIR = typeIR' as enumTypeIR
@@ -6732,17 +6732,17 @@ def $sizeof_maxSizeInBits''(typeIR) : nat =
       -- if typeIR' <: headerStackTypeIR
       -- let typeIR [ n_size ] = typeIR' as headerStackTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:703:1-703:98:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:703:1-703:99:
    clause 8(typeIR') = $sum($sizeof_maxSizeInBits'(typeIR)*{typeIR <- typeIR*})
       -- if typeIR' <: structTypeIR
       -- let struct _tid { typeIR _id ;*{_id <- _id*, typeIR <- typeIR*} } = typeIR' as structTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:704:1-704:98:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:704:1-704:99:
    clause 9(typeIR') = $sum($sizeof_maxSizeInBits'(typeIR)*{typeIR <- typeIR*})
       -- if typeIR' <: headerTypeIR
       -- let header _tid { typeIR _id ;*{_id <- _id*, typeIR <- typeIR*} } = typeIR' as headerTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:705:1-705:104:
+   ;; ../../../../../spectec/specs/p4-old/3-numerics.spectec:705:1-705:105:
    clause 10(typeIR') = $max($sizeof_maxSizeInBits'(typeIR)*{typeIR <- typeIR*})
       -- if typeIR' <: headerUnionTypeIR
       -- let header_union _tid { typeIR _id ;*{_id <- _id*, typeIR <- typeIR*} } = typeIR' as headerUnionTypeIR
@@ -6754,7 +6754,7 @@ def $sizeof_maxSizeInBytes(typeIR) : value =
    clause 0(typeIR) = d (n_size / 8) as int as value
       -- let n_size = $sizeof_maxSizeInBits'(typeIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:6:1-7:14:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:6:1-7:15:
 syntax prefixedNameIR = 
    | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
@@ -6767,7 +6767,7 @@ def $prefixedNonTypeName(prefixedNonTypeName) : prefixedNameIR =
       -- if prefixedNonTypeName <: nonTypeName
       -- let nonTypeName = prefixedNonTypeName as nonTypeName
 
-   ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:11:1-11:69:
+   ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:11:1-11:71:
    clause 1(prefixedNonTypeName) = . $name(nonTypeName as name)
       -- if prefixedNonTypeName matches `_ID . %`
       -- let . nonTypeName = prefixedNonTypeName
@@ -6780,7 +6780,7 @@ def $prefixedTypeName(prefixedTypeName) : prefixedNameIR =
       -- if prefixedTypeName <: typeName
       -- let typeName = prefixedTypeName as typeName
 
-   ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:15:1-15:61:
+   ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:15:1-15:63:
    clause 1(prefixedTypeName) = . $name(typeName as name)
       -- if prefixedTypeName matches `_TID . %`
       -- let . typeName = prefixedTypeName
@@ -6793,7 +6793,7 @@ def $flatten_prefixedNameIR(prefixedNameIR) : nameIR =
       -- if prefixedNameIR matches `_NAME %`
       -- let nameIR = prefixedNameIR
 
-   ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:19:1-19:55:
+   ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:19:1-19:56:
    clause 1(prefixedNameIR) = "." ++ nameIR
       -- if prefixedNameIR matches `. %`
       -- let . nameIR = prefixedNameIR
@@ -6820,7 +6820,7 @@ syntax constructorParameterIR = parameterIR
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:48:37-48:49:
 syntax constructorParameterListIR = parameterIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:56:28-56:55:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:56:28-56:56:
 syntax namedExpressionIR = 
    | nameIR = typedExpressionIR (from namedExpressionIR)
 
@@ -6844,7 +6844,7 @@ syntax unaryExpressionIR =
 syntax binaryExpressionIR = 
    | typedExpressionIR binop typedExpressionIR (from binaryExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:92:3-92:62:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:92:3-92:64:
 syntax ternaryExpressionIR = 
    | typedExpressionIR ? typedExpressionIR : typedExpressionIR (from ternaryExpressionIR)
 
@@ -6852,7 +6852,7 @@ syntax ternaryExpressionIR =
 syntax castExpressionIR = 
    | ( typeIR ) typedExpressionIR (from castExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:107:1-111:46:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:107:1-111:48:
 syntax dataExpressionIR = 
    | {#} (from dataExpressionIR)
    | seq { typedExpressionListIR } (from dataExpressionIR)
@@ -6860,15 +6860,15 @@ syntax dataExpressionIR =
    | record { namedExpressionListIR } (from dataExpressionIR)
    | record { namedExpressionListIR , ... } (from dataExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:120:3-120:18:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:120:3-120:19:
 syntax errorAccessExpressionIR = 
    | error . nameIR (from errorAccessExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:123:3-123:31:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:123:3-123:32:
 syntax memberAccessExpressionIR = 
    | memberAccessBaseIR . nameIR (from memberAccessExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:126:1-127:66:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:126:1-127:67:
 syntax indexAccessExpressionIR = 
    | typedExpressionIR [ typedExpressionIR ] (from indexAccessExpressionIR)
    | typedExpressionIR [ typedExpressionIR : typedExpressionIR ] (from indexAccessExpressionIR)
@@ -6933,7 +6933,7 @@ syntax expressionIR =
 syntax expressionNoteIR = 
    | ( typeIR ctk ) (from expressionNoteIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:180:3-180:35:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:180:3-180:36:
 syntax typedExpressionIR = 
    | expressionIR # expressionNoteIR (from typedExpressionIR)
 
@@ -6945,7 +6945,7 @@ syntax memberAccessBaseIR =
    | type prefixedNameIR (from memberAccessBaseIR)
    | expressionIR # expressionNoteIR (from typedExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:193:1-197:7:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:193:1-197:8:
 syntax simpleKeysetExpressionIR = 
    | expressionIR # expressionNoteIR (from typedExpressionIR)
    | typedExpressionIR &&& typedExpressionIR (from simpleKeysetExpressionIR)
@@ -6975,7 +6975,7 @@ syntax typeArgumentIR = typeIR
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:213:29-213:44:
 syntax typeArgumentListIR = typeArgumentIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:220:1-223:7:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:220:1-223:8:
 syntax argumentIR = 
    | expressionIR # expressionNoteIR (from typedExpressionIR)
    | nameIR = typedExpressionIR (from argumentIR)
@@ -6994,26 +6994,26 @@ syntax lvalueIR =
    | typedLvalueIR [ typedExpressionIR : typedExpressionIR ] (from lvalueIR)
    | ( typedLvalueIR ) (from lvalueIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:238:24-238:47:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:238:24-238:48:
 syntax typedLvalueIR = 
    | lvalueIR # ( typeIR ) (from typedLvalueIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:248:27-248:41:
 syntax emptyStatementIR = emptyStatement
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:255:3-255:46:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:255:3-255:47:
 syntax assignmentStatementIR = 
    | typedLvalueIR assignop typedExpressionIR ; (from assignmentStatementIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:262:3-262:65:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:262:3-262:66:
 syntax callStatementIR = 
    | routineTargetIR < typeArgumentListIR > ( argumentListIR ) ; (from callStatementIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:269:3-269:49:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:269:3-269:51:
 syntax directApplicationStatementIR = 
    | prefixedNameIR . apply ( argumentListIR ) ; (from directApplicationStatementIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:276:1-277:32:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:276:1-277:33:
 syntax returnStatementIR = 
    | return ; (from returnStatementIR)
    | return typedExpressionIR ; (from returnStatementIR)
@@ -7046,7 +7046,7 @@ syntax forUpdateStatementIR = forInitStatementIR
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:320:35-320:56:
 syntax forUpdateStatementListIR = forUpdateStatementIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:323:1-324:44:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:323:1-324:45:
 syntax forCollectionExpressionIR = 
    | expressionIR # expressionNoteIR (from typedExpressionIR)
    | typedExpressionIR .. typedExpressionIR (from forCollectionExpressionIR)
@@ -7062,7 +7062,7 @@ syntax switchLabelIR =
    | default (from switchLabelIR)
    | expressionIR # expressionNoteIR (from typedExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:346:1-347:21:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:346:1-347:22:
 syntax switchCaseIR = 
    | switchLabelIR : blockStatementIR (from switchCaseIR)
    | switchLabelIR : (from switchCaseIR)
@@ -7099,25 +7099,25 @@ syntax statementIR =
    | continue ; (from continueStatement)
    | switch ( typedExpressionIR ) { switchCaseListIR } (from switchStatementIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:388:32-388:40:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:388:32-388:41:
 syntax constantInitializerIR = 
    | = value (from constantInitializerIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:390:35-390:57:
 syntax constantInitializerOptIR = constantInitializerIR?
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:393:3-393:62:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:393:3-393:63:
 syntax constantDeclarationIR = 
    | annotationList const typeIR nameIR constantInitializerIR ; (from constantDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:395:24-395:44:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:395:24-395:45:
 syntax initializerIR = 
    | = typedExpressionIR (from initializerIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:397:27-397:41:
 syntax initializerOptIR = initializerIR?
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:400:3-400:51:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:400:3-400:52:
 syntax variableDeclarationIR = 
    | annotationList typeIR nameIR initializerOptIR ; (from variableDeclarationIR)
 
@@ -7145,7 +7145,7 @@ syntax blockElementStatementIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:407:38-407:62:
 syntax blockElementStatementListIR = blockElementStatementIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:414:3-415:73:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:414:3-415:74:
 syntax functionPrototypeIR = 
    | typeIR nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) (from functionPrototypeIR)
 
@@ -7157,14 +7157,14 @@ syntax functionDeclarationIR =
 syntax actionDeclarationIR = 
    | annotationList action nameIR ( parameterListIR ) blockStatementIR (from actionDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:433:30-433:61:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:433:30-433:62:
 syntax objectInitializerIR = 
    | = { objectDeclarationListIR } (from objectInitializerIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:435:33-435:53:
 syntax objectInitializerOptIR = objectInitializerIR?
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:438:3-440:30:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:438:3-440:31:
 syntax instantiationIR = 
    | annotationList typeIR prefixedNameIR < typeArgumentListIR > ( argumentListIR ) nameIR objectInitializerOptIR ; (from instantiationIR)
 
@@ -7189,22 +7189,22 @@ syntax enumTypeDeclarationIR =
    | annotationList enum nameIR { nameListIR } (from enumTypeDeclarationIR)
    | annotationList enum typeIR nameIR { namedExpressionListIR } (from enumTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:476:22-476:53:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:476:22-476:54:
 syntax typeFieldIR = 
    | annotationList typeIR nameIR ; (from typeFieldIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:478:26-478:38:
 syntax typeFieldListIR = typeFieldIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:481:3-482:73:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:481:3-482:74:
 syntax structTypeDeclarationIR = 
    | annotationList struct nameIR < typeParameterListIR , typeParameterListIR > { typeFieldListIR } (from structTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:485:3-486:73:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:485:3-486:74:
 syntax headerTypeDeclarationIR = 
    | annotationList header nameIR < typeParameterListIR , typeParameterListIR > { typeFieldListIR } (from headerTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:489:3-490:73:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:489:3-490:74:
 syntax headerUnionTypeDeclarationIR = 
    | annotationList header_union nameIR < typeParameterListIR , typeParameterListIR > { typeFieldListIR } (from headerUnionTypeDeclarationIR)
 
@@ -7259,16 +7259,16 @@ syntax typedefTypeIR =
    | annotationList header nameIR < typeParameterListIR , typeParameterListIR > { typeFieldListIR } (from headerTypeDeclarationIR)
    | annotationList header_union nameIR < typeParameterListIR , typeParameterListIR > { typeFieldListIR } (from headerUnionTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:507:1-508:41:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:507:1-508:42:
 syntax typedefDeclarationIR = 
    | annotationList typedef typedefTypeIR nameIR ; (from typedefDeclarationIR)
    | annotationList type typeIR nameIR ; (from typedefDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:515:3-515:47:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:515:3-515:48:
 syntax externFunctionDeclarationIR = 
    | annotationList extern functionPrototypeIR ; (from externFunctionDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:518:1-520:51:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:518:1-520:52:
 syntax methodPrototypeIR = 
    | annotationList nameIR < , typeParameterListIR > ( parameterListIR ) ; (from methodPrototypeIR)
    | annotationList functionPrototypeIR ; (from methodPrototypeIR)
@@ -7286,7 +7286,7 @@ syntax externDeclarationIR =
    | annotationList extern functionPrototypeIR ; (from externFunctionDeclarationIR)
    | annotationList extern nameIR < typeParameterListIR , typeParameterListIR > { methodPrototypeListIR } (from externObjectDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:541:23-541:54:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:541:23-541:56:
 syntax selectCaseIR = 
    | keysetExpressionIR : nameIR ; (from selectCaseIR)
 
@@ -7306,11 +7306,11 @@ syntax stateExpressionIR =
 syntax transitionStatementIR = 
    | transition stateExpressionIR (from transitionStatementIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:563:3-563:72:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:563:3-563:73:
 syntax valueSetDeclarationIR = 
    | annotationList value_set < typeIR > ( typedExpressionIR ) nameIR ; (from valueSetDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:570:3-571:76:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:570:3-571:78:
 syntax parserTypeDeclarationIR = 
    | annotationList parser nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ; (from parserTypeDeclarationIR)
 
@@ -7360,7 +7360,7 @@ syntax constIR = const
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:625:21-625:29:
 syntax constOptIR = constIR?
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:631:21-631:66:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:631:21-631:68:
 syntax tableKeyIR = 
    | typedExpressionIR : nameIR annotationList ; (from tableKeyIR)
 
@@ -7371,14 +7371,14 @@ syntax tableKeyListIR = tableKeyIR*
 syntax tableActionReferenceIR = 
    | prefixedNameIR ( argumentListIR ) (from tableActionReferenceIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:641:24-641:64:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:641:24-641:65:
 syntax tableActionIR = 
    | annotationList tableActionReferenceIR ; (from tableActionIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:643:28-643:42:
 syntax tableActionListIR = tableActionIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:650:1-651:42:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:650:1-651:44:
 syntax tableEntryPriorityIR = 
    | priority = number : (from tableEntryPriorityIR)
    | priority = ( typedExpressionIR ) : (from tableEntryPriorityIR)
@@ -7386,14 +7386,14 @@ syntax tableEntryPriorityIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:653:34-653:55:
 syntax tableEntryPriorityOptIR = tableEntryPriorityIR?
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:656:3-657:67:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:656:3-657:69:
 syntax tableEntryIR = 
    | constOptIR tableEntryPriorityOptIR keysetExpressionIR : tableActionReferenceIR annotationList ; (from tableEntryIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:659:27-659:40:
 syntax tableEntryListIR = tableEntryIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:666:1-672:75:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:666:1-672:76:
 syntax tablePropertyIR = 
    | key = { tableKeyListIR } (from tablePropertyIR)
    | actions = { tableActionListIR } (from tablePropertyIR)
@@ -7409,7 +7409,7 @@ syntax tablePropertyListIR = tablePropertyIR*
 syntax tableDeclarationIR = 
    | annotationList table typeIR nameIR { tablePropertyListIR } (from tableDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:684:3-686:28:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:684:3-686:29:
 syntax controlTypeDeclarationIR = 
    | annotationList control nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ; (from controlTypeDeclarationIR)
 
@@ -7431,7 +7431,7 @@ syntax controlLocalDeclarationListIR = controlLocalDeclarationIR*
 syntax controlDeclarationIR = 
    | annotationList control nameIR < typeParameterListIR > ( parameterListIR ) ( constructorParameterListIR ) { controlLocalDeclarationListIR apply controlBodyIR } (from controlDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:715:3-717:28:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:715:3-717:29:
 syntax packageTypeDeclarationIR = 
    | annotationList package nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ; (from packageTypeDeclarationIR)
 
@@ -7471,7 +7471,7 @@ syntax declarationIR =
    | annotationList control nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ; (from controlTypeDeclarationIR)
    | annotationList package nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ; (from packageTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:750:22-750:39:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:750:22-750:40:
 syntax p4programIR = 
    | declarationIR* ; (from p4programIR)
 
@@ -7601,7 +7601,7 @@ def $find_match_named_default<V>(rid, V, id*, pid*) : (rid, V, id*)? =
 ;; ../../../../../spectec/specs/p4-old/5.01-env.spectec:91:1-91:74:
 def $find_match_unnamed_default<V>(rid, V, id?*, pid*) : (rid, V, id*)? =
 
-   ;; ../../../../../spectec/specs/p4-old/5.01-env.spectec:93:1-95:74:
+   ;; ../../../../../spectec/specs/p4-old/5.01-env.spectec:93:1-95:75:
    clause 0(rid, V, id_arg?{id_arg <- id_arg?}*{id_arg? <- id_arg?*}, pid*{pid <- pid*}) = ?((rid, V, id_default*{id_default <- id_default*}))
       -- let (_pid*{_pid <- _pid*}, id_default # bool*{bool <- bool*, id_default <- id_default*}) = $partition_<pid>(pid*{pid <- pid*}, |id_arg?{id_arg <- id_arg?}*{id_arg? <- id_arg?*}|)
       -- (if (bool = true))*{bool <- bool*}
@@ -7708,7 +7708,7 @@ def $find_overloaded<V>(map<rid, V>, id, id?*) : (rid, V, id*)? =
 ;; ../../../../../spectec/specs/p4-old/5.01-env.spectec:218:1-218:50:
 def $find_non_overloaded<V>(map<rid, V>, id) : V? =
 
-   ;; ../../../../../spectec/specs/p4-old/5.01-env.spectec:221:1-222:60:
+   ;; ../../../../../spectec/specs/p4-old/5.01-env.spectec:221:1-222:61:
    clause 0({ rid : V*{V <- V*, rid <- rid*} }, id) = ?(V')
       -- let V''*{V'' <- V''*} = $find_non_overloaded'<V>({ rid : V*{V <- V*, rid <- rid*} }, id)
       -- if V''*{V'' <- V''*} matches [ _/1 ]
@@ -7725,7 +7725,7 @@ def $find_non_overloaded'<V>(map<rid, V>, id) : V* =
    clause 0(set<pair<rid, V>>, id) = []
       -- if (set<pair<rid, V>> = { [] })
 
-   ;; ../../../../../spectec/specs/p4-old/5.01-env.spectec:227:1-233:59:
+   ;; ../../../../../spectec/specs/p4-old/5.01-env.spectec:227:1-233:60:
    clause 1({ pair<rid, V>*{pair<rid, V> <- pair<rid, V>*} }, id) = V_h :: V_t_found*{V_t_found <- V_t_found*}
       -- if pair<rid, V>*{pair<rid, V> <- pair<rid, V>*} matches _ :: _
       -- let rid_h : V_h :: rid_t : V_t*{V_t <- V_t*, rid_t <- rid_t*} = pair<rid, V>*{pair<rid, V> <- pair<rid, V>*}
@@ -7733,7 +7733,7 @@ def $find_non_overloaded'<V>(map<rid, V>, id) : V* =
       -- if (id' = id)
       -- let V_t_found*{V_t_found <- V_t_found*} = $find_non_overloaded'<V>({ rid_t : V_t*{V_t <- V_t*, rid_t <- rid_t*} }, id)
 
-   ;; ../../../../../spectec/specs/p4-old/5.01-env.spectec:234:1-241:59:
+   ;; ../../../../../spectec/specs/p4-old/5.01-env.spectec:234:1-241:60:
    clause 2({ pair<rid, V>*{pair<rid, V> <- pair<rid, V>*} }, id) = V_t_found*{V_t_found <- V_t_found*}
       -- if pair<rid, V>*{pair<rid, V> <- pair<rid, V>*} matches _ :: _
       -- let rid_h : V_h :: rid_t : V_t*{V_t <- V_t*, rid_t <- rid_t*} = pair<rid, V>*{pair<rid, V> <- pair<rid, V>*}
@@ -7800,7 +7800,7 @@ syntax localKind =
 ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:62:1-62:45:
 def $is_function_localKind(localKind) : bool =
 
-   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:63:1-63:50:
+   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:63:1-63:51:
    clause 0(localKind) = true
       -- if localKind matches `FUNCTION -> %`
       -- let function -> _typeIR = localKind
@@ -8327,17 +8327,17 @@ def $id_argument(argumentIR) : id? =
       -- if argumentIR <: typedExpressionIR
       -- let typedExpressionIR = argumentIR as typedExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:405:1-405:39:
+   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:405:1-405:40:
    clause 1(argumentIR) = ?(nameIR)
       -- if argumentIR matches `% = %`
       -- let nameIR = _typedExpressionIR = argumentIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:406:1-406:40:
+   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:406:1-406:42:
    clause 2(argumentIR) = ?(nameIR)
       -- if argumentIR matches `% = _`
       -- let nameIR = _ = argumentIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:407:1-407:27:
+   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:407:1-407:28:
    clause 3(argumentIR) = ?()
       -- if argumentIR matches `_`
 
@@ -8442,13 +8442,13 @@ def $find_constructor_overloaded(typingContext, prefixedNameIR, argumentIR*) : (
 ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:468:1-468:47:
 def $find_return_type(typingContext) : typeIR? =
 
-   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:470:1-471:48:
+   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:470:1-471:49:
    clause 0(TC) = ?(typeIR_ret)
       -- let localKind = TC.local.kind
       -- if localKind matches `FUNCTION -> %`
       -- let function -> typeIR_ret = localKind
 
-   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:472:1-473:55:
+   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:472:1-473:56:
    clause 1(TC) = ?(typeIR_ret)
       -- let localKind = TC.local.kind
       -- if localKind matches `EXTERN_FUNCTION -> %`
@@ -8458,7 +8458,7 @@ def $find_return_type(typingContext) : typeIR? =
    clause 2(TC) = ?(void as typeIR)
       -- if (action = TC.local.kind)
 
-   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:476:1-477:53:
+   ;; ../../../../../spectec/specs/p4-old/5.02-context.spectec:476:1-477:54:
    clause 3(TC) = ?(typeIR_ret)
       -- let localKind = TC.local.kind
       -- if localKind matches `EXTERN_METHOD -> %`
@@ -9085,7 +9085,7 @@ relation RoutineType_wf: bound |- routineTypeIR
       -- (let direction typeIR _id _value?{_value <- _value?} = parameterTypeIR)*{_id <- _id*, _value? <- _value?*, direction <- direction*, parameterTypeIR <- parameterTypeIR*, typeIR <- typeIR*}
       -- (if $nestable_controlapplymethod(direction, typeIR))*{direction <- direction*, typeIR <- typeIR*}
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:650:1-651:51:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:650:1-651:52:
    rule tableapplymethod: bound |- routineTypeIR
       -- if routineTypeIR <: methodTypeIR
       -- let methodTypeIR = routineTypeIR as methodTypeIR
@@ -9437,7 +9437,7 @@ def $nestable'_tuple(typeIR) : bool =
       -- if enumTypeIR matches `ENUM % {%}`
       -- let enum _tid { _id*{_id <- _id*} } = enumTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:173:1-173:48:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:173:1-173:49:
    clause 13(typeIR) = true
       -- if typeIR <: enumTypeIR
       -- let enumTypeIR = typeIR as enumTypeIR
@@ -9566,7 +9566,7 @@ def $nestable'_struct(typeIR) : bool =
       -- if enumTypeIR matches `ENUM % {%}`
       -- let enum _tid { _id*{_id <- _id*} } = enumTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:214:1-214:49:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:214:1-214:50:
    clause 13(typeIR) = true
       -- if typeIR <: enumTypeIR
       -- let enumTypeIR = typeIR as enumTypeIR
@@ -9627,7 +9627,7 @@ def $nestable'_header(typeIR) : bool =
       -- if aliasTypeIR matches `TYPE % %`
       -- let type _tid _typeIR = aliasTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:236:1-236:49:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:236:1-236:50:
    clause 6(typeIR) = true
       -- if typeIR <: enumTypeIR
       -- let enumTypeIR = typeIR as enumTypeIR
@@ -9687,7 +9687,7 @@ def $nestable'_struct_in_header(typeIR) : bool =
       -- if aliasTypeIR matches `TYPE % %`
       -- let type _tid _typeIR = aliasTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:249:1-249:59:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:249:1-249:60:
    clause 5(typeIR) = true
       -- if typeIR <: enumTypeIR
       -- let enumTypeIR = typeIR as enumTypeIR
@@ -9880,7 +9880,7 @@ def $nestable'_set(typeIR) : bool =
       -- if enumTypeIR matches `ENUM % {%}`
       -- let enum _tid { _id*{_id <- _id*} } = enumTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:378:1-378:46:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:378:1-378:47:
    clause 8(typeIR) = true
       -- if typeIR <: enumTypeIR
       -- let enumTypeIR = typeIR as enumTypeIR
@@ -9955,7 +9955,7 @@ def $nestable'_tuple_in_set(typeIR) : bool =
       -- if enumTypeIR matches `ENUM % {%}`
       -- let enum _tid { _id*{_id <- _id*} } = enumTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:394:1-394:55:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:394:1-394:56:
    clause 7(typeIR) = true
       -- if typeIR <: enumTypeIR
       -- let enumTypeIR = typeIR as enumTypeIR
@@ -10022,7 +10022,7 @@ def $nestable'_sequence_in_set(typeIR) : bool =
       -- if enumTypeIR matches `ENUM % {%}`
       -- let enum _tid { _id*{_id <- _id*} } = enumTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:408:1-408:58:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:408:1-408:59:
    clause 7(typeIR) = true
       -- if typeIR <: enumTypeIR
       -- let enumTypeIR = typeIR as enumTypeIR
@@ -10063,14 +10063,14 @@ def $definable_type_mono(typeIR) : bool =
       -- if enumTypeIR matches `ENUM % {%}`
       -- let enum _tid { _id*{_id <- _id*} } = enumTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:435:1-435:52:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:435:1-435:53:
    clause 3(typeIR) = true
       -- if typeIR <: enumTypeIR
       -- let enumTypeIR = typeIR as enumTypeIR
       -- if enumTypeIR matches `ENUM % # % {%}`
       -- let enum _tid # _typeIR { _valueFieldIR*{_valueFieldIR <- _valueFieldIR*} } = enumTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:436:1-436:46:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:436:1-436:47:
    clause 4(typeIR) = true
       -- if typeIR <: tableObjectTypeIR
       -- let table _tid # _typeIR = typeIR as tableObjectTypeIR
@@ -10265,7 +10265,7 @@ def $nestable_externfunction'(direction, typeIR) : bool =
       -- if typeIR <: packageObjectTypeIR
       -- let package < _typeIR*{_typeIR <- _typeIR*} > = typeIR as packageObjectTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:543:1-543:63:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:543:1-543:64:
    clause 5(direction, typeIR) = false
       -- if typeIR <: tableObjectTypeIR
       -- let table _tid # _typeIR = typeIR as tableObjectTypeIR
@@ -10312,7 +10312,7 @@ def $nestable_externmethod'(direction, typeIR) : bool =
       -- if typeIR <: packageObjectTypeIR
       -- let package < _typeIR*{_typeIR <- _typeIR*} > = typeIR as packageObjectTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:573:1-573:61:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:573:1-573:62:
    clause 5(direction, typeIR) = false
       -- if typeIR <: tableObjectTypeIR
       -- let table _tid # _typeIR = typeIR as tableObjectTypeIR
@@ -10359,7 +10359,7 @@ def $nestable_externabstractmethod'(direction, typeIR) : bool =
       -- if typeIR <: packageObjectTypeIR
       -- let package < _typeIR*{_typeIR <- _typeIR*} > = typeIR as packageObjectTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:596:1-596:69:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:596:1-596:70:
    clause 5(direction, typeIR) = false
       -- if typeIR <: tableObjectTypeIR
       -- let table _tid # _typeIR = typeIR as tableObjectTypeIR
@@ -10406,7 +10406,7 @@ def $nestable_parserapplymethod'(direction, typeIR) : bool =
       -- if typeIR <: packageObjectTypeIR
       -- let package < _typeIR*{_typeIR <- _typeIR*} > = typeIR as packageObjectTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:619:1-619:66:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:619:1-619:67:
    clause 5(direction, typeIR) = false
       -- if typeIR <: tableObjectTypeIR
       -- let table _tid # _typeIR = typeIR as tableObjectTypeIR
@@ -10448,7 +10448,7 @@ def $nestable_controlapplymethod'(direction, typeIR) : bool =
       -- if typeIR <: packageObjectTypeIR
       -- let package < _typeIR*{_typeIR <- _typeIR*} > = typeIR as packageObjectTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:640:1-640:67:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:640:1-640:68:
    clause 4(direction, typeIR) = false
       -- if typeIR <: tableObjectTypeIR
       -- let table _tid # _typeIR = typeIR as tableObjectTypeIR
@@ -10460,7 +10460,7 @@ def $nestable_controlapplymethod'(direction, typeIR) : bool =
 ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:657:1-657:50:
 def $definable_routine_mono(routineTypeIR) : bool =
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:659:1-659:66:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:659:1-659:67:
    clause 0(routineTypeIR) = true
       -- if routineTypeIR <: functionTypeIR
       -- let functionTypeIR = routineTypeIR as functionTypeIR
@@ -10474,7 +10474,7 @@ def $definable_routine_mono(routineTypeIR) : bool =
       -- if functionTypeIR matches `ACTION (%)`
       -- let action ( _parameterTypeIR*{_parameterTypeIR <- _parameterTypeIR*} ) = functionTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:661:1-661:64:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:661:1-661:65:
    clause 2(routineTypeIR) = true
       -- if routineTypeIR <: methodTypeIR
       -- let methodTypeIR = routineTypeIR as methodTypeIR
@@ -10495,7 +10495,7 @@ def $definable_routine_mono(routineTypeIR) : bool =
       -- if methodTypeIR matches `CONTROL_APPLY (%)`
       -- let control_apply ( _parameterTypeIR*{_parameterTypeIR <- _parameterTypeIR*} ) = methodTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:664:1-664:54:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:664:1-664:55:
    clause 5(routineTypeIR) = true
       -- if routineTypeIR <: methodTypeIR
       -- let methodTypeIR = routineTypeIR as methodTypeIR
@@ -10509,28 +10509,28 @@ def $definable_routine_mono(routineTypeIR) : bool =
 ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:673:1-673:50:
 def $definable_routine_poly(routineTypeIR) : bool =
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:675:1-675:58:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:675:1-675:59:
    clause 0(routineTypeIR) = true
       -- if routineTypeIR <: functionTypeIR
       -- let functionTypeIR = routineTypeIR as functionTypeIR
       -- if functionTypeIR matches `FUNCTION (%) -> %`
       -- let function ( _parameterTypeIR*{_parameterTypeIR <- _parameterTypeIR*} ) -> _typeIR = functionTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:676:1-676:65:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:676:1-676:66:
    clause 1(routineTypeIR) = true
       -- if routineTypeIR <: functionTypeIR
       -- let functionTypeIR = routineTypeIR as functionTypeIR
       -- if functionTypeIR matches `EXTERN_FUNCTION (%) -> %`
       -- let extern_function ( _parameterTypeIR*{_parameterTypeIR <- _parameterTypeIR*} ) -> _typeIR = functionTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:677:1-677:63:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:677:1-677:64:
    clause 2(routineTypeIR) = true
       -- if routineTypeIR <: methodTypeIR
       -- let methodTypeIR = routineTypeIR as methodTypeIR
       -- if methodTypeIR matches `EXTERN_METHOD (%) -> %`
       -- let extern_method ( _parameterTypeIR*{_parameterTypeIR <- _parameterTypeIR*} ) -> _typeIR = methodTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:678:1-678:72:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:678:1-678:73:
    clause 3(routineTypeIR) = true
       -- if routineTypeIR <: methodTypeIR
       -- let methodTypeIR = routineTypeIR as methodTypeIR
@@ -10565,7 +10565,7 @@ def $nestable'_constructor_extern(typeIR) : bool =
       -- if typeIR <: packageObjectTypeIR
       -- let package < _typeIR*{_typeIR <- _typeIR*} > = typeIR as packageObjectTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:716:1-716:56:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:716:1-716:57:
    clause 2(typeIR) = false
       -- if typeIR <: tableObjectTypeIR
       -- let table _tid # _typeIR = typeIR as tableObjectTypeIR
@@ -10593,7 +10593,7 @@ def $nestable'_constructor_parser(typeIR) : bool =
       -- if typeIR <: packageObjectTypeIR
       -- let package < _typeIR*{_typeIR <- _typeIR*} > = typeIR as packageObjectTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:735:1-735:56:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:735:1-735:57:
    clause 2(typeIR) = false
       -- if typeIR <: tableObjectTypeIR
       -- let table _tid # _typeIR = typeIR as tableObjectTypeIR
@@ -10621,7 +10621,7 @@ def $nestable'_constructor_control(typeIR) : bool =
       -- if typeIR <: packageObjectTypeIR
       -- let package < _typeIR*{_typeIR <- _typeIR*} > = typeIR as packageObjectTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:754:1-754:57:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:754:1-754:58:
    clause 2(typeIR) = false
       -- if typeIR <: tableObjectTypeIR
       -- let table _tid # _typeIR = typeIR as tableObjectTypeIR
@@ -10639,7 +10639,7 @@ def $nestable_constructor_package(typeIR) : bool =
 ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:767:1-767:50:
 def $nestable'_constructor_package(typeIR) : bool =
 
-   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:771:1-771:57:
+   ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:771:1-771:58:
    clause 0(typeIR) = false
       -- if typeIR <: tableObjectTypeIR
       -- let table _tid # _typeIR = typeIR as tableObjectTypeIR
@@ -10684,40 +10684,40 @@ def $definable'_constructor(typeIR) : bool =
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:6:1-8:23:
 relation Eval_static: cursor typingContext |- typedExpressionIR ~> value
 
-   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:16:1-17:37:
+   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:16:1-17:38:
    rule literalExpressionIR-true: p TC |- expressionIR # ( _typeIR _ctk ) ~> b true as value
       -- if expressionIR <: literalExpression
       -- let literalExpression = expressionIR as literalExpression
       -- if literalExpression matches `TRUE`
 
-   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:19:1-20:39:
+   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:19:1-20:40:
    rule literalExpressionIR-false: p TC |- expressionIR # ( _typeIR _ctk ) ~> b false as value
       -- if expressionIR <: literalExpression
       -- let literalExpression = expressionIR as literalExpression
       -- if literalExpression matches `FALSE`
 
-   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:24:1-25:35:
+   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:24:1-25:36:
    rule literalExpressionIR-number-arbint: p TC |- expressionIR # ( _typeIR _ctk ) ~> d i as value
       -- if expressionIR <: number
       -- let number = expressionIR as number
       -- if number matches `D %`
       -- let d i = number
 
-   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:27:1-28:39:
+   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:27:1-28:40:
    rule literalExpressionIR-number-fixbit: p TC |- expressionIR # ( _typeIR _ctk ) ~> n w i as value
       -- if expressionIR <: number
       -- let number = expressionIR as number
       -- if number matches `% W %`
       -- let n w i = number
 
-   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:30:1-31:39:
+   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:30:1-31:40:
    rule literalExpressionIR-number-fixint: p TC |- expressionIR # ( _typeIR _ctk ) ~> n s i as value
       -- if expressionIR <: number
       -- let number = expressionIR as number
       -- if number matches `% S %`
       -- let n s i = number
 
-   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:35:1-36:49:
+   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:35:1-36:54:
    rule literalExpressionIR-stringliteral: p TC |- expressionIR # ( _typeIR _ctk ) ~> " text " as value
       -- if expressionIR <: stringLiteral
       -- let " text " = expressionIR as stringLiteral
@@ -10728,7 +10728,7 @@ relation Eval_static: cursor typingContext |- typedExpressionIR ~> value
       -- let prefixedNameIR = expressionIR as prefixedNameIR
       -- let value = $find_value(p, TC, prefixedNameIR)
 
-   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:48:1-49:38:
+   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:48:1-49:40:
    rule defaultExpressionIR: p TC |- expressionIR # ( _typeIR _ctk ) ~> default as value
       -- if expressionIR <: defaultExpression
       -- let defaultExpression = expressionIR as defaultExpression
@@ -10945,7 +10945,7 @@ relation Eval_static: cursor typingContext |- typedExpressionIR ~> value
       -- rel Eval_static: p TC |- typedExpressionIR ~> value
       -- let value_cast = $cast_op(typeIR, value)
 
-   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:225:1-226:35:
+   ;; ../../../../../spectec/specs/p4-old/5.06.1-expression-static-eval.spectec:225:1-226:38:
    rule dataExpressionIR-invalid: p TC |- expressionIR # ( _typeIR _ctk ) ~> {#} as value
       -- if expressionIR <: dataExpressionIR
       -- let dataExpressionIR = expressionIR as dataExpressionIR
@@ -11111,37 +11111,37 @@ relation Eval_static: cursor typingContext |- typedExpressionIR ~> value
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:15:1-17:23:
 relation Type_ok: cursor typingContext |- typeOrVoid : typeIR # tid*
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:11:1-12:29:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:11:1-12:30:
    rule boolean: p TC |- typeOrVoid : bool as typeIR # []
       -- if typeOrVoid <: baseType
       -- let baseType = typeOrVoid as baseType
       -- if baseType matches `BOOL`
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:16:1-17:31:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:16:1-17:32:
    rule error: p TC |- typeOrVoid : error as typeIR # []
       -- if typeOrVoid <: baseType
       -- let baseType = typeOrVoid as baseType
       -- if baseType matches `ERROR`
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:21:1-22:41:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:21:1-22:42:
    rule matchkind: p TC |- typeOrVoid : match_kind as typeIR # []
       -- if typeOrVoid <: baseType
       -- let baseType = typeOrVoid as baseType
       -- if baseType matches `MATCH_KIND`
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:26:1-27:33:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:26:1-27:34:
    rule string: p TC |- typeOrVoid : string as typeIR # []
       -- if typeOrVoid <: baseType
       -- let baseType = typeOrVoid as baseType
       -- if baseType matches `STRING`
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:31:1-32:27:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:31:1-32:28:
    rule arbint: p TC |- typeOrVoid : int as typeIR # []
       -- if typeOrVoid <: baseType
       -- let baseType = typeOrVoid as baseType
       -- if baseType matches `INT`
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:37:1-38:43:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:37:1-38:44:
    rule fixint: p TC |- typeOrVoid : int < n > as typeIR # []
       -- if typeOrVoid <: baseType
       -- let baseType = typeOrVoid as baseType
@@ -11162,13 +11162,13 @@ relation Type_ok: cursor typingContext |- typeOrVoid : typeIR # tid*
       -- if int <: nat
       -- let n = int as nat
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:50:1-51:36:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:50:1-51:37:
    rule bit: p TC |- typeOrVoid : bit < 1 > as typeIR # []
       -- if typeOrVoid <: baseType
       -- let baseType = typeOrVoid as baseType
       -- if baseType matches `BIT`
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:53:1-54:43:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:53:1-54:44:
    rule fixbit: p TC |- typeOrVoid : bit < n > as typeIR # []
       -- if typeOrVoid <: baseType
       -- let baseType = typeOrVoid as baseType
@@ -11189,7 +11189,7 @@ relation Type_ok: cursor typingContext |- typeOrVoid : typeIR # tid*
       -- if int <: nat
       -- let n = int as nat
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:65:1-66:49:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:65:1-66:50:
    rule varbit: p TC |- typeOrVoid : varbit < n > as typeIR # []
       -- if typeOrVoid <: baseType
       -- let baseType = typeOrVoid as baseType
@@ -11244,7 +11244,7 @@ relation Type_ok: cursor typingContext |- typeOrVoid : typeIR # tid*
       -- if typeDefIR <: typeIR
       -- let typeIR = typeDefIR as typeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:97:1-104:73:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:97:1-104:74:
    rule specializedType-poly: p TC |- typeOrVoid : polyTypeDefIR < typeIR_arg*{typeIR_arg <- typeIR_arg*} > as typeIR # tid_fresh*{tid_fresh <- tid_fresh*}
       -- if typeOrVoid <: specializedType
       -- let prefixedTypeName < typeArgumentList > = typeOrVoid as specializedType
@@ -11258,7 +11258,7 @@ relation Type_ok: cursor typingContext |- typeOrVoid : typeIR # tid*
       -- let typeArgument*{typeArgument <- typeArgument*} = $flatten_typeArgumentList(typeArgumentList)
       -- rel TypeArguments_ok: p TC |- typeArgument*{typeArgument <- typeArgument*} : typeIR_arg*{typeIR_arg <- typeIR_arg*} # tid_fresh*{tid_fresh <- tid_fresh*}
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:109:1-120:59:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:109:1-120:60:
    rule headerStackType-typeName-expression: p TC |- typeOrVoid : polyTypeDefIR_stack < [typeIR_base] > as typeIR # []
       -- if typeOrVoid <: headerStackType
       -- let namedType [ expression_size ] = typeOrVoid as headerStackType
@@ -11274,7 +11274,7 @@ relation Type_ok: cursor typingContext |- typeOrVoid : typeIR # tid*
       -- let typeIR_stack = tid "T" as typeIR [ n_size ] as typeIR
       -- let polyTypeDefIR_stack = typeIR_stack < ["T"] , [] >
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:122:1-133:59:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:122:1-133:60:
    rule headerStackType-specializedType-expression: p TC |- typeOrVoid : polyTypeDefIR_stack < [typeIR_base] > as typeIR # tid_fresh*{tid_fresh <- tid_fresh*}
       -- if typeOrVoid <: headerStackType
       -- let namedType [ expression_size ] = typeOrVoid as headerStackType
@@ -11289,7 +11289,7 @@ relation Type_ok: cursor typingContext |- typeOrVoid : typeIR # tid*
       -- let typeIR_stack = tid "T" as typeIR [ n_size ] as typeIR
       -- let polyTypeDefIR_stack = typeIR_stack < ["T"] , [] >
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:138:1-145:57:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:138:1-145:58:
    rule listType: p TC |- typeOrVoid : polyTypeDefIR_list < [typeIR_arg] > as typeIR # tid_fresh*{tid_fresh <- tid_fresh*}
       -- if typeOrVoid <: listType
       -- let list < typeArgument > = typeOrVoid as listType
@@ -11297,7 +11297,7 @@ relation Type_ok: cursor typingContext |- typeOrVoid : typeIR # tid*
       -- let typeIR_list = list < tid "T" as typeIR > as typeIR
       -- let polyTypeDefIR_list = typeIR_list < ["T"] , [] >
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:150:1-160:67:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:150:1-160:68:
    rule tupleType: p TC |- typeOrVoid : polyTypeDefIR_tuple < typeIR_arg*{typeIR_arg <- typeIR_arg*} > as typeIR # tid_fresh*{tid_fresh <- tid_fresh*}
       -- if typeOrVoid <: tupleType
       -- let tuple < typeArgumentList > = typeOrVoid as tupleType
@@ -11308,20 +11308,20 @@ relation Type_ok: cursor typingContext |- typeOrVoid : typeIR # tid*
       -- let typeIR_tuple = tuple < tid tid_tparam as typeIR*{tid_tparam <- tid_tparam*} > as typeIR
       -- let polyTypeDefIR_tuple = typeIR_tuple < tid_tparam*{tid_tparam <- tid_tparam*} , [] >
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:164:1-165:29:
+   ;; ../../../../../spectec/specs/p4-old/5.05.1-typing-type.spectec:164:1-165:30:
    rule void: p TC |- typeOrVoid : void as typeIR # []
       -- if typeOrVoid matches `VOID`
 
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:19:1-21:23:
 relation TypeArgument_ok: cursor typingContext |- typeArgument : typeArgumentIR # tid*
 
-   ;; ../../../../../spectec/specs/p4-old/5.07.1-typing-type-argument.spectec:12:1-14:49:
+   ;; ../../../../../spectec/specs/p4-old/5.07.1-typing-type-argument.spectec:12:1-14:50:
    rule type: p TC |- typeArgument : typeIR # tid_impl*{tid_impl <- tid_impl*}
       -- if typeArgument <: type
       -- let type = typeArgument as type
       -- rel Type_ok: p TC |- type as typeOrVoid : typeIR # tid_impl*{tid_impl <- tid_impl*}
 
-   ;; ../../../../../spectec/specs/p4-old/5.07.1-typing-type-argument.spectec:18:1-19:29:
+   ;; ../../../../../spectec/specs/p4-old/5.07.1-typing-type-argument.spectec:18:1-19:30:
    rule void: p TC |- typeArgument : void as typeIR # []
       -- if typeArgument <: realTypeArgument
       -- let realTypeArgument = typeArgument as realTypeArgument
@@ -11343,7 +11343,7 @@ relation TypeArgument_ok: cursor typingContext |- typeArgument : typeArgumentIR 
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:23:1-25:23:
 relation TypeArguments_ok: cursor typingContext |- typeArgument* : typeArgumentListIR # tid*
 
-   ;; ../../../../../spectec/specs/p4-old/5.07.1-typing-type-argument.spectec:39:1-40:27:
+   ;; ../../../../../spectec/specs/p4-old/5.07.1-typing-type-argument.spectec:39:1-40:28:
    rule : p TC |- typeArgument*{typeArgument <- typeArgument*} : [] # []
       -- if typeArgument*{typeArgument <- typeArgument*} matches []
 
@@ -12086,7 +12086,7 @@ relation Expr_ok: cursor typingContext |- expression : typedExpressionIR
       -- if (defaultExpression = ...)
       -- let expressionNoteIR = ( default as typeIR lctk )
 
-   ;; ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:77:1-86:58:
+   ;; ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:77:1-86:59:
    rule unaryExpression-lnot: p TC |- expression' : ! typedExpressionIR_reduced as expressionIR # expressionNoteIR
       -- if expression' <: unaryExpression
       -- let unop expression = expression' as unaryExpression
@@ -12097,7 +12097,7 @@ relation Expr_ok: cursor typingContext |- expression : typedExpressionIR
       -- let ?(typedExpressionIR_reduced) = typedExpressionIR'?{typedExpressionIR' <- typedExpressionIR'?}
       -- let _expressionIR # expressionNoteIR = typedExpressionIR_reduced
 
-   ;; ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:99:1-108:58:
+   ;; ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:99:1-108:59:
    rule unaryExpression-bnot: p TC |- expression' : ~ typedExpressionIR_reduced as expressionIR # expressionNoteIR
       -- if expression' <: unaryExpression
       -- let unop expression = expression' as unaryExpression
@@ -12108,7 +12108,7 @@ relation Expr_ok: cursor typingContext |- expression : typedExpressionIR
       -- let ?(typedExpressionIR_reduced) = typedExpressionIR'?{typedExpressionIR' <- typedExpressionIR'?}
       -- let _expressionIR # expressionNoteIR = typedExpressionIR_reduced
 
-   ;; ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:122:1-132:58:
+   ;; ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:122:1-132:59:
    rule unaryExpression-uplusminus: p TC |- expression' : unop typedExpressionIR_reduced as expressionIR # expressionNoteIR
       -- if expression' <: unaryExpression
       -- let unop expression = expression' as unaryExpression
@@ -12828,7 +12828,7 @@ relation Expr_ok: cursor typingContext |- expression : typedExpressionIR
       -- let callExpressionIR = prefixedNameIR < typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} > ( argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} )
       -- let expressionNoteIR = ( typeIR_object ctk )
 
-   ;; ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:1192:1-1195:50:
+   ;; ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:1192:1-1195:51:
    rule parenthesizedExpression: p TC |- expression' : ( typedExpressionIR ) as expressionIR # expressionNoteIR
       -- if expression' <: parenthesizedExpression
       -- let ( expression ) = expression' as parenthesizedExpression
@@ -12857,7 +12857,7 @@ relation Argument_ok: cursor typingContext |- argument : argumentIR
       -- let name = _ = argument
       -- let nameIR = $name(name)
 
-   ;; ../../../../../spectec/specs/p4-old/5.07.2-typing-argument.spectec:28:1-29:18:
+   ;; ../../../../../spectec/specs/p4-old/5.07.2-typing-argument.spectec:28:1-29:20:
    rule dontcare: p TC |- argument : _
       -- if argument matches `_`
 
@@ -12876,7 +12876,7 @@ relation Lvalue_ok: cursor typingContext |- lvalue : typedLvalueIR
       -- if value?{value <- value?} matches ()
       -- if ((direction = out) \/ (direction = inout))
 
-   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:23:1-38:54:
+   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:23:1-38:56:
    rule lvalue-member-stack-next-last: p TC |- lvalue : typedLvalueIR
       -- if lvalue matches `% . %`
       -- let lvalue_base . member = lvalue
@@ -12890,7 +12890,7 @@ relation Lvalue_ok: cursor typingContext |- lvalue : typedLvalueIR
       -- if (((p = block) /\ $is_parser_blockKind(TC.block.kind)) \/ ((p = local) /\ $is_parser_state_localKind(TC.local.kind)))
       -- let typedLvalueIR = typedLvalueIR_base . nameIR # ( typeIR )
 
-   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:40:1-52:54:
+   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:40:1-52:56:
    rule lvalue-member-struct: p TC |- lvalue : typedLvalueIR
       -- if lvalue matches `% . %`
       -- let lvalue_base . member = lvalue
@@ -12905,7 +12905,7 @@ relation Lvalue_ok: cursor typingContext |- lvalue : typedLvalueIR
       -- let ?(typeIR) = typeIR''?{typeIR'' <- typeIR''?}
       -- let typedLvalueIR = typedLvalueIR_base . nameIR # ( typeIR )
 
-   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:54:1-66:54:
+   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:54:1-66:56:
    rule lvalue-member-header: p TC |- lvalue : typedLvalueIR
       -- if lvalue matches `% . %`
       -- let lvalue_base . member = lvalue
@@ -12920,7 +12920,7 @@ relation Lvalue_ok: cursor typingContext |- lvalue : typedLvalueIR
       -- let ?(typeIR) = typeIR''?{typeIR'' <- typeIR''?}
       -- let typedLvalueIR = typedLvalueIR_base . nameIR # ( typeIR )
 
-   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:68:1-80:54:
+   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:68:1-80:56:
    rule lvalue-member-union: p TC |- lvalue : typedLvalueIR
       -- if lvalue matches `% . %`
       -- let lvalue_base . member = lvalue
@@ -12935,7 +12935,7 @@ relation Lvalue_ok: cursor typingContext |- lvalue : typedLvalueIR
       -- let ?(typeIR) = typeIR''?{typeIR'' <- typeIR''?}
       -- let typedLvalueIR = typedLvalueIR_base . nameIR # ( typeIR )
 
-   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:84:1-109:25:
+   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:84:1-109:26:
    rule lvalue-expression-lctk: p TC |- lvalue : typedLvalueIR
       -- if lvalue matches `% [%]`
       -- let lvalue_base [ expression_index ] = lvalue
@@ -12957,7 +12957,7 @@ relation Lvalue_ok: cursor typingContext |- lvalue : typedLvalueIR
       -- if (n_index < n_size)
       -- let typedLvalueIR = typedLvalueIR_base [ typedExpressionIR_index_reduced ] # ( typeIR )
 
-   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:111:1-133:25:
+   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:111:1-133:26:
    rule lvalue-expression-non-lctk: p TC |- lvalue : typedLvalueIR
       -- if lvalue matches `% [%]`
       -- let lvalue_base [ expression_index ] = lvalue
@@ -12974,7 +12974,7 @@ relation Lvalue_ok: cursor typingContext |- lvalue : typedLvalueIR
       -- if (ctk_index =/= lctk)
       -- let typedLvalueIR = typedLvalueIR_base [ typedExpressionIR_index_reduced ] # ( typeIR )
 
-   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:137:1-178:25:
+   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:137:1-178:26:
    rule lvalue-expression-expression: p TC |- lvalue : typedLvalueIR
       -- if lvalue matches `% [% : %]`
       -- let lvalue_base [ expression_hi : expression_lo ] = lvalue
@@ -13005,7 +13005,7 @@ relation Lvalue_ok: cursor typingContext |- lvalue : typedLvalueIR
       -- let typeIR = bit < ((n_hi - n_lo) + 1) > as typeIR
       -- let typedLvalueIR = typedLvalueIR_base [ typedExpressionIR_hi_reduced : typedExpressionIR_lo_reduced ] # ( typeIR )
 
-   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:182:1-189:54:
+   ;; ../../../../../spectec/specs/p4-old/5.08-typing-lvalue.spectec:182:1-189:55:
    rule parenthesized: p TC |- lvalue : typedLvalueIR
       -- if lvalue matches `(%)`
       -- let ( lvalue_base ) = lvalue
@@ -13016,7 +13016,7 @@ relation Lvalue_ok: cursor typingContext |- lvalue : typedLvalueIR
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:67:1-69:26:
 relation Stmt_ok: cursor typingContext flow |- statement : typingContext flow statementIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:10:1-11:25:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:10:1-11:27:
    rule emptyStatement: p TC f |- statement : TC f ; as statementIR
       -- if statement <: emptyStatement
       -- let emptyStatement = statement as emptyStatement
@@ -13035,7 +13035,7 @@ relation Stmt_ok: cursor typingContext flow |- statement : typingContext flow st
       -- if typedExpressionIR'?{typedExpressionIR' <- typedExpressionIR'?} matches (_)
       -- let ?(typedExpressionIR_cast) = typedExpressionIR'?{typedExpressionIR' <- typedExpressionIR'?}
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:41:1-58:79:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:41:1-58:80:
    rule callStatement-no-typeArgumentList: p TC f |- statement : TC f callStatementIR as statementIR
       -- if statement <: callStatement
       -- let callStatement = statement as callStatement
@@ -13048,7 +13048,7 @@ relation Stmt_ok: cursor typingContext flow |- statement : typingContext flow st
       -- rel Call_ok: p TC |- routineTypeIR < [] # tid_impl*{tid_impl <- tid_impl*} > ( argumentIR*{argumentIR <- argumentIR*} # id_default*{id_default <- id_default*} ) : typeIR_ret < typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} > ( argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} )
       -- let callStatementIR = routineTargetIR < typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} > ( argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} ) ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:62:1-83:79:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:62:1-83:80:
    rule callStatement-typeArgumentList: p TC f |- statement : TC f callStatementIR as statementIR
       -- if statement <: callStatement
       -- let callStatement = statement as callStatement
@@ -13064,7 +13064,7 @@ relation Stmt_ok: cursor typingContext flow |- statement : typingContext flow st
       -- rel Call_ok: p TC |- routineTypeIR < [] # tid_infer*{tid_infer <- tid_infer*} > ( argumentIR*{argumentIR <- argumentIR*} # id_default*{id_default <- id_default*} ) : typeIR_ret < typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} > ( argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} )
       -- let callStatementIR = routineTargetIR < typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} > ( argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} ) ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:98:1-118:57:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:98:1-118:59:
    rule directApplicationStatement-prefixedTypeName: p TC_0 f |- statement : TC_0 f directApplicationStatementIR as statementIR
       -- if statement <: directApplicationStatement
       -- let namedType . apply ( argumentList ) ; = statement as directApplicationStatement
@@ -13111,7 +13111,7 @@ relation Stmt_ok: cursor typingContext flow |- statement : typingContext flow st
       -- if typedExpressionIR'?{typedExpressionIR' <- typedExpressionIR'?} matches (_)
       -- let ?(typedExpressionIR_cast) = typedExpressionIR'?{typedExpressionIR' <- typedExpressionIR'?}
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:149:1-150:37:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:149:1-150:39:
    rule exitStatement: p TC f |- statement : TC f exit ; as statementIR
       -- if statement <: exitStatement
       -- let exitStatement = statement as exitStatement
@@ -13197,7 +13197,7 @@ relation BlockElementStmt_ok: typingContext flow |- blockElementStatement : typi
       -- if declarationIR <: constantDeclarationIR
       -- let constantDeclarationIR = declarationIR as constantDeclarationIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:413:1-426:44:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:413:1-426:45:
    rule variableDeclaration-empty: TC_0 f |- blockElementStatement : TC_1 f variableDeclarationIR as blockElementStatementIR
       -- if blockElementStatement <: variableDeclaration
       -- let annotationList type name initializerOpt ; = blockElementStatement as variableDeclaration
@@ -13210,7 +13210,7 @@ relation BlockElementStmt_ok: typingContext flow |- blockElementStatement : typi
       -- let TC_1 = $add_var(local, TC_0, nameIR, inout typeIR dyn ?())
       -- let variableDeclarationIR = annotationList typeIR nameIR ?() ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:428:1-447:73:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:428:1-447:75:
    rule variableDeclaration-initializer: TC_0 f |- blockElementStatement : TC_1 f variableDeclarationIR as blockElementStatementIR
       -- if blockElementStatement <: variableDeclaration
       -- let annotationList type name initializerOpt ; = blockElementStatement as variableDeclaration
@@ -13289,11 +13289,11 @@ relation Parameter_ok: cursor typingContext |- parameter : parameterIR # tid*
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:99:1-101:23:
 relation Parameters_ok: cursor typingContext |- parameter* : parameterListIR # tid*
 
-   ;; ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:49:1-50:27:
+   ;; ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:49:1-50:28:
    rule nil: p TC |- parameter*{parameter <- parameter*} : [] # []
       -- if parameter*{parameter <- parameter*} matches []
 
-   ;; ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:52:1-56:74:
+   ;; ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:52:1-56:75:
    rule cons: p TC |- parameter*{parameter <- parameter*} : parameterIR_h :: parameterIR_t*{parameterIR_t <- parameterIR_t*} # tid_fresh_h*{tid_fresh_h <- tid_fresh_h*} ++ tid_fresh_t*{tid_fresh_t <- tid_fresh_t*}
       -- if parameter*{parameter <- parameter*} matches _ :: _
       -- let parameter_h :: parameter_t*{parameter_t <- parameter_t*} = parameter*{parameter <- parameter*}
@@ -13315,14 +13315,14 @@ def $parameterIR(parameterIR) : parameterTypeIR =
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:109:1-112:23:
 relation ConstructorParameter_ok: cursor typingContext |- constructorParameter : constructorParameterIR # tid*
 
-   ;; ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:64:1-67:64:
+   ;; ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:64:1-67:65:
    rule : p TC |- constructorParameter : constructorParameterIR # tid_fresh*{tid_fresh <- tid_fresh*}
       -- rel Parameter_ok: p TC |- constructorParameter : constructorParameterIR # tid_fresh*{tid_fresh <- tid_fresh*}
 
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:114:1-117:23:
 relation ConstructorParameters_ok: cursor typingContext |- constructorParameter* : constructorParameterListIR # tid*
 
-   ;; ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:75:1-78:66:
+   ;; ../../../../../spectec/specs/p4-old/5.09-typing-parameter.spectec:75:1-78:67:
    rule : p TC |- constructorParameter*{constructorParameter <- constructorParameter*} : constructorParameterIR*{constructorParameterIR <- constructorParameterIR*} # tid_fresh*{tid_fresh <- tid_fresh*}
       -- rel Parameters_ok: p TC |- constructorParameter*{constructorParameter <- constructorParameter*} : constructorParameterIR*{constructorParameterIR <- constructorParameterIR*} # tid_fresh*{tid_fresh <- tid_fresh*}
 
@@ -13335,7 +13335,7 @@ def $constructorParameterIR(constructorParameterIR) : constructorParameterTypeIR
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:127:1-129:23:
 relation ExternMethod_ok: typingContext tid |- methodPrototype : typingContext methodPrototypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.12-typing-extern-method.spectec:9:1-39:79:
+   ;; ../../../../../spectec/specs/p4-old/5.12-typing-extern-method.spectec:9:1-39:81:
    rule non-abstract: TC_0 tid_extern |- methodPrototype : TC_4 methodPrototypeIR
       -- if methodPrototype matches `% % ;`
       -- let annotationList typeOrVoid name typeParameterListOpt ( parameterList ) ; = methodPrototype
@@ -13358,7 +13358,7 @@ relation ExternMethod_ok: typingContext tid |- methodPrototype : typingContext m
       -- let TC_4 = $add_routine_overload(block, TC_0, rid, routineTypeDefIR)
       -- let methodPrototypeIR = annotationList typeIR_ret nameIR < tid_expl*{tid_expl <- tid_expl*} , tid_impl*{tid_impl <- tid_impl*} > ( parameterIR*{parameterIR <- parameterIR*} ) ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.12-typing-extern-method.spectec:43:1-73:79:
+   ;; ../../../../../spectec/specs/p4-old/5.12-typing-extern-method.spectec:43:1-73:81:
    rule abstract: TC_0 tid_extern |- methodPrototype : TC_4 methodPrototypeIR
       -- if methodPrototype matches `% ABSTRACT % ;`
       -- let annotationList abstract typeOrVoid name typeParameterListOpt ( parameterList ) ; = methodPrototype
@@ -13398,7 +13398,7 @@ relation ExternMethods_ok: typingContext tid |- methodPrototype* : typingContext
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:135:1-137:23:
 relation ExternConstructor_ok: typingContext tid |- methodPrototype : typingContext methodPrototypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.12-typing-extern-method.spectec:100:1-126:80:
+   ;; ../../../../../spectec/specs/p4-old/5.12-typing-extern-method.spectec:100:1-126:82:
    rule : TC_0 tid_extern |- methodPrototype : TC_1 methodPrototypeIR
       -- if methodPrototype matches `% % (%) ;`
       -- let annotationList typeIdentifier ( parameterList ) ; = methodPrototype
@@ -13442,7 +13442,7 @@ relation ParserTransition_ok: typingContext nameIR* |- transitionStatement : tra
    rule empty: TC_0 nameIR_state*{nameIR_state <- nameIR_state*} |- transitionStatement : transition "reject" ;
       -- if transitionStatement matches `_EMPTY`
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:19:1-26:55:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:19:1-26:56:
    rule name: TC_0 nameIR_state*{nameIR_state <- nameIR_state*} |- transitionStatement : transitionStatementIR
       -- if transitionStatement matches `TRANSITION %`
       -- let transition stateExpression = transitionStatement
@@ -13477,7 +13477,7 @@ relation ParserStmt_ok: typingContext |- parserStatement : typingContext parserS
       -- if declarationIR <: constantDeclarationIR
       -- let constantDeclarationIR = declarationIR as constantDeclarationIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:326:1-339:44:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:326:1-339:45:
    rule variableDeclaration-empty: TC_0 |- parserStatement : TC_1 variableDeclarationIR as parserStatementIR
       -- if parserStatement <: variableDeclaration
       -- let annotationList type name initializerOpt ; = parserStatement as variableDeclaration
@@ -13490,7 +13490,7 @@ relation ParserStmt_ok: typingContext |- parserStatement : typingContext parserS
       -- let TC_1 = $add_var(local, TC_0, nameIR, inout typeIR dyn ?())
       -- let variableDeclarationIR = annotationList typeIR nameIR ?() ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:341:1-360:73:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:341:1-360:75:
    rule variableDeclaration-initializer: TC_0 |- parserStatement : TC_1 variableDeclarationIR as parserStatementIR
       -- if parserStatement <: variableDeclaration
       -- let annotationList type name initializerOpt ; = parserStatement as variableDeclaration
@@ -13623,7 +13623,7 @@ relation ParserLocalDecl_ok: typingContext |- parserLocalDeclaration : typingCon
       -- if declarationIR <: instantiationIR
       -- let instantiationIR = declarationIR as instantiationIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.3-typing-parser-declaration.spectec:27:1-40:44:
+   ;; ../../../../../spectec/specs/p4-old/5.13.3-typing-parser-declaration.spectec:27:1-40:45:
    rule variableDeclaration-empty: TC_0 |- parserLocalDeclaration : TC_1 variableDeclarationIR as parserLocalDeclarationIR
       -- if parserLocalDeclaration <: variableDeclaration
       -- let annotationList type name initializerOpt ; = parserLocalDeclaration as variableDeclaration
@@ -13636,7 +13636,7 @@ relation ParserLocalDecl_ok: typingContext |- parserLocalDeclaration : typingCon
       -- let TC_1 = $add_var(block, TC_0, nameIR, inout typeIR dyn ?())
       -- let variableDeclarationIR = annotationList typeIR nameIR ?() ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.3-typing-parser-declaration.spectec:42:1-61:73:
+   ;; ../../../../../spectec/specs/p4-old/5.13.3-typing-parser-declaration.spectec:42:1-61:75:
    rule variableDeclaration-initializer: TC_0 |- parserLocalDeclaration : TC_1 variableDeclarationIR as parserLocalDeclarationIR
       -- if parserLocalDeclaration <: variableDeclaration
       -- let annotationList type name initializerOpt ; = parserLocalDeclaration as variableDeclaration
@@ -13654,7 +13654,7 @@ relation ParserLocalDecl_ok: typingContext |- parserLocalDeclaration : typingCon
       -- let TC_1 = $add_var(block, TC_0, nameIR, inout typeIR dyn ?())
       -- let variableDeclarationIR = annotationList typeIR nameIR ?(= typedExpressionIR_init_cast) ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.3-typing-parser-declaration.spectec:67:1-84:78:
+   ;; ../../../../../spectec/specs/p4-old/5.13.3-typing-parser-declaration.spectec:67:1-84:79:
    rule valueSetDeclaration: TC_0 |- parserLocalDeclaration : TC_1 valueSetDeclarationIR as parserLocalDeclarationIR
       -- if parserLocalDeclaration <: valueSetDeclaration
       -- let annotationList value_set < valueSetType > ( expression ) name ; = parserLocalDeclaration as valueSetDeclaration
@@ -13685,7 +13685,7 @@ relation ParserLocalDecls_ok: typingContext |- parserLocalDeclaration* : typingC
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:181:1-183:23:
 relation TableKey_ok: typingContext tableContext |- tableKey : tableContext tableKeyIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:47:1-64:77:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:47:1-64:79:
    rule : TC TBLC_0 |- expression : name_matchkind annotationList ; : TBLC_2 tableKeyIR
       -- rel Expr_ok: local TC |- expression : typedExpressionIR
       -- let _expressionIR # ( typeIR _ctk ) = typedExpressionIR
@@ -13723,7 +13723,7 @@ relation Call_action_partial_ok: typingContext |- parameterTypeIR* @ argumentLis
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:194:1-196:23:
 relation TableAction_ok: typingContext tableContext |- tableAction : tableContext tableActionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:122:1-136:68:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:122:1-136:69:
    rule prefixedNonTypeName: TC TBLC_0 |- annotationList tableActionReference ; : TBLC_1 tableActionIR
       -- if tableActionReference <: prefixedNonTypeName
       -- let prefixedNonTypeName = tableActionReference as prefixedNonTypeName
@@ -13740,7 +13740,7 @@ relation TableAction_ok: typingContext tableContext |- tableAction : tableContex
       -- let TBLC_1 = $add_action(TBLC_0, prefixedNameIR, parameterTypeIR*{parameterTypeIR <- parameterTypeIR*}, [])
       -- let tableActionIR = annotationList prefixedNameIR ( [] ) ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:140:1-157:81:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:140:1-157:82:
    rule prefixedNonTypeName-argumentList: TC TBLC_0 |- annotationList tableActionReference ; : TBLC_1 tableActionIR
       -- if tableActionReference matches `% (%)`
       -- let prefixedNonTypeName ( argumentList ) = tableActionReference
@@ -14103,7 +14103,7 @@ relation TableEntry_priority_ok: typingContext tableContext tableEntryState |- t
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:224:1-226:23:
 relation TableEntry_ok: typingContext tableContext |- tableEntry : tableContext tableEntryIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:707:1-722:73:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:707:1-722:75:
    rule priority: TC TBLC_0 |- tableEntry : TBLC_1 tableEntryIR
       -- if tableEntry matches `% % % : % % ;`
       -- let constOpt tableEntryPriority keysetExpression : tableActionReference annotationList ; = tableEntry
@@ -14113,7 +14113,7 @@ relation TableEntry_ok: typingContext tableContext |- tableEntry : tableContext 
       -- let constOptIR = $flatten_constOpt(constOpt)
       -- let tableEntryIR = constOptIR tableEntryPriorityOptIR keysetExpressionIR : tableActionReferenceIR annotationList ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:726:1-740:73:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:726:1-740:75:
    rule non-priority: TC TBLC_0 |- tableEntry : TBLC_1 tableEntryIR
       -- if tableEntry matches `% % : % % ;`
       -- let constOpt keysetExpression : tableActionReference annotationList ; = tableEntry
@@ -14165,7 +14165,7 @@ relation TableProperty_ok: typingContext tableContext |- tableProperty : tableCo
       -- let TBLC_2 = TBLC_1[entries.const = (constOptIR = ?(const))]
       -- rel TableEntries_ok: TC TBLC_2 |- tableEntry*{tableEntry <- tableEntry*} : TBLC_3 tableEntryIR*{tableEntryIR <- tableEntryIR*}
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:797:1-807:78:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:797:1-807:80:
    rule custom-default-action: TC TBLC |- tableProperty : TBLC tablePropertyIR
       -- if tableProperty matches `% % % % ;`
       -- let annotationList constOpt tableCustomName initializer ; = tableProperty
@@ -14174,7 +14174,7 @@ relation TableProperty_ok: typingContext tableContext |- tableProperty : tableCo
       -- let constOptIR = $flatten_constOpt(constOpt)
       -- let tablePropertyIR = annotationList constOptIR default_action = tableActionReferenceIR ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:809:1-823:74:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:809:1-823:76:
    rule custom-size: TC TBLC |- tableProperty : TBLC tablePropertyIR
       -- if tableProperty matches `% % % % ;`
       -- let annotationList constOpt tableCustomName = expression ; = tableProperty
@@ -14185,7 +14185,7 @@ relation TableProperty_ok: typingContext tableContext |- tableProperty : tableCo
       -- let constOptIR = $flatten_constOpt(constOpt)
       -- let tablePropertyIR = annotationList constOptIR custom "size" = typedExpressionIR ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:825:1-840:70:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:825:1-840:72:
    rule custom-largest-priority-wins: TC TBLC_0 |- tableProperty : TBLC_1 tablePropertyIR
       -- if tableProperty matches `% % % % ;`
       -- let annotationList constOpt tableCustomName = expression ; = tableProperty
@@ -14204,7 +14204,7 @@ relation TableProperty_ok: typingContext tableContext |- tableProperty : tableCo
       -- let constOptIR = $flatten_constOpt(constOpt)
       -- let tablePropertyIR = annotationList constOptIR custom_const "largest_priority_wins" = b b_largest_priority_wins as value ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:842:1-862:47:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:842:1-862:49:
    rule custom-priority-delta: TC TBLC_0 |- tableProperty : TBLC_1 tablePropertyIR
       -- if tableProperty matches `% % % % ;`
       -- let annotationList constOpt tableCustomName = expression ; = tableProperty
@@ -14221,7 +14221,7 @@ relation TableProperty_ok: typingContext tableContext |- tableProperty : tableCo
       -- let constOptIR = $flatten_constOpt(constOpt)
       -- let tablePropertyIR = annotationList constOptIR custom_const "priority_delta" = d n_delta as int as value ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:864:1-877:74:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:864:1-877:76:
    rule custom: TC TBLC |- tableProperty : TBLC tablePropertyIR
       -- if tableProperty matches `% % % % ;`
       -- let annotationList constOpt tableCustomName = expression ; = tableProperty
@@ -14258,7 +14258,7 @@ relation Table_ok: typingContext |- tableProperty* : tableContext tablePropertyL
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:244:1-246:23:
 relation TableType_ok: typingContext tableContext |- name : typingContext typeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:936:1-962:59:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:936:1-962:60:
    rule : TC_0 TBLC |- name : TC_1 typeIR_table
       -- let nameIR = $name(name)
       -- let tid_enum = "action_list(" ++ nameIR ++ ")"
@@ -14291,7 +14291,7 @@ relation ControlLocalDecl_ok: typingContext |- controlLocalDeclaration : typingC
       -- if declarationIR <: instantiationIR
       -- let instantiationIR = declarationIR as instantiationIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.2-typing-control-declaration.spectec:23:1-36:44:
+   ;; ../../../../../spectec/specs/p4-old/5.14.2-typing-control-declaration.spectec:23:1-36:45:
    rule variableDeclaration-empty: TC_0 |- controlLocalDeclaration : TC_1 variableDeclarationIR as controlLocalDeclarationIR
       -- if controlLocalDeclaration <: variableDeclaration
       -- let annotationList type name initializerOpt ; = controlLocalDeclaration as variableDeclaration
@@ -14304,7 +14304,7 @@ relation ControlLocalDecl_ok: typingContext |- controlLocalDeclaration : typingC
       -- let TC_1 = $add_var(block, TC_0, nameIR, inout typeIR dyn ?())
       -- let variableDeclarationIR = annotationList typeIR nameIR ?() ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.2-typing-control-declaration.spectec:38:1-57:73:
+   ;; ../../../../../spectec/specs/p4-old/5.14.2-typing-control-declaration.spectec:38:1-57:75:
    rule variableDeclaration-initializer: TC_0 |- controlLocalDeclaration : TC_1 variableDeclarationIR as controlLocalDeclarationIR
       -- if controlLocalDeclaration <: variableDeclaration
       -- let annotationList type name initializerOpt ; = controlLocalDeclaration as variableDeclaration
@@ -14359,7 +14359,7 @@ relation ControlLocalDecls_ok: typingContext |- controlLocalDeclaration* : typin
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:262:1-264:23:
 relation Decl_ok: cursor typingContext |- declaration : typingContext declarationIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:9:1-29:57:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:9:1-29:59:
    rule constantDeclaration: p TC_0 |- declaration : TC_1 constantDeclarationIR as declarationIR
       -- if declaration <: constantDeclaration
       -- let annotationList const type name = expression_value ; = declaration as constantDeclaration
@@ -14377,7 +14377,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_1 = $add_var(p, TC_0, nameIR, typeIR lctk ?(value))
       -- let constantDeclarationIR = annotationList const typeIR nameIR = value ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:36:1-56:71:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:36:1-56:72:
    rule instantiation-prefixedTypeName-non-objectInitializer: p TC_0 |- declaration : TC_1 instantiationIR as declarationIR
       -- if declaration <: instantiation
       -- let instantiation = declaration as instantiation
@@ -14394,7 +14394,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_1 = $add_var(p, TC_0, nameIR, typeIR_object ctk ?())
       -- let instantiationIR = annotationList typeIR_object prefixedNameIR < typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} > ( argumentIR*{argumentIR <- argumentIR*} ) nameIR ?() ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:58:1-84:71:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:58:1-84:72:
    rule instantiation-specializedType-non-objectInitializer: p TC_0 |- declaration : TC_1 instantiationIR as declarationIR
       -- if declaration <: instantiation
       -- let instantiation = declaration as instantiation
@@ -14414,7 +14414,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_1 = $add_var(p, TC_0, nameIR, typeIR_object ctk ?())
       -- let instantiationIR = annotationList typeIR_object prefixedNameIR < typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} > ( argumentIR*{argumentIR <- argumentIR*} ) nameIR ?() ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:190:1-232:98:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:190:1-232:100:
    rule instantiation-prefixedTypeName-objectInitializer: p TC_0 |- declaration : TC_2 instantiationIR as declarationIR
       -- if declaration <: instantiation
       -- let instantiation = declaration as instantiation
@@ -14448,7 +14448,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_2 = $add_var(p, TC_0, nameIR, typeIR_object_init ctk ?())
       -- let instantiationIR = annotationList typeIR_object_init prefixedNameIR < typeArgumentIR_inferred*{typeArgumentIR_inferred <- typeArgumentIR_inferred*} > ( argumentIR*{argumentIR <- argumentIR*} ) nameIR ?(= { objectDeclarationIR*{objectDeclarationIR <- objectDeclarationIR*} }) ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:234:1-281:98:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:234:1-281:100:
    rule instantiation-specializedType-objectInitializer: p TC_0 |- declaration : TC_2 instantiationIR as declarationIR
       -- if declaration <: instantiation
       -- let instantiation = declaration as instantiation
@@ -14550,7 +14550,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- (let value_match_kind = match_kind . nameIR as value)*{nameIR <- nameIR*, value_match_kind <- value_match_kind*}
       -- let TC_1 = $add_vars(global, TC_0, nameIR*{nameIR <- nameIR*}, match_kind as typeIR lctk ?(value_match_kind)*{value_match_kind <- value_match_kind*})
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:385:1-412:79:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:385:1-412:81:
    rule externDeclaration-externFunctionDeclaration: cursor TC_0 |- declaration : TC_4 externFunctionDeclarationIR as declarationIR
       -- if cursor matches `GLOBAL`
       -- if declaration <: externFunctionDeclaration
@@ -14701,7 +14701,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_3 = $add_type(global, TC_2, nameIR, typeIR_enum as typeDefIR)
       -- let enumTypeDeclarationIR = annotationList enum typeIR nameIR { namedExpressionIR_field*{namedExpressionIR_field <- namedExpressionIR_field*} }
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:687:1-709:66:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:687:1-709:67:
    rule typeDeclaration-derivedTypeDeclaration-structTypeDeclaration: cursor TC_0 |- declaration : TC_2 structTypeDeclarationIR as declarationIR
       -- if cursor matches `GLOBAL`
       -- if declaration <: structTypeDeclaration
@@ -14720,7 +14720,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_2 = $add_type(global, TC_0, nameIR, typeDefIR_struct)
       -- let structTypeDeclarationIR = annotationList struct nameIR < tid_expl*{tid_expl <- tid_expl*} , tid_impl*{tid_impl <- tid_impl*} > { annotationList_field typeIR_field nameIR_field ;*{annotationList_field <- annotationList_field*, nameIR_field <- nameIR_field*, typeIR_field <- typeIR_field*} }
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:715:1-737:54:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:715:1-737:55:
    rule typeDeclaration-derivedTypeDeclaration-headerTypeDeclaration: cursor TC_0 |- declaration : TC_2 headerTypeDeclarationIR as declarationIR
       -- if cursor matches `GLOBAL`
       -- if declaration <: headerTypeDeclaration
@@ -14739,7 +14739,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_2 = $add_type(global, TC_0, nameIR, typeDefIR_header)
       -- let headerTypeDeclarationIR = annotationList header nameIR < tid_expl*{tid_expl <- tid_expl*} , tid_impl*{tid_impl <- tid_impl*} > { annotationList_f typeIR_f nameIR_f ;*{annotationList_f <- annotationList_f*, nameIR_f <- nameIR_f*, typeIR_f <- typeIR_f*} }
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:743:1-765:54:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:743:1-765:55:
    rule typeDeclaration-derivedTypeDeclaration-headerUnionTypeDeclaration: cursor TC_0 |- declaration : TC_2 headerUnionTypeDeclarationIR as declarationIR
       -- if cursor matches `GLOBAL`
       -- if declaration <: headerUnionTypeDeclaration
@@ -14758,7 +14758,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_2 = $add_type(global, TC_0, nameIR, typeDefIR_union)
       -- let headerUnionTypeDeclarationIR = annotationList header_union nameIR < tid_expl*{tid_expl <- tid_expl*} , tid_impl*{tid_impl <- tid_impl*} > { annotationList_f typeIR_f nameIR_f ;*{annotationList_f <- annotationList_f*, nameIR_f <- nameIR_f*, typeIR_f <- typeIR_f*} }
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:775:1-788:48:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:775:1-788:49:
    rule typeDeclaration-typedefDeclaration-typedef-type: cursor TC_0 |- declaration : TC_1 typedefDeclarationIR as declarationIR
       -- if cursor matches `GLOBAL`
       -- if declaration <: typedefDeclaration
@@ -14776,7 +14776,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_1 = $add_type(global, TC_0, nameIR, typeIR_typedef as typeDefIR)
       -- let typedefDeclarationIR = annotationList typedef typeIR as typedefTypeIR nameIR ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:792:1-810:66:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:792:1-810:67:
    rule typeDeclaration-typedefDeclaration-typedef-derivedTypeDeclaration-mono: cursor TC_0 |- declaration : TC_1 typedefDeclarationIR as declarationIR
       -- if cursor matches `GLOBAL`
       -- if declaration <: typedefDeclaration
@@ -14802,7 +14802,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_2 = $add_type(global, TC_0, nameIR, typeIR_typedef as typeDefIR)
       -- let typedefDeclarationIR = annotationList typedef derivedTypeDeclarationIR as typedefTypeIR nameIR ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:812:1-830:66:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:812:1-830:67:
    rule typeDeclaration-typedefDeclaration-typedef-derivedTypeDeclaration-poly: cursor TC_0 |- declaration : TC_1 typedefDeclarationIR as declarationIR
       -- if cursor matches `GLOBAL`
       -- if declaration <: typedefDeclaration
@@ -14830,7 +14830,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_2 = $add_type(global, TC_0, nameIR, typeIR_typedef as typeDefIR)
       -- let typedefDeclarationIR = annotationList typedef derivedTypeDeclarationIR as typedefTypeIR nameIR ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:834:1-847:45:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:834:1-847:46:
    rule typeDeclaration-typedefDeclaration-newtype: cursor TC_0 |- declaration : TC_1 typedefDeclarationIR as declarationIR
       -- if cursor matches `GLOBAL`
       -- if declaration <: typedefDeclaration
@@ -14846,7 +14846,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_1 = $add_type(global, TC_0, nameIR, typeIR_newtype as typeDefIR)
       -- let typedefDeclarationIR = annotationList type typeIR nameIR ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:853:1-874:86:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:853:1-874:88:
    rule typeDeclaration-parserTypeDeclaration: cursor TC_0 |- declaration : TC_3 parserTypeDeclarationIR as declarationIR
       -- if cursor matches `GLOBAL`
       -- if declaration <: parserTypeDeclaration
@@ -14865,7 +14865,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_3 = $add_type(global, TC_0, nameIR, typeDefIR_parser)
       -- let parserTypeDeclarationIR = annotationList parser nameIR < tid_expl*{tid_expl <- tid_expl*} , tid_impl*{tid_impl <- tid_impl*} > ( parameterIR*{parameterIR <- parameterIR*} ) ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:880:1-901:87:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:880:1-901:89:
    rule typeDeclaration-controlTypeDeclaration: cursor TC_0 |- declaration : TC_3 controlTypeDeclarationIR as declarationIR
       -- if cursor matches `GLOBAL`
       -- if declaration <: controlTypeDeclaration
@@ -14884,7 +14884,7 @@ relation Decl_ok: cursor typingContext |- declaration : typingContext declaratio
       -- let TC_3 = $add_type(global, TC_0, nameIR, typeDefIR_control)
       -- let controlTypeDeclarationIR = annotationList control nameIR < tid_expl*{tid_expl <- tid_expl*} , tid_impl*{tid_impl <- tid_impl*} > ( parameterIR*{parameterIR <- parameterIR*} ) ;
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:907:1-941:40:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:907:1-941:41:
    rule typeDeclaration-packageTypeDeclaration: cursor TC_0 |- declaration : TC_4 packageTypeDeclarationIR as declarationIR
       -- if cursor matches `GLOBAL`
       -- if declaration <: packageTypeDeclaration
@@ -15002,7 +15002,7 @@ relation Call_convention_argument_ok: cursor typingContext actctxt |- parameterT
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:294:1-297:29:
 relation Call_convention_ok: cursor typingContext actctxt |- parameterTypeIR* @ argumentListIR : argumentListIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:162:1-163:35:
+   ;; ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:162:1-163:36:
    rule nil: p TC actctxt |- parameterTypeIR*{parameterTypeIR <- parameterTypeIR*} @ argumentIR*{argumentIR <- argumentIR*} : []
       -- if parameterTypeIR*{parameterTypeIR <- parameterTypeIR*} matches []
       -- if argumentIR*{argumentIR <- argumentIR*} matches []
@@ -15099,7 +15099,7 @@ relation RoutineType_ok: cursor typingContext |- routineTargetIR < typeArgumentL
       -- let bound = $union_set<tid>($bound(p, TC), { tid_impl*{tid_impl <- tid_impl*} })
       -- if RoutineType_wf: bound |- functionTypeIR as routineTypeIR holds
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:97:1-103:55:
+   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:97:1-103:56:
    rule typedExpressionIR-nameIR-builtin-method-minmax-SizeIn-BitsBytes: p TC |- routineTargetIR < typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} > ( argumentIR*{argumentIR <- argumentIR*} ) : methodTypeIR as routineTypeIR < # [] > ( # [] )
       -- if routineTargetIR matches `% . %`
       -- let typedExpressionIR_base . nameIR = routineTargetIR
@@ -15108,7 +15108,7 @@ relation RoutineType_ok: cursor typingContext |- routineTargetIR < typeArgumentL
       -- if nameIR <- ["minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes"]
       -- let methodTypeIR = builtin_method ( [] ) -> int as typeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:105:1-116:67:
+   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:105:1-116:68:
    rule typedExpressionIR-nameIR-builtin-method-stack-push-pop-front: p TC |- routineTargetIR < typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} > ( argumentIR'*{argumentIR' <- argumentIR'*} ) : methodTypeIR as routineTypeIR < # [] > ( # [] )
       -- if routineTargetIR matches `% . %`
       -- let typedExpressionIR_base . nameIR = routineTargetIR
@@ -15123,7 +15123,7 @@ relation RoutineType_ok: cursor typingContext |- routineTargetIR < typeArgumentL
       -- let parameterTypeIR = int as typeIR "count" ?()
       -- let methodTypeIR = builtin_method ( [parameterTypeIR] ) -> int as typeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:118:1-127:56:
+   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:118:1-127:57:
    rule typedExpressionIR-nameIR-builtin-method-header-isValid: p TC |- routineTargetIR < typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} > ( argumentIR*{argumentIR <- argumentIR*} ) : methodTypeIR as routineTypeIR < # [] > ( # [] )
       -- if routineTargetIR matches `% . %`
       -- let typedExpressionIR_base . nameIR = routineTargetIR
@@ -15136,7 +15136,7 @@ relation RoutineType_ok: cursor typingContext |- routineTargetIR < typeArgumentL
       -- let header _tid { _fieldTypeIR*{_fieldTypeIR <- _fieldTypeIR*} } = typeIR as headerTypeIR
       -- let methodTypeIR = builtin_method ( [] ) -> bool as typeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:129:1-138:56:
+   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:129:1-138:57:
    rule typedExpressionIR-nameIR-builtin-method-union-isValid: p TC |- routineTargetIR < typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} > ( argumentIR*{argumentIR <- argumentIR*} ) : methodTypeIR as routineTypeIR < # [] > ( # [] )
       -- if routineTargetIR matches `% . %`
       -- let typedExpressionIR_base . nameIR = routineTargetIR
@@ -15149,7 +15149,7 @@ relation RoutineType_ok: cursor typingContext |- routineTargetIR < typeArgumentL
       -- let header_union _tid { _fieldTypeIR*{_fieldTypeIR <- _fieldTypeIR*} } = typeIR as headerUnionTypeIR
       -- let methodTypeIR = builtin_method ( [] ) -> bool as typeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:140:1-149:56:
+   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:140:1-149:57:
    rule typedExpressionIR-nameIR-builtin-method-header-set-ValidInvalid: p TC |- routineTargetIR < typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} > ( argumentIR*{argumentIR <- argumentIR*} ) : methodTypeIR as routineTypeIR < # [] > ( # [] )
       -- if routineTargetIR matches `% . %`
       -- let typedExpressionIR_base . nameIR = routineTargetIR
@@ -15226,7 +15226,7 @@ relation RoutineType_ok: cursor typingContext |- routineTargetIR < typeArgumentL
       -- if (rid' = rid)
       -- if (methodTypeIR' = methodTypeIR)
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:211:1-218:52:
+   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:211:1-218:53:
    rule typedExpressionIR-nameIR-table-apply-method: p TC |- routineTargetIR < typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} > ( argumentIR*{argumentIR <- argumentIR*} ) : methodTypeIR as routineTypeIR < # [] > ( # [] )
       -- if routineTargetIR matches `% . %`
       -- let typedExpressionIR_base . text = routineTargetIR
@@ -15239,7 +15239,7 @@ relation RoutineType_ok: cursor typingContext |- routineTargetIR < typeArgumentL
       -- let table _tid # typeIR_table = typeIR as tableObjectTypeIR
       -- let methodTypeIR = table_apply -> typeIR_table
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:224:1-228:85:
+   ;; ../../../../../spectec/specs/p4-old/5.15.4-typing-routine-call.spectec:224:1-228:87:
    rule parenthesized: p TC |- routineTargetIR' < typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} > ( argumentIR*{argumentIR <- argumentIR*} ) : routineTypeIR < # tid_inserted*{tid_inserted <- tid_inserted*} > ( # id_default*{id_default <- id_default*} )
       -- if routineTargetIR' matches `(%)`
       -- let ( routineTargetIR ) = routineTargetIR'
@@ -15481,7 +15481,7 @@ def $reduce_serenum_unary(typedExpressionIR, $check(typeIR) : bool) : typedExpre
       -- let _expressionIR # ( typeIR _ctk ) = typedExpressionIR
       -- if $check(typeIR)
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.2-subtype.spectec:350:1-356:79:
+   ;; ../../../../../spectec/specs/p4-old/5.05.2-subtype.spectec:350:1-356:80:
    clause 1(typedExpressionIR, $check) = $reduce_serenum_unary(typedExpressionIR_cast, $check)
       -- let _expressionIR # ( typeIR ctk ) = typedExpressionIR
       -- if ~$check(typeIR)
@@ -15505,7 +15505,7 @@ def $reduce_serenum_binary(typedExpressionIR, typedExpressionIR, $check(typeIR, 
       -- let _expressionIR' # ( typeIR_r _ctk' ) = typedExpressionIR_r
       -- if $check(typeIR_l, typeIR_r)
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.2-subtype.spectec:376:1-384:87:
+   ;; ../../../../../spectec/specs/p4-old/5.05.2-subtype.spectec:376:1-384:88:
    clause 1(typedExpressionIR_l, typedExpressionIR_r, $check) = $reduce_serenum_binary(typedExpressionIR_l_cast, typedExpressionIR_r, $check)
       -- let _expressionIR # ( typeIR_l ctk_l ) = typedExpressionIR_l
       -- let _expressionIR' # ( typeIR_r _ctk ) = typedExpressionIR_r
@@ -15517,7 +15517,7 @@ def $reduce_serenum_binary(typedExpressionIR, typedExpressionIR, $check(typeIR, 
       -- let enum _tid # typeIR_l_underlying { _valueFieldIR*{_valueFieldIR <- _valueFieldIR*} } = enumTypeIR
       -- let typedExpressionIR_l_cast = ( typeIR_l_underlying ) typedExpressionIR_l as expressionIR # ( typeIR_l_underlying ctk_l )
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.2-subtype.spectec:386:1-394:87:
+   ;; ../../../../../spectec/specs/p4-old/5.05.2-subtype.spectec:386:1-394:88:
    clause 2(typedExpressionIR_l, typedExpressionIR_r, $check) = $reduce_serenum_binary(typedExpressionIR_l, typedExpressionIR_r_cast, $check)
       -- let _expressionIR # ( typeIR_l _ctk ) = typedExpressionIR_l
       -- let _expressionIR' # ( typeIR_r ctk_r ) = typedExpressionIR_r
@@ -15541,7 +15541,7 @@ def $coerce_unary(typedExpressionIR, typeIR) : typedExpressionIR? =
       -- let _expressionIR # ( typeIR _ctk ) = typedExpressionIR
       -- if Type_alpha: typeIR ~~ typeIR_to holds
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.2-subtype.spectec:414:1-419:63:
+   ;; ../../../../../spectec/specs/p4-old/5.05.2-subtype.spectec:414:1-419:64:
    clause 1(typedExpressionIR, typeIR_to) = ?(typedExpressionIR_cast)
       -- let _expressionIR # ( typeIR ctk ) = typedExpressionIR
       -- if Type_alpha: typeIR ~~ typeIR_to does not hold
@@ -15557,7 +15557,7 @@ def $coerce_binary(typedExpressionIR, typedExpressionIR) : (typedExpressionIR, t
       -- let _expressionIR' # ( typeIR_r _ctk' ) = typedExpressionIR_r
       -- if Type_alpha: typeIR_l ~~ typeIR_r holds
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.2-subtype.spectec:432:1-439:65:
+   ;; ../../../../../spectec/specs/p4-old/5.05.2-subtype.spectec:432:1-439:66:
    clause 1(typedExpressionIR_l, typedExpressionIR_r) = ?((typedExpressionIR_l_cast, typedExpressionIR_r))
       -- let _expressionIR # ( typeIR_l ctk_l ) = typedExpressionIR_l
       -- let _expressionIR' # ( typeIR_r _ctk ) = typedExpressionIR_r
@@ -15565,7 +15565,7 @@ def $coerce_binary(typedExpressionIR, typedExpressionIR) : (typedExpressionIR, t
       -- if Cast_impl: typeIR_l -> typeIR_r holds
       -- let typedExpressionIR_l_cast = ( typeIR_r ) typedExpressionIR_l as expressionIR # ( typeIR_r ctk_l )
 
-   ;; ../../../../../spectec/specs/p4-old/5.05.2-subtype.spectec:441:1-449:65:
+   ;; ../../../../../spectec/specs/p4-old/5.05.2-subtype.spectec:441:1-449:66:
    clause 2(typedExpressionIR_l, typedExpressionIR_r) = ?((typedExpressionIR_l, typedExpressionIR_r_cast))
       -- let _expressionIR # ( typeIR_l _ctk ) = typedExpressionIR_l
       -- let _expressionIR' # ( typeIR_r ctk_r ) = typedExpressionIR_r
@@ -16260,7 +16260,7 @@ def $is_concrete_extern_object''(routineTypeDefIR) : bool =
 ;; ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:1117:1-1117:56:
 def $is_concrete_extern_object'''(routineTypeIR) : bool =
 
-   ;; ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:1134:1-1134:79:
+   ;; ../../../../../spectec/specs/p4-old/5.06.2-typing-expression.spectec:1134:1-1134:80:
    clause 0(routineTypeIR) = false
       -- if routineTypeIR <: methodTypeIR
       -- let methodTypeIR = routineTypeIR as methodTypeIR
@@ -16302,7 +16302,7 @@ relation SwitchLabel_table_ok: typingContext tid bool |- switchLabel : switchLab
       -- if (bool = true)
       -- if switchLabel matches `DEFAULT`
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:215:1-227:60:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:215:1-227:61:
    rule expressionNonBrace-prefixedNonTypeName: TC tid_table _bool |- switchLabel : typedExpressionIR_label as switchLabelIR
       -- if switchLabel <: prefixedNonTypeName
       -- let prefixedNonTypeName = switchLabel as prefixedNonTypeName
@@ -16322,7 +16322,7 @@ relation SwitchLabel_table_ok: typingContext tid bool |- switchLabel : switchLab
 ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:233:1-235:29:
 relation SwitchCase_table_ok: typingContext flow tid bool |- switchCase : flow switchCaseIR # switchLabel
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:239:1-247:57:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:239:1-247:58:
    rule switchLabel-blockStatement: TC f tid_table b_last |- switchCase : f_post switchCaseIR # switchLabel
       -- if switchCase matches `% : %`
       -- let switchLabel : blockStatement = switchCase
@@ -16330,7 +16330,7 @@ relation SwitchCase_table_ok: typingContext flow tid bool |- switchCase : flow s
       -- rel Block_ok: TC f |- blockStatement : TC_post f_post blockStatementIR
       -- let switchCaseIR = switchLabelIR : blockStatementIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:251:1-257:40:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:251:1-257:41:
    rule switchLabel: TC f tid_table b_last |- switchCase : f switchCaseIR # switchLabel
       -- if switchCase matches `% :`
       -- let switchLabel : = switchCase
@@ -16340,11 +16340,11 @@ relation SwitchCase_table_ok: typingContext flow tid bool |- switchCase : flow s
 ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:261:1-263:26:
 relation SwitchCases_table_ok: typingContext flow tid |- switchCase* : flow switchCaseListIR # switchLabel*
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:265:1-266:39:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:265:1-266:40:
    rule nil: TC f tid_table |- switchCase*{switchCase <- switchCase*} : f [] # []
       -- if switchCase*{switchCase <- switchCase*} matches []
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:268:1-275:80:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:268:1-275:81:
    rule cons: TC f tid_table |- switchCase*{switchCase <- switchCase*} : f_t switchCaseIR_h :: switchCaseIR_t*{switchCaseIR_t <- switchCaseIR_t*} # switchLabel_h :: switchLabel_t*{switchLabel_t <- switchLabel_t*}
       -- if switchCase*{switchCase <- switchCase*} matches _ :: _
       -- let switchCase_h :: switchCase_t*{switchCase_t <- switchCase_t*} = switchCase*{switchCase <- switchCase*}
@@ -16360,7 +16360,7 @@ relation SwitchLabel_general_ok: typingContext typeIR bool |- switchLabel : swit
       -- if (bool = true)
       -- if switchLabel matches `DEFAULT`
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:311:1-319:56:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:311:1-319:57:
    rule expressionNonBrace: TC typeIR_switch _bool |- switchLabel : typedExpressionIR_label_cast as switchLabelIR
       -- if switchLabel <: expressionNonBrace
       -- let expressionNonBrace_label = switchLabel as expressionNonBrace
@@ -16375,7 +16375,7 @@ relation SwitchLabel_general_ok: typingContext typeIR bool |- switchLabel : swit
 ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:323:1-325:29:
 relation SwitchCase_general_ok: typingContext flow typeIR bool |- switchCase : flow switchCaseIR # switchLabel
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:329:1-337:57:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:329:1-337:58:
    rule switchLabel-blockStatement: TC f typeIR_switch b_last |- switchCase : f_post switchCaseIR # switchLabel
       -- if switchCase matches `% : %`
       -- let switchLabel : blockStatement = switchCase
@@ -16383,7 +16383,7 @@ relation SwitchCase_general_ok: typingContext flow typeIR bool |- switchCase : f
       -- rel Block_ok: TC f |- blockStatement : TC_post f_post blockStatementIR
       -- let switchCaseIR = switchLabelIR : blockStatementIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:341:1-347:40:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:341:1-347:41:
    rule switchLabel: TC f typeIR_switch b_last |- switchCase : f switchCaseIR # switchLabel
       -- if switchCase matches `% :`
       -- let switchLabel : = switchCase
@@ -16393,11 +16393,11 @@ relation SwitchCase_general_ok: typingContext flow typeIR bool |- switchCase : f
 ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:351:1-353:26:
 relation SwitchCases_general_ok: typingContext flow typeIR |- switchCase* : flow switchCaseListIR # switchLabel*
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:355:1-356:43:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:355:1-356:44:
    rule nil: TC f typeIR_switch |- switchCase*{switchCase <- switchCase*} : f [] # []
       -- if switchCase*{switchCase <- switchCase*} matches []
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:358:1-366:84:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:358:1-366:85:
    rule cons: TC f typeIR_switch |- switchCase*{switchCase <- switchCase*} : f_t switchCaseIR_h :: switchCaseIR_t*{switchCaseIR_t <- switchCaseIR_t*} # switchLabel_h :: switchLabel_t*{switchLabel_t <- switchLabel_t*}
       -- if switchCase*{switchCase <- switchCase*} matches _ :: _
       -- let switchCase_h :: switchCase_t*{switchCase_t <- switchCase_t*} = switchCase*{switchCase <- switchCase*}
@@ -16441,7 +16441,7 @@ def $compat'_switch(typeIR) : bool =
       -- if enumTypeIR matches `ENUM % {%}`
       -- let enum _tid { _id*{_id <- _id*} } = enumTypeIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:377:1-377:47:
+   ;; ../../../../../spectec/specs/p4-old/5.10-typing-statement.spectec:377:1-377:48:
    clause 4(typeIR) = true
       -- if typeIR <: enumTypeIR
       -- let enumTypeIR = typeIR as enumTypeIR
@@ -16587,7 +16587,7 @@ relation Enum_serializable_field_ok: typingContext nameIR typeIR |- namedExpress
 ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:638:1-641:26:
 relation Enum_serializable_fields_ok: typingContext nameIR typeIR |- namedExpression* : typingContext namedExpressionIR* # value*
 
-   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:643:1-644:47:
+   ;; ../../../../../spectec/specs/p4-old/5.11-typing-declaration.spectec:643:1-644:48:
    rule nil: TC nameIR_enum typeIR |- namedExpression*{namedExpression <- namedExpression*} : TC [] # []
       -- if namedExpression*{namedExpression <- namedExpression*} matches []
 
@@ -16615,7 +16615,7 @@ relation SelectCase_keyset_simple_ok: typingContext typeIR |- simpleKeysetExpres
       -- let [typeIR] = typeIR'*{typeIR' <- typeIR'*}
       -- if Type_alpha: typeIR ~~ typeIR_key holds
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:47:1-58:69:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:47:1-58:70:
    rule expression-set-subtype: TC typeIR_key |- simpleKeysetExpression : typedExpressionIR_cast as simpleKeysetExpressionIR
       -- if simpleKeysetExpression <: expression
       -- let expression = simpleKeysetExpression as expression
@@ -16630,7 +16630,7 @@ relation SelectCase_keyset_simple_ok: typingContext typeIR |- simpleKeysetExpres
       -- let typeIR_cast = set < [typeIR_key] > as typeIR
       -- let typedExpressionIR_cast = ( typeIR_cast ) typedExpressionIR as expressionIR # ( typeIR_cast dyn )
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:60:1-72:69:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:60:1-72:70:
    rule expression-non-set: TC typeIR_key |- simpleKeysetExpression : typedExpressionIR_cast as simpleKeysetExpressionIR
       -- if simpleKeysetExpression <: expression
       -- let expression = simpleKeysetExpression as expression
@@ -16687,7 +16687,7 @@ relation SelectCase_keyset_simple_ok: typingContext typeIR |- simpleKeysetExpres
    rule default: TC typeIR_key |- simpleKeysetExpression : default
       -- if simpleKeysetExpression matches `DEFAULT`
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:156:1-157:27:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:156:1-157:29:
    rule dontcare: TC typeIR_key |- simpleKeysetExpression : _
       -- if simpleKeysetExpression matches `_`
 
@@ -16794,7 +16794,7 @@ relation SelectCase_keyset_ok: typingContext typeIR* |- keysetExpression : keyse
       -- let expression = keysetExpression as expression
       -- rel SelectCase_keyset_simple_ok: TC typeIR_key |- expression as simpleKeysetExpression : simpleKeysetExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:177:1-180:81:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:177:1-180:82:
    rule simpleKeysetExpression-mask: TC typeIR*{typeIR <- typeIR*} |- keysetExpression : simpleKeysetExpressionIR as keysetExpressionIR
       -- if typeIR*{typeIR <- typeIR*} matches [ _/1 ]
       -- let [typeIR_key] = typeIR*{typeIR <- typeIR*}
@@ -16804,7 +16804,7 @@ relation SelectCase_keyset_ok: typingContext typeIR* |- keysetExpression : keyse
       -- let expression_l &&& expression_r = simpleKeysetExpression
       -- rel SelectCase_keyset_simple_ok: TC typeIR_key |- expression_l &&& expression_r : simpleKeysetExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:184:1-187:80:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:184:1-187:81:
    rule simpleKeysetExpression-range: TC typeIR*{typeIR <- typeIR*} |- keysetExpression : simpleKeysetExpressionIR as keysetExpressionIR
       -- if typeIR*{typeIR <- typeIR*} matches [ _/1 ]
       -- let [typeIR_key] = typeIR*{typeIR <- typeIR*}
@@ -16838,7 +16838,7 @@ relation SelectCase_keyset_ok: typingContext typeIR* |- keysetExpression : keyse
       -- if (|typeIR_key*{typeIR_key <- typeIR_key*}| > 1)
       -- rel SelectCase_keyset_simple_ok: TC seq < typeIR_key*{typeIR_key <- typeIR_key*} > as typeIR |- default : simpleKeysetExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:207:1-210:53:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:207:1-210:54:
    rule simpleKeysetExpression-dontcare-one-to-one: TC typeIR*{typeIR <- typeIR*} |- keysetExpression : simpleKeysetExpressionIR as keysetExpressionIR
       -- if typeIR*{typeIR <- typeIR*} matches [ _/1 ]
       -- let [typeIR_key] = typeIR*{typeIR <- typeIR*}
@@ -16847,7 +16847,7 @@ relation SelectCase_keyset_ok: typingContext typeIR* |- keysetExpression : keyse
       -- if simpleKeysetExpression matches `_`
       -- rel SelectCase_keyset_simple_ok: TC typeIR_key |- _ : simpleKeysetExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:212:1-216:65:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:212:1-216:66:
    rule simpleKeysetExpression-dontcare-many-to-one: TC typeIR_key*{typeIR_key <- typeIR_key*} |- keysetExpression : simpleKeysetExpressionIR as keysetExpressionIR
       -- if keysetExpression <: simpleKeysetExpression
       -- let simpleKeysetExpression = keysetExpression as simpleKeysetExpression
@@ -16855,7 +16855,7 @@ relation SelectCase_keyset_ok: typingContext typeIR* |- keysetExpression : keyse
       -- if (|typeIR_key*{typeIR_key <- typeIR_key*}| > 1)
       -- rel SelectCase_keyset_simple_ok: TC seq < typeIR_key*{typeIR_key <- typeIR_key*} > as typeIR |- _ : simpleKeysetExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:223:1-226:81:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:223:1-226:82:
    rule tupleKeysetExpression-mask: TC typeIR*{typeIR <- typeIR*} |- keysetExpression : ( [simpleKeysetExpressionIR] ) as keysetExpressionIR
       -- if typeIR*{typeIR <- typeIR*} matches [ _/1 ]
       -- let [typeIR_key] = typeIR*{typeIR <- typeIR*}
@@ -16865,7 +16865,7 @@ relation SelectCase_keyset_ok: typingContext typeIR* |- keysetExpression : keyse
       -- let ( expression_l &&& expression_r ) = tupleKeysetExpression
       -- rel SelectCase_keyset_simple_ok: TC typeIR_key |- expression_l &&& expression_r : simpleKeysetExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:230:1-233:80:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:230:1-233:81:
    rule tupleKeysetExpression-range: TC typeIR*{typeIR <- typeIR*} |- keysetExpression : ( [simpleKeysetExpressionIR] ) as keysetExpressionIR
       -- if typeIR*{typeIR <- typeIR*} matches [ _/1 ]
       -- let [typeIR_key] = typeIR*{typeIR <- typeIR*}
@@ -16892,7 +16892,7 @@ relation SelectCase_keyset_ok: typingContext typeIR* |- keysetExpression : keyse
       -- if (|typeIR_key*{typeIR_key <- typeIR_key*}| > 1)
       -- rel SelectCase_keyset_simple_ok: TC seq < typeIR_key*{typeIR_key <- typeIR_key*} > as typeIR |- default : simpleKeysetExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:250:1-253:53:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:250:1-253:54:
    rule tupleKeysetExpression-dontcare-one-to-one: TC typeIR*{typeIR <- typeIR*} |- keysetExpression : ( [simpleKeysetExpressionIR] ) as keysetExpressionIR
       -- if typeIR*{typeIR <- typeIR*} matches [ _/1 ]
       -- let [typeIR_key] = typeIR*{typeIR <- typeIR*}
@@ -16901,7 +16901,7 @@ relation SelectCase_keyset_ok: typingContext typeIR* |- keysetExpression : keyse
       -- if tupleKeysetExpression matches `(_)`
       -- rel SelectCase_keyset_simple_ok: TC typeIR_key |- _ : simpleKeysetExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:255:1-259:65:
+   ;; ../../../../../spectec/specs/p4-old/5.13.1-typing-parser-statement.spectec:255:1-259:66:
    rule tupleKeysetExpression-dontcare-many-to-one: TC typeIR_key*{typeIR_key <- typeIR_key*} |- keysetExpression : ( [simpleKeysetExpressionIR] ) as keysetExpressionIR
       -- if keysetExpression <: tupleKeysetExpression
       -- let tupleKeysetExpression = keysetExpression as tupleKeysetExpression
@@ -17062,7 +17062,7 @@ def $split_dataplane_parameters(parameterTypeIR*) : (parameterTypeIR*, parameter
 ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:238:1-241:26:
 relation TableEntry_keyset_simple_ok: typingContext tableContext |- matchKey @ simpleKeysetExpression : tableEntryState simpleKeysetExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:245:1-258:67:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:245:1-258:68:
    rule expression-lpm: TC TBLC |- (typeIR_key, text) @ simpleKeysetExpression : lpm n typedExpressionIR_set as simpleKeysetExpressionIR
       -- if (text = "lpm")
       -- if simpleKeysetExpression <: expression
@@ -17076,7 +17076,7 @@ relation TableEntry_keyset_simple_ok: typingContext tableContext |- matchKey @ s
       -- let typeIR_set = set < [typeIR_key] > as typeIR
       -- let typedExpressionIR_set = ( typeIR_set ) typedExpressionIR as expressionIR # ( typeIR_set ctk )
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:260:1-273:67:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:260:1-273:68:
    rule expression-non-lpm: TC TBLC |- (typeIR_key, nameIR_matchkind) @ simpleKeysetExpression : nolpm typedExpressionIR_set as simpleKeysetExpressionIR
       -- if simpleKeysetExpression <: expression
       -- let expression = simpleKeysetExpression as expression
@@ -17171,7 +17171,7 @@ relation TableEntry_keyset_simple_ok: typingContext tableContext |- matchKey @ s
 ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:380:1-383:29:
 relation TableEntry_keysets_simple_ok: typingContext tableContext tableEntryState |- matchKey* @ simpleKeysetExpression* : tableEntryState simpleKeysetExpressionIR*
 
-   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:385:1-386:40:
+   ;; ../../../../../spectec/specs/p4-old/5.14.1-typing-control-table.spectec:385:1-386:41:
    rule nil: TC TBLC TBLS |- matchKey*{matchKey <- matchKey*} @ simpleKeysetExpression*{simpleKeysetExpression <- simpleKeysetExpression*} : TBLS []
       -- if matchKey*{matchKey <- matchKey*} matches []
       -- if simpleKeysetExpression*{simpleKeysetExpression <- simpleKeysetExpression*} matches []
@@ -17249,7 +17249,7 @@ def $filter_default_parameters(parameterTypeIR*, id*) : parameterTypeIR* =
 ;; ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:26:1-26:71:
 def $align_parameters(parameterTypeIR*, argumentIR*) : parameterTypeIR* =
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:29:1-32:90:
+   ;; ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:29:1-32:91:
    clause 0(parameterTypeIR*{parameterTypeIR <- parameterTypeIR*}, argumentIR*{argumentIR <- argumentIR*}) = parameterTypeIR_aligned*{parameterTypeIR_aligned <- parameterTypeIR_aligned*}
       -- (let _direction _typeIR id _value?{_value <- _value?} = parameterTypeIR)*{_direction <- _direction*, _typeIR <- _typeIR*, _value? <- _value?*, id <- id*, parameterTypeIR <- parameterTypeIR*}
       -- (let parameterTypeIR'?{parameterTypeIR' <- parameterTypeIR'?} = $align_parameters'({ id : parameterTypeIR*{id <- id*, parameterTypeIR <- parameterTypeIR*} }, parameterTypeIR, argumentIR))*{argumentIR <- argumentIR*, parameterTypeIR <- parameterTypeIR*, parameterTypeIR'? <- parameterTypeIR'?*}
@@ -17264,12 +17264,12 @@ def $align_parameters'(map<id, parameterTypeIR>, parameterTypeIR, argumentIR) : 
       -- if argumentIR <: typedExpressionIR
       -- let typedExpressionIR = argumentIR as typedExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:36:1-37:80:
+   ;; ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:36:1-37:81:
    clause 1({ id_param : parameterTypeIR*{id_param <- id_param*, parameterTypeIR <- parameterTypeIR*} }, _parameterTypeIR, argumentIR) = $find_map<id, parameterTypeIR>({ id_param : parameterTypeIR*{id_param <- id_param*, parameterTypeIR <- parameterTypeIR*} }, nameIR)
       -- if argumentIR matches `% = %`
       -- let nameIR = _typedExpressionIR = argumentIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:38:1-39:80:
+   ;; ../../../../../spectec/specs/p4-old/5.15.1-typing-call-convention.spectec:38:1-39:81:
    clause 2({ id_param : parameterTypeIR*{id_param <- id_param*, parameterTypeIR <- parameterTypeIR*} }, _parameterTypeIR, argumentIR) = $find_map<id, parameterTypeIR>({ id_param : parameterTypeIR*{id_param <- id_param*, parameterTypeIR <- parameterTypeIR*} }, nameIR)
       -- if argumentIR matches `% = _`
       -- let nameIR = _ = argumentIR
@@ -17342,7 +17342,7 @@ syntax constraint = map<tid, infer>
 ;; ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:11:1-11:41:
 def $empty_constraint(tid*) : constraint =
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:12:1-12:53:
+   ;; ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:12:1-12:54:
    clause 0(tid*{tid <- tid*}) = { tid : unknown*{tid <- tid*} }
 
 ;; ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:14:20-14:36:
@@ -17361,26 +17361,26 @@ def $infer(tid*, parameterTypeIR*, argumentIR*) : inference =
 ;; ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:21:1-21:66:
 def $infer'(constraint, parameterTypeIR, argumentIR) : constraint =
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:54:1-57:51:
+   ;; ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:54:1-57:52:
    clause 0(constraint, parameterTypeIR, argumentIR) = $gen_constraint_type(constraint, typeIR_param, typeIR_arg)
       -- if argumentIR <: typedExpressionIR
       -- let typedExpressionIR = argumentIR as typedExpressionIR
       -- let _direction typeIR_param _id _value?{_value <- _value?} = parameterTypeIR
       -- let _expressionIR # ( typeIR_arg _ctk ) = typedExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:59:1-62:51:
+   ;; ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:59:1-62:52:
    clause 1(constraint, parameterTypeIR, argumentIR) = $gen_constraint_type(constraint, typeIR_param, typeIR_arg)
       -- if argumentIR matches `% = %`
       -- let nameIR = typedExpressionIR = argumentIR
       -- let _direction typeIR_param _id _value?{_value <- _value?} = parameterTypeIR
       -- let _expressionIR # ( typeIR_arg _ctk ) = typedExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:64:1-64:68:
+   ;; ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:64:1-64:70:
    clause 2(constraint, parameterTypeIR, argumentIR) = constraint
       -- if argumentIR matches `% = _`
       -- let nameIR = _ = argumentIR
 
-   ;; ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:66:1-66:58:
+   ;; ../../../../../spectec/specs/p4-old/5.15.2-typing-call-inference.spectec:66:1-66:59:
    clause 3(constraint, parameterTypeIR, argumentIR) = constraint
       -- if argumentIR matches `_`
 
@@ -18011,7 +18011,7 @@ def $empty_senv : senv =
    ;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:21:1-21:49:
    clause 0 = $empty_map<nameIR, stateDyn>
 
-;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:28:1-31:34:
+;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:28:1-31:35:
 syntax lvalueDyn = 
    | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
@@ -18376,17 +18376,17 @@ def $id_argument_IR(argumentIR) : id? =
       -- if argumentIR <: typedExpressionIR
       -- let typedExpressionIR = argumentIR as typedExpressionIR
 
-   ;; ../../../../../spectec/specs/p4-old/6.02-context-instantiation.spectec:233:1-233:42:
+   ;; ../../../../../spectec/specs/p4-old/6.02-context-instantiation.spectec:233:1-233:43:
    clause 1(argumentIR) = ?(nameIR)
       -- if argumentIR matches `% = %`
       -- let nameIR = _typedExpressionIR = argumentIR
 
-   ;; ../../../../../spectec/specs/p4-old/6.02-context-instantiation.spectec:234:1-234:43:
+   ;; ../../../../../spectec/specs/p4-old/6.02-context-instantiation.spectec:234:1-234:45:
    clause 2(argumentIR) = ?(nameIR)
       -- if argumentIR matches `% = _`
       -- let nameIR = _ = argumentIR
 
-   ;; ../../../../../spectec/specs/p4-old/6.02-context-instantiation.spectec:235:1-235:30:
+   ;; ../../../../../spectec/specs/p4-old/6.02-context-instantiation.spectec:235:1-235:31:
    clause 3(argumentIR) = ?()
       -- if argumentIR matches `_`
 
@@ -18521,40 +18521,40 @@ relation Bind_arg: cursor contextInst ; cursor contextInst sto |- id argumentIR 
 ;; ../../../../../spectec/specs/p4-old/6.03-instantiation-relation.spectec:32:1-34:26:
 relation Expr_inst: cursor contextInst sto |- typedExpressionIR ==> sto value
 
-   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:16:1-17:41:
+   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:16:1-17:42:
    rule literalExpressionIR-true: p Ci sto |- expressionIR # _expressionNoteIR ==> sto b true as value
       -- if expressionIR <: literalExpression
       -- let literalExpression = expressionIR as literalExpression
       -- if literalExpression matches `TRUE`
 
-   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:19:1-20:43:
+   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:19:1-20:44:
    rule literalExpressionIR-false: p Ci sto |- expressionIR # _expressionNoteIR ==> sto b false as value
       -- if expressionIR <: literalExpression
       -- let literalExpression = expressionIR as literalExpression
       -- if literalExpression matches `FALSE`
 
-   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:24:1-25:39:
+   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:24:1-25:40:
    rule literalExpressionIR-number-arbint: p Ci sto |- expressionIR # _expressionNoteIR ==> sto d i as value
       -- if expressionIR <: number
       -- let number = expressionIR as number
       -- if number matches `D %`
       -- let d i = number
 
-   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:27:1-28:43:
+   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:27:1-28:44:
    rule literalExpressionIR-number-fixint: p Ci sto |- expressionIR # _expressionNoteIR ==> sto n s i as value
       -- if expressionIR <: number
       -- let number = expressionIR as number
       -- if number matches `% S %`
       -- let n s i = number
 
-   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:30:1-31:43:
+   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:30:1-31:44:
    rule literalExpressionIR-number-fixbit: p Ci sto |- expressionIR # _expressionNoteIR ==> sto n w i as value
       -- if expressionIR <: number
       -- let number = expressionIR as number
       -- if number matches `% W %`
       -- let n w i = number
 
-   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:35:1-36:53:
+   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:35:1-36:58:
    rule literalExpressionIR-stringLiteral: p Ci sto |- expressionIR # _expressionNoteIR ==> sto " text " as value
       -- if expressionIR <: stringLiteral
       -- let " text " = expressionIR as stringLiteral
@@ -18565,7 +18565,7 @@ relation Expr_inst: cursor contextInst sto |- typedExpressionIR ==> sto value
       -- let prefixedNameIR = expressionIR as prefixedNameIR
       -- let value = $find_value_inst(p, Ci, prefixedNameIR)
 
-   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:47:1-48:40:
+   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:47:1-48:42:
    rule defaultExpressionIR: p Ci sto |- expressionIR # _expressionNoteIR ==> sto default as value
       -- if expressionIR <: defaultExpression
       -- let defaultExpression = expressionIR as defaultExpression
@@ -18790,7 +18790,7 @@ relation Expr_inst: cursor contextInst sto |- typedExpressionIR ==> sto value
       -- rel Expr_inst: p Ci sto |- typedExpressionIR ==> sto_1 value
       -- let value_cast = $cast_op(typeIR, value)
 
-   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:228:1-229:37:
+   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:228:1-229:40:
    rule dataExpressionIR-invalid: p Ci sto |- expressionIR # _expressionNoteIR ==> sto {#} as value
       -- if expressionIR <: dataExpressionIR
       -- let dataExpressionIR = expressionIR as dataExpressionIR
@@ -18866,7 +18866,7 @@ relation Expr_inst: cursor contextInst sto |- typedExpressionIR ==> sto value
       -- if value'?{value' <- value'?} matches (_)
       -- let ?(value) = value'?{value' <- value'?}
 
-   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:290:1-294:40:
+   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:290:1-294:41:
    rule accessExpressionIR-memberAccessExpressionIR-typedExpressionIR: p Ci sto |- expressionIR # _expressionNoteIR ==> sto_1 d n_size as int as value
       -- if expressionIR <: memberAccessExpressionIR
       -- let memberAccessBaseIR . text = expressionIR as memberAccessExpressionIR
@@ -18888,7 +18888,7 @@ relation Expr_inst: cursor contextInst sto |- typedExpressionIR ==> sto value
       -- rel Expr_inst: p Ci sto_1 |- typedExpressionIR_l ==> sto_2 value_l
       -- rel Expr_inst: p Ci sto_2 |- typedExpressionIR_h ==> sto_3 value_h
 
-   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:316:1-326:25:
+   ;; ../../../../../spectec/specs/p4-old/6.05-instantiation-expression.spectec:316:1-326:26:
    rule callExpressionIR-instantiation: p Ci sto |- expressionIR # _expressionNoteIR ==> sto_2 value
       -- if expressionIR <: callExpressionIR
       -- let callExpressionIR = expressionIR as callExpressionIR
@@ -19091,7 +19091,7 @@ relation SwitchCase_inst: cursor contextInst sto |- switchCaseIR ==> contextInst
       -- if statementIR <: blockStatementIR
       -- let blockStatementIR' = statementIR as blockStatementIR
 
-   ;; ../../../../../spectec/specs/p4-old/6.07-instantiation-statement.spectec:121:1-122:61:
+   ;; ../../../../../spectec/specs/p4-old/6.07-instantiation-statement.spectec:121:1-122:63:
    rule fallthrough: p Ci sto |- switchCaseIR ==> Ci sto switchLabelIR :
       -- if switchCaseIR matches `% :`
       -- let switchLabelIR : = switchCaseIR
@@ -19426,22 +19426,22 @@ relation ParserLocalDecls_inst: contextInst sto |- parserLocalDeclarationIR* ==>
 ;; ../../../../../spectec/specs/p4-old/6.03-instantiation-relation.spectec:140:1-142:23:
 relation TableProperty_inst: contextInst sto |- tablePropertyIR ==> contextInst sto tablePropertyIR
 
-   ;; ../../../../../spectec/specs/p4-old/6.11.1-instantiation-control-table.spectec:8:1-9:79:
+   ;; ../../../../../spectec/specs/p4-old/6.11.1-instantiation-control-table.spectec:8:1-9:81:
    rule key: Ci sto |- tablePropertyIR ==> Ci sto key = { tableKeyListIR }
       -- if tablePropertyIR matches `KEY = {%}`
       -- let key = { tableKeyListIR } = tablePropertyIR
 
-   ;; ../../../../../spectec/specs/p4-old/6.11.1-instantiation-control-table.spectec:12:1-13:93:
+   ;; ../../../../../spectec/specs/p4-old/6.11.1-instantiation-control-table.spectec:12:1-13:95:
    rule actions: Ci sto |- tablePropertyIR ==> Ci sto actions = { tableActionListIR }
       -- if tablePropertyIR matches `ACTIONS = {%}`
       -- let actions = { tableActionListIR } = tablePropertyIR
 
-   ;; ../../../../../spectec/specs/p4-old/6.11.1-instantiation-control-table.spectec:16:1-18:76:
+   ;; ../../../../../spectec/specs/p4-old/6.11.1-instantiation-control-table.spectec:16:1-18:77:
    rule entries: Ci sto |- tablePropertyIR ==> Ci sto annotationList constOptIR entries = { tableEntryListIR }
       -- if tablePropertyIR matches `% % ENTRIES = {%}`
       -- let annotationList constOptIR entries = { tableEntryListIR } = tablePropertyIR
 
-   ;; ../../../../../spectec/specs/p4-old/6.11.1-instantiation-control-table.spectec:21:1-23:87:
+   ;; ../../../../../spectec/specs/p4-old/6.11.1-instantiation-control-table.spectec:21:1-23:89:
    rule custom-default-action: Ci sto |- tablePropertyIR ==> Ci sto annotationList constOptIR default_action = tableActionReferenceIR ;
       -- if tablePropertyIR matches `% % DEFAULT_ACTION = % ;`
       -- let annotationList constOptIR default_action = tableActionReferenceIR ; = tablePropertyIR
@@ -19453,7 +19453,7 @@ relation TableProperty_inst: contextInst sto |- tablePropertyIR ==> contextInst 
       -- let Ci_inner = $enter_path(Ci, nameIR)
       -- rel Expr_inst: local Ci_inner sto |- typedExpressionIR ==> sto_1 value
 
-   ;; ../../../../../spectec/specs/p4-old/6.11.1-instantiation-control-table.spectec:34:1-36:88:
+   ;; ../../../../../spectec/specs/p4-old/6.11.1-instantiation-control-table.spectec:34:1-36:89:
    rule custom-const: Ci sto |- tablePropertyIR ==> Ci sto annotationList constOptIR custom_const nameIR constantInitializerIR ;
       -- if tablePropertyIR matches `% % CUSTOM_CONST % % ;`
       -- let annotationList constOptIR custom_const nameIR constantInitializerIR ; = tablePropertyIR
@@ -19635,7 +19635,7 @@ relation Decl_inst: cursor contextInst sto |- declarationIR ==> contextInst sto 
       -- let funcDyn = action ( parameterListIR ) { blockStatementIR }
       -- let Ci_1 = $add_routine_non_overload_inst(p, Ci_0, rid, funcDyn as routineDyn)
 
-   ;; ../../../../../spectec/specs/p4-old/6.08-instantiation-declaration.spectec:146:1-150:81:
+   ;; ../../../../../spectec/specs/p4-old/6.08-instantiation-declaration.spectec:146:1-150:82:
    rule errorDeclarationIR: cursor Ci_0 sto |- declarationIR ==> Ci_1 sto ?()
       -- if cursor matches `GLOBAL`
       -- if declarationIR <: errorDeclarationIR
@@ -19643,7 +19643,7 @@ relation Decl_inst: cursor contextInst sto |- declarationIR ==> contextInst sto 
       -- (let nameIR_field = $concat_text(["error.", nameIR]))*{nameIR <- nameIR*, nameIR_field <- nameIR_field*}
       -- let Ci_1 = $add_values_inst(global, Ci_0, nameIR_field*{nameIR_field <- nameIR_field*}, error . nameIR as value*{nameIR <- nameIR*})
 
-   ;; ../../../../../spectec/specs/p4-old/6.08-instantiation-declaration.spectec:156:1-159:80:
+   ;; ../../../../../spectec/specs/p4-old/6.08-instantiation-declaration.spectec:156:1-159:81:
    rule matchKindDeclarationIR: cursor Ci_0 sto |- declarationIR ==> Ci_1 sto ?()
       -- if cursor matches `GLOBAL`
       -- if declarationIR <: matchKindDeclarationIR
@@ -19710,7 +19710,7 @@ relation Decl_inst: cursor contextInst sto |- declarationIR ==> contextInst sto 
       -- let Ci_1 = $add_values_inst(global, Ci_0, nameIR_path*{nameIR_path <- nameIR_path*}, nameIR . nameIR_mem as value*{nameIR_mem <- nameIR_mem*})
       -- let Ci_2 = $add_typedef_inst(global, Ci_1, nameIR, enum nameIR { nameIR_mem*{nameIR_mem <- nameIR_mem*} } as typeDefIR)
 
-   ;; ../../../../../spectec/specs/p4-old/6.08-instantiation-declaration.spectec:304:1-313:113:
+   ;; ../../../../../spectec/specs/p4-old/6.08-instantiation-declaration.spectec:304:1-313:116:
    rule typeDeclarationIR-derivedTypeDeclarationIR-enumTypeDeclarationIR-serializableEnum: cursor Ci_0 sto_0 |- declarationIR ==> Ci_2 sto_1 ?()
       -- if cursor matches `GLOBAL`
       -- if declarationIR <: enumTypeDeclarationIR
@@ -19883,7 +19883,7 @@ def $partition_default_parameters(parameterIR*, id*) : (parameterIR*, parameterI
 ;; ../../../../../spectec/specs/p4-old/6.04-instantiation-constructor.spectec:30:1-30:146:
 def $align_cparams_with_args(constructorParameterIR*, argumentIR*, id*) : (constructorParameterIR*, argumentIR*, constructorParameterIR*, value*) =
 
-   ;; ../../../../../spectec/specs/p4-old/6.04-instantiation-constructor.spectec:33:1-40:71:
+   ;; ../../../../../spectec/specs/p4-old/6.04-instantiation-constructor.spectec:33:1-40:72:
    clause 0(constructorParameterIR*{constructorParameterIR <- constructorParameterIR*}, argumentIR*{argumentIR <- argumentIR*}, id_default*{id_default <- id_default*}) = (constructorParameterIR_aligned*{constructorParameterIR_aligned <- constructorParameterIR_aligned*}, argumentIR_aligned*{argumentIR_aligned <- argumentIR_aligned*}, constructorParameterIR_default*{constructorParameterIR_default <- constructorParameterIR_default*}, value_default*{value_default <- value_default*})
       -- let (constructorParameterIR_nondefault*{constructorParameterIR_nondefault <- constructorParameterIR_nondefault*}, constructorParameterIR_default*{constructorParameterIR_default <- constructorParameterIR_default*}) = $partition_default_parameters(constructorParameterIR*{constructorParameterIR <- constructorParameterIR*}, id_default*{id_default <- id_default*})
       -- (let _annotationList _direction _typeIR id _constantInitializerOptIR = constructorParameterIR_nondefault)*{_annotationList <- _annotationList*, _constantInitializerOptIR <- _constantInitializerOptIR*, _direction <- _direction*, _typeIR <- _typeIR*, constructorParameterIR_nondefault <- constructorParameterIR_nondefault*, id <- id*}
@@ -19895,7 +19895,7 @@ def $align_cparams_with_args(constructorParameterIR*, argumentIR*, id*) : (const
 ;; ../../../../../spectec/specs/p4-old/6.04-instantiation-constructor.spectec:31:1-31:142:
 def $align_cparams_with_args'(map<id, constructorParameterIR>, constructorParameterIR*, argumentIR*) : (constructorParameterIR*, argumentIR*) =
 
-   ;; ../../../../../spectec/specs/p4-old/6.04-instantiation-constructor.spectec:42:1-42:99:
+   ;; ../../../../../spectec/specs/p4-old/6.04-instantiation-constructor.spectec:42:1-42:100:
    clause 0({ id_map : constructorParameterIR_map*{constructorParameterIR_map <- constructorParameterIR_map*, id_map <- id_map*} }, constructorParameterIR*{constructorParameterIR <- constructorParameterIR*}, argumentIR*{argumentIR <- argumentIR*}) = ([], [])
       -- if constructorParameterIR*{constructorParameterIR <- constructorParameterIR*} matches []
       -- if argumentIR*{argumentIR <- argumentIR*} matches []
@@ -19957,7 +19957,7 @@ def $get_init_decls(objectInitializerOptIR) : objectDeclarationListIR =
    clause 0(objectInitializerIR?{objectInitializerIR <- objectInitializerIR?}) = []
       -- if objectInitializerIR?{objectInitializerIR <- objectInitializerIR?} matches ()
 
-   ;; ../../../../../spectec/specs/p4-old/6.08-instantiation-declaration.spectec:31:1-31:79:
+   ;; ../../../../../spectec/specs/p4-old/6.08-instantiation-declaration.spectec:31:1-31:80:
    clause 1(objectInitializerOptIR) = objectDeclarationListIR
       -- if objectInitializerOptIR matches (_)
       -- let ?(= { objectDeclarationListIR }) = objectInitializerOptIR
@@ -20007,11 +20007,11 @@ def $rid_IR(nameIR, parameterListIR) : rid =
 ;; ../../../../../spectec/specs/p4-old/6.08-instantiation-declaration.spectec:109:1-109:31:
 def $pid_IR(parameterIR) : pid =
 
-   ;; ../../../../../spectec/specs/p4-old/6.08-instantiation-declaration.spectec:113:1-113:48:
+   ;; ../../../../../spectec/specs/p4-old/6.08-instantiation-declaration.spectec:113:1-113:49:
    clause 0(_annotationList _direction _typeIR nameIR constantInitializerIR?{constantInitializerIR <- constantInitializerIR?}) = nameIR # false
       -- if constantInitializerIR?{constantInitializerIR <- constantInitializerIR?} matches ()
 
-   ;; ../../../../../spectec/specs/p4-old/6.08-instantiation-declaration.spectec:114:1-114:65:
+   ;; ../../../../../spectec/specs/p4-old/6.08-instantiation-declaration.spectec:114:1-114:66:
    clause 1(_annotationList _direction _typeIR nameIR constantInitializerOptIR) = nameIR # true
       -- if constantInitializerOptIR matches (_)
       -- let ?(constantInitializerIR) = constantInitializerOptIR
