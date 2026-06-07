@@ -95,7 +95,7 @@ let unicode_of_atom : Xl.Atom.t -> string option = function
 
 let code_of_atom (atom : Mixfix.atom) =
   match atom.it with
-  | Xl.Atom.SilentAtom _ -> ""
+  | Xl.Atom.Tag _ -> ""
   | a -> (
       match unicode_of_atom a with
       | Some s -> s

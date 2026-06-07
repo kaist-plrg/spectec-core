@@ -38,7 +38,7 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 
 %}
 
-%token<string> SILENT_UPID
+%token<string> TAG_UPID
 %token<string> OPERATOR
 %token TICK_LANGLE TICK_LPAREN TICK_LBRACK TICK_LBRACE
 
@@ -146,10 +146,10 @@ atomid_lparen : UPID_LPAREN { $1 }
 atomid_langle : UPID_LANGLE { $1 }
 atomid : atomid_ { $1 } | atomid DOTID { $1 ^ "." ^ $2 }
 
-dotid : DOTID { Atom.Atom $1 @@@ $sloc }
+dotid : DOTID { Atom.Keyword $1 @@@ $sloc }
 
 fieldid :
-  | atomid_ { Atom.Atom $1 @@@ $sloc }
+  | atomid_ { Atom.Keyword $1 @@@ $sloc }
 
 relid : id { $1 @@@ $sloc }
 
@@ -180,10 +180,10 @@ synid :
 atom :
   | atom_ { $1 @@@ $sloc }
 atom_ :
-  | atomid { Atom.Atom $1 }
+  | atomid { Atom.Keyword $1 }
   | atom_escape { $1 }
 atom_escape :
-  | SILENT_UPID { Atom.SilentAtom $1 }
+  | TAG_UPID { Atom.Tag $1 }
   | OPERATOR { Atom.Operator $1 }
 
 (* Iterations *)
@@ -527,7 +527,7 @@ exp_atom_ :
   | atom { AtomE $1 }
   | atomid_lparen exp RPAREN
     { SeqE [
-        AtomE (Atom.Atom $1 @@@ $loc($1)) @@@ $loc($1);
+        AtomE (Atom.Keyword $1 @@@ $loc($1)) @@@ $loc($1);
         ParenE $2 @@@ $loc($2)
       ] }
 

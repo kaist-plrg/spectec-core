@@ -154,7 +154,7 @@ and after_nl_nl = parse
 
 and token = parse
   (* escaped tokens *)
-  | "_"(upid as s) { SILENT_UPID s }
+  | "_"(upid as s) { TAG_UPID s }
   | "'" ([^'\'''\n']* as s) "'" { OPERATOR s }
   (* matched grouping brackets *)
   | "`<" { TICK_LANGLE }

@@ -22,7 +22,7 @@ let pp_num fmt (num : num) : unit =
 
 let pp_atom fmt (atom : atom) : unit =
   match atom.it with
-  | Atom.SilentAtom _ -> F.fprintf fmt ""
+  | Atom.Tag _ -> F.fprintf fmt ""
   | _ ->
       F.fprintf fmt "%s" (Atom.string_of_atom atom.it |> String.lowercase_ascii)
 

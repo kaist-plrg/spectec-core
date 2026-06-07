@@ -9,8 +9,8 @@
    (`` `( ``, `` `< ``). *)
 
 type t =
-  | Atom of string                  (* concrete upper-case word: INT *)
-  | SilentAtom of string            (* abstract upper-case word: _NUM *)
+  | Keyword of string               (* concrete upper-case word: INT *)
+  | Tag of string                   (* abstract upper-case word: _NUM *)
   | Operator of string              (* concrete operator: '+', '->', ';' *)
   | Sub                             (* <: *)
   | Sup                             (* :> *)
@@ -78,10 +78,10 @@ let closer_of : t -> t option = function
   | _ -> None
 
 (* Lossy pretty-printing, canonical glyph. Drives the IL/elab/struct output;
-   SilentAtom is suppressed by the IL printer. *)
+   Tag is suppressed by the IL printer. *)
 let string_of_atom = function
-  | Atom id -> id
-  | SilentAtom id -> "_" ^ id
+  | Keyword id -> id
+  | Tag id -> "_" ^ id
   | Operator s -> s
   | Sub -> "<:"
   | Sup -> ":>"
@@ -113,8 +113,8 @@ let string_of_atom = function
 (* Faithful source-form printer: emits the surface syntax the parser reads, so
    it round-trips through the lexer. Used by the EL unparser. *)
 let string_of_atom_exact : t -> string = function
-  | Atom id -> id
-  | SilentAtom id -> "_" ^ id
+  | Keyword id -> id
+  | Tag id -> "_" ^ id
   | Operator s -> "'" ^ s ^ "'"
   | Sub -> "<:"
   | Sup -> ":>"
@@ -162,6 +162,6 @@ let of_string : string -> t = function
   (* `_` + upper-case word is a silent atom; a lone `_` is the concrete
      underscore terminal, so it must fall through to Operator. *)
   | s when String.length s > 1 && s.[0] = '_' && s.[1] >= 'A' && s.[1] <= 'Z' ->
-      SilentAtom (String.sub s 1 (String.length s - 1))
-  | s when String.length s > 0 && s.[0] >= 'A' && s.[0] <= 'Z' -> Atom s
+      Tag (String.sub s 1 (String.length s - 1))
+  | s when String.length s > 0 && s.[0] >= 'A' && s.[0] <= 'Z' -> Keyword s
   | s -> Operator s
