@@ -90,9 +90,9 @@ let run_property ~target ~generalize ~max_steps ~num_tests
             in
             let verdict =
               match Premise_eval.eval_side eval_env ~bindings side_prems with
-              | Premise_eval.Holds -> (
-                  match Premise_eval.eval eval_env ~bindings goal with
-                  | Premise_eval.Holds -> Property.Verdict.pass
+              | Premise_eval.Holds bindings' -> (
+                  match Premise_eval.eval eval_env ~bindings:bindings' goal with
+                  | Premise_eval.Holds _ -> Property.Verdict.pass
                   | Premise_eval.Fails ->
                       captured := Some bindings;
                       Property.Verdict.fail
