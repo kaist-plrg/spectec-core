@@ -133,7 +133,7 @@ let assemble ?(pad_brackets = false) ~(string_of_atom : atom -> string)
 
 let string_of_mixeme = function
   | Arg _ -> "%"
-  | Atom atom -> Xl.Atom.string_of_atom atom.it
+  | Atom atom -> Xl.Atom.to_string atom.it
 
 let to_string (mixfix : 'a t) : string =
   "`" ^ render_with ~pad_brackets:false string_of_mixeme mixfix ^ "`"

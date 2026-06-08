@@ -24,7 +24,7 @@ let string_of_defid defid = "$" ^ defid.it
 let string_of_atom atom =
   match atom.it with
   | Atom.Tag _ -> ""
-  | _ -> Atom.string_of_atom atom.it |> String.lowercase_ascii
+  | _ -> Atom.to_string atom.it |> String.lowercase_ascii
 
 let string_of_atoms atoms =
   match atoms with

@@ -99,7 +99,7 @@ let code_of_atom (atom : Mixfix.atom) =
   | a -> (
       match unicode_of_atom a with
       | Some s -> s
-      | None -> "+" ^ Xl.Atom.string_of_atom a ^ "+")
+      | None -> "+" ^ Xl.Atom.to_string a ^ "+")
 
 let code_of_mixop (mixop : mixop) : string =
   let arity = Mixfix.arity mixop in

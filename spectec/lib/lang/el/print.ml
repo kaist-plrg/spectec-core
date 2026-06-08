@@ -20,7 +20,7 @@ let string_of_defid defid = "$" ^ defid.it
 
 (* Atoms *)
 
-let string_of_atom atom = Atom.string_of_atom atom.it
+let string_of_atom atom = Atom.to_string atom.it
 
 (* Iterators *)
 

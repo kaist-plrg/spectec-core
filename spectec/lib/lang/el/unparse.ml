@@ -29,7 +29,7 @@ let to_doc_ruleid (id : id) =
   if id.it = "" then P.empty else P.string "/" ^^ P.string id.it
 
 let to_doc_defid (id : id) = P.string "$" ^^ P.string id.it
-let to_doc_atom (atom : atom) = P.string (Atom.string_of_atom_exact atom.it)
+let to_doc_atom (atom : atom) = P.string (Atom.unparse atom.it)
 let to_doc_iter = function Opt -> P.string "?" | List -> P.string "*"
 
 let to_doc_unop = function
