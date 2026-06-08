@@ -13,22 +13,22 @@ dec $ite<X>(bool, X_t, X_f)
 
 1. Else Phantom#0
 
-;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:27:1-28:31:
+;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:27:1-28:32:
 builtin dec $sum_nat(nat*)
 
-;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:30:1-31:31:
+;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:30:1-31:32:
 builtin dec $max_nat(nat*)
 
-;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:33:1-34:31:
+;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:33:1-34:32:
 builtin dec $min_nat(nat*)
 
-;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:40:1-41:31:
+;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:40:1-41:32:
 builtin dec $sum_int(int*)
 
-;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:43:1-44:31:
+;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:43:1-44:32:
 builtin dec $max_int(int*)
 
-;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:46:1-47:31:
+;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:46:1-47:32:
 builtin dec $min_int(int*)
 
 ;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:53:1-53:37:
@@ -364,7 +364,7 @@ builtin dec $sort_<X>((nat, X)*)
 ;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:210:1-212:60:
 builtin dec $distinct_<K>(K*)
 
-;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:218:17-218:24:
+;; ../../../../../spectec/specs/p4/0-aux/0.0-stdlib.spectec:218:17-218:25:
 syntax set<K> = 
    | { K* } (from set<K>)
 
@@ -592,7 +592,7 @@ syntax direction =
    | out (from direction)
    | inout (from direction)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:116:1-127:32:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:116:1-127:34:
 syntax baseType = 
    | bool (from baseType)
    | error (from baseType)
@@ -607,7 +607,7 @@ syntax baseType =
    | varbit < int > (from baseType)
    | varbit < ( expression ) > (from baseType)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:135:26-135:64:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:135:26-135:65:
 syntax specializedType = 
    | prefixedTypeName < typeArgumentList > (from specializedType)
 
@@ -617,15 +617,15 @@ syntax namedType =
    | . typeName (from prefixedTypeName)
    | prefixedTypeName < typeArgumentList > (from specializedType)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:145:26-145:51:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:145:26-145:52:
 syntax headerStackType = 
    | namedType [ expression ] (from headerStackType)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:153:19-153:41:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:153:19-153:42:
 syntax listType = 
    | list < typeArgument > (from listType)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:159:20-159:47:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:159:20-159:48:
 syntax tupleType = 
    | tuple < typeArgumentList > (from tupleType)
 
@@ -709,7 +709,7 @@ dec $flatten_typeParameterList(typeParameterList'')
 
 2. Else Phantom#17
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:194:1-195:27:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:194:1-195:28:
 syntax typeParameterListOpt = 
    |  (from typeParameterListOpt)
    | < typeParameterList > (from typeParameterListOpt)
@@ -781,7 +781,7 @@ syntax constructorParameter = parameter
 ;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:233:35-233:48:
 syntax constructorParameterList = parameterList
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:236:1-237:23:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:236:1-237:24:
 syntax constructorParameterListOpt = 
    |  (from constructorParameterListOpt)
    | ( parameterList ) (from constructorParameterListOpt)
@@ -906,7 +906,7 @@ syntax ternaryExpression =
 syntax ternaryExpressionNonBrace = 
    | expressionNonBrace ? expression : expression (from ternaryExpressionNonBrace)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:319:25-319:45:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:319:25-319:46:
 syntax castExpression = 
    | ( type ) expression (from castExpression)
 
@@ -914,7 +914,7 @@ syntax castExpression =
 syntax invalidHeaderExpression = 
    | {#} (from invalidHeaderExpression)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:330:1-330:60:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:330:1-330:61:
 syntax sequenceOrRecordExpression = 
    | { sequenceOrRecordElementExpression trailingCommaOpt } (from sequenceOrRecordExpression)
 
@@ -931,11 +931,11 @@ syntax errorAccessExpression =
 syntax memberAccessExpression = 
    | memberAccessBase . member (from memberAccessExpression)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:349:3-349:29:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:349:3-349:30:
 syntax indexAccessExpression = 
    | expression [ expression ] (from indexAccessExpression)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:352:1-353:47:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:352:1-353:48:
 syntax sliceAccessExpression = 
    | expression [ expression : expression ] (from sliceAccessExpression)
    | expression [ expression + : expression ] (from sliceAccessExpression)
@@ -952,11 +952,11 @@ syntax accessExpression =
 syntax memberAccessExpressionNonBrace = 
    | memberAccessBaseNonBrace . member (from memberAccessExpressionNonBrace)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:365:3-365:37:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:365:3-365:38:
 syntax indexAccessExpressionNonBrace = 
    | expressionNonBrace [ expression ] (from indexAccessExpressionNonBrace)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:368:1-369:55:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:368:1-369:56:
 syntax sliceAccessExpressionNonBrace = 
    | expressionNonBrace [ expression : expression ] (from sliceAccessExpressionNonBrace)
    | expressionNonBrace [ expression + : expression ] (from sliceAccessExpressionNonBrace)
@@ -969,17 +969,17 @@ syntax accessExpressionNonBrace =
    | expressionNonBrace [ expression : expression ] (from sliceAccessExpressionNonBrace)
    | expressionNonBrace [ expression + : expression ] (from sliceAccessExpressionNonBrace)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:389:1-390:63:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:389:1-390:65:
 syntax callExpression = 
    | callTarget ( argumentList ) (from callExpression)
    | callableTarget < realTypeArgumentList > ( argumentList ) (from callExpression)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:393:1-394:71:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:393:1-394:73:
 syntax callExpressionNonBrace = 
    | callTargetNonBrace ( argumentList ) (from callExpressionNonBrace)
    | callableTargetNonBrace < realTypeArgumentList > ( argumentList ) (from callExpressionNonBrace)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:400:34-400:49:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:400:34-400:50:
 syntax parenthesizedExpression = 
    | ( expression ) (from parenthesizedExpression)
 
@@ -1545,7 +1545,7 @@ dec $flatten_simpleKeysetExpressionList(simpleKeysetExpressionList'')
 
 2. Else Phantom#27
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:559:1-563:63:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:559:1-563:64:
 syntax tupleKeysetExpression = 
    | ( expression &&& expression ) (from tupleKeysetExpression)
    | ( expression .. expression ) (from tupleKeysetExpression)
@@ -1896,7 +1896,7 @@ dec $flatten_argumentList(argumentList)
 
 3. Else Phantom#35
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:634:1-639:16:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:634:1-639:17:
 syntax lvalue = 
    | text (from identifier)
    | apply (from nonTypeName)
@@ -2145,12 +2145,12 @@ dec $assignop_as_binop(assignop)
 
   1. Return ?()
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:719:1-720:55:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:719:1-720:57:
 syntax callStatement = 
    | lvalue ( argumentList ) ; (from callStatement)
    | lvalue < typeArgumentList > ( argumentList ) ; (from callStatement)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:726:37-726:78:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:726:37-726:79:
 syntax directApplicationStatement = 
    | namedType . apply ( argumentList ) ; (from directApplicationStatement)
 
@@ -2163,11 +2163,11 @@ syntax returnStatement =
 syntax exitStatement = 
    | exit ; (from exitStatement)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:748:25-748:70:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:748:25-748:71:
 syntax blockStatement = 
    | annotationList { blockElementStatementList } (from blockStatement)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:757:1-758:48:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:757:1-758:49:
 syntax conditionalStatement = 
    | if ( expression ) statement (from conditionalStatement)
    | if ( expression ) statement else statement (from conditionalStatement)
@@ -2314,7 +2314,7 @@ syntax forCollectionExpression =
    | ( expression ) (from parenthesizedExpression)
    | expression .. expression (from forCollectionExpression)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:814:1-819:81:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:814:1-819:82:
 syntax forStatement = 
    | annotationList for ( forInitStatementList ; expression ; forUpdateStatementList ) statement (from forStatement)
    | annotationList for ( type name in forCollectionExpression ) statement (from forStatement)
@@ -2377,7 +2377,7 @@ dec $flatten_switchCaseList(switchCaseList'')
 
     2. Return $flatten_switchCaseList(switchCaseList) ++ [switchCase]
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:843:26-843:68:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:843:26-843:70:
 syntax switchStatement = 
    | switch ( expression ) { switchCaseList } (from switchStatement)
 
@@ -2468,7 +2468,7 @@ dec $flatten_blockElementStatementList(blockElementStatementList'')
 
     2. Return $flatten_blockElementStatementList(blockElementStatementList) ++ [blockElementStatement]
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:914:3-914:58:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:914:3-914:59:
 syntax functionPrototype = 
    | typeOrVoid name typeParameterListOpt ( parameterList ) (from functionPrototype)
 
@@ -2476,15 +2476,15 @@ syntax functionPrototype =
 syntax functionDeclaration = 
    | annotationList functionPrototype blockStatement (from functionDeclaration)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:924:3-924:63:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:924:3-924:64:
 syntax actionDeclaration = 
    | annotationList action name ( parameterList ) blockStatement (from actionDeclaration)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:932:28-932:58:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:932:28-932:59:
 syntax objectInitializer = 
    | = { objectDeclarationList } (from objectInitializer)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:936:1-937:69:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:936:1-937:70:
 syntax instantiation = 
    | annotationList type ( argumentList ) name ; (from instantiation)
    | annotationList type ( argumentList ) name objectInitializer ; (from instantiation)
@@ -2515,15 +2515,15 @@ dec $flatten_objectDeclarationList(objectDeclarationList'')
 
     2. Return $flatten_objectDeclarationList(objectDeclarationList) ++ [objectDeclaration]
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:960:27-960:46:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:960:27-960:47:
 syntax errorDeclaration = 
    | error { nameList } (from errorDeclaration)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:966:31-966:72:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:966:31-966:73:
 syntax matchKindDeclaration = 
    | match_kind { nameList trailingCommaOpt } (from matchKindDeclaration)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:977:1-978:76:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:977:1-978:77:
 syntax enumTypeDeclaration = 
    | annotationList enum name { nameList trailingCommaOpt } (from enumTypeDeclaration)
    | annotationList enum type name { namedExpressionList trailingCommaOpt } (from enumTypeDeclaration)
@@ -2552,15 +2552,15 @@ dec $flatten_typeFieldList(typeFieldList'')
 
     2. Return $flatten_typeFieldList(typeFieldList) ++ [typeField]
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:997:3-997:69:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:997:3-997:70:
 syntax structTypeDeclaration = 
    | annotationList struct name typeParameterListOpt { typeFieldList } (from structTypeDeclaration)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1000:3-1000:69:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1000:3-1000:70:
 syntax headerTypeDeclaration = 
    | annotationList header name typeParameterListOpt { typeFieldList } (from headerTypeDeclaration)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1003:3-1003:75:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1003:3-1003:76:
 syntax headerUnionTypeDeclaration = 
    | annotationList header_union name typeParameterListOpt { typeFieldList } (from headerUnionTypeDeclaration)
 
@@ -2607,7 +2607,7 @@ syntax typedefDeclaration =
 syntax externFunctionDeclaration = 
    | annotationList extern functionPrototype ; (from externFunctionDeclaration)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1031:1-1031:57:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1031:1-1031:58:
 syntax externConstructorPrototype = 
    | annotationList typeIdentifier ( parameterList ) ; (from externConstructorPrototype)
 
@@ -2660,7 +2660,7 @@ dec $flatten_externConstructorOrMethodPrototypeList(externConstructorOrMethodPro
 
     2. Return $flatten_externConstructorOrMethodPrototypeList(externConstructorOrMethodPrototypeList) ++ [externConstructorOrMethodPrototype]
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1080:3-1081:69:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1080:3-1081:70:
 syntax externObjectDeclaration = 
    | annotationList extern nonTypeName typeParameterListOpt { externConstructorOrMethodPrototypeList } (from externObjectDeclaration)
 
@@ -2693,7 +2693,7 @@ dec $flatten_selectCaseList(selectCaseList'')
 
     2. Return $flatten_selectCaseList(selectCaseList) ++ [selectCase]
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1107:27-1107:73:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1107:27-1107:75:
 syntax selectExpression = 
    | select ( expressionList ) { selectCaseList } (from selectExpression)
 
@@ -2725,19 +2725,19 @@ syntax valueSetType =
    | text (from typeIdentifier)
    | . typeName (from prefixedTypeName)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1131:3-1131:70:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1131:3-1131:72:
 syntax valueSetDeclaration = 
    | annotationList value_set < valueSetType > ( expression ) name ; (from valueSetDeclaration)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1138:3-1138:73:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1138:3-1138:74:
 syntax parserTypeDeclaration = 
    | annotationList parser name typeParameterListOpt ( parameterList ) ; (from parserTypeDeclaration)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1146:31-1146:70:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1146:31-1146:71:
 syntax parserBlockStatement = 
    | annotationList { parserStatementList } (from parserBlockStatement)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1149:1-1150:60:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1149:1-1150:61:
 syntax parserConditionalStatement = 
    | if ( expression ) parserStatement (from parserConditionalStatement)
    | if ( expression ) parserStatement else parserStatement (from parserConditionalStatement)
@@ -2775,7 +2775,7 @@ dec $flatten_parserStatementList(parserStatementList'')
 
     2. Return $flatten_parserStatementList(parserStatementList) ++ [parserStatement]
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1173:3-1173:73:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1173:3-1173:74:
 syntax parserState = 
    | annotationList state name { parserStatementList transitionStatement } (from parserState)
 
@@ -2831,7 +2831,7 @@ dec $flatten_parserLocalDeclarationList(parserLocalDeclarationList'')
 
     2. Return $flatten_parserLocalDeclarationList(parserLocalDeclarationList) ++ [parserLocalDeclaration]
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1205:3-1207:52:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1205:3-1207:53:
 syntax parserDeclaration = 
    | annotationList parser name typeParameterListOpt ( parameterList ) constructorParameterListOpt { parserLocalDeclarationList parserStateList } (from parserDeclaration)
 
@@ -2885,7 +2885,7 @@ dec $flatten_tableKeyList(tableKeyList'')
 
     2. Return $flatten_tableKeyList(tableKeyList) ++ [tableKey]
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1249:1-1250:42:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1249:1-1250:43:
 syntax tableActionReference = 
    | text (from identifier)
    | apply (from nonTypeName)
@@ -2922,7 +2922,7 @@ dec $flatten_tableActionList(tableActionList'')
 
     2. Return $flatten_tableActionList(tableActionList) ++ [tableAction]
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1269:1-1270:37:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1269:1-1270:38:
 syntax tableEntryPriority = 
    | priority = integerLiteral : (from tableEntryPriority)
    | priority = ( expression ) : (from tableEntryPriority)
@@ -2979,11 +2979,11 @@ dec $flatten_tablePropertyList(tablePropertyList'')
 
     2. Return $flatten_tablePropertyList(tablePropertyList) ++ [tableProperty]
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1307:3-1307:51:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1307:3-1307:52:
 syntax tableDeclaration = 
    | annotationList table name { tablePropertyList } (from tableDeclaration)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1314:3-1314:74:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1314:3-1314:75:
 syntax controlTypeDeclaration = 
    | annotationList control name typeParameterListOpt ( parameterList ) ; (from controlTypeDeclaration)
 
@@ -3019,11 +3019,11 @@ dec $flatten_controlLocalDeclarationList(controlLocalDeclarationList'')
 
     2. Return $flatten_controlLocalDeclarationList(controlLocalDeclarationList) ++ [controlLocalDeclaration]
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1343:3-1345:55:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1343:3-1345:56:
 syntax controlDeclaration = 
    | annotationList control name typeParameterListOpt ( parameterList ) constructorParameterListOpt { controlLocalDeclarationList apply controlBody } (from controlDeclaration)
 
-;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1352:3-1352:74:
+;; ../../../../../spectec/specs/p4/1-p4-surface/1-syntax.spectec:1352:3-1352:75:
 syntax packageTypeDeclaration = 
    | annotationList package name typeParameterListOpt ( parameterList ) ; (from packageTypeDeclaration)
 
@@ -3385,7 +3385,7 @@ dec $fresh_typeIds(nat')
 
     2. Return $fresh_typeId :: $fresh_typeIds(n')
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.0-domain.spectec:65:23-65:38:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.0-domain.spectec:65:23-65:39:
 syntax callTargetId = 
    | nameIR ( id* ) (from callTargetId)
 
@@ -3395,7 +3395,7 @@ syntax callableId = callTargetId
 ;; ../../../../../spectec/specs/p4/2-static-runtime/2.0-domain.spectec:67:24-67:36:
 syntax constructorId = callTargetId
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.0-domain.spectec:69:1-70:58:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.0-domain.spectec:69:1-70:59:
 dec $callableId(name, parameterList)
 
 1. Return ($name(name) ( $callableId'(parameterList) ))
@@ -3499,15 +3499,15 @@ syntax baseValue =
    | nat s int (from integerLiteral) hint(print %#S#%)
    | nat . nat v int (from integerValue)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:31:20-31:36:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:31:20-31:37:
 syntax listValue = 
    | list [ value* ] (from listValue)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:32:21-32:38:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:32:21-32:39:
 syntax tupleValue = 
    | tuple ( value* ) (from tupleValue)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:33:27-33:68:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:33:27-33:70:
 syntax headerStackValue = 
    | header_stack [ value* ( nat ; nat ) ] (from headerStackValue)
 
@@ -3515,15 +3515,15 @@ syntax headerStackValue =
 syntax fieldValue = 
    | value nameIR ; (from fieldValue)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:37:22-37:52:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:37:22-37:53:
 syntax structValue = 
    | struct typeId { fieldValue* } (from structValue)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:38:22-38:61:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:38:22-38:62:
 syntax headerValue = 
    | header typeId { bool ; fieldValue* } (from headerValue)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:39:27-39:63:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:39:27-39:64:
 syntax headerUnionValue = 
    | header_union typeId { fieldValue* } (from headerUnionValue)
 
@@ -3555,17 +3555,17 @@ syntax defaultValue =
 syntax invalidHeaderValue = 
    | {#} (from invalidHeaderValue)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:69:1-70:30:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:69:1-70:31:
 syntax sequenceValue = 
    | seq ( value* ) (from sequenceValue)
    | seq ( value* , ... ) (from sequenceValue)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:73:1-74:38:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:73:1-74:39:
 syntax recordValue = 
    | record { fieldValue* } (from recordValue)
    | record { fieldValue* , ... } (from recordValue)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:77:1-81:19:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:77:1-81:20:
 syntax setValue = 
    | set { value } (from setValue)
    | set { value* ( nat ) } (from setValue)
@@ -3577,7 +3577,7 @@ syntax setValue =
 syntax tableMetadataEnumValue = 
    | table_enum typeId . nameIR (from tableMetadataEnumValue)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:86:3-88:65:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.1.1-value.spectec:86:3-88:66:
 syntax tableMetadataStructValue = 
    | table_struct typeId { hit boolValue ; miss boolValue ; action_run tableMetadataEnumValue ; } (from tableMetadataStructValue)
 
@@ -4114,15 +4114,15 @@ syntax stringTypeIR =
 syntax intTypeIR = 
    | int (from intTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:19:25-19:37:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:19:25-19:38:
 syntax fixedIntTypeIR = 
    | int < nat > (from fixedIntTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:20:25-20:37:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:20:25-20:38:
 syntax fixedBitTypeIR = 
    | bit < nat > (from fixedBitTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:21:23-21:38:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:21:23-21:39:
 syntax varBitTypeIR = 
    | varbit < nat > (from varBitTypeIR)
 
@@ -4162,15 +4162,15 @@ syntax aliasTypeIR =
    | typedef typeId typeIR (from typedefTypeIR) hint(print %0)
    | type typeId typeIR (from newTypeIR) hint(print %0)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:63:21-63:37:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:63:21-63:38:
 syntax listTypeIR = 
    | list < typeIR > (from listTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:64:22-64:40:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:64:22-64:41:
 syntax tupleTypeIR = 
    | tuple < typeIR* > (from tupleTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:65:28-65:43:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:65:28-65:44:
 syntax headerStackTypeIR = 
    | typeIR [ nat ] (from headerStackTypeIR)
 
@@ -4194,11 +4194,11 @@ syntax headerUnionTypeIR =
 syntax valueFieldIR = 
    | nameIR = value ; (from valueFieldIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:82:3-82:42:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:82:3-82:43:
 syntax simpleEnumTypeIR = 
    | enum typeId { nameIR* } (from simpleEnumTypeIR) hint(print %0)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:85:3-85:60:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:85:3-85:62:
 syntax serializableEnumTypeIR = 
    | enum typeId < typeIR > { valueFieldIR* } (from serializableEnumTypeIR) hint(print %0)
 
@@ -4257,17 +4257,17 @@ syntax defaultTypeIR =
 syntax invalidHeaderTypeIR = 
    | header_invalid (from invalidHeaderTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:147:1-148:31:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:147:1-148:32:
 syntax sequenceTypeIR = 
    | seq < typeIR* > (from sequenceTypeIR)
    | seq < typeIR* , ... > (from sequenceTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:151:1-152:39:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:151:1-152:40:
 syntax recordTypeIR = 
    | record { fieldTypeIR* } (from recordTypeIR)
    | record { fieldTypeIR* , ... } (from recordTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:154:20-154:35:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:154:20-154:36:
 syntax setTypeIR = 
    | set < typeIR > (from setTypeIR)
 
@@ -4345,15 +4345,15 @@ syntax nameTypeDefIR = nameTypeIR
 ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:17:25-17:36:
 syntax aliasTypeDefIR = aliasTypeIR
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:24:3-24:56:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:24:3-24:58:
 syntax structTypeDefIR = 
    | struct typeId < typeParameterIR* > { fieldTypeIR* } (from structTypeDefIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:26:3-26:56:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:26:3-26:58:
 syntax headerTypeDefIR = 
    | header typeId < typeParameterIR* > { fieldTypeIR* } (from headerTypeDefIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:28:3-28:62:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:28:3-28:64:
 syntax headerUnionTypeDefIR = 
    | header_union typeId < typeParameterIR* > { fieldTypeIR* } (from headerUnionTypeDefIR)
 
@@ -4372,15 +4372,15 @@ syntax dataTypeDefIR =
 syntax externObjectTypeDefIR = 
    | extern typeId < typeParameterIR* , typeParameterIR* > externMethodTypeDefEnv (from externObjectTypeDefIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:47:3-48:22:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:47:3-48:23:
 syntax parserObjectTypeDefIR = 
    | parser typeId < typeParameterIR* , typeParameterIR* > ( parameterIR* ) (from parserObjectTypeDefIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:51:3-52:22:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:51:3-52:23:
 syntax controlObjectTypeDefIR = 
    | control typeId < typeParameterIR* , typeParameterIR* > ( parameterIR* ) (from controlObjectTypeDefIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:55:3-56:17:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:55:3-56:18:
 syntax packageObjectTypeDefIR = 
    | package typeId < typeParameterIR* , typeParameterIR* > { typeIR* } (from packageObjectTypeDefIR)
 
@@ -5030,15 +5030,15 @@ syntax parameterInitializerOptIR = parameterInitializerIR?
 syntax parameterIR = 
    | annotationList direction typeIR id parameterInitializerOptIR (from parameterIR) hint(prose_fields "annotations" "direction" "type" "name" "default initializer")
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:27:23-27:69:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:27:23-27:70:
 syntax actionTypeIR = 
    | annotationList action nameIR ( parameterIR* ) (from actionTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:33:32-33:76:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:33:32-33:77:
 syntax definedFunctionTypeIR = 
    | function nameIR ( parameterIR* ) : typeIR (from definedFunctionTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:35:31-35:82:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:35:31-35:83:
 syntax externFunctionTypeIR = 
    | extern_function nameIR ( parameterIR* ) : typeIR (from externFunctionTypeIR)
 
@@ -5047,20 +5047,20 @@ syntax functionTypeIR =
    | function nameIR ( parameterIR* ) : typeIR (from definedFunctionTypeIR)
    | extern_function nameIR ( parameterIR* ) : typeIR (from externFunctionTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:45:30-45:80:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:45:30-45:81:
 syntax builtinMethodTypeIR = 
    | builtin_method nameIR ( parameterIR* ) : typeIR (from builtinMethodTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:48:1-49:63:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:48:1-49:64:
 syntax externMethodTypeIR = 
    | extern_method nameIR ( parameterIR* ) : typeIR (from externMethodTypeIR)
    | extern_method abstract nameIR ( parameterIR* ) : typeIR (from externMethodTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:51:34-51:64:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:51:34-51:65:
 syntax parserApplyMethodTypeIR = 
    | parser_apply ( parameterIR* ) (from parserApplyMethodTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:53:35-53:66:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.1-type-callable.spectec:53:35-53:67:
 syntax controlApplyMethodTypeIR = 
    | control_apply ( parameterIR* ) (from controlApplyMethodTypeIR)
 
@@ -5151,11 +5151,11 @@ dec $is_optional_parameterIR(parameterIR)
 ;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.3-type-callable-def.spectec:9:26-9:38:
 syntax actionTypeDefIR = actionTypeIR
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.3-type-callable-def.spectec:16:3-18:33:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.3-type-callable-def.spectec:16:3-18:34:
 syntax definedFunctionTypeDefIR = 
    | function nameIR < typeParameterIR* , typeParameterIR* > ( parameterIR* ) : typeIR (from definedFunctionTypeDefIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.3-type-callable-def.spectec:21:3-23:33:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.3-type-callable-def.spectec:21:3-23:34:
 syntax externFunctionTypeDefIR = 
    | extern_function nameIR < typeParameterIR* , typeParameterIR* > ( parameterIR* ) : typeIR (from externFunctionTypeDefIR)
 
@@ -5164,7 +5164,7 @@ syntax functionTypeDefIR =
    | function nameIR < typeParameterIR* , typeParameterIR* > ( parameterIR* ) : typeIR (from definedFunctionTypeDefIR)
    | extern_function nameIR < typeParameterIR* , typeParameterIR* > ( parameterIR* ) : typeIR (from externFunctionTypeDefIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.3-type-callable-def.spectec:34:1-39:35:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.3.3-type-callable-def.spectec:34:1-39:36:
 syntax externMethodTypeDefIR = 
    | extern_method nameIR < typeParameterIR* , typeParameterIR* > ( parameterIR* ) : typeIR (from externMethodTypeDefIR)
    | extern_method abstract nameIR < typeParameterIR* , typeParameterIR* > ( parameterIR* ) : typeIR (from externMethodTypeDefIR)
@@ -5426,11 +5426,11 @@ dec $parameterListIR_of_tableApplyMethodTypeDefIR(tableApplyMethodTypeIR)
 ;; ../../../../../spectec/specs/p4/2-static-runtime/2.4.1-type-constructor.spectec:5:33-5:44:
 syntax constructorParameterIR = parameterIR
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.4.1-type-constructor.spectec:12:3-12:54:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.4.1-type-constructor.spectec:12:3-12:55:
 syntax constructorTypeIR = 
    | constructor ( constructorParameterIR* ) : typeIR (from constructorTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.4.2-type-constructor-def.spectec:6:3-7:44:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.4.2-type-constructor-def.spectec:6:3-7:45:
 syntax constructorTypeDefIR = 
    | constructor < typeParameterIR* , typeParameterIR* > ( constructorParameterIR* ) : typeIR (from constructorTypeDefIR)
 
@@ -10026,7 +10026,7 @@ dec $cast_set(typeIR', setValue)
 
 1. Else Phantom#451
 
-;; ../../../../../spectec/specs/p4/3-operations/3-operations.spectec:860:1-862:35:
+;; ../../../../../spectec/specs/p4/3-operations/3-operations.spectec:860:1-862:36:
 dec $bitacc_range_op(value, value', value'')
 
 1. If ((value has type integerValue)), then
@@ -10065,7 +10065,7 @@ dec $bitacc_range_op(value, value', value'')
 
 1. Else Phantom#455
 
-;; ../../../../../spectec/specs/p4/3-operations/3-operations.spectec:875:1-877:36:
+;; ../../../../../spectec/specs/p4/3-operations/3-operations.spectec:875:1-877:37:
 dec $bitacc_offset_op(value, value', value'')
 
 1. If ((value has type integerValue)), then
@@ -10104,7 +10104,7 @@ dec $bitacc_offset_op(value, value', value'')
 
 1. Else Phantom#459
 
-;; ../../../../../spectec/specs/p4/3-operations/3-operations.spectec:890:1-892:54:
+;; ../../../../../spectec/specs/p4/3-operations/3-operations.spectec:890:1-892:55:
 dec $bitacc_range_replace_op(value, value', value'', value''')
 
 1. If ((value has type integerValue)), then
@@ -10163,7 +10163,7 @@ dec $bitacc_range_replace_op(value, value', value'', value''')
 
 1. Else Phantom#467
 
-;; ../../../../../spectec/specs/p4/3-operations/3-operations.spectec:905:1-907:55:
+;; ../../../../../spectec/specs/p4/3-operations/3-operations.spectec:905:1-907:56:
 dec $bitacc_offset_replace_op(value, value', value'', value''')
 
 1. If ((value has type integerValue)), then
@@ -10550,19 +10550,19 @@ syntax binaryExpressionIR =
 syntax ternaryExpressionIR = 
    | typedExpressionIR ? typedExpressionIR : typedExpressionIR (from ternaryExpressionIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:98:27-98:56:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:98:27-98:57:
 syntax castExpressionIR = 
    | ( typeIR ) typedExpressionIR (from castExpressionIR)
 
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:106:36-106:59:
 syntax invalidHeaderExpressionIR = invalidHeaderExpression
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:109:1-110:45:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:109:1-110:46:
 syntax sequenceExpressionIR = 
    | seq { typedExpressionListIR } (from sequenceExpressionIR)
    | seq { typedExpressionListIR , ... } (from sequenceExpressionIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:113:1-114:48:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:113:1-114:49:
 syntax recordExpressionIR = 
    | record { namedExpressionListIR } (from recordExpressionIR)
    | record { namedExpressionListIR , ... } (from recordExpressionIR)
@@ -10583,11 +10583,11 @@ syntax errorAccessExpressionIR =
 syntax memberAccessExpressionIR = 
    | memberAccessBaseIR . nameIR (from memberAccessExpressionIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:134:3-134:43:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:134:3-134:44:
 syntax indexAccessExpressionIR = 
    | typedExpressionIR [ typedExpressionIR ] (from indexAccessExpressionIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:137:1-138:68:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:137:1-138:69:
 syntax sliceAccessExpressionIR = 
    | typedExpressionIR [ typedExpressionIR : typedExpressionIR ] (from sliceAccessExpressionIR)
    | typedExpressionIR [ typedExpressionIR + : typedExpressionIR ] (from sliceAccessExpressionIR)
@@ -10600,7 +10600,7 @@ syntax accessExpressionIR =
    | typedExpressionIR [ typedExpressionIR : typedExpressionIR ] (from sliceAccessExpressionIR)
    | typedExpressionIR [ typedExpressionIR + : typedExpressionIR ] (from sliceAccessExpressionIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:155:1-158:26:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:155:1-158:27:
 syntax callableTargetIR = 
    | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
@@ -10608,16 +10608,16 @@ syntax callableTargetIR =
    | type prefixedNameIR . nameIR (from callableTargetIR)
    | ( callableTargetIR ) (from callableTargetIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:160:30-160:68:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:160:30-160:69:
 syntax constructorTargetIR = 
    | prefixedNameIR < typeArgumentListIR > (from constructorTargetIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:163:1-164:65:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:163:1-164:67:
 syntax callExpressionIR = 
    | constructorTargetIR ( argumentListIR ) (from callExpressionIR)
    | callableTargetIR < typeArgumentListIR > ( argumentListIR ) (from callExpressionIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:170:36-170:58:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:170:36-170:59:
 syntax parenthesizedExpressionIR = 
    | ( typedExpressionIR ) (from parenthesizedExpressionIR)
 
@@ -10691,7 +10691,7 @@ syntax simpleKeysetExpressionIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:226:39-226:64:
 syntax simpleKeysetExpressionListIR = simpleKeysetExpressionIR*
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:228:34-228:67:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:228:34-228:68:
 syntax tupleKeysetExpressionIR = 
    | ( simpleKeysetExpressionListIR ) (from tupleKeysetExpressionIR)
 
@@ -10734,7 +10734,7 @@ syntax argumentIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:259:25-259:36:
 syntax argumentListIR = argumentIR*
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:266:1-271:23:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:266:1-271:24:
 syntax lvalueIR = 
    | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
@@ -10744,7 +10744,7 @@ syntax lvalueIR =
    | typedLvalueIR [ typedExpressionIR + : typedExpressionIR ] (from lvalueIR)
    | ( typedLvalueIR ) (from lvalueIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:273:23-273:34:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:273:23-273:35:
 syntax lvalueNoteIR = 
    | ( typeIR ) (from lvalueNoteIR)
 
@@ -10932,11 +10932,11 @@ syntax emptyStatementIR = emptyStatement
 syntax assignmentStatementIR = 
    | typedLvalueIR assignop typedExpressionIR ; (from assignmentStatementIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:366:3-366:67:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:366:3-366:69:
 syntax callStatementIR = 
    | callableTargetIR < typeArgumentListIR > ( argumentListIR ) ; (from callStatementIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:373:3-373:56:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:373:3-373:57:
 syntax directApplicationStatementIR = 
    | constructorTargetIR . apply ( argumentListIR ) ; (from directApplicationStatementIR)
 
@@ -10948,11 +10948,11 @@ syntax returnStatementIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:387:26-387:39:
 syntax exitStatementIR = exitStatement
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:396:3-396:50:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:396:3-396:51:
 syntax blockStatementIR = 
    | annotationList { blockElementStatementListIR } (from blockStatementIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:405:1-406:59:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:405:1-406:60:
 syntax conditionalStatementIR = 
    | if ( typedExpressionIR ) statementIR (from conditionalStatementIR)
    | if ( typedExpressionIR ) statementIR else statementIR (from conditionalStatementIR)
@@ -10998,7 +10998,7 @@ syntax switchCaseIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:453:27-453:40:
 syntax switchCaseListIR = switchCaseIR*
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:456:3-456:54:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:456:3-456:56:
 syntax switchStatementIR = 
    | switch ( typedExpressionIR ) { switchCaseListIR } (from switchStatementIR)
 
@@ -11062,7 +11062,7 @@ syntax blockElementStatementIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:505:38-505:62:
 syntax blockElementStatementListIR = blockElementStatementIR*
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:512:3-513:74:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:512:3-513:76:
 syntax functionPrototypeIR = 
    | typeIR nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) (from functionPrototypeIR)
 
@@ -11070,11 +11070,11 @@ syntax functionPrototypeIR =
 syntax functionDeclarationIR = 
    | annotationList functionPrototypeIR blockStatementIR (from functionDeclarationIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:523:3-523:69:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:523:3-523:70:
 syntax actionDeclarationIR = 
    | annotationList action nameIR ( parameterListIR ) blockStatementIR (from actionDeclarationIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:531:30-531:62:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:531:30-531:63:
 syntax objectInitializerIR = 
    | = { objectDeclarationListIR } (from objectInitializerIR)
 
@@ -11112,15 +11112,15 @@ dec $flatten_objectInitializerOptIR(objectInitializerOptIR')
 
 3. Else Phantom#500
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:560:29-560:50:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:560:29-560:51:
 syntax errorDeclarationIR = 
    | error { nameListIR } (from errorDeclarationIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:566:33-566:59:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:566:33-566:60:
 syntax matchKindDeclarationIR = 
    | match_kind { nameListIR } (from matchKindDeclarationIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:577:1-578:60:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:577:1-578:61:
 syntax enumTypeDeclarationIR = 
    | annotationList enum nameIR { nameListIR } (from enumTypeDeclarationIR)
    | annotationList enum typeIR nameIR { namedValueListIR } (from enumTypeDeclarationIR)
@@ -11132,15 +11132,15 @@ syntax typeFieldIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:586:26-586:38:
 syntax typeFieldListIR = typeFieldIR*
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:589:3-590:50:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:589:3-590:52:
 syntax structTypeDeclarationIR = 
    | annotationList struct nameIR < typeParameterListIR > { typeFieldListIR } (from structTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:593:3-594:50:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:593:3-594:52:
 syntax headerTypeDeclarationIR = 
    | annotationList header nameIR < typeParameterListIR > { typeFieldListIR } (from headerTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:597:3-598:50:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:597:3-598:52:
 syntax headerUnionTypeDeclarationIR = 
    | annotationList header_union nameIR < typeParameterListIR > { typeFieldListIR } (from headerUnionTypeDeclarationIR)
 
@@ -11203,7 +11203,7 @@ syntax typedefDeclarationIR =
 syntax externFunctionDeclarationIR = 
    | annotationList extern functionPrototypeIR ; (from externFunctionDeclarationIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:626:3-626:78:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:626:3-626:80:
 syntax externConstructorPrototypeIR = 
    | annotationList nameIR < , typeParameterListIR > ( parameterListIR ) ; (from externConstructorPrototypeIR)
 
@@ -11218,7 +11218,7 @@ syntax externMethodPrototypeIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:634:38-634:62:
 syntax externMethodPrototypeListIR = externMethodPrototypeIR*
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:637:3-639:37:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:637:3-639:38:
 syntax externObjectDeclarationIR = 
    | annotationList extern nameIR < typeParameterListIR , > { externConstructorPrototypeListIR externMethodPrototypeListIR } (from externObjectDeclarationIR)
 
@@ -11234,7 +11234,7 @@ syntax selectCaseIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:655:27-655:40:
 syntax selectCaseListIR = selectCaseIR*
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:658:3-658:58:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:658:3-658:60:
 syntax selectExpressionIR = 
    | select ( typedExpressionListIR ) { selectCaseListIR } (from selectExpressionIR)
 
@@ -11247,19 +11247,19 @@ syntax stateExpressionIR =
 syntax transitionStatementIR = 
    | transition stateExpressionIR (from transitionStatementIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:675:3-675:73:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:675:3-675:75:
 syntax valueSetDeclarationIR = 
    | annotationList value_set < typeIR > ( typedExpressionIR ) nameIR ; (from valueSetDeclarationIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:682:3-683:78:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:682:3-683:80:
 syntax parserTypeDeclarationIR = 
    | annotationList parser nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ; (from parserTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:692:3-692:44:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:692:3-692:45:
 syntax parserBlockStatementIR = 
    | annotationList { parserStatementListIR } (from parserBlockStatementIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:695:1-696:71:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:695:1-696:72:
 syntax parserConditionalStatementIR = 
    | if ( typedExpressionIR ) parserStatementIR (from parserConditionalStatementIR)
    | if ( typedExpressionIR ) parserStatementIR else parserStatementIR (from parserConditionalStatementIR)
@@ -11279,7 +11279,7 @@ syntax parserStatementIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:708:32-708:50:
 syntax parserStatementListIR = parserStatementIR*
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:711:3-712:53:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:711:3-712:54:
 syntax parserStateIR = 
    | annotationList state nameIR { parserStatementListIR transitionStatementIR } (from parserStateIR)
 
@@ -11296,7 +11296,7 @@ syntax parserLocalDeclarationIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:723:3-723:28:
 syntax parserLocalDeclarationListIR = parserLocalDeclarationIR*
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:726:3-729:56:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:726:3-729:57:
 syntax parserDeclarationIR = 
    | annotationList parser nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ( constructorParameterListIR ) { parserLocalDeclarationListIR parserStateListIR } (from parserDeclarationIR)
 
@@ -11316,11 +11316,11 @@ syntax tableKeyListIR = tableKeyIR*
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:755:29-755:36:
 syntax controlPlaneNameIR = nameIR?
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:758:3-758:56:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:758:3-758:57:
 syntax tableActionReferenceIR = 
    | prefixedNameIR controlPlaneNameIR ( argumentListIR ) (from tableActionReferenceIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:761:3-762:53:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:761:3-762:54:
 syntax tableActionIR = 
    | annotationList tableActionReferenceIR # ( parameterListIR , parameterListIR ) ; (from tableActionIR)
 
@@ -11348,11 +11348,11 @@ dec $tableEntryPriorityOptIR_of_tableEntryIR(tableEntryIR)
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:785:27-785:40:
 syntax tableEntryListIR = tableEntryIR*
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:797:30-797:57:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:797:30-797:58:
 syntax tableKeysPropertyIR = 
    | key = { tableKeyListIR } (from tableKeysPropertyIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:799:33-799:67:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:799:33-799:68:
 syntax tableActionsPropertyIR = 
    | actions = { tableActionListIR } (from tableActionsPropertyIR)
 
@@ -11360,7 +11360,7 @@ syntax tableActionsPropertyIR =
 syntax tableDefaultActionPropertyIR = 
    | annotationList constOptIR default_action = tableActionReferenceIR ; (from tableDefaultActionPropertyIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:805:3-805:62:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:805:3-805:63:
 syntax tableEntriesPropertyIR = 
    | annotationList constOptIR entries = { tableEntryListIR } (from tableEntriesPropertyIR)
 
@@ -11381,11 +11381,11 @@ syntax tablePropertyIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:819:30-819:46:
 syntax tablePropertyListIR = tablePropertyIR*
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:822:3-823:35:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:822:3-823:36:
 syntax tableDeclarationIR = 
    | annotationList table typeIR nameIR { tablePropertyListIR } (from tableDeclarationIR) hint(print %0 TABLE %2 `{%3})
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:830:3-832:29:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:830:3-832:30:
 syntax controlTypeDeclarationIR = 
    | annotationList control nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ; (from controlTypeDeclarationIR)
 
@@ -11403,11 +11403,11 @@ syntax controlLocalDeclarationIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:848:3-848:29:
 syntax controlLocalDeclarationListIR = controlLocalDeclarationIR*
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:851:3-854:59:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:851:3-854:60:
 syntax controlDeclarationIR = 
    | annotationList control nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ( constructorParameterListIR ) { controlLocalDeclarationListIR apply controlBodyIR } (from controlDeclarationIR)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:861:3-863:29:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:861:3-863:30:
 syntax packageTypeDeclarationIR = 
    | annotationList package nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ; (from packageTypeDeclarationIR)
 
@@ -11578,15 +11578,15 @@ dec $align_parameterListIR_given(({ (id : parameterIR)* }), parameterIR'*, argum
 
     2. Else Phantom#508
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.2-ir-call-overload.spectec:5:24-5:40:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.2-ir-call-overload.spectec:5:24-5:41:
 syntax callTargetKey = 
    | nameIR ( id?* ) (from callTargetKey)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.2-ir-call-overload.spectec:6:29-6:44:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.2-ir-call-overload.spectec:6:29-6:45:
 syntax namedCallTargetKey = 
    | nameIR ( id* ) (from namedCallTargetKey)
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.2-ir-call-overload.spectec:7:31-7:46:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.2-ir-call-overload.spectec:7:31-7:47:
 syntax unnamedCallTargetKey = 
    | nameIR ( nat ) (from unnamedCallTargetKey)
 
@@ -11606,7 +11606,7 @@ syntax callTargetMatch =
 syntax callResolution<V> = 
    | callableId : V # nameIR* # nameIR* (from callResolution<V>) hint(prose_fields "call target id" "call target" "defaults" "optionals")
 
-;; ../../../../../spectec/specs/p4/4-p4-ir/4.2-ir-call-overload.spectec:20:1-21:54:
+;; ../../../../../spectec/specs/p4/4-p4-ir/4.2-ir-call-overload.spectec:20:1-21:55:
 dec $callTargetKey(nameIR_f, argumentIR*)
 
 1. (Let id_arg? be $callTargetKey'(argumentIR))*
@@ -13402,7 +13402,7 @@ dec $find_callableDef_non_overloaded_t(p', TC, prefixedNameIR)
 
     1. Else Phantom#585
 
-;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:444:1-446:79:
+;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:444:1-446:80:
 dec $find_constructorDef_overloaded_t(TC, prefixedNameIR, argumentIR*)
 
 1. Case analysis on prefixedNameIR
@@ -13478,7 +13478,7 @@ dec $find_local_return_type_t(TC)
 syntax matchKey = 
    | typeIR : nameIR (from matchKey)
 
-;; ../../../../../spectec/specs/p4/5-typing/5.02.2-typing-table-context.spectec:7:22-7:73:
+;; ../../../../../spectec/specs/p4/5-typing/5.02.2-typing-table-context.spectec:7:22-7:74:
 syntax matchAction = 
    | prefixedNameIR ( parameterIR* @ argumentListIR ) (from matchAction)
 
@@ -13518,7 +13518,7 @@ dec $add_key_tbl(TBLC, id, typeIR)
 
 2. Return TBLC[keys = TBLC.keys ++ [matchKey]]
 
-;; ../../../../../spectec/specs/p4/5-typing/5.02.2-typing-table-context.spectec:79:1-81:78:
+;; ../../../../../spectec/specs/p4/5-typing/5.02.2-typing-table-context.spectec:79:1-81:79:
 dec $add_action_tbl(TBLC, prefixedNameIR, parameterIR*, argumentListIR)
 
 1. (Let matchAction be (prefixedNameIR ( parameterIR* @ argumentListIR )))
@@ -24937,7 +24937,7 @@ dec $compat_bitslice_offset_width(typeIR'')
 
 2. Return false
 
-;; ../../../../../spectec/specs/p4/5-typing/5.06.1-typing-expression.spectec:1059:1-1061:64:
+;; ../../../../../spectec/specs/p4/5-typing/5.06.1-typing-expression.spectec:1059:1-1061:65:
 dec $is_valid_bitslice(typeIR'', n_lo', n_hi')
 
 1. Case analysis on typeIR''
@@ -28060,14 +28060,14 @@ dec $callable_tableApplyMethod(cursor, TC)
 
     2. Return ((localKind = ((control_apply_method) as localKind)) \/ (localKind = ((table_apply_method) as localKind)))
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.0-domain.spectec:5:1-6:58:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.0-domain.spectec:5:1-6:59:
 dec $callableId_IR(nameIR, parameterIR*)
 
 1. (Let (_annotationList _direction _typeIR id _parameterInitializerOptIR) be parameterIR)*
 
 2. Return (nameIR ( id* ))
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.1-storage-reference.spectec:6:1-10:43:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.1-storage-reference.spectec:6:1-10:44:
 syntax storageReference = 
    | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
@@ -28076,15 +28076,15 @@ syntax storageReference =
    | storageReference [ value : value ] (from storageReference)
    | storageReference [ value + : value ] (from storageReference)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:12:3-12:69:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:12:3-12:70:
 syntax actionDef = 
    | annotationList action nameIR ( parameterListIR ) blockStatementIR (from actionDef)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:19:3-20:42:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:19:3-20:43:
 syntax definedFunctionDef = 
    | function nameIR < typeParameterListIR > ( parameterListIR ) blockStatementIR (from definedFunctionDef)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:23:3-24:50:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:23:3-24:52:
 syntax externFunctionDef = 
    | extern_function nameIR < typeParameterListIR > ( parameterListIR ) (from externFunctionDef)
 
@@ -28093,20 +28093,20 @@ syntax functionDef =
    | function nameIR < typeParameterListIR > ( parameterListIR ) blockStatementIR (from definedFunctionDef)
    | extern_function nameIR < typeParameterListIR > ( parameterListIR ) (from externFunctionDef)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:35:1-38:52:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:35:1-38:54:
 syntax externMethodDef = 
    | extern_method nameIR < typeParameterListIR > ( parameterListIR ) blockStatementIR? (from externMethodDef)
    | extern_method abstract nameIR < typeParameterListIR > ( parameterListIR ) (from externMethodDef)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:41:3-42:51:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:41:3-42:52:
 syntax parserApplyMethodDef = 
    | parser_apply ( parameterListIR ) { parserLocalDeclarationListIR ; stateEnv } (from parserApplyMethodDef)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:45:3-46:74:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:45:3-46:75:
 syntax controlApplyMethodDef = 
    | control_apply ( parameterListIR ) { controlLocalDeclarationListIR ; actionDefEnv ; controlBodyIR } (from controlApplyMethodDef)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:49:3-49:39:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.1-callable-def.spectec:49:3-49:40:
 syntax tableApplyMethodDef = 
    | table_apply { tablePropertyListIR } (from tableApplyMethodDef)
 
@@ -28239,15 +28239,15 @@ dec $parameterListIR_of_tableApplyMethodDef((table_apply { _tablePropertyListIR 
 
 1. Return []
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:10:3-11:50:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:10:3-11:51:
 syntax actionCallee = 
    | action cursor . nameIR ( parameterListIR # id* ) blockStatementIR (from actionCallee)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:18:3-19:50:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:18:3-19:51:
 syntax definedFunctionCallee = 
    | function nameIR < typeParameterListIR > ( parameterListIR # id* ) blockStatementIR (from definedFunctionCallee)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:22:3-23:66:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:22:3-23:68:
 syntax externFunctionCallee = 
    | extern_function nameIR < typeParameterListIR > ( parameterListIR # id* # id* ) (from externFunctionCallee)
 
@@ -28256,23 +28256,23 @@ syntax functionCallee =
    | function nameIR < typeParameterListIR > ( parameterListIR # id* ) blockStatementIR (from definedFunctionCallee)
    | extern_function nameIR < typeParameterListIR > ( parameterListIR # id* # id* ) (from externFunctionCallee)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:34:3-35:49:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:34:3-35:51:
 syntax builtinMethodCallee = 
    | builtin_method storageReference . nameIR < typeArgumentListIR > ( parameterListIR ) (from builtinMethodCallee)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:38:3-40:47:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:38:3-40:48:
 syntax externMethodCallee = 
    | extern_method objectId . nameIR < typeParameterListIR > ( parameterListIR # id* # id* ) { theta ; frame ; blockStatementIR? } (from externMethodCallee)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:43:3-44:71:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:43:3-44:72:
 syntax parserApplyMethodCallee = 
    | parser objectId . apply ( parameterListIR # id* ) { theta ; frame ; parserLocalDeclarationListIR ; stateEnv } (from parserApplyMethodCallee)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:47:3-48:94:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:47:3-48:95:
 syntax controlApplyMethodCallee = 
    | control objectId . apply ( parameterListIR # id* ) { theta ; frame ; controlLocalDeclarationListIR ; actionDefEnv ; controlBodyIR } (from controlApplyMethodCallee)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:51:3-51:62:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.2.3-callable-callee.spectec:51:3-51:63:
 syntax tableApplyMethodCallee = 
    | table objectId . apply { frame ; tableObjectProperty } (from tableApplyMethodCallee)
 
@@ -28295,19 +28295,19 @@ syntax callee =
    | control objectId . apply ( parameterListIR # id* ) { theta ; frame ; controlLocalDeclarationListIR ; actionDefEnv ; controlBodyIR } (from controlApplyMethodCallee)
    | table objectId . apply { frame ; tableObjectProperty } (from tableApplyMethodCallee)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.3.1-constructor-def.spectec:6:3-8:37:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.3.1-constructor-def.spectec:6:3-8:38:
 syntax externObjectConstructorDef = 
    | extern nameIR < typeParameterListIR > ( constructorParameterListIR ) { externMethodPrototypeListIR } (from externObjectConstructorDef)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.3.1-constructor-def.spectec:11:3-15:27:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.3.1-constructor-def.spectec:11:3-15:28:
 syntax parserObjectConstructorDef = 
    | parser < typeParameterListIR > ( parameterListIR ) ( constructorParameterListIR ) { parserLocalDeclarationListIR parserStateListIR } (from parserObjectConstructorDef)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.3.1-constructor-def.spectec:18:3-22:29:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.3.1-constructor-def.spectec:18:3-22:30:
 syntax controlObjectConstructorDef = 
    | control < typeParameterListIR > ( parameterListIR ) ( constructorParameterListIR ) { controlLocalDeclarationListIR apply controlBodyIR } (from controlObjectConstructorDef)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.3.1-constructor-def.spectec:25:3-26:36:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.3.1-constructor-def.spectec:25:3-26:37:
 syntax packageObjectConstructorDef = 
    | package < typeParameterListIR > ( constructorParameterListIR ) (from packageObjectConstructorDef)
 
@@ -28350,38 +28350,38 @@ dec $parameterListIR_of_constructorDef(constructorDef)
 ;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:13:29-13:61:
 syntax externMethodDefEnv = map<callableId, externMethodDef>
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:15:1-16:68:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:15:1-16:70:
 dec $init_objectState
 
 
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:19:3-19:69:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:19:3-19:71:
 syntax externObject = 
    | extern typeId < theta > { objectState frame externMethodDefEnv } (from externObject)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:29:3-32:18:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:29:3-32:19:
 syntax parserObject = 
    | parser < theta > ( parameterListIR ) { frame parserLocalDeclarationListIR stateEnv } (from parserObject)
 
 ;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:42:23-42:49:
 syntax actionDefEnv = map<callableId, actionDef>
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:45:3-49:23:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:45:3-49:24:
 syntax controlObject = 
    | control < theta > ( parameterListIR ) { frame controlLocalDeclarationListIR actionDefEnv controlBodyIR } (from controlObject)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:57:24-57:53:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:57:24-57:55:
 syntax packageObject = 
    | package < theta > { frame } (from packageObject)
 
 ;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:65:3-69:37:
 syntax tableObjectProperty = {keys tableKeysPropertyIR, actions tableActionsPropertyIR, default_action tableDefaultActionPropertyIR, entries tableEntriesPropertyIR, customs tableCustomPropertyIR*}
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:75:3-75:46:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:75:3-75:47:
 syntax tableObject = 
    | table typeId { frame tableObjectProperty } (from tableObject)
 
-;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:83:3-83:33:
+;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:83:3-83:35:
 syntax valueSetObject = 
    | value_set { value* ( nat ) } (from valueSetObject)
 
@@ -28926,7 +28926,7 @@ dec $find_typeDef_i(_cursor, IC, prefixedNameIR)
 
     2. Return $find_map<typeId, typeDefIR>(IC.global.type, nameIR)
 
-;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:293:1-295:79:
+;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:293:1-295:80:
 dec $find_constructorDef_i(IC, prefixedNameIR, argumentIR*)
 
 1. Case analysis on prefixedNameIR

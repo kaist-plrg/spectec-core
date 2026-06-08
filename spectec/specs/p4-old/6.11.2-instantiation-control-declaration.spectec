@@ -34,10 +34,10 @@ rule ControlLocalDecl_inst/actionDeclarationIR:
 ;;; tableDeclarationIR
 
 rule ControlLocalDecl_inst/tableDeclarationIR:
-  Ci_0 sto_0 |- _ TABLE typeIR nameIR `{ tablePropertyListIR } ==> Ci_1 sto_1 constantDeclarationIR
+  Ci_0 sto_0 |- _ TABLE typeIR nameIR `{ tablePropertyListIR `} ==> Ci_1 sto_1 constantDeclarationIR
   ---- ;; instantiate table constructor
   -- if $enter_path(Ci_0, nameIR) = Ci_inner
-  -- Constructor_inst: BLOCK Ci_0 sto_0 |- (TABLE nameIR `{ tablePropertyListIR }) `< eps > `( eps '#' eps ) 
+  -- Constructor_inst: BLOCK Ci_0 sto_0 |- (TABLE nameIR `{ tablePropertyListIR `}) `< eps `> `( eps '#' eps `) 
                                        ==> sto_1 objDyn
   ---- ;; bind object to store
   -- if Ci_0.PATH ++ nameIR = oid

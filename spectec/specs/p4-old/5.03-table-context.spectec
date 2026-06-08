@@ -104,11 +104,11 @@ dec $update_mode(tableContext, id, typeIR) : tableContext
 dec $update_mode'(tableContext, id, typeIR) : tableContext
 
 def $update_mode(TBLC, id, typeIR) = $update_mode'(TBLC, id, $canon(typeIR))
-def $update_mode'(TBLC, "lpm", INT `< n >) = TBLC[ .MODE = NOPRILPM n ]
+def $update_mode'(TBLC, "lpm", INT `< n `>) = TBLC[ .MODE = NOPRILPM n ]
   -- if TBLC.MODE = NOPRI
-def $update_mode'(TBLC, "lpm", BIT `< n >) = TBLC[ .MODE = NOPRILPM n ]
+def $update_mode'(TBLC, "lpm", BIT `< n `>) = TBLC[ .MODE = NOPRILPM n ]
   -- if TBLC.MODE = NOPRI
-def $update_mode'(TBLC, "lpm", VARBIT `< n >) = TBLC[ .MODE = NOPRILPM n ]
+def $update_mode'(TBLC, "lpm", VARBIT `< n `>) = TBLC[ .MODE = NOPRILPM n ]
   -- if TBLC.MODE = NOPRI
 def $update_mode'(TBLC, "lpm", TYPE _ typeIR)
   = $update_mode(TBLC, "lpm", typeIR)

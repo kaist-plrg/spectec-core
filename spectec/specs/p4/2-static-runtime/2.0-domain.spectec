@@ -62,22 +62,22 @@ def $fresh_typeIds(n) = $fresh_typeId() :: $fresh_typeIds(n')
 ;; A pair of function name and a list of parameter names
 ;;
 
-syntax callTargetId = nameIR `( id* )
+syntax callTargetId = nameIR `( id* `)
 syntax callableId = callTargetId
 syntax constructorId = callTargetId
 
 dec $callableId(name, parameterList) : callableId
-  hint(prose_in "the callable identifier for" %0 `( %1 ))
+  hint(prose_in "the callable identifier for" %0 `( %1 `))
 dec $callableId'(parameterList) : id*
 
 dec $constructorId(name, constructorParameterListOpt) : constructorId
   hint(prose_in "the constructor identifier for" %0 %1)
 
 def $callableId(name, parameterList)
-  = $name(name) `( $callableId'(parameterList) )
+  = $name(name) `( $callableId'(parameterList) `)
 
-def $constructorId(name, _EMPTY) = $name(name) `( eps )
-def $constructorId(name, `( parameterList )) = $callableId(name, parameterList)
+def $constructorId(name, _EMPTY) = $name(name) `( eps `)
+def $constructorId(name, `( parameterList `)) = $callableId(name, parameterList)
 
 def $callableId'(_EMPTY) = eps
 def $callableId'(_ _ _ name _) = $name(name)

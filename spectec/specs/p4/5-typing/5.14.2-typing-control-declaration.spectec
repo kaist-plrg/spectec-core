@@ -41,7 +41,7 @@ rule ControlLocalDecl_ok/actionDeclaration:
 ;;;   annotationList TABLE name `{ tablePropertyList }
 
 rule ControlLocalDecl_ok/tableDeclaration:
-  TC_0 |- annotationList TABLE name `{ tablePropertyList }
+  TC_0 |- annotationList TABLE name `{ tablePropertyList `}
        : TC_3 tableDeclarationIR
   ---- ;; set local context
   -- if TC_1 = TC_0 [ .LOCAL.KIND = TABLE_APPLY_METHOD ]
@@ -55,7 +55,7 @@ rule ControlLocalDecl_ok/tableDeclaration:
   -- if TC_3 = $add_var_t(BLOCK, TC_2, nameIR, varTypeIR)
   ---- ;; create IR
   -- if tableDeclarationIR
-      = annotationList TABLE typeIR_table nameIR `{ tablePropertyIR* }
+      = annotationList TABLE typeIR_table nameIR `{ tablePropertyIR* `}
 
 ;;
 ;; Control local declaration list typing

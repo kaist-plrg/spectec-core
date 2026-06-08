@@ -22,42 +22,42 @@ rule Cast_expl/not-equals:
 ;;
 
 rule Cast_expl_neq/boolean-fixBit:
-  BOOL -> BIT `< 1 >
+  BOOL -> BIT `< 1 `>
 
 
 rule Cast_expl_neq/boolean:
   INT -> BOOL
 
 rule Cast_expl_neq/fixInt:
-  INT -> INT `< _ >
+  INT -> INT `< _ `>
 
 rule Cast_expl_neq/fixBit:
-  INT -> BIT `< _ >
+  INT -> BIT `< _ `>
 
 
 
 rule Cast_expl_neq/arbitraryInt:
-  INT `< _ > -> INT
+  INT `< _ `> -> INT
 
 rule Cast_expl_neq/fixInt:
-  INT `< w_a > -> INT `< w_b >
+  INT `< w_a `> -> INT `< w_b `>
 
 rule Cast_expl_neq/fixBit:
-  INT `< w > -> BIT `< w >
+  INT `< w `> -> BIT `< w `>
 
 
 
 rule Cast_expl_neq/boolean:
-  BIT `< 1 > -> BOOL
+  BIT `< 1 `> -> BOOL
 
 rule Cast_expl_neq/arbitraryInt:
-  BIT `< _ > -> INT
+  BIT `< _ `> -> INT
 
 rule Cast_expl_neq/fixInt:
-  BIT `< w > -> INT `< w >
+  BIT `< w `> -> INT `< w `>
 
 rule Cast_expl_neq/fixBit:
-  BIT `< w_a > -> BIT `< w_b >
+  BIT `< w_a `> -> BIT `< w_b `>
 
 
 
@@ -72,11 +72,11 @@ rule Cast_expl_neq/right:
 
 
 rule Cast_expl_neq/left:
-  ENUM _ `< typeIR_a > `{ _ } -> typeIR_b
+  ENUM _ `< typeIR_a `> `{ _ `} -> typeIR_b
   -- Cast_impl: typeIR_a -> typeIR_b
 
 rule Cast_expl_neq/right:
-  typeIR_a -> ENUM _ `< typeIR_b > `{ _ }
+  typeIR_a -> ENUM _ `< typeIR_b `> `{ _ `}
   -- Cast_impl: typeIR_a -> typeIR_b
 
 
@@ -93,30 +93,30 @@ rule Cast_expl_neq/headerUnionTypeIR:
 
 
 rule Cast_expl_neq/listTypeIR:
-  SEQ `< typeIR_a* > -> LIST `< typeIR_b >
+  SEQ `< typeIR_a* `> -> LIST `< typeIR_b `>
   -- (Cast_expl: typeIR_a -> typeIR_b)*
 
 rule Cast_expl_neq/tupleTypeIR:
-  SEQ `< typeIR_a* > -> TUPLE `< typeIR_b* >
+  SEQ `< typeIR_a* `> -> TUPLE `< typeIR_b* `>
   -- (Cast_expl: typeIR_a -> typeIR_b)*
 
 rule Cast_expl_neq/headerStackTypeIR:
-  SEQ `< typeIR_a* > -> typeIR_b `[ n_size ]
+  SEQ `< typeIR_a* `> -> typeIR_b `[ n_size `]
   -- if $(|typeIR_a*| <= n_size)
   -- (Cast_expl: typeIR_a -> typeIR_b)*
 
 rule Cast_expl_neq/structTypeIR:
-  SEQ `< typeIR_a* > -> STRUCT _ `< _ > `{ (_ typeIR_field_b _ ';')* }
+  SEQ `< typeIR_a* `> -> STRUCT _ `< _ `> `{ (_ typeIR_field_b _ ';')* `}
   -- (Cast_expl: typeIR_a -> typeIR_field_b)*
 
 rule Cast_expl_neq/headerTypeIR:
-  SEQ `< typeIR_a* > -> HEADER _ `< _ > `{ (_ typeIR_field_b _ ';')* }
+  SEQ `< typeIR_a* `> -> HEADER _ `< _ `> `{ (_ typeIR_field_b _ ';')* `}
   -- (Cast_expl: typeIR_a -> typeIR_field_b)*
 
 
 
 rule Cast_expl_neq/tupleTypeIR:
-  SEQ `< typeIR_a* ',' '...' > -> TUPLE `< typeIR_b* >
+  SEQ `< typeIR_a* ',' '...' `> -> TUPLE `< typeIR_b* `>
   -- if $(|typeIR_a*| < |typeIR_b*|)
   -- if (typeIR_b_non_default*, typeIR_b_default*)
       = $partition_<typeIR>(typeIR_b*, |typeIR_a*|)
@@ -124,14 +124,14 @@ rule Cast_expl_neq/tupleTypeIR:
   -- if $is_defaultable_typeIR(typeIR_b_default)*
 
 rule Cast_expl_neq/headerStackTypeIR:
-  SEQ `< typeIR_a* ',' '...' > -> typeIR_b `[ n_size ]
+  SEQ `< typeIR_a* ',' '...' `> -> typeIR_b `[ n_size `]
   -- if $(|typeIR_a*| < n_size)
   -- (Cast_expl: typeIR_a -> typeIR_b)*
   -- if $is_defaultable_typeIR(typeIR_b)
 
 rule Cast_expl_neq/structTypeIR:
-  SEQ `< typeIR_a* ',' '...' >
-  -> STRUCT _ `< _ > `{ (_ typeIR_field_b _ ';')* }
+  SEQ `< typeIR_a* ',' '...' `>
+  -> STRUCT _ `< _ `> `{ (_ typeIR_field_b _ ';')* `}
   -- if $(|typeIR_a*| < |typeIR_field_b*|)
   -- if (typeIR_field_b_non_default*, typeIR_field_b_default*)
       = $partition_<typeIR>(typeIR_field_b*, |typeIR_a*|)
@@ -139,8 +139,8 @@ rule Cast_expl_neq/structTypeIR:
   -- if $is_defaultable_typeIR(typeIR_field_b_default)*
 
 rule Cast_expl_neq/headerTypeIR:
-  SEQ `< typeIR_a* ',' '...' >
-  -> HEADER _ `< _ > `{ (_ typeIR_field_b _ ';')* }
+  SEQ `< typeIR_a* ',' '...' `>
+  -> HEADER _ `< _ `> `{ (_ typeIR_field_b _ ';')* `}
   -- if $(|typeIR_a*| < |typeIR_field_b*|)
   -- if (typeIR_field_b_non_default*, typeIR_field_b_default*)
       = $partition_<typeIR>(typeIR_field_b*, |typeIR_a*|)
@@ -150,57 +150,57 @@ rule Cast_expl_neq/headerTypeIR:
 
 
 rule Cast_expl_neq/structTypeIR:
-  RECORD `{ (_ typeIR_field_a id_field_a ';')* }
-  -> STRUCT _ `< _ > `{ (_ typeIR_field_b id_field_b ';')* }
-  -- if $eq_set<id>(`{ id_field_a* }, `{ id_field_b* })
+  RECORD `{ (_ typeIR_field_a id_field_a ';')* `}
+  -> STRUCT _ `< _ `> `{ (_ typeIR_field_b id_field_b ';')* `}
+  -- if $eq_set<id>(`{ id_field_a* `}, `{ id_field_b* `})
   -- if (typeIR_field_a_aligned
-        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* `}, id_field_a))*
   -- if (typeIR_field_b_aligned
-        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* `}, id_field_a))*
   -- (Cast_expl: typeIR_field_a_aligned -> typeIR_field_b_aligned)*
 
 rule Cast_expl_neq/headerTypeIR:
-  RECORD `{ (_ typeIR_field_a id_field_a ';')* }
-  -> HEADER _ `< _ > `{ (_ typeIR_field_b id_field_b ';')* }
-  -- if $eq_set<id>(`{ id_field_a* }, `{ id_field_b* })
+  RECORD `{ (_ typeIR_field_a id_field_a ';')* `}
+  -> HEADER _ `< _ `> `{ (_ typeIR_field_b id_field_b ';')* `}
+  -- if $eq_set<id>(`{ id_field_a* `}, `{ id_field_b* `})
   -- if (typeIR_field_a_aligned
-        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* `}, id_field_a))*
   -- if (typeIR_field_b_aligned
-        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* `}, id_field_a))*
   -- (Cast_expl: typeIR_field_a_aligned -> typeIR_field_b_aligned)*
 
 
 
 rule Cast_expl_neq/structTypeIR:
-  RECORD `{ (_ typeIR_field_a id_field_a ';')* ',' '...' }
-  -> STRUCT _ `< _ > `{ (_ typeIR_field_b id_field_b ';')* }
-  -- if $sub_set<id>(`{ id_field_a* }, `{ id_field_b* })
+  RECORD `{ (_ typeIR_field_a id_field_a ';')* ',' '...' `}
+  -> STRUCT _ `< _ `> `{ (_ typeIR_field_b id_field_b ';')* `}
+  -- if $sub_set<id>(`{ id_field_a* `}, `{ id_field_b* `})
   ----
   -- if (typeIR_field_a_aligned
-        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* `}, id_field_a))*
   -- if (typeIR_field_b_non_default_aligned
-        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* `}, id_field_a))*
   -- (Cast_expl: typeIR_field_a_aligned -> typeIR_field_b_non_default_aligned)*
   ----
-  -- if `{ id_default* } = $diff_set<id>(`{ id_field_b* }, `{ id_field_a* })
+  -- if `{ id_default* `} = $diff_set<id>(`{ id_field_b* `}, `{ id_field_a* `})
   -- if (typeIR_field_b_default
-        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* }, id_default))*
+        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* `}, id_default))*
   -- if $is_defaultable_typeIR(typeIR_field_b_default)*
 
 rule Cast_expl_neq/headerTypeIR:
-  RECORD `{ (_ typeIR_field_a id_field_a ';')* ',' '...' }
-  -> HEADER _ `< _ > `{ (_ typeIR_field_b id_field_b ';')* }
-  -- if $sub_set<id>(`{ id_field_a* }, `{ id_field_b* })
+  RECORD `{ (_ typeIR_field_a id_field_a ';')* ',' '...' `}
+  -> HEADER _ `< _ `> `{ (_ typeIR_field_b id_field_b ';')* `}
+  -- if $sub_set<id>(`{ id_field_a* `}, `{ id_field_b* `})
   ----
   -- if (typeIR_field_a_aligned
-        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* `}, id_field_a))*
   -- if (typeIR_field_b_non_default_aligned
-        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* `}, id_field_a))*
   -- (Cast_expl: typeIR_field_a_aligned -> typeIR_field_b_non_default_aligned)*
   ----
-  -- if `{ id_default* } = $diff_set<id>(`{ id_field_b* }, `{ id_field_a* })
+  -- if `{ id_default* `} = $diff_set<id>(`{ id_field_b* `}, `{ id_field_a* `})
   -- if (typeIR_field_b_default
-        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* }, id_default))*
+        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* `}, id_default))*
   -- if $is_defaultable_typeIR(typeIR_field_b_default)*
 
 
@@ -229,14 +229,14 @@ rule Cast_impl/not-equals:
 
 
 rule Cast_impl_neq/fixInt:
-  INT -> INT `< _ >
+  INT -> INT `< _ `>
 
 rule Cast_impl_neq/fixBit:
-  INT -> BIT `< _ >
+  INT -> BIT `< _ `>
 
 
 rule Cast_impl_neq/enumTypeIR-serializable:
-  ENUM _ `< typeIR_a > `{ _ } -> typeIR_b
+  ENUM _ `< typeIR_a `> `{ _ `} -> typeIR_b
   -- Cast_impl: typeIR_a -> typeIR_b
 
 rule Cast_impl_neq/defaultTypeIR:
@@ -252,34 +252,34 @@ rule Cast_impl_neq/headerUnionTypeIR:
 
 
 rule Cast_impl_neq/listTypeIR:
-  SEQ `< typeIR_a* > -> LIST `< typeIR_b >
+  SEQ `< typeIR_a* `> -> LIST `< typeIR_b `>
   -- (Cast_impl: typeIR_a -> typeIR_b)*
 
 rule Cast_impl_neq/tupleTypeIR:
-  SEQ `< typeIR_a* > -> TUPLE `< typeIR_b* >
+  SEQ `< typeIR_a* `> -> TUPLE `< typeIR_b* `>
   -- (Cast_impl: typeIR_a -> typeIR_b)*
 
 rule Cast_impl_neq/headerStackTypeIR:
-  SEQ `< typeIR_a* > -> typeIR_b `[ n_size ]
+  SEQ `< typeIR_a* `> -> typeIR_b `[ n_size `]
   -- if $(|typeIR_a*| <= n_size)
   -- (Cast_impl: typeIR_a -> typeIR_b)*
 
 rule Cast_impl_neq/structTypeIR:
-  SEQ `< typeIR_a* > -> STRUCT _ `< _ > `{ (_ typeIR_field_b _ ';')* }
+  SEQ `< typeIR_a* `> -> STRUCT _ `< _ `> `{ (_ typeIR_field_b _ ';')* `}
   -- (Cast_impl: typeIR_a -> typeIR_field_b)*
 
 rule Cast_impl_neq/headerTypeIR:
-  SEQ `< typeIR_a* > -> HEADER _ `< _ > `{ (_ typeIR_field_b _ ';')* }
+  SEQ `< typeIR_a* `> -> HEADER _ `< _ `> `{ (_ typeIR_field_b _ ';')* `}
   -- (Cast_impl: typeIR_a -> typeIR_field_b)*
 
 rule Cast_impl_neq/sequenceTypeIR:
-  SEQ `< typeIR_a* > -> SEQ `< typeIR_b* >
+  SEQ `< typeIR_a* `> -> SEQ `< typeIR_b* `>
   -- (Cast_impl: typeIR_a -> typeIR_b)*
 
 
 
 rule Cast_impl_neq/tupleTypeIR:
-  SEQ `< typeIR_a* ',' '...' > -> TUPLE `< typeIR_b* >
+  SEQ `< typeIR_a* ',' '...' `> -> TUPLE `< typeIR_b* `>
   -- if $(|typeIR_a*| < |typeIR_b*|)
   -- if (typeIR_b_non_default*, typeIR_b_default*)
       = $partition_<typeIR>(typeIR_b*, |typeIR_a*|)
@@ -287,14 +287,14 @@ rule Cast_impl_neq/tupleTypeIR:
   -- if $is_defaultable_typeIR(typeIR_b_default)*
 
 rule Cast_impl_neq/headerStackTypeIR:
-  SEQ `< typeIR_a* ',' '...' > -> typeIR_b `[ n_size ]
+  SEQ `< typeIR_a* ',' '...' `> -> typeIR_b `[ n_size `]
   -- if $(|typeIR_a*| < n_size)
   -- (Cast_impl: typeIR_a -> typeIR_b)*
   -- if $is_defaultable_typeIR(typeIR_b)
 
 rule Cast_impl_neq/structTypeIR:
-  SEQ `< typeIR_a* ',' '...' >
-  -> STRUCT _ `< _ > `{ (_ typeIR_field_b _ ';')* }
+  SEQ `< typeIR_a* ',' '...' `>
+  -> STRUCT _ `< _ `> `{ (_ typeIR_field_b _ ';')* `}
   -- if $(|typeIR_a*| < |typeIR_field_b*|)
   -- if (typeIR_field_b_non_default*, typeIR_field_b_default*)
       = $partition_<typeIR>(typeIR_field_b*, |typeIR_a*|)
@@ -302,8 +302,8 @@ rule Cast_impl_neq/structTypeIR:
   -- if $is_defaultable_typeIR(typeIR_field_b_default)*
 
 rule Cast_impl_neq/headerTypeIR:
-  SEQ `< typeIR_a* ',' '...' >
-  -> HEADER _ `< _ > `{ (_ typeIR_field_b _ ';')* }
+  SEQ `< typeIR_a* ',' '...' `>
+  -> HEADER _ `< _ `> `{ (_ typeIR_field_b _ ';')* `}
   -- if $(|typeIR_a*| < |typeIR_field_b*|)
   -- if (typeIR_field_b_non_default*, typeIR_field_b_default*)
       = $partition_<typeIR>(typeIR_field_b*, |typeIR_a*|)
@@ -313,57 +313,57 @@ rule Cast_impl_neq/headerTypeIR:
 
 
 rule Cast_impl_neq/structTypeIR:
-  RECORD `{ (_ typeIR_field_a id_field_a ';')* }
-  -> STRUCT _ `< _ > `{ (_ typeIR_field_b id_field_b ';')* }
-  -- if $eq_set<id>(`{ id_field_a* }, `{ id_field_b* })
+  RECORD `{ (_ typeIR_field_a id_field_a ';')* `}
+  -> STRUCT _ `< _ `> `{ (_ typeIR_field_b id_field_b ';')* `}
+  -- if $eq_set<id>(`{ id_field_a* `}, `{ id_field_b* `})
   -- if (typeIR_field_a_aligned
-        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* `}, id_field_a))*
   -- if (typeIR_field_b_aligned
-        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* `}, id_field_a))*
   -- (Cast_impl: typeIR_field_a_aligned -> typeIR_field_b_aligned)*
 
 rule Cast_impl_neq/headerTypeIR:
-  RECORD `{ (_ typeIR_field_a id_field_a ';')* }
-  -> HEADER _ `< _ > `{ (_ typeIR_field_b id_field_b ';')* }
-  -- if $eq_set<id>(`{ id_field_a* }, `{ id_field_b* })
+  RECORD `{ (_ typeIR_field_a id_field_a ';')* `}
+  -> HEADER _ `< _ `> `{ (_ typeIR_field_b id_field_b ';')* `}
+  -- if $eq_set<id>(`{ id_field_a* `}, `{ id_field_b* `})
   -- if (typeIR_field_a_aligned
-        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* `}, id_field_a))*
   -- if (typeIR_field_b_aligned
-        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* `}, id_field_a))*
   -- (Cast_impl: typeIR_field_a_aligned -> typeIR_field_b_aligned)*
 
 
 
 rule Cast_impl_neq/structTypeIR:
-  RECORD `{ (_ typeIR_field_a id_field_a ';')* ',' '...' }
-  -> STRUCT _ `< _ > `{ (_ typeIR_field_b id_field_b ';')* }
-  -- if $sub_set<id>(`{ id_field_a* }, `{ id_field_b* })
+  RECORD `{ (_ typeIR_field_a id_field_a ';')* ',' '...' `}
+  -> STRUCT _ `< _ `> `{ (_ typeIR_field_b id_field_b ';')* `}
+  -- if $sub_set<id>(`{ id_field_a* `}, `{ id_field_b* `})
   ----
   -- if (typeIR_field_a_aligned
-        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* `}, id_field_a))*
   -- if (typeIR_field_b_non_default_aligned
-        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* `}, id_field_a))*
   -- (Cast_impl: typeIR_field_a_aligned -> typeIR_field_b_non_default_aligned)*
   ----
-  -- if `{ id_default* } = $diff_set<id>(`{ id_field_b* }, `{ id_field_a* })
+  -- if `{ id_default* `} = $diff_set<id>(`{ id_field_b* `}, `{ id_field_a* `})
   -- if (typeIR_field_b_default
-        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* }, id_default))*
+        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* `}, id_default))*
   -- if $is_defaultable_typeIR(typeIR_field_b_default)*
 
 rule Cast_impl_neq/headerTypeIR:
-  RECORD `{ (_ typeIR_field_a id_field_a ';')* ',' '...' }
-  -> HEADER _ `< _ > `{ (_ typeIR_field_b id_field_b ';')* }
-  -- if $sub_set<id>(`{ id_field_a* }, `{ id_field_b* })
+  RECORD `{ (_ typeIR_field_a id_field_a ';')* ',' '...' `}
+  -> HEADER _ `< _ `> `{ (_ typeIR_field_b id_field_b ';')* `}
+  -- if $sub_set<id>(`{ id_field_a* `}, `{ id_field_b* `})
   ----
   -- if (typeIR_field_a_aligned
-        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_a ':' typeIR_field_a)* `}, id_field_a))*
   -- if (typeIR_field_b_non_default_aligned
-        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* }, id_field_a))*
+        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* `}, id_field_a))*
   -- (Cast_impl: typeIR_field_a_aligned -> typeIR_field_b_non_default_aligned)*
   ----
-  -- if `{ id_default* } = $diff_set<id>(`{ id_field_b* }, `{ id_field_a* })
+  -- if `{ id_default* `} = $diff_set<id>(`{ id_field_b* `}, `{ id_field_a* `})
   -- if (typeIR_field_b_default
-        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* }, id_default))*
+        = $find_map<id, typeIR>(`{ (id_field_b ':' typeIR_field_b)* `}, id_default))*
   -- if $is_defaultable_typeIR(typeIR_field_b_default)*
 
 
@@ -380,9 +380,9 @@ dec $reduce_serenum(typedExpressionIR) : typedExpressionIR
 def $reduce_serenum(typedExpressionIR) = typedExpressionIR_reduced
   -- if typeIR = $type_of_typedExpressionIR(typedExpressionIR)
   -- if ctk = $ctk_of_typedExpressionIR(typedExpressionIR)
-  -- if ENUM _ `< typeIR_underlying > `{ _ } = $unroll_typeIR(typeIR)
+  -- if ENUM _ `< typeIR_underlying `> `{ _ `} = $unroll_typeIR(typeIR)
   -- if typedExpressionIR_reduced
-      = (`(typeIR_underlying) typedExpressionIR) '#' `( typeIR_underlying ctk )
+      = (`(typeIR_underlying`) typedExpressionIR) '#' `( typeIR_underlying ctk `)
 def $reduce_serenum(typedExpressionIR) = typedExpressionIR
   -- otherwise
 
@@ -396,16 +396,16 @@ dec $reduce_serenum_unary(
 
 def $reduce_serenum_unary(typedExpressionIR, def $check)
   = typedExpressionIR
-  -- if _ '#' `( typeIR _ ) = typedExpressionIR
+  -- if _ '#' `( typeIR _ `) = typedExpressionIR
   -- if $check(typeIR)
 
 def $reduce_serenum_unary(typedExpressionIR, def $check)
   = $reduce_serenum_unary(typedExpressionIR_cast, def $check)
-  -- if _ '#' `( typeIR ctk ) = typedExpressionIR
+  -- if _ '#' `( typeIR ctk `) = typedExpressionIR
   -- if ~$check(typeIR)
-  -- if ENUM _ `< typeIR_underlying > `{ _ } = $unroll_typeIR(typeIR)
+  -- if ENUM _ `< typeIR_underlying `> `{ _ `} = $unroll_typeIR(typeIR)
   -- if typedExpressionIR_cast
-      = (`(typeIR_underlying) typedExpressionIR) '#' `( typeIR_underlying ctk )
+      = (`(typeIR_underlying`) typedExpressionIR) '#' `( typeIR_underlying ctk `)
 
 def $reduce_serenum_unary(typedExpressionIR, def $check) = eps
   -- otherwise
@@ -421,30 +421,30 @@ dec $reduce_serenum_binary(
 
 def $reduce_serenum_binary(typedExpressionIR_l, typedExpressionIR_r, def $check)
   = (typedExpressionIR_l, typedExpressionIR_r)
-  -- if _ '#' `( typeIR_l _ ) = typedExpressionIR_l
-  -- if _ '#' `( typeIR_r _ ) = typedExpressionIR_r
+  -- if _ '#' `( typeIR_l _ `) = typedExpressionIR_l
+  -- if _ '#' `( typeIR_r _ `) = typedExpressionIR_r
   -- if $check(typeIR_l, typeIR_r)
 
 def $reduce_serenum_binary(typedExpressionIR_l, typedExpressionIR_r, def $check)
   = ($reduce_serenum_binary(
       typedExpressionIR_l_cast, typedExpressionIR_r, def $check))
-  -- if _ '#' `( typeIR_l ctk_l ) = typedExpressionIR_l
-  -- if _ '#' `( typeIR_r _ ) = typedExpressionIR_r
+  -- if _ '#' `( typeIR_l ctk_l `) = typedExpressionIR_l
+  -- if _ '#' `( typeIR_r _ `) = typedExpressionIR_r
   -- if ~$check(typeIR_l, typeIR_r)
-  -- if ENUM _ `< typeIR_l_underlying > `{ _ } = $unroll_typeIR(typeIR_l)
+  -- if ENUM _ `< typeIR_l_underlying `> `{ _ `} = $unroll_typeIR(typeIR_l)
   -- if typedExpressionIR_l_cast
-      = (`(typeIR_l_underlying) typedExpressionIR_l) '#' `( typeIR_l_underlying ctk_l )
+      = (`(typeIR_l_underlying`) typedExpressionIR_l) '#' `( typeIR_l_underlying ctk_l `)
 
 def $reduce_serenum_binary(typedExpressionIR_l, typedExpressionIR_r, def $check)
   = ($reduce_serenum_binary(
       typedExpressionIR_l, typedExpressionIR_r_cast, def $check))
-  -- if _ '#' `( typeIR_l _ ) = typedExpressionIR_l
-  -- if _ '#' `( typeIR_r ctk_r ) = typedExpressionIR_r
+  -- if _ '#' `( typeIR_l _ `) = typedExpressionIR_l
+  -- if _ '#' `( typeIR_r ctk_r `) = typedExpressionIR_r
   -- if ~$check(typeIR_l, typeIR_r)
   -- if ~($unroll_typeIR(typeIR_l) <: serializableEnumTypeIR)
-  -- if ENUM _ `< typeIR_r_underlying > `{ _ } = $unroll_typeIR(typeIR_r)
+  -- if ENUM _ `< typeIR_r_underlying `> `{ _ `} = $unroll_typeIR(typeIR_r)
   -- if typedExpressionIR_r_cast
-      = (`(typeIR_r_underlying) typedExpressionIR_r) '#' `( typeIR_r_underlying ctk_r )
+      = (`(typeIR_r_underlying`) typedExpressionIR_r) '#' `( typeIR_r_underlying ctk_r `)
 
 def $reduce_serenum_binary(typedExpressionIR_l, typedExpressionIR_r, def $check) = eps
   -- otherwise
@@ -462,15 +462,15 @@ dec $cast_unary(typedExpressionIR, typeIR) : typedExpressionIR?
   hint(prose_in %0 "implicitly cast to" %1)
 
 def $cast_unary(typedExpressionIR, typeIR_to) = typedExpressionIR
-  -- if _ '#' `( typeIR _ ) = typedExpressionIR
+  -- if _ '#' `( typeIR _ `) = typedExpressionIR
   -- Type_alpha: typeIR ~~ typeIR_to
 
 def $cast_unary(typedExpressionIR, typeIR_to) = typedExpressionIR_cast
-  -- if _ '#' `( typeIR ctk ) = typedExpressionIR
+  -- if _ '#' `( typeIR ctk `) = typedExpressionIR
   -- Type_alpha:/ typeIR ~~ typeIR_to
   -- Cast_impl: typeIR -> typeIR_to
   -- if typedExpressionIR_cast
-      = (`(typeIR_to) typedExpressionIR) '#' `( typeIR_to ctk )
+      = (`(typeIR_to`) typedExpressionIR) '#' `( typeIR_to ctk `)
 
 def $cast_unary(typedExpressionIR, typeIR_to) = eps
   -- otherwise
@@ -483,33 +483,33 @@ dec $cast_binary(typedExpressionIR, typedExpressionIR)
 
 def $cast_binary(typedExpressionIR_l, typedExpressionIR_r)
   = (typedExpressionIR_l, typedExpressionIR_r)
-  -- if _ '#' `( typeIR_l _ ) = typedExpressionIR_l
-  -- if _ '#' `( typeIR_r _ ) = typedExpressionIR_r
+  -- if _ '#' `( typeIR_l _ `) = typedExpressionIR_l
+  -- if _ '#' `( typeIR_r _ `) = typedExpressionIR_r
   -- Type_alpha: typeIR_l ~~ typeIR_r
 
 def $cast_binary(typedExpressionIR_l, typedExpressionIR_r)
   = (typedExpressionIR_l_cast, typedExpressionIR_r)
-  -- if _ '#' `( typeIR_l ctk_l ) = typedExpressionIR_l
-  -- if _ '#' `( typeIR_r _ ) = typedExpressionIR_r
+  -- if _ '#' `( typeIR_l ctk_l `) = typedExpressionIR_l
+  -- if _ '#' `( typeIR_r _ `) = typedExpressionIR_r
   -- Type_alpha:/ typeIR_l ~~ typeIR_r
   -- Cast_impl: typeIR_l -> typeIR_r
   -- if typedExpressionIR_l_cast
-      = (`(typeIR_r) typedExpressionIR_l) '#' `( typeIR_r ctk_l )
+      = (`(typeIR_r`) typedExpressionIR_l) '#' `( typeIR_r ctk_l `)
 
 def $cast_binary(typedExpressionIR_l, typedExpressionIR_r)
   = (typedExpressionIR_l, typedExpressionIR_r_cast)
-  -- if _ '#' `( typeIR_l _ ) = typedExpressionIR_l
-  -- if _ '#' `( typeIR_r ctk_r ) = typedExpressionIR_r
+  -- if _ '#' `( typeIR_l _ `) = typedExpressionIR_l
+  -- if _ '#' `( typeIR_r ctk_r `) = typedExpressionIR_r
   -- Type_alpha:/ typeIR_l ~~ typeIR_r
   -- Cast_impl:/ typeIR_l -> typeIR_r
   -- Cast_impl: typeIR_r -> typeIR_l
   -- if typedExpressionIR_r_cast
-      = (`(typeIR_l) typedExpressionIR_r) '#' `( typeIR_l ctk_r )
+      = (`(typeIR_l`) typedExpressionIR_r) '#' `( typeIR_l ctk_r `)
 
 def $cast_binary(typedExpressionIR_l, typedExpressionIR_r)
   = $cast_binary(typedExpressionIR_l_cast, typedExpressionIR_r)
-  -- if _ '#' `( typeIR_l ctk_l ) = typedExpressionIR_l
-  -- if _ '#' `( typeIR_r _ ) = typedExpressionIR_r
+  -- if _ '#' `( typeIR_l ctk_l `) = typedExpressionIR_l
+  -- if _ '#' `( typeIR_r _ `) = typedExpressionIR_r
   -- Type_alpha:/ typeIR_l ~~ typeIR_r
   -- Cast_impl:/ typeIR_l -> typeIR_r
   -- Cast_impl:/ typeIR_r -> typeIR_l
@@ -518,8 +518,8 @@ def $cast_binary(typedExpressionIR_l, typedExpressionIR_r)
 
 def $cast_binary(typedExpressionIR_l, typedExpressionIR_r)
   = $cast_binary(typedExpressionIR_l, typedExpressionIR_r_cast)
-  -- if _ '#' `( typeIR_l _ ) = typedExpressionIR_l
-  -- if _ '#' `( typeIR_r ctk_r ) = typedExpressionIR_r
+  -- if _ '#' `( typeIR_l _ `) = typedExpressionIR_l
+  -- if _ '#' `( typeIR_r ctk_r `) = typedExpressionIR_r
   -- Type_alpha:/ typeIR_l ~~ typeIR_r
   -- Cast_impl:/ typeIR_l -> typeIR_r
   -- Cast_impl:/ typeIR_r -> typeIR_l

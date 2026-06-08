@@ -9,19 +9,19 @@ syntax stateEnv, actionDefEnv, frame, tableObjectProperty
 ;;
 
 syntax actionDef =
-  annotationList ACTION nameIR `( parameterListIR ) blockStatementIR
+  annotationList ACTION nameIR `( parameterListIR `) blockStatementIR
 
 ;;
 ;;;; Function definitions
 ;;
 
 syntax definedFunctionDef =
-  FUNCTION nameIR `< typeParameterListIR >
-    `( parameterListIR ) blockStatementIR
+  FUNCTION nameIR `< typeParameterListIR `>
+    `( parameterListIR `) blockStatementIR
 
 syntax externFunctionDef =
   EXTERN_FUNCTION nameIR
-    `< typeParameterListIR > `( parameterListIR )
+    `< typeParameterListIR `> `( parameterListIR `)
 
 syntax functionDef =
   | definedFunctionDef
@@ -32,21 +32,21 @@ syntax functionDef =
 ;;
 
 syntax externMethodDef =
-  | EXTERN_METHOD nameIR `< typeParameterListIR >
-      `( parameterListIR ) blockStatementIR?
+  | EXTERN_METHOD nameIR `< typeParameterListIR `>
+      `( parameterListIR `) blockStatementIR?
   | EXTERN_METHOD ABSTRACT nameIR
-      `< typeParameterListIR > `( parameterListIR )
+      `< typeParameterListIR `> `( parameterListIR `)
 
 syntax parserApplyMethodDef =
-  PARSER_APPLY `( parameterListIR )
-    `{ parserLocalDeclarationListIR ';' stateEnv }
+  PARSER_APPLY `( parameterListIR `)
+    `{ parserLocalDeclarationListIR ';' stateEnv `}
 
 syntax controlApplyMethodDef =
-  CONTROL_APPLY `( parameterListIR )
-    `{ controlLocalDeclarationListIR ';' actionDefEnv ';' controlBodyIR }
+  CONTROL_APPLY `( parameterListIR `)
+    `{ controlLocalDeclarationListIR ';' actionDefEnv ';' controlBodyIR `}
 
 syntax tableApplyMethodDef =
-  TABLE_APPLY `{ tablePropertyListIR }
+  TABLE_APPLY `{ tablePropertyListIR `}
 
 syntax methodDef =
   | externMethodDef

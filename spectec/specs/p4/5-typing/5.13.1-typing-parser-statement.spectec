@@ -20,7 +20,7 @@ rule SelectCase_keyset_simple_ok/set-alpha:
   ---- ;; check keyset expression
   -- Expr_ok: LOCAL TC |- expression : typedExpressionIR
   -- if typeIR = $type_of_typedExpressionIR(typedExpressionIR)
-  -- if SET `< typeIR_base > = $unroll_typeIR(typeIR)
+  -- if SET `< typeIR_base `> = $unroll_typeIR(typeIR)
   ---- ;; if the keyset type equals the key type
   -- Type_alpha: typeIR_base ~~ typeIR_key
 
@@ -29,14 +29,14 @@ rule SelectCase_keyset_simple_ok/set-subtype:
   ---- ;; check keyset expression
   -- Expr_ok: LOCAL TC |- expression : typedExpressionIR
   -- if typeIR = $type_of_typedExpressionIR(typedExpressionIR)
-  -- if SET `< typeIR_base > = $unroll_typeIR(typeIR)
+  -- if SET `< typeIR_base `> = $unroll_typeIR(typeIR)
   ---- ;; if the keyset type is a subtype of the key type
   -- Type_alpha:/ typeIR_base ~~ typeIR_key
   -- Cast_impl: typeIR_base -> typeIR_key
   ---- ;; cast the expression to the key type
-  -- if typeIR_cast = SET `< typeIR_key >
+  -- if typeIR_cast = SET `< typeIR_key `>
   -- if typedExpressionIR_cast
-      = (`( typeIR_cast ) typedExpressionIR) '#' `( typeIR_cast DYN )
+      = (`( typeIR_cast `) typedExpressionIR) '#' `( typeIR_cast DYN `)
 
 rule SelectCase_keyset_simple_ok/non-set:
   TC typeIR_key |- expression : typedExpressionIR_cast
@@ -49,17 +49,17 @@ rule SelectCase_keyset_simple_ok/non-set:
   ---- ;; if the keyset type is a subtype of the key type
   -- Cast_impl: typeIR -> typeIR_key
   ---- ;; cast the expression to the key type
-  -- if typeIR_cast = SET `< typeIR_key >
+  -- if typeIR_cast = SET `< typeIR_key `>
   -- if typedExpressionIR_cast
-      = (`( typeIR_cast ) typedExpressionIR) '#' `( typeIR_cast DYN )
+      = (`( typeIR_cast `) typedExpressionIR) '#' `( typeIR_cast DYN `)
 
 
 ;;;;;; expression '&&&' expression
 
 dec $compat_mask(typeIR, typeIR) : bool
 def $compat_mask(INT, INT) = true
-def $compat_mask(INT `< w_l >, INT `< w_r >) = $(w_l = w_r)
-def $compat_mask(BIT `< w_l >, BIT `< w_r >) = $(w_l = w_r)
+def $compat_mask(INT `< w_l `>, INT `< w_r `>) = $(w_l = w_r)
+def $compat_mask(BIT `< w_l `>, BIT `< w_r `>) = $(w_l = w_r)
 def $compat_mask(TYPEDEF _ typeIR_l, typeIR_r) = $compat_mask(typeIR_l, typeIR_r)
 def $compat_mask(typeIR_l, TYPEDEF _ typeIR_r) = $compat_mask(typeIR_l, typeIR_r)
 def $compat_mask(_, _) = false
@@ -152,7 +152,7 @@ rule SelectCase_keyset_ok/expression:
 rule SelectCase_keyset_ok/expression-list:
   TC typeIR_key* |- expression : simpleKeysetExpressionIR
   -- if $(|typeIR_key*| > 1)
-  -- if typeIR_key_tuple = TUPLE `< typeIR_key* >
+  -- if typeIR_key_tuple = TUPLE `< typeIR_key* `>
   -- SelectCase_keyset_simple_ok:
       TC typeIR_key_tuple |- expression : simpleKeysetExpressionIR
 
@@ -178,7 +178,7 @@ rule SelectCase_keyset_ok/default-many-to-one:
   TC typeIR_key* |- DEFAULT : simpleKeysetExpressionIR
   -- if $(|typeIR_key*| > 1)
   -- SelectCase_keyset_simple_ok:
-      TC (SEQ `< typeIR_key* >) |- DEFAULT : simpleKeysetExpressionIR
+      TC (SEQ `< typeIR_key* `>) |- DEFAULT : simpleKeysetExpressionIR
 
 rule SelectCase_keyset_ok/dontcare-one-to-one:
   TC typeIR_key |- '_' : simpleKeysetExpressionIR
@@ -189,7 +189,7 @@ rule SelectCase_keyset_ok/dontcare-many-to-one:
   TC typeIR_key* |- '_' : simpleKeysetExpressionIR
   -- if $(|typeIR_key*| > 1)
   -- SelectCase_keyset_simple_ok:
-      TC (SEQ `< typeIR_key* >) |- '_' : simpleKeysetExpressionIR
+      TC (SEQ `< typeIR_key* `>) |- '_' : simpleKeysetExpressionIR
 
 
 ;;;;;; tupleKeysetExpression
@@ -203,40 +203,40 @@ rule SelectCase_keyset_ok/dontcare-many-to-one:
 
 
 rule SelectCase_keyset_ok/mask:
-  TC typeIR_key |- `( expression_l '&&&' expression_r ) : `( simpleKeysetExpressionIR )
+  TC typeIR_key |- `( expression_l '&&&' expression_r `) : `( simpleKeysetExpressionIR `)
   -- SelectCase_keyset_simple_ok:
       TC typeIR_key |- expression_l '&&&' expression_r : simpleKeysetExpressionIR
 
 rule SelectCase_keyset_ok/range:
-  TC typeIR_key |- `( expression_l '..' expression_r ) : `( simpleKeysetExpressionIR )
+  TC typeIR_key |- `( expression_l '..' expression_r `) : `( simpleKeysetExpressionIR `)
   -- SelectCase_keyset_simple_ok:
       TC typeIR_key |- expression_l '..' expression_r : simpleKeysetExpressionIR
 
 rule SelectCase_keyset_ok/default-one-to-one:
-  TC typeIR_key |- `( DEFAULT ) : `( simpleKeysetExpressionIR )
+  TC typeIR_key |- `( DEFAULT `) : `( simpleKeysetExpressionIR `)
   -- SelectCase_keyset_simple_ok:
       TC typeIR_key |- DEFAULT : simpleKeysetExpressionIR
 
 rule SelectCase_keyset_ok/default-many-to-one:
-  TC typeIR_key* |- `( DEFAULT ) : `( simpleKeysetExpressionIR )
+  TC typeIR_key* |- `( DEFAULT `) : `( simpleKeysetExpressionIR `)
   -- if $(|typeIR_key*| > 1)
   -- SelectCase_keyset_simple_ok:
-      TC (SEQ `< typeIR_key* >) |- DEFAULT : simpleKeysetExpressionIR
+      TC (SEQ `< typeIR_key* `>) |- DEFAULT : simpleKeysetExpressionIR
 
 rule SelectCase_keyset_ok/dontcare-one-to-one:
-  TC typeIR_key |- `( '_' ) : `( simpleKeysetExpressionIR )
+  TC typeIR_key |- `( '_' `) : `( simpleKeysetExpressionIR `)
   -- SelectCase_keyset_simple_ok:
       TC typeIR_key |- '_' : simpleKeysetExpressionIR
 
 rule SelectCase_keyset_ok/dontcare-many-to-one:
-  TC typeIR_key* |- `( '_' ) : `( simpleKeysetExpressionIR )
+  TC typeIR_key* |- `( '_' `) : `( simpleKeysetExpressionIR `)
   -- if $(|typeIR_key*| > 1)
   -- SelectCase_keyset_simple_ok:
-      TC (SEQ `< typeIR_key* >) |- '_' : simpleKeysetExpressionIR
+      TC (SEQ `< typeIR_key* `>) |- '_' : simpleKeysetExpressionIR
 
 rule SelectCase_keyset_ok/list:
-  TC typeIR_key* |- `( simpleKeysetExpression_h ',' simpleKeysetExpressionList_t )
-                  : `( simpleKeysetExpressionIR* )
+  TC typeIR_key* |- `( simpleKeysetExpression_h ',' simpleKeysetExpressionList_t `)
+                  : `( simpleKeysetExpressionIR* `)
   ---- ;; check arity
   -- if simpleKeysetExpression_t*
       = $flatten_simpleKeysetExpressionList(simpleKeysetExpressionList_t)
@@ -269,7 +269,7 @@ rule SelectCase_ok:
 ;;; syntax selectExpression = SELECT `( expressionList ) `{ selectCaseList }
 
 rule ParserSelect_ok:
-  TC_0 nameIR_state* |- SELECT `( expressionList_key ) `{ selectCaseList }
+  TC_0 nameIR_state* |- SELECT `( expressionList_key `) `{ selectCaseList `}
                       : selectExpressionIR
   ---- ;; check select key expressions
   -- if expression_key* = $flatten_expressionList(expressionList_key)
@@ -278,13 +278,13 @@ rule ParserSelect_ok:
   -- if (typedExpressionIR_key_reduced = $reduce_serenum(typedExpressionIR_key))*
   -- if (typeIR_key_reduced = $type_of_typedExpressionIR(typedExpressionIR_key_reduced))*
   ---- ;; check that the keys form a valid set type
-  -- (Type_wf: $bound(LOCAL, TC_0) |- SET `< typeIR_key_reduced >)*
+  -- (Type_wf: $bound(LOCAL, TC_0) |- SET `< typeIR_key_reduced `>)*
   ---- ;; check select cases
   -- if selectCase* = $flatten_selectCaseList(selectCaseList)
   -- (SelectCase_ok: TC_0 nameIR_state* typeIR_key_reduced* |- selectCase : selectCaseIR)*
   ---- ;; create IR
   -- if selectExpressionIR
-      = SELECT `( typedExpressionIR_key_reduced* ) `{ selectCaseIR* }
+      = SELECT `( typedExpressionIR_key_reduced* `) `{ selectCaseIR* `}
 
 ;;; syntax stateExpression
 
@@ -376,7 +376,7 @@ rule ParserStmt_ok/directApplicationStatement:
 ;;; syntax parserBlockStatement = annotationList `{ parserStatementList }
 
 rule ParserStmt_ok/parserBlockStatement:
-  TC_0 |- annotationList `{ parserStatementList }
+  TC_0 |- annotationList `{ parserStatementList `}
         : TC_1 parserBlockStatementIR
   ---- ;; check statements in nested context
   -- if TC_1 = $enter_t(TC_0)
@@ -384,7 +384,7 @@ rule ParserStmt_ok/parserBlockStatement:
       TC_1 |- parserStatementList : TC_2 parserStatementIR*
   -- if TC_3 = $exit_t(TC_2)
   ---- ;; create IR
-  -- if parserBlockStatementIR = annotationList `{ parserStatementIR* }
+  -- if parserBlockStatementIR = annotationList `{ parserStatementIR* `}
 
 ;;; parserConditionalStatement
 ;;; syntax parserConditionalStatement
@@ -394,8 +394,8 @@ rule ParserStmt_ok/parserBlockStatement:
 
 
 rule ParserStmt_ok/non-else:
-  TC |- IF `( expression_cond ) parserStatement_then
-       : TC (IF `( typedExpressionIR_cond ) parserStatementIR_then)
+  TC |- IF `( expression_cond `) parserStatement_then
+       : TC (IF `( typedExpressionIR_cond `) parserStatementIR_then)
   ---- ;; check condition expression
   -- Expr_ok: LOCAL TC |- expression_cond : typedExpressionIR_cond
   ---- ;; fetch annotation
@@ -407,9 +407,9 @@ rule ParserStmt_ok/non-else:
                         : TC_then parserStatementIR_then
 
 rule ParserStmt_ok/else:
-  TC |- IF `( expression_cond ) parserStatement_then
+  TC |- IF `( expression_cond `) parserStatement_then
         ELSE parserStatement_else
-      : TC (IF `( typedExpressionIR_cond ) parserStatementIR_then
+      : TC (IF `( typedExpressionIR_cond `) parserStatementIR_then
             ELSE parserStatementIR_else)
   ---- ;; check condition expression
   -- Expr_ok: LOCAL TC |- expression_cond : typedExpressionIR_cond

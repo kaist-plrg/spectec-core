@@ -109,7 +109,7 @@ def $name_annotation(annotationList)
   -- if nameIR_found**
       = $opt_as_seq_<nameIR>(nameIR_opt?)*
 
-def $name_annotation_opt('@' name `( annotationBody ))
+def $name_annotation_opt('@' name `( annotationBody `))
   = $strip_prefix($strip_suffix(nameIR, "\""), "\"")
   -- if "name" = $name(name)
   -- if _EMPTY annotationToken = annotationBody
@@ -127,10 +127,10 @@ def $name_annotation_default(annotationList, nameIR) = nameIR
 dec $find_name_annotation_opt(annotationList) : annotation?
 def $find_name_annotation_opt(_EMPTY) = eps
 def $find_name_annotation_opt(annotation) = annotation
-  -- if '@' name `( annotationBody ) = annotation
+  -- if '@' name `( annotationBody `) = annotation
   -- if "name" = $name(name)
 def $find_name_annotation_opt(annotation) = eps
-  -- if '@' name `( annotationBody ) = annotation
+  -- if '@' name `( annotationBody `) = annotation
   -- if "name" =/= $name(name)
 def $find_name_annotation_opt(annotationListNonEmpty annotation)
   = $find_name_annotation_opt(annotationListNonEmpty)

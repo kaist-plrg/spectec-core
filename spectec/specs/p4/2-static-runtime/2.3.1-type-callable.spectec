@@ -24,15 +24,15 @@ syntax parameterIR =
 ;;;; Action types
 ;;
 
-syntax actionTypeIR = annotationList ACTION nameIR `( parameterIR* )
+syntax actionTypeIR = annotationList ACTION nameIR `( parameterIR* `)
 
 ;;
 ;;;; Function types
 ;;
 
-syntax definedFunctionTypeIR = FUNCTION nameIR `( parameterIR* ) ':' typeIR
+syntax definedFunctionTypeIR = FUNCTION nameIR `( parameterIR* `) ':' typeIR
 
-syntax externFunctionTypeIR = EXTERN_FUNCTION nameIR `( parameterIR* ) ':' typeIR
+syntax externFunctionTypeIR = EXTERN_FUNCTION nameIR `( parameterIR* `) ':' typeIR
 
 syntax functionTypeIR =
   | definedFunctionTypeIR
@@ -42,15 +42,15 @@ syntax functionTypeIR =
 ;;;; Method types
 ;;
 
-syntax builtinMethodTypeIR = BUILTIN_METHOD nameIR `( parameterIR* ) ':' typeIR
+syntax builtinMethodTypeIR = BUILTIN_METHOD nameIR `( parameterIR* `) ':' typeIR
 
 syntax externMethodTypeIR =
-  | EXTERN_METHOD nameIR `( parameterIR* ) ':' typeIR
-  | EXTERN_METHOD ABSTRACT nameIR `( parameterIR* ) ':' typeIR
+  | EXTERN_METHOD nameIR `( parameterIR* `) ':' typeIR
+  | EXTERN_METHOD ABSTRACT nameIR `( parameterIR* `) ':' typeIR
 
-syntax parserApplyMethodTypeIR = PARSER_APPLY `( parameterIR* )
+syntax parserApplyMethodTypeIR = PARSER_APPLY `( parameterIR* `)
 
-syntax controlApplyMethodTypeIR = CONTROL_APPLY `( parameterIR* )
+syntax controlApplyMethodTypeIR = CONTROL_APPLY `( parameterIR* `)
 
 syntax tableApplyMethodTypeIR = TABLE_APPLY ':' tableMetadataStructTypeIR
 

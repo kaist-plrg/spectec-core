@@ -41,7 +41,7 @@ rule ControlLocalDecl_inst/actionDeclarationIR:
 
 
 rule ControlLocalDecl_inst/tableDeclarationIR-no-name-annotation:
-  IC_0 STO_0 |- annotationList TABLE typeIR nameIR `{ tablePropertyListIR }
+  IC_0 STO_0 |- annotationList TABLE typeIR nameIR `{ tablePropertyListIR `}
               : IC_1 STO_2 constantDeclarationIR
   ---- ;; initialize callee context
   -- if IC_callee_0 = $inherit_i(BLOCK, IC_0)
@@ -54,7 +54,7 @@ rule ControlLocalDecl_inst/tableDeclarationIR-no-name-annotation:
   -- if TBL = $init_table(tablePropertyListIR_inst)
   ---- ;; create table object with table frame
   -- if frame :: _ = IC_frame.LOCAL.FRAMES
-  -- if object_table = TABLE nameIR `{ frame TBL }
+  -- if object_table = TABLE nameIR `{ frame TBL `}
   ---- ;; use name annotation if exists
   -- if nameIR_object
       = $name_annotation_default(annotationList, nameIR)
@@ -69,7 +69,7 @@ rule ControlLocalDecl_inst/tableDeclarationIR-no-name-annotation:
       = _EMPTY CONST typeIR nameIR ('=' _VALUE (REF objectId)) ';'
 
 rule ControlLocalDecl_inst/tableDeclarationIR-name-annotation:
-  IC_0 STO_0 |- annotationList TABLE typeIR nameIR `{ tablePropertyListIR }
+  IC_0 STO_0 |- annotationList TABLE typeIR nameIR `{ tablePropertyListIR `}
               : IC_1 STO_3 constantDeclarationIR
   ---- ;; initialize callee context
   -- if IC_callee_0 = $inherit_i(BLOCK, IC_0)
@@ -82,7 +82,7 @@ rule ControlLocalDecl_inst/tableDeclarationIR-name-annotation:
   -- if TBL = $init_table(tablePropertyListIR_inst)
   ---- ;; create table object with table frame
   -- if frame :: _ = IC_frame.LOCAL.FRAMES
-  -- if object_table = TABLE nameIR `{ frame TBL }
+  -- if object_table = TABLE nameIR `{ frame TBL `}
   ---- ;; use name annotation if exists
   -- if nameIR_object
       = $name_annotation_default(annotationList, nameIR)
