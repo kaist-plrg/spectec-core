@@ -6,17 +6,17 @@ dec $parameterListIR_of_constructorDef(constructorDef)
   : parameterIR*
 
 def $parameterListIR_of_constructorDef(
-    EXTERN _ `< _ > `( constructorParameterListIR ) `{ _ })
+    EXTERN _ `< _ `> `( constructorParameterListIR `) `{ _ `})
   = constructorParameterListIR
 
 def $parameterListIR_of_constructorDef(
-    PARSER `< _ > `( _ ) `( constructorParameterListIR ) `{ _ _ })
+    PARSER `< _ `> `( _ `) `( constructorParameterListIR `) `{ _ _ `})
   = constructorParameterListIR
 
 def $parameterListIR_of_constructorDef(
-    CONTROL `< _ > `( _ ) `( constructorParameterListIR ) `{ _ APPLY _ })
+    CONTROL `< _ `> `( _ `) `( constructorParameterListIR `) `{ _ APPLY _ `})
   = constructorParameterListIR
 
 def $parameterListIR_of_constructorDef(
-    PACKAGE `< _ > `( constructorParameterListIR ))
+    PACKAGE `< _ `> `( constructorParameterListIR `))
   = constructorParameterListIR

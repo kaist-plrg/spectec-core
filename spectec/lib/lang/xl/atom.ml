@@ -119,13 +119,13 @@ let unparse : t -> string = function
   | Tilde2 -> "~~"
   | Backslash -> "\\"
   | LAngle -> "`<"
-  | RAngle -> ">"
+  | RAngle -> "`>"
   | LParen -> "`("
-  | RParen -> ")"
+  | RParen -> "`)"
   | LBrack -> "`["
-  | RBrack -> "]"
+  | RBrack -> "`]"
   | LBrace -> "`{"
-  | RBrace -> "}"
+  | RBrace -> "`}"
 
 let is_upid (s : string) : bool =
   String.length s > 0

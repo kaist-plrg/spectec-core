@@ -7,32 +7,32 @@
 
 rule TableAction_inst/name-annotation-dot-prefix:
   IC STO |- annotationList tableActionReferenceIR
-            '#' `( parameterListIR ',' parameterListIR_control ) ';'
+            '#' `( parameterListIR ',' parameterListIR_control `) ';'
           : STO tableActionIR
   -- if tableActionReferenceIR
-      = prefixedNameIR _ `( argumentListIR )
+      = prefixedNameIR _ `( argumentListIR `)
   -- if (cursor, _, actionDef)
       = $find_callableDef_non_overload_i(LOCAL, IC, prefixedNameIR)
-  -- if annotationList_actionDef ACTION nameIR `( _ ) _
+  -- if annotationList_actionDef ACTION nameIR `( _ `) _
       = actionDef
   -- if nameIR_anno = $name_annotation(annotationList_actionDef)
   ---- ;; if name annotation has dot prefix, use a standalone name
   -- if $starts_with(nameIR_anno, ".")
   -- if controlPlaneNameIR = $strip_prefix(nameIR_anno, ".")
   -- if tableActionReferenceIR'
-      = prefixedNameIR controlPlaneNameIR `( argumentListIR )
+      = prefixedNameIR controlPlaneNameIR `( argumentListIR `)
   -- if tableActionIR = annotationList tableActionReferenceIR'
-        '#' `( parameterListIR ',' parameterListIR_control ) ';'
+        '#' `( parameterListIR ',' parameterListIR_control `) ';'
 
 rule TableAction_inst/name-annotation:
   IC STO |- annotationList tableActionReferenceIR
-            '#' `( parameterListIR ',' parameterListIR_control ) ';'
+            '#' `( parameterListIR ',' parameterListIR_control `) ';'
           : STO tableActionIR
   -- if tableActionReferenceIR
-      = prefixedNameIR _ `( argumentListIR )
+      = prefixedNameIR _ `( argumentListIR `)
   -- if (cursor, _, actionDef)
       = $find_callableDef_non_overload_i(LOCAL, IC, prefixedNameIR)
-  -- if annotationList_actionDef ACTION nameIR `( _ ) _
+  -- if annotationList_actionDef ACTION nameIR `( _ `) _
       = actionDef
   -- if nameIR_anno = $name_annotation(annotationList_actionDef)
   -- if ~$starts_with(nameIR_anno, ".")
@@ -43,19 +43,19 @@ rule TableAction_inst/name-annotation:
           $join_text(IC.PATH ++ nameIR_anno, ".")
         )
   -- if tableActionReferenceIR'
-      = prefixedNameIR controlPlaneNameIR `( argumentListIR )
+      = prefixedNameIR controlPlaneNameIR `( argumentListIR `)
   -- if tableActionIR = annotationList tableActionReferenceIR'
-        '#' `( parameterListIR ',' parameterListIR_control ) ';'
+        '#' `( parameterListIR ',' parameterListIR_control `) ';'
 
 rule TableAction_inst/no-name-annotation:
   IC STO |- annotationList tableActionReferenceIR
-            '#' `( parameterListIR ',' parameterListIR_control ) ';'
+            '#' `( parameterListIR ',' parameterListIR_control `) ';'
           : STO tableActionIR
   -- if tableActionReferenceIR
-      = prefixedNameIR _ `( argumentListIR )
+      = prefixedNameIR _ `( argumentListIR `)
   -- if (cursor, _, actionDef)
       = $find_callableDef_non_overload_i(LOCAL, IC, prefixedNameIR)
-  -- if annotationList_actionDef ACTION nameIR `( _ ) _
+  -- if annotationList_actionDef ACTION nameIR `( _ `) _
       = actionDef
   ---- ;; todo
   -- if eps = $name_annotation(annotationList_actionDef)
@@ -66,9 +66,9 @@ rule TableAction_inst/no-name-annotation:
           $join_text(IC.PATH ++ nameIR, ".")
         )
   -- if tableActionReferenceIR'
-      = prefixedNameIR controlPlaneNameIR `( argumentListIR )
+      = prefixedNameIR controlPlaneNameIR `( argumentListIR `)
   -- if tableActionIR = annotationList tableActionReferenceIR'
-        '#' `( parameterListIR ',' parameterListIR_control ) ';'
+        '#' `( parameterListIR ',' parameterListIR_control `) ';'
 
 
 ;;
@@ -104,11 +104,11 @@ rule TableProperty_inst/tableKeysPropertyIR:
 ;;; ACTIONS '=' `{ tableActionListIR }
 
 rule TableProperty_inst/tableActionsPropertyIR:
-  IC STO_0 |- ACTIONS '=' `{ tableActionListIR }
+  IC STO_0 |- ACTIONS '=' `{ tableActionListIR `}
           : STO_1 tableActionsPropertyIR
   -- TableActions_inst:
       IC STO_0 |- tableActionListIR : STO_1 tableActionListIR_inst
-  -- if tableActionsPropertyIR = ACTIONS '=' `{ tableActionListIR_inst }
+  -- if tableActionsPropertyIR = ACTIONS '=' `{ tableActionListIR_inst `}
 
 ;;; annotationList constOptIR DEFAULT_ACTION '=' tableActionReferenceIR ';'
 
@@ -172,7 +172,7 @@ def $init_tableKeys(tablePropertyIR*) = tableKeysPropertyIR
       = $filter_<tablePropertyIR>(
           tablePropertyIR*,
           (tablePropertyIR <: tableKeysPropertyIR)*)
-def $init_tableKeys(tablePropertyIR*) = KEY '=' `{ eps }
+def $init_tableKeys(tablePropertyIR*) = KEY '=' `{ eps `}
   -- if eps
       = $filter_<tablePropertyIR>(
           tablePropertyIR*,
@@ -184,7 +184,7 @@ def $init_tableEntries(tablePropertyIR*) = tableEntriesPropertyIR
           tablePropertyIR*,
           (tablePropertyIR <: tableEntriesPropertyIR)*)
 def $init_tableEntries(tablePropertyIR*)
-  = _EMPTY eps ENTRIES '=' `{ eps }
+  = _EMPTY eps ENTRIES '=' `{ eps `}
   -- if eps
       = $filter_<tablePropertyIR>(
           tablePropertyIR*,

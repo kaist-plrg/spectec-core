@@ -7,5 +7,5 @@ dec $parameterListIR_of_constructorTypeDefIR(constructorTypeDefIR)
   hint(prose_in "the parameters of" %0)
 
 def $parameterListIR_of_constructorTypeDefIR(
-    CONSTRUCTOR `< _ ',' _ > `( constructorParameterIR* ) ':' _)
+    CONSTRUCTOR `< _ ',' _ `> `( constructorParameterIR* `) ':' _)
   = constructorParameterIR*

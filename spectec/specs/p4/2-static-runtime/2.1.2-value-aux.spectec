@@ -83,8 +83,8 @@ def $update_headerUnion(
     nameIR)
   = (value_field_h_update nameIR_field_h ';') :: $update_headerUnion(fieldValue_t*, nameIR)
   -- if nameIR_field_h =/= nameIR
-  -- if HEADER typeId `{ _ ';' fieldValue* } = value_field_h
-  -- if value_field_h_update = HEADER typeId `{ false ';' fieldValue* }
+  -- if HEADER typeId `{ _ ';' fieldValue* `} = value_field_h
+  -- if value_field_h_update = HEADER typeId `{ false ';' fieldValue* `}
 
 ;;
 ;; Header operations
@@ -96,7 +96,7 @@ def $update_headerUnion(
 
 dec $isValid_header(value) : bool
 def $isValid_header(headerValue) = b_valid
-  -- if HEADER _ `{ b_valid ';' _ } = headerValue
+  -- if HEADER _ `{ b_valid ';' _ `} = headerValue
 
 ;;
 ;;;; Invalidate
@@ -106,10 +106,10 @@ dec $invalidate_value(value) : value
 dec $invalidate_header(headerValue) : headerValue
 dec $invalidate_headerUnion(headerUnionValue) : headerUnionValue
 
-def $invalidate_header(HEADER typeId `{ _ ';' fieldValue* })
-  = HEADER typeId `{ false ';' fieldValue* }
-def $invalidate_headerUnion(HEADER_UNION typeId `{ (value_field nameIR_field ';')* })
-  = HEADER_UNION typeId `{ (value_field_invalidated nameIR_field ';')* }
+def $invalidate_header(HEADER typeId `{ _ ';' fieldValue* `})
+  = HEADER typeId `{ false ';' fieldValue* `}
+def $invalidate_headerUnion(HEADER_UNION typeId `{ (value_field nameIR_field ';')* `})
+  = HEADER_UNION typeId `{ (value_field_invalidated nameIR_field ';')* `}
   -- if (value_field_invalidated = $invalidate_value(value_field))*
 
 def $invalidate_value(headerValue)
@@ -177,13 +177,13 @@ def $write_value_field_from_bits'(
       = $write_value_from_bits'(value, n_var, b*)
 
 def $write_value_from_bits'(
-    STRUCT typeId `{ fieldValue* }, n_var, b*)
-  = (STRUCT typeId `{ fieldValue_updated* }, b_rest*)
+    STRUCT typeId `{ fieldValue* `}, n_var, b*)
+  = (STRUCT typeId `{ fieldValue_updated* `}, b_rest*)
   -- if (fieldValue_updated*, b_rest*)
       = $write_value_fields_from_bits'(fieldValue*, n_var, b*)
 def $write_value_from_bits'(
-    HEADER typeId `{ _ ';' fieldValue* }, n_var, b*)
-  = (HEADER typeId `{ true ';' fieldValue_updated* }, b_rest*)
+    HEADER typeId `{ _ ';' fieldValue* `}, n_var, b*)
+  = (HEADER typeId `{ true ';' fieldValue_updated* `}, b_rest*)
   -- if (fieldValue_updated*, b_rest*)
       = $write_value_fields_from_bits'(fieldValue*, n_var, b*)
 
@@ -193,8 +193,8 @@ def $write_value_from_bits'(
   -- if (value_updated, b_rest*) = $write_value_from_bits'(value, n_var, b*)
 
 def $write_value_from_bits'(
-    HEADER_STACK `[ value* `( n_idx ';' n_size ) ], n_var, b*)
-  = (HEADER_STACK `[ value_updated* `( n_idx ';' n_size ) ], b_rest*)
+    HEADER_STACK `[ value* `( n_idx ';' n_size `) `], n_var, b*)
+  = (HEADER_STACK `[ value_updated* `( n_idx ';' n_size `) `], b_rest*)
   -- if (value_updated*, b_rest*) = $write_values_from_bits'(value*, n_var, b*)
 
 ;;
@@ -212,18 +212,18 @@ def $write_bits_from_value(_ '.' w V i)
   = $int_to_bits_unsigned(w, i)
 
 def $write_bits_from_value(
-    HEADER_STACK `[ value_element* `( _ ';' _ ) ])
+    HEADER_STACK `[ value_element* `( _ ';' _ `) `])
   = $concat_<bool>($write_bits_from_value(value_element)*)
 
 def $write_bits_from_value(
-    STRUCT _ `{ (value_field id_field ';')* })
+    STRUCT _ `{ (value_field id_field ';')* `})
   = $concat_<bool>($write_bits_from_value(value_field)*)
 def $write_bits_from_value(
-    HEADER _ `{ true ';' (value_field id_field ';')* })
+    HEADER _ `{ true ';' (value_field id_field ';')* `})
   = $concat_<bool>($write_bits_from_value(value_field)*)
-def $write_bits_from_value(HEADER _ `{ false ';' _ }) = eps
+def $write_bits_from_value(HEADER _ `{ false ';' _ `}) = eps
 def $write_bits_from_value(
-    HEADER_UNION _ `{ (value id ';')* })
+    HEADER_UNION _ `{ (value id ';')* `})
   = $concat_<bool>($write_bits_from_value(value)*)
 
 def $write_bits_from_value(typeId '.' id '.' value)

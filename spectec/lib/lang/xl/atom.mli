@@ -38,13 +38,13 @@ type t =
   | Tilde2                          (* ~~ *)
   | Backslash                       (* \ *)
   | LAngle                          (* `< *)
-  | RAngle                          (* > *)
+  | RAngle                          (* `> *)
   | LParen                          (* `( *)
-  | RParen                          (* ) *)
+  | RParen                          (* `) *)
   | LBrack                          (* `[ *)
-  | RBrack                          (* ] *)
+  | RBrack                          (* `] *)
   | LBrace                          (* `{ *)
-  | RBrace                          (* } *)
+  | RBrace                          (* `} *)
 [@@@ocamlformat "enable"]
 
 val compare : t -> t -> int

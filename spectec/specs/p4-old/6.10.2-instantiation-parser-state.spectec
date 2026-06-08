@@ -8,12 +8,12 @@
 
 rule ParserState_inst:
   Ci_0 sto_0 |- annotationList STATE nameIR
-                  `{ parserStatementListIR transitionStatementIR }
+                  `{ parserStatementListIR transitionStatementIR `}
             ==> Ci_2 sto_1
   ---- ;; instantiate parser statements
   -- ParserStmts_inst: Ci_0 sto_0 |- parserStatementListIR ==> Ci_1 sto_1 parserStatementListIR_inst
   ---- ;; bind parser state to state environment
-  -- if annotationList `{ parserStatementListIR_inst }
+  -- if annotationList `{ parserStatementListIR_inst `}
       = stateDyn
   -- if $add_state_inst(BLOCK, Ci_1, nameIR, stateDyn) = Ci_2
 

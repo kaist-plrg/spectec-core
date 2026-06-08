@@ -4,8 +4,8 @@
 
 
 rule Constructor_inst/non-aliased-none-type:
-  p IC |- prefixedNameIR `< typeArgumentIR* > `( argumentIR* )
-        : constructorDef `< typeArgumentIR* > `( '#' id_default* '#' id_optional* )
+  p IC |- prefixedNameIR `< typeArgumentIR* `> `( argumentIR* `)
+        : constructorDef `< typeArgumentIR* `> `( '#' id_default* '#' id_optional* `)
   ---- ;; if not aliased
   -- if eps = $find_typeDef_i(p, IC, prefixedNameIR)
   ---- ;; find and specialize the constructor type definition
@@ -13,8 +13,8 @@ rule Constructor_inst/non-aliased-none-type:
       = $find_constructorDef_i(IC, prefixedNameIR, argumentIR*)
 
 rule Constructor_inst/non-aliased-some-type:
-  p IC |- prefixedNameIR `< typeArgumentIR* > `( argumentIR* )
-        : constructorDef `< typeArgumentIR* > `( '#' id_default* '#' id_optional* )
+  p IC |- prefixedNameIR `< typeArgumentIR* `> `( argumentIR* `)
+        : constructorDef `< typeArgumentIR* `> `( '#' id_default* '#' id_optional* `)
   ---- ;; if not aliased
   -- if typeDefIR = $find_typeDef_i(p, IC, prefixedNameIR)
   -- if ~(typeDefIR <: typedefTypeIR)
@@ -23,8 +23,8 @@ rule Constructor_inst/non-aliased-some-type:
       = $find_constructorDef_i(IC, prefixedNameIR, argumentIR*)
 
 rule Constructor_inst/aliased:
-  p IC |- prefixedNameIR `< eps > `( argumentIR* )
-        : constructorDef `< typeArgumentIR* > `( '#' id_default* '#' id_optional* )
+  p IC |- prefixedNameIR `< eps `> `( argumentIR* `)
+        : constructorDef `< typeArgumentIR* `> `( '#' id_default* '#' id_optional* `)
   ---- ;; if aliased, resolve the alias
   -- if TYPEDEF nameIR_alias typeIR_alias
       = $find_typeDef_i(p, IC, prefixedNameIR)

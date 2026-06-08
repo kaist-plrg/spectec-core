@@ -118,13 +118,13 @@ syntax baseType =
   | MATCH_KIND
   | STRING
   | INT
-  | INT `< int >
-  | INT `< `( expression ) >
+  | INT `< int `>
+  | INT `< `( expression `) `>
   | BIT
-  | BIT `< int >
-  | BIT `< `( expression ) >
-  | VARBIT `< int >
-  | VARBIT `< `( expression ) >
+  | BIT `< int `>
+  | BIT `< `( expression `) `>
+  | VARBIT `< int `>
+  | VARBIT `< `( expression `) `>
 
 ;;
 ;;;; Named types
@@ -132,7 +132,7 @@ syntax baseType =
 
 syntax typeArgumentList
 
-syntax specializedType = prefixedTypeName `< typeArgumentList >
+syntax specializedType = prefixedTypeName `< typeArgumentList `>
 
 syntax namedType =
   | prefixedTypeName
@@ -142,7 +142,7 @@ syntax namedType =
 ;;;; Header stack types
 ;;
 
-syntax headerStackType = namedType `[ expression ]
+syntax headerStackType = namedType `[ expression `]
 
 ;;
 ;;;; List types
@@ -150,13 +150,13 @@ syntax headerStackType = namedType `[ expression ]
 
 syntax typeArgument
 
-syntax listType = LIST `< typeArgument >
+syntax listType = LIST `< typeArgument `>
 
 ;;
 ;;;; Tuple types
 ;;
 
-syntax tupleType = TUPLE `< typeArgumentList >
+syntax tupleType = TUPLE `< typeArgumentList `>
 
 ;;
 ;;;; Types
@@ -192,12 +192,12 @@ def $flatten_typeParameterList(typeParameterList ',' typeParameter) =
 
 syntax typeParameterListOpt =
   | _EMPTY
-  | `< typeParameterList >
+  | `< typeParameterList `>
 
 dec $flatten_typeParameterListOpt(typeParameterListOpt) : typeParameter*
   hint(prose_in %0 "flattened")
 def $flatten_typeParameterListOpt(_EMPTY) = eps
-def $flatten_typeParameterListOpt(`< typeParameterList >)
+def $flatten_typeParameterListOpt(`< typeParameterList `>)
   = $flatten_typeParameterList(typeParameterList)
 
 ;;
@@ -234,13 +234,13 @@ syntax constructorParameterList = parameterList
 
 syntax constructorParameterListOpt =
   | _EMPTY
-  | `( parameterList )
+  | `( parameterList `)
 
 dec $flatten_constructorParameterListOpt(constructorParameterListOpt)
   : constructorParameter*
   hint(prose_in %0 "flattened")
 def $flatten_constructorParameterListOpt(_EMPTY) = eps
-def $flatten_constructorParameterListOpt(`( parameterList ))
+def $flatten_constructorParameterListOpt(`( parameterList `))
   = $flatten_parameterList(parameterList)
 
 ;;
@@ -316,7 +316,7 @@ syntax ternaryExpressionNonBrace =
 ;;;; Cast expressions
 ;;
 
-syntax castExpression = `( type ) expression
+syntax castExpression = `( type `) expression
 
 ;;
 ;;;; Data (aggregate) expressions
@@ -327,7 +327,7 @@ syntax sequenceOrRecordElementExpression
 syntax invalidHeaderExpression = '{#}'
 
 syntax sequenceOrRecordExpression =
-  | `{ sequenceOrRecordElementExpression trailingCommaOpt }
+  | `{ sequenceOrRecordElementExpression trailingCommaOpt `}
 
 syntax dataExpression =
   | invalidHeaderExpression
@@ -346,11 +346,11 @@ syntax memberAccessExpression =
   memberAccessBase '.' member
 
 syntax indexAccessExpression =
-  expression `[ expression ]
+  expression `[ expression `]
 
 syntax sliceAccessExpression =
-  | expression `[ expression ':' expression ]
-  | expression `[ expression '+': expression ]
+  | expression `[ expression ':' expression `]
+  | expression `[ expression '+': expression `]
 
 syntax accessExpression =
   | errorAccessExpression
@@ -362,11 +362,11 @@ syntax memberAccessExpressionNonBrace =
   memberAccessBaseNonBrace '.' member
 
 syntax indexAccessExpressionNonBrace =
-  expressionNonBrace `[ expression ]
+  expressionNonBrace `[ expression `]
 
 syntax sliceAccessExpressionNonBrace =
-  | expressionNonBrace `[ expression ':' expression ]
-  | expressionNonBrace `[ expression '+': expression ]
+  | expressionNonBrace `[ expression ':' expression `]
+  | expressionNonBrace `[ expression '+': expression `]
 
 syntax accessExpressionNonBrace =
   | errorAccessExpression
@@ -386,18 +386,18 @@ syntax callTargetNonBrace
 syntax callableTargetNonBrace
 
 syntax callExpression =
-  | callTarget `( argumentList )
-  | callableTarget `< realTypeArgumentList > `( argumentList )
+  | callTarget `( argumentList `)
+  | callableTarget `< realTypeArgumentList `> `( argumentList `)
 
 syntax callExpressionNonBrace =
-  | callTargetNonBrace `( argumentList )
-  | callableTargetNonBrace `< realTypeArgumentList > `( argumentList )
+  | callTargetNonBrace `( argumentList `)
+  | callableTargetNonBrace `< realTypeArgumentList `> `( argumentList `)
 
 ;;
 ;;;; Parenthesized expressions
 ;;
 
-syntax parenthesizedExpression = `( expression )
+syntax parenthesizedExpression = `( expression `)
 
 ;;
 ;;;; Expressions
@@ -501,30 +501,30 @@ def $expressionNonBrace_as_expression(expressionNonBrace_base '.' member)
   -- if expression_base
       = $expressionNonBrace_as_expression(expressionNonBrace_base)
 def $expressionNonBrace_as_expression(
-    expressionNonBrace_base `[ expression_index ])
-  = expression_base `[ expression_index ]
+    expressionNonBrace_base `[ expression_index `])
+  = expression_base `[ expression_index `]
   -- if expression_base = $expressionNonBrace_as_expression(expressionNonBrace_base)
 def $expressionNonBrace_as_expression(
-    expressionNonBrace_base `[ expression_hi ':' expression_lo ])
-  = expression_base `[ expression_hi ':' expression_lo ]
+    expressionNonBrace_base `[ expression_hi ':' expression_lo `])
+  = expression_base `[ expression_hi ':' expression_lo `]
   -- if expression_base
       = $expressionNonBrace_as_expression(expressionNonBrace_base)
 def $expressionNonBrace_as_expression(
-    expressionNonBrace_base `[ expression_l '+': expression_w ])
-  = expression_base `[ expression_l '+': expression_w ]
+    expressionNonBrace_base `[ expression_l '+': expression_w `])
+  = expression_base `[ expression_l '+': expression_w `]
   -- if expression_base
       = $expressionNonBrace_as_expression(expressionNonBrace_base)
 def $expressionNonBrace_as_expression(
-    expressionNonBrace `( argumentList ))
-  = expression `( argumentList )
+    expressionNonBrace `( argumentList `))
+  = expression `( argumentList `)
   -- if expression
       = $expressionNonBrace_as_expression(expressionNonBrace)
 def $expressionNonBrace_as_expression(
-    constructorTarget `( argumentList ))
-  = constructorTarget `( argumentList )
+    constructorTarget `( argumentList `))
+  = constructorTarget `( argumentList `)
 def $expressionNonBrace_as_expression(
-    expressionNonBrace `< realTypeArgumentList > `( argumentList ))
-  = expression `< realTypeArgumentList > `( argumentList )
+    expressionNonBrace `< realTypeArgumentList `> `( argumentList `))
+  = expression `< realTypeArgumentList `> `( argumentList `)
   -- if expression
       = $expressionNonBrace_as_expression(expressionNonBrace)
 def $expressionNonBrace_as_expression(parenthesizedExpression)
@@ -556,11 +556,11 @@ def $flatten_simpleKeysetExpressionList(
     ++ [ simpleKeysetExpression ]
 
 syntax tupleKeysetExpression =
-  | `( expression '&&&' expression )
-  | `( expression '..' expression )
-  | `( DEFAULT )
-  | `( '_' )
-  | `( simpleKeysetExpression ',' simpleKeysetExpressionList )
+  | `( expression '&&&' expression `)
+  | `( expression '..' expression `)
+  | `( DEFAULT `)
+  | `( '_' `)
+  | `( simpleKeysetExpression ',' simpleKeysetExpressionList `)
 
 syntax keysetExpression =
   | simpleKeysetExpression
@@ -633,10 +633,10 @@ def $flatten_argumentList(argumentListNonEmpty ',' argument)
 syntax lvalue =
   | referenceExpression
   | lvalue '.' member
-  | lvalue `[ expression ]
-  | lvalue `[ expression ':' expression ]
-  | lvalue `[ expression '+': expression ]
-  | `( lvalue )
+  | lvalue `[ expression `]
+  | lvalue `[ expression ':' expression `]
+  | lvalue `[ expression '+': expression `]
+  | `( lvalue `)
 
 dec $lvalue_as_expression(lvalue) : expression
   hint(prose_in "the expression corresponding to" %0)
@@ -644,16 +644,16 @@ def $lvalue_as_expression(referenceExpression) = referenceExpression
 def $lvalue_as_expression(lvalue_base '.' member)
   = expression_base '.' member
   -- if expression_base = $lvalue_as_expression(lvalue_base)
-def $lvalue_as_expression(lvalue_base `[ expression_index ])
-  = expression_base `[ expression_index ]
+def $lvalue_as_expression(lvalue_base `[ expression_index `])
+  = expression_base `[ expression_index `]
   -- if expression_base = $lvalue_as_expression(lvalue_base)
-def $lvalue_as_expression(lvalue_base `[ expression_hi ':' expression_lo ])
-  = expression_base `[ expression_hi ':' expression_lo ]
+def $lvalue_as_expression(lvalue_base `[ expression_hi ':' expression_lo `])
+  = expression_base `[ expression_hi ':' expression_lo `]
   -- if expression_base = $lvalue_as_expression(lvalue_base)
-def $lvalue_as_expression(lvalue_base `[ expression_hi '+': expression_lo ])
-  = expression_base `[ expression_hi '+': expression_lo ]
+def $lvalue_as_expression(lvalue_base `[ expression_hi '+': expression_lo `])
+  = expression_base `[ expression_hi '+': expression_lo `]
   -- if expression_base = $lvalue_as_expression(lvalue_base)
-def $lvalue_as_expression(`( lvalue )) = `( expression )
+def $lvalue_as_expression(`( lvalue `)) = `( expression `)
   -- if expression = $lvalue_as_expression(lvalue)
 
 dec $expression_as_lvalue(expression) : lvalue?
@@ -661,16 +661,16 @@ dec $expression_as_lvalue(expression) : lvalue?
 def $expression_as_lvalue(referenceExpression) = referenceExpression
 def $expression_as_lvalue(expression '.' member) = lvalue '.' member
   -- if lvalue = $expression_as_lvalue(expression)
-def $expression_as_lvalue(expression_base `[ expression_index ])
-  = lvalue_base `[ expression_index ]
+def $expression_as_lvalue(expression_base `[ expression_index `])
+  = lvalue_base `[ expression_index `]
   -- if lvalue_base = $expression_as_lvalue(expression_base)
-def $expression_as_lvalue(expression_base `[ expression_hi ':' expression_lo ])
-  = lvalue_base `[ expression_hi ':' expression_lo ]
+def $expression_as_lvalue(expression_base `[ expression_hi ':' expression_lo `])
+  = lvalue_base `[ expression_hi ':' expression_lo `]
   -- if lvalue_base = $expression_as_lvalue(expression_base)
-def $expression_as_lvalue(expression_base `[ expression_hi '+': expression_lo ])
-  = lvalue_base `[ expression_hi '+': expression_lo ]
+def $expression_as_lvalue(expression_base `[ expression_hi '+': expression_lo `])
+  = lvalue_base `[ expression_hi '+': expression_lo `]
   -- if lvalue_base = $expression_as_lvalue(expression_base)
-def $expression_as_lvalue(`( expression )) = `( lvalue )
+def $expression_as_lvalue(`( expression `)) = `( lvalue `)
   -- if lvalue = $expression_as_lvalue(expression)
 
 ;;
@@ -716,14 +716,14 @@ def $assignop_as_binop(assignop) = eps
 ;;
 
 syntax callStatement =
-  | lvalue `( argumentList ) ';'
-  | lvalue `< typeArgumentList > `( argumentList ) ';'
+  | lvalue `( argumentList `) ';'
+  | lvalue `< typeArgumentList `> `( argumentList `) ';'
 
 ;;
 ;;;; Direct application statements
 ;;
 
-syntax directApplicationStatement = namedType '.' APPLY `( argumentList ) ';'
+syntax directApplicationStatement = namedType '.' APPLY `( argumentList `) ';'
 
 ;;
 ;;;; Return statements
@@ -745,7 +745,7 @@ syntax exitStatement = EXIT ';'
 
 syntax blockElementStatementList
 
-syntax blockStatement = annotationList `{ blockElementStatementList }
+syntax blockStatement = annotationList `{ blockElementStatementList `}
 
 ;;
 ;;;; Conditional statements
@@ -754,8 +754,8 @@ syntax blockStatement = annotationList `{ blockElementStatementList }
 syntax statement
 
 syntax conditionalStatement =
-  | IF `( expression ) statement
-  | IF `( expression ) statement ELSE statement
+  | IF `( expression `) statement
+  | IF `( expression `) statement ELSE statement
 
 ;;
 ;;;; For statements
@@ -764,8 +764,8 @@ syntax conditionalStatement =
 syntax annotationListNonEmpty
 
 syntax forUpdateStatement =
-  | lvalue `( argumentList )
-  | lvalue `< typeArgumentList > `( argumentList )
+  | lvalue `( argumentList `)
+  | lvalue `< typeArgumentList `> `( argumentList `)
   | lvalue assignop expression
 
 syntax forUpdateStatementListNonEmpty =
@@ -812,11 +812,11 @@ syntax forCollectionExpression =
 
 syntax forStatement =
   | annotationList FOR
-      `( forInitStatementList ';' expression ';' forUpdateStatementList ) statement
+      `( forInitStatementList ';' expression ';' forUpdateStatementList `) statement
   | annotationList FOR
-      `( type name IN forCollectionExpression ) statement
+      `( type name IN forCollectionExpression `) statement
   | annotationList FOR
-      `( annotationListNonEmpty type name IN forCollectionExpression ) statement
+      `( annotationListNonEmpty type name IN forCollectionExpression `) statement
 
 ;;
 ;;;; Switch statements
@@ -840,7 +840,7 @@ def $flatten_switchCaseList(_EMPTY) = eps
 def $flatten_switchCaseList(switchCaseList switchCase)
   = $flatten_switchCaseList(switchCaseList) ++ [ switchCase ]
 
-syntax switchStatement = SWITCH `( expression ) `{ switchCaseList }
+syntax switchStatement = SWITCH `( expression `) `{ switchCaseList `}
 
 ;;
 ;;;; Break and continue statements
@@ -911,7 +911,7 @@ def $flatten_blockElementStatementList(
 ;;
 
 syntax functionPrototype =
-  typeOrVoid name typeParameterListOpt `( parameterList )
+  typeOrVoid name typeParameterListOpt `( parameterList `)
 
 syntax functionDeclaration =
   annotationList functionPrototype blockStatement
@@ -921,7 +921,7 @@ syntax functionDeclaration =
 ;;
 
 syntax actionDeclaration =
-  annotationList ACTION name `( parameterList ) blockStatement
+  annotationList ACTION name `( parameterList `) blockStatement
 
 ;;
 ;;;; Instantiations
@@ -929,12 +929,12 @@ syntax actionDeclaration =
 
 syntax objectDeclarationList
 
-syntax objectInitializer = '=' `{ objectDeclarationList }
+syntax objectInitializer = '=' `{ objectDeclarationList `}
 
 ;; (TODO) can we refine type as namedType?
 syntax instantiation =
-  | annotationList type `( argumentList ) name ';'
-  | annotationList type `( argumentList ) name objectInitializer ';'
+  | annotationList type `( argumentList `) name ';'
+  | annotationList type `( argumentList `) name objectInitializer ';'
 
 syntax objectDeclaration =
   | functionDeclaration
@@ -957,13 +957,13 @@ def $flatten_objectDeclarationList(
 ;;;; Error declarations
 ;;
 
-syntax errorDeclaration = ERROR `{ nameList }
+syntax errorDeclaration = ERROR `{ nameList `}
 
 ;;
 ;;;; Match kind declarations
 ;;
 
-syntax matchKindDeclaration = MATCH_KIND `{ nameList trailingCommaOpt }
+syntax matchKindDeclaration = MATCH_KIND `{ nameList trailingCommaOpt `}
 
 ;;
 ;;;; Derived type declarations
@@ -974,8 +974,8 @@ syntax matchKindDeclaration = MATCH_KIND `{ nameList trailingCommaOpt }
 ;;
 
 syntax enumTypeDeclaration =
-  | annotationList ENUM name `{ nameList trailingCommaOpt }
-  | annotationList ENUM type name `{ namedExpressionList trailingCommaOpt }
+  | annotationList ENUM name `{ nameList trailingCommaOpt `}
+  | annotationList ENUM type name `{ namedExpressionList trailingCommaOpt `}
 
 ;;
 ;;;;;; Struct, header, and union type declarations
@@ -994,13 +994,13 @@ def $flatten_typeFieldList(typeFieldList typeField)
   = $flatten_typeFieldList(typeFieldList) ++ [ typeField ]
 
 syntax structTypeDeclaration =
-  annotationList STRUCT name typeParameterListOpt `{ typeFieldList }
+  annotationList STRUCT name typeParameterListOpt `{ typeFieldList `}
 
 syntax headerTypeDeclaration =
-  annotationList HEADER name typeParameterListOpt `{ typeFieldList }
+  annotationList HEADER name typeParameterListOpt `{ typeFieldList `}
 
 syntax headerUnionTypeDeclaration =
-  annotationList HEADER_UNION name typeParameterListOpt `{ typeFieldList }
+  annotationList HEADER_UNION name typeParameterListOpt `{ typeFieldList `}
 
 syntax derivedTypeDeclaration =
   | enumTypeDeclaration
@@ -1028,7 +1028,7 @@ syntax externFunctionDeclaration =
   annotationList EXTERN functionPrototype ';'
 
 syntax externConstructorPrototype =
-  | annotationList typeIdentifier `( parameterList ) ';'
+  | annotationList typeIdentifier `( parameterList `) ';'
 
 syntax externMethodPrototype =
   | annotationList functionPrototype ';'
@@ -1078,7 +1078,7 @@ def $flatten_externConstructorOrMethodPrototypeList(
 
 syntax externObjectDeclaration =
   annotationList EXTERN nonTypeName
-    typeParameterListOpt `{ externConstructorOrMethodPrototypeList }
+    typeParameterListOpt `{ externConstructorOrMethodPrototypeList `}
 
 syntax externDeclaration =
   | externFunctionDeclaration
@@ -1104,7 +1104,7 @@ def $flatten_selectCaseList(_EMPTY) = eps
 def $flatten_selectCaseList(selectCaseList selectCase)
   = $flatten_selectCaseList(selectCaseList) ++ [ selectCase ]
 
-syntax selectExpression = SELECT `( expressionList ) `{ selectCaseList }
+syntax selectExpression = SELECT `( expressionList `) `{ selectCaseList `}
 
 ;;
 ;;;;;; Transition statements
@@ -1128,14 +1128,14 @@ syntax valueSetType =
   | prefixedTypeName
 
 syntax valueSetDeclaration =
-  annotationList VALUE_SET `< valueSetType > `( expression ) name ';'
+  annotationList VALUE_SET `< valueSetType `> `( expression `) name ';'
 
 ;;
 ;;;;;; Parser type declarations
 ;;
 
 syntax parserTypeDeclaration =
-  annotationList PARSER name typeParameterListOpt `( parameterList ) ';'
+  annotationList PARSER name typeParameterListOpt `( parameterList `) ';'
 
 ;;
 ;;;;;; Parser declarations
@@ -1143,11 +1143,11 @@ syntax parserTypeDeclaration =
 
 syntax parserStatement, parserStatementList
 
-syntax parserBlockStatement = annotationList `{ parserStatementList }
+syntax parserBlockStatement = annotationList `{ parserStatementList `}
 
 syntax parserConditionalStatement =
-  | IF `( expression ) parserStatement
-  | IF `( expression ) parserStatement ELSE parserStatement
+  | IF `( expression `) parserStatement
+  | IF `( expression `) parserStatement ELSE parserStatement
 
 syntax parserStatement =
   | constantDeclaration
@@ -1170,7 +1170,7 @@ def $flatten_parserStatementList(parserStatementList parserStatement)
   = $flatten_parserStatementList(parserStatementList) ++ [ parserStatement ]
 
 syntax parserState =
-  annotationList STATE name `{ parserStatementList transitionStatement }
+  annotationList STATE name `{ parserStatementList transitionStatement `}
 
 syntax parserStateList =
   | parserState
@@ -1203,8 +1203,8 @@ def $flatten_parserLocalDeclarationList(
 
 syntax parserDeclaration =
   annotationList PARSER name typeParameterListOpt
-    `( parameterList ) constructorParameterListOpt
-    `{ parserLocalDeclarationList parserStateList }
+    `( parameterList `) constructorParameterListOpt
+    `{ parserLocalDeclarationList parserStateList `}
 
 ;;
 ;;;; Control statements and declarations
@@ -1247,7 +1247,7 @@ def $flatten_tableKeyList(tableKeyList tableKey)
 
 syntax tableActionReference =
   | prefixedNonTypeName
-  | prefixedNonTypeName `( argumentList )
+  | prefixedNonTypeName `( argumentList `)
 
 syntax tableAction = annotationList tableActionReference ';'
 
@@ -1267,7 +1267,7 @@ def $flatten_tableActionList(tableActionList tableAction) =
 
 syntax tableEntryPriority =
   | PRIORITY '=' integerLiteral ':'
-  | PRIORITY '=' `( expression ) ':'
+  | PRIORITY '=' `( expression `) ':'
 
 syntax tableEntry =
   | constOpt tableEntryPriority keysetExpression ':' tableActionReference annotationList ';'
@@ -1288,9 +1288,9 @@ def $flatten_tableEntryList(tableEntryList tableEntry)
 ;;
 
 syntax tableProperty =
-  | KEY '=' `{ tableKeyList }
-  | ACTIONS '=' `{ tableActionList }
-  | annotationList constOpt ENTRIES '=' `{ tableEntryList }
+  | KEY '=' `{ tableKeyList `}
+  | ACTIONS '=' `{ tableActionList `}
+  | annotationList constOpt ENTRIES '=' `{ tableEntryList `}
   | annotationList constOpt tableCustomName initializer ';'
 
 syntax tablePropertyList =
@@ -1304,14 +1304,14 @@ def $flatten_tablePropertyList(tablePropertyList tableProperty) =
   $flatten_tablePropertyList(tablePropertyList) ++ [ tableProperty ]
 
 syntax tableDeclaration =
-  annotationList TABLE name `{ tablePropertyList }
+  annotationList TABLE name `{ tablePropertyList `}
 
 ;;
 ;;;;;; Control type declarations
 ;;
 
 syntax controlTypeDeclaration =
-  annotationList CONTROL name typeParameterListOpt `( parameterList ) ';'
+  annotationList CONTROL name typeParameterListOpt `( parameterList `) ';'
 
 ;;
 ;;;;;; Control declarations
@@ -1341,15 +1341,15 @@ def $flatten_controlLocalDeclarationList(
 
 syntax controlDeclaration =
   annotationList CONTROL name typeParameterListOpt
-    `( parameterList ) constructorParameterListOpt
-    `{ controlLocalDeclarationList APPLY controlBody }
+    `( parameterList `) constructorParameterListOpt
+    `{ controlLocalDeclarationList APPLY controlBody `}
 
 ;;
 ;;;; Package type declarations
 ;;
 
 syntax packageTypeDeclaration =
-  annotationList PACKAGE name typeParameterListOpt `( parameterList ) ';'
+  annotationList PACKAGE name typeParameterListOpt `( parameterList `) ';'
 
 ;;
 ;;;; Type declarations
@@ -1404,7 +1404,7 @@ syntax annotationToken =
 
 syntax annotationBody =
   | _EMPTY
-  | annotationBody `( annotationBody )
+  | annotationBody `( annotationBody `)
   | annotationBody annotationToken
 
 syntax structuredAnnotationBody =
@@ -1413,9 +1413,9 @@ syntax structuredAnnotationBody =
 syntax annotation =
   | '@' name
     hint(print "@"#%0)
-  | '@' name `( annotationBody )
+  | '@' name `( annotationBody `)
     hint(print "@"#%0#"("#%1#")")
-  | '@' name `[ structuredAnnotationBody ]
+  | '@' name `[ structuredAnnotationBody `]
     hint(print "@"#%0#"["#%1#"]")
   | '@' PRAGMA name annotationBody
     hint(print "@pragma" %0 %1)

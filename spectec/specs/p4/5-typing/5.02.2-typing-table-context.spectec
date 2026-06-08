@@ -4,7 +4,7 @@
 
 syntax matchKey = typeIR ':' nameIR
 
-syntax matchAction = prefixedNameIR `( parameterIR* '@' argumentListIR )
+syntax matchAction = prefixedNameIR `( parameterIR* '@' argumentListIR `)
 
 syntax matchPriority =
   { DELTA nat,
@@ -78,11 +78,11 @@ def $add_key_tbl(TBLC, id, typeIR)
 
 dec $add_action_tbl(tableContext, prefixedNameIR, parameterIR*, argumentListIR)
   : tableContext
-  hint(prose_in %0 "with match action" %1 `( %2 ) "applied using" %3 "added")
+  hint(prose_in %0 "with match action" %1 `( %2 `) "applied using" %3 "added")
 
 def $add_action_tbl(TBLC, prefixedNameIR, parameterIR*, argumentListIR)
   = TBLC[ .ACTIONS = TBLC.ACTIONS ++ [ matchAction ] ]
-  -- if matchAction = prefixedNameIR `( parameterIR* '@' argumentListIR )
+  -- if matchAction = prefixedNameIR `( parameterIR* '@' argumentListIR `)
 
 ;;
 ;; Checkers
@@ -162,11 +162,11 @@ def $find_action'(eps, prefixedNameIR) = eps
 
 def $find_action'(matchAction_h :: matchAction_t*, prefixedNameIR)
   = (parameterIR*, argumentListIR)
-  -- if prefixedNameIR `( parameterIR* '@' argumentListIR ) = matchAction_h
+  -- if prefixedNameIR `( parameterIR* '@' argumentListIR `) = matchAction_h
 
 def $find_action'(matchAction_h :: matchAction_t*, prefixedNameIR)
   = $find_action'(matchAction_t*, prefixedNameIR)
-  -- if prefixedNameIR_h `(  _ '@' _ ) = matchAction_h
+  -- if prefixedNameIR_h `(  _ '@' _ `) = matchAction_h
   -- if prefixedNameIR_h =/= prefixedNameIR
 
 ;;

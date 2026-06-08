@@ -3,5 +3,5 @@
 ;;
 
 syntax constructorTypeDefIR =
-  CONSTRUCTOR `< typeParameterIR* ',' typeParameterIR* >
-    `( constructorParameterIR* ) ':' typeIR
+  CONSTRUCTOR `< typeParameterIR* ',' typeParameterIR* `>
+    `( constructorParameterIR* `) ':' typeIR

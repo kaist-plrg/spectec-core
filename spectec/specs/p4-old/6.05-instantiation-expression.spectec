@@ -216,7 +216,7 @@ rule Expr_inst/ternaryExpressionIR-else:
 ;;;; syntax castExpressionIR = `( typeIR ) typedExpressionIR
 
 rule Expr_inst/castExpressionIR:
-  p Ci sto |- (`( typeIR ) typedExpressionIR) '#' _ ==> sto_1 value_cast
+  p Ci sto |- (`( typeIR `) typedExpressionIR) '#' _ ==> sto_1 value_cast
   -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto_1 value
   -- if $cast_op(typeIR, value) = value_cast
 
@@ -231,29 +231,29 @@ rule Expr_inst/dataExpressionIR-invalid:
 ;;;;; SEQ `{ typedExpressionListIR }
 
 rule Expr_inst/dataExpressionIR-sequence:
-  p Ci sto |- (SEQ `{ typedExpressionListIR }) '#' _
-          ==> sto_1 (SEQ `( value* ))
+  p Ci sto |- (SEQ `{ typedExpressionListIR `}) '#' _
+          ==> sto_1 (SEQ `( value* `))
   -- Exprs_inst: p Ci sto |- typedExpressionListIR ==> sto_1 value*
 
 ;;;;; SEQ `{ typedExpressionListIR ',' '...' }
 
 rule Expr_inst/dataExpressionIR-sequence-default:
-  p Ci sto |- (SEQ `{ typedExpressionListIR ',' '...' }) '#' _
-          ==> sto_1 (SEQ `( value* ',' '...' ))
+  p Ci sto |- (SEQ `{ typedExpressionListIR ',' '...' `}) '#' _
+          ==> sto_1 (SEQ `( value* ',' '...' `))
   -- Exprs_inst: p Ci sto |- typedExpressionListIR ==> sto_1 value*
 
 ;;;;; RECORD `{ namedExpressionListIR }
 
 rule Expr_inst/dataExpressionIR-record:
-  p Ci sto |- (RECORD `{ (nameIR '=' typedExpressionIR)* }) '#' _
-          ==> sto_1 (RECORD `{ (value nameIR ';')* })
+  p Ci sto |- (RECORD `{ (nameIR '=' typedExpressionIR)* `}) '#' _
+          ==> sto_1 (RECORD `{ (value nameIR ';')* `})
   -- Exprs_inst: p Ci sto |- typedExpressionIR* ==> sto_1 value*
 
 ;;;;; RECORD `{ namedExpressionListIR ',' '...' }
 
 rule Expr_inst/dataExpressionIR-record-default:
-  p Ci sto |- (RECORD `{ (nameIR '=' typedExpressionIR)* ',' '...' }) '#' _
-          ==> sto_1 (RECORD `{ (value nameIR ';')* ',' '...' })
+  p Ci sto |- (RECORD `{ (nameIR '=' typedExpressionIR)* ',' '...' `}) '#' _
+          ==> sto_1 (RECORD `{ (value nameIR ';')* ',' '...' `})
   -- Exprs_inst: p Ci sto |- typedExpressionIR* ==> sto_1 value*
 
 ;;;; accessExpressionIR
@@ -276,13 +276,13 @@ rule Expr_inst/accessExpressionIR-errorAccessExpressionIR:
 rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-typeaccess-enum:
   p Ci sto |- ((TYPE prefixedNameIR) '.' nameIR) '#' _
           ==> sto (tid '.' nameIR)
-  -- if $find_typedef_inst(p, Ci, prefixedNameIR) = ENUM tid `{ _ }
+  -- if $find_typedef_inst(p, Ci, prefixedNameIR) = ENUM tid `{ _ `}
 
 rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-typeaccess-senum:
   p Ci sto |- ((TYPE prefixedNameIR) '.' nameIR) '#' _
           ==> sto (tid '.' nameIR '#' value)
   -- if $find_typedef_inst(p, Ci, prefixedNameIR) 
-      = ENUM tid '#' _ `{ (id_member '=' value_member ';')* }
+      = ENUM tid '#' _ `{ (id_member '=' value_member ';')* `}
   -- if $assoc_<nameIR, value>(nameIR, (id_member, value_member)*) = value
 
 ;;;;;;; typedExpressionIR
@@ -291,7 +291,7 @@ rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-typedExpressionIR:
   p Ci sto |- (typedExpressionIR '.' "size") '#' _
           ==> sto_1 (D n_size)
   -- Expr_inst: p Ci sto |- typedExpressionIR ==> sto_1 value
-  -- if value = `[ _ '#' `( _; n_size )] 
+  -- if value = `[ _ '#' `( _; n_size `)`] 
 
 ;;;;; indexAccessExpressionIR
 ;;;;; syntax indexAccessExpressionIR =
@@ -302,7 +302,7 @@ rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-typedExpressionIR:
 ;;;;;; typedExpressionIR `[ typedExpressionIR ':' typedExpressionIR ]
 
 rule Expr_inst/indexAccessExpressionIR-bitslice:
-  p Ci sto |- (typedExpressionIR_b `[ typedExpressionIR_l ':' typedExpressionIR_h ]) '#' _
+  p Ci sto |- (typedExpressionIR_b `[ typedExpressionIR_l ':' typedExpressionIR_h `]) '#' _
           ==> sto_3 $bitacc_op(value_b, value_l, value_h)
   -- Expr_inst: p Ci sto |- typedExpressionIR_b ==> sto_1 value_b
   -- Expr_inst: p Ci sto_1 |- typedExpressionIR_l ==> sto_2 value_l
@@ -314,11 +314,11 @@ rule Expr_inst/indexAccessExpressionIR-bitslice:
 ;;;;; constructorTargetIR `( argumentListIR )
 
 rule Expr_inst/callExpressionIR-instantiation:
-  p Ci sto |- ((prefixedNameIR `< typeArgumentListIR >) `( argumentListIR )) '#' _
+  p Ci sto |- ((prefixedNameIR `< typeArgumentListIR `>) `( argumentListIR `)) '#' _
           ==> sto_2 value
   ---- ;; find and instantiate constructor
   -- if $find_constructor_overloaded_inst(Ci, prefixedNameIR, argumentListIR) = (_, consDyn, id_default*)
-  -- Constructor_inst: p Ci sto |- consDyn `< typeArgumentListIR > `( argumentListIR '#' id_default* ) ==> sto_1 objDyn
+  -- Constructor_inst: p Ci sto |- consDyn `< typeArgumentListIR `> `( argumentListIR '#' id_default* `) ==> sto_1 objDyn
   ---- ;; add object to caller store
   -- if Ci.PATH = oid
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
@@ -335,15 +335,15 @@ rule Expr_inst/callExpressionIR-instantiation:
 ;;;;;;; typedExpressionIR '.' nameIR
 
 rule Expr_inst/callExpressionIR-methodTarget-generic:
-  p Ci sto |- ((typedExpressionIR '.' nameIR ) `< eps > `( eps )) '#' _
+  p Ci sto |- ((typedExpressionIR '.' nameIR ) `< eps `> `( eps `)) '#' _
           ==> sto $sizeof(typeIR_base, nameIR)
-  -- if typedExpressionIR = _ '#' `( typeIR_base _ )
+  -- if typedExpressionIR = _ '#' `( typeIR_base _ `)
   -- if nameIR <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
 
 ;;;;;;; TYPE prefixedNameIR '.' nameIR
 
 rule Expr_inst/callExpressionIR-methodTarget-non-generic:
-  p Ci sto |- ((TYPE prefixedNameIR '.' nameIR ) `< eps > `( eps )) '#' _
+  p Ci sto |- ((TYPE prefixedNameIR '.' nameIR ) `< eps `> `( eps `)) '#' _
           ==> sto $sizeof(typeIR_base, nameIR)
   -- if nameIR <- [ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" ]
   -- if $find_typedef_inst(p, Ci, prefixedNameIR) = typeIR_base
@@ -351,11 +351,11 @@ rule Expr_inst/callExpressionIR-methodTarget-non-generic:
 ;;;;;;; `( routineTargetIR )
 
 rule Expr_inst/callExpressionIR-methodTarget-routine:
-  p Ci sto |- ((`( routineTargetIR )) `< typeArgumentListIR > `( argumentListIR ))
+  p Ci sto |- ((`( routineTargetIR `)) `< typeArgumentListIR `> `( argumentListIR `))
               '#' expressionNoteIR
           ==> sto_1 value
     -- Expr_inst:
-        p Ci sto |- (routineTargetIR `< typeArgumentListIR > `( argumentListIR ))
+        p Ci sto |- (routineTargetIR `< typeArgumentListIR `> `( argumentListIR `))
                     '#' expressionNoteIR
                 ==> sto_1 value
 
@@ -363,7 +363,7 @@ rule Expr_inst/callExpressionIR-methodTarget-routine:
 ;;;; syntax parenthesizedExpressionIR = `( typedExpressionIR )
 
 rule Expr_inst/parenthesizedExpressionIR:
-  p Ci sto_0 |- (`( typedExpressionIR )) '#' _ ==> sto_1 value
+  p Ci sto_0 |- (`( typedExpressionIR `)) '#' _ ==> sto_1 value
   -- Expr_inst: p Ci sto_0 |- typedExpressionIR ==> sto_1 value
 
 ;;

@@ -3,15 +3,15 @@
 ;;
 
 rule ConstructorType_ok:
-  p TC |- prefixedNameIR `< typeArgumentIR* > `( argumentIR* )
-        : constructorTypeIR `< '#' tid_impl* > `( '#' id_default* )
+  p TC |- prefixedNameIR `< typeArgumentIR* `> `( argumentIR* `)
+        : constructorTypeIR `< '#' tid_impl* `> `( '#' id_default* `)
   ---- ;; find and specialize the constructor type definition
   -- if (cid, constructorTypeDefIR, id_default*)
       = $find_constructor_overloaded(TC, prefixedNameIR, argumentIR*)
   -- if (constructorTypeIR, tid_impl*)
       = $specialize_constructorTypeDef(constructorTypeDefIR, typeArgumentIR*)
   ---- ;; check that the constructor type is well-formed
-  -- if bound = $union_set<tid>($bound(p, TC), `{ tid_impl* })
+  -- if bound = $union_set<tid>($bound(p, TC), `{ tid_impl* `})
   -- ConstructorType_wf: bound |- constructorTypeIR
 
 ;;
@@ -77,13 +77,13 @@ def $instantiable(p, TC, instctxt, typeIR)
 ;;; Instantiation of a package
 
 rule Inst_ok/package:
-  GLOBAL TC instctxt |- constructorTypeIR `< typeArgumentIR* '#' tid_infer* > 
-                                          `( argumentIR* '#' id_default* )
-                      : typeIR_object_inferred `< typeArgumentIR_inferred* >
-                                               `( argumentIR_cast* )
+  GLOBAL TC instctxt |- constructorTypeIR `< typeArgumentIR* '#' tid_infer* `> 
+                                          `( argumentIR* '#' id_default* `)
+                      : typeIR_object_inferred `< typeArgumentIR_inferred* `>
+                                               `( argumentIR_cast* `)
   ---- ;; if the constructor is for a package object
-  -- if CONSTRUCTOR `( parameterTypeIR* ) '->' typeIR_object = constructorTypeIR
-  -- if PACKAGE `< _ > = $canon(typeIR_object)
+  -- if CONSTRUCTOR `( parameterTypeIR* `) '->' typeIR_object = constructorTypeIR
+  -- if PACKAGE `< _ `> = $canon(typeIR_object)
   ---- ;; filter default arguments
   -- if parameterTypeIR_non_default*
       = $filter_default_parameters(parameterTypeIR*, id_default*)
@@ -103,7 +103,7 @@ rule Inst_ok/package:
       = $subst_type(inference, typeIR_object)
   ---- ;; check that the substituted constructor is still well-formed
   -- if constructorTypeIR_inferred
-      = CONSTRUCTOR `( parameterTypeIR_aligned_inferred* ) '->' typeIR_object_inferred
+      = CONSTRUCTOR `( parameterTypeIR_aligned_inferred* `) '->' typeIR_object_inferred
   -- ConstructorType_wf: $bound(GLOBAL, TC) |- constructorTypeIR_inferred
   ---- ;; check instantiation site
   -- if $instantiable(GLOBAL, TC, instctxt, typeIR_object_inferred)
@@ -115,12 +115,12 @@ rule Inst_ok/package:
 ;;; Instantiation of a non-package
 
 rule Inst_ok/non-package:
-  p TC instctxt |- constructorTypeIR `< typeArgumentIR* '#' tid_infer* > 
-                                     `( argumentIR* '#' id_default* )
-                 : typeIR_object_inferred `< typeArgumentIR_inferred* >
-                                          `( argumentIR_cast* )
+  p TC instctxt |- constructorTypeIR `< typeArgumentIR* '#' tid_infer* `> 
+                                     `( argumentIR* '#' id_default* `)
+                 : typeIR_object_inferred `< typeArgumentIR_inferred* `>
+                                          `( argumentIR_cast* `)
   ---- ;; if the constructor is not for a package object
-  -- if CONSTRUCTOR `( parameterTypeIR* ) '->' typeIR_object = constructorTypeIR
+  -- if CONSTRUCTOR `( parameterTypeIR* `) '->' typeIR_object = constructorTypeIR
   -- if ~$is_package_object_typeIR($canon(typeIR_object))
   ---- ;; filter default arguments
   -- if parameterTypeIR_non_default*
@@ -141,7 +141,7 @@ rule Inst_ok/non-package:
       = $subst_type(inference, typeIR_object)
   ---- ;; check that the substituted constructor is still well-formed
   -- if constructorTypeIR_inferred
-      = CONSTRUCTOR `( parameterTypeIR_aligned_inferred* ) '->' typeIR_object_inferred
+      = CONSTRUCTOR `( parameterTypeIR_aligned_inferred* `) '->' typeIR_object_inferred
   -- ConstructorType_wf: $bound(p, TC) |- constructorTypeIR_inferred
   ---- ;; check instantiation site
   -- if $instantiable(p, TC, instctxt, typeIR_object_inferred)

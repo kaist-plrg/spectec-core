@@ -12,7 +12,7 @@
 ;;;; THIS '=' ... is disallowed
 
 rule Lvalue_ok/referenceExpression:
-  p TC |- prefixedNonTypeName : prefixedNameIR '#' `( typeIR )
+  p TC |- prefixedNonTypeName : prefixedNameIR '#' `( typeIR `)
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
   -- if direction typeIR DYN eps = $find_var_t(prefixedNameIR, p, TC)
   -- if direction = OUT \/ direction = INOUT
@@ -24,9 +24,9 @@ rule Lvalue_ok/headerStackTypeIR-next-last:
   p TC |- lvalue_base '.' member : typedLvalueIR
   ---- ;; check base lvaue
   -- Lvalue_ok: p TC |- lvalue_base : typedLvalueIR_base
-  -- if _ '#' `( typeIR_base ) = typedLvalueIR_base
+  -- if _ '#' `( typeIR_base `) = typedLvalueIR_base
   ---- ;; check that the lvalue is a struct
-  -- if typeIR `[ _ ] = $unroll_typeIR(typeIR_base)
+  -- if typeIR `[ _ `] = $unroll_typeIR(typeIR_base)
   ---- ;; check that the field is "next" or "last"
   -- if nameIR = $name(member)
   -- if nameIR = "next" \/ nameIR = "last"
@@ -35,67 +35,67 @@ rule Lvalue_ok/headerStackTypeIR-next-last:
         \/ (p = LOCAL /\ TC.LOCAL.KIND = PARSER_STATE)
   ---- ;; create typed lvalue
   -- if typedLvalueIR
-      = (typedLvalueIR_base '.' nameIR) '#' `( typeIR )
+      = (typedLvalueIR_base '.' nameIR) '#' `( typeIR `)
 
 rule Lvalue_ok/structTypeIR:
   p TC |- lvalue_base '.' member : typedLvalueIR
   ---- ;; check base lvaue
   -- Lvalue_ok: p TC |- lvalue_base : typedLvalueIR_base
-  -- if _ '#' `( typeIR_base ) = typedLvalueIR_base
+  -- if _ '#' `( typeIR_base `) = typedLvalueIR_base
   ---- ;; check that the lvalue is a struct
-  -- if STRUCT _ `< _ > `{ (_ typeIR_field nameIR_field ';')* }
+  -- if STRUCT _ `< _ `> `{ (_ typeIR_field nameIR_field ';')* `}
       = $unroll_typeIR(typeIR_base)
   ---- ;; find the field
   -- if nameIR = $name(member)
   -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_field, typeIR_field)*)
   ---- ;; create typed lvalue
   -- if typedLvalueIR
-      = (typedLvalueIR_base '.' nameIR) '#' `( typeIR )
+      = (typedLvalueIR_base '.' nameIR) '#' `( typeIR `)
 
 rule Lvalue_ok/headerTypeIR:
   p TC |- lvalue_base '.' member : typedLvalueIR
   ---- ;; check base lvaue
   -- Lvalue_ok: p TC |- lvalue_base : typedLvalueIR_base
-  -- if _ '#' `( typeIR_base ) = typedLvalueIR_base
+  -- if _ '#' `( typeIR_base `) = typedLvalueIR_base
   ---- ;; check that the lvalue is a header
-  -- if HEADER _ `< _ > `{ (_ typeIR_field nameIR_field ';')* }
+  -- if HEADER _ `< _ `> `{ (_ typeIR_field nameIR_field ';')* `}
       = $unroll_typeIR(typeIR_base)
   ---- ;; find the field
   -- if nameIR = $name(member)
   -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_field, typeIR_field)*)
   ---- ;; create typed lvalue
   -- if typedLvalueIR
-      = (typedLvalueIR_base '.' nameIR) '#' `( typeIR )
+      = (typedLvalueIR_base '.' nameIR) '#' `( typeIR `)
 
 rule Lvalue_ok/headerUnionTypeIR:
   p TC |- lvalue_base '.' member : typedLvalueIR
   ---- ;; check base lvaue
   -- Lvalue_ok: p TC |- lvalue_base : typedLvalueIR_base
-  -- if _ '#' `( typeIR_base ) = typedLvalueIR_base
+  -- if _ '#' `( typeIR_base `) = typedLvalueIR_base
   ---- ;; check that the lvalue is a header
-  -- if HEADER_UNION _ `< _ > `{ (_ typeIR_field nameIR_field ';')* }
+  -- if HEADER_UNION _ `< _ `> `{ (_ typeIR_field nameIR_field ';')* `}
       = $unroll_typeIR(typeIR_base)
   ---- ;; find the field
   -- if nameIR = $name(member)
   -- if typeIR = $assoc_<nameIR, typeIR>(nameIR, (nameIR_field, typeIR_field)*)
   ---- ;; create typed lvalue
   -- if typedLvalueIR
-      = (typedLvalueIR_base '.' nameIR) '#' `( typeIR )
+      = (typedLvalueIR_base '.' nameIR) '#' `( typeIR `)
 
 
 ;;; lvalue `[ expression ]
 
 
 rule Lvalue_ok/lctk:
-  p TC |- lvalue_base `[ expression_index ] : typedLvalueIR
+  p TC |- lvalue_base `[ expression_index `] : typedLvalueIR
   ---- ;; check base lvalue
   -- Lvalue_ok: p TC |- lvalue_base : typedLvalueIR_base
-  -- if _ '#' `( typeIR_base ) = typedLvalueIR_base
+  -- if _ '#' `( typeIR_base `) = typedLvalueIR_base
   ---- ;; check that the lvalue is a header stack
-  -- if typeIR `[ n_size ] = $unroll_typeIR(typeIR_base)
+  -- if typeIR `[ n_size `] = $unroll_typeIR(typeIR_base)
   ---- ;; check index expression
   -- Expr_ok: p TC |- expression_index : typedExpressionIR_index
-  -- if _ '#' `( typeIR_index ctk_index ) = typedExpressionIR_index
+  -- if _ '#' `( typeIR_index ctk_index `) = typedExpressionIR_index
   ---- ;; check that the index is compatible
   ---- ;; while inserting implicit casts if necessary
   -- if typedExpressionIR_index_reduced
@@ -109,19 +109,19 @@ rule Lvalue_ok/lctk:
   -- if $(n_index < n_size)
   ---- ;; create typed lvalue
   -- if typedLvalueIR
-      = (typedLvalueIR_base `[ typedExpressionIR_index_reduced ])
-          '#' `( typeIR )
+      = (typedLvalueIR_base `[ typedExpressionIR_index_reduced `])
+          '#' `( typeIR `)
 
 rule Lvalue_ok/non-lctk:
-  p TC |- lvalue_base `[ expression_index ] : typedLvalueIR
+  p TC |- lvalue_base `[ expression_index `] : typedLvalueIR
   ---- ;; check base lvalue
   -- Lvalue_ok: p TC |- lvalue_base : typedLvalueIR_base
-  -- if _ '#' `( typeIR_base ) = typedLvalueIR_base
+  -- if _ '#' `( typeIR_base `) = typedLvalueIR_base
   ---- ;; check that the lvalue is a header stack
-  -- if typeIR `[ n_size ] = $unroll_typeIR(typeIR_base)
+  -- if typeIR `[ n_size `] = $unroll_typeIR(typeIR_base)
   ---- ;; check index expression
   -- Expr_ok: p TC |- expression_index : typedExpressionIR_index
-  -- if _ '#' `( typeIR_index ctk_index ) = typedExpressionIR_index
+  -- if _ '#' `( typeIR_index ctk_index `) = typedExpressionIR_index
   ---- ;; check that the index is compatible
   ---- ;; while inserting implicit casts if necessary
   -- if typedExpressionIR_index_reduced
@@ -132,17 +132,17 @@ rule Lvalue_ok/non-lctk:
   -- if ctk_index =/= LCTK
   ---- ;; create typed lvalue
   -- if typedLvalueIR
-      = (typedLvalueIR_base `[ typedExpressionIR_index_reduced ])
-          '#' `( typeIR )
+      = (typedLvalueIR_base `[ typedExpressionIR_index_reduced `])
+          '#' `( typeIR `)
 
 
 ;;; lvalue `[ expression ':' expression ]
 
 rule Lvalue_ok/sliceAccess-range:
-  p TC |- lvalue_base `[ expression_hi ':' expression_lo ] : typedLvalueIR
+  p TC |- lvalue_base `[ expression_hi ':' expression_lo `] : typedLvalueIR
   ---- ;; check base lvalue
   -- Lvalue_ok: p TC |- lvalue_base : typedLvalueIR_base
-  -- if _ '#' `( typeIR_base ) = typedLvalueIR_base
+  -- if _ '#' `( typeIR_base `) = typedLvalueIR_base
   ---- ;; check that the base lvalue is compatible
   -- if $compat_bitslice_base(typeIR_base)
   ---- ;; check index expressions
@@ -159,9 +159,9 @@ rule Lvalue_ok/sliceAccess-range:
           typedExpressionIR_lo,
           def $compat_bitslice_range_index)
   ---- ;; fetch index annotations
-  -- if _ '#' `( typeIR_hi_reduced ctk_hi_reduced )
+  -- if _ '#' `( typeIR_hi_reduced ctk_hi_reduced `)
       = typedExpressionIR_hi_reduced
-  -- if _ '#' `( typeIR_lo_reduced ctk_lo_reduced )
+  -- if _ '#' `( typeIR_lo_reduced ctk_lo_reduced `)
       = typedExpressionIR_lo_reduced
   ---- ;; check that the indices are local compile-time known
   -- if ctk_hi_reduced = LCTK
@@ -174,19 +174,19 @@ rule Lvalue_ok/sliceAccess-range:
   -- if $is_valid_bitslice(typeIR_base, n_lo, n_hi)
   ---- ;; create typed lvalue
   -- if n_slice = $(n_hi - n_lo + 1)
-  -- if typeIR = BIT `< n_slice >
+  -- if typeIR = BIT `< n_slice `>
   -- if typedLvalueIR
       = (typedLvalueIR_base
-          `[ typedExpressionIR_hi_reduced ':' typedExpressionIR_lo_reduced ])
-          '#' `( typeIR )
+          `[ typedExpressionIR_hi_reduced ':' typedExpressionIR_lo_reduced `])
+          '#' `( typeIR `)
 
 ;;; lvalue `[ expression '+': expression ]
 
 rule Lvalue_ok/sliceAccess-offset:
-  p TC |- lvalue_base `[ expression_l '+': expression_w ] : typedLvalueIR
+  p TC |- lvalue_base `[ expression_l '+': expression_w `] : typedLvalueIR
   ---- ;; check base lvalue
   -- Lvalue_ok: p TC |- lvalue_base : typedLvalueIR_base
-  -- if _ '#' `( typeIR_base ) = typedLvalueIR_base
+  -- if _ '#' `( typeIR_base `) = typedLvalueIR_base
   ---- ;; check that the base lvalue is compatible
   -- if $compat_bitslice_base(typeIR_base)
   ---- ;; check index expressions
@@ -203,28 +203,28 @@ rule Lvalue_ok/sliceAccess-offset:
           typedExpressionIR_w,
           def $compat_bitslice_offset_width)
   ---- ;; fetch index annotations
-  -- if _ '#' `( typeIR_l_reduced ctk_l_reduced )
+  -- if _ '#' `( typeIR_l_reduced ctk_l_reduced `)
       = typedExpressionIR_l_reduced
-  -- if _ '#' `( typeIR_w_reduced ctk_w_reduced )
+  -- if _ '#' `( typeIR_w_reduced ctk_w_reduced `)
       = typedExpressionIR_w_reduced
   ---- ;; check that the indices are wcal compile-time known
   -- if ctk_w_reduced = LCTK
   -- Expr_eval_lctk: p TC |- typedExpressionIR_w_reduced ~> integerValue_w
   -- if n_w = $nat_of_integerValue(integerValue_w)
   ---- ;; create typed lvalue
-  -- if typeIR = BIT `< n_w >
+  -- if typeIR = BIT `< n_w `>
   -- if typedLvalueIR
       = (typedLvalueIR_base
-          `[ typedExpressionIR_l_reduced '+': typedExpressionIR_w_reduced ])
-          '#' `( typeIR )
+          `[ typedExpressionIR_l_reduced '+': typedExpressionIR_w_reduced `])
+          '#' `( typeIR `)
 
 ;;; `( lvalue )
 
 rule Lvalue_ok/parenthesized:
-  p TC |- `( lvalue_base ) : typedLvalueIR
+  p TC |- `( lvalue_base `) : typedLvalueIR
   ---- ;; check base lvalue
   -- Lvalue_ok: p TC |- lvalue_base : typedLvalueIR_base
-  -- if _ '#' `( typeIR_base ) = typedLvalueIR_base
+  -- if _ '#' `( typeIR_base `) = typedLvalueIR_base
   ---- ;; create typed lvalue
   -- if typedLvalueIR
-      = (`( typedLvalueIR_base )) '#' `( typeIR_base )
+      = (`( typedLvalueIR_base `)) '#' `( typeIR_base `)
