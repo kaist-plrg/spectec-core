@@ -234,9 +234,10 @@ rule Run_prog:
 
 builtin generator $base_prog : prog
 
-property Type_safety hint(generator $base_prog):
+property Type_safety:
   Eval_prog: |- prog -| env
   -- Check_prog: |- prog
+  hint(generator $base_prog)
 ;; === closure/spec.spectec ===
 syntax pair<K, V> =
   | K -> V
@@ -490,9 +491,10 @@ rule Run_prog:
 
 builtin generator $functions_prog : prog
 
-property Type_safety hint(generator $functions_prog):
+property Type_safety:
   Eval_prog: |- prog -| env
   -- Check_prog: |- prog
+  hint(generator $functions_prog)
 ;; === recursion/spec.spectec ===
 syntax pair<K, V> =
   | K -> V
@@ -788,6 +790,7 @@ rule Run_prog:
 
 builtin generator $functions_prog : prog
 
-property Type_safety hint(generator $functions_prog):
+property Type_safety:
   Eval_prog: |- prog -| env
   -- Check_prog: |- prog
+  hint(generator $functions_prog)

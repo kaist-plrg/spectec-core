@@ -1,3 +1,6 @@
+;; Broken copy of specs/impty/base for quickcheck tests:
+;; Check_expr/leq types its right operand as t_r instead of INT.
+
 ;;--------------------
 ;; Standard functions
 
@@ -5,6 +8,7 @@ syntax pair<K,V> = K -> V
 syntax map<K,V> = (pair<K,V>)*
 
 dec $lookup<K, V>(map<K, V>, K) : V?
+  hint(prose_in "lookup of" %1 "in" %0)
 def $lookup<K, V>(eps, K_query) = eps
 def $lookup<K, V>((K_h -> V_h)::(K_t -> V_t)*, K_query) = V_h
   -- if K_h = K_query
@@ -15,12 +19,10 @@ def $lookup<K, V>((K_h -> V_h):: (K_t -> V_t)*, K_query)
 ;;--------------------
 ;; Syntax
 
-syntax type =
-  | INT
-  | BOOL
-  | type `-> type                        ;; (new) function type
-
-syntax literal = `NUM int | `BOOL bool
+syntax type = INT | BOOL
+syntax literal =
+  | `NUM int      hint(prose "the integer" %0)
+  | `BOOL bool    hint(prose "the boolean" %0)
 syntax id = `ID text
 
 syntax expr =
@@ -30,20 +32,17 @@ syntax expr =
   | expr `+ expr
   | expr `<= expr
   | expr `&& expr
-  | expr `? expr `: expr                 ;; (rec) conditional expression
-  | FUN `( type id ) `-> type `{ expr }  ;; (new) anonymous function (returning a value)
-  | expr `( expr )                       ;; (new) function call
 
 syntax command =
   | SKIP
-  | type id `= expr                      ;; decl-init
-  | id `= expr                           ;; assignment
+  | type id `= expr                     ;; decl-init
+  | id `= expr                          ;; assignment
   | IF expr THEN command ELSE command END
   | WHILE expr DO command END
   | command `; command
-  | REC id `( type id ) `-> type `{ expr }  ;; (rec) recursive function declaration
 
 syntax prog = command
+
 
 ;;--------------------
 ;; Meta-variables
@@ -51,7 +50,6 @@ syntax prog = command
 var i : int
 var b : bool
 var x : id
-var f : id
 var e : expr
 var c : command
 var t : type
@@ -68,6 +66,7 @@ syntax tenv = map<id, type>
 relation Check_expr:
   tenv |- expr : type
   hint(input %0 %1)
+  hint(prose_in "typechecking" %1 "under context" %0)
 
 rule Check_expr/num:
   tenv |- (`NUM i) : INT
@@ -91,27 +90,12 @@ rule Check_expr/add:
 rule Check_expr/leq:
   tenv |- e_l `<= e_r : BOOL
   -- Check_expr: tenv |- e_l : INT
-  -- Check_expr: tenv |- e_r : INT
+  -- Check_expr: tenv |- e_r : t_r
 
 rule Check_expr/and:
   tenv |- e_l `&& e_r : BOOL
   -- Check_expr: tenv |- e_l : BOOL
   -- Check_expr: tenv |- e_r : BOOL
-
-rule Check_expr/cond:
-  tenv |- (e_1 `? e_2 `: e_3) : t
-  -- Check_expr: tenv |- e_1 : BOOL
-  -- Check_expr: tenv |- e_2 : t
-  -- Check_expr: tenv |- e_3 : t
-
-rule Check_expr/fun:
-  tenv |- FUN `( t_arg x_arg ) `-> t_ret `{ e } : t_arg `-> t_ret
-  -- Check_expr: ((x_arg -> t_arg)::tenv) |- e : t_ret
-
-rule Check_expr/call:
-  tenv |- (e_f `( e_a )) : t_ret
-  -- Check_expr: tenv |- e_f : t_arg `-> t_ret
-  -- Check_expr: tenv |- e_a : t_arg
 
 ;;--- Commands ---
 
@@ -119,6 +103,7 @@ rule Check_expr/call:
 relation Check_command:
   tenv |- command -| tenv
   hint(input %0 %1)
+  hint(prose_in "typechecking" %1 "under context" %0)
 
 rule Check_command/skip:
   tenv |- SKIP -| tenv
@@ -148,15 +133,12 @@ rule Check_command/seq:
   -- Check_command: tenv |- c_1 -| tenv_1
   -- Check_command: tenv_1 |- c_2 -| tenv_2
 
-rule Check_command/rec:
-  tenv |- (REC f `( t_arg x_arg ) `-> t_ret `{ e }) -| (f -> (t_arg `-> t_ret))::tenv
-  -- Check_expr: (x_arg -> t_arg)::(f -> (t_arg `-> t_ret))::tenv |- e : t_ret
-
 ;;--- Program ---
 
 relation Check_prog:
   |- prog
   hint(input %0)
+  hint(prose_true "program" %0 "is well-typed")
 
 rule Check_prog:
   |- command
@@ -167,13 +149,7 @@ rule Check_prog:
 
 ;;--- Contexts ---
 
-syntax value, env
-
-syntax value =
-  | literal
-  | CLO id expr env                     ;; (parameter, body, captured env)
-  | RECCLO id id expr env               ;; (rec) self-name, parameter, body, captured env
-
+syntax value = literal
 syntax env = map<id, value>
 
 var v : value
@@ -183,6 +159,7 @@ var v : value
 relation Eval_expr:
   env |- expr ==> value
   hint(input %0 %1)
+  hint(prose_in "evaluating" %1 "in environment" %0)
 
 rule Eval_expr/num:
   env |- (`NUM i) ==> (`NUM i)
@@ -217,36 +194,12 @@ rule Eval_expr/and:
   -- Eval_expr: env |- e_r ==> (`BOOL b_r)
   -- if b = (b_l /\ b_r)
 
-rule Eval_expr/cond-true:
-  env |- (e_1 `? e_2 `: e_3) ==> v
-  -- Eval_expr: env |- e_1 ==> (`BOOL true)
-  -- Eval_expr: env |- e_2 ==> v
-
-rule Eval_expr/cond-false:
-  env |- (e_1 `? e_2 `: e_3) ==> v
-  -- Eval_expr: env |- e_1 ==> (`BOOL false)
-  -- Eval_expr: env |- e_3 ==> v
-
-rule Eval_expr/fun:
-  env |- (FUN `( t_arg x_arg ) `-> t_ret `{ e }) ==> (CLO x_arg e env)
-
-rule Eval_expr/call:
-  env |- (e_f `( e_a )) ==> v_ret
-  -- Eval_expr: env |- e_f ==> (CLO x_a e_body env_clo)
-  -- Eval_expr: env |- e_a ==> v
-  -- Eval_expr: ((x_a -> v)::env_clo) |- e_body ==> v_ret
-
-rule Eval_expr/call-rec:
-  env |- (e_f `( e_a )) ==> v_ret
-  -- Eval_expr: env |- e_f ==> (RECCLO f x_arg e_body env_clo)
-  -- Eval_expr: env |- e_a ==> v
-  -- Eval_expr: ((x_arg -> v)::(f -> RECCLO f x_arg e_body env_clo)::env_clo) |- e_body ==> v_ret
-
 ;;--- Commands ---
 
 relation Eval_command:
   env |- command -| env
   hint(input %0 %1)
+  hint(prose_in "executing" %1 "in environment" %0)
 
 rule Eval_command/skip:
   env |- SKIP -| env
@@ -284,14 +237,12 @@ rule Eval_command/seq:
   -- Eval_command: env |- c_1 -| env_1
   -- Eval_command: env_1 |- c_2 -| env_2
 
-rule Eval_command/rec:
-  env |- (REC f `( t_arg x_arg ) `-> t_ret `{ e }) -| (f -> RECCLO f x_arg e env)::env
-
 ;;--- Program ---
 
 relation Eval_prog:
   |- prog -| env
   hint(input %0)
+  hint(prose_in "executing program" %0)
 
 rule Eval_prog:
   |- command -| env
@@ -301,6 +252,7 @@ rule Eval_prog:
 relation Run_prog:
   |- prog -| env
   hint(input %0)
+  hint(prose_in "running program" %0)
 
 rule Run_prog:
   |- command -| env
@@ -309,10 +261,10 @@ rule Run_prog:
 
 ;;--- Properties ---
 
-builtin generator $functions_prog : prog
+builtin generator $base_prog : prog
 
 ;; Type soundness
 property Type_safety :
   Eval_prog: |- prog -| env
   -- Check_prog: |- prog
-  hint(generator $functions_prog)
+  hint(generator $base_prog)

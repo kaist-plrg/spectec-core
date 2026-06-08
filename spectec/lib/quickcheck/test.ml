@@ -1,12 +1,11 @@
 type config = {
-  num_tests : int;
   max_size : int;
   seed : [ `Deterministic of int | `Nondeterministic ];
   verbose : bool;
 }
 
 let default_config =
-  { num_tests = 300; max_size = 50; seed = `Deterministic 42; verbose = false }
+  { max_size = 50; seed = `Deterministic 42; verbose = false }
 
 type outcome =
   | Pass of { num_tests : int; stamps : (string * int) list }
@@ -59,20 +58,19 @@ let rec generalize_loop (v : Property.Verdict.t) : Property.Verdict.t =
       if v'.Property.Verdict.arguments = v.Property.Verdict.arguments then v
       else generalize_loop v'
 
-let run ?(config = default_config) prop =
+let run ~num_tests ?(config = default_config) prop =
   let rand =
     match config.seed with
     | `Deterministic n -> Random.make n
     | `Nondeterministic -> Random.make_self_init ()
   in
   let rec loop i discarded all_stamps rand =
-    if i >= config.num_tests then
+    if i >= num_tests then
       Pass { num_tests = i; stamps = count_stamps all_stamps }
-    else if discarded > config.num_tests * 10 then Gave_up { num_tests = i }
+    else if discarded > num_tests * 10 then Gave_up { num_tests = i }
     else
       let size =
-        if config.max_size = 0 then 0
-        else i * config.max_size / config.num_tests
+        if config.max_size = 0 then 0 else i mod (config.max_size + 1)
       in
       let trial_rand, next_rand = Random.split rand in
       let verdict = Gen.run prop ~size ~rand:trial_rand in
