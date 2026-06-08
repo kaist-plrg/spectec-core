@@ -16,7 +16,7 @@ rule Parameter_ok/non-initializer:
           : TC_1 parameterIR '#' typeId_fresh*
   ---- ;; check parameter type
   -- Type_ok: p TC_0 |- type : typeIR '#' typeId_fresh*
-  -- if B = $union_set<typeId>($bound(p, TC_0), `{ typeId_fresh* })
+  -- if B = $union_set<typeId>($bound(p, TC_0), `{ typeId_fresh* }`)
   -- Type_wf: B |- typeIR
   ---- ;; construct parameter IR and add to context
   -- if nameIR = $name(name)
@@ -29,7 +29,7 @@ rule Parameter_ok/initializer-ctk:
           : TC_1 parameterIR '#' typeId_fresh*
   ---- ;; check parameter type
   -- Type_ok: p TC_0 |- type : typeIR '#' typeId_fresh*
-  -- if B = $union_set<typeId>($bound(p, TC_0), `{ typeId_fresh* })
+  -- if B = $union_set<typeId>($bound(p, TC_0), `{ typeId_fresh* }`)
   -- Type_wf: B |- typeIR
   ---- ;; check initializer
   -- Expr_ok: p TC_0 |- expression_init : typedExpressionIR_init
@@ -52,7 +52,7 @@ rule Parameter_ok/initializer-lctk:
           : TC_1 parameterIR '#' typeId_fresh*
   ---- ;; check parameter type
   -- Type_ok: p TC_0 |- type : typeIR '#' typeId_fresh*
-  -- if B = $union_set<typeId>($bound(p, TC_0), `{ typeId_fresh* })
+  -- if B = $union_set<typeId>($bound(p, TC_0), `{ typeId_fresh* }`)
   -- Type_wf: B |- typeIR
   ---- ;; check initializer
   -- Expr_ok: p TC_0 |- expression_init : typedExpressionIR_init

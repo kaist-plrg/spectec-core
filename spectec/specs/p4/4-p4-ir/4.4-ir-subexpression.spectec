@@ -46,23 +46,23 @@ def $subexpressions_of_expressionIR(
     ++ $subexpressions_of_typedExpressionIR(typedExpressionIR_else)
 
 def $subexpressions_of_expressionIR(
-    `( typeIR ) typedExpressionIR)
+    `( typeIR )` typedExpressionIR)
   = $subexpressions_of_typedExpressionIR(typedExpressionIR)
 
 def $subexpressions_of_expressionIR(
-    SEQ `{ typedExpressionListIR })
+    SEQ `{ typedExpressionListIR }`)
   = $subexpressions_of_typedExpressionListIR(typedExpressionListIR)
 
 def $subexpressions_of_expressionIR(
-    SEQ `{ typedExpressionListIR ',' '...' })
+    SEQ `{ typedExpressionListIR ',' '...' }`)
   = $subexpressions_of_typedExpressionListIR(typedExpressionListIR)
 
 def $subexpressions_of_expressionIR(
-    RECORD `{ (nameIR '=' typedExpressionIR)* })
+    RECORD `{ (nameIR '=' typedExpressionIR)* }`)
   = $subexpressions_of_typedExpressionListIR(typedExpressionIR*)
 
 def $subexpressions_of_expressionIR(
-    RECORD `{ (nameIR '=' typedExpressionIR)* ',' '...' })
+    RECORD `{ (nameIR '=' typedExpressionIR)* ',' '...' }`)
   = $subexpressions_of_typedExpressionListIR(typedExpressionIR*)
 
 def $subexpressions_of_expressionIR(
@@ -70,27 +70,27 @@ def $subexpressions_of_expressionIR(
   = $subexpressions_of_typedExpressionIR(typedExpressionIR)
 
 def $subexpressions_of_expressionIR(
-    typedExpressionIR_base `[ typedExpressionIR_index ])
+    typedExpressionIR_base `[ typedExpressionIR_index ]`)
   = $subexpressions_of_typedExpressionIR(typedExpressionIR_base)
     ++ $subexpressions_of_typedExpressionIR(typedExpressionIR_index)
 
 def $subexpressions_of_expressionIR(
     typedExpressionIR_base
-      `[ typedExpressionIR_hi ':' typedExpressionIR_lo ])
+      `[ typedExpressionIR_hi ':' typedExpressionIR_lo ]`)
   = $subexpressions_of_typedExpressionIR(typedExpressionIR_base)
     ++ $subexpressions_of_typedExpressionIR(typedExpressionIR_hi)
     ++ $subexpressions_of_typedExpressionIR(typedExpressionIR_lo)
 
 def $subexpressions_of_expressionIR(
-    constructorTargetIR `( argumentIR* ))
+    constructorTargetIR `( argumentIR* )`)
   = $subexpressions_of_argumentListIR(argumentIR*)
 
 def $subexpressions_of_expressionIR(
-    callableTargetIR `< typeArgumentIR* > `( argumentIR* ))
+    callableTargetIR `< typeArgumentIR* >` `( argumentIR* )`)
   = $subexpressions_of_argumentListIR(argumentIR*)
 
 def $subexpressions_of_expressionIR(
-    `( typedExpressionIR ))
+    `( typedExpressionIR )`)
   = $subexpressions_of_typedExpressionIR(typedExpressionIR)
 
 def $subexpressions_of_expressionIR(_) = eps

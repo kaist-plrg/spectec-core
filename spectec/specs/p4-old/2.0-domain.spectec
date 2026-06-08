@@ -54,14 +54,14 @@ def $fresh_tids(n) = $fresh_tid() :: $fresh_tids($(n - 1))
 ;;
 
 syntax pid = id '#' bool
-syntax rid = id `( pid* )
+syntax rid = id `( pid* )`
 
 dec $rid(name, parameterList) : rid
 dec $pids(parameterList) : pid*
 dec $pid(parameter) : pid
 
 def $rid(name, parameterList)
-  = $name(name) `( $pids(parameterList) )
+  = $name(name) `( $pids(parameterList) )`
 
 def $pids(_EMPTY) = eps
 def $pids(parameter) = $pid(parameter)
@@ -79,9 +79,9 @@ syntax cid = rid
 
 dec $cid(name, constructorParameterListOpt) : cid
 
-def $cid(name, _EMPTY) = $name(name) `( eps )
-def $cid(name, `( parameterList ))
-  = $name(name) `( $pids(parameterList) )
+def $cid(name, _EMPTY) = $name(name) `( eps )`
+def $cid(name, `( parameterList )`)
+  = $name(name) `( $pids(parameterList) )`
 
 
 
@@ -90,7 +90,7 @@ dec $expression_as_lvalue(expression) : lvalue?
 def $expression_as_lvalue(referenceExpression) = referenceExpression
 def $expression_as_lvalue(expression '.' member) = lvalue '.' member
   -- if lvalue = $expression_as_lvalue(expression)
-def $expression_as_lvalue(`( expression )) = `( lvalue )
+def $expression_as_lvalue(`( expression )`) = `( lvalue )`
   -- if lvalue = $expression_as_lvalue(expression)
 ;;
 ;; Object names

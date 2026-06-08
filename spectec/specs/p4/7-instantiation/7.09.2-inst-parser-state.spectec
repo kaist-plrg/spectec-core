@@ -9,7 +9,7 @@
 rule ParserState_inst:
   IC_0 STO_0 |- parserStateIR : IC_2 STO_1
   -- if annotationList STATE nameIR
-          `{ parserStatementListIR transitionStatementIR }
+          `{ parserStatementListIR transitionStatementIR }`
       = parserStateIR
   ---- ;; instantiate parser statements
   -- ParserStmts_inst:
@@ -18,7 +18,7 @@ rule ParserState_inst:
   ---- ;; bind parser state to state environment
   -- if parserStateIR_inst
       = annotationList STATE nameIR
-          `{ parserStatementListIR_inst transitionStatementIR }
+          `{ parserStatementListIR_inst transitionStatementIR }`
   -- if IC_2 = $add_parserState_i(IC_1, nameIR, parserStateIR_inst)
 
 ;;

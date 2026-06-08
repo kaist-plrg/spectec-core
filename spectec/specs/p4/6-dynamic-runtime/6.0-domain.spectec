@@ -3,8 +3,8 @@
 ;;
 
 dec $callableId_IR(nameIR, parameterListIR) : callableId
-  hint(prose_in "the callable identifier for" %0 `( %1 ))
+  hint(prose_in "the callable identifier for" %0 `( %1 )`)
 
 def $callableId_IR(nameIR, parameterIR*)
-  = nameIR `( id* )
+  = nameIR `( id* )`
   -- if (_ _ _ id _ = parameterIR)*

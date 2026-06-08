@@ -267,8 +267,8 @@ syntax expr =
   | expr '+' expr
   | expr '<=' expr
   | expr '&&' expr
-  | FUN `(type id) '->' type `{expr}
-  | expr `(expr)
+  | FUN `(type id)` '->' type `{expr}`
+  | expr `(expr)`
 
 syntax command =
   | SKIP
@@ -327,11 +327,11 @@ rule Check_expr/and:
   -- Check_expr: tenv |- e_r : BOOL
 
 rule Check_expr/fun:
-  tenv |- FUN `(t_arg x_arg) '->' t_ret `{e} : t_arg '->' t_ret
+  tenv |- FUN `(t_arg x_arg)` '->' t_ret `{e}` : t_arg '->' t_ret
   -- Check_expr: ((x_arg -> t_arg) :: tenv) |- e : t_ret
 
 rule Check_expr/call:
-  tenv |- (e_f `(e_a)) : t_ret
+  tenv |- (e_f `(e_a)`) : t_ret
   -- Check_expr: tenv |- e_f : t_arg '->' t_ret
   -- Check_expr: tenv |- e_a : t_arg
 
@@ -420,10 +420,10 @@ rule Eval_expr/and:
   -- if b = (b_l /\ b_r)
 
 rule Eval_expr/fun:
-  env |- (FUN `(t_arg x_arg) '->' t_ret `{e}) ==> (CLO x_arg e env)
+  env |- (FUN `(t_arg x_arg)` '->' t_ret `{e}`) ==> (CLO x_arg e env)
 
 rule Eval_expr/call:
-  env |- (e_f `(e_a)) ==> v_ret
+  env |- (e_f `(e_a)`) ==> v_ret
   -- Eval_expr: env |- e_f ==> (CLO x_a e_body env_clo)
   -- Eval_expr: env |- e_a ==> v
   -- Eval_expr: ((x_a -> v) :: env_clo) |- e_body ==> v_ret

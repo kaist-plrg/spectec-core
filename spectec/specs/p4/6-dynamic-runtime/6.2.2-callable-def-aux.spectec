@@ -9,7 +9,7 @@ dec $parameterListIR_of_callableDef(callableDef)
 
 dec $parameterListIR_of_actionDef(actionDef) : parameterIR*
 def $parameterListIR_of_actionDef(
-    annotationList ACTION _ `( parameterListIR ) _)
+    annotationList ACTION _ `( parameterListIR )` _)
   = parameterListIR
 
 def $parameterListIR_of_callableDef(actionDef)
@@ -23,13 +23,13 @@ dec $parameterListIR_of_functionDef(functionDef)
 dec $parameterListIR_of_definedFunctionDef(definedFunctionDef)
   : parameterIR*
 def $parameterListIR_of_definedFunctionDef(
-    FUNCTION _ `< _ > `( parameterListIR ) _)
+    FUNCTION _ `< _ >` `( parameterListIR )` _)
   = parameterListIR
 
 dec $parameterListIR_of_externFunctionDef(externFunctionDef)
   : parameterIR*
 def $parameterListIR_of_externFunctionDef(
-    EXTERN_FUNCTION _ `< _ > `( parameterListIR ))
+    EXTERN_FUNCTION _ `< _ >` `( parameterListIR )`)
   = parameterListIR
 
 def $parameterListIR_of_functionDef(definedFunctionDef)
@@ -48,24 +48,24 @@ dec $parameterListIR_of_methodDef(methodDef)
 dec $parameterListIR_of_externMethodDef(externMethodDef)
   : parameterIR*
 def $parameterListIR_of_externMethodDef(
-    EXTERN_METHOD _ `< _ > `( parameterListIR ) _)
+    EXTERN_METHOD _ `< _ >` `( parameterListIR )` _)
   = parameterListIR
 
 dec $parameterListIR_of_parserApplyMethodDef(parserApplyMethodDef)
   : parameterIR*
 def $parameterListIR_of_parserApplyMethodDef(
-    PARSER_APPLY `( parameterListIR ) `{ _ ';' _ })
+    PARSER_APPLY `( parameterListIR )` `{ _ ';' _ }`)
   = parameterListIR
 
 dec $parameterListIR_of_controlApplyMethodDef(controlApplyMethodDef)
   : parameterIR*
 def $parameterListIR_of_controlApplyMethodDef(
-    CONTROL_APPLY `( parameterListIR ) `{ _ ';' _ ';' _ })
+    CONTROL_APPLY `( parameterListIR )` `{ _ ';' _ ';' _ }`)
   = parameterListIR
 
 dec $parameterListIR_of_tableApplyMethodDef(tableApplyMethodDef)
   : parameterIR*
-def $parameterListIR_of_tableApplyMethodDef(TABLE_APPLY `{ _ })
+def $parameterListIR_of_tableApplyMethodDef(TABLE_APPLY `{ _ }`)
   = eps
 
 def $parameterListIR_of_methodDef(externMethodDef)

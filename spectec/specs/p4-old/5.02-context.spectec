@@ -160,7 +160,7 @@ def $empty_typingContext = TC
 
 dec $bound(cursor, typingContext) : bound
 
-def $bound(GLOBAL, TC) = `{ eps }
+def $bound(GLOBAL, TC) = `{ eps }`
 def $bound(BLOCK, TC) = $dom_map<tid, typeDefIR>(TC.BLOCK.TDENV)
 def $bound(LOCAL, TC) = $union_set<tid>(bound_block, bound_local)
   -- if bound_block = $bound(BLOCK, TC)
@@ -298,17 +298,17 @@ dec $add_routine_non_overload(cursor, typingContext, rid, routineTypeDefIR) : ty
 
 def $add_routine_non_overload(GLOBAL, TC, rid, routineTypeDefIR) = TC'
   -- if rdenv = TC.GLOBAL.RDENV
-  -- if id `( _ ) = rid
-  -- if `{ (id_k `( _ ))* } = $dom_map<rid, routineTypeDefIR>(rdenv)
-  -- if ~$in_set<id>(id, `{ id_k* })
+  -- if id `( _ )` = rid
+  -- if `{ (id_k `( _ )`)* }` = $dom_map<rid, routineTypeDefIR>(rdenv)
+  -- if ~$in_set<id>(id, `{ id_k* }`)
   -- if rdenv_update
         = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
   -- if TC' = TC [ .GLOBAL.RDENV = rdenv_update ]
 def $add_routine_non_overload(BLOCK, TC, rid, routineTypeDefIR) = TC'
   -- if rdenv = TC.BLOCK.RDENV
-  -- if id `( _ ) = rid
-  -- if `{ (id_k `( _ ))* } = $dom_map<rid, routineTypeDefIR>(rdenv)
-  -- if ~$in_set<id>(id, `{ id_k* })
+  -- if id `( _ )` = rid
+  -- if `{ (id_k `( _ )`)* }` = $dom_map<rid, routineTypeDefIR>(rdenv)
+  -- if ~$in_set<id>(id, `{ id_k* }`)
   -- if rdenv_update
         = $add_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)
   -- if TC' = TC [ .BLOCK.RDENV = rdenv_update ]

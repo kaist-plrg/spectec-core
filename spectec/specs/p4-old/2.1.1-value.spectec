@@ -32,15 +32,15 @@ syntax baseValue = | primitiveValue | numberValue
 
 syntax value
 
-syntax listValue = `[ value* ]
-syntax tupleValue = `( value* )
-syntax headerStackValue = `[ value* '#' `( nat; nat ) ]
+syntax listValue = `[ value* ]`
+syntax tupleValue = `( value* )`
+syntax headerStackValue = `[ value* '#' `( nat; nat )` ]`
 
 syntax fieldValue = value id ';'
 
-syntax structValue = STRUCT tid `{ fieldValue* }
-syntax headerValue = HEADER tid `{ fieldValue* }
-syntax headerUnionValue = HEADER_UNION tid `{ fieldValue* }
+syntax structValue = STRUCT tid `{ fieldValue* }`
+syntax headerValue = HEADER tid `{ fieldValue* }`
+syntax headerUnionValue = HEADER_UNION tid `{ fieldValue* }`
 
 syntax enumValue =
   | tid '.' id
@@ -64,21 +64,21 @@ syntax defaultValue = DEFAULT
 syntax invalidHeaderValue = '{#}'
 
 syntax sequenceValue =
-  | SEQ `( value* )
-  | SEQ `( value* ',' '...' )
+  | SEQ `( value* )`
+  | SEQ `( value* ',' '...' )`
 
 syntax recordValue =
-  | RECORD `{ fieldValue* }
-  | RECORD `{ fieldValue* ',' '...' }
+  | RECORD `{ fieldValue* }`
+  | RECORD `{ fieldValue* ',' '...' }`
 
 syntax setValue =
-  | SET `{ value }
-  | SET `{ value '&&&' value }
-  | SET `{ value '..' value }
+  | SET `{ value }`
+  | SET `{ value '&&&' value }`
+  | SET `{ value '..' value }`
 
 syntax tableValue =
   | TABLE_ENUM tid '.' id
-  | TABLE_STRUCT tid `{ fieldValue* }
+  | TABLE_STRUCT tid `{ fieldValue* }`
 
 syntax synthesizedValue =
   | defaultValue

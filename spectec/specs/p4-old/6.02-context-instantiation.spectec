@@ -171,14 +171,14 @@ def $add_routine_overload_inst(BLOCK, Ci, rid, routineDyn) = Ci[ .BLOCK.RENV = r
 dec $add_routine_non_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
 
 def $add_routine_non_overload_inst(GLOBAL, Ci, rid, routineDyn) = Ci[ .GLOBAL.RENV = renv ]
-  -- if rid = id `( _ )
-  -- if $dom_map<rid, routineDyn>(Ci.GLOBAL.RENV) = `{ (id_k `( _ ))* }
-  -- if ~$in_set<id>(id, `{ id_k* })
+  -- if rid = id `( _ )`
+  -- if $dom_map<rid, routineDyn>(Ci.GLOBAL.RENV) = `{ (id_k `( _ )`)* }`
+  -- if ~$in_set<id>(id, `{ id_k* }`)
   -- if $add_map<rid, routineDyn>(Ci.GLOBAL.RENV, rid, routineDyn) = renv
 def $add_routine_non_overload_inst(BLOCK, Ci, rid, routineDyn) = Ci[ .BLOCK.RENV = renv ]
-  -- if rid = id `( _ )
-  -- if $dom_map<rid, routineDyn>(Ci.BLOCK.RENV) = `{ (id_k `( _ ))* }
-  -- if ~$in_set<id>(id, `{ id_k* })
+  -- if rid = id `( _ )`
+  -- if $dom_map<rid, routineDyn>(Ci.BLOCK.RENV) = `{ (id_k `( _ )`)* }`
+  -- if ~$in_set<id>(id, `{ id_k* }`)
   -- if $add_map<rid, routineDyn>(Ci.BLOCK.RENV, rid, routineDyn) = renv
 
 ;;; Adder for constructors

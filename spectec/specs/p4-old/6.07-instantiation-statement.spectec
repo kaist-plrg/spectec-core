@@ -26,11 +26,11 @@ rule Stmt_inst/callStatementIR:
 ;;;   prefixedNameIR '.' APPLY `( argumentListIR ) ';'
 
 rule Stmt_inst/directApplicationStatementIR:
-  p Ci sto_0 |- prefixedNameIR '.' APPLY `( argumentListIR ) ';'
+  p Ci sto_0 |- prefixedNameIR '.' APPLY `( argumentListIR )` ';'
             ==> Ci sto_2 blockStatementIR
   ---- ;; find and instantiate constructor
   -- if $find_constructor_overloaded_inst(Ci, prefixedNameIR, eps) = (_, consDyn, _)
-  -- Constructor_inst: p Ci sto_0 |- consDyn `< eps > `( eps '#' eps ) ==> sto_1 objDyn
+  -- Constructor_inst: p Ci sto_0 |- consDyn `< eps >` `( eps '#' eps )` ==> sto_1 objDyn
   ---- ;; assign new tid with random string appended
   -- if $fresh_tid() = tid_fresh
   -- if $flatten_prefixedNameIR(prefixedNameIR) = tid
@@ -41,9 +41,9 @@ rule Stmt_inst/directApplicationStatementIR:
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
   ---- ;; replace with constant declaration and call statement
   -- if _EMPTY CONST typeIR nameIR ('=' ('!' oid)) ';' = constantDeclarationIR
-  -- if ((_NAME tid) '#' `( typeIR CTK )) '.' "apply" = routineTargetIR
-  -- if routineTargetIR `< eps > `( argumentListIR ) ';' = callStatementIR
-  -- if _EMPTY `{ [ constantDeclarationIR, callStatementIR ] } = blockStatementIR
+  -- if ((_NAME tid) '#' `( typeIR CTK )`) '.' "apply" = routineTargetIR
+  -- if routineTargetIR `< eps >` `( argumentListIR )` ';' = callStatementIR
+  -- if _EMPTY `{ [ constantDeclarationIR, callStatementIR ] }` = blockStatementIR
 
 ;;; returnStatementIR
 
@@ -59,9 +59,9 @@ rule Stmt_inst/exitStatementIR:
 ;;; syntax blockStatementIR = annotationList `{ blockElementStatementListIR }
 
 rule Stmt_inst/blockStatementIR:
-  p Ci sto |- annotationList `{ blockElementStatementListIR }
-          ==> Ci_1 sto_1 (annotationList `{ blockElementStatementListIR' })
-  -- Block_inst: p Ci sto |- annotationList `{ blockElementStatementListIR } ==> Ci_1 sto_1 (_ `{ blockElementStatementListIR' })
+  p Ci sto |- annotationList `{ blockElementStatementListIR }`
+          ==> Ci_1 sto_1 (annotationList `{ blockElementStatementListIR' }`)
+  -- Block_inst: p Ci sto |- annotationList `{ blockElementStatementListIR }` ==> Ci_1 sto_1 (_ `{ blockElementStatementListIR' }`)
 
 ;;; conditionalStatementIR
 ;;; syntax conditionalStatementIR =
@@ -69,15 +69,15 @@ rule Stmt_inst/blockStatementIR:
 ;;;; IF `( typedExpressionIR ) statementIR
 
 rule Stmt_inst/conditionalStatementIR-non-else:
-  p Ci sto |- IF `( typedExpressionIR ) statementIR
-          ==> Ci_1 sto_1 (IF `( typedExpressionIR ) statementIR')
+  p Ci sto |- IF `( typedExpressionIR )` statementIR
+          ==> Ci_1 sto_1 (IF `( typedExpressionIR )` statementIR')
   -- Stmt_inst: p Ci sto |- statementIR ==> Ci_1 sto_1 statementIR'
 
 ;;;; IF `( typedExpressionIR ) statementIR ELSE statementIR
 
 rule Stmt_inst/conditionalStatementIR-else:
-  p Ci sto |- IF `( typedExpressionIR ) statementIR_then ELSE statementIR_else
-          ==> Ci_2 sto_2 (IF `( typedExpressionIR ) statementIR_then' ELSE statementIR_else')
+  p Ci sto |- IF `( typedExpressionIR )` statementIR_then ELSE statementIR_else
+          ==> Ci_2 sto_2 (IF `( typedExpressionIR )` statementIR_then' ELSE statementIR_else')
   ---- ;; instantiate then branch
   -- Stmt_inst: p Ci sto |- statementIR_then ==> Ci_1 sto_1 statementIR_then'
   ---- ;; instantiate else branch
@@ -99,8 +99,8 @@ rule Stmt_inst/continueStatementIR:
 ;;; syntax switchStatementIR = SWITCH `( typedExpressionIR ) `{ switchCaseListIR }
 
 rule Stmt_inst/switchStatementIR:
-  p Ci sto |- SWITCH `( typedExpressionIR ) `{ switchCaseListIR } 
-          ==> Ci_1 sto_1 (SWITCH `( typedExpressionIR ) `{ switchCaseListIR' })
+  p Ci sto |- SWITCH `( typedExpressionIR )` `{ switchCaseListIR }` 
+          ==> Ci_1 sto_1 (SWITCH `( typedExpressionIR )` `{ switchCaseListIR' }`)
   ---- ;; instantiate switch cases
   -- SwitchCases_inst: p Ci sto |- switchCaseListIR ==> Ci_1 sto_1 switchCaseListIR'
 
@@ -171,8 +171,8 @@ rule BlockElementStmts_inst/cons:
 ;;;   annotationList `{ blockElementStatementListIR }
 
 rule Block_inst:
-  p Ci_0 sto_0 |- annotationList `{ blockElementStatementListIR }
-              ==> Ci_2 sto_1 (annotationList `{ blockElementStatementListIR_inst })
+  p Ci_0 sto_0 |- annotationList `{ blockElementStatementListIR }`
+              ==> Ci_2 sto_1 (annotationList `{ blockElementStatementListIR_inst }`)
   -- if $enter_inst(Ci_0) = Ci_1
   -- BlockElementStmts_inst: p Ci_1 sto_0 |- blockElementStatementListIR ==> Ci_2 sto_1 blockElementStatementListIR_inst
   -- if $exit_inst(Ci_2) = Ci_3

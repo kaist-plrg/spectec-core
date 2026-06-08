@@ -13,10 +13,10 @@ syntax objectState
 syntax externMethodDefEnv = map<callableId, externMethodDef>
 
 dec $init_objectState(nameIR, typeIR*, value*) : objectState
-  hint(prose_in "initialization of" %0#`<%1>#`(%2) "in the target")
+  hint(prose_in "initialization of" %0#`<%1>`#`(%2)` "in the target")
 
 syntax externObject =
-  EXTERN typeId `< theta > `{ objectState frame externMethodDefEnv }
+  EXTERN typeId `< theta >` `{ objectState frame externMethodDefEnv }`
 
 ;;
 ;;;; Parser object
@@ -26,10 +26,10 @@ syntax externObject =
 ;;
 
 syntax parserObject =
-  PARSER `< theta > `( parameterListIR )
+  PARSER `< theta >` `( parameterListIR )`
     `{ frame
        parserLocalDeclarationListIR
-       stateEnv }
+       stateEnv }`
 
 ;;
 ;;;; Control object
@@ -42,11 +42,11 @@ syntax parserObject =
 syntax actionDefEnv = map<callableId, actionDef>
 
 syntax controlObject =
-  CONTROL `< theta > `( parameterListIR )
+  CONTROL `< theta >` `( parameterListIR )`
     `{ frame
        controlLocalDeclarationListIR
        actionDefEnv
-       controlBodyIR }
+       controlBodyIR }`
 
 ;;
 ;;;; Package object
@@ -54,7 +54,7 @@ syntax controlObject =
 ;;;; and value environment (frame)
 ;;
 
-syntax packageObject = PACKAGE `< theta > `{ frame }
+syntax packageObject = PACKAGE `< theta >` `{ frame }`
 
 ;;
 ;;;; Table object
@@ -72,7 +72,7 @@ var TBL : tableObjectProperty
 
 ;; (TODO) Why is frame needed here?
 syntax tableObject =
-  TABLE typeId `{ frame tableObjectProperty }
+  TABLE typeId `{ frame tableObjectProperty }`
 
 ;;
 ;;;; Value set object
@@ -80,7 +80,7 @@ syntax tableObject =
 ;;
 
 syntax valueSetObject =
-  VALUE_SET `{ value* `( nat ) }
+  VALUE_SET `{ value* `( nat )` }`
 
 syntax object =
   | externObject

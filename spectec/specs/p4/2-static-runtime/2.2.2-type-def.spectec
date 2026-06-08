@@ -21,11 +21,11 @@ syntax aliasTypeDefIR = aliasTypeIR
 ;;
 
 syntax structTypeDefIR =
-  STRUCT typeId `< typeParameterIR* > `{ fieldTypeIR* }
+  STRUCT typeId `< typeParameterIR* >` `{ fieldTypeIR* }`
 syntax headerTypeDefIR =
-  HEADER typeId `< typeParameterIR* > `{ fieldTypeIR* }
+  HEADER typeId `< typeParameterIR* >` `{ fieldTypeIR* }`
 syntax headerUnionTypeDefIR =
-  HEADER_UNION typeId `< typeParameterIR* > `{ fieldTypeIR* }
+  HEADER_UNION typeId `< typeParameterIR* >` `{ fieldTypeIR* }`
 
 syntax enumTypeDefIR = enumTypeIR
 
@@ -40,20 +40,20 @@ syntax dataTypeDefIR =
 ;;
 
 syntax externObjectTypeDefIR =
-  EXTERN typeId `< typeParameterIR* ',' typeParameterIR* >
+  EXTERN typeId `< typeParameterIR* ',' typeParameterIR* >`
     externMethodTypeDefEnv
 
 syntax parserObjectTypeDefIR =
-  PARSER typeId `< typeParameterIR* ',' typeParameterIR* >
-    `( parameterIR* )
+  PARSER typeId `< typeParameterIR* ',' typeParameterIR* >`
+    `( parameterIR* )`
 
 syntax controlObjectTypeDefIR =
-  CONTROL typeId `< typeParameterIR* ',' typeParameterIR* >
-    `( parameterIR* )
+  CONTROL typeId `< typeParameterIR* ',' typeParameterIR* >`
+    `( parameterIR* )`
 
 syntax packageObjectTypeDefIR =
-  PACKAGE typeId `< typeParameterIR* ',' typeParameterIR* >
-    `{ typeIR* }
+  PACKAGE typeId `< typeParameterIR* ',' typeParameterIR* >`
+    `{ typeIR* }`
 
 syntax tableObjectTypeDefIR = tableObjectTypeIR
 

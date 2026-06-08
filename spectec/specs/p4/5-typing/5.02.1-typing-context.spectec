@@ -105,7 +105,7 @@ def $empty_typingContext = TC
 dec $bound(cursor, typingContext) : bound
   hint(prose_in "bound type variables from the" %0 "layer of" %1)
 
-def $bound(GLOBAL, TC) = `{ eps }
+def $bound(GLOBAL, TC) = `{ eps }`
 def $bound(BLOCK, TC) = $dom_map<typeId, typeDefIR>(TC.BLOCK.TYPE)
 def $bound(LOCAL, TC) = $union_set<typeId>(B_block, B_local)
   -- if B_block = $bound(BLOCK, TC)
@@ -264,20 +264,20 @@ dec $add_callableDef_non_overload_t(cursor, typingContext, callableId, callableT
 
 def $add_callableDef_non_overload_t(GLOBAL, TC, callableId, callableTypeDefIR) = TC'
   -- if callableTypeDefEnv = TC.GLOBAL.CALLABLE
-  -- if nameIR `( _ ) = callableId
-  -- if `{ (nameIR_k `( _ ))* }
+  -- if nameIR `( _ )` = callableId
+  -- if `{ (nameIR_k `( _ )`)* }`
       = $dom_map<callableId, callableTypeDefIR>(callableTypeDefEnv)
-  -- if ~$in_set<nameIR>(nameIR, `{ nameIR_k* })
+  -- if ~$in_set<nameIR>(nameIR, `{ nameIR_k* }`)
   -- if callableTypeDefEnv_update
         = $add_map<callableId, callableTypeDefIR>(
             callableTypeDefEnv, callableId, callableTypeDefIR)
   -- if TC' = TC [ .GLOBAL.CALLABLE = callableTypeDefEnv_update ]
 def $add_callableDef_non_overload_t(BLOCK, TC, callableId, callableTypeDefIR) = TC'
   -- if callableTypeDefEnv = TC.BLOCK.CALLABLE
-  -- if nameIR `( _ ) = callableId
-  -- if `{ (nameIR_k `( _ ))* }
+  -- if nameIR `( _ )` = callableId
+  -- if `{ (nameIR_k `( _ )`)* }`
       = $dom_map<callableId, callableTypeDefIR>(callableTypeDefEnv)
-  -- if ~$in_set<nameIR>(nameIR, `{ nameIR_k* })
+  -- if ~$in_set<nameIR>(nameIR, `{ nameIR_k* }`)
   -- if callableTypeDefEnv_update
         = $add_map<callableId, callableTypeDefIR>(
             callableTypeDefEnv, callableId, callableTypeDefIR)
@@ -306,10 +306,10 @@ def $add_constructorDef_t(TC, callableId, constructorTypeDefIR) = TC'
 
 def $add_constructorDef_non_overload_t(TC, callableId, constructorTypeDefIR) = TC'
   -- if constructorTypeDefEnv = TC.GLOBAL.CONSTRUCTOR
-  -- if nameIR `( _ ) = callableId
-  -- if `{ (nameIR_k `( _ ))* }
+  -- if nameIR `( _ )` = callableId
+  -- if `{ (nameIR_k `( _ )`)* }`
       = $dom_map<callableId, constructorTypeDefIR>(constructorTypeDefEnv)
-  -- if ~$in_set<nameIR>(nameIR, `{ nameIR_k* })
+  -- if ~$in_set<nameIR>(nameIR, `{ nameIR_k* }`)
   -- if constructorTypeDefEnv_update
         = $add_map<callableId, constructorTypeDefIR>(
             constructorTypeDefEnv, callableId, constructorTypeDefIR)
@@ -443,7 +443,7 @@ def $find_callableDef_non_overloaded_t(LOCAL, TC, _NAME nameIR)
 
 dec $find_constructorDef_overloaded_t(typingContext, prefixedNameIR, argumentIR*)
   : callResolution<constructorTypeDefIR>?
-  hint(prose_in "the overloaded constructor definition of" %1 `( %2 ) "in" %0)
+  hint(prose_in "the overloaded constructor definition of" %1 `( %2 )` "in" %0)
 
 def $find_constructorDef_overloaded_t(TC, '.' nameIR, argumentIR*)
   = $find_overloaded<constructorTypeDefIR>(

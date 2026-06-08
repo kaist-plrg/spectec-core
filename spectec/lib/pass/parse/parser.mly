@@ -40,7 +40,8 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 
 %token<string> TAG_UPID
 %token<string> OPERATOR
-%token TICK_LANGLE TICK_LPAREN TICK_LBRACK TICK_LBRACE
+%token TICK_LANGLE TICK_RANGLE TICK_LPAREN TICK_RPAREN
+%token TICK_LBRACK TICK_RBRACK TICK_LBRACE TICK_RBRACE
 
 %token NL_BAR NL2 NL3
 %token SUB TURNSTILE TILESTURN
@@ -233,19 +234,19 @@ typ_prim_ :
     {
       NotationT (AtomT $1 @@@ $loc($1))
     }
-  | TICK_LANGLE typ RANGLE
+  | TICK_LANGLE typ TICK_RANGLE
     {
       NotationT (BrackT (Atom.LAngle @@@ $loc($1), $2, Atom.RAngle @@@ $loc($3)) @@@ $loc($1))
     }
-  | TICK_LPAREN typ RPAREN
+  | TICK_LPAREN typ TICK_RPAREN
     {
       NotationT (BrackT (Atom.LParen @@@ $loc($1), $2, Atom.RParen @@@ $loc($3)) @@@ $loc($1))
     }
-  | TICK_LBRACK typ RBRACK
+  | TICK_LBRACK typ TICK_RBRACK
     {
       NotationT (BrackT (Atom.LBrack @@@ $loc($1), $2, Atom.RBrack @@@ $loc($3)) @@@ $loc($1))
     }
-  | TICK_LBRACE typ RBRACE
+  | TICK_LBRACE typ TICK_RBRACE
     {
       NotationT (BrackT (Atom.LBrace @@@ $loc($1), $2, Atom.RBrace @@@ $loc($3)) @@@ $loc($1))
     }
@@ -501,13 +502,13 @@ exp_prim_ :
       | [ exp ] -> ParenE exp
       | exps -> TupleE exps
     }
-  | TICK_LANGLE exp RANGLE
+  | TICK_LANGLE exp TICK_RANGLE
     { BrackE (Atom.LAngle @@@ $loc($1), $2, Atom.RAngle @@@ $loc($3)) }
-  | TICK_LPAREN exp RPAREN
+  | TICK_LPAREN exp TICK_RPAREN
     { BrackE (Atom.LParen @@@ $loc($1), $2, Atom.RParen @@@ $loc($3)) }
-  | TICK_LBRACK exp RBRACK
+  | TICK_LBRACK exp TICK_RBRACK
     { BrackE (Atom.LBrack @@@ $loc($1), $2, Atom.RBrack @@@ $loc($3)) }
-  | TICK_LBRACE exp RBRACE
+  | TICK_LBRACE exp TICK_RBRACE
     { BrackE (Atom.LBrace @@@ $loc($1), $2, Atom.RBrace @@@ $loc($3)) }
   | DOLLAR LPAREN arith RPAREN { $3.it }
   | HASH2 exp_prim { UnparenE $2 }

@@ -8,7 +8,7 @@
 rule ParserState_ok:
   TC_0 nameIR_state* |- parserState : parserStateIR
   -- if annotationList STATE name
-          `{ parserStatementList transitionStatement }
+          `{ parserStatementList transitionStatement }`
       = parserState
   ----
   -- if nameIR = $name(name)
@@ -25,7 +25,7 @@ rule ParserState_ok:
   -- if TC_3 = $exit_t(TC_2)
   ---- ;; create IR
   -- if parserStateIR
-      = annotationList STATE nameIR `{ parserStatementIR* transitionStatementIR }
+      = annotationList STATE nameIR `{ parserStatementIR* transitionStatementIR }`
 
 ;;
 ;; Parser state list typing
@@ -38,7 +38,7 @@ rule ParserStateList_ok:
   -- if parserState*
       = $flatten_parserStateList(parserStateList)
   ---- ;; check that state names are distinct
-  -- if (_ STATE name_state `{ _ _ } = parserState)*
+  -- if (_ STATE name_state `{ _ _ }` = parserState)*
   -- if (nameIR_state = $name(name_state))*
   -- if $distinct_<nameIR>(nameIR_state*)
   ---- ;; check that a "start" state exists

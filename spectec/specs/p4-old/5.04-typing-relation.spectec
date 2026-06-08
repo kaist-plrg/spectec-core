@@ -324,8 +324,8 @@ relation RoutineTarget_lvalue_ok:
   hint(input %0 %1 %2)
 
 relation RoutineType_ok:
-  cursor typingContext |- routineTargetIR `< typeArgumentListIR > `( argumentIR* )
-                        : routineTypeIR `< '#' tid* > `( '#' id* )
+  cursor typingContext |- routineTargetIR `< typeArgumentListIR >` `( argumentIR* )`
+                        : routineTypeIR `< '#' tid* >` `( '#' id* )`
   hint(input %0 %1 %2 %3 %4)
 
 ;; Checks that an action/function/method invocation is valid,
@@ -334,9 +334,9 @@ relation RoutineType_ok:
 ;; and inserts implicit casts for arguments, if necessary
 
 relation Call_ok:
-  cursor typingContext |- routineTypeIR `< typeArgumentListIR '#' tid* >
-                                  `( argumentListIR '#' id* )
-                        : typeIR `< typeArgumentListIR > `( argumentListIR )
+  cursor typingContext |- routineTypeIR `< typeArgumentListIR '#' tid* >`
+                                  `( argumentListIR '#' id* )`
+                        : typeIR `< typeArgumentListIR >` `( argumentListIR )`
   hint(input %0 %1 %2 %3 %4 %5 %6)
 
 ;;
@@ -348,8 +348,8 @@ relation Call_ok:
 ;; and also identifies the ids of default arguments (id*)
 
 relation ConstructorType_ok:
-  cursor typingContext |- prefixedNameIR `< typeArgumentListIR > `( argumentIR* )
-                        : constructorTypeIR `< '#' tid* > `( '#' id* )
+  cursor typingContext |- prefixedNameIR `< typeArgumentListIR >` `( argumentIR* )`
+                        : constructorTypeIR `< '#' tid* >` `( '#' id* )`
   hint(input %0 %1 %2 %3 %4)
 
 ;; Checks that a constructor invocation is valid,
@@ -361,9 +361,9 @@ syntax instctxt = NAMED | ANON
 
 relation Inst_ok:
   cursor typingContext instctxt |- constructorTypeIR
-                                    `< typeArgumentListIR '#' tid* >
-                                    `( argumentListIR '#' id* )
+                                    `< typeArgumentListIR '#' tid* >`
+                                    `( argumentListIR '#' id* )`
                                  : typeIR
-                                    `< typeArgumentListIR >
-                                    `( argumentListIR )
+                                    `< typeArgumentListIR >`
+                                    `( argumentListIR )`
   hint(input %0 %1 %2 %3 %4 %5 %6 %7)

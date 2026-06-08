@@ -74,57 +74,57 @@ def $align_parameterListIR(
   -- if (_ _ _ nameIR_given _ = parameterIR_given)*
   -- if parameterIR_given_aligned*
       = $align_parameterListIR_given(
-          `{ (nameIR_given ':' parameterIR_given)* },
+          `{ (nameIR_given ':' parameterIR_given)* }`,
           parameterIR_given*,
           argumentIR*)
 
 def $align_parameterListIR_given(
-    `{ (id ':' parameterIR)* }, eps, eps) = eps
+    `{ (id ':' parameterIR)* }`, eps, eps) = eps
 
 def $align_parameterListIR_given(
-    `{ (id ':' parameterIR)* },
+    `{ (id ':' parameterIR)* }`,
     parameterIR_h :: parameterIR_t*,
     argumentIR_h :: argumentIR_t*)
   = parameterIR_h :: parameterIR_aligned*
   -- if argumentIR_h = typedExpressionIR
   -- if parameterIR_aligned*
       = $align_parameterListIR_given(
-          `{ (id ':' parameterIR)* },
+          `{ (id ':' parameterIR)* }`,
           parameterIR_t*, argumentIR_t*)
 
 def $align_parameterListIR_given(
-    `{ (id ':' parameterIR)* },
+    `{ (id ':' parameterIR)* }`,
     parameterIR_h :: parameterIR_t*,
     argumentIR_h :: argumentIR_t*)
   = parameterIR_h :: parameterIR_aligned*
   -- if argumentIR_h = '_'
   -- if parameterIR_aligned*
       = $align_parameterListIR_given(
-          `{ (id ':'  parameterIR)* },
+          `{ (id ':'  parameterIR)* }`,
           parameterIR_t*, argumentIR_t*)
 
 def $align_parameterListIR_given(
-    `{ (id ':' parameterIR)* },
+    `{ (id ':' parameterIR)* }`,
     parameterIR_h :: parameterIR_t*,
     argumentIR_h :: argumentIR_t*)
   = parameterIR_match :: parameterIR_aligned*
   -- if argumentIR_h = nameIR '=' _
   -- if parameterIR_match
-      = $find_map<id, parameterIR>(`{ (id ':' parameterIR)* }, nameIR)
+      = $find_map<id, parameterIR>(`{ (id ':' parameterIR)* }`, nameIR)
   -- if parameterIR_aligned*
       = $align_parameterListIR_given(
-          `{ (id ':'  parameterIR)* },
+          `{ (id ':'  parameterIR)* }`,
           parameterIR_t*, argumentIR_t*)
 
 def $align_parameterListIR_given(
-    `{ (id ':' parameterIR)* },
+    `{ (id ':' parameterIR)* }`,
     parameterIR_h :: parameterIR_t*,
     argumentIR_h :: argumentIR_t*)
   = parameterIR_match :: parameterIR_aligned*
   -- if argumentIR_h = nameIR '=' '_'
   -- if parameterIR_match
-      = $find_map<id, parameterIR>(`{ (id ':' parameterIR)* }, nameIR)
+      = $find_map<id, parameterIR>(`{ (id ':' parameterIR)* }`, nameIR)
   -- if parameterIR_aligned*
       = $align_parameterListIR_given(
-          `{ (id ':'  parameterIR)* },
+          `{ (id ':'  parameterIR)* }`,
           parameterIR_t*, argumentIR_t*)

@@ -195,16 +195,16 @@ dec $add_callableDef_non_overload_i(cursor, instContext, callableId, callableDef
 
 def $add_callableDef_non_overload_i(GLOBAL, IC, callableId, callableDef)
   = IC[ .GLOBAL.CALLABLE = callableDefEnv ]
-  -- if id `( _ ) = callableId
-  -- if `{ (id_k `( _ ))* } = $dom_map<callableId, callableDef>(IC.GLOBAL.CALLABLE)
-  -- if ~$in_set<id>(id, `{ id_k* })
+  -- if id `( _ )` = callableId
+  -- if `{ (id_k `( _ )`)* }` = $dom_map<callableId, callableDef>(IC.GLOBAL.CALLABLE)
+  -- if ~$in_set<id>(id, `{ id_k* }`)
   -- if callableDefEnv
       = $add_map<callableId, callableDef>(IC.GLOBAL.CALLABLE, callableId, callableDef)
 def $add_callableDef_non_overload_i(BLOCK, IC, callableId, callableDef)
   = IC[ .BLOCK.CALLABLE = callableDefEnv ]
-  -- if id `( _ ) = callableId
-  -- if `{ (id_k `( _ ))* } = $dom_map<callableId, callableDef>(IC.BLOCK.CALLABLE)
-  -- if ~$in_set<id>(id, `{ id_k* })
+  -- if id `( _ )` = callableId
+  -- if `{ (id_k `( _ )`)* }` = $dom_map<callableId, callableDef>(IC.BLOCK.CALLABLE)
+  -- if ~$in_set<id>(id, `{ id_k* }`)
   -- if callableDefEnv
       = $add_map<callableId, callableDef>(IC.BLOCK.CALLABLE, callableId, callableDef)
 
@@ -292,7 +292,7 @@ def $find_typeDef_i(_, IC, '.' nameIR)
 
 dec $find_constructorDef_i(instContext, prefixedNameIR, argumentIR*)
   : callResolution<constructorDef>?
-  hint(prose_in "the overloaded constructor definition of" %1 `( %2 ) "in" %0)
+  hint(prose_in "the overloaded constructor definition of" %1 `( %2 )` "in" %0)
 
 def $find_constructorDef_i(IC, _NAME nameIR, argumentIR*)
   = $find_overloaded<constructorDef>(

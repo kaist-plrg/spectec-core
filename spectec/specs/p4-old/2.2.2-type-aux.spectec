@@ -56,12 +56,12 @@ def $is_arbitrary_int_typeIR(typeIR) = false
   -- otherwise
 
 dec $is_fixed_int_typeIR(typeIR) : bool
-def $is_fixed_int_typeIR(INT `< _ >) = true
+def $is_fixed_int_typeIR(INT `< _ >`) = true
 def $is_fixed_int_typeIR(typeIR) = false
   -- otherwise
 
 dec $is_fixed_bit_typeIR(typeIR) : bool
-def $is_fixed_bit_typeIR(BIT `< _ >) = true
+def $is_fixed_bit_typeIR(BIT `< _ >`) = true
 def $is_fixed_bit_typeIR(typeIR) = false
   -- otherwise
 
@@ -123,6 +123,6 @@ def $is_synthesizedTypeIR(typeIR) = false
   -- otherwise
 
 dec $is_set_typeIR(typeIR) : bool
-def $is_set_typeIR(SET `< _ >) = true
+def $is_set_typeIR(SET `< _ >`) = true
 def $is_set_typeIR(typeIR) = false
   -- otherwise

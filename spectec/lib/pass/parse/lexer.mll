@@ -156,11 +156,15 @@ and token = parse
   (* escaped tokens *)
   | "_"(upid as s) { TAG_UPID s }
   | "'" ([^'\'''\n']* as s) "'" { OPERATOR s }
-  (* matched grouping brackets *)
+  (* matched grouping brackets: backtick on both delimiters *)
   | "`<" { TICK_LANGLE }
+  | ">`" { TICK_RANGLE }
   | "`(" { TICK_LPAREN }
+  | ")`" { TICK_RPAREN }
   | "`[" { TICK_LBRACK }
+  | "]`" { TICK_RBRACK }
   | "`{" { TICK_LBRACE }
+  | "}`" { TICK_RBRACE }
   (* normal tokens *)
   | "|-" { TURNSTILE }
   | "-|" { TILESTURN }

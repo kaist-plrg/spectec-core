@@ -21,17 +21,17 @@ relation Expr_lvalue_ok:
   hint(prose_in %2 "is a valid l-value, under context" %1 "at" %0)
 
 rule Expr_lvalue_ok/referenceExpressionIR:
-  p TC |- prefixedNameIR '#' `( _ _ )
+  p TC |- prefixedNameIR '#' `( _ _ )`
   -- if direction _ DYN _ = $find_var_t(prefixedNameIR, p, TC)
   -- if direction = OUT \/ direction = INOUT
 
 
 rule Expr_lvalue_ok/headerstack-next-last:
-  p TC |- (typedExpressionIR_base '.' nameIR) '#' `( _ _ )
+  p TC |- (typedExpressionIR_base '.' nameIR) '#' `( _ _ )`
   -- Expr_lvalue_ok: p TC |- typedExpressionIR_base
   ---- ;; if the base expression is a header stack
   -- if typeIR_base = $type_of_typedExpressionIR(typedExpressionIR_base)
-  -- if typeIR `[ _ ] = $unroll_typeIR(typeIR_base)
+  -- if typeIR `[ _ ]` = $unroll_typeIR(typeIR_base)
   ---- ;; if accessing "next" or "last"
   -- if nameIR = "next" \/ nameIR = "last"
   ---- ;; "next" and "last" can be only used within a parser
@@ -39,7 +39,7 @@ rule Expr_lvalue_ok/headerstack-next-last:
         \/ (p = LOCAL /\ TC.LOCAL.KIND = PARSER_STATE)
 
 rule Expr_lvalue_ok/non-headerstack:
-  p TC |- (typedExpressionIR_base '.' nameIR) '#' `( _ _ )
+  p TC |- (typedExpressionIR_base '.' nameIR) '#' `( _ _ )`
   -- Expr_lvalue_ok: p TC |- typedExpressionIR_base
   -- if typeIR_base = $type_of_typedExpressionIR(typedExpressionIR_base)
   ---- ;; if the base expression is not a header stack
@@ -48,17 +48,17 @@ rule Expr_lvalue_ok/non-headerstack:
 
 
 rule Expr_lvalue_ok/accessExpressionIR-indexAccessExpressionIR:
-  p TC |- (typedExpressionIR_base `[ typedExpressionIR_index ]) '#' `( _ _ )
+  p TC |- (typedExpressionIR_base `[ typedExpressionIR_index ]`) '#' `( _ _ )`
   -- Expr_lvalue_ok: p TC |- typedExpressionIR_base
 
 rule Expr_lvalue_ok/accessExpressionIR-sliceAccessExpressionIR-range:
   p TC |- (typedExpressionIR_base
-            `[ typedExpressionIR_hi ':' typedExpressionIR_lo ]) '#' `( _ _ )
+            `[ typedExpressionIR_hi ':' typedExpressionIR_lo ]`) '#' `( _ _ )`
   -- Expr_lvalue_ok: p TC |- typedExpressionIR_base
 
 rule Expr_lvalue_ok/accessExpressionIR-sliceAccessExpressionIR-offset:
   p TC |- (typedExpressionIR_base
-            `[ typedExpressionIR_l '+': typedExpressionIR_w ]) '#' `( _ _ )
+            `[ typedExpressionIR_l '+': typedExpressionIR_w ]`) '#' `( _ _ )`
   -- Expr_lvalue_ok: p TC |- typedExpressionIR_base
 
 rule Call_convention_expr_ok/out-inout:

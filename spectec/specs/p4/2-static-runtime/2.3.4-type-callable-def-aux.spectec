@@ -14,22 +14,22 @@ def $callableTypeIR_of_callableTypeDefIR(actionTypeDefIR)
 ;;; Function type definitions
 
 def $callableTypeIR_of_callableTypeDefIR(
-    FUNCTION nameIR `< _ ',' _ > `( parameterIR* ) ':' typeIR)
-  = FUNCTION nameIR `( parameterIR* ) ':' typeIR
+    FUNCTION nameIR `< _ ',' _ >` `( parameterIR* )` ':' typeIR)
+  = FUNCTION nameIR `( parameterIR* )` ':' typeIR
 
 def $callableTypeIR_of_callableTypeDefIR(
-    EXTERN_FUNCTION nameIR `< _ ',' _ > `( parameterIR* ) ':' typeIR)
-  = EXTERN_FUNCTION nameIR `( parameterIR* ) ':' typeIR
+    EXTERN_FUNCTION nameIR `< _ ',' _ >` `( parameterIR* )` ':' typeIR)
+  = EXTERN_FUNCTION nameIR `( parameterIR* )` ':' typeIR
 
 ;;; Method type definitions
 
 def $callableTypeIR_of_callableTypeDefIR(
-    EXTERN_METHOD nameIR `< _ ',' _ > `( parameterIR* ) ':' typeIR)
-  = EXTERN_METHOD nameIR `( parameterIR* ) ':' typeIR
+    EXTERN_METHOD nameIR `< _ ',' _ >` `( parameterIR* )` ':' typeIR)
+  = EXTERN_METHOD nameIR `( parameterIR* )` ':' typeIR
 
 def $callableTypeIR_of_callableTypeDefIR(
-    EXTERN_METHOD ABSTRACT nameIR `< _ ',' _ > `( parameterIR* ) ':' typeIR)
-  = EXTERN_METHOD ABSTRACT nameIR `( parameterIR* ) ':' typeIR
+    EXTERN_METHOD ABSTRACT nameIR `< _ ',' _ >` `( parameterIR* )` ':' typeIR)
+  = EXTERN_METHOD ABSTRACT nameIR `( parameterIR* )` ':' typeIR
 
 def $callableTypeIR_of_callableTypeDefIR(
     parserApplyMethodTypeDefIR)
@@ -55,21 +55,21 @@ def $typeParameterListIR_of_callableTypeDefIR(actionTypeDefIR)
 ;;; Function type definitions
 
 def $typeParameterListIR_of_callableTypeDefIR(
-    FUNCTION _ `< typeParameterIR_expl* ',' typeParameterIR_impl* > `( _ ) ':' _)
+    FUNCTION _ `< typeParameterIR_expl* ',' typeParameterIR_impl* >` `( _ )` ':' _)
   = (typeParameterIR_expl*, typeParameterIR_impl*)
 
 def $typeParameterListIR_of_callableTypeDefIR(
-    EXTERN_FUNCTION _ `< typeParameterIR_expl* ',' typeParameterIR_impl* > `( _ ) ':' _)
+    EXTERN_FUNCTION _ `< typeParameterIR_expl* ',' typeParameterIR_impl* >` `( _ )` ':' _)
   = (typeParameterIR_expl*, typeParameterIR_impl*)
 
 ;;; Method type definitions
 
 def $typeParameterListIR_of_callableTypeDefIR(
-    EXTERN_METHOD _ `< typeParameterIR_expl* ',' typeParameterIR_impl* > `( _ ) ':' _)
+    EXTERN_METHOD _ `< typeParameterIR_expl* ',' typeParameterIR_impl* >` `( _ )` ':' _)
   = (typeParameterIR_expl*, typeParameterIR_impl*)
 
 def $typeParameterListIR_of_callableTypeDefIR(
-    EXTERN_METHOD ABSTRACT _ `< typeParameterIR_expl* ',' typeParameterIR_impl* > `( _ ) ':' _)
+    EXTERN_METHOD ABSTRACT _ `< typeParameterIR_expl* ',' typeParameterIR_impl* >` `( _ )` ':' _)
   = (typeParameterIR_expl*, typeParameterIR_impl*)
 
 def $typeParameterListIR_of_callableTypeDefIR(
@@ -92,7 +92,7 @@ dec $parameterListIR_of_callableTypeDefIR(callableTypeDefIR)
 
 dec $parameterListIR_of_actionTypeDefIR(actionTypeDefIR)
   : parameterIR*
-def $parameterListIR_of_actionTypeDefIR(_ ACTION _ `( parameterIR* ))
+def $parameterListIR_of_actionTypeDefIR(_ ACTION _ `( parameterIR* )`)
   = parameterIR*
 
 def $parameterListIR_of_callableTypeDefIR(actionTypeDefIR)
@@ -106,13 +106,13 @@ dec $parameterListIR_of_functionTypeDefIR(functionTypeDefIR)
 dec $parameterListIR_of_definedFunctionTypeDefIR(definedFunctionTypeDefIR)
   : parameterIR*
 def $parameterListIR_of_definedFunctionTypeDefIR(
-    FUNCTION _ `< _ ',' _ > `( parameterIR* ) ':' _)
+    FUNCTION _ `< _ ',' _ >` `( parameterIR* )` ':' _)
   = parameterIR*
 
 dec $parameterListIR_of_externFunctionTypeDefIR(externFunctionTypeDefIR)
   : parameterIR*
 def $parameterListIR_of_externFunctionTypeDefIR(
-    EXTERN_FUNCTION _ `< _ ',' _ > `( parameterIR* ) ':' _)
+    EXTERN_FUNCTION _ `< _ ',' _ >` `( parameterIR* )` ':' _)
   = parameterIR*
 
 def $parameterListIR_of_functionTypeDefIR(definedFunctionTypeDefIR)
@@ -131,22 +131,22 @@ dec $parameterListIR_of_methodTypeDefIR(methodTypeDefIR)
 dec $parameterListIR_of_externMethodTypeDefIR(externMethodTypeDefIR)
   : parameterIR*
 def $parameterListIR_of_externMethodTypeDefIR(
-    EXTERN_METHOD _ `< _ ',' _ > `( parameterIR* ) ':' _)
+    EXTERN_METHOD _ `< _ ',' _ >` `( parameterIR* )` ':' _)
   = parameterIR*
 def $parameterListIR_of_externMethodTypeDefIR(
-    EXTERN_METHOD ABSTRACT _ `< _ ',' _ > `( parameterIR* ) ':' _)
+    EXTERN_METHOD ABSTRACT _ `< _ ',' _ >` `( parameterIR* )` ':' _)
   = parameterIR*
 
 dec $parameterListIR_of_parserApplyMethodTypeIR(parserApplyMethodTypeIR)
   : parameterIR*
 def $parameterListIR_of_parserApplyMethodTypeIR(
-    PARSER_APPLY `( parameterIR* ))
+    PARSER_APPLY `( parameterIR* )`)
   = parameterIR*
 
 dec $parameterListIR_of_controlApplyMethodTypeIR(controlApplyMethodTypeIR)
   : parameterIR*
 def $parameterListIR_of_controlApplyMethodTypeIR(
-    CONTROL_APPLY `( parameterIR* ))
+    CONTROL_APPLY `( parameterIR* )`)
   = parameterIR*
 
 dec $parameterListIR_of_tableApplyMethodTypeDefIR(tableApplyMethodTypeDefIR)

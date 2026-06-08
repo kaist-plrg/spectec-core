@@ -24,19 +24,19 @@ rule Stmt_inst/callStatementIR:
 ;;;   prefixedNameIR `< typeArgumentListIR > '.' APPLY `( argumentListIR ) ';'
 
 rule DirectApplicationStmt_inst:
-  p IC STO_0 |- constructorTargetIR '.' APPLY `( argumentListIR ) ';'
+  p IC STO_0 |- constructorTargetIR '.' APPLY `( argumentListIR )` ';'
               : STO_2 constantDeclarationIR callStatementIR
   ---- ;; find and instantiate constructor
-  -- if prefixedNameIR `< typeArgumentListIR >
+  -- if prefixedNameIR `< typeArgumentListIR >`
       = constructorTargetIR
   -- Constructor_inst:
-      p IC |- prefixedNameIR `< typeArgumentListIR > `( eps )
-            : constructorDef `< typeArgumentListIR_inst > `( '#' id_default* '#' id_optional* )
+      p IC |- prefixedNameIR `< typeArgumentListIR >` `( eps )`
+            : constructorDef `< typeArgumentListIR_inst >` `( '#' id_default* '#' id_optional* )`
   -- if typeId = $flatten_prefixedNameIR(prefixedNameIR)
   -- if IC_callee = $enter_path_i(IC, typeId)
   -- Constructor_call:
-      p IC_callee STO_0 |- constructorDef `< typeArgumentListIR_inst >
-                            `( eps '#' id_default* '#' id_optional* )
+      p IC_callee STO_0 |- constructorDef `< typeArgumentListIR_inst >`
+                            `( eps '#' id_default* '#' id_optional* )`
                          : STO_1 object
   ---- ;; assign new typeId with random string appended
   -- if typeId_fresh = $fresh_typeId()
@@ -49,11 +49,11 @@ rule DirectApplicationStmt_inst:
   -- if constantDeclarationIR
       = _EMPTY CONST typeIR nameIR ('=' _VALUE (REF objectId)) ';'
   -- if typedExpressionIR_base
-      = (_NAME nameIR) '#' `( typeIR CTK )
+      = (_NAME nameIR) '#' `( typeIR CTK )`
   -- if callableTargetIR
       = typedExpressionIR_base '.' "apply"
   -- if callStatementIR
-      = callableTargetIR `< typeArgumentListIR_inst > `( argumentListIR ) ';'
+      = callableTargetIR `< typeArgumentListIR_inst >` `( argumentListIR )` ';'
 
 rule Stmt_inst/directApplicationStatementIR:
   p IC STO_0 |- directApplicationStatementIR
@@ -62,7 +62,7 @@ rule Stmt_inst/directApplicationStatementIR:
       p IC STO_0 |- directApplicationStatementIR
                   : STO_1 constantDeclarationIR callStatementIR
   -- if blockStatementIR
-      = _EMPTY `{ [ constantDeclarationIR, callStatementIR ] }
+      = _EMPTY `{ [ constantDeclarationIR, callStatementIR ] }`
 
 ;;; returnStatementIR
 
@@ -78,13 +78,13 @@ rule Stmt_inst/exitStatementIR:
 ;;; syntax blockStatementIR = annotationList `{ blockElementStatementListIR }
 
 rule Stmt_inst/blockStatementIR:
-  LOCAL IC_0 STO_0 |- annotationList `{ blockElementStatementListIR }
+  LOCAL IC_0 STO_0 |- annotationList `{ blockElementStatementListIR }`
                     : IC_3 STO_1
-                        (annotationList `{ blockElementStatementListIR_inst })
+                        (annotationList `{ blockElementStatementListIR_inst }`)
   -- if IC_1 = $enter_i(IC_0)
   -- Block_inst:
-      IC_1 STO_0 |- annotationList `{ blockElementStatementListIR }
-                  : IC_2 STO_1 (_ `{ blockElementStatementListIR_inst })
+      IC_1 STO_0 |- annotationList `{ blockElementStatementListIR }`
+                  : IC_2 STO_1 (_ `{ blockElementStatementListIR_inst }`)
   -- if IC_3 = $exit_i(IC_2)
 
 ;;; conditionalStatementIR
@@ -95,16 +95,16 @@ rule Stmt_inst/blockStatementIR:
 
 
 rule Stmt_inst/non-else:
-  p IC STO_0 |- IF `( typedExpressionIR_cond ) statementIR_then
-              : IC STO_1 (IF `( typedExpressionIR_cond ) statementIR_then_inst)
+  p IC STO_0 |- IF `( typedExpressionIR_cond )` statementIR_then
+              : IC STO_1 (IF `( typedExpressionIR_cond )` statementIR_then_inst)
   -- Stmt_inst:
       p IC STO_0 |- statementIR_then
                   : IC_then STO_1 statementIR_then_inst
 
 rule Stmt_inst/else:
-  p IC STO_0 |- IF `( typedExpressionIR_cond ) statementIR_then ELSE statementIR_else
+  p IC STO_0 |- IF `( typedExpressionIR_cond )` statementIR_then ELSE statementIR_else
               : IC STO_2
-                  (IF `( typedExpressionIR_cond ) statementIR_then_inst
+                  (IF `( typedExpressionIR_cond )` statementIR_then_inst
                    ELSE statementIR_else_inst)
   -- Stmt_inst:
       p IC STO_0 |- statementIR_then
@@ -125,12 +125,12 @@ rule Stmt_inst/forStatementIR-three-clause:
   p IC STO_0 |- annotationList FOR
                   `( forInitStatementListIR ';'
                      typedExpressionIR ';'
-                     forUpdateStatementListIR ) statementIR
+                     forUpdateStatementListIR )` statementIR
               : IC STO_1 forStatementIR
   -- Stmt_inst: p IC STO_0 |- statementIR : IC_body STO_1 statementIR_body
   -- if forStatementIR
       = annotationList FOR `( forInitStatementListIR ';' typedExpressionIR ';'
-          forUpdateStatementListIR ) statementIR_body
+          forUpdateStatementListIR )` statementIR_body
 
 ;;;; annotationList FOR
 ;;;;   `( typeIR nameIR IN forCollectionExpressionIR )
@@ -142,22 +142,22 @@ rule Stmt_inst/forStatementIR-three-clause:
 
 rule Stmt_inst/no-annotations:
   p IC STO_0 |- annotationList FOR
-                  `( typeIR nameIR IN forCollectionExpressionIR )
+                  `( typeIR nameIR IN forCollectionExpressionIR )`
                   statementIR
               : IC STO_1 forStatementIR
   -- Stmt_inst: p IC STO_0 |- statementIR : IC_body STO_1 statementIR_body
   -- if forStatementIR
-      = annotationList FOR `( typeIR nameIR IN forCollectionExpressionIR )
+      = annotationList FOR `( typeIR nameIR IN forCollectionExpressionIR )`
           statementIR_body
 
 rule Stmt_inst/annotations:
   p IC STO_0 |- annotationList FOR
-                  `( annotationList typeIR nameIR IN forCollectionExpressionIR )
+                  `( annotationList typeIR nameIR IN forCollectionExpressionIR )`
                   statementIR
               : IC STO_1 forStatementIR
   -- Stmt_inst: p IC STO_0 |- statementIR : IC_body STO_1 statementIR_body
   -- if forStatementIR
-      = annotationList FOR `( annotationList typeIR nameIR IN forCollectionExpressionIR )
+      = annotationList FOR `( annotationList typeIR nameIR IN forCollectionExpressionIR )`
           statementIR_body
 
 
@@ -223,8 +223,8 @@ rule SwitchCases_inst/cons:
 
 
 rule Stmt_inst/switchStatementIR:
-  p IC STO_0 |- SWITCH `( typedExpressionIR ) `{ switchCaseListIR }
-              : IC STO_1 (SWITCH `( typedExpressionIR ) `{ switchCaseListIR_inst })
+  p IC STO_0 |- SWITCH `( typedExpressionIR )` `{ switchCaseListIR }`
+              : IC STO_1 (SWITCH `( typedExpressionIR )` `{ switchCaseListIR_inst }`)
   ---- ;; instantiate switch cases
   -- SwitchCases_inst: p IC STO_0 |- switchCaseListIR
                                    : STO_1 switchCaseListIR_inst
@@ -286,8 +286,8 @@ rule BlockElementStmtList_inst/cons:
 ;;; syntax blockStatmentIR = annotationList `{ blockElementStatementListIR }
 
 rule Block_inst:
-  IC_0 STO_0 |- annotationList `{ blockElementStatementListIR }
-              : IC_1 STO_1 (annotationList `{ blockElementStatementListIR_inst })
+  IC_0 STO_0 |- annotationList `{ blockElementStatementListIR }`
+              : IC_1 STO_1 (annotationList `{ blockElementStatementListIR_inst }`)
   -- BlockElementStmtList_inst:
       IC_0 STO_0 |- blockElementStatementListIR
                   : IC_1 STO_1 blockElementStatementListIR_inst

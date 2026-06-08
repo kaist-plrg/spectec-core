@@ -65,23 +65,23 @@ rule ParserLocalDecl_ok/variableDeclaration-initializer:
 ;;;   annotationList VALUE_SET `< valueSetType > `( expression ) name ';'
 
 rule ParserLocalDecl_ok/valueSetDeclaration:
-  TC_0 |- annotationList VALUE_SET `< valueSetType > `( expression ) name ';'
+  TC_0 |- annotationList VALUE_SET `< valueSetType >` `( expression )` name ';'
        : TC_1 valueSetDeclarationIR
   ---- ;; check type
   -- Type_ok: BLOCK TC_0 |- valueSetType : typeIR '#' eps
   ---- ;; check that the type can be embedded in a set
-  -- Type_wf: $bound(BLOCK, TC_0) |- SET `< typeIR >
+  -- Type_wf: $bound(BLOCK, TC_0) |- SET `< typeIR >`
   ---- ;; check expression
   -- Expr_ok: BLOCK TC_0 |- expression : typedExpressionIR
   ---- ;; check that the expression is compile-time known
-  -- if _ '#' `( _ ctk ) = typedExpressionIR
+  -- if _ '#' `( _ ctk )` = typedExpressionIR
   -- if ctk =/= DYN
   ---- ;; add the value set to the context
   -- if nameIR = $name(name)
-  -- if TC_1 = $add_var(BLOCK, TC_0, nameIR, _EMPTY (SET `< typeIR >) CTK eps)
+  -- if TC_1 = $add_var(BLOCK, TC_0, nameIR, _EMPTY (SET `< typeIR >`) CTK eps)
   ---- ;; create IR
   -- if valueSetDeclarationIR
-      = annotationList VALUE_SET `< typeIR > `( typedExpressionIR ) nameIR ';'
+      = annotationList VALUE_SET `< typeIR >` `( typedExpressionIR )` nameIR ';'
 
 ;;
 ;; Parser local declaration list typing

@@ -6,16 +6,16 @@
 
 ;;; KEY '=' `{ tableKeyListIR }
 rule TableProperty_inst/key:
-  Ci sto |- KEY '=' `{ tableKeyListIR } ==> Ci sto (KEY '=' `{ tableKeyListIR })
+  Ci sto |- KEY '=' `{ tableKeyListIR }` ==> Ci sto (KEY '=' `{ tableKeyListIR }`)
 
 ;;; ACTIONS '=' `{ tableActionListIR }
 rule TableProperty_inst/actions:
-  Ci sto |- ACTIONS '=' `{ tableActionListIR } ==> Ci sto (ACTIONS '=' `{ tableActionListIR })
+  Ci sto |- ACTIONS '=' `{ tableActionListIR }` ==> Ci sto (ACTIONS '=' `{ tableActionListIR }`)
 
 ;;; annotationList constOptIR ENTRIES '=' `{ tableEntryListIR }
 rule TableProperty_inst/entries:
-  Ci sto |- annotationList constOptIR ENTRIES '=' `{ tableEntryListIR }
-    ==> Ci sto (annotationList constOptIR ENTRIES '=' `{ tableEntryListIR })
+  Ci sto |- annotationList constOptIR ENTRIES '=' `{ tableEntryListIR }`
+    ==> Ci sto (annotationList constOptIR ENTRIES '=' `{ tableEntryListIR }`)
 
 ;;; annotationList constOptIR DEFAULT_ACTION '=' tableActionReferenceIR ';'
 rule TableProperty_inst/custom-default-action:
