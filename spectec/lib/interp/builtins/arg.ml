@@ -74,7 +74,8 @@ module VMap = Map.Make (Value)
 let colon_pair : (Value.t * Value.t) t =
  fun at v ->
   match v.it with
-  | CaseV [ Arg key; Atom { it = Operator ":"; _ }; Arg value ] ->
+  | CaseV [ Arg key; Atom sep; Arg value ]
+    when Lang.Xl.Atom.is_operator sep.it ":" ->
       Ok (key, value)
   | _ -> Error (type_err at "Expected a k ':' v pair" v)
 

@@ -2,17 +2,23 @@
     is either an object-language terminal that appears in the described program,
     or a piece of the spec's own meta-notation.
 
-    The three string-carrying cases ([Keyword], [Tag], [Operator]) should be
-    built through {!keyword}, {!tag} and {!operator}, which validate the payload
-    against what the lexer can read; the nullary constructors are built
-    directly. *)
+    The three string-carrying cases ([Keyword], [Tag], [Operator]) carry private
+    payloads, so they can only be built through {!keyword}, {!tag} and
+    {!operator}, which validate against what the lexer can read; the nullary
+    constructors are built directly. *)
+
+(** A validated upper identifier. *)
+type upid = private string
+
+(** Validated operator text. *)
+type optext = private string
 
 [@@@ocamlformat "disable"]
 
 type t =
-  | Keyword of string               (* concrete object word: INT *)
-  | Tag of string                   (* silent meta case label: _NUM *)
-  | Operator of string              (* concrete operator: '+', '->', ';' *)
+  | Keyword of upid                 (* concrete object word: INT *)
+  | Tag of upid                     (* silent meta case label: _NUM *)
+  | Operator of optext              (* concrete operator: '+', '->', ';' *)
   | Sub                             (* <: *)
   | Sup                             (* :> *)
   | Turnstile                       (* |- *)
@@ -75,3 +81,6 @@ val tag : string -> t
 (** [operator s] is [Operator s]; raises [Invalid_argument] if [s] contains a
     single quote or newline. *)
 val operator : string -> t
+
+(** [is_operator atom s] holds when [atom] is the operator spelled [s]. *)
+val is_operator : t -> string -> bool

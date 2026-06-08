@@ -1,7 +1,10 @@
+type upid = string
+type optext = string
+
 type t =
-  | Keyword of string
-  | Tag of string
-  | Operator of string
+  | Keyword of upid
+  | Tag of upid
+  | Operator of optext
   | Sub
   | Sup
   | Turnstile
@@ -144,3 +147,5 @@ let operator (s : string) : t =
   if String.contains s '\'' || String.contains s '\n' then
     invalid_arg ("Atom.operator: unquotable operator: " ^ s)
   else Operator s
+
+let is_operator atom s = match atom with Operator o -> o = s | _ -> false

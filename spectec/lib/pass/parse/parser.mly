@@ -146,10 +146,10 @@ atomid_lparen : UPID_LPAREN { $1 }
 atomid_langle : UPID_LANGLE { $1 }
 atomid : atomid_ { $1 } | atomid DOTID { $1 ^ "." ^ $2 }
 
-dotid : DOTID { Atom.Keyword $1 @@@ $sloc }
+dotid : DOTID { Atom.keyword $1 @@@ $sloc }
 
 fieldid :
-  | atomid_ { Atom.Keyword $1 @@@ $sloc }
+  | atomid_ { Atom.keyword $1 @@@ $sloc }
 
 relid : id { $1 @@@ $sloc }
 
@@ -180,11 +180,11 @@ synid :
 atom :
   | atom_ { $1 @@@ $sloc }
 atom_ :
-  | atomid { Atom.Keyword $1 }
+  | atomid { Atom.keyword $1 }
   | atom_escape { $1 }
 atom_escape :
-  | TAG_UPID { Atom.Tag $1 }
-  | OPERATOR { Atom.Operator $1 }
+  | TAG_UPID { Atom.tag $1 }
+  | OPERATOR { Atom.operator $1 }
 
 (* Iterations *)
 
@@ -527,7 +527,7 @@ exp_atom_ :
   | atom { AtomE $1 }
   | atomid_lparen exp RPAREN
     { SeqE [
-        AtomE (Atom.Keyword $1 @@@ $loc($1)) @@@ $loc($1);
+        AtomE (Atom.keyword $1 @@@ $loc($1)) @@@ $loc($1);
         ParenE $2 @@@ $loc($2)
       ] }
 
