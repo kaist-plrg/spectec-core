@@ -80,3 +80,14 @@ Preservation property catches it directly with the offending expression:
   [Quickcheck Preservation: Test]
   Falsifiable, after 14 tests:
     env=[], tenv=[], expr=+2 <= +2
+
+The preservation-compat fixture spells out the environment/context agreement with
+let- and iteration-premises: it destructures `env` and `tenv` into key/value
+sequences and requires their keys to match pointwise. Evaluating it exercises
+let, if, and iteration premises, which the property evaluator now supports:
+
+  $ spectec impty quickcheck --spec ../../testdata/quickcheck/preservation-compat.spectec --num-tests 50 --color never
+  [Quickcheck Type_safety: Test]
+  OK, passed 50 samples.
+  [Quickcheck Preservation: Test]
+  OK, passed 50 samples.

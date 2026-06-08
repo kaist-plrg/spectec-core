@@ -22,8 +22,10 @@ type env = {
           entries. *)
 }
 
-(** Evaluates a single premise. Only [RelPr] and [RelAssertPr] are handled;
-    other premise shapes return [Unsupported]. *)
+(** Evaluates a single premise, extending the bindings with anything it binds
+    ([LetPr] patterns, relation outputs, and the sequences collected by an
+    [IterPr]). [IfPr] conditions are checked. Premise or expression shapes not
+    yet handled return [Unsupported]. *)
 val eval : env -> bindings:bindings -> prem -> outcome
 
 (** Evaluates a list of premises left-to-right, threading each premise's output
