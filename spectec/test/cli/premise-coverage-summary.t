@@ -10,9 +10,9 @@ premises that never succeeded:
   
   === IL Node Coverage ===
   
-  IL Premises: 35/147 attempted (23.81%), 27/147 succeeded (18.37%)
+  IL Premises: 35/151 attempted (23.18%), 27/151 succeeded (17.88%)
   38 rel premises
-  60 if-premises: succeeded 12/60 (20.00%), failed 11/60 (18.33%), neither 40/60 (66.67%), total 23/120 (19.17%)
+  62 if-premises: succeeded 12/62 (19.35%), failed 11/62 (17.74%), neither 42/62 (67.74%), total 23/124 (18.55%)
   
   Never succeeded:
     lookup/clause/0:
@@ -255,4 +255,12 @@ premises that never succeeded:
       if Check_prog: |- command holds
     Run_prog/:
       rel Eval_prog: |- command -| env
+    Check_value/num:
+      if literal matches ``NUM %`
+    Check_value/num:
+      let int = literal
+    Check_value/boollit:
+      if literal matches ``BOOL %`
+    Check_value/boollit:
+      let bool = literal
   Typecheck succeeded

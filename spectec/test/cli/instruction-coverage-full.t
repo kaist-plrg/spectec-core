@@ -10,7 +10,7 @@ instructions:
   
   === SL Node Coverage ===
   
-  SL Instructions: 65/149 (43.62%)
+  SL Instructions: 65/154 (42.21%)
   
   def $lookup:
       2   Case on pair<K, V>*
@@ -206,6 +206,15 @@ instructions:
       1   If (Check_prog: |- command holds)
       1     Eval_prog: |- command -| env
       1       Result env
+  
+  relation Check_value:
+   ####   Case on literal
+      -     Case (% matches pattern ``NUM %`):
+   ####       Let (int) = literal
+   ####         Result (int)
+      -     Case (% matches pattern ``BOOL %`):
+   ####       Let (bool) = literal
+   ####         Result (bool)
   [
     y -> true,
     x -> 5

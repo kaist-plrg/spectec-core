@@ -10,11 +10,13 @@ lists only the uncovered SL instructions:
   
   === SL Node Coverage ===
   
-  SL Instructions: 65/149 (43.62%)
+  SL Instructions: 65/154 (42.21%)
   
   Uncovered SL instructions:
     lookup:
       If ((pair<K, V>* matches pattern _ :: _))
+    Check_value:
+      Case on literal
   [
     y -> true,
     x -> 5

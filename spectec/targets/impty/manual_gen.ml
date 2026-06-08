@@ -50,6 +50,15 @@ let fresh_name (ctx : ('a * 'b) list) = Printf.sprintf "x%d" (List.length ctx)
 let expr_typ = VarT { synid = "expr" $ no_region; targs = [] } $ no_region
 let cmd_typ = VarT { synid = "command" $ no_region; targs = [] } $ no_region
 
+(* value (= literal) constructors, and env/tenv map values. A map<K,V> is a bare
+   list of pairs; a pair K -> V is a CaseV around the plain "->" atom, matching
+   how the interpreter builds (x -> v)::env in Eval_command/decl. *)
+let lit_num n = case_v ~var:"value" [ atom "`NUM"; arg (int (Bigint.of_int n)) ]
+let lit_bool b = case_v ~var:"value" [ atom "`BOOL"; arg (bool b) ]
+let pair_val k v = case_v ~var:"pair" [ arg k; atom "->"; arg v ]
+let pair_typ = VarT { synid = "pair" $ no_region; targs = [] } $ no_region
+let map_val pairs = Value.list pair_typ pairs
+
 (* ===== Base Impty generator (INT, BOOL only) ===== *)
 
 module Base = struct
@@ -66,10 +75,16 @@ module Base = struct
   let expr_typ = VarT { synid = "expr" $ no_region; targs = [] } $ no_region
   let cmd_typ = VarT { synid = "command" $ no_region; targs = [] } $ no_region
 
-  let rec gen_expr (spec : spec) (ctx : ctx) (ty : ty) : t Gen.t =
+  (* [typed_only] drops the random (possibly ill-typed) fallback case, so every
+     generated expression is well-typed under [ctx] -- required by the
+     Preservation generator, whose expressions must pass Check_expr. *)
+  let rec gen_expr ?(typed_only = false) (spec : spec) (ctx : ctx) (ty : ty) :
+      t Gen.t =
     let open Gen in
     sized (fun size ->
-        let random_expr = Il_gen.gen_of_typ spec expr_typ in
+        let fallback =
+          if typed_only then [] else [ (1, Il_gen.gen_of_typ spec expr_typ) ]
+        in
         match ty with
         | TInt ->
             let int_vars = vars_of ctx TInt in
@@ -91,12 +106,20 @@ module Base = struct
               else
                 [
                   ( 1,
-                    let* e1 = scale (fun n -> n / 2) (gen_expr spec ctx TInt) in
-                    let* e2 = scale (fun n -> n / 2) (gen_expr spec ctx TInt) in
+                    let* e1 =
+                      scale
+                        (fun n -> n / 2)
+                        (gen_expr ~typed_only spec ctx TInt)
+                    in
+                    let* e2 =
+                      scale
+                        (fun n -> n / 2)
+                        (gen_expr ~typed_only spec ctx TInt)
+                    in
                     return (expr_add e1 e2) );
                 ]
             in
-            frequency (base @ recursive @ [ (1, random_expr) ])
+            frequency (base @ recursive @ fallback)
         | TBool ->
             let bool_vars = vars_of ctx TBool in
             let base =
@@ -117,23 +140,39 @@ module Base = struct
               else
                 [
                   ( 1,
-                    let* e1 = scale (fun n -> n / 2) (gen_expr spec ctx TInt) in
-                    let* e2 = scale (fun n -> n / 2) (gen_expr spec ctx TInt) in
+                    let* e1 =
+                      scale
+                        (fun n -> n / 2)
+                        (gen_expr ~typed_only spec ctx TInt)
+                    in
+                    let* e2 =
+                      scale
+                        (fun n -> n / 2)
+                        (gen_expr ~typed_only spec ctx TInt)
+                    in
                     return (expr_leq e1 e2) );
                   ( 1,
-                    let* e = scale (fun n -> n / 2) (gen_expr spec ctx TBool) in
+                    let* e =
+                      scale
+                        (fun n -> n / 2)
+                        (gen_expr ~typed_only spec ctx TBool)
+                    in
                     return (expr_not e) );
                   ( 1,
                     let* e1 =
-                      scale (fun n -> n / 2) (gen_expr spec ctx TBool)
+                      scale
+                        (fun n -> n / 2)
+                        (gen_expr ~typed_only spec ctx TBool)
                     in
                     let* e2 =
-                      scale (fun n -> n / 2) (gen_expr spec ctx TBool)
+                      scale
+                        (fun n -> n / 2)
+                        (gen_expr ~typed_only spec ctx TBool)
                     in
                     return (expr_and e1 e2) );
                 ]
             in
-            frequency (base @ recursive @ [ (1, random_expr) ]))
+            frequency (base @ recursive @ fallback))
 
   (* Returns the generated command together with the output context, because
    seq must thread the context from c1 into c2. *)
@@ -187,6 +226,49 @@ module Base = struct
     let open Gen in
     let* cmd, _ = gen_command spec [] in
     return [ ("prog", cmd) ]
+
+  (* A literal value of the given type, used to populate env. *)
+  let lit_of_ty : ty -> t Gen.t =
+    let open Gen in
+    function
+    | TInt ->
+        let* n = choose_int (0, 100) in
+        return (lit_num n)
+    | TBool ->
+        let* b = Arbitrary.Bool.arbitrary in
+        return (lit_bool b)
+
+  (* Inputs for Preservation: a typing context [tenv] and a value-compatible
+     [env] sharing the same identifiers, plus a well-typed [expr] over them. By
+     construction Check_expr and Eval_expr both hold, so the only way Preserves
+     fails is a genuine preservation violation in the spec. *)
+  let gen_preservation (spec : spec) : (string * value) list Gen.t =
+    let open Gen in
+    let* arity = choose_int (0, 3) in
+    let* ctx =
+      sequence
+        (List.init arity (fun i ->
+             let* ty = elements [ TInt; TBool ] in
+             return (Printf.sprintf "x%d" i, ty)))
+    in
+    let tenv =
+      map_val
+        (List.map (fun (name, ty) -> pair_val (id_val name) (type_val ty)) ctx)
+    in
+    let* env =
+      let* entries =
+        sequence
+          (List.map
+             (fun (name, ty) ->
+               let* v = lit_of_ty ty in
+               return (pair_val (id_val name) v))
+             ctx)
+      in
+      return (map_val entries)
+    in
+    let* ty = elements [ TInt; TBool ] in
+    let* expr = gen_expr ~typed_only:true spec ctx ty in
+    return [ ("env", env); ("tenv", tenv); ("expr", expr) ]
 end
 
 (* ===== Closure Impty generator (INT, BOOL, function types) ===== *)
@@ -490,6 +572,7 @@ let gen_curried_prog (spec : spec) : (string * value) list Gen.t =
 let manual_gens : (string * (spec -> (string * value) list Gen.t)) list =
   [
     ("base_prog", Base.gen_well_typed_prog);
+    ("preservation", Base.gen_preservation);
     ("functions_prog", gen_functions_prog);
     ("curried_prog", gen_curried_prog);
   ]

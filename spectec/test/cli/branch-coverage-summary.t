@@ -10,7 +10,7 @@ IL interpreter:
   
   === Branch Coverage ===
   
-  Rules: 13/31 (41.94%)
+  Rules: 13/33 (39.39%)
   
   Uncovered rules:
     Check_command/skip
@@ -21,6 +21,8 @@ IL interpreter:
     Check_expr/not
     Check_expr/add
     Check_expr/and
+    Check_value/num
+    Check_value/boollit
     Eval_command/skip
     Eval_command/assign
     Eval_command/ite-true

@@ -32,6 +32,10 @@ annotations, not just the uncovered ones:
   relation Check_prog: (1/1 = 100.00%)
        1  rule 
   
+  relation Check_value: (0/2 = 0.00%)
+    ####  rule boollit
+    ####  rule num
+  
   relation Eval_command: (2/8 = 25.00%)
     ####  rule assign
        2  rule decl

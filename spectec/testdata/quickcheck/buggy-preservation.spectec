@@ -179,11 +179,12 @@ rule Eval_expr/add:
   -- Eval_expr: env |- e_r ==> (`NUM i_r)
   -- if i = $(i_l + i_r)
 
+;; BUG: e_l <= e_r evaluates to a NUM, but Check_expr types it as BOOL, so the
+;; result value's type does not match its static type -- a preservation violation.
 rule Eval_expr/leq:
-  env |- (e_l `<= e_r) ==> (`BOOL b)
+  env |- (e_l `<= e_r) ==> (`NUM i_l)
   -- Eval_expr: env |- e_l ==> (`NUM i_l)
   -- Eval_expr: env |- e_r ==> (`NUM i_r)
-  -- if b = $(i_l <= i_r)
 
 rule Eval_expr/and:
   env |- (e_l `&& e_r) ==> (`BOOL b)
