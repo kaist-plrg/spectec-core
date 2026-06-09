@@ -248,7 +248,7 @@ builtin dec $eq_set<K>(set<K>, set<K>) : bool
 ;; General map functions
 ;;
 
-syntax pair<K, V> = K `: V
+syntax pair<K, V> = K ':' V
 
 syntax map<K, V> = set<pair<K, V>>
 
@@ -258,11 +258,11 @@ def $empty_map<K, V> = `{ eps }
 
 dec $dom_map<K, V>(map<K, V>) : set<K>
   hint(prose_in "the domain of the map" %0)
-def $dom_map<K, V>(`{ (K `: V)* }) = `{ K* }
+def $dom_map<K, V>(`{ (K ':' V)* }) = `{ K* }
 
 dec $codom_map<K, V>(map<K, V>) : set<V>
   hint(prose_in "the codomain of the map" %0)
-def $codom_map<K, V>(`{ (K `: V)* }) = `{ V* }
+def $codom_map<K, V>(`{ (K ':' V)* }) = `{ V* }
 
 builtin dec $find_map<K, V>(map<K, V>, K) : V?
   hint(prose_in "the value of" %1 "in map" %0)
@@ -280,7 +280,7 @@ builtin dec $update_map<K, V>(map<K, V>, K, V) : map<K, V>
   hint(prose_in "the map" %0 "with the value for" %1 "is updated to" %2)
 
 dec $extend_map<K, V>(map<K, V>, map<K, V>) : map<K, V>
-def $extend_map<K, V>(`{ (K_a `: V_a)* }, `{ (K_b `: V_b)* })
-  = `{ (K_c `: V_c)* }
-  -- if `{ (K_c `: V_c)* }
-      = $adds_map<K, V>(`{ (K_a `: V_a)* }, K_b*, V_b*)
+def $extend_map<K, V>(`{ (K_a ':' V_a)* }, `{ (K_b ':' V_b)* })
+  = `{ (K_c ':' V_c)* }
+  -- if `{ (K_c ':' V_c)* }
+      = $adds_map<K, V>(`{ (K_a ':' V_a)* }, K_b*, V_b*)

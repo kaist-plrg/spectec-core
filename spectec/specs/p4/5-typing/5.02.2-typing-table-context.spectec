@@ -2,9 +2,9 @@
 ;; Table context
 ;;
 
-syntax matchKey = typeIR `: nameIR
+syntax matchKey = typeIR ':' nameIR
 
-syntax matchAction = prefixedNameIR `( parameterIR* `@ argumentListIR )
+syntax matchAction = prefixedNameIR `( parameterIR* '@' argumentListIR )
 
 syntax matchPriority =
   { DELTA nat,
@@ -72,7 +72,7 @@ dec $add_key_tbl(tableContext, id, typeIR) : tableContext
 
 def $add_key_tbl(TBLC, id, typeIR)
   = TBLC[ .KEYS = TBLC.KEYS ++ [ matchKey ] ]
-  -- if matchKey = typeIR `: id
+  -- if matchKey = typeIR ':' id
 
 ;;; Adder for actions
 
@@ -82,7 +82,7 @@ dec $add_action_tbl(tableContext, prefixedNameIR, parameterIR*, argumentListIR)
 
 def $add_action_tbl(TBLC, prefixedNameIR, parameterIR*, argumentListIR)
   = TBLC[ .ACTIONS = TBLC.ACTIONS ++ [ matchAction ] ]
-  -- if matchAction = prefixedNameIR `( parameterIR* `@ argumentListIR )
+  -- if matchAction = prefixedNameIR `( parameterIR* '@' argumentListIR )
 
 ;;
 ;; Checkers
@@ -94,7 +94,7 @@ dec $is_lpm_key(tableKeyIR) : bool
   hint(prose_false "match kind of table key" %0 "is not lpm")
 dec $is_lpm_key'(nameIR) : bool
 
-def $is_lpm_key(_ `# _ `: nameIR _ `;) = $is_lpm_key'(nameIR)
+def $is_lpm_key(_ '#' _ ':' nameIR _ ';') = $is_lpm_key'(nameIR)
 
 def $is_lpm_key'("lpm") = true
 def $is_lpm_key'(nameIR) = false
@@ -107,7 +107,7 @@ dec $requires_priority(tableKeyIR) : bool
   hint(prose_false "match kind of table key" %0 "does not require a priority")
 dec $requires_priority'(nameIR) : bool
 
-def $requires_priority(_ `# _ `: nameIR _ `;) = $requires_priority'(nameIR)
+def $requires_priority(_ '#' _ ':' nameIR _ ';') = $requires_priority'(nameIR)
 
 def $requires_priority'("range") = true
 def $requires_priority'("ternary") = true
@@ -135,7 +135,7 @@ def $update_mode_tbl(TBLC, tableKeyIR*)
   -- if ~$exists_(b_pri*)
   -- (if b_lpm = $is_lpm_key(tableKeyIR))*
   -- if tableKeyIR_lpm = $filter_<tableKeyIR>(tableKeyIR*, b_lpm*)
-  -- if typedExpressionIR `# _ `: "lpm" _ `; = tableKeyIR_lpm
+  -- if typedExpressionIR '#' _ ':' "lpm" _ ';' = tableKeyIR_lpm
   -- if typeIR = $type_of_typedExpressionIR(typedExpressionIR)
   -- if integerTypeIR = $unroll_aliasType(typeIR)
   -- if n = $width_of_integerTypeIR(integerTypeIR)
@@ -162,11 +162,11 @@ def $find_action'(eps, prefixedNameIR) = eps
 
 def $find_action'(matchAction_h :: matchAction_t*, prefixedNameIR)
   = (parameterIR*, argumentListIR)
-  -- if prefixedNameIR `( parameterIR* `@ argumentListIR ) = matchAction_h
+  -- if prefixedNameIR `( parameterIR* '@' argumentListIR ) = matchAction_h
 
 def $find_action'(matchAction_h :: matchAction_t*, prefixedNameIR)
   = $find_action'(matchAction_t*, prefixedNameIR)
-  -- if prefixedNameIR_h `(  _ `@ _ ) = matchAction_h
+  -- if prefixedNameIR_h `(  _ '@' _ ) = matchAction_h
   -- if prefixedNameIR_h =/= prefixedNameIR
 
 ;;
@@ -234,7 +234,7 @@ def $set_priorities_of_tableEntryListIR(
   -- if TBLC.MODE = PRI
   -- if ~TBLC.ENTRIES.CONST
   ---- ;; if at least one priority is explicitly provided
-  -- if PRIORITY `= integerLiteral `:
+  -- if PRIORITY '=' integerLiteral ':'
       = $tableEntryPriorityOptIR_of_tableEntryIR(tableEntryIR_h)
   ---- ;; evaluate and initialize the priority
   -- if n = $nat_of_integerValue(integerLiteral)
@@ -264,7 +264,7 @@ def $set_priorities_of_tableEntryListIR'(
     TBLC, n_last, tableEntryIR_h :: tableEntryIR_t*
   ) = tableEntryIR_h_updated :: tableEntryIR_t_updated*
   ---- ;; if the priority is explicitly provided
-  -- if PRIORITY `= integerLiteral `:
+  -- if PRIORITY '=' integerLiteral ':'
       = $tableEntryPriorityOptIR_of_tableEntryIR(tableEntryIR_h)
   ---- ;; set the priority
   -- if n = $nat_of_integerValue(integerLiteral)
@@ -275,12 +275,12 @@ def $set_priorities_of_tableEntryListIR'(
 
 def $set_priority_of_tableEntryIR(tableEntryIR, n) = tableEntryIR_updated
   -- if constOptIR _ keysetExpressionIR
-      `: tableActionReferenceIR annotationList `;
+      ':' tableActionReferenceIR annotationList ';'
       = tableEntryIR
-  -- if tableEntryPriorityIR = PRIORITY `= (D n) `:
+  -- if tableEntryPriorityIR = PRIORITY '=' (D n) ':'
   -- if tableEntryIR_updated
       = constOptIR tableEntryPriorityIR keysetExpressionIR
-      `: tableActionReferenceIR annotationList `;
+      ':' tableActionReferenceIR annotationList ';'
 
 ;;
 ;; State management

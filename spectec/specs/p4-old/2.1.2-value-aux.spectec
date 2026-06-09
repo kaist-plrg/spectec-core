@@ -20,4 +20,4 @@ dec $to_number(value) : int
 def $to_number(D i) = i
 def $to_number(w S i) = $to_int(w, i)
 def $to_number(w W i) = i
-def $to_number(w V i `# _) = i
+def $to_number(w V i '#' _) = i

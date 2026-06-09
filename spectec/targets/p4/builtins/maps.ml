@@ -17,7 +17,7 @@ let value_of_map (typ_key : typ) (typ_value : typ) (map : map) : value =
   let value_of_tuple ((value_key, value_value) : value * value) : value =
     let value =
       let typ = Typ.var "pair" [ typ_key; typ_value ] in
-      [ Arg value_key; Atom (Colon `Tick $ no_region); Arg value_value ]
+      [ Arg value_key; Atom (operator ":" $ no_region); Arg value_value ]
       |> Value.Make.case typ
     in
     value
@@ -28,11 +28,7 @@ let value_of_map (typ_key : typ) (typ_value : typ) (map : map) : value =
   in
   let value =
     let typ = Typ.var "map" [ typ_key; typ_value ] in
-    [
-      Atom (LBrace `Tick $ no_region);
-      Arg value_pairs;
-      Atom (RBrace `Plain $ no_region);
-    ]
+    [ Atom (LBrace $ no_region); Arg value_pairs; Atom (RBrace $ no_region) ]
     |> Value.Make.case typ
   in
   value

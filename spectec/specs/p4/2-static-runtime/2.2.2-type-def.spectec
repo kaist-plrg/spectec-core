@@ -40,19 +40,19 @@ syntax dataTypeDefIR =
 ;;
 
 syntax externObjectTypeDefIR =
-  EXTERN typeId `< typeParameterIR* `, typeParameterIR* >
+  EXTERN typeId `< typeParameterIR* ',' typeParameterIR* >
     externMethodTypeDefEnv
 
 syntax parserObjectTypeDefIR =
-  PARSER typeId `< typeParameterIR* `, typeParameterIR* >
+  PARSER typeId `< typeParameterIR* ',' typeParameterIR* >
     `( parameterIR* )
 
 syntax controlObjectTypeDefIR =
-  CONTROL typeId `< typeParameterIR* `, typeParameterIR* >
+  CONTROL typeId `< typeParameterIR* ',' typeParameterIR* >
     `( parameterIR* )
 
 syntax packageObjectTypeDefIR =
-  PACKAGE typeId `< typeParameterIR* `, typeParameterIR* >
+  PACKAGE typeId `< typeParameterIR* ',' typeParameterIR* >
     `{ typeIR* }
 
 syntax tableObjectTypeDefIR = tableObjectTypeIR

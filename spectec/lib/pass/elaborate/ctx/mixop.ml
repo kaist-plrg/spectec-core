@@ -17,15 +17,11 @@ type t =
 let rec to_string (mixop : t) : string =
   match mixop with
   | Arg -> "%"
-  | Atom a -> Atom.string_of_atom_exact a.it
+  | Atom a -> Atom.unparse a.it
   | Brack (l, inner, r) ->
-      Atom.string_of_atom_exact l.it
-      ^ to_string inner
-      ^ Atom.string_of_atom_exact r.it
+      Atom.unparse l.it ^ to_string inner ^ Atom.unparse r.it
   | Infix (l, a, r) ->
-      "(" ^ to_string l ^ " "
-      ^ Atom.string_of_atom_exact a.it
-      ^ " " ^ to_string r ^ ")"
+      "(" ^ to_string l ^ " " ^ Atom.unparse a.it ^ " " ^ to_string r ^ ")"
   | Seq ts -> "[" ^ String.concat " " (List.map to_string ts) ^ "]"
 
 (* Inverse of [to_il] for mixops produced by the EL parser (balanced brackets,

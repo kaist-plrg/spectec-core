@@ -23,7 +23,7 @@ rule ParserLocalDecl_inst/variableDeclarationIR:
 
 ;;; valueSetDeclarationIR
 ;;; syntax valueSetDeclarationIR =
-;;;   annotationList VALUE_SET `< typeIR > `( typedExpressionIR ) nameIR `;
+;;;   annotationList VALUE_SET `< typeIR > `( typedExpressionIR ) nameIR ';'
 
 rule ParserLocalDecl_inst/valueSetDeclarationIR:
   Ci sto |- valueSetDeclarationIR ==> Ci sto valueSetDeclarationIR

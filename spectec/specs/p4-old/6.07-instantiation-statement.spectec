@@ -16,21 +16,21 @@ rule Stmt_inst/assignmentStatementIR:
 
 ;;; callStatementIR
 ;;; syntax callStatementIR =
-;;;   routineLvalueIR `< typeArgumentListIR > `( argumentListIR ) `;
+;;;   routineLvalueIR `< typeArgumentListIR > `( argumentListIR ) ';'
 
 rule Stmt_inst/callStatementIR:
   p Ci sto |- callStatementIR ==> Ci sto callStatementIR
 
 ;;; directApplicationStatementIR
 ;;; syntax directApplicationStatementIR =
-;;;   prefixedNameIR `. APPLY `( argumentListIR ) `;
+;;;   prefixedNameIR '.' APPLY `( argumentListIR ) ';'
 
 rule Stmt_inst/directApplicationStatementIR:
-  p Ci sto_0 |- prefixedNameIR `. APPLY `( argumentListIR ) `;
+  p Ci sto_0 |- prefixedNameIR '.' APPLY `( argumentListIR ) ';'
             ==> Ci sto_2 blockStatementIR
   ---- ;; find and instantiate constructor
   -- if $find_constructor_overloaded_inst(Ci, prefixedNameIR, eps) = (_, consDyn, _)
-  -- Constructor_inst: p Ci sto_0 |- consDyn `< eps > `( eps `# eps ) ==> sto_1 objDyn
+  -- Constructor_inst: p Ci sto_0 |- consDyn `< eps > `( eps '#' eps ) ==> sto_1 objDyn
   ---- ;; assign new tid with random string appended
   -- if $fresh_tid() = tid_fresh
   -- if $flatten_prefixedNameIR(prefixedNameIR) = tid
@@ -40,10 +40,10 @@ rule Stmt_inst/directApplicationStatementIR:
   -- if Ci.PATH ++ nameIR = oid
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
   ---- ;; replace with constant declaration and call statement
-  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
-  -- if ((`` tid) `# `( typeIR CTK )) `. "apply" = routineTargetIR
-  -- if routineTargetIR `< eps > `( argumentListIR ) `; = callStatementIR
-  -- if `EMPTY `{ [ constantDeclarationIR, callStatementIR ] } = blockStatementIR
+  -- if _EMPTY CONST typeIR nameIR ('=' ('!' oid)) ';' = constantDeclarationIR
+  -- if ((_NAME tid) '#' `( typeIR CTK )) '.' "apply" = routineTargetIR
+  -- if routineTargetIR `< eps > `( argumentListIR ) ';' = callStatementIR
+  -- if _EMPTY `{ [ constantDeclarationIR, callStatementIR ] } = blockStatementIR
 
 ;;; returnStatementIR
 
@@ -110,16 +110,16 @@ rule Stmt_inst/switchStatementIR:
 ;; syntax switchCaseIR
 ;;
 
-;;; switchLabelIR `: blockStatementIR
+;;; switchLabelIR ':' blockStatementIR
 
 rule SwitchCase_inst/match:
-  p Ci sto |- switchLabelIR `: blockStatementIR ==> Ci_1 sto_1 (switchLabelIR `: blockStatementIR')
+  p Ci sto |- switchLabelIR ':' blockStatementIR ==> Ci_1 sto_1 (switchLabelIR ':' blockStatementIR')
   -- Stmt_inst: p Ci sto |- blockStatementIR ==> Ci_1 sto_1 blockStatementIR'
 
-;;; switchLabelIR `:
+;;; switchLabelIR ':'
 
 rule SwitchCase_inst/fallthrough:
-  p Ci sto |- switchLabelIR `: ==> Ci sto (switchLabelIR `:)
+  p Ci sto |- switchLabelIR ':' ==> Ci sto (switchLabelIR ':')
 
 rule SwitchCases_inst/nil:
   p Ci sto |- eps ==> Ci sto eps

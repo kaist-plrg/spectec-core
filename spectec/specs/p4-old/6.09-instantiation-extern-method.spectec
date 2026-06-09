@@ -4,34 +4,34 @@
 ;; syntax methodPrototypeIR
 ;;
 
-;;; annotationList functionPrototypeIR `;
+;;; annotationList functionPrototypeIR ';'
 
 rule Bind_method/non-abstract:
   rdenv_0 |- _ (typeIR_ret nameIR 
-               `< typeParameterListIR `, typeParameterListIR_inferred >
-               `( parameterIR* )) `;
+               `< typeParameterListIR ',' typeParameterListIR_inferred >
+               `( parameterIR* )) ';'
          ==> rdenv_1
     ---- ;; add extern method to routine type environment
     -- if $rid_IR(nameIR, parameterIR*) = rid
     -- if ($parameterIR(parameterIR) = parameterTypeIR)*
-    -- if EXTERN_METHOD `( parameterTypeIR* ) `-> typeIR_ret
+    -- if EXTERN_METHOD `( parameterTypeIR* ) '->' typeIR_ret
         = methodTypeIR
-    -- if methodTypeIR `< typeParameterListIR `, typeParameterListIR_inferred >
+    -- if methodTypeIR `< typeParameterListIR ',' typeParameterListIR_inferred >
         = routineTypeDefIR
     -- if $add_map<rid, routineTypeDefIR>(rdenv_0, rid, routineTypeDefIR)
         = rdenv_1
 
 rule Bind_method/abstract:
   rdenv_0 |- _ ABSTRACT (typeIR_ret nameIR
-               `< typeParameterListIR `, typeParameterListIR_inferred >
-               `( parameterIR* )) `;
+               `< typeParameterListIR ',' typeParameterListIR_inferred >
+               `( parameterIR* )) ';'
          ==> rdenv_1
     ---- ;; add extern abstract method to routine type environment
     -- if $rid_IR(nameIR, parameterIR*) = rid
     -- if ($parameterIR(parameterIR) = parameterTypeIR)*
-    -- if EXTERN_METHOD ABSTRACT `( parameterTypeIR* ) `-> typeIR_ret
+    -- if EXTERN_METHOD ABSTRACT `( parameterTypeIR* ) '->' typeIR_ret
         = methodTypeIR
-    -- if methodTypeIR `< typeParameterListIR `, typeParameterListIR_inferred >
+    -- if methodTypeIR `< typeParameterListIR ',' typeParameterListIR_inferred >
         = routineTypeDefIR
     -- if $add_map<rid, routineTypeDefIR>(rdenv_0, rid, routineTypeDefIR)
         = rdenv_1
@@ -45,8 +45,8 @@ rule Bind_methods/cons:
   -- Bind_methods: rdenv_1 |- methodPrototypeIR_t* ==> rdenv_2
 
 rule Bind_constructor/constructor:
-  p Ci_0 typeParameterListIR methodPrototypeListIR |- annotationList nameIR `< `, typeParameterListIR_inferred >
-                                                      `( parameterListIR ) `;
+  p Ci_0 typeParameterListIR methodPrototypeListIR |- annotationList nameIR `< ',' typeParameterListIR_inferred >
+                                                      `( parameterListIR ) ';'
                                                   ==> Ci_1
   ---- ;; add extern constructor to constructor environment
   -- if $cid_IR(nameIR, parameterListIR) = cid
@@ -66,8 +66,8 @@ rule Bind_constructors/cons:
 
 rule ExternMethod_inst/non-abstract:
   Ci_0 |- _ (_ nameIR 
-            `< typeParameterListIR `, typeParameterListIR_inferred >
-            `( parameterListIR )) `;
+            `< typeParameterListIR ',' typeParameterListIR_inferred >
+            `( parameterListIR )) ';'
       ==> Ci_1
     ---- ;; bind extern method to routine environment
     -- if $rid_IR(nameIR, parameterListIR) = rid
@@ -78,8 +78,8 @@ rule ExternMethod_inst/non-abstract:
 
 rule ExternMethod_inst/abstract:
   Ci_0 |- _ ABSTRACT
-    (_ nameIR `< typeParameterListIR `, typeParameterListIR_inferred >
-    `( parameterListIR )) `;
+    (_ nameIR `< typeParameterListIR ',' typeParameterListIR_inferred >
+    `( parameterListIR )) ';'
     ==> Ci_1
     ---- ;; bind extern abstract method to routine environment
     -- if $rid_IR(nameIR, parameterListIR) = rid

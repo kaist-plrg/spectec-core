@@ -17,11 +17,7 @@ let value_of_set (typ_key : typ) (set : set) : value =
   let value_elements = VSet.elements set |> Value.list typ_key in
   let value =
     let typ = Typ.var "set" [ typ_key ] in
-    [
-      Atom (LBrace `Tick $ no_region);
-      Arg value_elements;
-      Atom (RBrace `Plain $ no_region);
-    ]
+    [ Atom (LBrace $ no_region); Arg value_elements; Atom (RBrace $ no_region) ]
     |> Value.Make.case typ
   in
   value

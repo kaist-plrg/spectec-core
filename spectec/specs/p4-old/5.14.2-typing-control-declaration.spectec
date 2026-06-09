@@ -18,13 +18,13 @@ rule ControlLocalDecl_ok/instantiation:
 
 ;;; variableDeclaration
 ;;; syntax variableDeclaration =
-;;;   annotationList type name initializerOpt `;
+;;;   annotationList type name initializerOpt ';'
 
 rule ControlLocalDecl_ok/variableDeclaration-empty:
-  TC_0 |- annotationList type name `EMPTY `;
+  TC_0 |- annotationList type name _EMPTY ';'
         : TC_1 variableDeclarationIR
   ---- ;; check type
-  -- Type_ok: BLOCK TC_0 |- type : typeIR `# eps
+  -- Type_ok: BLOCK TC_0 |- type : typeIR '#' eps
   -- Type_wf: $bound(BLOCK, TC_0) |- typeIR
   ---- ;; check that the type is assignable
   -- if $is_assignable_typeIR(typeIR)
@@ -33,13 +33,13 @@ rule ControlLocalDecl_ok/variableDeclaration-empty:
   -- if TC_1 = $add_var(BLOCK, TC_0, nameIR, INOUT typeIR DYN eps)
   ---- ;; create IR
   -- if variableDeclarationIR
-      = annotationList typeIR nameIR eps `;
+      = annotationList typeIR nameIR eps ';'
 
 rule ControlLocalDecl_ok/variableDeclaration-initializer:
-  TC_0 |- annotationList type name (`= expression_init) `;
+  TC_0 |- annotationList type name ('=' expression_init) ';'
         : TC_1 variableDeclarationIR
   ---- ;; check type
-  -- Type_ok: BLOCK TC_0 |- type : typeIR `# eps
+  -- Type_ok: BLOCK TC_0 |- type : typeIR '#' eps
   -- Type_wf: $bound(BLOCK, TC_0) |- typeIR
   ---- ;; check that the type is assignable
   -- if $is_assignable_typeIR(typeIR)
@@ -54,7 +54,7 @@ rule ControlLocalDecl_ok/variableDeclaration-initializer:
   -- if TC_1 = $add_var(BLOCK, TC_0, nameIR, INOUT typeIR DYN eps)
   ---- ;; create IR
   -- if variableDeclarationIR
-      = annotationList typeIR nameIR (`= typedExpressionIR_init_cast) `;
+      = annotationList typeIR nameIR ('=' typedExpressionIR_init_cast) ';'
 
 ;;; actionDeclaration
 
@@ -77,7 +77,7 @@ rule ControlLocalDecl_ok/tableDeclaration:
   ---- ;; update the context with synthesized table
   -- if nameIR = $name(name)
   -- TableType_ok: TC_1 TBLC |- name : TC_2 typeIR_table
-  -- if TC_3 = $add_var(BLOCK, TC_2, nameIR, `EMPTY typeIR_table DYN eps)
+  -- if TC_3 = $add_var(BLOCK, TC_2, nameIR, _EMPTY typeIR_table DYN eps)
   ---- ;; create IR
   -- if tableDeclarationIR
       = annotationList TABLE typeIR_table nameIR `{ tablePropertyIR* }

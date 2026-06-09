@@ -14,13 +14,13 @@ syntax actionTypeDefIR = actionTypeIR
 
 syntax definedFunctionTypeDefIR =
   FUNCTION nameIR
-    `< typeParameterIR* `, typeParameterIR* >
-    `( parameterIR* ) `: typeIR
+    `< typeParameterIR* ',' typeParameterIR* >
+    `( parameterIR* ) ':' typeIR
 
 syntax externFunctionTypeDefIR =
   EXTERN_FUNCTION nameIR
-    `< typeParameterIR* `, typeParameterIR* >
-    `( parameterIR* ) `: typeIR
+    `< typeParameterIR* ',' typeParameterIR* >
+    `( parameterIR* ) ':' typeIR
 
 syntax functionTypeDefIR =
   | definedFunctionTypeDefIR
@@ -32,11 +32,11 @@ syntax functionTypeDefIR =
 
 syntax externMethodTypeDefIR =
   | EXTERN_METHOD nameIR
-      `< typeParameterIR* `, typeParameterIR* >
-      `( parameterIR* ) `: typeIR
+      `< typeParameterIR* ',' typeParameterIR* >
+      `( parameterIR* ) ':' typeIR
   | EXTERN_METHOD ABSTRACT nameIR
-      `< typeParameterIR* `, typeParameterIR* >
-      `( parameterIR* ) `: typeIR
+      `< typeParameterIR* ',' typeParameterIR* >
+      `( parameterIR* ) ':' typeIR
 
 syntax parserApplyMethodTypeDefIR = parserApplyMethodTypeIR
 

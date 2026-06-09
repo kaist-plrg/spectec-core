@@ -37,11 +37,11 @@ rule ParserStmt_inst/callStatementIR:
 ;;; directApplicationStatementIR
 
 rule ParserStmt_inst/directApplicationStatementIR:
-  Ci sto_0 |- prefixedNameIR `. APPLY `( argumentListIR ) `;
+  Ci sto_0 |- prefixedNameIR '.' APPLY `( argumentListIR ) ';'
           ==> Ci sto_2 parserBlockStatementIR
   ---- ;; find and instantiate constructor
   -- if $find_constructor_overloaded_inst(Ci, prefixedNameIR, eps) = (_, consDyn, _)
-  -- Constructor_inst: BLOCK Ci sto_0 |- consDyn `< eps > `( eps `# eps ) ==> sto_1 objDyn
+  -- Constructor_inst: BLOCK Ci sto_0 |- consDyn `< eps > `( eps '#' eps ) ==> sto_1 objDyn
   ---- ;; assign new tid with random string appended
   -- if $flatten_prefixedNameIR(prefixedNameIR) = tid
   -- if $fresh_tid() = tid_fresh
@@ -51,11 +51,11 @@ rule ParserStmt_inst/directApplicationStatementIR:
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
   ---- ;; replace with constant declaration and call statement
   -- if TID tid = typeIR
-  -- if `EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
-  -- if ((`` tid) `# `( typeIR CTK )) `. "apply" = routineTargetIR
-  -- if routineTargetIR `< eps > `( argumentListIR ) `; = callStatementIR
+  -- if _EMPTY CONST typeIR nameIR ('=' ('!' oid)) ';' = constantDeclarationIR
+  -- if ((_NAME tid) '#' `( typeIR CTK )) '.' "apply" = routineTargetIR
+  -- if routineTargetIR `< eps > `( argumentListIR ) ';' = callStatementIR
   ---- ;; create parser block
-  -- if `EMPTY `{ [ constantDeclarationIR, callStatementIR ] } = parserBlockStatementIR
+  -- if _EMPTY `{ [ constantDeclarationIR, callStatementIR ] } = parserBlockStatementIR
 
 ;;; parserBlockStatementIR
 

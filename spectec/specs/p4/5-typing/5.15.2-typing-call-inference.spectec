@@ -9,7 +9,7 @@ syntax infer =
 syntax constraint = map<typeId, infer>
 
 dec $empty_constraint(typeId*) : constraint
-def $empty_constraint(typeId*) = `{ (typeId `: UNKNOWN)* }
+def $empty_constraint(typeId*) = `{ (typeId ':' UNKNOWN)* }
 
 syntax inference = map<typeId, typeIR>
 
@@ -55,21 +55,21 @@ def $infer'(constraint, parameterIR, typedExpressionIR)
   -- if _ _ typeIR_param _ _ = parameterIR
   -- if typeIR_arg = $type_of_typedExpressionIR(typedExpressionIR)
 
-def $infer'(constraint, parameterIR, nameIR `= typedExpressionIR)
+def $infer'(constraint, parameterIR, nameIR '=' typedExpressionIR)
   = $gen_constraint(constraint, typeIR_param, typeIR_arg)
   -- if _ _ typeIR_param _ _ = parameterIR
   -- if typeIR_arg = $type_of_typedExpressionIR(typedExpressionIR)
 
-def $infer'(constraint, parameterIR, nameIR `= `_) = constraint
+def $infer'(constraint, parameterIR, nameIR '=' '_') = constraint
 
-def $infer'(constraint, parameterIR, `_) = constraint
+def $infer'(constraint, parameterIR, '_') = constraint
 
 
 ;;
 ;;;; Synthesized type resolution
 ;;
 
-def $resolve_inference(`{ (typeId `: typeIR)* }) = `{ (typeId `: typeIR_resolved)* }
+def $resolve_inference(`{ (typeId ':' typeIR)* }) = `{ (typeId ':' typeIR_resolved)* }
   -- if (typeIR_resolved = $resolve_inference'(typeIR))*
 
 def $resolve_inference'(typeIR) = typeIR_resolved
@@ -84,7 +84,7 @@ def $resolve_inference'(typeIR) = typeIR
 
 ;;; Named types
 
-def $gen_constraint(constraint, `` typeId_param, typeIR_arg)
+def $gen_constraint(constraint, _NAME typeId_param, typeIR_arg)
   = $update_map<typeId, infer>(constraint, typeId_param, KNOWN AS typeIR_arg)
   -- if $in_set<typeId>(typeId_param, $dom_map<typeId, infer>(constraint))
 
@@ -266,6 +266,6 @@ def $merge_constraints(
 ;;;; Constraint resolution
 ;;
 
-def $resolve_constraint(`{ (typeId `: infer)* })
-  = `{ (typeId `: typeIR)* }
+def $resolve_constraint(`{ (typeId ':' infer)* })
+  = `{ (typeId ':' typeIR)* }
   -- if (KNOWN AS typeIR = infer)*

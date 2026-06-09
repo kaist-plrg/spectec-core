@@ -53,7 +53,7 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 5]           → Check_expr/num
   [ 5]             | -- if expr <: literal
   [ 5]             | -- let literal = expr as literal
-  [ 5]             | -- if literal matches ``NUM %`
+  [ 5]             | -- if literal matches `_NUM %`
   [ 5]             | -- let i = literal
   [ 5]           ← Check_expr/num [ok]
   [ 4]         ← Check_expr [ok]
@@ -134,7 +134,7 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 6]             → Check_expr/num
   [ 6]               | -- if expr <: literal
   [ 6]               | -- let literal = expr as literal
-  [ 6]               | -- if literal matches ``NUM %`
+  [ 6]               | -- if literal matches `_NUM %`
   [ 6]               | -- let i = literal
   [ 6]             ← Check_expr/num [ok]
   [ 5]           ← Check_expr [ok]
@@ -201,7 +201,7 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 5]           → Eval_expr/num
   [ 5]             | -- if expr <: literal
   [ 5]             | -- let literal = expr as literal
-  [ 5]             | -- if literal matches ``NUM %`
+  [ 5]             | -- if literal matches `_NUM %`
   [ 5]             | -- let i = literal
   [ 5]           ← Eval_expr/num [ok]
   [ 4]         ← Eval_expr [ok]
@@ -273,7 +273,7 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 6]             ← Eval_expr/id [ok]
   [ 5]           ← Eval_expr [ok]
   [ 5]               5
-  [ 5]             | -- if literal matches ``NUM %`
+  [ 5]             | -- if literal matches `_NUM %`
   [ 5]             | -- let i_l = literal
   [ 5]             | -- rel Eval_expr: env |- e_r ==> literal'
   [ 5]           → Eval_expr
@@ -282,12 +282,12 @@ markers are unreachable here: the base spec has no executed iterated premise.
   [ 6]             → Eval_expr/num
   [ 6]               | -- if expr <: literal
   [ 6]               | -- let literal = expr as literal
-  [ 6]               | -- if literal matches ``NUM %`
+  [ 6]               | -- if literal matches `_NUM %`
   [ 6]               | -- let i = literal
   [ 6]             ← Eval_expr/num [ok]
   [ 5]           ← Eval_expr [ok]
   [ 5]               10
-  [ 5]             | -- if literal' matches ``NUM %`
+  [ 5]             | -- if literal' matches `_NUM %`
   [ 5]             | -- let i_r = literal'
   [ 5]             | -- let b = (i_l <= i_r)
   [ 5]           ← Eval_expr/leq [ok]

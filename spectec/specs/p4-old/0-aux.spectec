@@ -86,7 +86,7 @@ builtin dec $eq_set<K>(set<K>, set<K>) : bool
 ;; General map functions
 ;;
 
-syntax pair<K, V> = K `: V
+syntax pair<K, V> = K ':' V
 
 syntax map<K, V> = set<pair<K, V>>
 
@@ -94,7 +94,7 @@ dec $empty_map<K, V> : map<K, V>
 def $empty_map<K, V> = `{ eps }
 
 dec $dom_map<K, V>(map<K, V>) : set<K>
-def $dom_map<K, V>(`{ (K `: V)* }) = `{ K* }
+def $dom_map<K, V>(`{ (K ':' V)* }) = `{ K* }
 
 builtin dec $find_map<K, V>(map<K, V>, K) : V?
 

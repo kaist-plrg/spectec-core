@@ -10,23 +10,23 @@ rule Argument_ok/expression:
   p TC |- expression : typedExpressionIR
   -- Expr_ok: p TC |- expression : typedExpressionIR
 
-;;; name `= expression
+;;; name '=' expression
 
 rule Argument_ok/name-expression:
-  p TC |- (name `= expression) : (nameIR `= typedExpressionIR)
+  p TC |- (name '=' expression) : (nameIR '=' typedExpressionIR)
   -- if nameIR = $name(name)
   -- Expr_ok: p TC |- expression : typedExpressionIR
 
-;;; name `= `_
+;;; name '=' '_'
 
 rule Argument_ok/name-dontcare:
-  p TC |- (name `= `_) : (nameIR `= `_)
+  p TC |- (name '=' '_') : (nameIR '=' '_')
   -- if nameIR = $name(name)
 
-;;; `_
+;;; '_'
 
 rule Argument_ok/dontcare:
-  p TC |- `_ : `_
+  p TC |- '_' : '_'
 
 ;;
 ;; Argument list typing

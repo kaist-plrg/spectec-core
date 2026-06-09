@@ -7,7 +7,7 @@
 
 rule TableAction_inst/name-annotation-dot-prefix:
   IC STO |- annotationList tableActionReferenceIR
-            `# `( parameterListIR `, parameterListIR_control ) `;
+            '#' `( parameterListIR ',' parameterListIR_control ) ';'
           : STO tableActionIR
   -- if tableActionReferenceIR
       = prefixedNameIR _ `( argumentListIR )
@@ -22,11 +22,11 @@ rule TableAction_inst/name-annotation-dot-prefix:
   -- if tableActionReferenceIR'
       = prefixedNameIR controlPlaneNameIR `( argumentListIR )
   -- if tableActionIR = annotationList tableActionReferenceIR'
-        `# `( parameterListIR `, parameterListIR_control ) `;
+        '#' `( parameterListIR ',' parameterListIR_control ) ';'
 
 rule TableAction_inst/name-annotation:
   IC STO |- annotationList tableActionReferenceIR
-            `# `( parameterListIR `, parameterListIR_control ) `;
+            '#' `( parameterListIR ',' parameterListIR_control ) ';'
           : STO tableActionIR
   -- if tableActionReferenceIR
       = prefixedNameIR _ `( argumentListIR )
@@ -45,11 +45,11 @@ rule TableAction_inst/name-annotation:
   -- if tableActionReferenceIR'
       = prefixedNameIR controlPlaneNameIR `( argumentListIR )
   -- if tableActionIR = annotationList tableActionReferenceIR'
-        `# `( parameterListIR `, parameterListIR_control ) `;
+        '#' `( parameterListIR ',' parameterListIR_control ) ';'
 
 rule TableAction_inst/no-name-annotation:
   IC STO |- annotationList tableActionReferenceIR
-            `# `( parameterListIR `, parameterListIR_control ) `;
+            '#' `( parameterListIR ',' parameterListIR_control ) ';'
           : STO tableActionIR
   -- if tableActionReferenceIR
       = prefixedNameIR _ `( argumentListIR )
@@ -68,7 +68,7 @@ rule TableAction_inst/no-name-annotation:
   -- if tableActionReferenceIR'
       = prefixedNameIR controlPlaneNameIR `( argumentListIR )
   -- if tableActionIR = annotationList tableActionReferenceIR'
-        `# `( parameterListIR `, parameterListIR_control ) `;
+        '#' `( parameterListIR ',' parameterListIR_control ) ';'
 
 
 ;;
@@ -96,48 +96,48 @@ rule TableActions_inst/cons:
 ;; syntax tablePropertyIR
 ;;
 
-;;; KEY `= `{ tableKeyListIR }
+;;; KEY '=' `{ tableKeyListIR }
 
 rule TableProperty_inst/tableKeysPropertyIR:
   IC STO |- tableKeysPropertyIR : STO tableKeysPropertyIR
 
-;;; ACTIONS `= `{ tableActionListIR }
+;;; ACTIONS '=' `{ tableActionListIR }
 
 rule TableProperty_inst/tableActionsPropertyIR:
-  IC STO_0 |- ACTIONS `= `{ tableActionListIR }
+  IC STO_0 |- ACTIONS '=' `{ tableActionListIR }
           : STO_1 tableActionsPropertyIR
   -- TableActions_inst:
       IC STO_0 |- tableActionListIR : STO_1 tableActionListIR_inst
-  -- if tableActionsPropertyIR = ACTIONS `= `{ tableActionListIR_inst }
+  -- if tableActionsPropertyIR = ACTIONS '=' `{ tableActionListIR_inst }
 
-;;; annotationList constOptIR DEFAULT_ACTION `= tableActionReferenceIR `;
+;;; annotationList constOptIR DEFAULT_ACTION '=' tableActionReferenceIR ';'
 
 rule TableProperty_inst/tableDefaultActionPropertyIR:
   IC STO |- tableDefaultActionPropertyIR : STO tableDefaultActionPropertyIR
 
-;;; annotationList constOptIR ENTRIES `= `{ tableEntryListIR }
+;;; annotationList constOptIR ENTRIES '=' `{ tableEntryListIR }
 
 rule TableProperty_inst/tableEntriesPropertyIR:
   IC STO |- tableEntriesPropertyIR : STO tableEntriesPropertyIR
 
-;;; annotationList constOptIR CUSTOM nameIR initializerIR `;
-;;; annotationList constOptIR CUSTOM_CONST nameIR constantInitializerIR `;
+;;; annotationList constOptIR CUSTOM nameIR initializerIR ';'
+;;; annotationList constOptIR CUSTOM_CONST nameIR constantInitializerIR ';'
 
 
 rule TableProperty_inst/custom:
-  IC STO_0 |- annotationList constOptIR CUSTOM nameIR (`= typedExpressionIR) `;
+  IC STO_0 |- annotationList constOptIR CUSTOM nameIR ('=' typedExpressionIR) ';'
             : STO_1 tableCustomPropertyIR_inst
   ---- ;; instantiate expression and replace custom property with evaluated result
   -- if IC_inner = $enter_path_i(IC, nameIR)
   -- Expr_inst: LOCAL IC_inner STO_0 |- typedExpressionIR : STO_1 value
   -- if tableCustomPropertyIR_inst
-      = annotationList constOptIR CUSTOM_CONST nameIR (`= `VALUE value) `;
+      = annotationList constOptIR CUSTOM_CONST nameIR ('=' _VALUE value) ';'
 
 rule TableProperty_inst/custom-const:
-  IC STO |- annotationList constOptIR CUSTOM_CONST nameIR constantInitializerIR `;
+  IC STO |- annotationList constOptIR CUSTOM_CONST nameIR constantInitializerIR ';'
           : STO tableCustomPropertyIR_inst
   -- if tableCustomPropertyIR_inst
-      = annotationList constOptIR CUSTOM_CONST nameIR constantInitializerIR `;
+      = annotationList constOptIR CUSTOM_CONST nameIR constantInitializerIR ';'
 
 
 ;;
@@ -172,7 +172,7 @@ def $init_tableKeys(tablePropertyIR*) = tableKeysPropertyIR
       = $filter_<tablePropertyIR>(
           tablePropertyIR*,
           (tablePropertyIR <: tableKeysPropertyIR)*)
-def $init_tableKeys(tablePropertyIR*) = KEY `= `{ eps }
+def $init_tableKeys(tablePropertyIR*) = KEY '=' `{ eps }
   -- if eps
       = $filter_<tablePropertyIR>(
           tablePropertyIR*,
@@ -184,7 +184,7 @@ def $init_tableEntries(tablePropertyIR*) = tableEntriesPropertyIR
           tablePropertyIR*,
           (tablePropertyIR <: tableEntriesPropertyIR)*)
 def $init_tableEntries(tablePropertyIR*)
-  = `EMPTY eps ENTRIES `= `{ eps }
+  = _EMPTY eps ENTRIES '=' `{ eps }
   -- if eps
       = $filter_<tablePropertyIR>(
           tablePropertyIR*,

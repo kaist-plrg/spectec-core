@@ -7,8 +7,8 @@
 ;;
 
 syntax actionCallee =
-  ACTION cursor `. nameIR
-    `( parameterListIR `# id* ) blockStatementIR
+  ACTION cursor '.' nameIR
+    `( parameterListIR '#' id* ) blockStatementIR
 
 ;;
 ;;;; Function callees
@@ -16,11 +16,11 @@ syntax actionCallee =
 
 syntax definedFunctionCallee =
   FUNCTION nameIR `< typeParameterListIR >
-    `( parameterListIR `# id* ) blockStatementIR
+    `( parameterListIR '#' id* ) blockStatementIR
 
 syntax externFunctionCallee =
   EXTERN_FUNCTION nameIR
-    `< typeParameterListIR > `( parameterListIR `# id* `# id* )
+    `< typeParameterListIR > `( parameterListIR '#' id* '#' id* )
 
 syntax functionCallee =
   | definedFunctionCallee
@@ -31,24 +31,24 @@ syntax functionCallee =
 ;;
 
 syntax builtinMethodCallee =
-  BUILTIN_METHOD storageReference `. nameIR
+  BUILTIN_METHOD storageReference '.' nameIR
     `< typeArgumentListIR > `( parameterListIR )
 
 syntax externMethodCallee =
-  EXTERN_METHOD objectId `. nameIR `< typeParameterListIR >
-    `( parameterListIR `# id* `# id* )
-    `{ theta `; frame `; blockStatementIR? }
+  EXTERN_METHOD objectId '.' nameIR `< typeParameterListIR >
+    `( parameterListIR '#' id* '#' id* )
+    `{ theta ';' frame ';' blockStatementIR? }
 
 syntax parserApplyMethodCallee =
-  PARSER objectId `. APPLY `( parameterListIR `# id* )
-    `{ theta `; frame `; parserLocalDeclarationListIR `; stateEnv }
+  PARSER objectId '.' APPLY `( parameterListIR '#' id* )
+    `{ theta ';' frame ';' parserLocalDeclarationListIR ';' stateEnv }
 
 syntax controlApplyMethodCallee =
-  CONTROL objectId `. APPLY `( parameterListIR `# id* )
-    `{ theta `; frame `; controlLocalDeclarationListIR `; actionDefEnv `; controlBodyIR }
+  CONTROL objectId '.' APPLY `( parameterListIR '#' id* )
+    `{ theta ';' frame ';' controlLocalDeclarationListIR ';' actionDefEnv ';' controlBodyIR }
 
 syntax tableApplyMethodCallee =
-  TABLE objectId `. APPLY `{ frame `; tableObjectProperty }
+  TABLE objectId '.' APPLY `{ frame ';' tableObjectProperty }
 
 syntax methodCallee =
   | builtinMethodCallee

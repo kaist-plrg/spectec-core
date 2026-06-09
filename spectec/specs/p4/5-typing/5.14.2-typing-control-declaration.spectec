@@ -51,7 +51,7 @@ rule ControlLocalDecl_ok/tableDeclaration:
   ---- ;; update the context with synthesized table
   -- if nameIR = $name(name)
   -- TableType_ok: TC_1 TBLC |- name : TC_2 typeIR_table
-  -- if varTypeIR = `EMPTY typeIR_table DYN eps
+  -- if varTypeIR = _EMPTY typeIR_table DYN eps
   -- if TC_3 = $add_var_t(BLOCK, TC_2, nameIR, varTypeIR)
   ---- ;; create IR
   -- if tableDeclarationIR

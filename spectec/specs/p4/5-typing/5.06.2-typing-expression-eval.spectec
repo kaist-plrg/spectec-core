@@ -2,7 +2,7 @@
 ;; Static evaluation of expression
 ;;
 ;; syntax typedExpressionIR =
-;;   expressionIR `# `( typeIR ctk )
+;;   expressionIR '#' `( typeIR ctk )
 ;;
 
 ;;; syntax expressionIR
@@ -15,35 +15,35 @@
 
 
 rule Expr_eval_lctk/booleanLiteral:
-  p TC |- booleanLiteral `# _ ~> boolValue
+  p TC |- booleanLiteral '#' _ ~> boolValue
   -- if boolValue
-      = $ite<boolValue>(booleanLiteral = TRUE, `B true, `B false)
+      = $ite<boolValue>(booleanLiteral = TRUE, _B true, _B false)
 
 rule Expr_eval_lctk/integerLiteral:
-  p TC |- integerLiteral `# _ ~> integerLiteral
+  p TC |- integerLiteral '#' _ ~> integerLiteral
 
 rule Expr_eval_lctk/stringLiteral:
-  p TC |- stringLiteral `# _ ~> stringLiteral
+  p TC |- stringLiteral '#' _ ~> stringLiteral
 
 
 ;;;; referenceExpressionIR
 ;;;; syntax referenceExpressionIR = prefixedNameIR
 
 rule Expr_eval_lctk/referenceExpressionIR:
-  p TC |- prefixedNameIR `# _ ~> value
+  p TC |- prefixedNameIR '#' _ ~> value
   -- if value = $find_var_value_t(prefixedNameIR, p, TC)
 
 ;;;; defaultExpressionIR
 ;;;; syntax defaultExpressionIR = defaultExpression
 
 rule Expr_eval_lctk/defaultExpressionIR:
-  p TC |- `... `# _ ~> DEFAULT
+  p TC |- '...' '#' _ ~> DEFAULT
 
 ;;;; unaryExpressionIR
 ;;;; syntax unaryExpressionIR = unop typedExpressionIR
 
 rule Expr_eval_lctk/unaryExpressionIR:
-  p TC |- (unop typedExpressionIR) `# _ ~> $un_op(unop, value)
+  p TC |- (unop typedExpressionIR) '#' _ ~> $un_op(unop, value)
   -- Expr_eval_lctk: p TC |- typedExpressionIR ~> value
 
 ;;;; binaryExpressionIR
@@ -52,51 +52,51 @@ rule Expr_eval_lctk/unaryExpressionIR:
 
 
 rule Expr_eval_lctk/non-short-circuit:
-  p TC |- (typedExpressionIR_l binop typedExpressionIR_r) `# _
+  p TC |- (typedExpressionIR_l binop typedExpressionIR_r) '#' _
        ~> $bin_op(binop, value_l, value_r)
-  -- if ~(binop <- [ `&&, `|| ])
+  -- if ~(binop <- [ '&&', '||' ])
   -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> value_l
   -- Expr_eval_lctk: p TC |- typedExpressionIR_r ~> value_r
 
 rule Expr_eval_lctk/land-false:
-  p TC |- (typedExpressionIR_l `&& typedExpressionIR_r) `# _
-       ~> (`B false)
-  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (`B false)
+  p TC |- (typedExpressionIR_l '&&' typedExpressionIR_r) '#' _
+       ~> (_B false)
+  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (_B false)
 
 rule Expr_eval_lctk/land-true:
-  p TC |- (typedExpressionIR_l `&& typedExpressionIR_r) `# _
+  p TC |- (typedExpressionIR_l '&&' typedExpressionIR_r) '#' _
        ~> value_r
-  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (`B true)
+  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (_B true)
   -- Expr_eval_lctk: p TC |- typedExpressionIR_r ~> value_r
 
 rule Expr_eval_lctk/lor-true:
-  p TC |- (typedExpressionIR_l `|| typedExpressionIR_r) `# _
-       ~> (`B true)
-  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (`B true)
+  p TC |- (typedExpressionIR_l '||' typedExpressionIR_r) '#' _
+       ~> (_B true)
+  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (_B true)
 
 rule Expr_eval_lctk/lor-false:
-  p TC |- (typedExpressionIR_l `|| typedExpressionIR_r) `# _
+  p TC |- (typedExpressionIR_l '||' typedExpressionIR_r) '#' _
        ~> value_r
-  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (`B false)
+  -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> (_B false)
   -- Expr_eval_lctk: p TC |- typedExpressionIR_r ~> value_r
 
 ;;;; ternaryExpressionIR
 ;;;; syntax ternaryExpressionIR =
-;;;;   typedExpressionIR `? typedExpressionIR `: typedExpressionIR
+;;;;   typedExpressionIR '?' typedExpressionIR ':' typedExpressionIR
 
 
 rule Expr_eval_lctk/true:
-  p TC |- (typedExpressionIR_cond `? typedExpressionIR_true `: typedExpressionIR_false)
-          `# _
+  p TC |- (typedExpressionIR_cond '?' typedExpressionIR_true ':' typedExpressionIR_false)
+          '#' _
        ~> value_true
-  -- Expr_eval_lctk: p TC |- typedExpressionIR_cond ~> (`B true)
+  -- Expr_eval_lctk: p TC |- typedExpressionIR_cond ~> (_B true)
   -- Expr_eval_lctk: p TC |- typedExpressionIR_true ~> value_true
 
 rule Expr_eval_lctk/false:
-  p TC |- (typedExpressionIR_cond `? typedExpressionIR_true `: typedExpressionIR_false)
-          `# _
+  p TC |- (typedExpressionIR_cond '?' typedExpressionIR_true ':' typedExpressionIR_false)
+          '#' _
        ~> value_false
-  -- Expr_eval_lctk: p TC |- typedExpressionIR_cond ~> (`B false)
+  -- Expr_eval_lctk: p TC |- typedExpressionIR_cond ~> (_B false)
   -- Expr_eval_lctk: p TC |- typedExpressionIR_false ~> value_false
 
 
@@ -104,7 +104,7 @@ rule Expr_eval_lctk/false:
 ;;;; syntax castExpressionIR = `( typeIR ) typedExpressionIR
 
 rule Expr_eval_lctk/castExpressionIR:
-  p TC |- (`( typeIR ) typedExpressionIR) `# _ ~> value_cast
+  p TC |- (`( typeIR ) typedExpressionIR) '#' _ ~> value_cast
   -- Expr_eval_lctk: p TC |- typedExpressionIR ~> value
   -- if value_cast = $cast_op(typeIR, value)
 
@@ -112,40 +112,40 @@ rule Expr_eval_lctk/castExpressionIR:
 ;;;; syntax dataExpressionIR
 
 ;;;;; invalidHeaderExpressionIR
-;;;;; syntax invalidHeaderExpressionIR = `{#}
+;;;;; syntax invalidHeaderExpressionIR = '{#}'
 
 rule Expr_eval_lctk/invalidHeaderExpressionIR:
-  p TC |- `{#} `# _ ~> `{#}
+  p TC |- '{#}' '#' _ ~> '{#}'
 
 ;;;;; sequenceExpressionIR
 ;;;;; syntax sequenceExpressionIR =
 ;;;;;; SEQ `{ typedExpressionListIR }
-;;;;;; SEQ `{ typedExpressionListIR `, `... }
+;;;;;; SEQ `{ typedExpressionListIR ',' '...' }
 
 
 rule Expr_eval_lctk/non-default:
-  p TC |- (SEQ `{ typedExpressionIR* }) `# _ ~> SEQ `( value* )
+  p TC |- (SEQ `{ typedExpressionIR* }) '#' _ ~> SEQ `( value* )
   -- (Expr_eval_lctk: p TC |- typedExpressionIR ~> value)*
 
 rule Expr_eval_lctk/default:
-  p TC |- (SEQ `{ typedExpressionIR* `, `... }) `# _ ~> SEQ `( value* `, `... )
+  p TC |- (SEQ `{ typedExpressionIR* ',' '...' }) '#' _ ~> SEQ `( value* ',' '...' )
   -- (Expr_eval_lctk: p TC |- typedExpressionIR ~> value)*
 
 
 ;;;;; recordExpressionIR
 ;;;;; syntax recordExpressionIR =
 ;;;;;; RECORD `{ namedExpressionListIR }
-;;;;;; RECORD `{ namedExpressionListIR `, `... }
+;;;;;; RECORD `{ namedExpressionListIR ',' '...' }
 
 
 rule Expr_eval_lctk/non-default:
-  p TC |- (RECORD `{ (nameIR `= typedExpressionIR)* }) `# _
-      ~> RECORD `{ (value nameIR `;)* }
+  p TC |- (RECORD `{ (nameIR '=' typedExpressionIR)* }) '#' _
+      ~> RECORD `{ (value nameIR ';')* }
   -- (Expr_eval_lctk: p TC |- typedExpressionIR ~> value)*
 
 rule Expr_eval_lctk/default:
-  p TC |- (RECORD `{ (nameIR `= typedExpressionIR)* `, `... }) `# _
-      ~> RECORD `{ (value nameIR `;)* `, `... }
+  p TC |- (RECORD `{ (nameIR '=' typedExpressionIR)* ',' '...' }) '#' _
+      ~> RECORD `{ (value nameIR ';')* ',' '...' }
   -- (Expr_eval_lctk: p TC |- typedExpressionIR ~> value)*
 
 
@@ -153,23 +153,23 @@ rule Expr_eval_lctk/default:
 ;;;; syntax accessExpressionIR =
 
 ;;;;; errorAccessExpressionIR
-;;;;; syntax errorAccessExpressionIR = ERROR `. nameIR
+;;;;; syntax errorAccessExpressionIR = ERROR '.' nameIR
 
 rule Expr_eval_lctk/errorAccessExpressionIR:
-  p TC |- (ERROR `. nameIR) `# `( _ _ ) ~> value_error
+  p TC |- (ERROR '.' nameIR) '#' `( _ _ ) ~> value_error
   -- if nameIR_error = "error." ++ nameIR
-  -- if value_error = $find_var_value_t(`` nameIR_error, p, TC)
+  -- if value_error = $find_var_value_t(_NAME nameIR_error, p, TC)
 
 ;;;;; memberAccessExpressionIR
-;;;;; syntax memberAccessExpressionIR = memberAccessBaseIR `. nameIR
+;;;;; syntax memberAccessExpressionIR = memberAccessBaseIR '.' nameIR
 ;;;;;; syntax memberAccessBaseIR
 
 ;;;;;;; TYPE prefixedNameIR
 
 
 rule Expr_eval_lctk/enum:
-  p TC |- ((TYPE prefixedNameIR_base) `. nameIR) `# _
-       ~> typeId `. nameIR
+  p TC |- ((TYPE prefixedNameIR_base) '.' nameIR) '#' _
+       ~> typeId '.' nameIR
   -- if typeDefIR_base = $find_typeDef_t(p, TC, prefixedNameIR_base)
   -- if $is_monomorphic_typeDefIR(typeDefIR_base)
   -- if typeIR_base = $typeIR_of_typeDefIR(typeDefIR_base)
@@ -177,12 +177,12 @@ rule Expr_eval_lctk/enum:
   -- if nameIR <- nameIR_field*
 
 rule Expr_eval_lctk/serenum:
-  p TC |- ((TYPE prefixedNameIR_base) `. nameIR) `# _
-       ~> typeId `. nameIR `. value
+  p TC |- ((TYPE prefixedNameIR_base) '.' nameIR) '#' _
+       ~> typeId '.' nameIR '.' value
   -- if typeDefIR_base = $find_typeDef_t(p, TC, prefixedNameIR_base)
   -- if $is_monomorphic_typeDefIR(typeDefIR_base)
   -- if typeIR_base = $typeIR_of_typeDefIR(typeDefIR_base)
-  -- if ENUM typeId `< typeIR > `{ (nameIR_field `= value_field `;)* }
+  -- if ENUM typeId `< typeIR > `{ (nameIR_field '=' value_field ';')* }
       = $unroll_typeIR(typeIR_base)
   -- if value
       = $assoc_<nameIR, value>(nameIR, (nameIR_field, value_field)*)
@@ -192,31 +192,31 @@ rule Expr_eval_lctk/serenum:
 
 
 rule Expr_eval_lctk/header-stack-size:
-  p TC |- (typedExpressionIR_base `. nameIR) `# _
+  p TC |- (typedExpressionIR_base '.' nameIR) '#' _
        ~> D n_size
   -- if typeIR_base = $type_of_typedExpressionIR(typedExpressionIR_base)
   -- if _ `[ n_size ] = $unroll_typeIR(typeIR_base)
   -- if nameIR = "size"
 
 rule Expr_eval_lctk/struct:
-  p TC |- (typedExpressionIR_base `. nameIR) `# _
+  p TC |- (typedExpressionIR_base '.' nameIR) '#' _
        ~> value
   -- Expr_eval_lctk: p TC |- typedExpressionIR_base ~> structValue
-  -- if STRUCT _ `{ (value_field nameIR_field `;)* } = structValue
+  -- if STRUCT _ `{ (value_field nameIR_field ';')* } = structValue
   -- if value = $assoc_<nameIR, value>(nameIR, (nameIR_field, value_field)*)
 
 rule Expr_eval_lctk/header:
-  p TC |- (typedExpressionIR_base `. nameIR) `# _
+  p TC |- (typedExpressionIR_base '.' nameIR) '#' _
        ~> value
   -- Expr_eval_lctk: p TC |- typedExpressionIR_base ~> headerValue
-  -- if HEADER _ `{ _ `; (value_field nameIR_field `;)* } = headerValue
+  -- if HEADER _ `{ _ ';' (value_field nameIR_field ';')* } = headerValue
   -- if value = $assoc_<nameIR, value>(nameIR, (nameIR_field, value_field)*)
 
 rule Expr_eval_lctk/header-union:
-  p TC |- (typedExpressionIR_base `. nameIR) `# _
+  p TC |- (typedExpressionIR_base '.' nameIR) '#' _
        ~> value
   -- Expr_eval_lctk: p TC |- typedExpressionIR_base ~> headerUnionValue
-  -- if HEADER_UNION _ `{ (value_field nameIR_field `;)* } = headerUnionValue
+  -- if HEADER_UNION _ `{ (value_field nameIR_field ';')* } = headerUnionValue
   -- if value = $assoc_<nameIR, value>(nameIR, (nameIR_field, value_field)*)
 
 
@@ -226,7 +226,7 @@ rule Expr_eval_lctk/header-union:
 
 
 rule Expr_eval_lctk/tuple:
-  p TC |- (typedExpressionIR_base `[ typedExpressionIR_index ]) `# _
+  p TC |- (typedExpressionIR_base `[ typedExpressionIR_index ]) '#' _
        ~> value
   -- Expr_eval_lctk: p TC |- typedExpressionIR_base ~> value_base
   -- Expr_eval_lctk: p TC |- typedExpressionIR_index ~> integerValue_index
@@ -236,11 +236,11 @@ rule Expr_eval_lctk/tuple:
   -- if value = value_e*[n_index]
 
 rule Expr_eval_lctk/indexAccessExpressionIR-stack:
-  p TC |- (typedExpressionIR_base `[ typedExpressionIR_index ]) `# _
+  p TC |- (typedExpressionIR_base `[ typedExpressionIR_index ]) '#' _
        ~> value
   -- Expr_eval_lctk: p TC |- typedExpressionIR_base ~> value_base
   -- Expr_eval_lctk: p TC |- typedExpressionIR_index ~> integerValue_index
-  -- if HEADER_STACK `[ value_e* `( _ `; _ ) ] = value_base
+  -- if HEADER_STACK `[ value_e* `( _ ';' _ ) ] = value_base
   -- if n_index = $nat_of_integerValue(integerValue_index)
   -- if $(n_index < |value_e*|)
   -- if value = value_e*[n_index]
@@ -248,19 +248,19 @@ rule Expr_eval_lctk/indexAccessExpressionIR-stack:
 
 ;;;;; sliceAccessExpressionIR
 ;;;;; syntax sliceAccessExpressionIR =
-;;;;;;  typedExpressionIR `[ typedExpressionIR `: typedExpressionIR ]
-;;;;;;  typedExpressionIR `[ typedExpressionIR `+: typedExpressionIR ]
+;;;;;;  typedExpressionIR `[ typedExpressionIR ':' typedExpressionIR ]
+;;;;;;  typedExpressionIR `[ typedExpressionIR '+': typedExpressionIR ]
 
 
 rule Expr_eval_lctk/range:
-  p TC |- (typedExpressionIR_base `[ typedExpressionIR_hi `: typedExpressionIR_lo ]) `# _
+  p TC |- (typedExpressionIR_base `[ typedExpressionIR_hi ':' typedExpressionIR_lo ]) '#' _
        ~> $bitacc_range_op(value_base, value_hi, value_lo)
   -- Expr_eval_lctk: p TC |- typedExpressionIR_base ~> value_base
   -- Expr_eval_lctk: p TC |- typedExpressionIR_hi ~> value_hi
   -- Expr_eval_lctk: p TC |- typedExpressionIR_lo ~> value_lo
 
 rule Expr_eval_lctk/offset:
-  p TC |- (typedExpressionIR_base `[ typedExpressionIR_l `+: typedExpressionIR_w ]) `# _
+  p TC |- (typedExpressionIR_base `[ typedExpressionIR_l '+': typedExpressionIR_w ]) '#' _
        ~> $bitacc_offset_op(value_base, value_l, value_w)
   -- Expr_eval_lctk: p TC |- typedExpressionIR_base ~> value_base
   -- Expr_eval_lctk: p TC |- typedExpressionIR_l ~> value_l
@@ -278,20 +278,20 @@ rule Expr_eval_lctk/offset:
 
 ;;;;;;; referenceExpressionIR
 ;;;;;;; function/action calls, except static_assert, are not evaluated statically
-;;;;;;; typedExpressionIR `. nameIR
-;;;;;;; TYPE prefixedNameIR `. nameIR
+;;;;;;; typedExpressionIR '.' nameIR
+;;;;;;; TYPE prefixedNameIR '.' nameIR
 ;;;;;;; `( callableTargetIR )
 
 
 rule Expr_eval_lctk/static_assert:
-  p TC |- (prefixedNameIR `< typeArgumentIR* > `( argumentIR* )) `# _
+  p TC |- (prefixedNameIR `< typeArgumentIR* > `( argumentIR* )) '#' _
        ~> boolValue
   ---- ;; resolve the callee
   -- CallableType_ok:
       p TC |- prefixedNameIR `< typeArgumentIR* > `( argumentIR* )
-            : externFunctionTypeIR `< `# _ > `( `# id_default* `# id_optional* )
+            : externFunctionTypeIR `< '#' _ > `( '#' id_default* '#' id_optional* )
   ---- ;; if calling static_assert
-  -- if EXTERN_FUNCTION "static_assert" `( parameterIR* ) `: BOOL
+  -- if EXTERN_FUNCTION "static_assert" `( parameterIR* ) ':' BOOL
       = externFunctionTypeIR
   -- (if _ _ _ nameIR_param _ = parameterIR)*
   ---- ;; create callee context
@@ -312,17 +312,17 @@ rule Expr_eval_lctk/static_assert:
   -- ExternFunctionCall_eval_lctk:
       TC_callee_1 |- "static_assert" `( nameIR_param* ) ~> boolValue
   ---- ;; static_assert should return true
-  -- if `B true = boolValue
+  -- if _B true = boolValue
 
 rule Expr_eval_lctk/size-expression:
-  p TC |- ((typedExpressionIR_base `. nameIR) `< _ > `( _ )) `# _
+  p TC |- ((typedExpressionIR_base '.' nameIR) `< _ > `( _ )) '#' _
       ~> $sizeof(typeIR_base, nameIR)
-  -- if _ `# `( typeIR_base _ ) = typedExpressionIR_base
+  -- if _ '#' `( typeIR_base _ ) = typedExpressionIR_base
   -- if nameIR <- [ "minSizeInBits", "minSizeInBytes",
                     "maxSizeInBits", "maxSizeInBytes" ]
 
 rule Expr_eval_lctk/size-type-monomorphic:
-  p TC |- ((TYPE prefixedNameIR `. nameIR) `< _ > `( _ )) `# _
+  p TC |- ((TYPE prefixedNameIR '.' nameIR) `< _ > `( _ )) '#' _
       ~> $sizeof(typeIR_base, nameIR)
   -- if typeDefIR_base = $find_typeDef_t(p, TC, prefixedNameIR)
   -- if $is_monomorphic_typeDefIR(typeDefIR_base)
@@ -331,7 +331,7 @@ rule Expr_eval_lctk/size-type-monomorphic:
                     "maxSizeInBits", "maxSizeInBytes" ]
 
 rule Expr_eval_lctk/size-type-polymorphic:
-  p TC |- ((TYPE prefixedNameIR `. nameIR) `< _ > `( _ )) `# _
+  p TC |- ((TYPE prefixedNameIR '.' nameIR) `< _ > `( _ )) '#' _
       ~> $sizeof(typeIR_base, nameIR)
   -- if typeDefIR_base = $find_typeDef_t(p, TC, prefixedNameIR)
   -- if ~$is_monomorphic_typeDefIR(typeDefIR_base)
@@ -342,11 +342,11 @@ rule Expr_eval_lctk/size-type-polymorphic:
 
 rule Expr_eval_lctk/callExpressionIR-parenthesized:
   p TC |- ((`( callableTargetIR )) `< typeArgumentIR* > `( argumentIR* ))
-          `# `( typeIR ctk )
+          '#' `( typeIR ctk )
         ~> value
   -- Expr_eval_lctk:
       p TC |- (callableTargetIR `< typeArgumentIR* > `( argumentIR* ))
-              `# `( typeIR ctk )
+              '#' `( typeIR ctk )
             ~> value
 
 
@@ -354,7 +354,7 @@ rule Expr_eval_lctk/callExpressionIR-parenthesized:
 ;;;; syntax parenthesizedExpressionIR = `( typedExpressionIR )
 
 rule Expr_eval_lctk/parenthesizedExpressionIR:
-  p TC |- (`( typedExpressionIR )) `# _ ~> value
+  p TC |- (`( typedExpressionIR )) '#' _ ~> value
   -- Expr_eval_lctk: p TC |- typedExpressionIR ~> value
 
 ;;
@@ -369,12 +369,12 @@ rule Argument_eval_lctk/typedExpressionIR:
   p TC |- typedExpressionIR ~> value
   -- Expr_eval_lctk: p TC |- typedExpressionIR ~> value
 
-;;; nameIR `= typedExpressionIR
+;;; nameIR '=' typedExpressionIR
 
 rule Argument_eval_lctk/namedArgumentIR:
-  p TC |- nameIR `= typedExpressionIR ~> value
+  p TC |- nameIR '=' typedExpressionIR ~> value
   -- Expr_eval_lctk: p TC |- typedExpressionIR ~> value
 
-;;; nameIR `= `_
-;;; `_
+;;; nameIR '=' '_'
+;;; '_'
 ;;; don't care arguments are not evaluated statically

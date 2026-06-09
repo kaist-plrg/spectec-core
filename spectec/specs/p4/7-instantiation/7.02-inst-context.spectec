@@ -214,24 +214,24 @@ dec $find_callableDef_non_overload_i(cursor, instContext, prefixedNameIR)
   : (cursor, callableId, callableDef)?
   hint(prose_in "the non-overloaded callable definition of" %2 "from the" %0 "layer of" %1)
 
-def $find_callableDef_non_overload_i(p, IC, `. nameIR)
+def $find_callableDef_non_overload_i(p, IC, '.' nameIR)
   = eps
   -- if eps = $find_non_overloaded<callableDef>(IC.GLOBAL.CALLABLE, nameIR)
-def $find_callableDef_non_overload_i(p, IC, `. nameIR)
+def $find_callableDef_non_overload_i(p, IC, '.' nameIR)
   = (GLOBAL, callableId, callableDef)
   -- if (callableId, callableDef) = $find_non_overloaded<callableDef>(IC.GLOBAL.CALLABLE, nameIR)
-def $find_callableDef_non_overload_i(GLOBAL, IC, `` nameIR)
-  = $find_callableDef_non_overload_i(GLOBAL, IC, `. nameIR)
-def $find_callableDef_non_overload_i(BLOCK, IC, `` nameIR)
+def $find_callableDef_non_overload_i(GLOBAL, IC, _NAME nameIR)
+  = $find_callableDef_non_overload_i(GLOBAL, IC, '.' nameIR)
+def $find_callableDef_non_overload_i(BLOCK, IC, _NAME nameIR)
   = (BLOCK, callableId, callableDef)
   -- if (callableId, callableDef)
       = $find_non_overloaded<callableDef>(IC.BLOCK.CALLABLE, nameIR)
-def $find_callableDef_non_overload_i(BLOCK, IC, `` nameIR)
-  = $find_callableDef_non_overload_i(GLOBAL, IC, `` nameIR)
+def $find_callableDef_non_overload_i(BLOCK, IC, _NAME nameIR)
+  = $find_callableDef_non_overload_i(GLOBAL, IC, _NAME nameIR)
   -- if eps
       = $find_non_overloaded<callableDef>(IC.BLOCK.CALLABLE, nameIR)
-def $find_callableDef_non_overload_i(LOCAL, IC, `` nameIR)
-  = $find_callableDef_non_overload_i(BLOCK, IC, `` nameIR)
+def $find_callableDef_non_overload_i(LOCAL, IC, _NAME nameIR)
+  = $find_callableDef_non_overload_i(BLOCK, IC, _NAME nameIR)
 
 ;;; Adder for constructor definitions
 
@@ -263,19 +263,19 @@ def $add_constructorDefs_i(
 dec $find_var_i(prefixedNameIR, cursor, instContext) : value
   hint(prose_in "the value of" %0 "from the" %1 "layer of" %2)
 
-def $find_var_i(`. id, p, IC) = value
+def $find_var_i('.' id, p, IC) = value
   -- if value = $find_map<id, value>(IC.GLOBAL.FRAME, id)
-def $find_var_i(`` id, GLOBAL, IC) = value
+def $find_var_i(_NAME id, GLOBAL, IC) = value
   -- if value = $find_map<id, value>(IC.GLOBAL.FRAME, id)
-def $find_var_i(`` id, BLOCK, IC) = value
+def $find_var_i(_NAME id, BLOCK, IC) = value
   -- if value = $find_map<id, value>(IC.BLOCK.FRAME, id)
-def $find_var_i(`` id, BLOCK, IC)
-  = $find_var_i(`` id, GLOBAL, IC)
+def $find_var_i(_NAME id, BLOCK, IC)
+  = $find_var_i(_NAME id, GLOBAL, IC)
   -- if eps = $find_map<id, value>(IC.BLOCK.FRAME, id)
-def $find_var_i(`` id, LOCAL, IC) = value
+def $find_var_i(_NAME id, LOCAL, IC) = value
   -- if value = $find_maps<id, value>(IC.LOCAL.FRAMES, id)
-def $find_var_i(`` id, LOCAL, IC)
-  = $find_var_i(`` id, BLOCK, IC)
+def $find_var_i(_NAME id, LOCAL, IC)
+  = $find_var_i(_NAME id, BLOCK, IC)
   -- if eps = $find_maps<id, value>(IC.LOCAL.FRAMES, id)
 
 ;;; Finder for type definitions
@@ -283,9 +283,9 @@ def $find_var_i(`` id, LOCAL, IC)
 dec $find_typeDef_i(cursor, instContext, prefixedNameIR) : typeDefIR?
   hint(prose_in "the type definition of" %2 "from the" %0 "layer of" %1)
 
-def $find_typeDef_i(_, IC, `` nameIR)
+def $find_typeDef_i(_, IC, _NAME nameIR)
   = $find_map<typeId, typeDefIR>(IC.GLOBAL.TYPE, nameIR)
-def $find_typeDef_i(_, IC, `. nameIR)
+def $find_typeDef_i(_, IC, '.' nameIR)
   = $find_map<typeId, typeDefIR>(IC.GLOBAL.TYPE, nameIR)
 
 ;;; Finder for constructor definitions
@@ -294,13 +294,13 @@ dec $find_constructorDef_i(instContext, prefixedNameIR, argumentIR*)
   : callResolution<constructorDef>?
   hint(prose_in "the overloaded constructor definition of" %1 `( %2 ) "in" %0)
 
-def $find_constructorDef_i(IC, `` nameIR, argumentIR*)
+def $find_constructorDef_i(IC, _NAME nameIR, argumentIR*)
   = $find_overloaded<constructorDef>(
       IC.GLOBAL.CONSTRUCTOR,
       callTargetKey,
       def $parameterListIR_of_constructorDef)
   -- if callTargetKey = $callTargetKey(nameIR, argumentIR*)
-def $find_constructorDef_i(IC, `. nameIR, argumentIR*)
+def $find_constructorDef_i(IC, '.' nameIR, argumentIR*)
   = $find_overloaded<constructorDef>(
       IC.GLOBAL.CONSTRUCTOR,
       callTargetKey,

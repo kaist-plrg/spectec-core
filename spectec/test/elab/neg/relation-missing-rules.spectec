@@ -1,6 +1,6 @@
 ;; A relation declared but with no rules — should produce a warning,
 ;; not an error. Confirms the harness handles warnings.
 
-syntax foo = `FOO
+syntax foo = _FOO
 
 relation Foo_ok: |- foo

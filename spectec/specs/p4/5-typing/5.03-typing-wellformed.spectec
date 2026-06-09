@@ -68,7 +68,7 @@ rule Type_wf/baseTypeIR:
 ;;; Name types
 
 rule Type_wf/nameTypeIR:
-  B |- `` typeId
+  B |- _NAME typeId
   -- if $in_set<typeId>(typeId, B)
 
 ;;; Alias types
@@ -182,7 +182,7 @@ dec $nestable_struct(typeIR) : bool
 def $nestable_struct(typeIR) = $nestable_tuple(typeIR)
 
 rule Type_wf/structTypeIR:
-  B |- STRUCT _ `< _ > `{ (_ typeIR_field nameIR_field `;)* }
+  B |- STRUCT _ `< _ > `{ (_ typeIR_field nameIR_field ';')* }
   -- if $distinct_<nameIR>(nameIR_field*)
   -- if $nestable_struct(typeIR_field)*
   -- (Type_wf: B |- typeIR_field)*
@@ -202,7 +202,7 @@ def $nestable_header(nameTypeIR) = true
 def $nestable_header(TYPEDEF _ typeIR) = $nestable_header(typeIR)
 def $nestable_header(newTypeIR) = true
 def $nestable_header(ENUM _ `< _ > `{ _ }) = true
-def $nestable_header(STRUCT _ `< _ > `{ (_ typeIR_field _ `;)* }) = $forall_($nestable_struct_in_header(typeIR_field)*)
+def $nestable_header(STRUCT _ `< _ > `{ (_ typeIR_field _ ';')* }) = $forall_($nestable_struct_in_header(typeIR_field)*)
 def $nestable_header(_) = false
 
 def $nestable_struct_in_header(BOOL) = true
@@ -212,11 +212,11 @@ def $nestable_struct_in_header(nameTypeIR) = true
 def $nestable_struct_in_header(TYPEDEF _ typeIR) = $nestable_struct_in_header(typeIR)
 def $nestable_struct_in_header(newTypeIR) = true
 def $nestable_struct_in_header(ENUM _ `< _ > `{ _ }) = true
-def $nestable_struct_in_header(STRUCT _ `< _ > `{ (_ typeIR_field _ `;)* }) = $forall_($nestable_struct_in_header(typeIR_field)*)
+def $nestable_struct_in_header(STRUCT _ `< _ > `{ (_ typeIR_field _ ';')* }) = $forall_($nestable_struct_in_header(typeIR_field)*)
 def $nestable_struct_in_header(_) = false
 
 rule Type_wf/headerTypeIR:
-  B |- HEADER _ `< _ > `{ (_ typeIR_field nameIR_field `;)* }
+  B |- HEADER _ `< _ > `{ (_ typeIR_field nameIR_field ';')* }
   -- if $distinct_<nameIR>(nameIR_field*)
   -- if $nestable_header(typeIR_field)*
   -- (Type_wf: B |- typeIR_field)*
@@ -232,7 +232,7 @@ def $nestable_headerUnion(headerTypeIR) = true
 def $nestable_headerUnion(_) = false
 
 rule Type_wf/headerUnionTypeIR:
-  B |- HEADER_UNION _ `< _ > `{ (_ typeIR_field nameIR_field `;)* }
+  B |- HEADER_UNION _ `< _ > `{ (_ typeIR_field nameIR_field ';')* }
   -- if $distinct_<nameIR>(nameIR_field*)
   -- if $nestable_headerUnion(typeIR_field)*
   -- (Type_wf: B |- typeIR_field)*
@@ -264,7 +264,7 @@ rule Type_wf/non-serializable:
   -- if $distinct_<nameIR>(nameIR_field*)
 
 rule Type_wf/serializable:
-  B |- ENUM _ `< typeIR > `{ (nameIR_field `= _ `;)* }
+  B |- ENUM _ `< typeIR > `{ (nameIR_field '=' _ ';')* }
   -- if $distinct_<nameIR>(nameIR_field*)
   -- if $nestable_enum_serializable(typeIR)
   -- Type_wf: B |- typeIR
@@ -273,7 +273,7 @@ rule Type_wf/serializable:
 ;;; Object types
 
 rule Type_wf/externObjectTypeIR:
-  B |- EXTERN _ `< _ > (`{ (_ `: externMethodTypeDefIR)* })
+  B |- EXTERN _ `< _ > (`{ (_ ':' externMethodTypeDefIR)* })
   -- (CallableTypeDef_wf: B |- externMethodTypeDefIR)*
 
 rule Type_wf/parserObjectTypeIR:
@@ -306,18 +306,18 @@ rule Type_wf/non-default:
   -- (Type_wf: B |- typeIR)*
 
 rule Type_wf/default:
-  B |- SEQ `< typeIR* `, `... >
+  B |- SEQ `< typeIR* ',' '...' >
   -- (Type_wf: B |- typeIR)*
 
 
 
 rule Type_wf/non-default:
-  B |- RECORD `{ (_ typeIR_field nameIR_field `;)* }
+  B |- RECORD `{ (_ typeIR_field nameIR_field ';')* }
   -- if $distinct_<nameIR>(nameIR_field*)
   -- (Type_wf: B |- typeIR_field)*
 
 rule Type_wf/default:
-  B |- RECORD `{ (_ typeIR_field nameIR_field `;)* `, `... }
+  B |- RECORD `{ (_ typeIR_field nameIR_field ';')* ',' '...' }
   -- if $distinct_<nameIR>(nameIR_field*)
   -- (Type_wf: B |- typeIR_field)*
 
@@ -376,9 +376,9 @@ rule Type_wf/enum:
   -- if $distinct_<nameIR>(nameIR*)
 
 rule Type_wf/struct:
-  B |- TABLE_STRUCT _ `{ HIT _ `;
-                             MISS _ `;
-                             ACTION_RUN tableMetadataEnumTypeIR `; }
+  B |- TABLE_STRUCT _ `{ HIT _ ';'
+                             MISS _ ';'
+                             ACTION_RUN tableMetadataEnumTypeIR ';' }
   -- Type_wf: B |- tableMetadataEnumTypeIR
 
 
@@ -411,7 +411,7 @@ rule ParameterType_wf/non-default:
   -- if ((typeIR_unroll = INT)
         \/ (typeIR_unroll <: stringTypeIR)
         \/ (typeIR_unroll <: objectTypeIR))
-        => direction = `EMPTY
+        => direction = _EMPTY
 
 rule ParameterType_wf/default:
   B |- annotationList direction typeIR _ parameterInitializerIR
@@ -421,8 +421,8 @@ rule ParameterType_wf/default:
   -- if ((typeIR_unroll = INT)
         \/ (typeIR_unroll <: stringTypeIR)
         \/ (typeIR_unroll <: objectTypeIR))
-        => direction = `EMPTY
-  -- if direction = IN \/ direction = `EMPTY
+        => direction = _EMPTY
+  -- if direction = IN \/ direction = _EMPTY
   -- if ~$optional_annotation_of_parameterIR'(annotationList)
 
 
@@ -453,12 +453,12 @@ def $directionless_trailing(direction*)
   = $directionless_trailing'(true, $rev_<direction>(direction*))
 
 def $directionless_trailing'(_, eps) = true
-def $directionless_trailing'(true, `EMPTY :: direction_t*)
+def $directionless_trailing'(true, _EMPTY :: direction_t*)
   = $directionless_trailing'(true, direction_t*)
-def $directionless_trailing'(false, `EMPTY :: direction_t*) = false
+def $directionless_trailing'(false, _EMPTY :: direction_t*) = false
 def $directionless_trailing'(_, direction_h :: direction_t*)
   = $directionless_trailing'(false, direction_t*)
-  -- if direction_h =/= `EMPTY
+  -- if direction_h =/= _EMPTY
 
 dec $nestable_action(typeIR) : bool
   hint(prose_true %0 "can be used in an action type")
@@ -490,7 +490,7 @@ def $nestable_definedFunction(synthesizedTypeIR) = false
 def $nestable_definedFunction(_) = true
 
 rule CallableType_wf/definedFunctionTypeIR:
-  B |- FUNCTION _ `( parameterIR* ) `: typeIR_ret
+  B |- FUNCTION _ `( parameterIR* ) ':' typeIR_ret
   -- (ParameterType_wf: B |- parameterIR)*
   -- if (~$is_optional_parameterIR(parameterIR))*
   -- if (_ _ typeIR _ _ = parameterIR)*
@@ -509,7 +509,7 @@ def $nestable_externFunction(tableObjectTypeIR) = false
 def $nestable_externFunction(_) = true
 
 rule CallableType_wf/externFunctionTypeIR:
-  B |- EXTERN_FUNCTION _ `( parameterIR* ) `: typeIR_ret
+  B |- EXTERN_FUNCTION _ `( parameterIR* ) ':' typeIR_ret
   -- (ParameterType_wf: B |- parameterIR)*
   -- if (_ _ typeIR _ _ = parameterIR)*
   -- if $nestable_externFunction(typeIR)*
@@ -518,7 +518,7 @@ rule CallableType_wf/externFunctionTypeIR:
 ;;; Method types
 
 rule CallableType_wf/builtinMethodTypeIR:
-  B |- BUILTIN_METHOD _ `( parameterIR* ) `: typeIR_ret
+  B |- BUILTIN_METHOD _ `( parameterIR* ) ':' typeIR_ret
   -- (ParameterType_wf: B |- parameterIR)*
   -- if (~$is_optional_parameterIR(parameterIR))*
   -- ReturnType_wf: B |- typeIR_ret
@@ -536,14 +536,14 @@ def $nestable_externMethod(_) = true
 
 
 rule CallableType_wf/non-abstract:
-  B |- EXTERN_METHOD _ `( parameterIR* ) `: typeIR_ret
+  B |- EXTERN_METHOD _ `( parameterIR* ) ':' typeIR_ret
   -- (ParameterType_wf: B |- parameterIR)*
   -- if (_ _ typeIR _ _ = parameterIR)*
   -- if $nestable_externMethod(typeIR)*
   -- ReturnType_wf: B |- typeIR_ret
 
 rule CallableType_wf/abstract:
-  B |- EXTERN_METHOD ABSTRACT _ `( parameterIR* ) `: typeIR_ret
+  B |- EXTERN_METHOD ABSTRACT _ `( parameterIR* ) ':' typeIR_ret
   -- (ParameterType_wf: B |- parameterIR)*
   -- if (~$is_optional_parameterIR(parameterIR))*
   -- if (_ _ typeIR _ _ = parameterIR)*
@@ -587,7 +587,7 @@ rule CallableType_wf/controlApplyMethodTypeIR:
   -- if $nestable_controlApplyMethod(typeIR)*
 
 rule CallableType_wf/tableApplyMethodTypeIR:
-  B |- TABLE_APPLY `: tableMetadataStructTypeIR
+  B |- TABLE_APPLY ':' tableMetadataStructTypeIR
 
 ;;
 ;;;; Well-formedness of callable type definitions
@@ -612,7 +612,7 @@ rule CallableTypeDef_wf:
 
 rule ConstructorParameterType_wf:
   B |- constructorParameterIR
-  -- if _ `EMPTY _ _ _ = constructorParameterIR
+  -- if _ _EMPTY _ _ _ = constructorParameterIR
   -- ParameterType_wf: B |- constructorParameterIR
 
 ;;
@@ -631,7 +631,7 @@ def $nestable_constructor_extern(tableObjectTypeIR) = false
 def $nestable_constructor_extern(_) = true
 
 rule ConstructorType_wf/externObjectTypeIR:
-  B |- CONSTRUCTOR `( parameterIR* ) `: typeIR_object
+  B |- CONSTRUCTOR `( parameterIR* ) ':' typeIR_object
   -- (ConstructorParameterType_wf: B |- parameterIR)*
   -- Type_wf: B |- typeIR_object
   -- if externObjectTypeIR = $unroll_typeIR(typeIR_object)
@@ -649,7 +649,7 @@ def $nestable_constructor_parser(tableObjectTypeIR) = false
 def $nestable_constructor_parser(_) = true
 
 rule ConstructorType_wf/parserObjectTypeIR:
-  B |- CONSTRUCTOR `( parameterIR* ) `: typeIR_object
+  B |- CONSTRUCTOR `( parameterIR* ) ':' typeIR_object
   -- (ConstructorParameterType_wf: B |- parameterIR)*
   -- if (~$is_optional_parameterIR(parameterIR))*
   -- Type_wf: B |- typeIR_object
@@ -667,7 +667,7 @@ def $nestable_constructor_control(tableObjectTypeIR) = false
 def $nestable_constructor_control(_) = true
 
 rule ConstructorType_wf/controlObjectTypeIR:
-  B |- CONSTRUCTOR `( parameterIR* ) `: typeIR_object
+  B |- CONSTRUCTOR `( parameterIR* ) ':' typeIR_object
   -- (ConstructorParameterType_wf: B |- parameterIR)*
   -- if (~$is_optional_parameterIR(parameterIR))*
   -- Type_wf: B |- typeIR_object
@@ -676,7 +676,7 @@ rule ConstructorType_wf/controlObjectTypeIR:
   -- if $nestable_constructor_control(typeIR)*
 
 rule ConstructorType_wf/tableObjectTypeIR:
-  B |- CONSTRUCTOR `( eps ) `: typeIR_object
+  B |- CONSTRUCTOR `( eps ) ':' typeIR_object
   -- Type_wf: B |- typeIR_object
   -- if tableObjectTypeIR = $unroll_typeIR(typeIR_object)
 
@@ -688,7 +688,7 @@ def $nestable_constructor_package(tableObjectTypeIR) = false
 def $nestable_constructor_package(_) = true
 
 rule ConstructorType_wf/packageObjectTypeIR:
-  B |- CONSTRUCTOR `( parameterIR* ) `: typeIR_object
+  B |- CONSTRUCTOR `( parameterIR* ) ':' typeIR_object
   -- (ConstructorParameterType_wf: B |- parameterIR)*
   -- Type_wf: B |- typeIR_object
   -- if packageObjectTypeIR = $unroll_typeIR(typeIR_object)
@@ -712,8 +712,8 @@ def $definable_constructor(_) = false
 
 rule ConstructorTypeDef_wf:
   B |- constructorTypeDefIR
-  -- if CONSTRUCTOR `< typeParameterIR_expl* `, typeParameterIR_impl* >
-          `( parameterIR* ) `: typeIR_object
+  -- if CONSTRUCTOR `< typeParameterIR_expl* ',' typeParameterIR_impl* >
+          `( parameterIR* ) ':' typeIR_object
       = constructorTypeDefIR
   -- if $definable_constructor(typeIR_object)
   -- if typeParameterIR*
@@ -722,4 +722,4 @@ rule ConstructorTypeDef_wf:
   -- if B_inner
       = $union_set<typeId>(B, `{ typeParameterIR* })
   -- ConstructorType_wf:
-      B_inner |- CONSTRUCTOR `( parameterIR* ) `: typeIR_object
+      B_inner |- CONSTRUCTOR `( parameterIR* ) ':' typeIR_object

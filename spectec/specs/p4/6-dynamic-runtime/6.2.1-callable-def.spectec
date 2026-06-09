@@ -39,11 +39,11 @@ syntax externMethodDef =
 
 syntax parserApplyMethodDef =
   PARSER_APPLY `( parameterListIR )
-    `{ parserLocalDeclarationListIR `; stateEnv }
+    `{ parserLocalDeclarationListIR ';' stateEnv }
 
 syntax controlApplyMethodDef =
   CONTROL_APPLY `( parameterListIR )
-    `{ controlLocalDeclarationListIR `; actionDefEnv `; controlBodyIR }
+    `{ controlLocalDeclarationListIR ';' actionDefEnv ';' controlBodyIR }
 
 syntax tableApplyMethodDef =
   TABLE_APPLY `{ tablePropertyListIR }

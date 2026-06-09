@@ -92,11 +92,11 @@ let split (mixfix : 'a t) : mixop * 'a list =
 (* Rendering *)
 
 let is_open_bracket : Xl.Atom.t -> bool = function
-  | LParen | LBrack _ | LBrace _ | LAngle _ -> true
+  | LParen | LBrack | LBrace | LAngle -> true
   | _ -> false
 
 let is_close_bracket : Xl.Atom.t -> bool = function
-  | RParen | RBrack _ | RBrace _ | RAngle _ -> true
+  | RParen | RBrack | RBrace | RAngle -> true
   | _ -> false
 
 let opens_bracket = function Atom a -> is_open_bracket a.it | Arg _ -> false
@@ -133,7 +133,7 @@ let assemble ?(pad_brackets = false) ~(string_of_atom : atom -> string)
 
 let string_of_mixeme = function
   | Arg _ -> "%"
-  | Atom atom -> Xl.Atom.string_of_atom atom.it
+  | Atom atom -> Xl.Atom.to_string atom.it
 
 let to_string (mixfix : 'a t) : string =
   "`" ^ render_with ~pad_brackets:false string_of_mixeme mixfix ^ "`"

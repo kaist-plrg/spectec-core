@@ -47,9 +47,9 @@ def $is_defaultable_typeIR(TYPEDEF _ typeIR) = $is_defaultable_typeIR(typeIR)
 def $is_defaultable_typeIR(TYPE _ typeIR) = $is_defaultable_typeIR(typeIR)
 def $is_defaultable_typeIR(TUPLE `< typeIR* >) = $forall_($is_defaultable_typeIR(typeIR)*)
 def $is_defaultable_typeIR(typeIR `[ _ ]) = $is_defaultable_typeIR(typeIR)
-def $is_defaultable_typeIR(STRUCT _ `< _ > `{ (_ typeIR _ `;)* }) = $forall_($is_defaultable_typeIR(typeIR)*)
-def $is_defaultable_typeIR(HEADER _ `< _ > `{ (_ typeIR _ `;)* }) = $forall_($is_defaultable_typeIR(typeIR)*)
-def $is_defaultable_typeIR(HEADER_UNION _ `< _ > `{ (_ typeIR _ `;)* }) = $forall_($is_defaultable_typeIR(typeIR)*)
+def $is_defaultable_typeIR(STRUCT _ `< _ > `{ (_ typeIR _ ';')* }) = $forall_($is_defaultable_typeIR(typeIR)*)
+def $is_defaultable_typeIR(HEADER _ `< _ > `{ (_ typeIR _ ';')* }) = $forall_($is_defaultable_typeIR(typeIR)*)
+def $is_defaultable_typeIR(HEADER_UNION _ `< _ > `{ (_ typeIR _ ';')* }) = $forall_($is_defaultable_typeIR(typeIR)*)
 def $is_defaultable_typeIR(ENUM _ `{ _ }) = true
 def $is_defaultable_typeIR(ENUM _ `< typeIR > `{ _ }) = $is_defaultable_typeIR(typeIR)
 def $is_defaultable_typeIR(_) = false
@@ -60,7 +60,7 @@ dec $is_equalable_typeIR(typeIR) : bool
   hint(prose_true %0 "supports equality comparison")
   hint(prose_false %0 "does not support equality comparison")
 def $is_equalable_typeIR(VOID) = false
-def $is_equalable_typeIR(`` typeId) = false
+def $is_equalable_typeIR(_NAME typeId) = false
 def $is_equalable_typeIR(TYPEDEF _ typeIR) = $is_equalable_typeIR(typeIR)
 def $is_equalable_typeIR(externObjectTypeIR) = false
 def $is_equalable_typeIR(parserObjectTypeIR) = false

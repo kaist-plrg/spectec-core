@@ -154,70 +154,13 @@ and after_nl_nl = parse
 
 and token = parse
   (* escaped tokens *)
-  | "`"(upid as s) { TICK_UPID s }
-  | "``" { TICK_TICK }
-  | "`\"" { TICK_DOUBLE_QUOTE }
-  | "`_" { TICK_UNDERSCORE }
-  | "`->" { TICK_ARROW }
-  | "`=>" { TICK_DOUBLE_ARROW }
-  | "`." { TICK_DOT }
-  | "`.." { TICK_DOT2 }
-  | "`..." { TICK_DOT3 }
-  | "`," { TICK_COMMA }
-  | "`;" { TICK_SEMICOLON }
-  | "`:" { TICK_COLON }
-  | "`:=" { TICK_COLON_EQ }
-  | "`#" { TICK_HASH }
-  | "`$" { TICK_DOLLAR }
-  | "`@" { TICK_AT }
-  | "`?" { TICK_QUEST }
-  | "`!" { TICK_BANG }
-  | "`!=" { TICK_BANG_EQ }
-  | "`~" { TICK_TILDE }
-  | "`~~" { TICK_TILDE2 }
-  | "``<" { TICK2_LANGLE }
+  | "_"(upid as s) { TAG_UPID s }
+  | "'" ([^'\'''\n']* as s) "'" { OPERATOR s }
+  (* matched grouping brackets *)
   | "`<" { TICK_LANGLE }
-  | "`<<" { TICK_LANGLE2 }
-  | "`<=" { TICK_LANGLE_EQ }
-  | "`<<=" { TICK_LANGLE2_EQ }
-  | "``>" { TICK2_RANGLE }
-  | "`>>" { TICK_RANGLE2 }
-  | "`>=" { TICK_RANGLE_EQ }
-  | "`>>=" { TICK_RANGLE2_EQ }
   | "`(" { TICK_LPAREN }
   | "`[" { TICK_LBRACK }
-  | "``[" { TICK2_LBRACK }
-  | "``]" { TICK2_RBRACK }
   | "`{" { TICK_LBRACE }
-  | "`{#}" { TICK_LBRACE_HASH_RBRACE }
-  | "``{" { TICK2_LBRACE }
-  | "``}" { TICK2_RBRACE }
-  | "`+" { TICK_PLUS }
-  | "`++" { TICK_PLUS2 }
-  | "`+=" { TICK_PLUS_EQ }
-  | "`-" { TICK_MINUS }
-  | "`-=" { TICK_MINUS_EQ }
-  | "`*" { TICK_STAR }
-  | "`*=" { TICK_STAR_EQ }
-  | "`/" { TICK_SLASH }
-  | "`/=" { TICK_SLASH_EQ }
-  | "`%" { TICK_PERCENT }
-  | "`%=" { TICK_PERCENT_EQ }
-  | "`=" { TICK_EQ }
-  | "`==" { TICK_EQ2 }
-  | "`&" { TICK_AMP }
-  | "`&&" { TICK_AMP2 }
-  | "`&&&" { TICK_AMP3 }
-  | "`&=" { TICK_AMP_EQ }
-  | "`^" { TICK_UP }
-  | "`^=" { TICK_UP_EQ }
-  | "`|" { TICK_BAR }
-  | "`||" { TICK_BAR2 }
-  | "`|=" { TICK_BAR_EQ }
-  | "`|+|" { TICK_BAR_PLUS_BAR }
-  | "`|+|=" { TICK_BAR_PLUS_BAR_EQ }
-  | "`|-|" { TICK_BAR_MINUS_BAR }
-  | "`|-|=" { TICK_BAR_MINUS_BAR_EQ }
   (* normal tokens *)
   | "|-" { TURNSTILE }
   | "-|" { TILESTURN }

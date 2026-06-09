@@ -21,7 +21,7 @@ syntax globalTypingLayer =
 ;; Block layer
 
 syntax blockKind =
-  | `EMPTY
+  | _EMPTY
   | EXTERN
   | PARSER
   | CONTROL
@@ -49,24 +49,24 @@ syntax blockTypingLayer =
 ;; Local layer
 
 syntax localKind =
-  | `EMPTY
-  | FUNCTION `-> typeIR
-  | EXTERN_FUNCTION `-> typeIR
+  | _EMPTY
+  | FUNCTION '->' typeIR
+  | EXTERN_FUNCTION '->' typeIR
   | ACTION
-  | EXTERN_METHOD `-> typeIR
-  | EXTERN_METHOD ABSTRACT `-> typeIR
+  | EXTERN_METHOD '->' typeIR
+  | EXTERN_METHOD ABSTRACT '->' typeIR
   | PARSER_STATE
   | CONTROL_APPLY_METHOD
   | TABLE_APPLY_METHOD
 
 dec $is_function_localKind(localKind) : bool
-def $is_function_localKind(FUNCTION `-> _) = true
+def $is_function_localKind(FUNCTION '->' _) = true
 def $is_function_localKind(_) = false
   -- otherwise
 
 dec $is_extern_function_localKind(localKind) : bool
 def $is_extern_function_localKind(
-    EXTERN_FUNCTION `-> _
+    EXTERN_FUNCTION '->' _
   ) = true
 def $is_extern_function_localKind(_) = false
   -- otherwise
@@ -78,14 +78,14 @@ def $is_action_localKind(_) = false
 
 dec $is_extern_method_localKind(localKind) : bool
 def $is_extern_method_localKind(
-    EXTERN_METHOD `-> _
+    EXTERN_METHOD '->' _
   ) = true
 def $is_extern_method_localKind(_) = false
   -- otherwise
 
 dec $is_extern_abstract_method_localKind(localKind) : bool
 def $is_extern_abstract_method_localKind(
-    EXTERN_METHOD ABSTRACT `-> _
+    EXTERN_METHOD ABSTRACT '->' _
   ) = true
 def $is_extern_abstract_method_localKind(_) = false
   -- otherwise
@@ -140,13 +140,13 @@ def $empty_typingContext = TC
           FRAME $empty_frame }
   -- if blockTypingLayer
       = { ID "",
-          KIND `EMPTY,
+          KIND _EMPTY,
           TDENV $empty_tdenv,
           RDENV $empty_rdenv,
           FRAME $empty_frame }
   -- if localTypingLayer
       = { ID "",
-          KIND `EMPTY,
+          KIND _EMPTY,
           TDENV $empty_tdenv,
           FRAMES ([ $empty_frame ]) }
   -- if TC
@@ -219,8 +219,8 @@ def $add_vars(p, TC, id_h :: id_t*, varTypeIR_h :: varTypeIR_t*) = TC''
 dec $add_parameter(cursor, typingContext, parameterTypeIR) : typingContext
 dec $add_parameters(cursor, typingContext, parameterTypeIR*) : typingContext
 
-def $add_parameter(cursor, TC, `EMPTY typeIR id value?) = TC'
-  -- if varTypeIR = `EMPTY typeIR CTK value?
+def $add_parameter(cursor, TC, _EMPTY typeIR id value?) = TC'
+  -- if varTypeIR = _EMPTY typeIR CTK value?
   -- if TC' = $add_var(cursor, TC, id, varTypeIR)
 def $add_parameter(cursor, TC, direction typeIR id value?) = TC'
   -- if direction = IN \/ direction = OUT \/ direction = INOUT
@@ -332,20 +332,20 @@ def $add_constructor(TC, cid, constructorTypeDefIR) = TC'
 
 dec $find_var(cursor, typingContext, prefixedNameIR) : varTypeIR?
 
-def $find_var(p, TC, `. id) = $find_map<id, varTypeIR>(frame, id)
+def $find_var(p, TC, '.' id) = $find_map<id, varTypeIR>(frame, id)
   -- if frame = TC.GLOBAL.FRAME
-def $find_var(GLOBAL, TC, `` id) = $find_map<id, varTypeIR>(frame, id)
+def $find_var(GLOBAL, TC, _NAME id) = $find_map<id, varTypeIR>(frame, id)
   -- if frame = TC.GLOBAL.FRAME
-def $find_var(BLOCK, TC, `` id) = varTypeIR
+def $find_var(BLOCK, TC, _NAME id) = varTypeIR
   -- if frame = TC.BLOCK.FRAME
   -- if varTypeIR = $find_map<id, varTypeIR>(frame, id)
-def $find_var(BLOCK, TC, `` id) = $find_var(GLOBAL, TC, `` id)
+def $find_var(BLOCK, TC, _NAME id) = $find_var(GLOBAL, TC, _NAME id)
   -- if frame = TC.BLOCK.FRAME
   -- if eps = $find_map<id, varTypeIR>(frame, id)
-def $find_var(LOCAL, TC, `` id) = varTypeIR
+def $find_var(LOCAL, TC, _NAME id) = varTypeIR
   -- if frame* = TC.LOCAL.FRAMES
   -- if varTypeIR = $find_maps<id, varTypeIR>(frame*, id)
-def $find_var(LOCAL, TC, `` id) = $find_var(BLOCK, TC, `` id)
+def $find_var(LOCAL, TC, _NAME id) = $find_var(BLOCK, TC, _NAME id)
   -- if frame* = TC.LOCAL.FRAMES
   -- if eps = $find_maps<id, varTypeIR>(frame*, id)
 
@@ -353,22 +353,22 @@ def $find_var(LOCAL, TC, `` id) = $find_var(BLOCK, TC, `` id)
 
 dec $find_value(cursor, typingContext, prefixedNameIR) : value
 
-def $find_value(p, TC, `. id) = value
+def $find_value(p, TC, '.' id) = value
   -- if frame = TC.GLOBAL.FRAME
   -- if _ _ _ value = $find_map<id, varTypeIR>(frame, id)
-def $find_value(GLOBAL, TC, `` id) = value
+def $find_value(GLOBAL, TC, _NAME id) = value
   -- if frame = TC.GLOBAL.FRAME
   -- if _ _ _ value = $find_map<id, varTypeIR>(frame, id)
-def $find_value(BLOCK, TC, `` id) = value
+def $find_value(BLOCK, TC, _NAME id) = value
   -- if frame = TC.BLOCK.FRAME
   -- if _ _ _ value = $find_map<id, varTypeIR>(frame, id)
-def $find_value(BLOCK, TC, `` id) = $find_value(GLOBAL, TC, `` id)
+def $find_value(BLOCK, TC, _NAME id) = $find_value(GLOBAL, TC, _NAME id)
   -- if frame = TC.BLOCK.FRAME
   -- if eps = $find_map<id, varTypeIR>(frame, id)
-def $find_value(LOCAL, TC, `` id) = value
+def $find_value(LOCAL, TC, _NAME id) = value
   -- if frame* = TC.LOCAL.FRAMES
   -- if _ _ _ value = $find_maps<id, varTypeIR>(frame*, id)
-def $find_value(LOCAL, TC, `` id) = $find_value(BLOCK, TC, `` id)
+def $find_value(LOCAL, TC, _NAME id) = $find_value(BLOCK, TC, _NAME id)
   -- if frame* = TC.LOCAL.FRAMES
   -- if eps = $find_maps<id, varTypeIR>(frame*, id)
 
@@ -376,22 +376,22 @@ def $find_value(LOCAL, TC, `` id) = $find_value(BLOCK, TC, `` id)
 
 dec $find_type(cursor, typingContext, prefixedNameIR) : typeDefIR?
 
-def $find_type(p, TC, `. tid)
+def $find_type(p, TC, '.' tid)
   = $find_map<tid, typeDefIR>(tdenv, tid)
   -- if tdenv = TC.GLOBAL.TDENV
-def $find_type(GLOBAL, TC, `` tid)
+def $find_type(GLOBAL, TC, _NAME tid)
   = $find_map<tid, typeDefIR>(tdenv, tid)
   -- if tdenv = TC.GLOBAL.TDENV
-def $find_type(BLOCK, TC, `` tid) = typeDefIR
+def $find_type(BLOCK, TC, _NAME tid) = typeDefIR
   -- if tdenv = TC.BLOCK.TDENV
   -- if typeDefIR = $find_map<tid, typeDefIR>(tdenv, tid)
-def $find_type(BLOCK, TC, `` tid) = $find_type(GLOBAL, TC, `` tid)
+def $find_type(BLOCK, TC, _NAME tid) = $find_type(GLOBAL, TC, _NAME tid)
   -- if tdenv = TC.BLOCK.TDENV
   -- if eps = $find_map<tid, typeDefIR>(tdenv, tid)
-def $find_type(LOCAL, TC, `` tid) = typeDefIR
+def $find_type(LOCAL, TC, _NAME tid) = typeDefIR
   -- if tdenv* = TC.LOCAL.TDENV
   -- if typeDefIR = $find_maps<tid, typeDefIR>(tdenv*, tid)
-def $find_type(LOCAL, TC, `` tid) = $find_type(BLOCK, TC, `` tid)
+def $find_type(LOCAL, TC, _NAME tid) = $find_type(BLOCK, TC, _NAME tid)
   -- if tdenv* = TC.LOCAL.TDENV
   -- if eps = $find_maps<tid, typeDefIR>(tdenv*, tid)
 
@@ -402,63 +402,63 @@ dec $id_argument(argumentIR) : id?
 
 def $ids_arguments(argumentIR*) = ($id_argument(argumentIR))*
 def $id_argument(typedExpressionIR) = eps
-def $id_argument(nameIR `= _) = nameIR
-def $id_argument(nameIR `= `_) = nameIR
-def $id_argument(`_) = eps
+def $id_argument(nameIR '=' _) = nameIR
+def $id_argument(nameIR '=' '_') = nameIR
+def $id_argument('_') = eps
 
 dec $find_routine_overloaded(cursor, typingContext, prefixedNameIR, argumentIR*)
   : (rid, routineTypeDefIR, id*)?
 
-def $find_routine_overloaded(GLOBAL, TC, `. id, argumentIR*)
+def $find_routine_overloaded(GLOBAL, TC, '.' id, argumentIR*)
   = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
   -- if rdenv = TC.GLOBAL.RDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
-def $find_routine_overloaded(GLOBAL, TC, `` id, argumentIR*)
+def $find_routine_overloaded(GLOBAL, TC, _NAME id, argumentIR*)
   = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
   -- if rdenv = TC.GLOBAL.RDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
-def $find_routine_overloaded(BLOCK, TC, `` id, argumentIR*)
+def $find_routine_overloaded(BLOCK, TC, _NAME id, argumentIR*)
   = (rid, routineTypeDefIR, id_default*)
   -- if rdenv = TC.BLOCK.RDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
   -- if (rid, routineTypeDefIR, id_default*)
       = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
-def $find_routine_overloaded(BLOCK, TC, `` id, argumentIR*)
-  = $find_routine_overloaded(GLOBAL, TC, `` id, argumentIR*)
+def $find_routine_overloaded(BLOCK, TC, _NAME id, argumentIR*)
+  = $find_routine_overloaded(GLOBAL, TC, _NAME id, argumentIR*)
   -- if rdenv = TC.BLOCK.RDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
   -- if eps
       = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
-def $find_routine_overloaded(LOCAL, TC, `` id, argumentIR*)
-  = $find_routine_overloaded(BLOCK, TC, `` id, argumentIR*) 
+def $find_routine_overloaded(LOCAL, TC, _NAME id, argumentIR*)
+  = $find_routine_overloaded(BLOCK, TC, _NAME id, argumentIR*) 
 
 dec $find_routine_non_overloaded(cursor, typingContext, prefixedNameIR)
   : routineTypeDefIR?
 
-def $find_routine_non_overloaded(p, TC, `. id)
+def $find_routine_non_overloaded(p, TC, '.' id)
   = $find_non_overloaded<routineTypeDefIR>(TC.GLOBAL.RDENV, id)
-def $find_routine_non_overloaded(GLOBAL, TC, `` id)
+def $find_routine_non_overloaded(GLOBAL, TC, _NAME id)
   = $find_non_overloaded<routineTypeDefIR>(TC.GLOBAL.RDENV, id)
-def $find_routine_non_overloaded(BLOCK, TC, `` id) = routineTypeDefIR
+def $find_routine_non_overloaded(BLOCK, TC, _NAME id) = routineTypeDefIR
   -- if routineTypeDefIR
       = $find_non_overloaded<routineTypeDefIR>(TC.BLOCK.RDENV, id)
-def $find_routine_non_overloaded(BLOCK, TC, `` id)
-  = $find_routine_non_overloaded(GLOBAL, TC, `` id)
+def $find_routine_non_overloaded(BLOCK, TC, _NAME id)
+  = $find_routine_non_overloaded(GLOBAL, TC, _NAME id)
   -- if eps 
       = $find_non_overloaded<routineTypeDefIR>(TC.BLOCK.RDENV, id)
-def $find_routine_non_overloaded(LOCAL, TC, `` id)
-  = $find_routine_non_overloaded(BLOCK, TC, `` id)
+def $find_routine_non_overloaded(LOCAL, TC, _NAME id)
+  = $find_routine_non_overloaded(BLOCK, TC, _NAME id)
 
 ;;; Finder for constructors
 
 dec $find_constructor_overloaded(typingContext, prefixedNameIR, argumentIR*)
   : (rid, constructorTypeDefIR, id*)?
 
-def $find_constructor_overloaded(TC, `. id, argumentIR*)
+def $find_constructor_overloaded(TC, '.' id, argumentIR*)
   = $find_overloaded<constructorTypeDefIR>(cdenv, id, (id_arg?)*)
   -- if cdenv = TC.GLOBAL.CDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
-def $find_constructor_overloaded(TC, `` id, argumentIR*)
+def $find_constructor_overloaded(TC, _NAME id, argumentIR*)
   = $find_overloaded<constructorTypeDefIR>(cdenv, id, (id_arg?)*)
   -- if cdenv = TC.GLOBAL.CDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
@@ -468,15 +468,15 @@ def $find_constructor_overloaded(TC, `` id, argumentIR*)
 dec $find_return_type(typingContext) : typeIR?
 
 def $find_return_type(TC) = typeIR_ret
-  -- if FUNCTION `-> typeIR_ret = TC.LOCAL.KIND
+  -- if FUNCTION '->' typeIR_ret = TC.LOCAL.KIND
 def $find_return_type(TC) = typeIR_ret
-  -- if EXTERN_FUNCTION `-> typeIR_ret = TC.LOCAL.KIND
+  -- if EXTERN_FUNCTION '->' typeIR_ret = TC.LOCAL.KIND
 def $find_return_type(TC) = VOID
   -- if ACTION = TC.LOCAL.KIND
 def $find_return_type(TC) = typeIR_ret
-  -- if EXTERN_METHOD `-> typeIR_ret = TC.LOCAL.KIND
+  -- if EXTERN_METHOD '->' typeIR_ret = TC.LOCAL.KIND
 def $find_return_type(TC) = typeIR_ret
-  -- if EXTERN_METHOD ABSTRACT `-> typeIR_ret
+  -- if EXTERN_METHOD ABSTRACT '->' typeIR_ret
       = TC.LOCAL.KIND
 def $find_return_type(TC) = VOID
   -- if CONTROL_APPLY_METHOD = TC.LOCAL.KIND

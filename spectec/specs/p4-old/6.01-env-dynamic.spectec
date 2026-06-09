@@ -26,9 +26,9 @@ def $empty_senv() = $empty_map<nameIR, stateDyn>
 
 syntax lvalueDyn =
   | referenceExpressionIR
-  | lvalueDyn `. nameIR
+  | lvalueDyn '.' nameIR
   | lvalueDyn `[ value ]
-  | lvalueDyn `[ value `: value ]
+  | lvalueDyn `[ value ':' value ]
 
 ;;
 ;; Routines
@@ -43,11 +43,11 @@ syntax funcDyn =
   | EXTERN_FUNCTION `< typeParameterListIR > `( parameterListIR ) `{ blockElementStatementIR? }
 
 syntax methodDyn =
-  | BUILTIN_METHOD `( parameterListIR ) `# lvalueDyn 
+  | BUILTIN_METHOD `( parameterListIR ) '#' lvalueDyn 
   | EXTERN_METHOD `< typeParameterListIR > `( parameterListIR ) blockStatementIR?
   | EXTERN_METHOD ABSTRACT `< typeParameterListIR > `( parameterListIR )
-  | PARSER_APPLY `( parameterListIR ) `{ parserLocalDeclarationListIR `; senv }
-  | CONTROL_APPLY `( parameterListIR ) `{ controlLocalDeclarationListIR `; renv `; blockElementStatementListIR }
+  | PARSER_APPLY `( parameterListIR ) `{ parserLocalDeclarationListIR ';' senv }
+  | CONTROL_APPLY `( parameterListIR ) `{ controlLocalDeclarationListIR ';' renv ';' blockElementStatementListIR }
   | TABLE_APPLY `{ tablePropertyListIR }
 
 syntax routineDyn = 

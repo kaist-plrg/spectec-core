@@ -4,12 +4,12 @@
 ;; syntax externMethodPrototypeIR
 ;;
 
-;;; annotationList functionPrototypeIR `;
+;;; annotationList functionPrototypeIR ';'
 
 rule ExternMethod_inst/non-abstract:
   IC_0 |- annotationList (typeIR nameIR
-            `< typeParameterListIR `, typeParameterListIR_inferred >
-            `( parameterListIR )) `;
+            `< typeParameterListIR ',' typeParameterListIR_inferred >
+            `( parameterListIR )) ';'
         : IC_1
   ---- ;; bind extern method definition to environment
   -- if callableId = $callableId_IR(nameIR, parameterListIR)
@@ -19,12 +19,12 @@ rule ExternMethod_inst/non-abstract:
         `( parameterListIR ) eps
   -- if IC_1 = $add_callableDef_overload_i(BLOCK, IC_0, callableId, externMethodDef)
 
-;;; annotationList ABSTRACT functionPrototypeIR `;
+;;; annotationList ABSTRACT functionPrototypeIR ';'
 
 rule ExternMethod_inst/abstract:
   IC_0 |- annotationList ABSTRACT (typeIR nameIR
-            `< typeParameterListIR `, typeParameterListIR_inferred >
-            `( parameterListIR )) `;
+            `< typeParameterListIR ',' typeParameterListIR_inferred >
+            `( parameterListIR )) ';'
         : IC_1
   ---- ;; bind extern abstract method definition to environment
   -- if callableId = $callableId_IR(nameIR, parameterListIR)

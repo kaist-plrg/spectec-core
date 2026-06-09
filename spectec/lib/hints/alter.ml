@@ -15,12 +15,10 @@ type t =
 let rec to_string (h : t) : string =
   match h with
   | TextH text -> "\"" ^ String.escaped text ^ "\""
-  | AtomH atom -> Atom.string_of_atom atom.it
+  | AtomH atom -> Atom.to_string atom.it
   | SeqH parts -> String.concat " " (List.map to_string parts)
   | BrackH (atom_l, inner, atom_r) ->
-      Atom.string_of_atom atom_l.it
-      ^ to_string inner
-      ^ Atom.string_of_atom atom_r.it
+      Atom.to_string atom_l.it ^ to_string inner ^ Atom.to_string atom_r.it
   | HoleH (`Num n) -> "%" ^ string_of_int n
   | HoleH `Next -> "%"
   | FuseH (l, r) -> to_string l ^ "#" ^ to_string r
@@ -38,7 +36,7 @@ let rec parse (exp : El.exp) : t =
   | _ -> OtherH exp
 
 let rec alternate ?(base_text : string -> string = fun x -> x)
-    ?(base_atom : Atom.t phrase -> string = fun a -> Atom.string_of_atom a.it)
+    ?(base_atom : Atom.t phrase -> string = fun a -> Atom.to_string a.it)
     ?(base_exp : El.exp -> string = El.Print.string_of_exp) (hint : t)
     (print : 'a -> string) (items : 'a list) : string =
   let _, result =
@@ -47,7 +45,7 @@ let rec alternate ?(base_text : string -> string = fun x -> x)
   result
 
 and alternate' ?(base_text : string -> string = fun x -> x)
-    ?(base_atom : Atom.t phrase -> string = fun a -> Atom.string_of_atom a.it)
+    ?(base_atom : Atom.t phrase -> string = fun a -> Atom.to_string a.it)
     ?(base_exp : El.exp -> string = El.Print.string_of_exp) (hint : t)
     (print : 'a -> string) (items : 'a list) (cursor : int) : int * string =
   match hint with

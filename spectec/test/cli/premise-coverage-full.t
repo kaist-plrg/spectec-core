@@ -32,13 +32,13 @@ Full premise coverage emits a GCOV-style annotated spec with per-premise counts:
         rule num:
      7:    2/   2     -- if expr <: literal
      8:    2         -- let literal = expr as literal
-     9:    2/####     -- if literal matches ``NUM %`
+     9:    2/####     -- if literal matches `_NUM %`
     10:    2         -- let i = literal
            2          tenv |- expr : int
         rule boollit:
     11: ####/   2     -- if expr <: literal
     12: ####         -- let literal = expr as literal
-    13: ####/####     -- if literal matches ``BOOL %`
+    13: ####/####     -- if literal matches `_BOOL %`
     14: ####         -- let b = literal
         ####          tenv |- expr : bool
         rule id:
@@ -126,13 +126,13 @@ Full premise coverage emits a GCOV-style annotated spec with per-premise counts:
         rule num:
     67: ####/####     -- if expr <: literal
     68: ####         -- let literal = expr as literal
-    69: ####/####     -- if literal matches ``NUM %`
+    69: ####/####     -- if literal matches `_NUM %`
     70: ####         -- let i = literal
         ####          env |- expr ==> i
         rule boollit:
     71: ####/####     -- if expr <: literal
     72: ####         -- let literal = expr as literal
-    73: ####/####     -- if literal matches ``BOOL %`
+    73: ####/####     -- if literal matches `_BOOL %`
     74: ####         -- let b = literal
         ####          env |- expr ==> b
         rule id:
@@ -146,7 +146,7 @@ Full premise coverage emits a GCOV-style annotated spec with per-premise counts:
     80: ####/####     -- if expr matches `! %`
     81: ####         -- let ! e = expr
     82: ####/####     -- rel Eval_expr: env |- e ==> literal
-    83: ####/####     -- if literal matches ``BOOL %`
+    83: ####/####     -- if literal matches `_BOOL %`
     84: ####         -- let b_e = literal
     85: ####         -- let b = ~b_e
         ####          env |- expr ==> b
@@ -154,10 +154,10 @@ Full premise coverage emits a GCOV-style annotated spec with per-premise counts:
     86: ####/####     -- if expr matches `% + %`
     87: ####         -- let e_l + e_r = expr
     88: ####/####     -- rel Eval_expr: env |- e_l ==> literal
-    89: ####/####     -- if literal matches ``NUM %`
+    89: ####/####     -- if literal matches `_NUM %`
     90: ####         -- let i_l = literal
     91: ####/####     -- rel Eval_expr: env |- e_r ==> literal'
-    92: ####/####     -- if literal' matches ``NUM %`
+    92: ####/####     -- if literal' matches `_NUM %`
     93: ####         -- let i_r = literal'
     94: ####         -- let i = (i_l + i_r)
         ####          env |- expr ==> i
@@ -165,10 +165,10 @@ Full premise coverage emits a GCOV-style annotated spec with per-premise counts:
     95: ####/####     -- if expr matches `% <= %`
     96: ####         -- let e_l <= e_r = expr
     97: ####/####     -- rel Eval_expr: env |- e_l ==> literal
-    98: ####/####     -- if literal matches ``NUM %`
+    98: ####/####     -- if literal matches `_NUM %`
     99: ####         -- let i_l = literal
    100: ####/####     -- rel Eval_expr: env |- e_r ==> literal'
-   101: ####/####     -- if literal' matches ``NUM %`
+   101: ####/####     -- if literal' matches `_NUM %`
    102: ####         -- let i_r = literal'
    103: ####         -- let b = (i_l <= i_r)
         ####          env |- expr ==> b
@@ -176,10 +176,10 @@ Full premise coverage emits a GCOV-style annotated spec with per-premise counts:
    104: ####/####     -- if expr matches `% && %`
    105: ####         -- let e_l && e_r = expr
    106: ####/####     -- rel Eval_expr: env |- e_l ==> literal
-   107: ####/####     -- if literal matches ``BOOL %`
+   107: ####/####     -- if literal matches `_BOOL %`
    108: ####         -- let b_l = literal
    109: ####/####     -- rel Eval_expr: env |- e_r ==> literal'
-   110: ####/####     -- if literal' matches ``BOOL %`
+   110: ####/####     -- if literal' matches `_BOOL %`
    111: ####         -- let b_r = literal'
    112: ####         -- let b = (b_l /\ b_r)
         ####          env |- expr ==> b

@@ -54,13 +54,13 @@ def $parameterListIR_of_externMethodDef(
 dec $parameterListIR_of_parserApplyMethodDef(parserApplyMethodDef)
   : parameterIR*
 def $parameterListIR_of_parserApplyMethodDef(
-    PARSER_APPLY `( parameterListIR ) `{ _ `; _ })
+    PARSER_APPLY `( parameterListIR ) `{ _ ';' _ })
   = parameterListIR
 
 dec $parameterListIR_of_controlApplyMethodDef(controlApplyMethodDef)
   : parameterIR*
 def $parameterListIR_of_controlApplyMethodDef(
-    CONTROL_APPLY `( parameterListIR ) `{ _ `; _ `; _ })
+    CONTROL_APPLY `( parameterListIR ) `{ _ ';' _ ';' _ })
   = parameterListIR
 
 dec $parameterListIR_of_tableApplyMethodDef(tableApplyMethodDef)

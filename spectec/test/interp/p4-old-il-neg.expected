@@ -538,7 +538,7 @@ application of rule Program_ok/ failed
                                                                                                                             └── application of rule RoutineTarget_lvalue_ok/ failed
                                                                                                                                 └── invocation of relation RoutineTarget_ok failed
                                                                                                                                     └── application of rule RoutineTarget_ok/prefixedNonTypeName failed
-                                                                                                                                        └── condition (((prefixedNameIR = ` "verify") \/ (prefixedNameIR = . "verify")) => (((p = block) /\ $is_parser_blockKind(TC.block.kind)) \/ ((p = local) /\ $is_parser_state_localKind(TC.local.kind)))) was not met
+                                                                                                                                        └── condition (((prefixedNameIR = "verify") \/ (prefixedNameIR = . "verify")) => (((p = block) /\ $is_parser_blockKind(TC.block.kind)) \/ ((p = local) /\ $is_parser_state_localKind(TC.local.kind)))) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default-initializer-err.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default-initializer-err.p4
@@ -6005,7 +6005,7 @@ application of rule Program_ok/ failed
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/missing_match.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/missing_match.p4
-error: invocation of function $find_value(global, TC, ` id) failed
+error: invocation of function $find_value(global, TC, id) failed
 application of clause find_value(cursor, TC, prefixedNameIR) failed
 └── condition varTypeIR?{varTypeIR <- varTypeIR?} matches (_) was not met
 
