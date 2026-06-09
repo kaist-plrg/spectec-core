@@ -89,7 +89,7 @@ rule ExternConstructor_ok:
             : TC_1 constructorParameterIR* `# typeId_impl*
   ---- ;; find extern type
   -- if externObjectTypeDefIR
-      = $find_typeDef_t(GLOBAL, TC_0, `` typeId_extern)
+      = $find_typeDef_t(GLOBAL, TC_0, _NAME typeId_extern)
   -- if (typeId_expl*, eps)
       = $typeParameterListIR_of_typeDefIR(externObjectTypeDefIR)
   ---- ;; add implicit type parameters to the constructor

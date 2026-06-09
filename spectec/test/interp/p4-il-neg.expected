@@ -7091,7 +7091,7 @@ application of rule Program_ok/ failed
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/missing_match.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/missing_match.p4
-error: invocation of function $find_var_value_t(` nameIR_matchkind, local, TC) failed
+error: invocation of function $find_var_value_t(nameIR_matchkind, local, TC) failed
 application of clause find_var_value_t(prefixedNameIR, p, TC) failed
 └── condition varTypeIR?{varTypeIR <- varTypeIR?} matches (_) was not met
 

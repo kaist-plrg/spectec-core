@@ -52,7 +52,7 @@ rule ParserStmt_inst/directApplicationStatementIR:
   ---- ;; replace with constant declaration and call statement
   -- if TID tid = typeIR
   -- if _EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
-  -- if ((`` tid) `# `( typeIR CTK )) `. "apply" = routineTargetIR
+  -- if ((_NAME tid) `# `( typeIR CTK )) `. "apply" = routineTargetIR
   -- if routineTargetIR `< eps > `( argumentListIR ) `; = callStatementIR
   ---- ;; create parser block
   -- if _EMPTY `{ [ constantDeclarationIR, callStatementIR ] } = parserBlockStatementIR

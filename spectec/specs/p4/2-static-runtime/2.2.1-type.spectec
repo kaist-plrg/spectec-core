@@ -38,7 +38,7 @@ syntax baseTypeIR =
 ;;;; Named types
 ;;
 
-syntax nameTypeIR = `` typeId hint(print %0)
+syntax nameTypeIR = _NAME typeId hint(print %0)
 
 ;;
 ;;;; Alias types

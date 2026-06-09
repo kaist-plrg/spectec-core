@@ -110,7 +110,7 @@ rule ExternConstructor_ok:
   -- if (constructorParameterTypeIR
       = $constructorParameterIR(constructorParameterIR))*
   ---- ;; find extern type
-  -- if typeIR_extern `< tid_expl* `, eps > = $find_type(GLOBAL, TC_0, `` nameIR)
+  -- if typeIR_extern `< tid_expl* `, eps > = $find_type(GLOBAL, TC_0, _NAME nameIR)
   ---- ;; add implicit type parameters to the constructor
   ---- ;; and add it to the context
   -- if cid = $cid(typeIdentifier, `( parameterList ))

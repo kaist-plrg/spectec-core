@@ -8709,7 +8709,7 @@ dec $sizeof_maxSizeInBytes(typeIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:6:1-7:14:
 syntax prefixedNameIR = 
-   | ` nameIR (from prefixedNameIR)
+   | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:9:1-9:63:
@@ -8719,7 +8719,7 @@ dec $prefixedNonTypeName(prefixedNonTypeName)
 
   1. (Let nonTypeName be (prefixedNonTypeName as nonTypeName))
 
-  2. Return (` $name((nonTypeName as name)))
+  2. Return ($name((nonTypeName as name)))
 
 1. Else Phantom#405
 
@@ -8738,7 +8738,7 @@ dec $prefixedTypeName(prefixedTypeName)
 
   1. (Let typeName be (prefixedTypeName as typeName))
 
-  2. Return (` $name((typeName as name)))
+  2. Return ($name((typeName as name)))
 
 1. Else Phantom#407
 
@@ -8755,9 +8755,9 @@ dec $flatten_prefixedNameIR(prefixedNameIR)
 
 1. Case analysis on prefixedNameIR
 
-  1. Case (% matches pattern `` %`)
+  1. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` nameIR) be prefixedNameIR)
+    1. (Let (nameIR) be prefixedNameIR)
 
     2. Return nameIR
 
@@ -8851,7 +8851,7 @@ syntax accessExpressionIR =
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:143:1-146:25:
 syntax routineTargetIR = 
-   | ` nameIR (from prefixedNameIR)
+   | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
    | typedExpressionIR . nameIR (from routineTargetIR)
    | type prefixedNameIR . nameIR (from routineTargetIR)
@@ -8878,7 +8878,7 @@ syntax expressionIR =
    | nat w int (from number) hint(print %#W#%)
    | nat s int (from number) hint(print %#S#%)
    | " text " (from stringLiteral) hint(print "#%#")
-   | ` nameIR (from prefixedNameIR)
+   | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
    | ... (from defaultExpression)
    | unop typedExpressionIR (from unaryExpressionIR)
@@ -8956,7 +8956,7 @@ syntax argumentListIR = argumentIR*
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:232:1-236:23:
 syntax lvalueIR = 
-   | ` nameIR (from prefixedNameIR)
+   | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
    | typedLvalueIR . nameIR (from lvalueIR)
    | typedLvalueIR [ typedExpressionIR ] (from lvalueIR)
@@ -10371,9 +10371,9 @@ dec $find_var(p', TC, prefixedNameIR)
 
   1. Case (% matches pattern `GLOBAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let frame be TC.global.frame)
 
@@ -10383,9 +10383,9 @@ dec $find_var(p', TC, prefixedNameIR)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let frame be TC.block.frame)
 
@@ -10401,7 +10401,7 @@ dec $find_var(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_map<id, varTypeIR>(frame, id))), then
 
-        1. Return $find_var((global), TC, (` id))
+        1. Return $find_var((global), TC, (id))
 
       5. Else Phantom#458
 
@@ -10409,9 +10409,9 @@ dec $find_var(p', TC, prefixedNameIR)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let frame* be TC.local.frames)
 
@@ -10427,7 +10427,7 @@ dec $find_var(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_maps<id, varTypeIR>(frame*, id))), then
 
-        1. Return $find_var((block), TC, (` id))
+        1. Return $find_var((block), TC, (id))
 
       5. Else Phantom#461
 
@@ -10464,9 +10464,9 @@ dec $find_value(p', TC, prefixedNameIR)
 
   1. Case (% matches pattern `GLOBAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let frame be TC.global.frame)
 
@@ -10490,9 +10490,9 @@ dec $find_value(p', TC, prefixedNameIR)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let frame be TC.block.frame)
 
@@ -10514,7 +10514,7 @@ dec $find_value(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_map<id, varTypeIR>(frame, id))), then
 
-        1. Return $find_value((global), TC, (` id))
+        1. Return $find_value((global), TC, (id))
 
       5. Else Phantom#471
 
@@ -10522,9 +10522,9 @@ dec $find_value(p', TC, prefixedNameIR)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let frame* be TC.local.frames)
 
@@ -10546,7 +10546,7 @@ dec $find_value(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_maps<id, varTypeIR>(frame*, id))), then
 
-        1. Return $find_value((block), TC, (` id))
+        1. Return $find_value((block), TC, (id))
 
       5. Else Phantom#475
 
@@ -10569,9 +10569,9 @@ dec $find_type(p', TC, prefixedNameIR)
 
   1. Case (% matches pattern `GLOBAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` tid) be prefixedNameIR)
+      1. (Let (tid) be prefixedNameIR)
 
       2. (Let tdenv be TC.global.tdenv)
 
@@ -10581,9 +10581,9 @@ dec $find_type(p', TC, prefixedNameIR)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` tid) be prefixedNameIR)
+      1. (Let (tid) be prefixedNameIR)
 
       2. (Let tdenv be TC.block.tdenv)
 
@@ -10599,7 +10599,7 @@ dec $find_type(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_map<tid, typeDefIR>(tdenv, tid))), then
 
-        1. Return $find_type((global), TC, (` tid))
+        1. Return $find_type((global), TC, (tid))
 
       5. Else Phantom#480
 
@@ -10607,9 +10607,9 @@ dec $find_type(p', TC, prefixedNameIR)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` tid) be prefixedNameIR)
+      1. (Let (tid) be prefixedNameIR)
 
       2. (Let tdenv* be [TC.local.tdenv])
 
@@ -10625,7 +10625,7 @@ dec $find_type(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_maps<tid, typeDefIR>(tdenv*, tid))), then
 
-        1. Return $find_type((block), TC, (` tid))
+        1. Return $find_type((block), TC, (tid))
 
       5. Else Phantom#483
 
@@ -10686,9 +10686,9 @@ dec $find_routine_overloaded(cursor, TC, prefixedNameIR, argumentIR*)
 
         4. Return $find_overloaded<routineTypeDefIR>(rdenv, id, id_arg?*)
 
-      2. Case (% matches pattern `` %`)
+      2. Case (% matches pattern `_NAME %`)
 
-        1. (Let (` id) be prefixedNameIR)
+        1. (Let (id) be prefixedNameIR)
 
         2. (Let rdenv be TC.global.rdenv)
 
@@ -10698,9 +10698,9 @@ dec $find_routine_overloaded(cursor, TC, prefixedNameIR, argumentIR*)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let rdenv be TC.block.rdenv)
 
@@ -10718,7 +10718,7 @@ dec $find_routine_overloaded(cursor, TC, prefixedNameIR, argumentIR*)
 
       6. If ((?() = $find_overloaded<routineTypeDefIR>(rdenv, id, id_arg?*))), then
 
-        1. Return $find_routine_overloaded((global), TC, (` id), argumentIR*)
+        1. Return $find_routine_overloaded((global), TC, (id), argumentIR*)
 
       6. Else Phantom#488
 
@@ -10726,11 +10726,11 @@ dec $find_routine_overloaded(cursor, TC, prefixedNameIR, argumentIR*)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
-      2. Return $find_routine_overloaded((block), TC, (` id), argumentIR*)
+      2. Return $find_routine_overloaded((block), TC, (id), argumentIR*)
 
     1. Else Phantom#490
 
@@ -10749,9 +10749,9 @@ dec $find_routine_non_overloaded(p', TC, prefixedNameIR)
 
   1. Case (% matches pattern `GLOBAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. Return $find_non_overloaded<routineTypeDefIR>(TC.global.rdenv, id)
 
@@ -10759,9 +10759,9 @@ dec $find_routine_non_overloaded(p', TC, prefixedNameIR)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let routineTypeDefIR'? be $find_non_overloaded<routineTypeDefIR>(TC.block.rdenv, id))
 
@@ -10775,7 +10775,7 @@ dec $find_routine_non_overloaded(p', TC, prefixedNameIR)
 
       4. If ((?() = $find_non_overloaded<routineTypeDefIR>(TC.block.rdenv, id))), then
 
-        1. Return $find_routine_non_overloaded((global), TC, (` id))
+        1. Return $find_routine_non_overloaded((global), TC, (id))
 
       4. Else Phantom#494
 
@@ -10783,11 +10783,11 @@ dec $find_routine_non_overloaded(p', TC, prefixedNameIR)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
-      2. Return $find_routine_non_overloaded((block), TC, (` id))
+      2. Return $find_routine_non_overloaded((block), TC, (id))
 
     1. Else Phantom#496
 
@@ -10806,9 +10806,9 @@ dec $find_constructor_overloaded(TC, prefixedNameIR, argumentIR*)
 
     4. Return $find_overloaded<constructorTypeDefIR>(cdenv, id, id_arg?*)
 
-  2. Case (% matches pattern `` %`)
+  2. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` id) be prefixedNameIR)
+    1. (Let (id) be prefixedNameIR)
 
     2. (Let cdenv be TC.global.cdenv)
 
@@ -14177,7 +14177,7 @@ relation Eval_static: p, TC, (expressionIR # (( _typeIR' _ctk'' )))
 
     2. (Let nameIR_error be "error." ++ nameIR)
 
-    3. (Let value_error be $find_value(p, TC, (` nameIR_error)))
+    3. (Let value_error be $find_value(p, TC, (nameIR_error)))
 
     4. Result in value_error
 
@@ -16577,7 +16577,7 @@ relation Expr_ok: p, TC, expression'''
 
     3. (Let nameIR_error be "error." ++ nameIR)
 
-    4. If ((((error . nameIR) as value) = $find_value(p, TC, (` nameIR_error)))), then
+    4. If ((((error . nameIR) as value) = $find_value(p, TC, (nameIR_error)))), then
 
       1. (Let expressionNoteIR be (( ((error) as typeIR) (lctk) )))
 
@@ -17185,7 +17185,7 @@ relation Expr_ok: p, TC, expression'''
 
     2. If ((referenceExpression matches pattern `THIS`)), then
 
-      1. (Let prefixedNameIR be (` "this"))
+      1. (Let prefixedNameIR be ("this"))
 
       2. (Let varTypeIR? be $find_var(p, TC, prefixedNameIR))
 
@@ -17630,7 +17630,7 @@ relation Stmt_ok: p', TC', f', statement
 
                 2. (Let (routineTargetIR < typeArgumentIR'* > ( argumentIR_cast* ) ;) be callStatementIR)
 
-                3. If ((routineTargetIR = ((((` nameIR_object) as expressionIR) # (( typeIR_object (ctk) ))) . "apply"))), then
+                3. If ((routineTargetIR = ((((nameIR_object) as expressionIR) # (( typeIR_object (ctk) ))) . "apply"))), then
 
                   1. If ((typeArgumentIR'* matches pattern [])), then
 
@@ -18213,7 +18213,7 @@ relation ExternConstructor_ok: TC_0, tid_extern, methodPrototype
 
     3. (Let constructorParameterTypeIR be $constructorParameterIR(constructorParameterIR))*
 
-    4. (Let typeDefIR'? be $find_type((global), TC_0, (` nameIR)))
+    4. (Let typeDefIR'? be $find_type((global), TC_0, (nameIR)))
 
     5. If ((typeDefIR'? matches pattern (_))), then
 
@@ -18746,7 +18746,7 @@ relation TableKey_ok: TC, TBLC_0, (expression : name_matchkind annotationList ;)
 
   1. (Let nameIR_matchkind be $name(name_matchkind))
 
-  2. If ((((match_kind . nameIR_matchkind) as value) = $find_value((local), TC, (` nameIR_matchkind)))), then
+  2. If ((((match_kind . nameIR_matchkind) as value) = $find_value((local), TC, (nameIR_matchkind)))), then
 
     1. If ($compat_table_key(nameIR_matchkind, typeIR)), then
 
@@ -20722,7 +20722,7 @@ relation Decl_ok: p', TC_0, declaration
 
                   1. (Let [tid] be tid'*)
 
-                  2. (Let typeDefIR'? be $find_type((global), TC_1, (` tid)))
+                  2. (Let typeDefIR'? be $find_type((global), TC_1, (tid)))
 
                   3. If ((typeDefIR'? matches pattern (_))), then
 
@@ -20766,7 +20766,7 @@ relation Decl_ok: p', TC_0, declaration
 
                   1. (Let [tid] be tid'*)
 
-                  2. (Let typeDefIR'? be $find_type((global), TC_1, (` tid)))
+                  2. (Let typeDefIR'? be $find_type((global), TC_1, (tid)))
 
                   3. If ((typeDefIR'? matches pattern (_))), then
 
@@ -21186,7 +21186,7 @@ relation RoutineTarget_ok: p, TC, routineTarget'
 
     2. (Let prefixedNameIR be $prefixedNonTypeName(prefixedNonTypeName))
 
-    3. If ((((prefixedNameIR = (` "verify")) \/ (prefixedNameIR = (. "verify"))) => (((p = (block)) /\ $is_parser_blockKind(TC.block.kind)) \/ ((p = (local)) /\ $is_parser_state_localKind(TC.local.kind))))), then
+    3. If ((((prefixedNameIR = ("verify")) \/ (prefixedNameIR = (. "verify"))) => (((p = (block)) /\ $is_parser_blockKind(TC.block.kind)) \/ ((p = (local)) /\ $is_parser_state_localKind(TC.local.kind))))), then
 
       1. Result in (prefixedNameIR as routineTargetIR)
 
@@ -21234,7 +21234,7 @@ relation RoutineTarget_ok: p, TC, routineTarget'
 
   2. If ((referenceExpression matches pattern `THIS`)), then
 
-    1. Result in ((` "this") as routineTargetIR)
+    1. Result in (("this") as routineTargetIR)
 
   2. Else Phantom#1201
 
@@ -22943,15 +22943,15 @@ relation SwitchLabel_table_ok: TC, tid_table, bool', switchLabel
 
   2. (Let prefixedNameIR be $prefixedNonTypeName(prefixedNonTypeName))
 
-  3. If ((prefixedNameIR matches pattern `` %`)), then
+  3. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-    1. (Let (` nameIR_label) be prefixedNameIR)
+    1. (Let (nameIR_label) be prefixedNameIR)
 
     2. (Let tid_table_enum be "action_list(" ++ tid_table ++ ")")
 
     3. (Let id_label be tid_table_enum ++ "." ++ nameIR_label)
 
-    4. (Let varTypeIR? be $find_var((local), TC, (` id_label)))
+    4. (Let varTypeIR? be $find_var((local), TC, (id_label)))
 
     5. If ((varTypeIR? matches pattern (_))), then
 
@@ -22963,7 +22963,7 @@ relation SwitchLabel_table_ok: TC, tid_table, bool', switchLabel
 
         2. If ((value_label = ((table_enum tid_table_enum . nameIR_label) as value))), then
 
-          1. (Let typedExpressionIR_label be (((` nameIR_label) as expressionIR) # (( typeIR_label ctk_label ))))
+          1. (Let typedExpressionIR_label be (((nameIR_label) as expressionIR) # (( typeIR_label ctk_label ))))
 
           2. Result in (typedExpressionIR_label as switchLabelIR)
 
@@ -23241,7 +23241,7 @@ relation Decl_object_ok: p, TC_0, frame, rdenv, objectDeclaration
 
       2. (Let (_annotationList _typeIR _prefixedNameIR < _typeArgumentListIR > ( _argumentListIR ) nameIR _objectInitializerOptIR ;) be instantiationIR)
 
-      3. (Let varTypeIR'? be $find_var(p, TC_1, (` nameIR)))
+      3. (Let varTypeIR'? be $find_var(p, TC_1, (nameIR)))
 
       4. If ((varTypeIR'? matches pattern (_))), then
 
@@ -25482,7 +25482,7 @@ dec $empty_senv
 
 ;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:28:1-31:34:
 syntax lvalueDyn = 
-   | ` nameIR (from prefixedNameIR)
+   | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
    | lvalueDyn . nameIR (from lvalueDyn)
    | lvalueDyn [ value ] (from lvalueDyn)
@@ -25877,9 +25877,9 @@ dec $find_value_inst(p', Ci, prefixedNameIR)
 
   1. Case (% matches pattern `GLOBAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let value'? be $find_map<id, value>(Ci.global.venv, id))
 
@@ -25895,9 +25895,9 @@ dec $find_value_inst(p', Ci, prefixedNameIR)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let value'? be $find_map<id, value>(Ci.block.venv, id))
 
@@ -25911,7 +25911,7 @@ dec $find_value_inst(p', Ci, prefixedNameIR)
 
       4. If (($find_map<id, value>(Ci.block.venv, id) = ?())), then
 
-        1. Return $find_value_inst((global), Ci, (` id))
+        1. Return $find_value_inst((global), Ci, (id))
 
       4. Else Phantom#1456
 
@@ -25919,9 +25919,9 @@ dec $find_value_inst(p', Ci, prefixedNameIR)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let venv* be Ci.local.venvs)
 
@@ -25937,7 +25937,7 @@ dec $find_value_inst(p', Ci, prefixedNameIR)
 
       5. If (($find_maps<id, value>(Ci.local.venvs, id) = ?())), then
 
-        1. Return $find_value_inst((block), Ci, (` id))
+        1. Return $find_value_inst((block), Ci, (id))
 
       5. Else Phantom#1459
 
@@ -25948,9 +25948,9 @@ dec $find_typedef_inst(_cursor, Ci, prefixedNameIR)
 
 1. Case analysis on prefixedNameIR
 
-  1. Case (% matches pattern `` %`)
+  1. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` nameIR) be prefixedNameIR)
+    1. (Let (nameIR) be prefixedNameIR)
 
     2. Return $find_map<tid, typeDefIR>(Ci.global.tdenv, nameIR)
 
@@ -26001,9 +26001,9 @@ dec $find_constructor_overloaded_inst(Ci, prefixedNameIR, argumentIR*)
 
 1. Case analysis on prefixedNameIR
 
-  1. Case (% matches pattern `` %`)
+  1. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` id) be prefixedNameIR)
+    1. (Let (id) be prefixedNameIR)
 
     2. (Let id_arg?* be $ids_arguments_IR(argumentIR*))
 
@@ -26535,7 +26535,7 @@ relation Expr_inst: p, Ci, sto', (expressionIR # _expressionNoteIR')
 
     2. (Let nameIR_error be "error." ++ nameIR)
 
-    3. (Let value_error be $find_value_inst(p, Ci, (` nameIR_error)))
+    3. (Let value_error be $find_value_inst(p, Ci, (nameIR_error)))
 
     4. Result in sto', value_error
 
@@ -26856,7 +26856,7 @@ relation Stmt_inst: p, Ci, sto', statementIR'''
 
       9. (Let constantDeclarationIR be (() const typeIR nameIR (= ((! oid) as value)) ;))
 
-      10. (Let routineTargetIR be ((((` tid) as expressionIR) # (( typeIR (ctk) ))) . "apply"))
+      10. (Let routineTargetIR be ((((tid) as expressionIR) # (( typeIR (ctk) ))) . "apply"))
 
       11. (Let callStatementIR be (routineTargetIR < [] > ( argumentListIR ) ;))
 
@@ -27313,7 +27313,7 @@ relation ParserStmt_inst: Ci_0', sto_0, parserStatementIR
 
       9. (Let constantDeclarationIR be (() const typeIR nameIR (= ((! oid) as value)) ;))
 
-      10. (Let routineTargetIR be ((((` tid) as expressionIR) # (( typeIR (ctk) ))) . "apply"))
+      10. (Let routineTargetIR be ((((tid) as expressionIR) # (( typeIR (ctk) ))) . "apply"))
 
       11. (Let callStatementIR be (routineTargetIR < [] > ( argumentListIR ) ;))
 

@@ -40,7 +40,7 @@ rule DirectApplicationStmt_inst:
                          : STO_1 object
   ---- ;; assign new typeId with random string appended
   -- if typeId_fresh = $fresh_typeId()
-  -- if typeIR = `` typeId
+  -- if typeIR = _NAME typeId
   -- if nameIR = $concat_text([ typeId, "_", typeId_fresh])
   ---- ;; add object to store
   -- if objectId = IC.PATH ++ typeId
@@ -49,7 +49,7 @@ rule DirectApplicationStmt_inst:
   -- if constantDeclarationIR
       = _EMPTY CONST typeIR nameIR (`= _VALUE (REF objectId)) `;
   -- if typedExpressionIR_base
-      = (`` nameIR) `# `( typeIR CTK )
+      = (_NAME nameIR) `# `( typeIR CTK )
   -- if callableTargetIR
       = typedExpressionIR_base `. "apply"
   -- if callStatementIR

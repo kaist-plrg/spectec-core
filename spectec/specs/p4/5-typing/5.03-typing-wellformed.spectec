@@ -68,7 +68,7 @@ rule Type_wf/baseTypeIR:
 ;;; Name types
 
 rule Type_wf/nameTypeIR:
-  B |- `` typeId
+  B |- _NAME typeId
   -- if $in_set<typeId>(typeId, B)
 
 ;;; Alias types

@@ -265,7 +265,7 @@ rule Expr_inst/dataExpressionIR-record-default:
 rule Expr_inst/accessExpressionIR-errorAccessExpressionIR:
   p Ci sto |- (ERROR `. nameIR) `# _ ==> sto value_error
   -- if "error." ++ nameIR = nameIR_error
-  -- if $find_value_inst(p, Ci, `` nameIR_error) = value_error
+  -- if $find_value_inst(p, Ci, _NAME nameIR_error) = value_error
 
 ;;;;; memberAccessExpressionIR
 ;;;;; syntax memberAccessExpressionIR = memberAccessBaseIR `. nameIR

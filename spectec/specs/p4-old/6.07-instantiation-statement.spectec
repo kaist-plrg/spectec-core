@@ -41,7 +41,7 @@ rule Stmt_inst/directApplicationStatementIR:
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
   ---- ;; replace with constant declaration and call statement
   -- if _EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
-  -- if ((`` tid) `# `( typeIR CTK )) `. "apply" = routineTargetIR
+  -- if ((_NAME tid) `# `( typeIR CTK )) `. "apply" = routineTargetIR
   -- if routineTargetIR `< eps > `( argumentListIR ) `; = callStatementIR
   -- if _EMPTY `{ [ constantDeclarationIR, callStatementIR ] } = blockStatementIR
 

@@ -158,7 +158,7 @@ rule Expr_eval_lctk/default:
 rule Expr_eval_lctk/errorAccessExpressionIR:
   p TC |- (ERROR `. nameIR) `# `( _ _ ) ~> value_error
   -- if nameIR_error = "error." ++ nameIR
-  -- if value_error = $find_var_value_t(`` nameIR_error, p, TC)
+  -- if value_error = $find_var_value_t(_NAME nameIR_error, p, TC)
 
 ;;;;; memberAccessExpressionIR
 ;;;;; syntax memberAccessExpressionIR = memberAccessBaseIR `. nameIR

@@ -28,7 +28,7 @@ def $free_typeIR(baseTypeIR) = `{ eps }
 
 ;;; Named types
 
-def $free_typeIR(`` typeId) = `{ typeId }
+def $free_typeIR(_NAME typeId) = `{ typeId }
 
 ;;; Typedef types
 

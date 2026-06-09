@@ -334,18 +334,18 @@ dec $find_var(cursor, typingContext, prefixedNameIR) : varTypeIR?
 
 def $find_var(p, TC, `. id) = $find_map<id, varTypeIR>(frame, id)
   -- if frame = TC.GLOBAL.FRAME
-def $find_var(GLOBAL, TC, `` id) = $find_map<id, varTypeIR>(frame, id)
+def $find_var(GLOBAL, TC, _NAME id) = $find_map<id, varTypeIR>(frame, id)
   -- if frame = TC.GLOBAL.FRAME
-def $find_var(BLOCK, TC, `` id) = varTypeIR
+def $find_var(BLOCK, TC, _NAME id) = varTypeIR
   -- if frame = TC.BLOCK.FRAME
   -- if varTypeIR = $find_map<id, varTypeIR>(frame, id)
-def $find_var(BLOCK, TC, `` id) = $find_var(GLOBAL, TC, `` id)
+def $find_var(BLOCK, TC, _NAME id) = $find_var(GLOBAL, TC, _NAME id)
   -- if frame = TC.BLOCK.FRAME
   -- if eps = $find_map<id, varTypeIR>(frame, id)
-def $find_var(LOCAL, TC, `` id) = varTypeIR
+def $find_var(LOCAL, TC, _NAME id) = varTypeIR
   -- if frame* = TC.LOCAL.FRAMES
   -- if varTypeIR = $find_maps<id, varTypeIR>(frame*, id)
-def $find_var(LOCAL, TC, `` id) = $find_var(BLOCK, TC, `` id)
+def $find_var(LOCAL, TC, _NAME id) = $find_var(BLOCK, TC, _NAME id)
   -- if frame* = TC.LOCAL.FRAMES
   -- if eps = $find_maps<id, varTypeIR>(frame*, id)
 
@@ -356,19 +356,19 @@ dec $find_value(cursor, typingContext, prefixedNameIR) : value
 def $find_value(p, TC, `. id) = value
   -- if frame = TC.GLOBAL.FRAME
   -- if _ _ _ value = $find_map<id, varTypeIR>(frame, id)
-def $find_value(GLOBAL, TC, `` id) = value
+def $find_value(GLOBAL, TC, _NAME id) = value
   -- if frame = TC.GLOBAL.FRAME
   -- if _ _ _ value = $find_map<id, varTypeIR>(frame, id)
-def $find_value(BLOCK, TC, `` id) = value
+def $find_value(BLOCK, TC, _NAME id) = value
   -- if frame = TC.BLOCK.FRAME
   -- if _ _ _ value = $find_map<id, varTypeIR>(frame, id)
-def $find_value(BLOCK, TC, `` id) = $find_value(GLOBAL, TC, `` id)
+def $find_value(BLOCK, TC, _NAME id) = $find_value(GLOBAL, TC, _NAME id)
   -- if frame = TC.BLOCK.FRAME
   -- if eps = $find_map<id, varTypeIR>(frame, id)
-def $find_value(LOCAL, TC, `` id) = value
+def $find_value(LOCAL, TC, _NAME id) = value
   -- if frame* = TC.LOCAL.FRAMES
   -- if _ _ _ value = $find_maps<id, varTypeIR>(frame*, id)
-def $find_value(LOCAL, TC, `` id) = $find_value(BLOCK, TC, `` id)
+def $find_value(LOCAL, TC, _NAME id) = $find_value(BLOCK, TC, _NAME id)
   -- if frame* = TC.LOCAL.FRAMES
   -- if eps = $find_maps<id, varTypeIR>(frame*, id)
 
@@ -379,19 +379,19 @@ dec $find_type(cursor, typingContext, prefixedNameIR) : typeDefIR?
 def $find_type(p, TC, `. tid)
   = $find_map<tid, typeDefIR>(tdenv, tid)
   -- if tdenv = TC.GLOBAL.TDENV
-def $find_type(GLOBAL, TC, `` tid)
+def $find_type(GLOBAL, TC, _NAME tid)
   = $find_map<tid, typeDefIR>(tdenv, tid)
   -- if tdenv = TC.GLOBAL.TDENV
-def $find_type(BLOCK, TC, `` tid) = typeDefIR
+def $find_type(BLOCK, TC, _NAME tid) = typeDefIR
   -- if tdenv = TC.BLOCK.TDENV
   -- if typeDefIR = $find_map<tid, typeDefIR>(tdenv, tid)
-def $find_type(BLOCK, TC, `` tid) = $find_type(GLOBAL, TC, `` tid)
+def $find_type(BLOCK, TC, _NAME tid) = $find_type(GLOBAL, TC, _NAME tid)
   -- if tdenv = TC.BLOCK.TDENV
   -- if eps = $find_map<tid, typeDefIR>(tdenv, tid)
-def $find_type(LOCAL, TC, `` tid) = typeDefIR
+def $find_type(LOCAL, TC, _NAME tid) = typeDefIR
   -- if tdenv* = TC.LOCAL.TDENV
   -- if typeDefIR = $find_maps<tid, typeDefIR>(tdenv*, tid)
-def $find_type(LOCAL, TC, `` tid) = $find_type(BLOCK, TC, `` tid)
+def $find_type(LOCAL, TC, _NAME tid) = $find_type(BLOCK, TC, _NAME tid)
   -- if tdenv* = TC.LOCAL.TDENV
   -- if eps = $find_maps<tid, typeDefIR>(tdenv*, tid)
 
@@ -413,41 +413,41 @@ def $find_routine_overloaded(GLOBAL, TC, `. id, argumentIR*)
   = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
   -- if rdenv = TC.GLOBAL.RDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
-def $find_routine_overloaded(GLOBAL, TC, `` id, argumentIR*)
+def $find_routine_overloaded(GLOBAL, TC, _NAME id, argumentIR*)
   = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
   -- if rdenv = TC.GLOBAL.RDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
-def $find_routine_overloaded(BLOCK, TC, `` id, argumentIR*)
+def $find_routine_overloaded(BLOCK, TC, _NAME id, argumentIR*)
   = (rid, routineTypeDefIR, id_default*)
   -- if rdenv = TC.BLOCK.RDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
   -- if (rid, routineTypeDefIR, id_default*)
       = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
-def $find_routine_overloaded(BLOCK, TC, `` id, argumentIR*)
-  = $find_routine_overloaded(GLOBAL, TC, `` id, argumentIR*)
+def $find_routine_overloaded(BLOCK, TC, _NAME id, argumentIR*)
+  = $find_routine_overloaded(GLOBAL, TC, _NAME id, argumentIR*)
   -- if rdenv = TC.BLOCK.RDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
   -- if eps
       = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
-def $find_routine_overloaded(LOCAL, TC, `` id, argumentIR*)
-  = $find_routine_overloaded(BLOCK, TC, `` id, argumentIR*) 
+def $find_routine_overloaded(LOCAL, TC, _NAME id, argumentIR*)
+  = $find_routine_overloaded(BLOCK, TC, _NAME id, argumentIR*) 
 
 dec $find_routine_non_overloaded(cursor, typingContext, prefixedNameIR)
   : routineTypeDefIR?
 
 def $find_routine_non_overloaded(p, TC, `. id)
   = $find_non_overloaded<routineTypeDefIR>(TC.GLOBAL.RDENV, id)
-def $find_routine_non_overloaded(GLOBAL, TC, `` id)
+def $find_routine_non_overloaded(GLOBAL, TC, _NAME id)
   = $find_non_overloaded<routineTypeDefIR>(TC.GLOBAL.RDENV, id)
-def $find_routine_non_overloaded(BLOCK, TC, `` id) = routineTypeDefIR
+def $find_routine_non_overloaded(BLOCK, TC, _NAME id) = routineTypeDefIR
   -- if routineTypeDefIR
       = $find_non_overloaded<routineTypeDefIR>(TC.BLOCK.RDENV, id)
-def $find_routine_non_overloaded(BLOCK, TC, `` id)
-  = $find_routine_non_overloaded(GLOBAL, TC, `` id)
+def $find_routine_non_overloaded(BLOCK, TC, _NAME id)
+  = $find_routine_non_overloaded(GLOBAL, TC, _NAME id)
   -- if eps 
       = $find_non_overloaded<routineTypeDefIR>(TC.BLOCK.RDENV, id)
-def $find_routine_non_overloaded(LOCAL, TC, `` id)
-  = $find_routine_non_overloaded(BLOCK, TC, `` id)
+def $find_routine_non_overloaded(LOCAL, TC, _NAME id)
+  = $find_routine_non_overloaded(BLOCK, TC, _NAME id)
 
 ;;; Finder for constructors
 
@@ -458,7 +458,7 @@ def $find_constructor_overloaded(TC, `. id, argumentIR*)
   = $find_overloaded<constructorTypeDefIR>(cdenv, id, (id_arg?)*)
   -- if cdenv = TC.GLOBAL.CDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
-def $find_constructor_overloaded(TC, `` id, argumentIR*)
+def $find_constructor_overloaded(TC, _NAME id, argumentIR*)
   = $find_overloaded<constructorTypeDefIR>(cdenv, id, (id_arg?)*)
   -- if cdenv = TC.GLOBAL.CDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)

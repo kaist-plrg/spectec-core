@@ -54,7 +54,7 @@ rule TableKey_ok:
   -- Type_wf: $bound(LOCAL, TC) |- SET `< typeIR >
   ---- ;; check match kind
   -- if nameIR_matchkind = $name(name_matchkind)
-  -- if MATCH_KIND `. nameIR_matchkind = $find_value(LOCAL, TC, `` nameIR_matchkind)
+  -- if MATCH_KIND `. nameIR_matchkind = $find_value(LOCAL, TC, _NAME nameIR_matchkind)
   ---- ;; check compatibility with the match kind
   -- if $compat_table_key(nameIR_matchkind, typeIR)
   ---- ;; update table context

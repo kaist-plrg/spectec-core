@@ -7,7 +7,7 @@ dec $typeId_of_typeDefIR(typeDefIR) : typeId
 
 ;;; Name type definitions
 
-def $typeId_of_typeDefIR(`` typeId) = typeId
+def $typeId_of_typeDefIR(_NAME typeId) = typeId
 
 ;;; Alias type definitions
 
@@ -49,15 +49,15 @@ def $typeIR_of_typeDefIR(aliasTypeDefIR) = aliasTypeDefIR
 
 def $typeIR_of_typeDefIR(
     STRUCT typeId `< typeParameterIR* > `{ fieldTypeIR* })
-  = STRUCT typeId `< (`` typeParameterIR)* > `{ fieldTypeIR* }
+  = STRUCT typeId `< (_NAME typeParameterIR)* > `{ fieldTypeIR* }
 
 def $typeIR_of_typeDefIR(
     HEADER typeId `< typeParameterIR* > `{ fieldTypeIR* })
-  = HEADER typeId `< (`` typeParameterIR)* > `{ fieldTypeIR* }
+  = HEADER typeId `< (_NAME typeParameterIR)* > `{ fieldTypeIR* }
 
 def $typeIR_of_typeDefIR(
     HEADER_UNION typeId `< typeParameterIR* > `{ fieldTypeIR* })
-  = HEADER_UNION typeId `< (`` typeParameterIR)* > `{ fieldTypeIR* }
+  = HEADER_UNION typeId `< (_NAME typeParameterIR)* > `{ fieldTypeIR* }
 
 def $typeIR_of_typeDefIR(enumTypeDefIR) = enumTypeDefIR
 
@@ -66,22 +66,22 @@ def $typeIR_of_typeDefIR(enumTypeDefIR) = enumTypeDefIR
 def $typeIR_of_typeDefIR(
     EXTERN typeId `< typeParameterIR_expl* `, typeParameterIR_impl* >
       `{ (callableId `: externMethodTypeDefIR)* })
-  = EXTERN typeId `< (`` typeParameterIR)* > `{ (callableId `: externMethodTypeDefIR)* }
+  = EXTERN typeId `< (_NAME typeParameterIR)* > `{ (callableId `: externMethodTypeDefIR)* }
   -- if typeParameterIR* = typeParameterIR_expl* ++ typeParameterIR_impl*
 
 def $typeIR_of_typeDefIR(
     PARSER typeId `< typeParameterIR_expl* `, typeParameterIR_impl* > `( parameterIR* ))
-  = PARSER typeId `< (`` typeParameterIR)* > `( parameterIR* )
+  = PARSER typeId `< (_NAME typeParameterIR)* > `( parameterIR* )
   -- if typeParameterIR* = typeParameterIR_expl* ++ typeParameterIR_impl*
 
 def $typeIR_of_typeDefIR(
     CONTROL typeId `< typeParameterIR_expl* `, typeParameterIR_impl* > `( parameterIR* ))
-  = CONTROL typeId `< (`` typeParameterIR)* > `( parameterIR* )
+  = CONTROL typeId `< (_NAME typeParameterIR)* > `( parameterIR* )
   -- if typeParameterIR* = typeParameterIR_expl* ++ typeParameterIR_impl*
 
 def $typeIR_of_typeDefIR(
     PACKAGE typeId `< typeParameterIR_expl* `, typeParameterIR_impl* > `{ typeIR* })
-  = PACKAGE typeId `< (`` typeParameterIR)* > `{ typeIR* }
+  = PACKAGE typeId `< (_NAME typeParameterIR)* > `{ typeIR* }
   -- if typeParameterIR* = typeParameterIR_expl* ++ typeParameterIR_impl*
 
 def $typeIR_of_typeDefIR(tableObjectTypeDefIR) = tableObjectTypeDefIR

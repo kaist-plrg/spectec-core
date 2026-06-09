@@ -13,14 +13,14 @@ rule RoutineTarget_ok/prefixedNonTypeName:
   p TC |- prefixedNonTypeName : prefixedNameIR
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
   ---- ;; call to "verify" is only allowed in parsers
-  -- if ((prefixedNameIR = `` "verify") \/ (prefixedNameIR = `. "verify"))
+  -- if ((prefixedNameIR = _NAME "verify") \/ (prefixedNameIR = `. "verify"))
         => ((p = BLOCK /\ $is_parser_blockKind(TC.BLOCK.KIND))
              \/ (p = LOCAL /\ $is_parser_state_localKind(TC.LOCAL.KIND)))
 
 ;;;; THIS
 
 rule RoutineTarget_ok/this:
-  p TC |- THIS : (`` "this")
+  p TC |- THIS : (_NAME "this")
 
 ;;; memberAccessExpression
 ;;; syntax memberAccessExpression = memberAccessBase `. member

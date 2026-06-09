@@ -44,7 +44,7 @@ def $specialize_callableTypeDefIR(callableTypeDefIR_base, typeArgumentIR*)
   -- if $(|typeParameterIR_expl*| = |typeArgumentIR*|)
   ---- ;; create fresh type arguments for implicit type parameters
   -- if typeId_fresh* = $fresh_typeIds(|typeParameterIR_impl*|)
-  -- if (typeArgumentIR_impl = `` typeId_fresh)*
+  -- if (typeArgumentIR_impl = _NAME typeId_fresh)*
   ---- ;; specialize
   -- if theta
       = `{ (typeParameterIR_expl `: typeArgumentIR)*
@@ -64,7 +64,7 @@ def $specialize_callableTypeDefIR(callableTypeDefIR_base, typeArgumentIR*)
   -- if $(|typeParameterIR_expl*| > 0) /\ $(|typeArgumentIR*| = 0)
   ---- ;; create fresh type arguments
   -- if typeId_fresh* = $fresh_typeIds(|typeParameterIR*|)
-  -- if (typeArgumentIR_fresh = `` typeId_fresh)*
+  -- if (typeArgumentIR_fresh = _NAME typeId_fresh)*
   ---- ;; specialize
   -- if theta = `{ (typeParameterIR `: typeArgumentIR_fresh)* }
   -- if callableTypeIR_base
@@ -92,7 +92,7 @@ def $specialize_constructorTypeDefIR(
   -- if $(|typeParameterIR_expl*| = |typeArgumentIR*|)
   ---- ;; create fresh type arguments for implicit type parameters
   -- if typeId_fresh* = $fresh_typeIds(|typeParameterIR_impl*|)
-  -- if (typeArgumentIR_impl = `` typeId_fresh)*
+  -- if (typeArgumentIR_impl = _NAME typeId_fresh)*
   ---- ;; specialize
   -- if theta
       = `{ (typeParameterIR_expl `: typeArgumentIR)*
@@ -113,7 +113,7 @@ def $specialize_constructorTypeDefIR(
   -- if $(|typeParameterIR_expl*| > 0) /\ $(|typeArgumentIR*| = 0)
   ---- ;; create fresh type arguments
   -- if typeId_fresh* = $fresh_typeIds(|typeParameterIR*|)
-  -- if (typeArgumentIR_fresh = `` typeId_fresh)*
+  -- if (typeArgumentIR_fresh = _NAME typeId_fresh)*
   ---- ;; specialize
   -- if theta = `{ (typeParameterIR `: typeArgumentIR_fresh)* }
   -- if constructorTypeIR_spec

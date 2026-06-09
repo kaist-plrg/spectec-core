@@ -260,7 +260,7 @@ rule Eval_static/dataExpressionIR-record-default:
 rule Eval_static/errorAccessExpressionIR:
   p TC |- (ERROR `. nameIR) `# `( _ _ ) ~> value_error
   -- if nameIR_error = "error." ++ nameIR
-  -- if value_error = $find_value(p, TC, `` nameIR_error)
+  -- if value_error = $find_value(p, TC, _NAME nameIR_error)
 
 ;;;;; memberAccessExpressionIR
 ;;;;; syntax memberAccessExpressionIR = memberAccessBaseIR `. nameIR

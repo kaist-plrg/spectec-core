@@ -21,13 +21,13 @@ rule TypeArgument_ok/void:
 ;;;;  `_
 
 rule TypeArgument_ok/dontcare:
-  p TC |- `_ : (`` typeId_impl) `# typeId_impl
+  p TC |- `_ : (_NAME typeId_impl) `# typeId_impl
   -- if typeId_impl = $fresh_typeId()
 
 ;;; nonTypeName
 
 rule TypeArgument_ok/nonTypeName:
-  p TC |- nonTypeName : (`` typeId) `# eps
+  p TC |- nonTypeName : (_NAME typeId) `# eps
   -- if typeId = $name(nonTypeName)
 
 ;;

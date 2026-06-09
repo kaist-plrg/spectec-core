@@ -101,7 +101,7 @@ rule TableKey_ok:
   ---- ;; check match kind
   -- if nameIR_matchkind = $name(name_matchkind)
   -- if MATCH_KIND `. nameIR_matchkind
-      = $find_var_value_t(`` nameIR_matchkind, LOCAL, TC)
+      = $find_var_value_t(_NAME nameIR_matchkind, LOCAL, TC)
   ---- ;; check compatibility with the match kind
   -- if $compat_table_key(nameIR_matchkind, typeIR)
   ---- ;; update table context
@@ -1012,7 +1012,7 @@ rule Table_ok/zero-default-action:
   -- TableProperties_ok: TC TBLC_0 |- tableProperty* : TBLC_1 tablePropertyIR*
   ---- ;; insert NoAction as default_action
   -- if tablePropertyIR_default_action
-      = _EMPTY eps DEFAULT_ACTION `= ((`` "NoAction") eps `( eps )) `;
+      = _EMPTY eps DEFAULT_ACTION `= ((_NAME "NoAction") eps `( eps )) `;
   -- if (TBLC_2, tablePropertyIR_updated*)
       = $insert_NoAction_tablePropertyIR(TBLC_1, tablePropertyIR*)
 

@@ -38,7 +38,7 @@ rule Type_alpha/baseTypeIR:
 ;;; Name types
 
 rule Type_alpha/nameTypeIR:
-  (`` typeId) ~~  (`` typeId)
+  (_NAME typeId) ~~  (_NAME typeId)
 
 ;;; Alias types
 
@@ -201,14 +201,14 @@ rule ExternMethodTypeDef_alpha:
       = $fresh_typeIds(|typeParameterIR_expl_a* ++ typeParameterIR_impl_a*|)
   ---- ;; substitute the left hand side
   -- if typeParameterIR_a* = typeParameterIR_expl_a* ++ typeParameterIR_impl_a*
-  -- if theta_a = `{ (typeParameterIR_a `: (`` typeParameterIR_fresh))* }
+  -- if theta_a = `{ (typeParameterIR_a `: (_NAME typeParameterIR_fresh))* }
   -- if externMethodTypeIR_a
       = $callableTypeIR_of_callableTypeDefIR(externMethodTypeDefIR_a)
   -- if externMethodTypeIR_a_subst
       = $subst_callableTypeIR(theta_a, externMethodTypeIR_a)
   ---- ;; substitute the right hand side
   -- if typeParameterIR_b* = typeParameterIR_expl_b* ++ typeParameterIR_impl_b*
-  -- if theta_b = `{ (typeParameterIR_b `: (`` typeParameterIR_fresh))* }
+  -- if theta_b = `{ (typeParameterIR_b `: (_NAME typeParameterIR_fresh))* }
   -- if externMethodTypeIR_b
       = $callableTypeIR_of_callableTypeDefIR(externMethodTypeDefIR_b)
   -- if externMethodTypeIR_b_subst

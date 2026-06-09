@@ -32,4 +32,4 @@ rule Constructor_inst/aliased:
       = $resolve_type_alias(typeIR_alias)
   ---- ;; find and specialize the constructor type definition
   -- if _ `: constructorDef `# id_default* `# id_optional*
-      = $find_constructorDef_i(IC, `` nameIR, argumentIR*)
+      = $find_constructorDef_i(IC, _NAME nameIR, argumentIR*)

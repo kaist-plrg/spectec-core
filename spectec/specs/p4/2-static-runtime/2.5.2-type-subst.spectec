@@ -56,7 +56,7 @@ def $capture_avoiding_(theta, typeParameterIR*, B)
   ---- ;; update substitution mapping
   -- if theta_fresh
       = $adds_map<typeId, typeIR>(
-          theta, typeParameterIR*, (`` typeParameterIR_fresh)*)
+          theta, typeParameterIR*, (_NAME typeParameterIR_fresh)*)
 
 def $capture_avoiding(theta, typeParameterIR_expl*, typeParameterIR_impl*, B)
   = (theta_fresh, typeParameterIR_expl_fresh*, typeParameterIR_impl_fresh*)
@@ -77,7 +77,7 @@ def $capture_avoiding(theta, typeParameterIR_expl*, typeParameterIR_impl*, B)
       = $adds_map<typeId, typeIR>(
           theta,
           typeParameterIR_expl* ++ typeParameterIR_impl*,
-          (`` typeParameterIR_expl_fresh)* ++ (`` typeParameterIR_impl_fresh)*)
+          (_NAME typeParameterIR_expl_fresh)* ++ (_NAME typeParameterIR_impl_fresh)*)
 
 ;;
 ;;;; Type substitutions
@@ -93,9 +93,9 @@ def $subst_typeIR'(theta, baseTypeIR) = baseTypeIR
 
 ;;; Named types
 
-def $subst_typeIR'(theta, `` typeId) = typeIR
+def $subst_typeIR'(theta, _NAME typeId) = typeIR
   -- if typeIR = $find_map<typeId, typeIR>(theta, typeId)
-def $subst_typeIR'(theta, `` typeId) = `` typeId
+def $subst_typeIR'(theta, _NAME typeId) = _NAME typeId
   -- if eps = $find_map<typeId, typeIR>(theta, typeId)
 
 ;;; Alias types

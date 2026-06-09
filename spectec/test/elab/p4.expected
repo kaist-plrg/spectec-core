@@ -3655,9 +3655,9 @@ syntax baseTypeIR =
    | bit < nat > (from fixedBitTypeIR)
    | varbit < nat > (from varBitTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:41:21-41:45:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:41:21-41:48:
 syntax nameTypeIR = 
-   | ` typeId (from nameTypeIR) hint(print %0)
+   | typeId (from nameTypeIR) hint(print %0)
 
 ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:48:3-49:17:
 syntax typedefTypeIR = 
@@ -3817,7 +3817,7 @@ syntax typeIR =
    | int < nat > (from fixedIntTypeIR)
    | bit < nat > (from fixedBitTypeIR)
    | varbit < nat > (from varBitTypeIR)
-   | ` typeId (from nameTypeIR) hint(print %0)
+   | typeId (from nameTypeIR) hint(print %0)
    | typedef typeId typeIR (from typedefTypeIR) hint(print %0)
    | type typeId typeIR (from newTypeIR) hint(print %0)
    | list < typeIR > (from listTypeIR)
@@ -3907,7 +3907,7 @@ syntax objectTypeDefIR =
 
 ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:72:1-75:20:
 syntax typeDefIR = 
-   | ` typeId (from nameTypeIR) hint(print %0)
+   | typeId (from nameTypeIR) hint(print %0)
    | typedef typeId typeIR (from typedefTypeIR) hint(print %0)
    | type typeId typeIR (from newTypeIR) hint(print %0)
    | struct typeId < typeParameterIR* > { fieldTypeIR* } (from structTypeDefIR)
@@ -4057,10 +4057,10 @@ def $is_equalable_typeIR(typeIR) : bool =
       -- let voidTypeIR = typeIR as voidTypeIR
       -- if (voidTypeIR = void)
 
-   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.3-type-aux.spectec:63:1-63:44:
+   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.3-type-aux.spectec:63:1-63:47:
    clause 1(typeIR) = false
       -- if typeIR <: nameTypeIR
-      -- let ` typeId = typeIR as nameTypeIR
+      -- let typeId = typeIR as nameTypeIR
 
    ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.3-type-aux.spectec:64:1-64:74:
    clause 2(typeIR') = $is_equalable_typeIR(typeIR)
@@ -4169,10 +4169,10 @@ def $is_assignable_typeIR(typeIR) : bool =
 ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:5:1-6:34:
 def $typeId_of_typeDefIR(typeDefIR) : typeId =
 
-   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:10:1-10:45:
+   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:10:1-10:48:
    clause 0(typeDefIR) = typeId
       -- if typeDefIR <: nameTypeIR
-      -- let ` typeId = typeDefIR as nameTypeIR
+      -- let typeId = typeDefIR as nameTypeIR
 
    ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:14:1-14:52:
    clause 1(typeDefIR) = typeId
@@ -4247,18 +4247,18 @@ def $typeIR_of_typeDefIR(typeDefIR) : typeIR =
       -- if typeDefIR <: aliasTypeDefIR
       -- let aliasTypeDefIR = typeDefIR as aliasTypeDefIR
 
-   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:50:1-52:63:
-   clause 2(typeDefIR) = struct typeId < ` typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > { fieldTypeIR*{fieldTypeIR <- fieldTypeIR*} } as typeIR
+   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:50:1-52:66:
+   clause 2(typeDefIR) = struct typeId < typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > { fieldTypeIR*{fieldTypeIR <- fieldTypeIR*} } as typeIR
       -- if typeDefIR <: structTypeDefIR
       -- let struct typeId < typeParameterIR*{typeParameterIR <- typeParameterIR*} > { fieldTypeIR*{fieldTypeIR <- fieldTypeIR*} } = typeDefIR as structTypeDefIR
 
-   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:54:1-56:63:
-   clause 3(typeDefIR) = header typeId < ` typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > { fieldTypeIR*{fieldTypeIR <- fieldTypeIR*} } as typeIR
+   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:54:1-56:66:
+   clause 3(typeDefIR) = header typeId < typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > { fieldTypeIR*{fieldTypeIR <- fieldTypeIR*} } as typeIR
       -- if typeDefIR <: headerTypeDefIR
       -- let header typeId < typeParameterIR*{typeParameterIR <- typeParameterIR*} > { fieldTypeIR*{fieldTypeIR <- fieldTypeIR*} } = typeDefIR as headerTypeDefIR
 
-   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:58:1-60:69:
-   clause 4(typeDefIR) = header_union typeId < ` typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > { fieldTypeIR*{fieldTypeIR <- fieldTypeIR*} } as typeIR
+   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:58:1-60:72:
+   clause 4(typeDefIR) = header_union typeId < typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > { fieldTypeIR*{fieldTypeIR <- fieldTypeIR*} } as typeIR
       -- if typeDefIR <: headerUnionTypeDefIR
       -- let header_union typeId < typeParameterIR*{typeParameterIR <- typeParameterIR*} > { fieldTypeIR*{fieldTypeIR <- fieldTypeIR*} } = typeDefIR as headerUnionTypeDefIR
 
@@ -4268,25 +4268,25 @@ def $typeIR_of_typeDefIR(typeDefIR) : typeIR =
       -- let enumTypeDefIR = typeDefIR as enumTypeDefIR
 
    ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:66:1-70:74:
-   clause 6(typeDefIR) = extern typeId < ` typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > { callableId : externMethodTypeDefIR*{callableId <- callableId*, externMethodTypeDefIR <- externMethodTypeDefIR*} } as typeIR
+   clause 6(typeDefIR) = extern typeId < typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > { callableId : externMethodTypeDefIR*{callableId <- callableId*, externMethodTypeDefIR <- externMethodTypeDefIR*} } as typeIR
       -- if typeDefIR <: externObjectTypeDefIR
       -- let extern typeId < typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} , typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*} > { callableId : externMethodTypeDefIR*{callableId <- callableId*, externMethodTypeDefIR <- externMethodTypeDefIR*} } = typeDefIR as externObjectTypeDefIR
       -- let typeParameterIR*{typeParameterIR <- typeParameterIR*} = typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} ++ typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}
 
    ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:72:1-75:74:
-   clause 7(typeDefIR) = parser typeId < ` typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > ( parameterIR*{parameterIR <- parameterIR*} ) as typeIR
+   clause 7(typeDefIR) = parser typeId < typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > ( parameterIR*{parameterIR <- parameterIR*} ) as typeIR
       -- if typeDefIR <: parserObjectTypeDefIR
       -- let parser typeId < typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} , typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*} > ( parameterIR*{parameterIR <- parameterIR*} ) = typeDefIR as parserObjectTypeDefIR
       -- let typeParameterIR*{typeParameterIR <- typeParameterIR*} = typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} ++ typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}
 
    ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:77:1-80:74:
-   clause 8(typeDefIR) = control typeId < ` typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > ( parameterIR*{parameterIR <- parameterIR*} ) as typeIR
+   clause 8(typeDefIR) = control typeId < typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > ( parameterIR*{parameterIR <- parameterIR*} ) as typeIR
       -- if typeDefIR <: controlObjectTypeDefIR
       -- let control typeId < typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} , typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*} > ( parameterIR*{parameterIR <- parameterIR*} ) = typeDefIR as controlObjectTypeDefIR
       -- let typeParameterIR*{typeParameterIR <- typeParameterIR*} = typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} ++ typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}
 
    ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.4-type-def-aux.spectec:82:1-85:74:
-   clause 9(typeDefIR) = package typeId < ` typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > { typeIR*{typeIR <- typeIR*} } as typeIR
+   clause 9(typeDefIR) = package typeId < typeParameterIR as typeIR*{typeParameterIR <- typeParameterIR*} > { typeIR*{typeIR <- typeIR*} } as typeIR
       -- if typeDefIR <: packageObjectTypeDefIR
       -- let package typeId < typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} , typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*} > { typeIR*{typeIR <- typeIR*} } = typeDefIR as packageObjectTypeDefIR
       -- let typeParameterIR*{typeParameterIR <- typeParameterIR*} = typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} ++ typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}
@@ -4787,10 +4787,10 @@ def $free_typeIR(typeIR) : bound =
       -- if typeIR <: baseTypeIR
       -- let baseTypeIR = typeIR as baseTypeIR
 
-   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.5.1-type-free.spectec:31:1-31:42:
+   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.5.1-type-free.spectec:31:1-31:45:
    clause 1(typeIR) = { [typeId] }
       -- if typeIR <: nameTypeIR
-      -- let ` typeId = typeIR as nameTypeIR
+      -- let typeId = typeIR as nameTypeIR
 
    ;; ../../../../../spectec/specs/p4/2-static-runtime/2.5.1-type-free.spectec:35:1-35:58:
    clause 2(typeIR') = $free_typeIR(typeIR)
@@ -5020,7 +5020,7 @@ def $empty_theta : theta =
 ;; ../../../../../spectec/specs/p4/2-static-runtime/2.5.2-type-subst.spectec:10:1-11:30:
 def $capture_avoiding_(theta, typeParameterIR*, bound) : (theta, typeParameterIR*) =
 
-   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.5.2-type-subst.spectec:44:1-59:64:
+   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.5.2-type-subst.spectec:44:1-59:67:
    clause 0(theta, typeParameterIR*{typeParameterIR <- typeParameterIR*}, B) = (theta_fresh, typeParameterIR_fresh*{typeParameterIR_fresh <- typeParameterIR_fresh*})
       -- let { typeId_free*{typeId_free <- typeId_free*} } = $diff_set<typeId>(B, { typeParameterIR*{typeParameterIR <- typeParameterIR*} })
       -- (let typeIR?{typeIR <- typeIR?} = $find_map<typeId, typeIR>(theta, typeId_free))*{typeIR? <- typeIR?*, typeId_free <- typeId_free*}
@@ -5029,12 +5029,12 @@ def $capture_avoiding_(theta, typeParameterIR*, bound) : (theta, typeParameterIR
       -- let B_capture = $unions_set<typeId>($free_typeIR(typeIR_free)*{typeIR_free <- typeIR_free*})
       -- let typeParameterIR_fresh*{typeParameterIR_fresh <- typeParameterIR_fresh*} = $fresh_typeIds(|typeParameterIR*{typeParameterIR <- typeParameterIR*}|)
       -- (if ~$in_set<typeId>(typeParameterIR_fresh, B_capture))*{typeParameterIR_fresh <- typeParameterIR_fresh*}
-      -- let theta_fresh = $adds_map<typeId, typeIR>(theta, typeParameterIR*{typeParameterIR <- typeParameterIR*}, ` typeParameterIR_fresh as typeIR*{typeParameterIR_fresh <- typeParameterIR_fresh*})
+      -- let theta_fresh = $adds_map<typeId, typeIR>(theta, typeParameterIR*{typeParameterIR <- typeParameterIR*}, typeParameterIR_fresh as typeIR*{typeParameterIR_fresh <- typeParameterIR_fresh*})
 
 ;; ../../../../../spectec/specs/p4/2-static-runtime/2.5.2-type-subst.spectec:12:1-13:30:
 def $capture_avoiding(theta, typeId*, typeId*, bound) : (theta, typeId*, typeId*) =
 
-   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.5.2-type-subst.spectec:61:1-80:80:
+   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.5.2-type-subst.spectec:61:1-80:86:
    clause 0(theta, typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*}, typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}, B) = (theta_fresh, typeParameterIR_expl_fresh*{typeParameterIR_expl_fresh <- typeParameterIR_expl_fresh*}, typeParameterIR_impl_fresh*{typeParameterIR_impl_fresh <- typeParameterIR_impl_fresh*})
       -- let { typeId_free*{typeId_free <- typeId_free*} } = $diff_set<typeId>(B, { typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} ++ typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*} })
       -- (let typeIR?{typeIR <- typeIR?} = $find_map<typeId, typeIR>(theta, typeId_free))*{typeIR? <- typeIR?*, typeId_free <- typeId_free*}
@@ -5045,7 +5045,7 @@ def $capture_avoiding(theta, typeId*, typeId*, bound) : (theta, typeId*, typeId*
       -- (if ~$in_set<typeId>(typeId_fresh, B_capture))*{typeId_fresh <- typeId_fresh*}
       -- let typeParameterIR_expl_fresh*{typeParameterIR_expl_fresh <- typeParameterIR_expl_fresh*} = typeId_fresh*{typeId_fresh <- typeId_fresh*}[0 : |typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*}|]
       -- let typeParameterIR_impl_fresh*{typeParameterIR_impl_fresh <- typeParameterIR_impl_fresh*} = typeId_fresh*{typeId_fresh <- typeId_fresh*}[|typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*}| : |typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}|]
-      -- let theta_fresh = $adds_map<typeId, typeIR>(theta, typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} ++ typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}, ` typeParameterIR_expl_fresh as typeIR*{typeParameterIR_expl_fresh <- typeParameterIR_expl_fresh*} ++ ` typeParameterIR_impl_fresh as typeIR*{typeParameterIR_impl_fresh <- typeParameterIR_impl_fresh*})
+      -- let theta_fresh = $adds_map<typeId, typeIR>(theta, typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} ++ typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}, typeParameterIR_expl_fresh as typeIR*{typeParameterIR_expl_fresh <- typeParameterIR_expl_fresh*} ++ typeParameterIR_impl_fresh as typeIR*{typeParameterIR_impl_fresh <- typeParameterIR_impl_fresh*})
 
 ;; ../../../../../spectec/specs/p4/2-static-runtime/2.5.2-type-subst.spectec:15:1-16:40:
 def $subst_typeIR(theta, typeIR) : typeIR =
@@ -5069,15 +5069,15 @@ def $subst_typeIR'(theta, typeIR) : typeIR =
    ;; ../../../../../spectec/specs/p4/2-static-runtime/2.5.2-type-subst.spectec:96:1-97:58:
    clause 1(theta, typeIR') = typeIR
       -- if typeIR' <: nameTypeIR
-      -- let ` typeId = typeIR' as nameTypeIR
+      -- let typeId = typeIR' as nameTypeIR
       -- let typeIR''?{typeIR'' <- typeIR''?} = $find_map<typeId, typeIR>(theta, typeId)
       -- if typeIR''?{typeIR'' <- typeIR''?} matches (_)
       -- let ?(typeIR) = typeIR''?{typeIR'' <- typeIR''?}
 
    ;; ../../../../../spectec/specs/p4/2-static-runtime/2.5.2-type-subst.spectec:98:1-99:55:
-   clause 2(theta, typeIR) = ` typeId as typeIR
+   clause 2(theta, typeIR) = typeId as typeIR
       -- if typeIR <: nameTypeIR
-      -- let ` typeId = typeIR as nameTypeIR
+      -- let typeId = typeIR as nameTypeIR
       -- if (?() = $find_map<typeId, typeIR>(theta, typeId))
 
    ;; ../../../../../spectec/specs/p4/2-static-runtime/2.5.2-type-subst.spectec:103:1-105:53:
@@ -5458,7 +5458,7 @@ def $specialize_callableTypeDefIR(callableTypeDefIR, typeIR*) : (callableTypeIR,
       -- let typeParameterIR*{typeParameterIR <- typeParameterIR*} = typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} ++ typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}
       -- if (|typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*}| = |typeArgumentIR*{typeArgumentIR <- typeArgumentIR*}|)
       -- let typeId_fresh*{typeId_fresh <- typeId_fresh*} = $fresh_typeIds(|typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}|)
-      -- (let typeArgumentIR_impl = ` typeId_fresh as typeIR)*{typeArgumentIR_impl <- typeArgumentIR_impl*, typeId_fresh <- typeId_fresh*}
+      -- (let typeArgumentIR_impl = typeId_fresh as typeIR)*{typeArgumentIR_impl <- typeArgumentIR_impl*, typeId_fresh <- typeId_fresh*}
       -- let theta = { typeParameterIR_expl : typeArgumentIR*{typeArgumentIR <- typeArgumentIR*, typeParameterIR_expl <- typeParameterIR_expl*} ++ typeParameterIR_impl : typeArgumentIR_impl*{typeArgumentIR_impl <- typeArgumentIR_impl*, typeParameterIR_impl <- typeParameterIR_impl*} }
       -- let callableTypeIR_base = $callableTypeIR_of_callableTypeDefIR(callableTypeDefIR_base)
       -- let callableTypeIR_spec = $subst_callableTypeIR(theta, callableTypeIR_base)
@@ -5469,7 +5469,7 @@ def $specialize_callableTypeDefIR(callableTypeDefIR, typeIR*) : (callableTypeIR,
       -- let typeParameterIR*{typeParameterIR <- typeParameterIR*} = typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} ++ typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}
       -- if ((|typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*}| > 0) /\ (|typeArgumentIR*{typeArgumentIR <- typeArgumentIR*}| = 0))
       -- let typeId_fresh*{typeId_fresh <- typeId_fresh*} = $fresh_typeIds(|typeParameterIR*{typeParameterIR <- typeParameterIR*}|)
-      -- (let typeArgumentIR_fresh = ` typeId_fresh as typeIR)*{typeArgumentIR_fresh <- typeArgumentIR_fresh*, typeId_fresh <- typeId_fresh*}
+      -- (let typeArgumentIR_fresh = typeId_fresh as typeIR)*{typeArgumentIR_fresh <- typeArgumentIR_fresh*, typeId_fresh <- typeId_fresh*}
       -- let theta = { typeParameterIR : typeArgumentIR_fresh*{typeArgumentIR_fresh <- typeArgumentIR_fresh*, typeParameterIR <- typeParameterIR*} }
       -- let callableTypeIR_base = $callableTypeIR_of_callableTypeDefIR(callableTypeDefIR_base)
       -- let callableTypeIR_spec = $subst_callableTypeIR(theta, callableTypeIR_base)
@@ -5482,7 +5482,7 @@ def $specialize_constructorTypeDefIR(constructorTypeDefIR, typeIR*) : (construct
       -- let typeParameterIR*{typeParameterIR <- typeParameterIR*} = typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} ++ typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}
       -- if (|typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*}| = |typeArgumentIR*{typeArgumentIR <- typeArgumentIR*}|)
       -- let typeId_fresh*{typeId_fresh <- typeId_fresh*} = $fresh_typeIds(|typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}|)
-      -- (let typeArgumentIR_impl = ` typeId_fresh as typeIR)*{typeArgumentIR_impl <- typeArgumentIR_impl*, typeId_fresh <- typeId_fresh*}
+      -- (let typeArgumentIR_impl = typeId_fresh as typeIR)*{typeArgumentIR_impl <- typeArgumentIR_impl*, typeId_fresh <- typeId_fresh*}
       -- let theta = { typeParameterIR_expl : typeArgumentIR*{typeArgumentIR <- typeArgumentIR*, typeParameterIR_expl <- typeParameterIR_expl*} ++ typeParameterIR_impl : typeArgumentIR_impl*{typeArgumentIR_impl <- typeArgumentIR_impl*, typeParameterIR_impl <- typeParameterIR_impl*} }
       -- let constructorTypeIR_spec = $subst_constructorTypeIR(theta, constructor ( constructorParameterIR*{constructorParameterIR <- constructorParameterIR*} ) : typeIR)
 
@@ -5491,7 +5491,7 @@ def $specialize_constructorTypeDefIR(constructorTypeDefIR, typeIR*) : (construct
       -- let typeParameterIR*{typeParameterIR <- typeParameterIR*} = typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*} ++ typeParameterIR_impl*{typeParameterIR_impl <- typeParameterIR_impl*}
       -- if ((|typeParameterIR_expl*{typeParameterIR_expl <- typeParameterIR_expl*}| > 0) /\ (|typeArgumentIR*{typeArgumentIR <- typeArgumentIR*}| = 0))
       -- let typeId_fresh*{typeId_fresh <- typeId_fresh*} = $fresh_typeIds(|typeParameterIR*{typeParameterIR <- typeParameterIR*}|)
-      -- (let typeArgumentIR_fresh = ` typeId_fresh as typeIR)*{typeArgumentIR_fresh <- typeArgumentIR_fresh*, typeId_fresh <- typeId_fresh*}
+      -- (let typeArgumentIR_fresh = typeId_fresh as typeIR)*{typeArgumentIR_fresh <- typeArgumentIR_fresh*, typeId_fresh <- typeId_fresh*}
       -- let theta = { typeParameterIR : typeArgumentIR_fresh*{typeArgumentIR_fresh <- typeArgumentIR_fresh*, typeParameterIR <- typeParameterIR*} }
       -- let constructorTypeIR_spec = $subst_constructorTypeIR(theta, constructor ( constructorParameterIR*{constructorParameterIR <- constructorParameterIR*} ) : typeIR)
 
@@ -5506,12 +5506,12 @@ relation Type_alpha: typeIR ~~ typeIR
       -- let baseTypeIR' = typeIR' as baseTypeIR
       -- if (baseTypeIR = baseTypeIR')
 
-   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.6-type-alpha.spectec:40:1-41:30:
+   ;; ../../../../../spectec/specs/p4/2-static-runtime/2.6-type-alpha.spectec:40:1-41:36:
    rule nameTypeIR: typeIR ~~ typeIR'
       -- if typeIR <: nameTypeIR
-      -- let ` typeId = typeIR as nameTypeIR
+      -- let typeId = typeIR as nameTypeIR
       -- if typeIR' <: nameTypeIR
-      -- let ` typeId' = typeIR' as nameTypeIR
+      -- let typeId' = typeIR' as nameTypeIR
       -- if (typeId = typeId')
 
    ;; ../../../../../spectec/specs/p4/2-static-runtime/2.6-type-alpha.spectec:46:1-48:38:
@@ -5777,7 +5777,7 @@ relation ExternMethodTypeDef_alpha: externMethodTypeDefIR ~~ externMethodTypeDef
       -- if (|typeParameterIR_impl_a*{typeParameterIR_impl_a <- typeParameterIR_impl_a*}| = |typeParameterIR_impl_b*{typeParameterIR_impl_b <- typeParameterIR_impl_b*}|)
       -- let typeParameterIR_fresh*{typeParameterIR_fresh <- typeParameterIR_fresh*} = $fresh_typeIds(|typeParameterIR_expl_a*{typeParameterIR_expl_a <- typeParameterIR_expl_a*} ++ typeParameterIR_impl_a*{typeParameterIR_impl_a <- typeParameterIR_impl_a*}|)
       -- let typeParameterIR_a*{typeParameterIR_a <- typeParameterIR_a*} = typeParameterIR_expl_a*{typeParameterIR_expl_a <- typeParameterIR_expl_a*} ++ typeParameterIR_impl_a*{typeParameterIR_impl_a <- typeParameterIR_impl_a*}
-      -- let theta_a = { typeParameterIR_a : ` typeParameterIR_fresh as typeIR*{typeParameterIR_a <- typeParameterIR_a*, typeParameterIR_fresh <- typeParameterIR_fresh*} }
+      -- let theta_a = { typeParameterIR_a : typeParameterIR_fresh as typeIR*{typeParameterIR_a <- typeParameterIR_a*, typeParameterIR_fresh <- typeParameterIR_fresh*} }
       -- let callableTypeIR = $callableTypeIR_of_callableTypeDefIR(externMethodTypeDefIR_a as callableTypeDefIR)
       -- if callableTypeIR <: externMethodTypeIR
       -- let externMethodTypeIR_a = callableTypeIR as externMethodTypeIR
@@ -5785,7 +5785,7 @@ relation ExternMethodTypeDef_alpha: externMethodTypeDefIR ~~ externMethodTypeDef
       -- if callableTypeIR' <: externMethodTypeIR
       -- let externMethodTypeIR_a_subst = callableTypeIR' as externMethodTypeIR
       -- let typeParameterIR_b*{typeParameterIR_b <- typeParameterIR_b*} = typeParameterIR_expl_b*{typeParameterIR_expl_b <- typeParameterIR_expl_b*} ++ typeParameterIR_impl_b*{typeParameterIR_impl_b <- typeParameterIR_impl_b*}
-      -- let theta_b = { typeParameterIR_b : ` typeParameterIR_fresh as typeIR*{typeParameterIR_b <- typeParameterIR_b*, typeParameterIR_fresh <- typeParameterIR_fresh*} }
+      -- let theta_b = { typeParameterIR_b : typeParameterIR_fresh as typeIR*{typeParameterIR_b <- typeParameterIR_b*, typeParameterIR_fresh <- typeParameterIR_fresh*} }
       -- let callableTypeIR'' = $callableTypeIR_of_callableTypeDefIR(externMethodTypeDefIR_b as callableTypeDefIR)
       -- if callableTypeIR'' <: externMethodTypeIR
       -- let externMethodTypeIR_b = callableTypeIR'' as externMethodTypeIR
@@ -7997,14 +7997,14 @@ def $sizeof_maxSizeInBytes(typeIR) : value =
 
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:6:1-7:14:
 syntax prefixedNameIR = 
-   | ` nameIR (from prefixedNameIR) hint(print %0)
+   | nameIR (from prefixedNameIR) hint(print %0)
    | . nameIR (from prefixedNameIR)
 
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:9:1-10:44:
 def $prefixedNonTypeName(prefixedNonTypeName) : prefixedNameIR =
 
-   ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:11:1-11:62:
-   clause 0(prefixedNonTypeName) = ` $name(nonTypeName as name)
+   ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:11:1-11:65:
+   clause 0(prefixedNonTypeName) = $name(nonTypeName as name)
       -- if prefixedNonTypeName <: nonTypeName
       -- let nonTypeName = prefixedNonTypeName as nonTypeName
 
@@ -8016,8 +8016,8 @@ def $prefixedNonTypeName(prefixedNonTypeName) : prefixedNameIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:14:1-15:44:
 def $prefixedTypeName(prefixedTypeName) : prefixedNameIR =
 
-   ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:16:1-16:53:
-   clause 0(prefixedTypeName) = ` $name(typeName as name)
+   ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:16:1-16:56:
+   clause 0(prefixedTypeName) = $name(typeName as name)
       -- if prefixedTypeName <: typeName
       -- let typeName = prefixedTypeName as typeName
 
@@ -8029,10 +8029,10 @@ def $prefixedTypeName(prefixedTypeName) : prefixedNameIR =
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:19:1-20:42:
 def $flatten_prefixedNameIR(prefixedNameIR) : nameIR =
 
-   ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:21:1-21:48:
+   ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:21:1-21:51:
    clause 0(prefixedNameIR) = nameIR
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
 
    ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:22:1-22:55:
    clause 1(prefixedNameIR) = "." ++ nameIR
@@ -8138,7 +8138,7 @@ syntax accessExpressionIR =
 
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:155:1-158:26:
 syntax callableTargetIR = 
-   | ` nameIR (from prefixedNameIR) hint(print %0)
+   | nameIR (from prefixedNameIR) hint(print %0)
    | . nameIR (from prefixedNameIR)
    | typedExpressionIR . nameIR (from callableTargetIR)
    | type prefixedNameIR . nameIR (from callableTargetIR)
@@ -8165,7 +8165,7 @@ syntax expressionIR =
    | nat w int (from integerLiteral) hint(print %#W#%)
    | nat s int (from integerLiteral) hint(print %#S#%)
    | " text " (from stringLiteral) hint(print "#%#")
-   | ` nameIR (from prefixedNameIR) hint(print %0)
+   | nameIR (from prefixedNameIR) hint(print %0)
    | . nameIR (from prefixedNameIR)
    | ... (from defaultExpression)
    | unop typedExpressionIR (from unaryExpressionIR)
@@ -8268,7 +8268,7 @@ syntax argumentListIR = argumentIR*
 
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:266:1-271:23:
 syntax lvalueIR = 
-   | ` nameIR (from prefixedNameIR) hint(print %0)
+   | nameIR (from prefixedNameIR) hint(print %0)
    | . nameIR (from prefixedNameIR)
    | typedLvalueIR . nameIR (from lvalueIR)
    | typedLvalueIR [ typedExpressionIR ] (from lvalueIR)
@@ -8616,7 +8616,7 @@ syntax typedefIR =
    | int < nat > (from fixedIntTypeIR)
    | bit < nat > (from fixedBitTypeIR)
    | varbit < nat > (from varBitTypeIR)
-   | ` typeId (from nameTypeIR) hint(print %0)
+   | typeId (from nameTypeIR) hint(print %0)
    | typedef typeId typeIR (from typedefTypeIR) hint(print %0)
    | type typeId typeIR (from newTypeIR) hint(print %0)
    | list < typeIR > (from listTypeIR)
@@ -10161,8 +10161,8 @@ def $add_typeDefs_t(cursor, typingContext, typeId*, typeDefIR*) : typingContext 
 ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:232:1-233:70:
 def $add_typeParameters_t(cursor, typingContext, typeId*) : typingContext =
 
-   ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:235:1-236:50:
-   clause 0(p, TC, typeId*{typeId <- typeId*}) = $add_typeDefs_t(p, TC, typeId*{typeId <- typeId*}, ` typeId as typeDefIR*{typeId <- typeId*})
+   ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:235:1-236:53:
+   clause 0(p, TC, typeId*{typeId <- typeId*}) = $add_typeDefs_t(p, TC, typeId*{typeId <- typeId*}, typeId as typeDefIR*{typeId <- typeId*})
 
 ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:240:1-242:94:
 def $add_callableDef_overload_t(cursor, typingContext, callableId, callableTypeDefIR) : typingContext =
@@ -10256,15 +10256,15 @@ def $find_var_t(prefixedNameIR, cursor, typingContext) : varTypeIR? =
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:338:1-340:36:
    clause 1(prefixedNameIR, cursor, TC) = $find_map<id, varTypeIR>(typeFrame, id)
-      -- if prefixedNameIR matches `` %`
-      -- let ` id = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let id = prefixedNameIR
       -- if cursor matches `GLOBAL`
       -- let typeFrame = TC.global.frame
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:341:1-343:60:
    clause 2(prefixedNameIR, cursor, TC) = ?(varTypeIR)
-      -- if prefixedNameIR matches `` %`
-      -- let ` id = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let id = prefixedNameIR
       -- if cursor matches `BLOCK`
       -- let typeFrame = TC.block.frame
       -- let varTypeIR'?{varTypeIR' <- varTypeIR'?} = $find_map<id, varTypeIR>(typeFrame, id)
@@ -10272,17 +10272,17 @@ def $find_var_t(prefixedNameIR, cursor, typingContext) : varTypeIR? =
       -- let ?(varTypeIR) = varTypeIR'?{varTypeIR' <- varTypeIR'?}
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:344:1-346:54:
-   clause 3(prefixedNameIR, cursor, TC) = $find_var_t(` id, global, TC)
-      -- if prefixedNameIR matches `` %`
-      -- let ` id = prefixedNameIR
+   clause 3(prefixedNameIR, cursor, TC) = $find_var_t(id, global, TC)
+      -- if prefixedNameIR matches `_NAME %`
+      -- let id = prefixedNameIR
       -- if cursor matches `BLOCK`
       -- let typeFrame = TC.block.frame
       -- if (?() = $find_map<id, varTypeIR>(typeFrame, id))
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:347:1-349:62:
    clause 4(prefixedNameIR, cursor, TC) = ?(varTypeIR)
-      -- if prefixedNameIR matches `` %`
-      -- let ` id = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let id = prefixedNameIR
       -- if cursor matches `LOCAL`
       -- let typeFrame*{typeFrame <- typeFrame*} = TC.local.frames
       -- let varTypeIR'?{varTypeIR' <- varTypeIR'?} = $find_maps<id, varTypeIR>(typeFrame*{typeFrame <- typeFrame*}, id)
@@ -10290,9 +10290,9 @@ def $find_var_t(prefixedNameIR, cursor, typingContext) : varTypeIR? =
       -- let ?(varTypeIR) = varTypeIR'?{varTypeIR' <- varTypeIR'?}
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:350:1-352:56:
-   clause 5(prefixedNameIR, cursor, TC) = $find_var_t(` id, block, TC)
-      -- if prefixedNameIR matches `` %`
-      -- let ` id = prefixedNameIR
+   clause 5(prefixedNameIR, cursor, TC) = $find_var_t(id, block, TC)
+      -- if prefixedNameIR matches `_NAME %`
+      -- let id = prefixedNameIR
       -- if cursor matches `LOCAL`
       -- let typeFrame*{typeFrame <- typeFrame*} = TC.local.frames
       -- if (?() = $find_maps<id, varTypeIR>(typeFrame*{typeFrame <- typeFrame*}, id))
@@ -10320,43 +10320,43 @@ def $find_typeDef_t(cursor, typingContext, prefixedNameIR) : typeDefIR? =
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:370:1-372:36:
    clause 1(cursor, TC, prefixedNameIR) = $find_map<typeId, typeDefIR>(typeDefEnv, typeId)
       -- if cursor matches `GLOBAL`
-      -- if prefixedNameIR matches `` %`
-      -- let ` typeId = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let typeId = prefixedNameIR
       -- let typeDefEnv = TC.global.type
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:373:1-376:69:
    clause 2(cursor, TC, prefixedNameIR) = ?(typeDefIR)
       -- if cursor matches `BLOCK`
-      -- if prefixedNameIR matches `` %`
-      -- let ` typeId = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let typeId = prefixedNameIR
       -- let typeDefEnv = TC.block.type
       -- let typeDefIR'?{typeDefIR' <- typeDefIR'?} = $find_map<typeId, typeDefIR>(typeDefEnv, typeId)
       -- if typeDefIR'?{typeDefIR' <- typeDefIR'?} matches (_)
       -- let ?(typeDefIR) = typeDefIR'?{typeDefIR' <- typeDefIR'?}
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:377:1-380:63:
-   clause 3(cursor, TC, prefixedNameIR) = $find_typeDef_t(global, TC, ` typeId)
+   clause 3(cursor, TC, prefixedNameIR) = $find_typeDef_t(global, TC, typeId)
       -- if cursor matches `BLOCK`
-      -- if prefixedNameIR matches `` %`
-      -- let ` typeId = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let typeId = prefixedNameIR
       -- let typeDefEnv = TC.block.type
       -- if (?() = $find_map<typeId, typeDefIR>(typeDefEnv, typeId))
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:381:1-384:71:
    clause 4(cursor, TC, prefixedNameIR) = ?(typeDefIR)
       -- if cursor matches `LOCAL`
-      -- if prefixedNameIR matches `` %`
-      -- let ` typeId = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let typeId = prefixedNameIR
       -- let typeDefEnv*{typeDefEnv <- typeDefEnv*} = [TC.local.type]
       -- let typeDefIR'?{typeDefIR' <- typeDefIR'?} = $find_maps<typeId, typeDefIR>(typeDefEnv*{typeDefEnv <- typeDefEnv*}, typeId)
       -- if typeDefIR'?{typeDefIR' <- typeDefIR'?} matches (_)
       -- let ?(typeDefIR) = typeDefIR'?{typeDefIR' <- typeDefIR'?}
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:385:1-388:65:
-   clause 5(cursor, TC, prefixedNameIR) = $find_typeDef_t(block, TC, ` typeId)
+   clause 5(cursor, TC, prefixedNameIR) = $find_typeDef_t(block, TC, typeId)
       -- if cursor matches `LOCAL`
-      -- if prefixedNameIR matches `` %`
-      -- let ` typeId = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let typeId = prefixedNameIR
       -- let typeDefEnv*{typeDefEnv <- typeDefEnv*} = [TC.local.type]
       -- if (?() = $find_maps<typeId, typeDefIR>(typeDefEnv*{typeDefEnv <- typeDefEnv*}, typeId))
 
@@ -10374,16 +10374,16 @@ def $find_callableDef_overloaded_t(cursor, typingContext, prefixedNameIR, argume
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:401:1-405:60:
    clause 1(cursor, TC, prefixedNameIR, argumentIR*{argumentIR <- argumentIR*}) = $find_overloaded<callableTypeDefIR>(callableTypeDefEnv, callTargetKey, $parameterListIR_of_callableTypeDefIR)
       -- if cursor matches `GLOBAL`
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
       -- let callableTypeDefEnv = TC.global.callable
       -- let callTargetKey = $callTargetKey(nameIR, argumentIR*{argumentIR <- argumentIR*})
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:406:1-412:88:
    clause 2(cursor, TC, prefixedNameIR, argumentIR*{argumentIR <- argumentIR*}) = ?(callableId : callableTypeDefIR # id_default*{id_default <- id_default*} # id_optional*{id_optional <- id_optional*})
       -- if cursor matches `BLOCK`
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
       -- let callableTypeDefEnv = TC.block.callable
       -- let callTargetKey = $callTargetKey(nameIR, argumentIR*{argumentIR <- argumentIR*})
       -- let callResolution<callableTypeDefIR>?{callResolution<callableTypeDefIR> <- callResolution<callableTypeDefIR>?} = $find_overloaded<callableTypeDefIR>(callableTypeDefEnv, callTargetKey, $parameterListIR_of_callableTypeDefIR)
@@ -10391,19 +10391,19 @@ def $find_callableDef_overloaded_t(cursor, typingContext, prefixedNameIR, argume
       -- let ?(callableId : callableTypeDefIR # id_default*{id_default <- id_default*} # id_optional*{id_optional <- id_optional*}) = callResolution<callableTypeDefIR>?{callResolution<callableTypeDefIR> <- callResolution<callableTypeDefIR>?}
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:413:1-419:88:
-   clause 3(cursor, TC, prefixedNameIR, argumentIR*{argumentIR <- argumentIR*}) = $find_callableDef_overloaded_t(global, TC, ` nameIR, argumentIR*{argumentIR <- argumentIR*})
+   clause 3(cursor, TC, prefixedNameIR, argumentIR*{argumentIR <- argumentIR*}) = $find_callableDef_overloaded_t(global, TC, nameIR, argumentIR*{argumentIR <- argumentIR*})
       -- if cursor matches `BLOCK`
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
       -- let callableTypeDefEnv = TC.block.callable
       -- let callTargetKey = $callTargetKey(nameIR, argumentIR*{argumentIR <- argumentIR*})
       -- if (?() = $find_overloaded<callableTypeDefIR>(callableTypeDefEnv, callTargetKey, $parameterListIR_of_callableTypeDefIR))
 
-   ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:420:1-421:70:
-   clause 4(cursor, TC, prefixedNameIR, argumentIR*{argumentIR <- argumentIR*}) = $find_callableDef_overloaded_t(block, TC, ` nameIR, argumentIR*{argumentIR <- argumentIR*})
+   ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:420:1-421:73:
+   clause 4(cursor, TC, prefixedNameIR, argumentIR*{argumentIR <- argumentIR*}) = $find_callableDef_overloaded_t(block, TC, nameIR, argumentIR*{argumentIR <- argumentIR*})
       -- if cursor matches `LOCAL`
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
 
 ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:423:1-425:92:
 def $find_callableDef_non_overloaded_t(cursor, typingContext, prefixedNameIR) : (callableId, callableTypeDefIR)? =
@@ -10416,30 +10416,30 @@ def $find_callableDef_non_overloaded_t(cursor, typingContext, prefixedNameIR) : 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:429:1-430:72:
    clause 1(cursor, TC, prefixedNameIR) = $find_non_overloaded<callableTypeDefIR>(TC.global.callable, nameIR)
       -- if cursor matches `GLOBAL`
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:431:1-434:75:
    clause 2(cursor, TC, prefixedNameIR) = ?((callableId, callableTypeDefIR))
       -- if cursor matches `BLOCK`
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
       -- let (callableId, callableTypeDefIR)?{(callableId, callableTypeDefIR) <- (callableId, callableTypeDefIR)?} = $find_non_overloaded<callableTypeDefIR>(TC.block.callable, nameIR)
       -- if (callableId, callableTypeDefIR)?{(callableId, callableTypeDefIR) <- (callableId, callableTypeDefIR)?} matches (_)
       -- let ?((callableId, callableTypeDefIR)) = (callableId, callableTypeDefIR)?{(callableId, callableTypeDefIR) <- (callableId, callableTypeDefIR)?}
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:435:1-438:75:
-   clause 3(cursor, TC, prefixedNameIR) = $find_callableDef_non_overloaded_t(global, TC, ` nameIR)
+   clause 3(cursor, TC, prefixedNameIR) = $find_callableDef_non_overloaded_t(global, TC, nameIR)
       -- if cursor matches `BLOCK`
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
       -- if (?() = $find_non_overloaded<callableTypeDefIR>(TC.block.callable, nameIR))
 
-   ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:439:1-440:61:
-   clause 4(cursor, TC, prefixedNameIR) = $find_callableDef_non_overloaded_t(block, TC, ` nameIR)
+   ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:439:1-440:64:
+   clause 4(cursor, TC, prefixedNameIR) = $find_callableDef_non_overloaded_t(block, TC, nameIR)
       -- if cursor matches `LOCAL`
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
 
 ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:444:1-446:79:
 def $find_constructorDef_overloaded_t(typingContext, prefixedNameIR, argumentIR*) : callResolution<constructorTypeDefIR>? =
@@ -10452,8 +10452,8 @@ def $find_constructorDef_overloaded_t(typingContext, prefixedNameIR, argumentIR*
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:454:1-459:60:
    clause 1(TC, prefixedNameIR, argumentIR*{argumentIR <- argumentIR*}) = $find_overloaded<constructorTypeDefIR>(TC.global.constructor, callTargetKey, $parameterListIR_of_constructorTypeDefIR)
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
       -- let callTargetKey = $callTargetKey(nameIR, argumentIR*{argumentIR <- argumentIR*})
 
 ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:463:1-464:50:
@@ -10824,7 +10824,7 @@ relation Type_wf: bound |- typeIR
    ;; ../../../../../spectec/specs/p4/5-typing/5.03-typing-wellformed.spectec:70:1-72:35:
    rule nameTypeIR: B |- typeIR
       -- if typeIR <: nameTypeIR
-      -- let ` typeId = typeIR as nameTypeIR
+      -- let typeId = typeIR as nameTypeIR
       -- if $in_set<typeId>(typeId, B)
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.03-typing-wellformed.spectec:94:1-97:26:
@@ -12302,12 +12302,12 @@ relation Expr_eval_lctk: cursor typingContext |- typedExpressionIR ~> value
       -- let record { nameIR = typedExpressionIR*{nameIR <- nameIR*, typedExpressionIR <- typedExpressionIR*} , ... } = recordExpressionIR
       -- (rel Expr_eval_lctk: p TC |- typedExpressionIR ~> value)*{typedExpressionIR <- typedExpressionIR*, value <- value*}
 
-   ;; ../../../../../spectec/specs/p4/5-typing/5.06.2-typing-expression-eval.spectec:158:1-161:64:
+   ;; ../../../../../spectec/specs/p4/5-typing/5.06.2-typing-expression-eval.spectec:158:1-161:67:
    rule errorAccessExpressionIR: p TC |- expressionIR # ( _typeIR _ctk ) ~> value_error
       -- if expressionIR <: errorAccessExpressionIR
       -- let error . nameIR = expressionIR as errorAccessExpressionIR
       -- let nameIR_error = "error." ++ nameIR
-      -- let value_error = $find_var_value_t(` nameIR_error, p, TC)
+      -- let value_error = $find_var_value_t(nameIR_error, p, TC)
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.06.2-typing-expression-eval.spectec:170:1-177:32:
    rule enum: p TC |- expressionIR # _expressionNoteIR ~> typeId . nameIR as value
@@ -12762,14 +12762,14 @@ relation TypeArgument_ok: cursor typingContext |- typeArgument : typeArgumentIR 
       -- if realTypeArgument matches `VOID`
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.05.3-typing-type-argument.spectec:23:1-25:38:
-   rule dontcare: p TC |- typeArgument : ` typeId_impl as typeIR # [typeId_impl]
+   rule dontcare: p TC |- typeArgument : typeId_impl as typeIR # [typeId_impl]
       -- if typeArgument <: realTypeArgument
       -- let realTypeArgument = typeArgument as realTypeArgument
       -- if realTypeArgument matches `_`
       -- let typeId_impl = $fresh_typeId
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.05.3-typing-type-argument.spectec:29:1-31:36:
-   rule nonTypeName: p TC |- typeArgument : ` typeId as typeIR # []
+   rule nonTypeName: p TC |- typeArgument : typeId as typeIR # []
       -- if typeArgument <: nonTypeName
       -- let nonTypeName = typeArgument as nonTypeName
       -- let typeId = $name(nonTypeName as name)
@@ -13438,7 +13438,7 @@ relation Expr_ok: cursor typingContext |- expression : typedExpressionIR
       -- if expression <: referenceExpression
       -- let referenceExpression = expression as referenceExpression
       -- if referenceExpression matches `THIS`
-      -- let prefixedNameIR = ` "this"
+      -- let prefixedNameIR = "this"
       -- let varTypeIR?{varTypeIR <- varTypeIR?} = $find_var_t(prefixedNameIR, p, TC)
       -- if varTypeIR?{varTypeIR <- varTypeIR?} matches (_)
       -- let ?(_direction typeIR ctk _value?{_value <- _value?}) = varTypeIR?{varTypeIR <- varTypeIR?}
@@ -13865,7 +13865,7 @@ relation Expr_ok: cursor typingContext |- expression : typedExpressionIR
       -- let error . member = expression as errorAccessExpression
       -- let nameIR = $name(member)
       -- let nameIR_error = "error." ++ nameIR
-      -- if (error . nameIR as value = $find_var_value_t(` nameIR_error, p, TC))
+      -- if (error . nameIR as value = $find_var_value_t(nameIR_error, p, TC))
       -- let expressionNoteIR = ( error as typeIR lctk )
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.06.1-typing-expression.spectec:720:1-734:49:
@@ -14697,7 +14697,7 @@ relation Stmt_ok: cursor typingContext flow loopctxt |- statement : typingContex
       -- let typedExpressionIR_base . text = callableTargetIR
       -- if (text = "apply")
       -- if typeArgumentIR'*{typeArgumentIR' <- typeArgumentIR'*} matches []
-      -- if (` nameIR_object as expressionIR # ( typeIR_object ctk ) = typedExpressionIR_base)
+      -- if (nameIR_object as expressionIR # ( typeIR_object ctk ) = typedExpressionIR_base)
       -- if (constructorTargetIR = prefixedNameIR < typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} >)
       -- let directApplicationStatementIR = constructorTargetIR . apply ( argumentIR_cast*{argumentIR_cast <- argumentIR_cast*} ) ;
 
@@ -15036,7 +15036,7 @@ relation ExternConstructor_ok: typingContext typeId |- externConstructorPrototyp
       -- let nameIR = $name(typeIdentifier as name)
       -- if (nameIR = typeId_extern)
       -- rel ConstructorParameterListOpt_ok: TC_0 |- ( parameterList ) : TC_1 constructorParameterIR*{constructorParameterIR <- constructorParameterIR*} # typeId_impl*{typeId_impl <- typeId_impl*}
-      -- let typeDefIR'?{typeDefIR' <- typeDefIR'?} = $find_typeDef_t(global, TC_0, ` typeId_extern)
+      -- let typeDefIR'?{typeDefIR' <- typeDefIR'?} = $find_typeDef_t(global, TC_0, typeId_extern)
       -- if typeDefIR'?{typeDefIR' <- typeDefIR'?} matches (_)
       -- let ?(typeDefIR) = typeDefIR'?{typeDefIR' <- typeDefIR'?}
       -- if typeDefIR <: externObjectTypeDefIR
@@ -15261,7 +15261,7 @@ relation TableKey_ok: typingContext tableContext |- tableKey : tableContext tabl
       -- let nameIR_default = $strip_all_whitespace($name_expression(expression))
       -- let nameIR_key = $name_annotation_default(annotationList, nameIR_default)
       -- let nameIR_matchkind = $name(name_matchkind)
-      -- if (match_kind . nameIR_matchkind as value = $find_var_value_t(` nameIR_matchkind, local, TC))
+      -- if (match_kind . nameIR_matchkind as value = $find_var_value_t(nameIR_matchkind, local, TC))
       -- if $compat_table_key(nameIR_matchkind, typeIR)
       -- let TBLC_1 = $add_key_tbl(TBLC_0, nameIR_matchkind, typeIR)
       -- let tableKeyIR = typedExpressionIR # nameIR_key : nameIR_matchkind annotationList ;
@@ -15709,7 +15709,7 @@ relation Table_ok: typingContext |- tableProperty* : tableContext tablePropertyL
       -- if (|$filter_<tableProperty>(tableProperty*{tableProperty <- tableProperty*}, $is_tableDefaultActionProperty(tableProperty)*{tableProperty <- tableProperty*})| = 0)
       -- let TBLC_0 = $empty_tableContext
       -- rel TableProperties_ok: TC TBLC_0 |- tableProperty*{tableProperty <- tableProperty*} : TBLC_1 tablePropertyIR*{tablePropertyIR <- tablePropertyIR*}
-      -- let tablePropertyIR_default_action = ?() default_action = ` "NoAction" ?() ( [] ) ; as tablePropertyIR
+      -- let tablePropertyIR_default_action = ?() default_action = "NoAction" ?() ( [] ) ; as tablePropertyIR
       -- let (TBLC_2, tablePropertyIR_updated*{tablePropertyIR_updated <- tablePropertyIR_updated*}) = $insert_NoAction_tablePropertyIR(TBLC_1, tablePropertyIR*{tablePropertyIR <- tablePropertyIR*})
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.14.1-typing-control-table.spectec:1019:1-1032:79:
@@ -16157,7 +16157,7 @@ relation Decl_ok: typingContext |- declaration : typingContext declarationIR
       -- let { typeId'*{typeId' <- typeId'*} } = $diff_set<typeId>($dom_map<typeId, typeDefIR>(TC_1.global.type), $dom_map<typeId, typeDefIR>(TC_0.global.type))
       -- if typeId'*{typeId' <- typeId'*} matches [ _/1 ]
       -- let [typeId] = typeId'*{typeId' <- typeId'*}
-      -- let typeDefIR'?{typeDefIR' <- typeDefIR'?} = $find_typeDef_t(global, TC_1, ` typeId)
+      -- let typeDefIR'?{typeDefIR' <- typeDefIR'?} = $find_typeDef_t(global, TC_1, typeId)
       -- if typeDefIR'?{typeDefIR' <- typeDefIR'?} matches (_)
       -- let ?(typeDefIR) = typeDefIR'?{typeDefIR' <- typeDefIR'?}
       -- if $is_monomorphic_typeDefIR(typeDefIR)
@@ -16182,7 +16182,7 @@ relation Decl_ok: typingContext |- declaration : typingContext declarationIR
       -- let { typeId'*{typeId' <- typeId'*} } = $diff_set<typeId>($dom_map<typeId, typeDefIR>(TC_1.global.type), $dom_map<typeId, typeDefIR>(TC_0.global.type))
       -- if typeId'*{typeId' <- typeId'*} matches [ _/1 ]
       -- let [typeId] = typeId'*{typeId' <- typeId'*}
-      -- let typeDefIR'?{typeDefIR' <- typeDefIR'?} = $find_typeDef_t(global, TC_1, ` typeId)
+      -- let typeDefIR'?{typeDefIR' <- typeDefIR'?} = $find_typeDef_t(global, TC_1, typeId)
       -- if typeDefIR'?{typeDefIR' <- typeDefIR'?} matches (_)
       -- let ?(typeDefIR) = typeDefIR'?{typeDefIR' <- typeDefIR'?}
       -- if ~$is_monomorphic_typeDefIR(typeDefIR)
@@ -16404,8 +16404,8 @@ relation CallableTarget_ok: cursor typingContext |- callableTarget : callableTar
       -- let prefixedNonTypeName = callableTarget as prefixedNonTypeName
       -- let prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
 
-   ;; ../../../../../spectec/specs/p4/5-typing/5.15.4-typing-callable-call.spectec:26:1-27:29:
-   rule this: p TC |- expression : ` "this" as callableTargetIR
+   ;; ../../../../../spectec/specs/p4/5-typing/5.15.4-typing-callable-call.spectec:26:1-27:32:
+   rule this: p TC |- expression : "this" as callableTargetIR
       -- if expression <: referenceExpression
       -- let referenceExpression = expression as referenceExpression
       -- if referenceExpression matches `THIS`
@@ -16781,7 +16781,7 @@ relation ConstructorType_ok: cursor typingContext |- constructorTargetIR ( argum
       -- if typeDefIR <: typedefTypeIR
       -- let typedef nameIR_alias typeIR_alias = typeDefIR as typedefTypeIR
       -- let (nameIR, typeArgumentIR*{typeArgumentIR <- typeArgumentIR*}) = $resolve_type_alias(typeIR_alias)
-      -- let callResolution<constructorTypeDefIR>?{callResolution<constructorTypeDefIR> <- callResolution<constructorTypeDefIR>?} = $find_constructorDef_overloaded_t(TC, ` nameIR, argumentIR*{argumentIR <- argumentIR*})
+      -- let callResolution<constructorTypeDefIR>?{callResolution<constructorTypeDefIR> <- callResolution<constructorTypeDefIR>?} = $find_constructorDef_overloaded_t(TC, nameIR, argumentIR*{argumentIR <- argumentIR*})
       -- if callResolution<constructorTypeDefIR>?{callResolution<constructorTypeDefIR> <- callResolution<constructorTypeDefIR>?} matches (_)
       -- let ?(callableId : constructorTypeDefIR # id_default*{id_default <- id_default*} # id_optional*{id_optional <- id_optional*}) = callResolution<constructorTypeDefIR>?{callResolution<constructorTypeDefIR> <- callResolution<constructorTypeDefIR>?}
       -- let (constructorTypeIR, typeId_impl*{typeId_impl <- typeId_impl*}) = $specialize_constructorTypeDefIR(constructorTypeDefIR, typeArgumentIR*{typeArgumentIR <- typeArgumentIR*})
@@ -17836,22 +17836,22 @@ relation SwitchLabel_table_ok: typingContext typeId |- switchLabel : switchLabel
    rule default: TC typeId_table |- switchLabel : default
       -- if switchLabel matches `DEFAULT`
 
-   ;; ../../../../../spectec/specs/p4/5-typing/5.10-typing-statement.spectec:548:1-560:57:
+   ;; ../../../../../spectec/specs/p4/5-typing/5.10-typing-statement.spectec:548:1-560:60:
    rule expressionNonBrace-prefixedNonTypeName: TC typeId_table |- switchLabel : typedExpressionIR_label as switchLabelIR
       -- if switchLabel <: prefixedNonTypeName
       -- let prefixedNonTypeName = switchLabel as prefixedNonTypeName
       -- let prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR_label = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR_label = prefixedNameIR
       -- let typeId_table_enum = $concat_text(["action_list(", typeId_table, ")"])
       -- let id_label = $concat_text([typeId_table_enum, ".", nameIR_label])
-      -- let varTypeIR?{varTypeIR <- varTypeIR?} = $find_var_t(` id_label, local, TC)
+      -- let varTypeIR?{varTypeIR <- varTypeIR?} = $find_var_t(id_label, local, TC)
       -- if varTypeIR?{varTypeIR <- varTypeIR?} matches (_)
       -- let ?(_direction typeIR_label ctk_label value?{value <- value?}) = varTypeIR?{varTypeIR <- varTypeIR?}
       -- if value?{value <- value?} matches (_)
       -- let ?(value_label) = value?{value <- value?}
       -- if (value_label = table_enum typeId_table_enum . nameIR_label as value)
-      -- let typedExpressionIR_label = ` nameIR_label as expressionIR # ( typeIR_label ctk_label )
+      -- let typedExpressionIR_label = nameIR_label as expressionIR # ( typeIR_label ctk_label )
 
 ;; ../../../../../spectec/specs/p4/5-typing/5.10-typing-statement.spectec:565:1-571:60:
 relation SwitchCase_table_ok: typingContext flow loopctxt typeId |- switchCase : flow switchCaseIR # switchLabel
@@ -18024,7 +18024,7 @@ relation ObjectDecl_ok: cursor typingContext typeFrame externMethodTypeDefEnv |-
       -- let instantiation = objectDeclaration as instantiation
       -- rel InstDecl_ok: p TC_0 |- instantiation : TC_1 instantiationIR
       -- let _annotationList _typeIR _constructorTargetIR ( _argumentListIR ) nameIR _objectInitializerOptIR ; = instantiationIR
-      -- let varTypeIR'?{varTypeIR' <- varTypeIR'?} = $find_var_t(` nameIR, p, TC_1)
+      -- let varTypeIR'?{varTypeIR' <- varTypeIR'?} = $find_var_t(nameIR, p, TC_1)
       -- if varTypeIR'?{varTypeIR' <- varTypeIR'?} matches (_)
       -- let ?(varTypeIR) = varTypeIR'?{varTypeIR' <- varTypeIR'?}
       -- let typeFrame_init = $update_map<id, varTypeIR>(typeFrame, nameIR, varTypeIR)
@@ -19134,7 +19134,7 @@ def $gen_constraint(constraint, typeIR, typeIR) : constraint =
    ;; ../../../../../spectec/specs/p4/5-typing/5.15.2-typing-call-inference.spectec:87:1-89:75:
    clause 0(constraint, typeIR, typeIR_arg) = $update_map<typeId, infer>(constraint, typeId_param, known as typeIR_arg)
       -- if typeIR <: nameTypeIR
-      -- let ` typeId_param = typeIR as nameTypeIR
+      -- let typeId_param = typeIR as nameTypeIR
       -- if $in_set<typeId>(typeId_param, $dom_map<typeId, infer>(constraint))
 
    ;; ../../../../../spectec/specs/p4/5-typing/5.15.2-typing-call-inference.spectec:93:1-94:58:
@@ -19655,7 +19655,7 @@ def $callableId_IR(nameIR, parameterListIR) : callableId =
 
 ;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.1-storage-reference.spectec:6:1-10:42:
 syntax storageReference = 
-   | ` nameIR (from prefixedNameIR) hint(print %0)
+   | nameIR (from prefixedNameIR) hint(print %0)
    | . nameIR (from prefixedNameIR)
    | storageReference . nameIR (from storageReference)
    | storageReference [ value ] (from storageReference)
@@ -20223,30 +20223,30 @@ def $find_callableDef_non_overload_i(cursor, instContext, prefixedNameIR) : (cur
    ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:223:1-224:60:
    clause 2(cursor, IC, prefixedNameIR) = $find_callableDef_non_overload_i(global, IC, . nameIR)
       -- if cursor matches `GLOBAL`
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
 
    ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:225:1-228:69:
    clause 3(cursor, IC, prefixedNameIR) = ?((block, callableId, callableDef))
       -- if cursor matches `BLOCK`
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
       -- let (callableId, callableDef)?{(callableId, callableDef) <- (callableId, callableDef)?} = $find_non_overloaded<callableDef>(IC.block.callable, nameIR)
       -- if (callableId, callableDef)?{(callableId, callableDef) <- (callableId, callableDef)?} matches (_)
       -- let ?((callableId, callableDef)) = (callableId, callableDef)?{(callableId, callableDef) <- (callableId, callableDef)?}
 
    ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:229:1-232:69:
-   clause 4(cursor, IC, prefixedNameIR) = $find_callableDef_non_overload_i(global, IC, ` nameIR)
+   clause 4(cursor, IC, prefixedNameIR) = $find_callableDef_non_overload_i(global, IC, nameIR)
       -- if cursor matches `BLOCK`
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
       -- if (?() = $find_non_overloaded<callableDef>(IC.block.callable, nameIR))
 
-   ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:233:1-234:59:
-   clause 5(cursor, IC, prefixedNameIR) = $find_callableDef_non_overload_i(block, IC, ` nameIR)
+   ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:233:1-234:62:
+   clause 5(cursor, IC, prefixedNameIR) = $find_callableDef_non_overload_i(block, IC, nameIR)
       -- if cursor matches `LOCAL`
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
 
 ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:238:1-239:53:
 def $add_constructorDef_i(instContext, callableId, constructorDef) : instContext =
@@ -20285,8 +20285,8 @@ def $find_var_i(prefixedNameIR, cursor, instContext) : value =
 
    ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:268:1-269:58:
    clause 1(prefixedNameIR, cursor, IC) = value
-      -- if prefixedNameIR matches `` %`
-      -- let ` id = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let id = prefixedNameIR
       -- if cursor matches `GLOBAL`
       -- let value'?{value' <- value'?} = $find_map<id, value>(IC.global.frame, id)
       -- if value'?{value' <- value'?} matches (_)
@@ -20294,33 +20294,33 @@ def $find_var_i(prefixedNameIR, cursor, instContext) : value =
 
    ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:270:1-271:57:
    clause 2(prefixedNameIR, cursor, IC) = value
-      -- if prefixedNameIR matches `` %`
-      -- let ` id = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let id = prefixedNameIR
       -- if cursor matches `BLOCK`
       -- let value'?{value' <- value'?} = $find_map<id, value>(IC.block.frame, id)
       -- if value'?{value' <- value'?} matches (_)
       -- let ?(value) = value'?{value' <- value'?}
 
    ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:272:1-274:55:
-   clause 3(prefixedNameIR, cursor, IC) = $find_var_i(` id, global, IC)
-      -- if prefixedNameIR matches `` %`
-      -- let ` id = prefixedNameIR
+   clause 3(prefixedNameIR, cursor, IC) = $find_var_i(id, global, IC)
+      -- if prefixedNameIR matches `_NAME %`
+      -- let id = prefixedNameIR
       -- if cursor matches `BLOCK`
       -- if (?() = $find_map<id, value>(IC.block.frame, id))
 
    ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:275:1-276:59:
    clause 4(prefixedNameIR, cursor, IC) = value
-      -- if prefixedNameIR matches `` %`
-      -- let ` id = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let id = prefixedNameIR
       -- if cursor matches `LOCAL`
       -- let value'?{value' <- value'?} = $find_maps<id, value>(IC.local.frames, id)
       -- if value'?{value' <- value'?} matches (_)
       -- let ?(value) = value'?{value' <- value'?}
 
    ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:277:1-279:57:
-   clause 5(prefixedNameIR, cursor, IC) = $find_var_i(` id, block, IC)
-      -- if prefixedNameIR matches `` %`
-      -- let ` id = prefixedNameIR
+   clause 5(prefixedNameIR, cursor, IC) = $find_var_i(id, block, IC)
+      -- if prefixedNameIR matches `_NAME %`
+      -- let id = prefixedNameIR
       -- if cursor matches `LOCAL`
       -- if (?() = $find_maps<id, value>(IC.local.frames, id))
 
@@ -20329,8 +20329,8 @@ def $find_typeDef_i(cursor, instContext, prefixedNameIR) : typeDefIR? =
 
    ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:286:1-287:57:
    clause 0(_cursor, IC, prefixedNameIR) = $find_map<typeId, typeDefIR>(IC.global.type, nameIR)
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
 
    ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:288:1-289:57:
    clause 1(_cursor, IC, prefixedNameIR) = $find_map<typeId, typeDefIR>(IC.global.type, nameIR)
@@ -20342,8 +20342,8 @@ def $find_constructorDef_i(instContext, prefixedNameIR, argumentIR*) : callResol
 
    ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:297:1-302:60:
    clause 0(IC, prefixedNameIR, argumentIR*{argumentIR <- argumentIR*}) = $find_overloaded<constructorDef>(IC.global.constructor, callTargetKey, $parameterListIR_of_constructorDef)
-      -- if prefixedNameIR matches `` %`
-      -- let ` nameIR = prefixedNameIR
+      -- if prefixedNameIR matches `_NAME %`
+      -- let nameIR = prefixedNameIR
       -- let callTargetKey = $callTargetKey(nameIR, argumentIR*{argumentIR <- argumentIR*})
 
    ;; ../../../../../spectec/specs/p4/7-instantiation/7.02-inst-context.spectec:303:1-308:60:
@@ -20513,12 +20513,12 @@ relation Expr_inst: cursor instContext store |- typedExpressionIR : store value
       -- let record { nameIR = typedExpressionIR*{nameIR <- nameIR*, typedExpressionIR <- typedExpressionIR*} , ... } = recordExpressionIR
       -- rel Exprs_inst: p IC STO_0 |- typedExpressionIR*{typedExpressionIR <- typedExpressionIR*} : STO_1 value*{value <- value*}
 
-   ;; ../../../../../spectec/specs/p4/7-instantiation/7.04-inst-expression.spectec:160:1-163:58:
+   ;; ../../../../../spectec/specs/p4/7-instantiation/7.04-inst-expression.spectec:160:1-163:61:
    rule errorAccessExpressionIR: p IC STO |- expressionIR # _expressionNoteIR : STO value_error
       -- if expressionIR <: errorAccessExpressionIR
       -- let error . nameIR = expressionIR as errorAccessExpressionIR
       -- let nameIR_error = "error." ++ nameIR
-      -- let value_error = $find_var_i(` nameIR_error, p, IC)
+      -- let value_error = $find_var_i(nameIR_error, p, IC)
 
    ;; ../../../../../spectec/specs/p4/7-instantiation/7.04-inst-expression.spectec:172:1-176:47:
    rule enum: p IC STO |- expressionIR # _expressionNoteIR : STO typeId . nameIR as value
@@ -20764,12 +20764,12 @@ relation DirectApplicationStmt_inst: cursor instContext store |- directApplicati
       -- let IC_callee = $enter_path_i(IC, typeId)
       -- rel Constructor_call: p IC_callee STO_0 |- constructorDef < typeArgumentListIR_inst > ( [] # id_default*{id_default <- id_default*} # id_optional*{id_optional <- id_optional*} ) : STO_1 object
       -- let typeId_fresh = $fresh_typeId
-      -- let typeIR = ` typeId as typeIR
+      -- let typeIR = typeId as typeIR
       -- let nameIR = $concat_text([typeId, "_", typeId_fresh])
       -- let objectId = IC.path ++ [typeId]
       -- let STO_2 = $add_store(STO_1, objectId, object)
       -- let constantDeclarationIR = const typeIR nameIR = ref objectId as value ;
-      -- let typedExpressionIR_base = ` nameIR as expressionIR # ( typeIR ctk )
+      -- let typedExpressionIR_base = nameIR as expressionIR # ( typeIR ctk )
       -- let callableTargetIR = typedExpressionIR_base . "apply"
       -- let callStatementIR = callableTargetIR < typeArgumentListIR_inst > ( argumentListIR ) ;
 
@@ -21725,7 +21725,7 @@ relation Constructor_inst: cursor instContext |- prefixedNameIR < typeArgumentLi
       -- if callResolution<constructorDef>?{callResolution<constructorDef> <- callResolution<constructorDef>?} matches (_)
       -- let ?(_callableId : constructorDef # id_default*{id_default <- id_default*} # id_optional*{id_optional <- id_optional*}) = callResolution<constructorDef>?{callResolution<constructorDef> <- callResolution<constructorDef>?}
 
-   ;; ../../../../../spectec/specs/p4/7-instantiation/7.11.1-inst-constructor.spectec:25:1-35:59:
+   ;; ../../../../../spectec/specs/p4/7-instantiation/7.11.1-inst-constructor.spectec:25:1-35:62:
    rule aliased: p IC |- prefixedNameIR < typeArgumentIR'*{typeArgumentIR' <- typeArgumentIR'*} > ( argumentIR*{argumentIR <- argumentIR*} ) : constructorDef < typeArgumentIR*{typeArgumentIR <- typeArgumentIR*} > ( # id_default*{id_default <- id_default*} # id_optional*{id_optional <- id_optional*} )
       -- if typeArgumentIR'*{typeArgumentIR' <- typeArgumentIR'*} matches []
       -- let typeDefIR'?{typeDefIR' <- typeDefIR'?} = $find_typeDef_i(p, IC, prefixedNameIR)
@@ -21734,7 +21734,7 @@ relation Constructor_inst: cursor instContext |- prefixedNameIR < typeArgumentLi
       -- if typeDefIR <: typedefTypeIR
       -- let typedef nameIR_alias typeIR_alias = typeDefIR as typedefTypeIR
       -- let (nameIR, typeArgumentIR*{typeArgumentIR <- typeArgumentIR*}) = $resolve_type_alias(typeIR_alias)
-      -- let callResolution<constructorDef>?{callResolution<constructorDef> <- callResolution<constructorDef>?} = $find_constructorDef_i(IC, ` nameIR, argumentIR*{argumentIR <- argumentIR*})
+      -- let callResolution<constructorDef>?{callResolution<constructorDef> <- callResolution<constructorDef>?} = $find_constructorDef_i(IC, nameIR, argumentIR*{argumentIR <- argumentIR*})
       -- if callResolution<constructorDef>?{callResolution<constructorDef> <- callResolution<constructorDef>?} matches (_)
       -- let ?(_callableId : constructorDef # id_default*{id_default <- id_default*} # id_optional*{id_optional <- id_optional*}) = callResolution<constructorDef>?{callResolution<constructorDef> <- callResolution<constructorDef>?}
 

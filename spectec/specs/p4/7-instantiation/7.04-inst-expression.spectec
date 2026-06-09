@@ -160,7 +160,7 @@ rule Expr_inst/default:
 rule Expr_inst/errorAccessExpressionIR:
   p IC STO |- (ERROR `. nameIR) `# _ : STO value_error
   -- if nameIR_error = "error." ++ nameIR
-  -- if value_error = $find_var_i(`` nameIR_error, p, IC)
+  -- if value_error = $find_var_i(_NAME nameIR_error, p, IC)
 
 ;;;;; memberAccessExpressionIR
 ;;;;; syntax memberAccessExpressionIR = memberAccessBaseIR `. nameIR

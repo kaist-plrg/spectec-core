@@ -102,7 +102,7 @@ let unicode_of_atom : Xl.Atom.t -> string option = function
 
 let code_of_atom (atom : Mixfix.atom) =
   match atom.it with
-  | Xl.Atom.Tick -> ""
+  | Xl.Atom.SilentAtom _ -> ""
   | a -> (
       match unicode_of_atom a with
       | Some s -> s

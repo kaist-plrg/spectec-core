@@ -3,22 +3,22 @@
 ;;
 
 syntax prefixedNameIR =
-  | `` nameIR   hint(print %0)
+  | _NAME nameIR   hint(print %0)
   | `. nameIR
 
 dec $prefixedNonTypeName(prefixedNonTypeName) : prefixedNameIR
   hint(prose_in "the prefixed name of " %0)
-def $prefixedNonTypeName(nonTypeName) = `` $name(nonTypeName)
+def $prefixedNonTypeName(nonTypeName) = _NAME $name(nonTypeName)
 def $prefixedNonTypeName(_ID `. nonTypeName) = `. $name(nonTypeName)
 
 dec $prefixedTypeName(prefixedTypeName) : prefixedNameIR
   hint(prose_in "the prefixed name of " %0)
-def $prefixedTypeName(typeName) = `` $name(typeName)
+def $prefixedTypeName(typeName) = _NAME $name(typeName)
 def $prefixedTypeName(_TID `. typeName) = `. $name(typeName)
 
 dec $flatten_prefixedNameIR(prefixedNameIR) : nameIR
   hint(prose_in "the string form of " %0)
-def $flatten_prefixedNameIR(`` nameIR) = nameIR
+def $flatten_prefixedNameIR(_NAME nameIR) = nameIR
 def $flatten_prefixedNameIR(`. nameIR) = "." ++ nameIR
 
 syntax nameListIR = nameIR*

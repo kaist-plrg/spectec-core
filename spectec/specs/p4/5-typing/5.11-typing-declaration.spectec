@@ -150,7 +150,7 @@ rule ObjectDecl_ok/instantiation:
                           : TC_1 instantiationIR
   ---- ;; add instance
   -- if _ _ _ `( _ ) nameIR _ `; = instantiationIR
-  -- if varTypeIR = $find_var_t(`` nameIR, p, TC_1)
+  -- if varTypeIR = $find_var_t(_NAME nameIR, p, TC_1)
   -- if typeFrame_init
       = $update_map<id, varTypeIR>(typeFrame, nameIR, varTypeIR)
 
@@ -974,7 +974,7 @@ rule Decl_ok/derivedTypeDeclaration-mono:
   -- if `{ typeId }
       = $diff_set<typeId>($dom_map<typeId, typeDefIR>(TC_1.GLOBAL.TYPE),
                        $dom_map<typeId, typeDefIR>(TC_0.GLOBAL.TYPE))
-  -- if typeDefIR = $find_typeDef_t(GLOBAL, TC_1, `` typeId)
+  -- if typeDefIR = $find_typeDef_t(GLOBAL, TC_1, _NAME typeId)
   ---- ;; if the type is monomorphic
   -- if $is_monomorphic_typeDefIR(typeDefIR)
   -- if typeIR = $typeIR_of_typeDefIR(typeDefIR)
@@ -997,7 +997,7 @@ rule Decl_ok/derivedTypeDeclaration-poly:
   -- if `{ typeId }
       = $diff_set<typeId>($dom_map<typeId, typeDefIR>(TC_1.GLOBAL.TYPE),
                        $dom_map<typeId, typeDefIR>(TC_0.GLOBAL.TYPE))
-  -- if typeDefIR = $find_typeDef_t(GLOBAL, TC_1, `` typeId)
+  -- if typeDefIR = $find_typeDef_t(GLOBAL, TC_1, _NAME typeId)
   ---- ;; if the type is polymorphic, yet has no type parameters
   -- if ~$is_monomorphic_typeDefIR(typeDefIR)
   -- if (eps, eps) = $typeParameterListIR_of_typeDefIR(typeDefIR)

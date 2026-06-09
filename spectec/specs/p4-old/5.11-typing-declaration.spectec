@@ -144,7 +144,7 @@ rule Decl_object_ok/instantiation:
   -- Decl_ok: p TC_0 |- instantiation : TC_1 instantiationIR
   ---- ;; add instance
   -- if _ _ _ `< _ > `( _ ) nameIR _ `; = instantiationIR
-  -- if varTypeIR = $find_var(p, TC_1, `` nameIR)
+  -- if varTypeIR = $find_var(p, TC_1, _NAME nameIR)
   -- if frame_init
       = $update_map<id, varTypeIR>(frame, nameIR, varTypeIR)
 
@@ -799,7 +799,7 @@ rule Decl_ok/typeDeclaration-typedefDeclaration-typedef-derivedTypeDeclaration-m
   -- if `{ tid }
       = $diff_set<tid>($dom_map<tid, typeDefIR>(TC_1.GLOBAL.TDENV),
                        $dom_map<tid, typeDefIR>(TC_0.GLOBAL.TDENV))
-  -- if typeIR = $find_type(GLOBAL, TC_1, `` tid)
+  -- if typeIR = $find_type(GLOBAL, TC_1, _NAME tid)
   ---- ;; create typedef and add to context
   -- if nameIR = $name(name)
   -- if typeIR_typedef = TYPEDEF nameIR typeIR
@@ -819,7 +819,7 @@ rule Decl_ok/typeDeclaration-typedefDeclaration-typedef-derivedTypeDeclaration-p
   -- if `{ tid }
       = $diff_set<tid>($dom_map<tid, typeDefIR>(TC_1.GLOBAL.TDENV),
                        $dom_map<tid, typeDefIR>(TC_0.GLOBAL.TDENV))
-  -- if typeIR `< eps `, eps > = $find_type(GLOBAL, TC_1, `` tid)
+  -- if typeIR `< eps `, eps > = $find_type(GLOBAL, TC_1, _NAME tid)
   ---- ;; create typedef and add to context
   -- if nameIR = $name(name)
   -- if typeIR_typedef = TYPEDEF nameIR ((typeIR `< eps `, eps >) `< eps >)

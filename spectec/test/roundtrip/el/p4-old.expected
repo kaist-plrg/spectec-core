@@ -3327,24 +3327,24 @@ def $sizeof_maxSizeInBytes(typeIR) = D $(n_size / 8)
 def $sizeof(typeIR, "maxSizeInBytes") = $sizeof_maxSizeInBytes(typeIR)
 ;; === 4-ir-syntax.spectec ===
 syntax prefixedNameIR =
-  | `` nameIR
+  | _NAME nameIR
   | `. nameIR
 
 dec $prefixedNonTypeName(prefixedNonTypeName) : prefixedNameIR
 
-def $prefixedNonTypeName(nonTypeName) = `` $name(nonTypeName)
+def $prefixedNonTypeName(nonTypeName) = _NAME $name(nonTypeName)
 
 def $prefixedNonTypeName(_ID `. nonTypeName) = `. $name(nonTypeName)
 
 dec $prefixedTypeName(prefixedTypeName) : prefixedNameIR
 
-def $prefixedTypeName(typeName) = `` $name(typeName)
+def $prefixedTypeName(typeName) = _NAME $name(typeName)
 
 def $prefixedTypeName(_TID `. typeName) = `. $name(typeName)
 
 dec $flatten_prefixedNameIR(prefixedNameIR) : nameIR
 
-def $flatten_prefixedNameIR(`` nameIR) = nameIR
+def $flatten_prefixedNameIR(_NAME nameIR) = nameIR
 
 def $flatten_prefixedNameIR(`. nameIR) = "." ++ nameIR
 
@@ -4413,22 +4413,22 @@ dec $find_var(cursor, typingContext, prefixedNameIR) : varTypeIR?
 def $find_var(p, TC, `. id) = $find_map<id, varTypeIR>(frame, id)
   -- if frame = TC.GLOBAL.FRAME
 
-def $find_var(GLOBAL, TC, `` id) = $find_map<id, varTypeIR>(frame, id)
+def $find_var(GLOBAL, TC, _NAME id) = $find_map<id, varTypeIR>(frame, id)
   -- if frame = TC.GLOBAL.FRAME
 
-def $find_var(BLOCK, TC, `` id) = varTypeIR
+def $find_var(BLOCK, TC, _NAME id) = varTypeIR
   -- if frame = TC.BLOCK.FRAME
   -- if varTypeIR = $find_map<id, varTypeIR>(frame, id)
 
-def $find_var(BLOCK, TC, `` id) = $find_var(GLOBAL, TC, `` id)
+def $find_var(BLOCK, TC, _NAME id) = $find_var(GLOBAL, TC, _NAME id)
   -- if frame = TC.BLOCK.FRAME
   -- if eps = $find_map<id, varTypeIR>(frame, id)
 
-def $find_var(LOCAL, TC, `` id) = varTypeIR
+def $find_var(LOCAL, TC, _NAME id) = varTypeIR
   -- if frame* = TC.LOCAL.FRAMES
   -- if varTypeIR = $find_maps<id, varTypeIR>(frame*, id)
 
-def $find_var(LOCAL, TC, `` id) = $find_var(BLOCK, TC, `` id)
+def $find_var(LOCAL, TC, _NAME id) = $find_var(BLOCK, TC, _NAME id)
   -- if frame* = TC.LOCAL.FRAMES
   -- if eps = $find_maps<id, varTypeIR>(frame*, id)
 
@@ -4438,23 +4438,23 @@ def $find_value(p, TC, `. id) = value
   -- if frame = TC.GLOBAL.FRAME
   -- if _ _ _ value = $find_map<id, varTypeIR>(frame, id)
 
-def $find_value(GLOBAL, TC, `` id) = value
+def $find_value(GLOBAL, TC, _NAME id) = value
   -- if frame = TC.GLOBAL.FRAME
   -- if _ _ _ value = $find_map<id, varTypeIR>(frame, id)
 
-def $find_value(BLOCK, TC, `` id) = value
+def $find_value(BLOCK, TC, _NAME id) = value
   -- if frame = TC.BLOCK.FRAME
   -- if _ _ _ value = $find_map<id, varTypeIR>(frame, id)
 
-def $find_value(BLOCK, TC, `` id) = $find_value(GLOBAL, TC, `` id)
+def $find_value(BLOCK, TC, _NAME id) = $find_value(GLOBAL, TC, _NAME id)
   -- if frame = TC.BLOCK.FRAME
   -- if eps = $find_map<id, varTypeIR>(frame, id)
 
-def $find_value(LOCAL, TC, `` id) = value
+def $find_value(LOCAL, TC, _NAME id) = value
   -- if frame* = TC.LOCAL.FRAMES
   -- if _ _ _ value = $find_maps<id, varTypeIR>(frame*, id)
 
-def $find_value(LOCAL, TC, `` id) = $find_value(BLOCK, TC, `` id)
+def $find_value(LOCAL, TC, _NAME id) = $find_value(BLOCK, TC, _NAME id)
   -- if frame* = TC.LOCAL.FRAMES
   -- if eps = $find_maps<id, varTypeIR>(frame*, id)
 
@@ -4463,22 +4463,22 @@ dec $find_type(cursor, typingContext, prefixedNameIR) : typeDefIR?
 def $find_type(p, TC, `. tid) = $find_map<tid, typeDefIR>(tdenv, tid)
   -- if tdenv = TC.GLOBAL.TDENV
 
-def $find_type(GLOBAL, TC, `` tid) = $find_map<tid, typeDefIR>(tdenv, tid)
+def $find_type(GLOBAL, TC, _NAME tid) = $find_map<tid, typeDefIR>(tdenv, tid)
   -- if tdenv = TC.GLOBAL.TDENV
 
-def $find_type(BLOCK, TC, `` tid) = typeDefIR
+def $find_type(BLOCK, TC, _NAME tid) = typeDefIR
   -- if tdenv = TC.BLOCK.TDENV
   -- if typeDefIR = $find_map<tid, typeDefIR>(tdenv, tid)
 
-def $find_type(BLOCK, TC, `` tid) = $find_type(GLOBAL, TC, `` tid)
+def $find_type(BLOCK, TC, _NAME tid) = $find_type(GLOBAL, TC, _NAME tid)
   -- if tdenv = TC.BLOCK.TDENV
   -- if eps = $find_map<tid, typeDefIR>(tdenv, tid)
 
-def $find_type(LOCAL, TC, `` tid) = typeDefIR
+def $find_type(LOCAL, TC, _NAME tid) = typeDefIR
   -- if tdenv* = TC.LOCAL.TDENV
   -- if typeDefIR = $find_maps<tid, typeDefIR>(tdenv*, tid)
 
-def $find_type(LOCAL, TC, `` tid) = $find_type(BLOCK, TC, `` tid)
+def $find_type(LOCAL, TC, _NAME tid) = $find_type(BLOCK, TC, _NAME tid)
   -- if tdenv* = TC.LOCAL.TDENV
   -- if eps = $find_maps<tid, typeDefIR>(tdenv*, tid)
 
@@ -4504,26 +4504,26 @@ def $find_routine_overloaded(GLOBAL, TC, `. id, argumentIR*)
   -- if rdenv = TC.GLOBAL.RDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
 
-def $find_routine_overloaded(GLOBAL, TC, `` id, argumentIR*)
+def $find_routine_overloaded(GLOBAL, TC, _NAME id, argumentIR*)
   = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
   -- if rdenv = TC.GLOBAL.RDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
 
-def $find_routine_overloaded(BLOCK, TC, `` id, argumentIR*)
+def $find_routine_overloaded(BLOCK, TC, _NAME id, argumentIR*)
   = (rid, routineTypeDefIR, id_default*)
   -- if rdenv = TC.BLOCK.RDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
   -- if (rid, routineTypeDefIR, id_default*)
         = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
 
-def $find_routine_overloaded(BLOCK, TC, `` id, argumentIR*)
-  = $find_routine_overloaded(GLOBAL, TC, `` id, argumentIR*)
+def $find_routine_overloaded(BLOCK, TC, _NAME id, argumentIR*)
+  = $find_routine_overloaded(GLOBAL, TC, _NAME id, argumentIR*)
   -- if rdenv = TC.BLOCK.RDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
   -- if eps = $find_overloaded<routineTypeDefIR>(rdenv, id, (id_arg?)*)
 
-def $find_routine_overloaded(LOCAL, TC, `` id, argumentIR*)
-  = $find_routine_overloaded(BLOCK, TC, `` id, argumentIR*)
+def $find_routine_overloaded(LOCAL, TC, _NAME id, argumentIR*)
+  = $find_routine_overloaded(BLOCK, TC, _NAME id, argumentIR*)
 
 dec $find_routine_non_overloaded(cursor, typingContext, prefixedNameIR)
   : routineTypeDefIR?
@@ -4531,19 +4531,19 @@ dec $find_routine_non_overloaded(cursor, typingContext, prefixedNameIR)
 def $find_routine_non_overloaded(p, TC, `. id)
   = $find_non_overloaded<routineTypeDefIR>(TC.GLOBAL.RDENV, id)
 
-def $find_routine_non_overloaded(GLOBAL, TC, `` id)
+def $find_routine_non_overloaded(GLOBAL, TC, _NAME id)
   = $find_non_overloaded<routineTypeDefIR>(TC.GLOBAL.RDENV, id)
 
-def $find_routine_non_overloaded(BLOCK, TC, `` id) = routineTypeDefIR
+def $find_routine_non_overloaded(BLOCK, TC, _NAME id) = routineTypeDefIR
   -- if routineTypeDefIR
         = $find_non_overloaded<routineTypeDefIR>(TC.BLOCK.RDENV, id)
 
-def $find_routine_non_overloaded(BLOCK, TC, `` id)
-  = $find_routine_non_overloaded(GLOBAL, TC, `` id)
+def $find_routine_non_overloaded(BLOCK, TC, _NAME id)
+  = $find_routine_non_overloaded(GLOBAL, TC, _NAME id)
   -- if eps = $find_non_overloaded<routineTypeDefIR>(TC.BLOCK.RDENV, id)
 
-def $find_routine_non_overloaded(LOCAL, TC, `` id)
-  = $find_routine_non_overloaded(BLOCK, TC, `` id)
+def $find_routine_non_overloaded(LOCAL, TC, _NAME id)
+  = $find_routine_non_overloaded(BLOCK, TC, _NAME id)
 
 dec $find_constructor_overloaded(typingContext, prefixedNameIR, argumentIR*)
   : (rid, constructorTypeDefIR, id*)?
@@ -4553,7 +4553,7 @@ def $find_constructor_overloaded(TC, `. id, argumentIR*)
   -- if cdenv = TC.GLOBAL.CDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
 
-def $find_constructor_overloaded(TC, `` id, argumentIR*)
+def $find_constructor_overloaded(TC, _NAME id, argumentIR*)
   = $find_overloaded<constructorTypeDefIR>(cdenv, id, (id_arg?)*)
   -- if cdenv = TC.GLOBAL.CDENV
   -- if (id_arg?)* = $ids_arguments(argumentIR*)
@@ -6770,7 +6770,7 @@ rule Eval_static/dataExpressionIR-record-default:
 rule Eval_static/errorAccessExpressionIR:
   p TC |- (ERROR `. nameIR) `# `(_ _) ~> value_error
   -- if nameIR_error = "error." ++ nameIR
-  -- if value_error = $find_value(p, TC, `` nameIR_error)
+  -- if value_error = $find_value(p, TC, _NAME nameIR_error)
 
 rule Eval_static/memberAccessExpressionIR-prefixedNameIR-enum:
   p TC |- ((TYPE prefixedNameIR) `. nameIR) `# `(typeIR_base _) ~> tid `. nameIR
@@ -6874,7 +6874,7 @@ rule Expr_ok/referenceExpression-prefixedNonTypeName:
 
 rule Expr_ok/referenceExpression-this:
   p TC |- THIS : prefixedNameIR `# expressionNoteIR
-  -- if prefixedNameIR = `` "this"
+  -- if prefixedNameIR = _NAME "this"
   -- if _ typeIR ctk _ = $find_var(p, TC, prefixedNameIR)
   -- if expressionNoteIR = `(typeIR ctk)
 
@@ -7430,7 +7430,7 @@ rule Expr_ok/accessExpression-errorAccessExpression:
   p TC |- ERROR `. member : (ERROR `. nameIR) `# expressionNoteIR
   -- if nameIR = $name(member)
   -- if nameIR_error = "error." ++ nameIR
-  -- if ERROR `. nameIR = $find_value(p, TC, `` nameIR_error)
+  -- if ERROR `. nameIR = $find_value(p, TC, _NAME nameIR_error)
   -- if expressionNoteIR = `(ERROR LCTK)
 
 rule Expr_ok/accessExpression-memberAccessExpression-prefixedType-enum:
@@ -8089,7 +8089,7 @@ rule Stmt_ok/directApplicationStatement-prefixedTypeName:
   -- if TC_1 = $add_var(p, TC_0, nameIR_object, _EMPTY typeIR_object CTK eps)
   -- if lvalue = (_ID nameIR_object) `. (_ID "apply")
   -- Stmt_ok: p TC_1 f |- lvalue `(argumentList) `; : _ _ callStatementIR
-  -- if (((`` nameIR_object) `# `(typeIR_object CTK)) `. "apply")
+  -- if (((_NAME nameIR_object) `# `(typeIR_object CTK)) `. "apply")
         `<eps>
         `(argumentIR_cast*)
         `;
@@ -8144,12 +8144,14 @@ rule SwitchLabel_table_ok/default:
 
 rule SwitchLabel_table_ok/expressionNonBrace-prefixedNonTypeName:
   TC tid_table _ |- prefixedNonTypeName : typedExpressionIR_label
-  -- if `` nameIR_label = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if _NAME nameIR_label = $prefixedNonTypeName(prefixedNonTypeName)
   -- if tid_table_enum = "action_list(" ++ tid_table ++ ")"
   -- if id_label = tid_table_enum ++ "." ++ nameIR_label
-  -- if _ typeIR_label ctk_label value_label = $find_var(LOCAL, TC, `` id_label)
+  -- if _ typeIR_label ctk_label value_label
+        = $find_var(LOCAL, TC, _NAME id_label)
   -- if value_label = TABLE_ENUM tid_table_enum `. nameIR_label
-  -- if typedExpressionIR_label = (`` nameIR_label) `# `(typeIR_label ctk_label)
+  -- if typedExpressionIR_label
+        = (_NAME nameIR_label) `# `(typeIR_label ctk_label)
 
 relation SwitchCase_table_ok:
   typingContext flow tid bool |- switchCase : flow switchCaseIR `# switchLabel
@@ -8476,7 +8478,7 @@ rule Decl_object_ok/instantiation:
   p TC_0 frame rdenv |- instantiation : frame_init rdenv instantiationIR
   -- Decl_ok: p TC_0 |- instantiation : TC_1 instantiationIR
   -- if _ _ _ `<_> `(_) nameIR _ `; = instantiationIR
-  -- if varTypeIR = $find_var(p, TC_1, `` nameIR)
+  -- if varTypeIR = $find_var(p, TC_1, _NAME nameIR)
   -- if frame_init = $update_map<id, varTypeIR>(frame, nameIR, varTypeIR)
 
 relation Decls_object_ok:
@@ -9066,7 +9068,7 @@ rule Decl_ok/typeDeclaration-typedefDeclaration-typedef-derivedTypeDeclaration-m
   -- if `{tid}
         = $diff_set<tid>($dom_map<tid, typeDefIR>(TC_1.GLOBAL.TDENV),
                          $dom_map<tid, typeDefIR>(TC_0.GLOBAL.TDENV))
-  -- if typeIR = $find_type(GLOBAL, TC_1, `` tid)
+  -- if typeIR = $find_type(GLOBAL, TC_1, _NAME tid)
   -- if nameIR = $name(name)
   -- if typeIR_typedef = TYPEDEF nameIR typeIR
   -- TypeDef_wf: $bound(GLOBAL, TC_0) |- typeIR_typedef
@@ -9083,7 +9085,7 @@ rule Decl_ok/typeDeclaration-typedefDeclaration-typedef-derivedTypeDeclaration-p
   -- if `{tid}
         = $diff_set<tid>($dom_map<tid, typeDefIR>(TC_1.GLOBAL.TDENV),
                          $dom_map<tid, typeDefIR>(TC_0.GLOBAL.TDENV))
-  -- if typeIR `<eps `, eps> = $find_type(GLOBAL, TC_1, `` tid)
+  -- if typeIR `<eps `, eps> = $find_type(GLOBAL, TC_1, _NAME tid)
   -- if nameIR = $name(name)
   -- if typeIR_typedef = TYPEDEF nameIR ((typeIR `<eps `, eps>) `<eps>)
   -- TypeDef_wf: $bound(GLOBAL, TC_0) |- typeIR_typedef
@@ -9281,7 +9283,8 @@ rule ExternConstructor_ok:
          : constructorParameterIR* `# tid_impl*
   -- (if (constructorParameterTypeIR
          = $constructorParameterIR(constructorParameterIR)))*
-  -- if typeIR_extern `<tid_expl* `, eps> = $find_type(GLOBAL, TC_0, `` nameIR)
+  -- if typeIR_extern `<tid_expl* `, eps>
+        = $find_type(GLOBAL, TC_0, _NAME nameIR)
   -- if cid = $cid(typeIdentifier, `(parameterList))
   -- if typeIR_extern_spec
         = (typeIR_extern `<tid_expl* `, eps>) `<(TID tid_expl)*>
@@ -9759,7 +9762,7 @@ rule TableKey_ok:
   -- Type_wf: $bound(LOCAL, TC) |- SET `<typeIR>
   -- if nameIR_matchkind = $name(name_matchkind)
   -- if MATCH_KIND `. nameIR_matchkind
-        = $find_value(LOCAL, TC, `` nameIR_matchkind)
+        = $find_value(LOCAL, TC, _NAME nameIR_matchkind)
   -- if $compat_table_key(nameIR_matchkind, typeIR)
   -- if TBLC_1 = $update_mode(TBLC_0, nameIR_matchkind, typeIR)
   -- if TBLC_2 = $add_key(TBLC_1, nameIR_matchkind, typeIR)
@@ -11080,12 +11083,12 @@ rule Inst_ok/non-package:
 rule RoutineTarget_ok/prefixedNonTypeName:
   p TC |- prefixedNonTypeName : prefixedNameIR
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
-  -- if ((prefixedNameIR = `` "verify") \/ (prefixedNameIR = `. "verify"))
+  -- if ((prefixedNameIR = _NAME "verify") \/ (prefixedNameIR = `. "verify"))
         => ((p = BLOCK /\ $is_parser_blockKind(TC.BLOCK.KIND))
         \/ (p = LOCAL /\ $is_parser_state_localKind(TC.LOCAL.KIND)))
 
 rule RoutineTarget_ok/this:
-  p TC |- THIS : (`` "this")
+  p TC |- THIS : (_NAME "this")
 
 rule RoutineTarget_ok/memberAccessExpression-prefixedTypeName:
   p TC |- prefixedTypeName `. member : TYPE prefixedNameIR `. nameIR
@@ -11793,25 +11796,27 @@ dec $find_value_inst(cursor, contextInst, prefixedNameIR) : value
 def $find_value_inst(p, Ci, `. id) = value
   -- if $find_map<id, value>(Ci.GLOBAL.VENV, id) = value
 
-def $find_value_inst(GLOBAL, Ci, `` id) = value
+def $find_value_inst(GLOBAL, Ci, _NAME id) = value
   -- if $find_map<id, value>(Ci.GLOBAL.VENV, id) = value
 
-def $find_value_inst(BLOCK, Ci, `` id) = value
+def $find_value_inst(BLOCK, Ci, _NAME id) = value
   -- if $find_map<id, value>(Ci.BLOCK.VENV, id) = value
 
-def $find_value_inst(BLOCK, Ci, `` id) = $find_value_inst(GLOBAL, Ci, `` id)
+def $find_value_inst(BLOCK, Ci, _NAME id)
+  = $find_value_inst(GLOBAL, Ci, _NAME id)
   -- if $find_map<id, value>(Ci.BLOCK.VENV, id) = eps
 
-def $find_value_inst(LOCAL, Ci, `` id) = value
+def $find_value_inst(LOCAL, Ci, _NAME id) = value
   -- if Ci.LOCAL.VENVS = venv*
   -- if $find_maps<id, value>(venv*, id) = value
 
-def $find_value_inst(LOCAL, Ci, `` id) = $find_value_inst(BLOCK, Ci, `` id)
+def $find_value_inst(LOCAL, Ci, _NAME id)
+  = $find_value_inst(BLOCK, Ci, _NAME id)
   -- if $find_maps<id, value>(Ci.LOCAL.VENVS, id) = eps
 
 dec $find_typedef_inst(cursor, contextInst, prefixedNameIR) : typeDefIR?
 
-def $find_typedef_inst(_, Ci, `` nameIR)
+def $find_typedef_inst(_, Ci, _NAME nameIR)
   = $find_map<tid, typeDefIR>(Ci.GLOBAL.TDENV, nameIR)
 
 def $find_typedef_inst(_, Ci, `. nameIR)
@@ -11834,7 +11839,7 @@ def $id_argument_IR(`_) = eps
 dec $find_constructor_overloaded_inst(contextInst, prefixedNameIR, argumentIR*)
   : (cid, consDyn, id*)?
 
-def $find_constructor_overloaded_inst(Ci, `` id, argumentIR*)
+def $find_constructor_overloaded_inst(Ci, _NAME id, argumentIR*)
   = $find_overloaded<consDyn>(Ci.GLOBAL.CENV, id, (id_arg?)*)
   -- if $ids_arguments_IR(argumentIR*) = (id_arg?)*
 
@@ -12531,7 +12536,7 @@ rule Expr_inst/dataExpressionIR-record-default:
 rule Expr_inst/accessExpressionIR-errorAccessExpressionIR:
   p Ci sto |- (ERROR `. nameIR) `# _ ==> sto value_error
   -- if "error." ++ nameIR = nameIR_error
-  -- if $find_value_inst(p, Ci, `` nameIR_error) = value_error
+  -- if $find_value_inst(p, Ci, _NAME nameIR_error) = value_error
 
 rule Expr_inst/accessExpressionIR-memberAccessExpressionIR-typeaccess-enum:
   p Ci sto |- ((TYPE prefixedNameIR) `. nameIR) `# _ ==> sto (tid `. nameIR)
@@ -12651,7 +12656,7 @@ rule Stmt_inst/directApplicationStatementIR:
   -- if Ci.PATH ++ nameIR = oid
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
   -- if _EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
-  -- if ((`` tid) `# `(typeIR CTK)) `. "apply" = routineTargetIR
+  -- if ((_NAME tid) `# `(typeIR CTK)) `. "apply" = routineTargetIR
   -- if routineTargetIR `<eps> `(argumentListIR) `; = callStatementIR
   -- if _EMPTY `{[constantDeclarationIR, callStatementIR]} = blockStatementIR
 
@@ -13380,7 +13385,7 @@ rule ParserStmt_inst/directApplicationStatementIR:
   -- if $add_sto(sto_1, oid, objDyn) = sto_2
   -- if TID tid = typeIR
   -- if _EMPTY CONST typeIR nameIR (`= (`! oid)) `; = constantDeclarationIR
-  -- if ((`` tid) `# `(typeIR CTK)) `. "apply" = routineTargetIR
+  -- if ((_NAME tid) `# `(typeIR CTK)) `. "apply" = routineTargetIR
   -- if routineTargetIR `<eps> `(argumentListIR) `; = callStatementIR
   -- if _EMPTY `{[constantDeclarationIR, callStatementIR]}
         = parserBlockStatementIR

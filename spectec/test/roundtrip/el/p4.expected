@@ -2162,7 +2162,7 @@ syntax baseTypeIR =
   | integerTypeIR
 
 syntax nameTypeIR =
-  | `` typeId hint(print %0)
+  | _NAME typeId hint(print %0)
 
 syntax typedefTypeIR =
   | TYPEDEF typeId typeIR hint(print %0)
@@ -2419,7 +2419,7 @@ dec $is_equalable_typeIR(typeIR) : bool
 
 def $is_equalable_typeIR(VOID) = false
 
-def $is_equalable_typeIR(`` typeId) = false
+def $is_equalable_typeIR(_NAME typeId) = false
 
 def $is_equalable_typeIR(TYPEDEF _ typeIR) = $is_equalable_typeIR(typeIR)
 
@@ -2468,7 +2468,7 @@ def $is_assignable_typeIR(_) = true
 dec $typeId_of_typeDefIR(typeDefIR) : typeId
   hint(prose_in "the name of" %0)
 
-def $typeId_of_typeDefIR(`` typeId) = typeId
+def $typeId_of_typeDefIR(_NAME typeId) = typeId
 
 def $typeId_of_typeDefIR(TYPEDEF typeId _) = typeId
 
@@ -2502,13 +2502,13 @@ def $typeIR_of_typeDefIR(nameTypeDefIR) = nameTypeDefIR
 def $typeIR_of_typeDefIR(aliasTypeDefIR) = aliasTypeDefIR
 
 def $typeIR_of_typeDefIR(STRUCT typeId `<typeParameterIR*> `{fieldTypeIR*})
-  = STRUCT typeId `<(`` typeParameterIR)*> `{fieldTypeIR*}
+  = STRUCT typeId `<(_NAME typeParameterIR)*> `{fieldTypeIR*}
 
 def $typeIR_of_typeDefIR(HEADER typeId `<typeParameterIR*> `{fieldTypeIR*})
-  = HEADER typeId `<(`` typeParameterIR)*> `{fieldTypeIR*}
+  = HEADER typeId `<(_NAME typeParameterIR)*> `{fieldTypeIR*}
 
 def $typeIR_of_typeDefIR(HEADER_UNION typeId `<typeParameterIR*> `{fieldTypeIR*})
-  = HEADER_UNION typeId `<(`` typeParameterIR)*> `{fieldTypeIR*}
+  = HEADER_UNION typeId `<(_NAME typeParameterIR)*> `{fieldTypeIR*}
 
 def $typeIR_of_typeDefIR(enumTypeDefIR) = enumTypeDefIR
 
@@ -2518,7 +2518,7 @@ def $typeIR_of_typeDefIR(EXTERN
                          `{(callableId `: externMethodTypeDefIR)*})
   = EXTERN
     typeId
-    `<(`` typeParameterIR)*>
+    `<(_NAME typeParameterIR)*>
     `{(callableId `: externMethodTypeDefIR)*}
   -- if typeParameterIR* = typeParameterIR_expl* ++ typeParameterIR_impl*
 
@@ -2526,21 +2526,21 @@ def $typeIR_of_typeDefIR(PARSER
                          typeId
                          `<typeParameterIR_expl* `, typeParameterIR_impl*>
                          `(parameterIR*))
-  = PARSER typeId `<(`` typeParameterIR)*> `(parameterIR*)
+  = PARSER typeId `<(_NAME typeParameterIR)*> `(parameterIR*)
   -- if typeParameterIR* = typeParameterIR_expl* ++ typeParameterIR_impl*
 
 def $typeIR_of_typeDefIR(CONTROL
                          typeId
                          `<typeParameterIR_expl* `, typeParameterIR_impl*>
                          `(parameterIR*))
-  = CONTROL typeId `<(`` typeParameterIR)*> `(parameterIR*)
+  = CONTROL typeId `<(_NAME typeParameterIR)*> `(parameterIR*)
   -- if typeParameterIR* = typeParameterIR_expl* ++ typeParameterIR_impl*
 
 def $typeIR_of_typeDefIR(PACKAGE
                          typeId
                          `<typeParameterIR_expl* `, typeParameterIR_impl*>
                          `{typeIR*})
-  = PACKAGE typeId `<(`` typeParameterIR)*> `{typeIR*}
+  = PACKAGE typeId `<(_NAME typeParameterIR)*> `{typeIR*}
   -- if typeParameterIR* = typeParameterIR_expl* ++ typeParameterIR_impl*
 
 def $typeIR_of_typeDefIR(tableObjectTypeDefIR) = tableObjectTypeDefIR
@@ -3027,7 +3027,7 @@ dec $free_callableTypeDefIR(callableTypeDefIR) : bound
 
 def $free_typeIR(baseTypeIR) = `{eps}
 
-def $free_typeIR(`` typeId) = `{typeId}
+def $free_typeIR(_NAME typeId) = `{typeId}
 
 def $free_typeIR(TYPEDEF _ typeIR) = $free_typeIR(typeIR)
 
@@ -3197,7 +3197,7 @@ def $capture_avoiding_(theta, typeParameterIR*, B)
   -- if theta_fresh
         = $adds_map<typeId, typeIR>(theta,
                                     typeParameterIR*,
-                                    (`` typeParameterIR_fresh)*)
+                                    (_NAME typeParameterIR_fresh)*)
 
 def $capture_avoiding(theta, typeParameterIR_expl*, typeParameterIR_impl*, B)
   = (theta_fresh, typeParameterIR_expl_fresh*, typeParameterIR_impl_fresh*)
@@ -3214,8 +3214,8 @@ def $capture_avoiding(theta, typeParameterIR_expl*, typeParameterIR_impl*, B)
   -- if theta_fresh
         = $adds_map<typeId, typeIR>(theta,
                                     typeParameterIR_expl* ++ typeParameterIR_impl*,
-                                    (`` typeParameterIR_expl_fresh)* ++ (``
-                                                                         typeParameterIR_impl_fresh)*)
+                                    (_NAME typeParameterIR_expl_fresh)* ++ (_NAME
+                                                                            typeParameterIR_impl_fresh)*)
 
 def $subst_typeIR(`{eps}, typeIR) = typeIR
 
@@ -3224,10 +3224,10 @@ def $subst_typeIR(theta, typeIR) = $subst_typeIR'(theta, typeIR)
 
 def $subst_typeIR'(theta, baseTypeIR) = baseTypeIR
 
-def $subst_typeIR'(theta, `` typeId) = typeIR
+def $subst_typeIR'(theta, _NAME typeId) = typeIR
   -- if typeIR = $find_map<typeId, typeIR>(theta, typeId)
 
-def $subst_typeIR'(theta, `` typeId) = `` typeId
+def $subst_typeIR'(theta, _NAME typeId) = _NAME typeId
   -- if eps = $find_map<typeId, typeIR>(theta, typeId)
 
 def $subst_typeIR'(theta, TYPEDEF typeId typeIR) = TYPEDEF typeId typeIR_subst
@@ -3576,7 +3576,7 @@ def $specialize_callableTypeDefIR(callableTypeDefIR_base, typeArgumentIR*)
   -- if typeParameterIR* = typeParameterIR_expl* ++ typeParameterIR_impl*
   -- if |typeParameterIR_expl*| = |typeArgumentIR*|
   -- if typeId_fresh* = $fresh_typeIds(|typeParameterIR_impl*|)
-  -- (if (typeArgumentIR_impl = `` typeId_fresh))*
+  -- (if (typeArgumentIR_impl = _NAME typeId_fresh))*
   -- if theta
         = `{(typeParameterIR_expl `: typeArgumentIR)* ++ (typeParameterIR_impl
                                                           `:
@@ -3592,7 +3592,7 @@ def $specialize_callableTypeDefIR(callableTypeDefIR_base, typeArgumentIR*)
   -- if typeParameterIR* = typeParameterIR_expl* ++ typeParameterIR_impl*
   -- if $(|typeParameterIR_expl*| > 0) /\ |typeArgumentIR*| = 0
   -- if typeId_fresh* = $fresh_typeIds(|typeParameterIR*|)
-  -- (if (typeArgumentIR_fresh = `` typeId_fresh))*
+  -- (if (typeArgumentIR_fresh = _NAME typeId_fresh))*
   -- if theta = `{(typeParameterIR `: typeArgumentIR_fresh)*}
   -- if callableTypeIR_base
         = $callableTypeIR_of_callableTypeDefIR(callableTypeDefIR_base)
@@ -3614,7 +3614,7 @@ def $specialize_constructorTypeDefIR(CONSTRUCTOR
   -- if typeParameterIR* = typeParameterIR_expl* ++ typeParameterIR_impl*
   -- if |typeParameterIR_expl*| = |typeArgumentIR*|
   -- if typeId_fresh* = $fresh_typeIds(|typeParameterIR_impl*|)
-  -- (if (typeArgumentIR_impl = `` typeId_fresh))*
+  -- (if (typeArgumentIR_impl = _NAME typeId_fresh))*
   -- if theta
         = `{(typeParameterIR_expl `: typeArgumentIR)* ++ (typeParameterIR_impl
                                                           `:
@@ -3638,7 +3638,7 @@ def $specialize_constructorTypeDefIR(CONSTRUCTOR
   -- if typeParameterIR* = typeParameterIR_expl* ++ typeParameterIR_impl*
   -- if $(|typeParameterIR_expl*| > 0) /\ |typeArgumentIR*| = 0
   -- if typeId_fresh* = $fresh_typeIds(|typeParameterIR*|)
-  -- (if (typeArgumentIR_fresh = `` typeId_fresh))*
+  -- (if (typeArgumentIR_fresh = _NAME typeId_fresh))*
   -- if theta = `{(typeParameterIR `: typeArgumentIR_fresh)*}
   -- if constructorTypeIR_spec
         = $subst_constructorTypeIR(theta,
@@ -3672,7 +3672,7 @@ rule Type_alpha/baseTypeIR:
   baseTypeIR ~~ baseTypeIR
 
 rule Type_alpha/nameTypeIR:
-  (`` typeId) ~~ (`` typeId)
+  (_NAME typeId) ~~ (_NAME typeId)
 
 rule Type_alpha/left:
   (TYPEDEF _ typeIR_a) ~~ typeIR_b
@@ -3800,13 +3800,13 @@ rule ExternMethodTypeDef_alpha:
   -- if typeParameterIR_fresh*
         = $fresh_typeIds(|typeParameterIR_expl_a* ++ typeParameterIR_impl_a*|)
   -- if typeParameterIR_a* = typeParameterIR_expl_a* ++ typeParameterIR_impl_a*
-  -- if theta_a = `{(typeParameterIR_a `: (`` typeParameterIR_fresh))*}
+  -- if theta_a = `{(typeParameterIR_a `: (_NAME typeParameterIR_fresh))*}
   -- if externMethodTypeIR_a
         = $callableTypeIR_of_callableTypeDefIR(externMethodTypeDefIR_a)
   -- if externMethodTypeIR_a_subst
         = $subst_callableTypeIR(theta_a, externMethodTypeIR_a)
   -- if typeParameterIR_b* = typeParameterIR_expl_b* ++ typeParameterIR_impl_b*
-  -- if theta_b = `{(typeParameterIR_b `: (`` typeParameterIR_fresh))*}
+  -- if theta_b = `{(typeParameterIR_b `: (_NAME typeParameterIR_fresh))*}
   -- if externMethodTypeIR_b
         = $callableTypeIR_of_callableTypeDefIR(externMethodTypeDefIR_b)
   -- if externMethodTypeIR_b_subst
@@ -4842,27 +4842,27 @@ def $sizeof_maxSizeInBytes(typeIR) = D $(n_size / 8)
 def $sizeof(typeIR, "maxSizeInBytes") = $sizeof_maxSizeInBytes(typeIR)
 ;; === 4-p4-ir/4.0-ir-syntax.spectec ===
 syntax prefixedNameIR =
-  | `` nameIR hint(print %0)
+  | _NAME nameIR hint(print %0)
   | `. nameIR
 
 dec $prefixedNonTypeName(prefixedNonTypeName) : prefixedNameIR
   hint(prose_in "the prefixed name of " %0)
 
-def $prefixedNonTypeName(nonTypeName) = `` $name(nonTypeName)
+def $prefixedNonTypeName(nonTypeName) = _NAME $name(nonTypeName)
 
 def $prefixedNonTypeName(_ID `. nonTypeName) = `. $name(nonTypeName)
 
 dec $prefixedTypeName(prefixedTypeName) : prefixedNameIR
   hint(prose_in "the prefixed name of " %0)
 
-def $prefixedTypeName(typeName) = `` $name(typeName)
+def $prefixedTypeName(typeName) = _NAME $name(typeName)
 
 def $prefixedTypeName(_TID `. typeName) = `. $name(typeName)
 
 dec $flatten_prefixedNameIR(prefixedNameIR) : nameIR
   hint(prose_in "the string form of " %0)
 
-def $flatten_prefixedNameIR(`` nameIR) = nameIR
+def $flatten_prefixedNameIR(_NAME nameIR) = nameIR
 
 def $flatten_prefixedNameIR(`. nameIR) = "." ++ nameIR
 
@@ -6600,7 +6600,7 @@ dec $add_typeParameters_t(cursor, typingContext, typeId*) : typingContext
   hint(prose_in "type parameters" %2 "added to the" %0 "layer of" %1)
 
 def $add_typeParameters_t(p, TC, typeId*)
-  = $add_typeDefs_t(p, TC, typeId*, (`` typeId)*)
+  = $add_typeDefs_t(p, TC, typeId*, (_NAME typeId)*)
 
 dec $add_callableDef_overload_t(cursor,
                                 typingContext,
@@ -6729,22 +6729,22 @@ dec $find_var_t(prefixedNameIR, cursor, typingContext) : varTypeIR?
 def $find_var_t(`. id, p, TC) = $find_map<id, varTypeIR>(typeFrame, id)
   -- if typeFrame = TC.GLOBAL.FRAME
 
-def $find_var_t(`` id, GLOBAL, TC) = $find_map<id, varTypeIR>(typeFrame, id)
+def $find_var_t(_NAME id, GLOBAL, TC) = $find_map<id, varTypeIR>(typeFrame, id)
   -- if typeFrame = TC.GLOBAL.FRAME
 
-def $find_var_t(`` id, BLOCK, TC) = varTypeIR
+def $find_var_t(_NAME id, BLOCK, TC) = varTypeIR
   -- if typeFrame = TC.BLOCK.FRAME
   -- if varTypeIR = $find_map<id, varTypeIR>(typeFrame, id)
 
-def $find_var_t(`` id, BLOCK, TC) = $find_var_t(`` id, GLOBAL, TC)
+def $find_var_t(_NAME id, BLOCK, TC) = $find_var_t(_NAME id, GLOBAL, TC)
   -- if typeFrame = TC.BLOCK.FRAME
   -- if eps = $find_map<id, varTypeIR>(typeFrame, id)
 
-def $find_var_t(`` id, LOCAL, TC) = varTypeIR
+def $find_var_t(_NAME id, LOCAL, TC) = varTypeIR
   -- if typeFrame* = TC.LOCAL.FRAMES
   -- if varTypeIR = $find_maps<id, varTypeIR>(typeFrame*, id)
 
-def $find_var_t(`` id, LOCAL, TC) = $find_var_t(`` id, BLOCK, TC)
+def $find_var_t(_NAME id, LOCAL, TC) = $find_var_t(_NAME id, BLOCK, TC)
   -- if typeFrame* = TC.LOCAL.FRAMES
   -- if eps = $find_maps<id, varTypeIR>(typeFrame*, id)
 
@@ -6761,25 +6761,25 @@ def $find_typeDef_t(p, TC, `. typeId)
   = $find_map<typeId, typeDefIR>(typeDefEnv, typeId)
   -- if typeDefEnv = TC.GLOBAL.TYPE
 
-def $find_typeDef_t(GLOBAL, TC, `` typeId)
+def $find_typeDef_t(GLOBAL, TC, _NAME typeId)
   = $find_map<typeId, typeDefIR>(typeDefEnv, typeId)
   -- if typeDefEnv = TC.GLOBAL.TYPE
 
-def $find_typeDef_t(BLOCK, TC, `` typeId) = typeDefIR
+def $find_typeDef_t(BLOCK, TC, _NAME typeId) = typeDefIR
   -- if typeDefEnv = TC.BLOCK.TYPE
   -- if typeDefIR = $find_map<typeId, typeDefIR>(typeDefEnv, typeId)
 
-def $find_typeDef_t(BLOCK, TC, `` typeId)
-  = $find_typeDef_t(GLOBAL, TC, `` typeId)
+def $find_typeDef_t(BLOCK, TC, _NAME typeId)
+  = $find_typeDef_t(GLOBAL, TC, _NAME typeId)
   -- if typeDefEnv = TC.BLOCK.TYPE
   -- if eps = $find_map<typeId, typeDefIR>(typeDefEnv, typeId)
 
-def $find_typeDef_t(LOCAL, TC, `` typeId) = typeDefIR
+def $find_typeDef_t(LOCAL, TC, _NAME typeId) = typeDefIR
   -- if typeDefEnv* = TC.LOCAL.TYPE
   -- if typeDefIR = $find_maps<typeId, typeDefIR>(typeDefEnv*, typeId)
 
-def $find_typeDef_t(LOCAL, TC, `` typeId)
-  = $find_typeDef_t(BLOCK, TC, `` typeId)
+def $find_typeDef_t(LOCAL, TC, _NAME typeId)
+  = $find_typeDef_t(BLOCK, TC, _NAME typeId)
   -- if typeDefEnv* = TC.LOCAL.TYPE
   -- if eps = $find_maps<typeId, typeDefIR>(typeDefEnv*, typeId)
 
@@ -6803,14 +6803,14 @@ def $find_callableDef_overloaded_t(GLOBAL, TC, `. nameIR, argumentIR*)
   -- if callableTypeDefEnv = TC.GLOBAL.CALLABLE
   -- if callTargetKey = $callTargetKey(nameIR, argumentIR*)
 
-def $find_callableDef_overloaded_t(GLOBAL, TC, `` nameIR, argumentIR*)
+def $find_callableDef_overloaded_t(GLOBAL, TC, _NAME nameIR, argumentIR*)
   = $find_overloaded<callableTypeDefIR>(callableTypeDefEnv,
                                         callTargetKey,
                                         def $parameterListIR_of_callableTypeDefIR)
   -- if callableTypeDefEnv = TC.GLOBAL.CALLABLE
   -- if callTargetKey = $callTargetKey(nameIR, argumentIR*)
 
-def $find_callableDef_overloaded_t(BLOCK, TC, `` nameIR, argumentIR*)
+def $find_callableDef_overloaded_t(BLOCK, TC, _NAME nameIR, argumentIR*)
   = callableId `: callableTypeDefIR `# id_default* `# id_optional*
   -- if callableTypeDefEnv = TC.BLOCK.CALLABLE
   -- if callTargetKey = $callTargetKey(nameIR, argumentIR*)
@@ -6819,8 +6819,8 @@ def $find_callableDef_overloaded_t(BLOCK, TC, `` nameIR, argumentIR*)
                                               callTargetKey,
                                               def $parameterListIR_of_callableTypeDefIR)
 
-def $find_callableDef_overloaded_t(BLOCK, TC, `` nameIR, argumentIR*)
-  = $find_callableDef_overloaded_t(GLOBAL, TC, `` nameIR, argumentIR*)
+def $find_callableDef_overloaded_t(BLOCK, TC, _NAME nameIR, argumentIR*)
+  = $find_callableDef_overloaded_t(GLOBAL, TC, _NAME nameIR, argumentIR*)
   -- if callableTypeDefEnv = TC.BLOCK.CALLABLE
   -- if callTargetKey = $callTargetKey(nameIR, argumentIR*)
   -- if eps
@@ -6828,8 +6828,8 @@ def $find_callableDef_overloaded_t(BLOCK, TC, `` nameIR, argumentIR*)
                                               callTargetKey,
                                               def $parameterListIR_of_callableTypeDefIR)
 
-def $find_callableDef_overloaded_t(LOCAL, TC, `` nameIR, argumentIR*)
-  = $find_callableDef_overloaded_t(BLOCK, TC, `` nameIR, argumentIR*)
+def $find_callableDef_overloaded_t(LOCAL, TC, _NAME nameIR, argumentIR*)
+  = $find_callableDef_overloaded_t(BLOCK, TC, _NAME nameIR, argumentIR*)
 
 dec $find_callableDef_non_overloaded_t(cursor, typingContext, prefixedNameIR)
   : (callableId, callableTypeDefIR)?
@@ -6843,20 +6843,20 @@ dec $find_callableDef_non_overloaded_t(cursor, typingContext, prefixedNameIR)
 def $find_callableDef_non_overloaded_t(p, TC, `. nameIR)
   = $find_non_overloaded<callableTypeDefIR>(TC.GLOBAL.CALLABLE, nameIR)
 
-def $find_callableDef_non_overloaded_t(GLOBAL, TC, `` nameIR)
+def $find_callableDef_non_overloaded_t(GLOBAL, TC, _NAME nameIR)
   = $find_non_overloaded<callableTypeDefIR>(TC.GLOBAL.CALLABLE, nameIR)
 
-def $find_callableDef_non_overloaded_t(BLOCK, TC, `` nameIR)
+def $find_callableDef_non_overloaded_t(BLOCK, TC, _NAME nameIR)
   = (callableId, callableTypeDefIR)
   -- if (callableId, callableTypeDefIR)
         = $find_non_overloaded<callableTypeDefIR>(TC.BLOCK.CALLABLE, nameIR)
 
-def $find_callableDef_non_overloaded_t(BLOCK, TC, `` nameIR)
-  = $find_callableDef_non_overloaded_t(GLOBAL, TC, `` nameIR)
+def $find_callableDef_non_overloaded_t(BLOCK, TC, _NAME nameIR)
+  = $find_callableDef_non_overloaded_t(GLOBAL, TC, _NAME nameIR)
   -- if eps = $find_non_overloaded<callableTypeDefIR>(TC.BLOCK.CALLABLE, nameIR)
 
-def $find_callableDef_non_overloaded_t(LOCAL, TC, `` nameIR)
-  = $find_callableDef_non_overloaded_t(BLOCK, TC, `` nameIR)
+def $find_callableDef_non_overloaded_t(LOCAL, TC, _NAME nameIR)
+  = $find_callableDef_non_overloaded_t(BLOCK, TC, _NAME nameIR)
 
 dec $find_constructorDef_overloaded_t(typingContext, prefixedNameIR, argumentIR*)
   : callResolution<constructorTypeDefIR>?
@@ -6868,7 +6868,7 @@ def $find_constructorDef_overloaded_t(TC, `. nameIR, argumentIR*)
                                            def $parameterListIR_of_constructorTypeDefIR)
   -- if callTargetKey = $callTargetKey(nameIR, argumentIR*)
 
-def $find_constructorDef_overloaded_t(TC, `` nameIR, argumentIR*)
+def $find_constructorDef_overloaded_t(TC, _NAME nameIR, argumentIR*)
   = $find_overloaded<constructorTypeDefIR>(TC.GLOBAL.CONSTRUCTOR,
                                            callTargetKey,
                                            def $parameterListIR_of_constructorTypeDefIR)
@@ -7241,7 +7241,7 @@ rule Type_wf/baseTypeIR:
   B |- baseTypeIR
 
 rule Type_wf/nameTypeIR:
-  B |- `` typeId
+  B |- _NAME typeId
   -- if $in_set<typeId>(typeId, B)
 
 dec $nestable_typedef(typeIR) : bool
@@ -9207,11 +9207,11 @@ rule TypeArgument_ok/void:
   p TC |- VOID : VOID `# eps
 
 rule TypeArgument_ok/dontcare:
-  p TC |- `_ : (`` typeId_impl) `# typeId_impl
+  p TC |- `_ : (_NAME typeId_impl) `# typeId_impl
   -- if typeId_impl = $fresh_typeId
 
 rule TypeArgument_ok/nonTypeName:
-  p TC |- nonTypeName : (`` typeId) `# eps
+  p TC |- nonTypeName : (_NAME typeId) `# eps
   -- if typeId = $name(nonTypeName)
 
 rule TypeArguments_ok/nil:
@@ -9266,7 +9266,7 @@ rule Expr_ok/prefixedNonTypeName:
 
 rule Expr_ok/this:
   p TC |- THIS : prefixedNameIR `# expressionNoteIR
-  -- if prefixedNameIR = `` "this"
+  -- if prefixedNameIR = _NAME "this"
   -- if _ typeIR ctk _ = $find_var_t(prefixedNameIR, p, TC)
   -- if expressionNoteIR = `(typeIR ctk)
 
@@ -9856,7 +9856,7 @@ rule Expr_ok/errorAccessExpression:
   p TC |- ERROR `. member : (ERROR `. nameIR) `# expressionNoteIR
   -- if nameIR = $name(member)
   -- if nameIR_error = "error." ++ nameIR
-  -- if ERROR `. nameIR = $find_var_value_t(`` nameIR_error, p, TC)
+  -- if ERROR `. nameIR = $find_var_value_t(_NAME nameIR_error, p, TC)
   -- if expressionNoteIR = `(ERROR LCTK)
 
 rule Expr_ok/enum:
@@ -10541,7 +10541,7 @@ rule Expr_eval_lctk/default:
 rule Expr_eval_lctk/errorAccessExpressionIR:
   p TC |- (ERROR `. nameIR) `# `(_ _) ~> value_error
   -- if nameIR_error = "error." ++ nameIR
-  -- if value_error = $find_var_value_t(`` nameIR_error, p, TC)
+  -- if value_error = $find_var_value_t(_NAME nameIR_error, p, TC)
 
 rule Expr_eval_lctk/enum:
   p TC |- ((TYPE prefixedNameIR_base) `. nameIR) `# _ ~> typeId `. nameIR
@@ -11057,7 +11057,7 @@ rule Stmt_ok/directApplicationStatement:
   -- Stmt_ok: p TC_1 f l |- lvalue `(argumentList) `; : _ _ callStatementIR
   -- if (typedExpressionIR_base `. "apply") `<eps> `(argumentIR_cast*) `;
         = callStatementIR
-  -- if (`` nameIR_object) `# `(typeIR_object CTK) = typedExpressionIR_base
+  -- if (_NAME nameIR_object) `# `(typeIR_object CTK) = typedExpressionIR_base
   -- if constructorTargetIR = prefixedNameIR `<typeArgumentIR*>
   -- if directApplicationStatementIR
         = constructorTargetIR `. APPLY `(argumentIR_cast*) `;
@@ -11344,13 +11344,14 @@ rule SwitchLabel_table_ok/default:
 
 rule SwitchLabel_table_ok/expressionNonBrace-prefixedNonTypeName:
   TC typeId_table |- prefixedNonTypeName : typedExpressionIR_label
-  -- if `` nameIR_label = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if _NAME nameIR_label = $prefixedNonTypeName(prefixedNonTypeName)
   -- if typeId_table_enum = $concat_text(["action_list(", typeId_table, ")"])
   -- if id_label = $concat_text([typeId_table_enum, ".", nameIR_label])
   -- if _ typeIR_label ctk_label value_label
-        = $find_var_t(`` id_label, LOCAL, TC)
+        = $find_var_t(_NAME id_label, LOCAL, TC)
   -- if value_label = TABLE_ENUM typeId_table_enum `. nameIR_label
-  -- if typedExpressionIR_label = (`` nameIR_label) `# `(typeIR_label ctk_label)
+  -- if typedExpressionIR_label
+        = (_NAME nameIR_label) `# `(typeIR_label ctk_label)
 
 relation SwitchCase_table_ok:
   typingContext flow loopctxt typeId
@@ -11726,7 +11727,7 @@ rule ObjectDecl_ok/instantiation:
     : typeFrame_init externMethodTypeDefEnv instantiationIR
   -- InstDecl_ok: p TC_0 |- instantiation : TC_1 instantiationIR
   -- if _ _ _ `(_) nameIR _ `; = instantiationIR
-  -- if varTypeIR = $find_var_t(`` nameIR, p, TC_1)
+  -- if varTypeIR = $find_var_t(_NAME nameIR, p, TC_1)
   -- if typeFrame_init
         = $update_map<id, varTypeIR>(typeFrame, nameIR, varTypeIR)
 
@@ -12479,7 +12480,7 @@ rule Decl_ok/derivedTypeDeclaration-mono:
   -- if `{typeId}
         = $diff_set<typeId>($dom_map<typeId, typeDefIR>(TC_1.GLOBAL.TYPE),
                             $dom_map<typeId, typeDefIR>(TC_0.GLOBAL.TYPE))
-  -- if typeDefIR = $find_typeDef_t(GLOBAL, TC_1, `` typeId)
+  -- if typeDefIR = $find_typeDef_t(GLOBAL, TC_1, _NAME typeId)
   -- if $is_monomorphic_typeDefIR(typeDefIR)
   -- if typeIR = $typeIR_of_typeDefIR(typeDefIR)
   -- if nameIR = $name(name)
@@ -12497,7 +12498,7 @@ rule Decl_ok/derivedTypeDeclaration-poly:
   -- if `{typeId}
         = $diff_set<typeId>($dom_map<typeId, typeDefIR>(TC_1.GLOBAL.TYPE),
                             $dom_map<typeId, typeDefIR>(TC_0.GLOBAL.TYPE))
-  -- if typeDefIR = $find_typeDef_t(GLOBAL, TC_1, `` typeId)
+  -- if typeDefIR = $find_typeDef_t(GLOBAL, TC_1, _NAME typeId)
   -- if ~$is_monomorphic_typeDefIR(typeDefIR)
   -- if (eps, eps) = $typeParameterListIR_of_typeDefIR(typeDefIR)
   -- if nameIR = $name(name)
@@ -12683,7 +12684,8 @@ rule ExternConstructor_ok:
   -- if nameIR = typeId_extern
   -- ConstructorParameterListOpt_ok:
        TC_0 |- `(parameterList) : TC_1 constructorParameterIR* `# typeId_impl*
-  -- if externObjectTypeDefIR = $find_typeDef_t(GLOBAL, TC_0, `` typeId_extern)
+  -- if externObjectTypeDefIR
+        = $find_typeDef_t(GLOBAL, TC_0, _NAME typeId_extern)
   -- if (typeId_expl*, eps)
         = $typeParameterListIR_of_typeDefIR(externObjectTypeDefIR)
   -- if typeIR_extern = $typeIR_of_typeDefIR(externObjectTypeDefIR)
@@ -13225,7 +13227,7 @@ rule TableKey_ok:
   -- if nameIR_key = $name_annotation_default(annotationList, nameIR_default)
   -- if nameIR_matchkind = $name(name_matchkind)
   -- if MATCH_KIND `. nameIR_matchkind
-        = $find_var_value_t(`` nameIR_matchkind, LOCAL, TC)
+        = $find_var_value_t(_NAME nameIR_matchkind, LOCAL, TC)
   -- if $compat_table_key(nameIR_matchkind, typeIR)
   -- if TBLC_1 = $add_key_tbl(TBLC_0, nameIR_matchkind, typeIR)
   -- if tableKeyIR
@@ -13879,7 +13881,7 @@ rule Table_ok/zero-default-action:
   -- if TBLC_0 = $empty_tableContext
   -- TableProperties_ok: TC TBLC_0 |- tableProperty* : TBLC_1 tablePropertyIR*
   -- if tablePropertyIR_default_action
-        = _EMPTY eps DEFAULT_ACTION `= ((`` "NoAction") eps `(eps)) `;
+        = _EMPTY eps DEFAULT_ACTION `= ((_NAME "NoAction") eps `(eps)) `;
   -- if (TBLC_2, tablePropertyIR_updated*)
         = $insert_NoAction_tablePropertyIR(TBLC_1, tablePropertyIR*)
 
@@ -14153,7 +14155,7 @@ def $resolve_inference'(typeIR) = typeIR_resolved
 def $resolve_inference'(typeIR) = typeIR
   -- otherwise
 
-def $gen_constraint(constraint, `` typeId_param, typeIR_arg)
+def $gen_constraint(constraint, _NAME typeId_param, typeIR_arg)
   = $update_map<typeId, infer>(constraint, typeId_param, KNOWN AS typeIR_arg)
   -- if $in_set<typeId>(typeId_param, $dom_map<typeId, infer>(constraint))
 
@@ -14361,7 +14363,7 @@ rule ConstructorType_ok/aliased:
         = $find_typeDef_t(p, TC, prefixedNameIR)
   -- if (nameIR, typeArgumentIR*) = $resolve_type_alias(typeIR_alias)
   -- if callableId `: constructorTypeDefIR `# id_default* `# id_optional*
-        = $find_constructorDef_overloaded_t(TC, `` nameIR, argumentIR*)
+        = $find_constructorDef_overloaded_t(TC, _NAME nameIR, argumentIR*)
   -- if (constructorTypeIR, typeId_impl*)
         = $specialize_constructorTypeDefIR(constructorTypeDefIR, typeArgumentIR*)
   -- if B = $union_set<typeId>($bound(p, TC), `{typeId_impl*})
@@ -14505,7 +14507,7 @@ rule CallableTarget_ok/prefixedNonTypeName:
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
 
 rule CallableTarget_ok/this:
-  p TC |- THIS : (`` "this")
+  p TC |- THIS : (_NAME "this")
 
 rule CallableTarget_ok/memberAccessExpression-prefixedTypeName:
   p TC |- prefixedTypeName `. member : TYPE prefixedNameIR `. nameIR
@@ -15551,20 +15553,20 @@ def $find_callableDef_non_overload_i(p, IC, `. nameIR)
   -- if (callableId, callableDef)
         = $find_non_overloaded<callableDef>(IC.GLOBAL.CALLABLE, nameIR)
 
-def $find_callableDef_non_overload_i(GLOBAL, IC, `` nameIR)
+def $find_callableDef_non_overload_i(GLOBAL, IC, _NAME nameIR)
   = $find_callableDef_non_overload_i(GLOBAL, IC, `. nameIR)
 
-def $find_callableDef_non_overload_i(BLOCK, IC, `` nameIR)
+def $find_callableDef_non_overload_i(BLOCK, IC, _NAME nameIR)
   = (BLOCK, callableId, callableDef)
   -- if (callableId, callableDef)
         = $find_non_overloaded<callableDef>(IC.BLOCK.CALLABLE, nameIR)
 
-def $find_callableDef_non_overload_i(BLOCK, IC, `` nameIR)
-  = $find_callableDef_non_overload_i(GLOBAL, IC, `` nameIR)
+def $find_callableDef_non_overload_i(BLOCK, IC, _NAME nameIR)
+  = $find_callableDef_non_overload_i(GLOBAL, IC, _NAME nameIR)
   -- if eps = $find_non_overloaded<callableDef>(IC.BLOCK.CALLABLE, nameIR)
 
-def $find_callableDef_non_overload_i(LOCAL, IC, `` nameIR)
-  = $find_callableDef_non_overload_i(BLOCK, IC, `` nameIR)
+def $find_callableDef_non_overload_i(LOCAL, IC, _NAME nameIR)
+  = $find_callableDef_non_overload_i(BLOCK, IC, _NAME nameIR)
 
 dec $add_constructorDef_i(instContext, callableId, constructorDef) : instContext
   hint(prose_in "where" %1 "to" %2 "is added to" %0)
@@ -15595,25 +15597,25 @@ dec $find_var_i(prefixedNameIR, cursor, instContext) : value
 def $find_var_i(`. id, p, IC) = value
   -- if value = $find_map<id, value>(IC.GLOBAL.FRAME, id)
 
-def $find_var_i(`` id, GLOBAL, IC) = value
+def $find_var_i(_NAME id, GLOBAL, IC) = value
   -- if value = $find_map<id, value>(IC.GLOBAL.FRAME, id)
 
-def $find_var_i(`` id, BLOCK, IC) = value
+def $find_var_i(_NAME id, BLOCK, IC) = value
   -- if value = $find_map<id, value>(IC.BLOCK.FRAME, id)
 
-def $find_var_i(`` id, BLOCK, IC) = $find_var_i(`` id, GLOBAL, IC)
+def $find_var_i(_NAME id, BLOCK, IC) = $find_var_i(_NAME id, GLOBAL, IC)
   -- if eps = $find_map<id, value>(IC.BLOCK.FRAME, id)
 
-def $find_var_i(`` id, LOCAL, IC) = value
+def $find_var_i(_NAME id, LOCAL, IC) = value
   -- if value = $find_maps<id, value>(IC.LOCAL.FRAMES, id)
 
-def $find_var_i(`` id, LOCAL, IC) = $find_var_i(`` id, BLOCK, IC)
+def $find_var_i(_NAME id, LOCAL, IC) = $find_var_i(_NAME id, BLOCK, IC)
   -- if eps = $find_maps<id, value>(IC.LOCAL.FRAMES, id)
 
 dec $find_typeDef_i(cursor, instContext, prefixedNameIR) : typeDefIR?
   hint(prose_in "the type definition of" %2 "from the" %0 "layer of" %1)
 
-def $find_typeDef_i(_, IC, `` nameIR)
+def $find_typeDef_i(_, IC, _NAME nameIR)
   = $find_map<typeId, typeDefIR>(IC.GLOBAL.TYPE, nameIR)
 
 def $find_typeDef_i(_, IC, `. nameIR)
@@ -15623,7 +15625,7 @@ dec $find_constructorDef_i(instContext, prefixedNameIR, argumentIR*)
   : callResolution<constructorDef>?
   hint(prose_in "the overloaded constructor definition of" %1 `(%2) "in" %0)
 
-def $find_constructorDef_i(IC, `` nameIR, argumentIR*)
+def $find_constructorDef_i(IC, _NAME nameIR, argumentIR*)
   = $find_overloaded<constructorDef>(IC.GLOBAL.CONSTRUCTOR,
                                      callTargetKey,
                                      def $parameterListIR_of_constructorDef)
@@ -16064,7 +16066,7 @@ rule Expr_inst/default:
 rule Expr_inst/errorAccessExpressionIR:
   p IC STO |- (ERROR `. nameIR) `# _ : STO value_error
   -- if nameIR_error = "error." ++ nameIR
-  -- if value_error = $find_var_i(`` nameIR_error, p, IC)
+  -- if value_error = $find_var_i(_NAME nameIR_error, p, IC)
 
 rule Expr_inst/enum:
   p IC STO |- ((TYPE prefixedNameIR) `. nameIR) `# _ : STO (typeId `. nameIR)
@@ -16262,13 +16264,13 @@ rule DirectApplicationStmt_inst:
             `(eps `# id_default* `# id_optional*)
          : STO_1 object
   -- if typeId_fresh = $fresh_typeId
-  -- if typeIR = `` typeId
+  -- if typeIR = _NAME typeId
   -- if nameIR = $concat_text([typeId, "_", typeId_fresh])
   -- if objectId = IC.PATH ++ typeId
   -- if STO_2 = $add_store(STO_1, objectId, object)
   -- if constantDeclarationIR
         = _EMPTY CONST typeIR nameIR (`= _VALUE (REF objectId)) `;
-  -- if typedExpressionIR_base = (`` nameIR) `# `(typeIR CTK)
+  -- if typedExpressionIR_base = (_NAME nameIR) `# `(typeIR CTK)
   -- if callableTargetIR = typedExpressionIR_base `. "apply"
   -- if callStatementIR
         = callableTargetIR `<typeArgumentListIR_inst> `(argumentListIR) `;
@@ -17495,7 +17497,7 @@ rule Constructor_inst/aliased:
         = $find_typeDef_i(p, IC, prefixedNameIR)
   -- if (nameIR, typeArgumentIR*) = $resolve_type_alias(typeIR_alias)
   -- if _ `: constructorDef `# id_default* `# id_optional*
-        = $find_constructorDef_i(IC, `` nameIR, argumentIR*)
+        = $find_constructorDef_i(IC, _NAME nameIR, argumentIR*)
 ;; === 7-instantiation/7.11.2-inst-constructor-call.spectec ===
 rule Copy_in_argument_inst:
   STO_0 p_caller IC_caller argumentIR `@ p_callee IC_callee_0 id

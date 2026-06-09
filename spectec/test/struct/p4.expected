@@ -4145,9 +4145,9 @@ syntax baseTypeIR =
    | bit < nat > (from fixedBitTypeIR)
    | varbit < nat > (from varBitTypeIR)
 
-;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:41:21-41:45:
+;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:41:21-41:48:
 syntax nameTypeIR = 
-   | ` typeId (from nameTypeIR) hint(print %0)
+   | typeId (from nameTypeIR) hint(print %0)
 
 ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.1-type.spectec:48:3-49:17:
 syntax typedefTypeIR = 
@@ -4307,7 +4307,7 @@ syntax typeIR =
    | int < nat > (from fixedIntTypeIR)
    | bit < nat > (from fixedBitTypeIR)
    | varbit < nat > (from varBitTypeIR)
-   | ` typeId (from nameTypeIR) hint(print %0)
+   | typeId (from nameTypeIR) hint(print %0)
    | typedef typeId typeIR (from typedefTypeIR) hint(print %0)
    | type typeId typeIR (from newTypeIR) hint(print %0)
    | list < typeIR > (from listTypeIR)
@@ -4397,7 +4397,7 @@ syntax objectTypeDefIR =
 
 ;; ../../../../../spectec/specs/p4/2-static-runtime/2.2.2-type-def.spectec:72:1-75:20:
 syntax typeDefIR = 
-   | ` typeId (from nameTypeIR) hint(print %0)
+   | typeId (from nameTypeIR) hint(print %0)
    | typedef typeId typeIR (from typedefTypeIR) hint(print %0)
    | type typeId typeIR (from newTypeIR) hint(print %0)
    | struct typeId < typeParameterIR* > { fieldTypeIR* } (from structTypeDefIR)
@@ -4594,7 +4594,7 @@ dec $is_equalable_typeIR(typeIR'')
 
   2. Case (% has type nameTypeIR)
 
-    1. (Let (` typeId) be (typeIR'' as nameTypeIR))
+    1. (Let (typeId) be (typeIR'' as nameTypeIR))
 
     2. Return false
 
@@ -4746,7 +4746,7 @@ dec $typeId_of_typeDefIR(typeDefIR)
 
   1. Case (% has type nameTypeIR)
 
-    1. (Let (` typeId) be (typeDefIR as nameTypeIR))
+    1. (Let (typeId) be (typeDefIR as nameTypeIR))
 
     2. Return typeId
 
@@ -4843,19 +4843,19 @@ dec $typeIR_of_typeDefIR(typeDefIR)
 
     1. (Let (struct typeId < typeParameterIR* > { fieldTypeIR* }) be (typeDefIR as structTypeDefIR))
 
-    2. Return ((struct typeId < ((` typeParameterIR) as typeIR)* > { fieldTypeIR* }) as typeIR)
+    2. Return ((struct typeId < ((typeParameterIR) as typeIR)* > { fieldTypeIR* }) as typeIR)
 
   4. Case (% has type headerTypeDefIR)
 
     1. (Let (header typeId < typeParameterIR* > { fieldTypeIR* }) be (typeDefIR as headerTypeDefIR))
 
-    2. Return ((header typeId < ((` typeParameterIR) as typeIR)* > { fieldTypeIR* }) as typeIR)
+    2. Return ((header typeId < ((typeParameterIR) as typeIR)* > { fieldTypeIR* }) as typeIR)
 
   5. Case (% has type headerUnionTypeDefIR)
 
     1. (Let (header_union typeId < typeParameterIR* > { fieldTypeIR* }) be (typeDefIR as headerUnionTypeDefIR))
 
-    2. Return ((header_union typeId < ((` typeParameterIR) as typeIR)* > { fieldTypeIR* }) as typeIR)
+    2. Return ((header_union typeId < ((typeParameterIR) as typeIR)* > { fieldTypeIR* }) as typeIR)
 
   6. Case (% has type enumTypeDefIR)
 
@@ -4869,7 +4869,7 @@ dec $typeIR_of_typeDefIR(typeDefIR)
 
     2. (Let typeParameterIR* be typeParameterIR_expl* ++ typeParameterIR_impl*)
 
-    3. Return ((extern typeId < ((` typeParameterIR) as typeIR)* > ({ (callableId : externMethodTypeDefIR)* })) as typeIR)
+    3. Return ((extern typeId < ((typeParameterIR) as typeIR)* > ({ (callableId : externMethodTypeDefIR)* })) as typeIR)
 
   8. Case (% has type parserObjectTypeDefIR)
 
@@ -4877,7 +4877,7 @@ dec $typeIR_of_typeDefIR(typeDefIR)
 
     2. (Let typeParameterIR* be typeParameterIR_expl* ++ typeParameterIR_impl*)
 
-    3. Return ((parser typeId < ((` typeParameterIR) as typeIR)* > ( parameterIR* )) as typeIR)
+    3. Return ((parser typeId < ((typeParameterIR) as typeIR)* > ( parameterIR* )) as typeIR)
 
   9. Case (% has type controlObjectTypeDefIR)
 
@@ -4885,7 +4885,7 @@ dec $typeIR_of_typeDefIR(typeDefIR)
 
     2. (Let typeParameterIR* be typeParameterIR_expl* ++ typeParameterIR_impl*)
 
-    3. Return ((control typeId < ((` typeParameterIR) as typeIR)* > ( parameterIR* )) as typeIR)
+    3. Return ((control typeId < ((typeParameterIR) as typeIR)* > ( parameterIR* )) as typeIR)
 
   10. Case (% has type packageObjectTypeDefIR)
 
@@ -4893,7 +4893,7 @@ dec $typeIR_of_typeDefIR(typeDefIR)
 
     2. (Let typeParameterIR* be typeParameterIR_expl* ++ typeParameterIR_impl*)
 
-    3. Return ((package typeId < ((` typeParameterIR) as typeIR)* > { typeIR* }) as typeIR)
+    3. Return ((package typeId < ((typeParameterIR) as typeIR)* > { typeIR* }) as typeIR)
 
   11. Case (% has type tableObjectTypeDefIR)
 
@@ -5455,7 +5455,7 @@ dec $free_typeIR(typeIR'')
 
   2. Case (% has type nameTypeIR)
 
-    1. (Let (` typeId) be (typeIR'' as nameTypeIR))
+    1. (Let (typeId) be (typeIR'' as nameTypeIR))
 
     2. Return ({ [typeId] })
 
@@ -5764,7 +5764,7 @@ dec $capture_avoiding_(theta, typeParameterIR*, B)
 
   4. If (~$in_set<typeId>(typeParameterIR_fresh, B_capture))*, then
 
-    1. (Let theta_fresh be $adds_map<typeId, typeIR>(theta, typeParameterIR*, ((` typeParameterIR_fresh) as typeIR)*))
+    1. (Let theta_fresh be $adds_map<typeId, typeIR>(theta, typeParameterIR*, ((typeParameterIR_fresh) as typeIR)*))
 
     2. Return (theta_fresh, typeParameterIR_fresh*)
 
@@ -5793,7 +5793,7 @@ dec $capture_avoiding(theta, typeParameterIR_expl*, typeParameterIR_impl*, B)
 
     2. (Let typeParameterIR_impl_fresh* be typeId_fresh*[|typeParameterIR_expl*| : |typeParameterIR_impl*|])
 
-    3. (Let theta_fresh be $adds_map<typeId, typeIR>(theta, typeParameterIR_expl* ++ typeParameterIR_impl*, ((` typeParameterIR_expl_fresh) as typeIR)* ++ ((` typeParameterIR_impl_fresh) as typeIR)*))
+    3. (Let theta_fresh be $adds_map<typeId, typeIR>(theta, typeParameterIR_expl* ++ typeParameterIR_impl*, ((typeParameterIR_expl_fresh) as typeIR)* ++ ((typeParameterIR_impl_fresh) as typeIR)*))
 
     4. Return (theta_fresh, typeParameterIR_expl_fresh*, typeParameterIR_impl_fresh*)
 
@@ -5825,7 +5825,7 @@ dec $subst_typeIR'(theta, typeIR''')
 
   2. Case (% has type nameTypeIR)
 
-    1. (Let (` typeId) be (typeIR''' as nameTypeIR))
+    1. (Let (typeId) be (typeIR''' as nameTypeIR))
 
     2. (Let typeIR''? be $find_map<typeId, typeIR>(theta, typeId))
 
@@ -5839,7 +5839,7 @@ dec $subst_typeIR'(theta, typeIR''')
 
     4. If ((?() = $find_map<typeId, typeIR>(theta, typeId))), then
 
-      1. Return ((` typeId) as typeIR)
+      1. Return ((typeId) as typeIR)
 
     4. Else Phantom#116
 
@@ -6377,7 +6377,7 @@ dec $specialize_callableTypeDefIR(callableTypeDefIR_base, typeArgumentIR*)
 
   1. (Let typeId_fresh* be $fresh_typeIds(|typeParameterIR_impl*|))
 
-  2. (Let typeArgumentIR_impl be ((` typeId_fresh) as typeIR))*
+  2. (Let typeArgumentIR_impl be ((typeId_fresh) as typeIR))*
 
   3. (Let theta be ({ (typeParameterIR_expl : typeArgumentIR)* ++ (typeParameterIR_impl : typeArgumentIR_impl)* }))
 
@@ -6393,7 +6393,7 @@ dec $specialize_callableTypeDefIR(callableTypeDefIR_base, typeArgumentIR*)
 
   1. (Let typeId_fresh* be $fresh_typeIds(|typeParameterIR*|))
 
-  2. (Let typeArgumentIR_fresh be ((` typeId_fresh) as typeIR))*
+  2. (Let typeArgumentIR_fresh be ((typeId_fresh) as typeIR))*
 
   3. (Let theta be ({ (typeParameterIR : typeArgumentIR_fresh)* }))
 
@@ -6414,7 +6414,7 @@ dec $specialize_constructorTypeDefIR((constructor < typeParameterIR_expl* , type
 
   1. (Let typeId_fresh* be $fresh_typeIds(|typeParameterIR_impl*|))
 
-  2. (Let typeArgumentIR_impl be ((` typeId_fresh) as typeIR))*
+  2. (Let typeArgumentIR_impl be ((typeId_fresh) as typeIR))*
 
   3. (Let theta be ({ (typeParameterIR_expl : typeArgumentIR)* ++ (typeParameterIR_impl : typeArgumentIR_impl)* }))
 
@@ -6428,7 +6428,7 @@ dec $specialize_constructorTypeDefIR((constructor < typeParameterIR_expl* , type
 
   1. (Let typeId_fresh* be $fresh_typeIds(|typeParameterIR*|))
 
-  2. (Let typeArgumentIR_fresh be ((` typeId_fresh) as typeIR))*
+  2. (Let typeArgumentIR_fresh be ((typeId_fresh) as typeIR))*
 
   3. (Let theta be ({ (typeParameterIR : typeArgumentIR_fresh)* }))
 
@@ -6461,11 +6461,11 @@ relation Type_alpha: typeIR'', typeIR'''
 
   2. Case (% has type nameTypeIR)
 
-    1. (Let (` typeId) be (typeIR'' as nameTypeIR))
+    1. (Let (typeId) be (typeIR'' as nameTypeIR))
 
     2. If ((typeIR''' has type nameTypeIR)), then
 
-      1. (Let (` typeId') be (typeIR''' as nameTypeIR))
+      1. (Let (typeId') be (typeIR''' as nameTypeIR))
 
       2. If ((typeId = typeId')), then
 
@@ -7034,7 +7034,7 @@ relation ExternMethodTypeDef_alpha: externMethodTypeDefIR_a, externMethodTypeDef
 
     2. (Let typeParameterIR_a* be typeParameterIR_expl_a* ++ typeParameterIR_impl_a*)
 
-    3. (Let theta_a be ({ (typeParameterIR_a : ((` typeParameterIR_fresh) as typeIR))* }))
+    3. (Let theta_a be ({ (typeParameterIR_a : ((typeParameterIR_fresh) as typeIR))* }))
 
     4. (Let callableTypeIR be $callableTypeIR_of_callableTypeDefIR((externMethodTypeDefIR_a as callableTypeDefIR)))
 
@@ -7050,7 +7050,7 @@ relation ExternMethodTypeDef_alpha: externMethodTypeDefIR_a, externMethodTypeDef
 
         2. (Let typeParameterIR_b* be typeParameterIR_expl_b* ++ typeParameterIR_impl_b*)
 
-        3. (Let theta_b be ({ (typeParameterIR_b : ((` typeParameterIR_fresh) as typeIR))* }))
+        3. (Let theta_b be ({ (typeParameterIR_b : ((typeParameterIR_fresh) as typeIR))* }))
 
         4. (Let callableTypeIR'' be $callableTypeIR_of_callableTypeDefIR((externMethodTypeDefIR_b as callableTypeDefIR)))
 
@@ -10445,7 +10445,7 @@ dec $sizeof_maxSizeInBytes(typeIR)
 
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:6:1-7:14:
 syntax prefixedNameIR = 
-   | ` nameIR (from prefixedNameIR) hint(print %0)
+   | nameIR (from prefixedNameIR) hint(print %0)
    | . nameIR (from prefixedNameIR)
 
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:9:1-10:44:
@@ -10455,7 +10455,7 @@ dec $prefixedNonTypeName(prefixedNonTypeName)
 
   1. (Let nonTypeName be (prefixedNonTypeName as nonTypeName))
 
-  2. Return (` $name((nonTypeName as name)))
+  2. Return ($name((nonTypeName as name)))
 
 1. Else Phantom#482
 
@@ -10474,7 +10474,7 @@ dec $prefixedTypeName(prefixedTypeName)
 
   1. (Let typeName be (prefixedTypeName as typeName))
 
-  2. Return (` $name((typeName as name)))
+  2. Return ($name((typeName as name)))
 
 1. Else Phantom#484
 
@@ -10491,9 +10491,9 @@ dec $flatten_prefixedNameIR(prefixedNameIR)
 
 1. Case analysis on prefixedNameIR
 
-  1. Case (% matches pattern `` %`)
+  1. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` nameIR) be prefixedNameIR)
+    1. (Let (nameIR) be prefixedNameIR)
 
     2. Return nameIR
 
@@ -10602,7 +10602,7 @@ syntax accessExpressionIR =
 
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:155:1-158:26:
 syntax callableTargetIR = 
-   | ` nameIR (from prefixedNameIR) hint(print %0)
+   | nameIR (from prefixedNameIR) hint(print %0)
    | . nameIR (from prefixedNameIR)
    | typedExpressionIR . nameIR (from callableTargetIR)
    | type prefixedNameIR . nameIR (from callableTargetIR)
@@ -10629,7 +10629,7 @@ syntax expressionIR =
    | nat w int (from integerLiteral) hint(print %#W#%)
    | nat s int (from integerLiteral) hint(print %#S#%)
    | " text " (from stringLiteral) hint(print "#%#")
-   | ` nameIR (from prefixedNameIR) hint(print %0)
+   | nameIR (from prefixedNameIR) hint(print %0)
    | . nameIR (from prefixedNameIR)
    | ... (from defaultExpression)
    | unop typedExpressionIR (from unaryExpressionIR)
@@ -10736,7 +10736,7 @@ syntax argumentListIR = argumentIR*
 
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:266:1-271:23:
 syntax lvalueIR = 
-   | ` nameIR (from prefixedNameIR) hint(print %0)
+   | nameIR (from prefixedNameIR) hint(print %0)
    | . nameIR (from prefixedNameIR)
    | typedLvalueIR . nameIR (from lvalueIR)
    | typedLvalueIR [ typedExpressionIR ] (from lvalueIR)
@@ -11163,7 +11163,7 @@ syntax typedefIR =
    | int < nat > (from fixedIntTypeIR)
    | bit < nat > (from fixedBitTypeIR)
    | varbit < nat > (from varBitTypeIR)
-   | ` typeId (from nameTypeIR) hint(print %0)
+   | typeId (from nameTypeIR) hint(print %0)
    | typedef typeId typeIR (from typedefTypeIR) hint(print %0)
    | type typeId typeIR (from newTypeIR) hint(print %0)
    | list < typeIR > (from listTypeIR)
@@ -12972,7 +12972,7 @@ dec $add_typeDefs_t(p, TC, typeId*, typeDefIR*)
 ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:232:1-233:70:
 dec $add_typeParameters_t(p, TC, typeId*)
 
-1. Return $add_typeDefs_t(p, TC, typeId*, ((` typeId) as typeDefIR)*)
+1. Return $add_typeDefs_t(p, TC, typeId*, ((typeId) as typeDefIR)*)
 
 ;; ../../../../../spectec/specs/p4/5-typing/5.02.1-typing-context.spectec:240:1-242:94:
 dec $add_callableDef_overload_t(cursor, TC, callableId, callableTypeDefIR)
@@ -13128,9 +13128,9 @@ dec $find_var_t(prefixedNameIR, p', TC)
 
     3. Return $find_map<id, varTypeIR>(typeFrame, id)
 
-  2. Case (% matches pattern `` %`)
+  2. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` id) be prefixedNameIR)
+    1. (Let (id) be prefixedNameIR)
 
     2. Case analysis on p'
 
@@ -13156,7 +13156,7 @@ dec $find_var_t(prefixedNameIR, p', TC)
 
         4. If ((?() = $find_map<id, varTypeIR>(typeFrame, id))), then
 
-          1. Return $find_var_t((` id), (global), TC)
+          1. Return $find_var_t((id), (global), TC)
 
         4. Else Phantom#563
 
@@ -13176,7 +13176,7 @@ dec $find_var_t(prefixedNameIR, p', TC)
 
         4. If ((?() = $find_maps<id, varTypeIR>(typeFrame*, id))), then
 
-          1. Return $find_var_t((` id), (block), TC)
+          1. Return $find_var_t((id), (block), TC)
 
         4. Else Phantom#565
 
@@ -13216,9 +13216,9 @@ dec $find_typeDef_t(p', TC, prefixedNameIR)
 
   1. Case (% matches pattern `GLOBAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` typeId) be prefixedNameIR)
+      1. (Let (typeId) be prefixedNameIR)
 
       2. (Let typeDefEnv be TC.global.type)
 
@@ -13228,9 +13228,9 @@ dec $find_typeDef_t(p', TC, prefixedNameIR)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` typeId) be prefixedNameIR)
+      1. (Let (typeId) be prefixedNameIR)
 
       2. (Let typeDefEnv be TC.block.type)
 
@@ -13246,7 +13246,7 @@ dec $find_typeDef_t(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_map<typeId, typeDefIR>(typeDefEnv, typeId))), then
 
-        1. Return $find_typeDef_t((global), TC, (` typeId))
+        1. Return $find_typeDef_t((global), TC, (typeId))
 
       5. Else Phantom#571
 
@@ -13254,9 +13254,9 @@ dec $find_typeDef_t(p', TC, prefixedNameIR)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` typeId) be prefixedNameIR)
+      1. (Let (typeId) be prefixedNameIR)
 
       2. (Let typeDefEnv* be [TC.local.type])
 
@@ -13272,7 +13272,7 @@ dec $find_typeDef_t(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_maps<typeId, typeDefIR>(typeDefEnv*, typeId))), then
 
-        1. Return $find_typeDef_t((block), TC, (` typeId))
+        1. Return $find_typeDef_t((block), TC, (typeId))
 
       5. Else Phantom#574
 
@@ -13297,9 +13297,9 @@ dec $find_callableDef_overloaded_t(cursor, TC, prefixedNameIR, argumentIR*)
 
         4. Return $find_overloaded<callableTypeDefIR>(callableTypeDefEnv, callTargetKey, $parameterListIR_of_callableTypeDefIR)
 
-      2. Case (% matches pattern `` %`)
+      2. Case (% matches pattern `_NAME %`)
 
-        1. (Let (` nameIR) be prefixedNameIR)
+        1. (Let (nameIR) be prefixedNameIR)
 
         2. (Let callableTypeDefEnv be TC.global.callable)
 
@@ -13309,9 +13309,9 @@ dec $find_callableDef_overloaded_t(cursor, TC, prefixedNameIR, argumentIR*)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` nameIR) be prefixedNameIR)
+      1. (Let (nameIR) be prefixedNameIR)
 
       2. (Let callableTypeDefEnv be TC.block.callable)
 
@@ -13329,7 +13329,7 @@ dec $find_callableDef_overloaded_t(cursor, TC, prefixedNameIR, argumentIR*)
 
       6. If ((?() = $find_overloaded<callableTypeDefIR>(callableTypeDefEnv, callTargetKey, $parameterListIR_of_callableTypeDefIR))), then
 
-        1. Return $find_callableDef_overloaded_t((global), TC, (` nameIR), argumentIR*)
+        1. Return $find_callableDef_overloaded_t((global), TC, (nameIR), argumentIR*)
 
       6. Else Phantom#577
 
@@ -13337,11 +13337,11 @@ dec $find_callableDef_overloaded_t(cursor, TC, prefixedNameIR, argumentIR*)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` nameIR) be prefixedNameIR)
+      1. (Let (nameIR) be prefixedNameIR)
 
-      2. Return $find_callableDef_overloaded_t((block), TC, (` nameIR), argumentIR*)
+      2. Return $find_callableDef_overloaded_t((block), TC, (nameIR), argumentIR*)
 
     1. Else Phantom#579
 
@@ -13360,9 +13360,9 @@ dec $find_callableDef_non_overloaded_t(p', TC, prefixedNameIR)
 
   1. Case (% matches pattern `GLOBAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` nameIR) be prefixedNameIR)
+      1. (Let (nameIR) be prefixedNameIR)
 
       2. Return $find_non_overloaded<callableTypeDefIR>(TC.global.callable, nameIR)
 
@@ -13370,9 +13370,9 @@ dec $find_callableDef_non_overloaded_t(p', TC, prefixedNameIR)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` nameIR) be prefixedNameIR)
+      1. (Let (nameIR) be prefixedNameIR)
 
       2. (Let (callableId, callableTypeDefIR)? be $find_non_overloaded<callableTypeDefIR>(TC.block.callable, nameIR))
 
@@ -13386,7 +13386,7 @@ dec $find_callableDef_non_overloaded_t(p', TC, prefixedNameIR)
 
       4. If ((?() = $find_non_overloaded<callableTypeDefIR>(TC.block.callable, nameIR))), then
 
-        1. Return $find_callableDef_non_overloaded_t((global), TC, (` nameIR))
+        1. Return $find_callableDef_non_overloaded_t((global), TC, (nameIR))
 
       4. Else Phantom#583
 
@@ -13394,11 +13394,11 @@ dec $find_callableDef_non_overloaded_t(p', TC, prefixedNameIR)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` nameIR) be prefixedNameIR)
+      1. (Let (nameIR) be prefixedNameIR)
 
-      2. Return $find_callableDef_non_overloaded_t((block), TC, (` nameIR))
+      2. Return $find_callableDef_non_overloaded_t((block), TC, (nameIR))
 
     1. Else Phantom#585
 
@@ -13415,9 +13415,9 @@ dec $find_constructorDef_overloaded_t(TC, prefixedNameIR, argumentIR*)
 
     3. Return $find_overloaded<constructorTypeDefIR>(TC.global.constructor, callTargetKey, $parameterListIR_of_constructorTypeDefIR)
 
-  2. Case (% matches pattern `` %`)
+  2. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` nameIR) be prefixedNameIR)
+    1. (Let (nameIR) be prefixedNameIR)
 
     2. (Let callTargetKey be $callTargetKey(nameIR, argumentIR*))
 
@@ -13935,7 +13935,7 @@ relation Type_wf: B, typeIR''
 
   2. Case (% has type nameTypeIR)
 
-    1. (Let (` typeId) be (typeIR'' as nameTypeIR))
+    1. (Let (typeId) be (typeIR'' as nameTypeIR))
 
     2. If ($in_set<typeId>(typeId, B)), then
 
@@ -16160,7 +16160,7 @@ relation Expr_eval_lctk: p, TC, (expressionIR # _expressionNoteIR')
 
   2. (Let nameIR_error be "error." ++ nameIR)
 
-  3. (Let value_error be $find_var_value_t((` nameIR_error), p, TC))
+  3. (Let value_error be $find_var_value_t((nameIR_error), p, TC))
 
   4. Result in value_error
 
@@ -16884,7 +16884,7 @@ relation TypeArgument_ok: p, TC, typeArgument
 
     2. (Let typeId be $name((nonTypeName as name)))
 
-    3. Result in ((` typeId) as typeIR), []
+    3. Result in ((typeId) as typeIR), []
 
 1. Else Phantom#848
 
@@ -16902,7 +16902,7 @@ relation TypeArgument_ok: p, TC, typeArgument
 
       1. (Let typeId_impl be $fresh_typeId)
 
-      2. Result in ((` typeId_impl) as typeIR), [typeId_impl]
+      2. Result in ((typeId_impl) as typeIR), [typeId_impl]
 
   2. Else Phantom#849
 
@@ -18727,7 +18727,7 @@ relation Expr_ok: p, TC, expression'''
 
     3. (Let nameIR_error be "error." ++ nameIR)
 
-    4. If ((((error . nameIR) as value) = $find_var_value_t((` nameIR_error), p, TC))), then
+    4. If ((((error . nameIR) as value) = $find_var_value_t((nameIR_error), p, TC))), then
 
       1. (Let expressionNoteIR be (( ((error) as typeIR) (lctk) )))
 
@@ -19447,7 +19447,7 @@ relation Expr_ok: p, TC, expression'''
 
   2. If ((referenceExpression matches pattern `THIS`)), then
 
-    1. (Let prefixedNameIR be (` "this"))
+    1. (Let prefixedNameIR be ("this"))
 
     2. (Let varTypeIR? be $find_var_t(prefixedNameIR, p, TC))
 
@@ -20052,7 +20052,7 @@ relation Stmt_ok: p', TC', f', l', statement''
 
                   1. If ((typeArgumentIR'* matches pattern [])), then
 
-                    1. If (((((` nameIR_object) as expressionIR) # (( typeIR_object (ctk) ))) = typedExpressionIR_base)), then
+                    1. If (((((nameIR_object) as expressionIR) # (( typeIR_object (ctk) ))) = typedExpressionIR_base)), then
 
                       1. If ((constructorTargetIR = (prefixedNameIR < typeArgumentIR* >))), then
 
@@ -20637,7 +20637,7 @@ relation ExternConstructor_ok: TC_0, typeId_extern, (annotationList typeIdentifi
 
   1. (ConstructorParameterListOpt_ok: TC_0 |- (( parameterList )) : TC_1 constructorParameterIR* # typeId_impl*)
 
-  2. (Let typeDefIR'? be $find_typeDef_t((global), TC_0, (` typeId_extern)))
+  2. (Let typeDefIR'? be $find_typeDef_t((global), TC_0, (typeId_extern)))
 
   3. If ((typeDefIR'? matches pattern (_))), then
 
@@ -21024,7 +21024,7 @@ relation TableKey_ok: TC, TBLC_0, (expression : name_matchkind annotationList ;)
 
   3. (Let nameIR_matchkind be $name(name_matchkind))
 
-  4. If ((((match_kind . nameIR_matchkind) as value) = $find_var_value_t((` nameIR_matchkind), (local), TC))), then
+  4. If ((((match_kind . nameIR_matchkind) as value) = $find_var_value_t((nameIR_matchkind), (local), TC))), then
 
     1. If ($compat_table_key(nameIR_matchkind, typeIR)), then
 
@@ -21801,7 +21801,7 @@ relation Table_ok: TC, tableProperty*
 
         2. (TableProperties_ok: TC TBLC_0 |- tableProperty* : TBLC_1 tablePropertyIR*)
 
-        3. (Let tablePropertyIR_default_action be ((() ?() default_action = ((` "NoAction") ?() ( [] )) ;) as tablePropertyIR))
+        3. (Let tablePropertyIR_default_action be ((() ?() default_action = (("NoAction") ?() ( [] )) ;) as tablePropertyIR))
 
         4. (Let (TBLC_2, tablePropertyIR_updated*) be $insert_NoAction_tablePropertyIR(TBLC_1, tablePropertyIR*))
 
@@ -22628,7 +22628,7 @@ relation Decl_ok: TC_0, declaration
 
                 1. (Let [typeId] be typeId'*)
 
-                2. (Let typeDefIR'? be $find_typeDef_t((global), TC_1, (` typeId)))
+                2. (Let typeDefIR'? be $find_typeDef_t((global), TC_1, (typeId)))
 
                 3. If ((typeDefIR'? matches pattern (_))), then
 
@@ -22672,7 +22672,7 @@ relation Decl_ok: TC_0, declaration
 
                 1. (Let [typeId] be typeId'*)
 
-                2. (Let typeDefIR'? be $find_typeDef_t((global), TC_1, (` typeId)))
+                2. (Let typeDefIR'? be $find_typeDef_t((global), TC_1, (typeId)))
 
                 3. If ((typeDefIR'? matches pattern (_))), then
 
@@ -23117,7 +23117,7 @@ relation CallableTarget_ok: p, TC, callableTarget'
 
   2. If ((referenceExpression matches pattern `THIS`)), then
 
-    1. Result in ((` "this") as callableTargetIR)
+    1. Result in (("this") as callableTargetIR)
 
   2. Else Phantom#1347
 
@@ -23775,7 +23775,7 @@ relation ConstructorType_ok: p, TC, (prefixedNameIR < typeArgumentIR''* >), argu
 
       2. (Let (nameIR, typeArgumentIR*) be $resolve_type_alias(typeIR_alias))
 
-      3. (Let callResolution<constructorTypeDefIR>? be $find_constructorDef_overloaded_t(TC, (` nameIR), argumentIR*))
+      3. (Let callResolution<constructorTypeDefIR>? be $find_constructorDef_overloaded_t(TC, (nameIR), argumentIR*))
 
       4. If ((callResolution<constructorTypeDefIR>? matches pattern (_))), then
 
@@ -25385,15 +25385,15 @@ relation SwitchLabel_table_ok: TC, typeId_table, switchLabel
 
   2. (Let prefixedNameIR be $prefixedNonTypeName(prefixedNonTypeName))
 
-  3. If ((prefixedNameIR matches pattern `` %`)), then
+  3. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-    1. (Let (` nameIR_label) be prefixedNameIR)
+    1. (Let (nameIR_label) be prefixedNameIR)
 
     2. (Let typeId_table_enum be $concat_text(["action_list(", typeId_table, ")"]))
 
     3. (Let id_label be $concat_text([typeId_table_enum, ".", nameIR_label]))
 
-    4. (Let varTypeIR? be $find_var_t((` id_label), (local), TC))
+    4. (Let varTypeIR? be $find_var_t((id_label), (local), TC))
 
     5. If ((varTypeIR? matches pattern (_))), then
 
@@ -25405,7 +25405,7 @@ relation SwitchLabel_table_ok: TC, typeId_table, switchLabel
 
         2. If ((value_label = ((table_enum typeId_table_enum . nameIR_label) as value))), then
 
-          1. (Let typedExpressionIR_label be (((` nameIR_label) as expressionIR) # (( typeIR_label ctk_label ))))
+          1. (Let typedExpressionIR_label be (((nameIR_label) as expressionIR) # (( typeIR_label ctk_label ))))
 
           2. Result in (typedExpressionIR_label as switchLabelIR)
 
@@ -25666,7 +25666,7 @@ relation ObjectDecl_ok: p, TC_0, typeFrame, externMethodTypeDefEnv, objectDeclar
 
     3. (Let (_annotationList _typeIR _constructorTargetIR ( _argumentListIR ) nameIR _objectInitializerOptIR ;) be instantiationIR)
 
-    4. (Let varTypeIR'? be $find_var_t((` nameIR), p, TC_1))
+    4. (Let varTypeIR'? be $find_var_t((nameIR), p, TC_1))
 
     5. If ((varTypeIR'? matches pattern (_))), then
 
@@ -27401,7 +27401,7 @@ dec $gen_constraint(constraint, typeIR'', typeIR_arg')
 
   1. Case (% has type nameTypeIR)
 
-    1. (Let (` typeId_param) be (typeIR'' as nameTypeIR))
+    1. (Let (typeId_param) be (typeIR'' as nameTypeIR))
 
     2. If ($in_set<typeId>(typeId_param, $dom_map<typeId, infer>(constraint))), then
 
@@ -28069,7 +28069,7 @@ dec $callableId_IR(nameIR, parameterIR*)
 
 ;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.1-storage-reference.spectec:6:1-10:42:
 syntax storageReference = 
-   | ` nameIR (from prefixedNameIR) hint(print %0)
+   | nameIR (from prefixedNameIR) hint(print %0)
    | . nameIR (from prefixedNameIR)
    | storageReference . nameIR (from storageReference)
    | storageReference [ value ] (from storageReference)
@@ -28758,9 +28758,9 @@ dec $find_callableDef_non_overload_i(p', IC, prefixedNameIR)
 
   1. Case (% matches pattern `GLOBAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` nameIR) be prefixedNameIR)
+      1. (Let (nameIR) be prefixedNameIR)
 
       2. Return $find_callableDef_non_overload_i((global), IC, (. nameIR))
 
@@ -28768,9 +28768,9 @@ dec $find_callableDef_non_overload_i(p', IC, prefixedNameIR)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` nameIR) be prefixedNameIR)
+      1. (Let (nameIR) be prefixedNameIR)
 
       2. (Let (callableId, callableDef)? be $find_non_overloaded<callableDef>(IC.block.callable, nameIR))
 
@@ -28784,7 +28784,7 @@ dec $find_callableDef_non_overload_i(p', IC, prefixedNameIR)
 
       4. If ((?() = $find_non_overloaded<callableDef>(IC.block.callable, nameIR))), then
 
-        1. Return $find_callableDef_non_overload_i((global), IC, (` nameIR))
+        1. Return $find_callableDef_non_overload_i((global), IC, (nameIR))
 
       4. Else Phantom#1694
 
@@ -28792,11 +28792,11 @@ dec $find_callableDef_non_overload_i(p', IC, prefixedNameIR)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` nameIR) be prefixedNameIR)
+      1. (Let (nameIR) be prefixedNameIR)
 
-      2. Return $find_callableDef_non_overload_i((block), IC, (` nameIR))
+      2. Return $find_callableDef_non_overload_i((block), IC, (nameIR))
 
     1. Else Phantom#1696
 
@@ -28855,9 +28855,9 @@ dec $find_var_i(prefixedNameIR, p', IC)
 
     3. Else Phantom#1699
 
-  2. Case (% matches pattern `` %`)
+  2. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` id) be prefixedNameIR)
+    1. (Let (id) be prefixedNameIR)
 
     2. Case analysis on p'
 
@@ -28887,7 +28887,7 @@ dec $find_var_i(prefixedNameIR, p', IC)
 
         3. If ((?() = $find_map<id, value>(IC.block.frame, id))), then
 
-          1. Return $find_var_i((` id), (global), IC)
+          1. Return $find_var_i((id), (global), IC)
 
         3. Else Phantom#1702
 
@@ -28905,7 +28905,7 @@ dec $find_var_i(prefixedNameIR, p', IC)
 
         3. If ((?() = $find_maps<id, value>(IC.local.frames, id))), then
 
-          1. Return $find_var_i((` id), (block), IC)
+          1. Return $find_var_i((id), (block), IC)
 
         3. Else Phantom#1704
 
@@ -28914,9 +28914,9 @@ dec $find_typeDef_i(_cursor, IC, prefixedNameIR)
 
 1. Case analysis on prefixedNameIR
 
-  1. Case (% matches pattern `` %`)
+  1. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` nameIR) be prefixedNameIR)
+    1. (Let (nameIR) be prefixedNameIR)
 
     2. Return $find_map<typeId, typeDefIR>(IC.global.type, nameIR)
 
@@ -28931,9 +28931,9 @@ dec $find_constructorDef_i(IC, prefixedNameIR, argumentIR*)
 
 1. Case analysis on prefixedNameIR
 
-  1. Case (% matches pattern `` %`)
+  1. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` nameIR) be prefixedNameIR)
+    1. (Let (nameIR) be prefixedNameIR)
 
     2. (Let callTargetKey be $callTargetKey(nameIR, argumentIR*))
 
@@ -29173,7 +29173,7 @@ relation Expr_inst: p, IC, STO', (expressionIR # _expressionNoteIR')
 
     2. (Let nameIR_error be "error." ++ nameIR)
 
-    3. (Let value_error be $find_var_i((` nameIR_error), p, IC))
+    3. (Let value_error be $find_var_i((nameIR_error), p, IC))
 
     4. Result in STO', value_error
 
@@ -29528,7 +29528,7 @@ relation DirectApplicationStmt_inst: p, IC, STO_0, (constructorTargetIR . apply 
 
 6. (Let typeId_fresh be $fresh_typeId)
 
-7. (Let typeIR be ((` typeId) as typeIR))
+7. (Let typeIR be ((typeId) as typeIR))
 
 8. (Let nameIR be $concat_text([typeId, "_", typeId_fresh]))
 
@@ -29538,7 +29538,7 @@ relation DirectApplicationStmt_inst: p, IC, STO_0, (constructorTargetIR . apply 
 
 11. (Let constantDeclarationIR be (() const typeIR nameIR (= ((ref objectId) as value)) ;))
 
-12. (Let typedExpressionIR_base be (((` nameIR) as expressionIR) # (( typeIR (ctk) ))))
+12. (Let typedExpressionIR_base be (((nameIR) as expressionIR) # (( typeIR (ctk) ))))
 
 13. (Let callableTargetIR be (typedExpressionIR_base . "apply"))
 
@@ -30944,7 +30944,7 @@ relation Constructor_inst: p, IC, prefixedNameIR, typeArgumentIR''*, argumentIR*
 
       2. (Let (nameIR, typeArgumentIR*) be $resolve_type_alias(typeIR_alias))
 
-      3. (Let callResolution<constructorDef>? be $find_constructorDef_i(IC, (` nameIR), argumentIR*))
+      3. (Let callResolution<constructorDef>? be $find_constructorDef_i(IC, (nameIR), argumentIR*))
 
       4. If ((callResolution<constructorDef>? matches pattern (_))), then
 

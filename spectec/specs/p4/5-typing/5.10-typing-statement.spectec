@@ -158,7 +158,7 @@ rule Stmt_ok/directApplicationStatement:
   -- if (typedExpressionIR_base `. "apply")
           `< eps > `( argumentIR_cast* ) `;
       = callStatementIR
-  -- if (`` nameIR_object) `# `( typeIR_object CTK )
+  -- if (_NAME nameIR_object) `# `( typeIR_object CTK )
       = typedExpressionIR_base
   ---- ;; create IR
   -- if constructorTargetIR = prefixedNameIR `< typeArgumentIR* >
@@ -548,16 +548,16 @@ rule SwitchLabel_table_ok/default:
 rule SwitchLabel_table_ok/expressionNonBrace-prefixedNonTypeName:
   TC typeId_table |- prefixedNonTypeName : typedExpressionIR_label
   ---- ;; check that the label is a valid table action reference
-  -- if `` nameIR_label = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if _NAME nameIR_label = $prefixedNonTypeName(prefixedNonTypeName)
   -- if typeId_table_enum = $concat_text([ "action_list(", typeId_table, ")" ])
   -- if id_label = $concat_text([ typeId_table_enum, ".", nameIR_label ])
   -- if _ typeIR_label ctk_label value_label
-      = $find_var_t(`` id_label, LOCAL, TC)
+      = $find_var_t(_NAME id_label, LOCAL, TC)
   -- if value_label
       = TABLE_ENUM typeId_table_enum `. nameIR_label
   ---- ;; create typed switch label
   -- if typedExpressionIR_label
-      = (`` nameIR_label) `# `( typeIR_label ctk_label )
+      = (_NAME nameIR_label) `# `( typeIR_label ctk_label )
 
 
 ;;;;; syntax switchCase

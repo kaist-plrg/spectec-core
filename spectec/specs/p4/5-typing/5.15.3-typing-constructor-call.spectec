@@ -50,7 +50,7 @@ rule ConstructorType_ok/aliased:
   -- if (nameIR, typeArgumentIR*) = $resolve_type_alias(typeIR_alias)
   ---- ;; find and specialize the constructor type definition
   -- if callableId `: constructorTypeDefIR `# id_default* `# id_optional*
-      = $find_constructorDef_overloaded_t(TC, `` nameIR, argumentIR*)
+      = $find_constructorDef_overloaded_t(TC, _NAME nameIR, argumentIR*)
   -- if (constructorTypeIR, typeId_impl*)
       = $specialize_constructorTypeDefIR(constructorTypeDefIR, typeArgumentIR*)
   ---- ;; check that the constructor type is well-formed

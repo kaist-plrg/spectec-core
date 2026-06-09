@@ -47,7 +47,7 @@ rule Expr_ok/prefixedNonTypeName:
 
 rule Expr_ok/this:
   p TC |- THIS : prefixedNameIR `# expressionNoteIR
-  -- if prefixedNameIR = `` "this"
+  -- if prefixedNameIR = _NAME "this"
   -- if _ typeIR ctk _ = $find_var_t(prefixedNameIR, p, TC)
   -- if expressionNoteIR = `( typeIR ctk )
 
@@ -706,7 +706,7 @@ rule Expr_ok/errorAccessExpression:
   ---- ;; check that error member is defined
   -- if nameIR = $name(member)
   -- if nameIR_error = "error." ++ nameIR
-  -- if ERROR `. nameIR = $find_var_value_t(`` nameIR_error, p, TC)
+  -- if ERROR `. nameIR = $find_var_value_t(_NAME nameIR_error, p, TC)
   ---- ;; create typed expression
   -- if expressionNoteIR = `( ERROR LCTK )
 

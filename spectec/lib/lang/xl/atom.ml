@@ -14,7 +14,6 @@ type t =
   | Sup                             (* `:>` *)
   | Turnstile                       (* `|-` *)
   | Tilesturn                       (* `-|` *)
-  | Tick                            (* ```` *)
   | DoubleQuote                     (* ``''` *)
   | Underscore                      (* ``_` *)
   | Arrow of [ `Plain | `Tick ]     (* `->` or ``->` *)
@@ -129,7 +128,6 @@ let string_of_atom = function
   | Sup -> ":>"
   | Turnstile -> "|-"
   | Tilesturn -> "-|"
-  | Tick -> "`"
   | DoubleQuote -> "\""
   | Underscore -> "_"
   | Arrow _ -> "->"
@@ -207,7 +205,6 @@ let string_of_atom_exact : t -> string = function
   | Sup -> ":>"
   | Turnstile -> "|-"
   | Tilesturn -> "-|"
-  | Tick -> "``"
   | DoubleQuote -> "`\""
   | Underscore -> "`_"
   | Arrow `Plain -> "->"
@@ -294,7 +291,6 @@ let of_string : string -> t = function
   | ":>" -> Sup
   | "|-" -> Turnstile
   | "-|" -> Tilesturn
-  | "`" -> Tick
   | "\"" -> DoubleQuote
   | "_" -> Underscore
   | "->" -> Arrow `Plain

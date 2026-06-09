@@ -110,7 +110,7 @@ rule Stmt_ok/directApplicationStatement-prefixedTypeName:
   ---- ;; check apply method
   -- if lvalue = (_ID nameIR_object) `. (_ID "apply")
   -- Stmt_ok: p TC_1 f |- lvalue `( argumentList ) `; : _ _ callStatementIR
-  -- if (((`` nameIR_object) `# `( typeIR_object CTK )) `. "apply")
+  -- if (((_NAME nameIR_object) `# `( typeIR_object CTK )) `. "apply")
           `< eps > `( argumentIR_cast* ) `;
       = callStatementIR
   ---- ;; create IR
@@ -215,16 +215,16 @@ rule SwitchLabel_table_ok/default:
 rule SwitchLabel_table_ok/expressionNonBrace-prefixedNonTypeName:
   TC tid_table _ |- prefixedNonTypeName : typedExpressionIR_label
   ---- ;; check that the label is a valid table action reference
-  -- if `` nameIR_label = $prefixedNonTypeName(prefixedNonTypeName)
+  -- if _NAME nameIR_label = $prefixedNonTypeName(prefixedNonTypeName)
   -- if tid_table_enum = "action_list(" ++ tid_table ++ ")" 
   -- if id_label = tid_table_enum ++ "." ++ nameIR_label
   -- if _ typeIR_label ctk_label value_label
-      = $find_var(LOCAL, TC, `` id_label)
+      = $find_var(LOCAL, TC, _NAME id_label)
   -- if value_label
       = TABLE_ENUM tid_table_enum `. nameIR_label
   ---- ;; create typed switch label
   -- if typedExpressionIR_label
-      = (`` nameIR_label) `# `( typeIR_label ctk_label )
+      = (_NAME nameIR_label) `# `( typeIR_label ctk_label )
 
 ;;;;;;; (TODO) handle parenthesizedExpression
 

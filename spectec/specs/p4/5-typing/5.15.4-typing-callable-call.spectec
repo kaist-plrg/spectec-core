@@ -24,7 +24,7 @@ rule CallableTarget_ok/prefixedNonTypeName:
   -- if prefixedNameIR = $prefixedNonTypeName(prefixedNonTypeName)
 
 rule CallableTarget_ok/this:
-  p TC |- THIS : (`` "this")
+  p TC |- THIS : (_NAME "this")
 
 rule CallableTarget_ok/memberAccessExpression-prefixedTypeName:
   p TC |- prefixedTypeName `. member : TYPE prefixedNameIR `. nameIR

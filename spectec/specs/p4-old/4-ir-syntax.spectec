@@ -3,19 +3,19 @@
 ;;
 
 syntax prefixedNameIR =
-  | `` nameIR
+  | _NAME nameIR
   | `. nameIR
 
 dec $prefixedNonTypeName(prefixedNonTypeName) : prefixedNameIR
-def $prefixedNonTypeName(nonTypeName) = `` $name(nonTypeName)
+def $prefixedNonTypeName(nonTypeName) = _NAME $name(nonTypeName)
 def $prefixedNonTypeName(_ID `. nonTypeName) = `. $name(nonTypeName)
 
 dec $prefixedTypeName(prefixedTypeName) : prefixedNameIR
-def $prefixedTypeName(typeName) = `` $name(typeName)
+def $prefixedTypeName(typeName) = _NAME $name(typeName)
 def $prefixedTypeName(_TID `. typeName) = `. $name(typeName)
 
 dec $flatten_prefixedNameIR(prefixedNameIR) : nameIR
-def $flatten_prefixedNameIR(`` nameIR) = nameIR
+def $flatten_prefixedNameIR(_NAME nameIR) = nameIR
 def $flatten_prefixedNameIR(`. nameIR) = "." ++ nameIR
 
 syntax nameListIR = nameIR*

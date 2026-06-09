@@ -198,19 +198,19 @@ dec $find_value_inst(cursor, contextInst, prefixedNameIR) : value
 
 def $find_value_inst(p, Ci, `. id) = value
   -- if $find_map<id, value>(Ci.GLOBAL.VENV, id) = value
-def $find_value_inst(GLOBAL, Ci, `` id) = value
+def $find_value_inst(GLOBAL, Ci, _NAME id) = value
   -- if $find_map<id, value>(Ci.GLOBAL.VENV, id) = value
-def $find_value_inst(BLOCK, Ci, `` id) = value
+def $find_value_inst(BLOCK, Ci, _NAME id) = value
   -- if $find_map<id, value>(Ci.BLOCK.VENV, id) = value
-def $find_value_inst(BLOCK, Ci, `` id)
-  = $find_value_inst(GLOBAL, Ci, `` id)
+def $find_value_inst(BLOCK, Ci, _NAME id)
+  = $find_value_inst(GLOBAL, Ci, _NAME id)
   ---- ;; fallback to global layer
   -- if $find_map<id, value>(Ci.BLOCK.VENV, id) = eps
-def $find_value_inst(LOCAL, Ci, `` id) = value
+def $find_value_inst(LOCAL, Ci, _NAME id) = value
   -- if Ci.LOCAL.VENVS = venv*
   -- if $find_maps<id, value>(venv*, id) = value
-def $find_value_inst(LOCAL, Ci, `` id)
-  = $find_value_inst(BLOCK, Ci, `` id)
+def $find_value_inst(LOCAL, Ci, _NAME id)
+  = $find_value_inst(BLOCK, Ci, _NAME id)
   ---- ;; fallback to block layer
   -- if $find_maps<id, value>(Ci.LOCAL.VENVS, id) = eps
 
@@ -218,7 +218,7 @@ def $find_value_inst(LOCAL, Ci, `` id)
 
 dec $find_typedef_inst(cursor, contextInst, prefixedNameIR) : typeDefIR?
 
-def $find_typedef_inst(_, Ci, `` nameIR) =
+def $find_typedef_inst(_, Ci, _NAME nameIR) =
     $find_map<tid, typeDefIR>(Ci.GLOBAL.TDENV, nameIR)
 def $find_typedef_inst(_, Ci, `. nameIR) =
     $find_map<tid, typeDefIR>(Ci.GLOBAL.TDENV, nameIR)
@@ -236,7 +236,7 @@ def $id_argument_IR(`_) = eps
 
 dec $find_constructor_overloaded_inst(contextInst, prefixedNameIR, argumentIR*) : (cid, consDyn, id*)?
 
-def $find_constructor_overloaded_inst(Ci, `` id, argumentIR*)
+def $find_constructor_overloaded_inst(Ci, _NAME id, argumentIR*)
   = $find_overloaded<consDyn>(Ci.GLOBAL.CENV, id, (id_arg?)*)
   -- if $ids_arguments_IR(argumentIR*) = (id_arg?)*
 def $find_constructor_overloaded_inst(Ci, `. id, argumentIR*)
