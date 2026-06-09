@@ -197,13 +197,8 @@ let sanitize_name =
 
 (* Render the [prog] of [env] to [.imp] source. *)
 let render_imp env : (string, string) result =
-  let binding =
-    match List.assoc_opt "prog" env with
-    | Some v -> Some v
-    | None -> ( match env with (_, v) :: _ -> Some v | [] -> None)
-  in
-  match binding with
-  | None -> Error "no input to render"
+  match List.assoc_opt "prog" env with
+  | None -> Error "counterexample is not a program"
   | Some v -> (
       match Print_surface.string_of_prog v with
       | exception Print_surface.Unsupported what ->
