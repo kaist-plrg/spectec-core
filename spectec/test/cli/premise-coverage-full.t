@@ -9,9 +9,9 @@ Full premise coverage emits a GCOV-style annotated spec with per-premise counts:
   
   === IL Node Coverage ===
   
-  IL Premises: 35/147 attempted (23.81%), 27/147 succeeded (18.37%)
+  IL Premises: 35/151 attempted (23.18%), 27/151 succeeded (17.88%)
   38 rel premises
-  60 if-premises: succeeded 12/60 (20.00%), failed 11/60 (18.33%), neither 40/60 (66.67%), total 23/120 (19.17%)
+  62 if-premises: succeeded 12/62 (19.35%), failed 11/62 (17.74%), neither 42/62 (67.74%), total 23/124 (18.55%)
   
   def $lookup:
         clause 0:
@@ -243,4 +243,14 @@ Full premise coverage emits a GCOV-style annotated spec with per-premise counts:
    145: ####         -- if Check_prog: |- command holds
    146: ####/####     -- rel Eval_prog: |- command -| env
         ####          |- command -| env
+  
+  relation Check_value:
+        rule num:
+   147: ####/####     -- if literal matches ``NUM %`
+   148: ####         -- let int = literal
+        ####          |- literal : int
+        rule boollit:
+   149: ####/####     -- if literal matches ``BOOL %`
+   150: ####         -- let bool = literal
+        ####          |- literal : bool
   Typecheck succeeded

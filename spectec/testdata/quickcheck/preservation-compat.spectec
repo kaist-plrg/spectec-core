@@ -283,4 +283,7 @@ property Preservation :
   Check_value: |- value : type
   -- Check_expr: tenv |- expr : type
   -- Eval_expr: env |- expr ==> value
+  -- if env = (id_env -> value_env)*
+  -- if tenv = (id_tenv -> type_tenv)*
+  -- (if id_env = id_tenv)*
   hint(generator $preservation)

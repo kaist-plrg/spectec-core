@@ -41,10 +41,14 @@ The flag surface, including the default sample count:
     [-help], -?                . print this help text and exit
   
 
-A sound spec passes: every generated program that typechecks also evaluates.
+A sound spec passes both properties: every generated program that typechecks
+also evaluates (Type_safety), and every well-typed expression evaluates to a
+value of its static type (Preservation).
 
   $ spectec impty quickcheck --spec ../../specs/impty/base/spec.spectec --num-tests 50 --color never
   [Quickcheck Type_safety: Test]
+  OK, passed 50 samples.
+  [Quickcheck Preservation: Test]
   OK, passed 50 samples.
 
 The buggy-leq fixture types `e <= e'` without constraining the right operand,
@@ -64,3 +68,26 @@ programs that exhibit the bug:
     prog=while -3 <= true do skip end
     (Generalized)
     prog=while [int] <= [bool] do [command] end
+
+The buggy-preservation fixture evaluates `e <= e'` to a NUM while still typing it
+as BOOL, so a well-typed expression evaluates to a value of the wrong type. The
+Preservation property catches it directly with the offending expression:
+
+  $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-preservation.spectec --num-tests 500 --color never
+  [Quickcheck Type_safety: Test]
+  Falsifiable, after 6 tests:
+    prog=bool x0 = ! +0 <= +1
+  [Quickcheck Preservation: Test]
+  Falsifiable, after 14 tests:
+    env=[], tenv=[], expr=+2 <= +2
+
+The preservation-compat fixture spells out the environment/context agreement with
+let- and iteration-premises: it destructures `env` and `tenv` into key/value
+sequences and requires their keys to match pointwise. Evaluating it exercises
+let, if, and iteration premises, which the property evaluator now supports:
+
+  $ spectec impty quickcheck --spec ../../testdata/quickcheck/preservation-compat.spectec --num-tests 50 --color never
+  [Quickcheck Type_safety: Test]
+  OK, passed 50 samples.
+  [Quickcheck Preservation: Test]
+  OK, passed 50 samples.
