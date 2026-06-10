@@ -335,8 +335,3 @@ let parse_string ~spec:_ ~filename content =
   try Ok [ parse_string_exn ~filename content ]
   with Error.ImptyParseError (at, msg) ->
     Error (Spectec.Error.TaskParseError (at, msg))
-
-(* For now, just dump the IL value structure — good enough for debugging and
-   round-trip inspection. A surface-syntax pretty printer can come later. *)
-let unparse ~spec:_ values =
-  values |> List.map Lang.Il.Print_debug.string_of_value |> String.concat "\n"

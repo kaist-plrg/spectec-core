@@ -1,11 +1,9 @@
-(* Inverts the IL [value] constructors built in {!Parse}. Expression precedence
-   mirrors [parse_expr] and friends (loosest to tightest: [&&], [<=], [+], unary
-   [!], call, primary) so the output stays minimally parenthesised yet re-parses
-   to the same tree. The public contract lives in the .mli. *)
+(* Expression precedence mirrors the parser (loosest to tightest: [&&], [<=],
+   [+], unary [!], call), so output is minimally parenthesised yet re-parses to
+   the same tree. *)
 
 open Lang.Il
 
-(** Raised when a value has no surface-syntax representation. *)
 exception Unsupported of string
 
 let flatten = Value.flatten_case_v
@@ -19,8 +17,8 @@ let unsupported what id atoms n =
 let rec string_of_expr ~prec (v : Value.t) : string =
   let id, atoms, vs = flatten v in
   match (id, atoms, vs) with
-  (* Generators ({!Manual_gen}) build literal and id leaves under synid [expr];
-     {!Parse} builds them under [literal]/[id]. Match either. *)
+  (* {!Manual_gen} builds literal/id leaves under synid [expr], {!Parse} under
+     [literal]/[id], so match on the atom and ignore the synid. *)
   | _, [ "_NUM" ], [ n ] -> Bigint.to_string (Xl.Num.to_int (Value.get_num n))
   | _, [ "_BOOL" ], [ b ] -> if Value.get_bool b then "true" else "false"
   | _, [ "_ID" ], [ s ] -> Value.get_text s
@@ -52,7 +50,6 @@ and string_of_type (v : Value.t) : string =
       string_of_type_atom a ^ " -> " ^ string_of_type b
   | _ -> unsupported "type" id atoms (List.length vs)
 
-(* Function arrow is right-associative; parenthesize an arrow on the left. *)
 and string_of_type_atom (v : Value.t) : string =
   match flatten v with
   | "type", [ "->" ], _ -> "(" ^ string_of_type v ^ ")"
@@ -82,5 +79,7 @@ and text_of_id (v : Value.t) : string =
   | _, [ "_ID" ], [ s ] -> Value.get_text s
   | id, atoms, vs -> unsupported "id" id atoms (List.length vs)
 
-(* [prog = command], so a program is just its top-level command. *)
 let string_of_prog (v : Value.t) : string = string_of_command v
+
+let unparse ~spec:_ (values : Value.t list) : string =
+  values |> List.map string_of_prog |> String.concat "\n"

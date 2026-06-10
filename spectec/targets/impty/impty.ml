@@ -74,7 +74,7 @@ module Task_common = struct
 
   type nonrec input = input
 
-  let unparse = Parse.unparse
+  let unparse = Unparse.unparse
   let parse_string = Parse.parse_string
   let source ({ filename; _ } : input) = filename
   let expectation ({ expect; _ } : input) = expect
@@ -200,8 +200,8 @@ let render_imp env : (string, string) result =
   match List.assoc_opt "prog" env with
   | None -> Error "counterexample is not a program"
   | Some v -> (
-      match Print_surface.string_of_prog v with
-      | exception Print_surface.Unsupported what ->
+      match Unparse.string_of_prog v with
+      | exception Unparse.Unsupported what ->
           Error (Printf.sprintf "no surface syntax (%s)" what)
       | text -> Ok text)
 
