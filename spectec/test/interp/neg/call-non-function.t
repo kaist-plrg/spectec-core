@@ -23,6 +23,6 @@ Calling a non-function value fails the typechecker.
       |                     invocation of relation Check_expr failed
       |                     └── ../../../specs/impty/closure/spec.spectec:119:6-119:16:
       |                         application of rule Check_expr/call failed
-      |                         └── ../../../specs/impty/closure/spec.spectec:104:32-104:47:
+      |                         └── ../../../specs/impty/closure/spec.spectec:104:32-104:48:
       |                             condition type matches `% -> %` was not met
   [1]

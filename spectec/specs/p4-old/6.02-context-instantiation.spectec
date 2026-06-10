@@ -171,14 +171,14 @@ def $add_routine_overload_inst(BLOCK, Ci, rid, routineDyn) = Ci[ .BLOCK.RENV = r
 dec $add_routine_non_overload_inst(cursor, contextInst, rid, routineDyn) : contextInst
 
 def $add_routine_non_overload_inst(GLOBAL, Ci, rid, routineDyn) = Ci[ .GLOBAL.RENV = renv ]
-  -- if rid = id `( _ )
-  -- if $dom_map<rid, routineDyn>(Ci.GLOBAL.RENV) = `{ (id_k `( _ ))* }
-  -- if ~$in_set<id>(id, `{ id_k* })
+  -- if rid = id `( _ `)
+  -- if $dom_map<rid, routineDyn>(Ci.GLOBAL.RENV) = `{ (id_k `( _ `))* `}
+  -- if ~$in_set<id>(id, `{ id_k* `})
   -- if $add_map<rid, routineDyn>(Ci.GLOBAL.RENV, rid, routineDyn) = renv
 def $add_routine_non_overload_inst(BLOCK, Ci, rid, routineDyn) = Ci[ .BLOCK.RENV = renv ]
-  -- if rid = id `( _ )
-  -- if $dom_map<rid, routineDyn>(Ci.BLOCK.RENV) = `{ (id_k `( _ ))* }
-  -- if ~$in_set<id>(id, `{ id_k* })
+  -- if rid = id `( _ `)
+  -- if $dom_map<rid, routineDyn>(Ci.BLOCK.RENV) = `{ (id_k `( _ `))* `}
+  -- if ~$in_set<id>(id, `{ id_k* `})
   -- if $add_map<rid, routineDyn>(Ci.BLOCK.RENV, rid, routineDyn) = renv
 
 ;;; Adder for constructors
@@ -196,21 +196,21 @@ def $add_constructor_inst(GLOBAL, Ci, cid, consDyn) = Ci[ .GLOBAL.CENV = cenv ]
 
 dec $find_value_inst(cursor, contextInst, prefixedNameIR) : value
 
-def $find_value_inst(p, Ci, `. id) = value
+def $find_value_inst(p, Ci, '.' id) = value
   -- if $find_map<id, value>(Ci.GLOBAL.VENV, id) = value
-def $find_value_inst(GLOBAL, Ci, `` id) = value
+def $find_value_inst(GLOBAL, Ci, _NAME id) = value
   -- if $find_map<id, value>(Ci.GLOBAL.VENV, id) = value
-def $find_value_inst(BLOCK, Ci, `` id) = value
+def $find_value_inst(BLOCK, Ci, _NAME id) = value
   -- if $find_map<id, value>(Ci.BLOCK.VENV, id) = value
-def $find_value_inst(BLOCK, Ci, `` id)
-  = $find_value_inst(GLOBAL, Ci, `` id)
+def $find_value_inst(BLOCK, Ci, _NAME id)
+  = $find_value_inst(GLOBAL, Ci, _NAME id)
   ---- ;; fallback to global layer
   -- if $find_map<id, value>(Ci.BLOCK.VENV, id) = eps
-def $find_value_inst(LOCAL, Ci, `` id) = value
+def $find_value_inst(LOCAL, Ci, _NAME id) = value
   -- if Ci.LOCAL.VENVS = venv*
   -- if $find_maps<id, value>(venv*, id) = value
-def $find_value_inst(LOCAL, Ci, `` id)
-  = $find_value_inst(BLOCK, Ci, `` id)
+def $find_value_inst(LOCAL, Ci, _NAME id)
+  = $find_value_inst(BLOCK, Ci, _NAME id)
   ---- ;; fallback to block layer
   -- if $find_maps<id, value>(Ci.LOCAL.VENVS, id) = eps
 
@@ -218,9 +218,9 @@ def $find_value_inst(LOCAL, Ci, `` id)
 
 dec $find_typedef_inst(cursor, contextInst, prefixedNameIR) : typeDefIR?
 
-def $find_typedef_inst(_, Ci, `` nameIR) =
+def $find_typedef_inst(_, Ci, _NAME nameIR) =
     $find_map<tid, typeDefIR>(Ci.GLOBAL.TDENV, nameIR)
-def $find_typedef_inst(_, Ci, `. nameIR) =
+def $find_typedef_inst(_, Ci, '.' nameIR) =
     $find_map<tid, typeDefIR>(Ci.GLOBAL.TDENV, nameIR)
 
 ;;; Finder for constructors 
@@ -230,15 +230,15 @@ dec $id_argument_IR(argumentIR) : id?
 
 def $ids_arguments_IR(argumentIR*) = ($id_argument_IR(argumentIR))*
 def $id_argument_IR(typedExpressionIR) = eps
-def $id_argument_IR(nameIR `= _) = nameIR
-def $id_argument_IR(nameIR `= `_) = nameIR
-def $id_argument_IR(`_) = eps
+def $id_argument_IR(nameIR '=' _) = nameIR
+def $id_argument_IR(nameIR '=' '_') = nameIR
+def $id_argument_IR('_') = eps
 
 dec $find_constructor_overloaded_inst(contextInst, prefixedNameIR, argumentIR*) : (cid, consDyn, id*)?
 
-def $find_constructor_overloaded_inst(Ci, `` id, argumentIR*)
+def $find_constructor_overloaded_inst(Ci, _NAME id, argumentIR*)
   = $find_overloaded<consDyn>(Ci.GLOBAL.CENV, id, (id_arg?)*)
   -- if $ids_arguments_IR(argumentIR*) = (id_arg?)*
-def $find_constructor_overloaded_inst(Ci, `. id, argumentIR*)
+def $find_constructor_overloaded_inst(Ci, '.' id, argumentIR*)
   = $find_overloaded<consDyn>(Ci.GLOBAL.CENV, id, (id_arg?)*)
   -- if $ids_arguments_IR(argumentIR*) = (id_arg?)*

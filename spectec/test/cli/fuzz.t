@@ -14,7 +14,7 @@ A program counterexample (Type_safety) is saved; a non-program one
   $ spectec impty fuzz --spec ../../testdata/quickcheck/buggy-preservation.spectec --num-tests 500 --out-dir buggy --color never
   [Quickcheck Type_safety: Test]
   Falsifiable, after 6 tests:
-    prog=bool x0 = ! +0 <= +1
+    prog=while +0 <= +0 do skip end
   [Quickcheck Preservation: Test]
   Falsifiable, after 14 tests:
     env=[], tenv=[], expr=+2 <= +2
@@ -23,4 +23,4 @@ A program counterexample (Type_safety) is saved; a non-program one
 
   $ cat buggy/counter_Type_safety.imp
   // quickcheck counterexample for Type_safety
-  bool x0 = !(0 <= 1)
+  while 0 <= 0 do skip end

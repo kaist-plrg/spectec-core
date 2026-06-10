@@ -62,13 +62,13 @@ builtin dec $distinct_<K>(K*) : bool
 ;; General set functions
 ;;
 
-syntax set<K> = `{ K* }
+syntax set<K> = `{ K* `}
 
 dec $empty_set<K> : set<K>
-def $empty_set<K> = `{ eps }
+def $empty_set<K> = `{ eps `}
 
 dec $in_set<K>(K, set<K>) : bool
-def $in_set<K>(K, `{ K_e* }) = K <- K_e*
+def $in_set<K>(K, `{ K_e* `}) = K <- K_e*
 
 builtin dec $intersect_set<K>(set<K>, set<K>) : set<K>
 
@@ -86,15 +86,15 @@ builtin dec $eq_set<K>(set<K>, set<K>) : bool
 ;; General map functions
 ;;
 
-syntax pair<K, V> = K `: V
+syntax pair<K, V> = K ':' V
 
 syntax map<K, V> = set<pair<K, V>>
 
 dec $empty_map<K, V> : map<K, V>
-def $empty_map<K, V> = `{ eps }
+def $empty_map<K, V> = `{ eps `}
 
 dec $dom_map<K, V>(map<K, V>) : set<K>
-def $dom_map<K, V>(`{ (K `: V)* }) = `{ K* }
+def $dom_map<K, V>(`{ (K ':' V)* `}) = `{ K* `}
 
 builtin dec $find_map<K, V>(map<K, V>, K) : V?
 

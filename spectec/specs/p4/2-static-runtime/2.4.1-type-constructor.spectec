@@ -9,4 +9,4 @@ syntax constructorParameterIR = parameterIR
 ;;
 
 syntax constructorTypeIR =
-  CONSTRUCTOR `( constructorParameterIR* ) `: typeIR
+  CONSTRUCTOR `( constructorParameterIR* `) ':' typeIR

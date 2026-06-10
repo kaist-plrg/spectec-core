@@ -23,7 +23,9 @@ let rec compare (value_l : t) (value_r : t) =
   | StructV fields_l, StructV fields_r ->
       let atoms_l, values_l = List.split fields_l in
       let atoms_r, values_r = List.split fields_r in
-      let cmp_atoms = List.compare Xl.Atom.compare atoms_l atoms_r in
+      let cmp_atoms =
+        List.compare (fun a b -> Xl.Atom.compare a.it b.it) atoms_l atoms_r
+      in
       if cmp_atoms <> 0 then cmp_atoms else compares values_l values_r
   | CaseV vc_l, CaseV vc_r -> Mixfix.compare ~compare_arg:compare vc_l vc_r
   | TupleV values_l, TupleV values_r -> compares values_l values_r
@@ -184,16 +186,6 @@ let tuple (vs : t list) : t =
 let opt (typ : typ) (v : t option) : t = OptV v |> make_val (Typ.opt typ)
 let list (typ : typ) (vs : t list) : t = ListV vs |> make_val (Typ.list typ)
 
-(* CaseV construction helpers *)
-
-let atom ?(at = no_region) (s : string) : t Mixfix.mixeme =
-  Mixfix.Atom (Xl.Atom.of_string s $ at)
-
-let arg (v : t) : t Mixfix.mixeme = Mixfix.Arg v
-
-let case_v ~(var : string) (mixemes : t Mixfix.t) : t =
-  CaseV mixemes |> make_val (Typ.var var [])
-
 let id_of_case_v (v : t) : string =
   match (v.it, v.note.typ) with
   | CaseV _, VarT { synid; _ } -> synid.it
@@ -205,7 +197,7 @@ let flatten_case_v (value : t) : string * string list * t list =
       let shape, values = Mixfix.split valuecase in
       let atoms =
         Mixfix.atoms shape
-        |> List.map (fun a -> Xl.Atom.string_of_atom a.Common.Source.it)
+        |> List.map (fun a -> Xl.Atom.to_string a.Common.Source.it)
       in
       (synid.it, atoms, values)
   | _ -> failwith "Expected a CaseV value"

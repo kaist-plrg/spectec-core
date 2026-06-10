@@ -21,9 +21,9 @@ let rec string_of_expr ~prec (v : Value.t) : string =
   match (id, atoms, vs) with
   (* Generators ({!Manual_gen}) build literal and id leaves under synid [expr];
      {!Parse} builds them under [literal]/[id]. Match either. *)
-  | _, [ "`NUM" ], [ n ] -> Bigint.to_string (Xl.Num.to_int (Value.get_num n))
-  | _, [ "`BOOL" ], [ b ] -> if Value.get_bool b then "true" else "false"
-  | _, [ "`ID" ], [ s ] -> Value.get_text s
+  | _, [ "_NUM" ], [ n ] -> Bigint.to_string (Xl.Num.to_int (Value.get_num n))
+  | _, [ "_BOOL" ], [ b ] -> if Value.get_bool b then "true" else "false"
+  | _, [ "_ID" ], [ s ] -> Value.get_text s
   | "expr", [ "&&" ], [ l; r ] ->
       paren (prec > 0)
         (string_of_expr ~prec:0 l ^ " && " ^ string_of_expr ~prec:1 r)
@@ -79,7 +79,7 @@ and string_of_command (v : Value.t) : string =
 
 and text_of_id (v : Value.t) : string =
   match flatten v with
-  | _, [ "`ID" ], [ s ] -> Value.get_text s
+  | _, [ "_ID" ], [ s ] -> Value.get_text s
   | id, atoms, vs -> unsupported "id" id atoms (List.length vs)
 
 (* [prog = command], so a program is just its top-level command. *)

@@ -25,26 +25,26 @@ def $ite<X>(false, X_t, X_f) = X_f
 ;;
 
 builtin dec $sum_nat(nat*) : nat
-  hint(prose_in "sum"#`( %0 ))
+  hint(prose_in "sum"#`( %0 `))
 
 builtin dec $max_nat(nat*) : nat
-  hint(prose_in "max"#`( %0 ))
+  hint(prose_in "max"#`( %0 `))
 
 builtin dec $min_nat(nat*) : nat
-  hint(prose_in "min"#`( %0 ))
+  hint(prose_in "min"#`( %0 `))
 
 ;;
 ;; General int functions
 ;;
 
 builtin dec $sum_int(int*) : int
-  hint(prose_in "sum"#`( %0 ))
+  hint(prose_in "sum"#`( %0 `))
 
 builtin dec $max_int(int*) : int
-  hint(prose_in "max"#`( %0 ))
+  hint(prose_in "max"#`( %0 `))
 
 builtin dec $min_int(int*) : int
-  hint(prose_in "min"#`( %0 ))
+  hint(prose_in "min"#`( %0 `))
 
 ;;
 ;; General text functions
@@ -215,14 +215,14 @@ builtin dec $distinct_<K>(K*) : bool
 ;; General set functions
 ;;
 
-syntax set<K> = `{ K* }
+syntax set<K> = `{ K* `}
 
 dec $empty_set<K> : set<K>
-def $empty_set<K> = `{ eps }
+def $empty_set<K> = `{ eps `}
 
 dec $in_set<K>(K, set<K>) : bool
   hint(prose_true %0 "is an element of the set" %1)
-def $in_set<K>(K, `{ K_e* }) = K <- K_e*
+def $in_set<K>(K, `{ K_e* `}) = K <- K_e*
 
 builtin dec $intersect_set<K>(set<K>, set<K>) : set<K>
   hint(prose_in "the intersection of the sets" %0 "and" %1)
@@ -248,21 +248,21 @@ builtin dec $eq_set<K>(set<K>, set<K>) : bool
 ;; General map functions
 ;;
 
-syntax pair<K, V> = K `: V
+syntax pair<K, V> = K ':' V
 
 syntax map<K, V> = set<pair<K, V>>
 
 dec $empty_map<K, V> : map<K, V>
   hint(prose_in "an empty map")
-def $empty_map<K, V> = `{ eps }
+def $empty_map<K, V> = `{ eps `}
 
 dec $dom_map<K, V>(map<K, V>) : set<K>
   hint(prose_in "the domain of the map" %0)
-def $dom_map<K, V>(`{ (K `: V)* }) = `{ K* }
+def $dom_map<K, V>(`{ (K ':' V)* `}) = `{ K* `}
 
 dec $codom_map<K, V>(map<K, V>) : set<V>
   hint(prose_in "the codomain of the map" %0)
-def $codom_map<K, V>(`{ (K `: V)* }) = `{ V* }
+def $codom_map<K, V>(`{ (K ':' V)* `}) = `{ V* `}
 
 builtin dec $find_map<K, V>(map<K, V>, K) : V?
   hint(prose_in "the value of" %1 "in map" %0)
@@ -280,7 +280,7 @@ builtin dec $update_map<K, V>(map<K, V>, K, V) : map<K, V>
   hint(prose_in "the map" %0 "with the value for" %1 "is updated to" %2)
 
 dec $extend_map<K, V>(map<K, V>, map<K, V>) : map<K, V>
-def $extend_map<K, V>(`{ (K_a `: V_a)* }, `{ (K_b `: V_b)* })
-  = `{ (K_c `: V_c)* }
-  -- if `{ (K_c `: V_c)* }
-      = $adds_map<K, V>(`{ (K_a `: V_a)* }, K_b*, V_b*)
+def $extend_map<K, V>(`{ (K_a ':' V_a)* `}, `{ (K_b ':' V_b)* `})
+  = `{ (K_c ':' V_c)* `}
+  -- if `{ (K_c ':' V_c)* `}
+      = $adds_map<K, V>(`{ (K_a ':' V_a)* `}, K_b*, V_b*)

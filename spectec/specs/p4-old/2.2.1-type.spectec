@@ -23,9 +23,9 @@ syntax primitiveTypeIR =
 
 syntax numberTypeIR =
   | INT
-  | INT `< nat >
-  | BIT `< nat >
-  | VARBIT `< nat >
+  | INT `< nat `>
+  | BIT `< nat `>
+  | VARBIT `< nat `>
 
 syntax baseTypeIR = primitiveTypeIR | numberTypeIR
 
@@ -38,7 +38,7 @@ syntax polyTypeDefIR
 
 syntax namedTypeIR =
   | TID tid
-  | polyTypeDefIR `< typeIR* >
+  | polyTypeDefIR `< typeIR* `>
 
 ;;
 ;;;; Defined types
@@ -56,21 +56,21 @@ syntax aliasTypeIR =
 ;;;;;; Data types
 ;;
 
-syntax listTypeIR = LIST `< typeIR >
-syntax tupleTypeIR = TUPLE `< typeIR* >
-syntax headerStackTypeIR = typeIR `[ nat ]
+syntax listTypeIR = LIST `< typeIR `>
+syntax tupleTypeIR = TUPLE `< typeIR* `>
+syntax headerStackTypeIR = typeIR `[ nat `]
 
-syntax fieldTypeIR = typeIR id `;
+syntax fieldTypeIR = typeIR id ';'
 
-syntax structTypeIR = STRUCT tid `{ fieldTypeIR* }
-syntax headerTypeIR = HEADER tid `{ fieldTypeIR* }
-syntax headerUnionTypeIR = HEADER_UNION tid `{ fieldTypeIR* }
+syntax structTypeIR = STRUCT tid `{ fieldTypeIR* `}
+syntax headerTypeIR = HEADER tid `{ fieldTypeIR* `}
+syntax headerUnionTypeIR = HEADER_UNION tid `{ fieldTypeIR* `}
 
-syntax valueFieldIR = id `= value `;
+syntax valueFieldIR = id '=' value ';'
 
 syntax enumTypeIR =
-  | ENUM tid `{ id* }
-  | ENUM tid `# typeIR `{ valueFieldIR* }
+  | ENUM tid `{ id* `}
+  | ENUM tid '#' typeIR `{ valueFieldIR* `}
 
 syntax dataTypeIR =
   | listTypeIR
@@ -90,10 +90,10 @@ syntax routineTypeDefIR
 
 syntax externObjectTypeIR =
   EXTERN tid map<rid, routineTypeDefIR>
-syntax parserObjectTypeIR = PARSER `( parameterTypeIR* )
-syntax controlObjectTypeIR = CONTROL `( parameterTypeIR* )
-syntax packageObjectTypeIR = PACKAGE `< typeIR* >
-syntax tableObjectTypeIR = TABLE tid `# typeIR
+syntax parserObjectTypeIR = PARSER `( parameterTypeIR* `)
+syntax controlObjectTypeIR = CONTROL `( parameterTypeIR* `)
+syntax packageObjectTypeIR = PACKAGE `< typeIR* `>
+syntax tableObjectTypeIR = TABLE tid '#' typeIR
 
 syntax objectTypeIR =
   | externObjectTypeIR
@@ -116,18 +116,18 @@ syntax defaultTypeIR = DEFAULT
 syntax invalidHeaderTypeIR = HEADER_INVALID
 
 syntax sequenceTypeIR =
-  | SEQ `< typeIR* >
-  | SEQ `< typeIR* `, `... >
+  | SEQ `< typeIR* `>
+  | SEQ `< typeIR* ',' '...' `>
 
 syntax recordTypeIR =
-  | RECORD `{ fieldTypeIR* }
-  | RECORD `{ fieldTypeIR* `, `... }
+  | RECORD `{ fieldTypeIR* `}
+  | RECORD `{ fieldTypeIR* ',' '...' `}
 
-syntax setTypeIR = SET `< typeIR* >
+syntax setTypeIR = SET `< typeIR* `>
 
 syntax tableTypeIR =
-  | TABLE_ENUM tid `{ id* }
-  | TABLE_STRUCT tid `{ fieldTypeIR* }
+  | TABLE_ENUM tid `{ id* `}
+  | TABLE_STRUCT tid `{ fieldTypeIR* `}
 
 syntax synthesizedTypeIR =
   | defaultTypeIR
@@ -153,7 +153,7 @@ syntax typeIR =
 
 syntax monoTypeDefIR = typeIR
 
-syntax polyTypeDefIR = typeIR `< tid* `, tid* >
+syntax polyTypeDefIR = typeIR `< tid* ',' tid* `>
 
 syntax typeDefIR = monoTypeDefIR | polyTypeDefIR
 
@@ -168,18 +168,18 @@ syntax parameterTypeIR = direction typeIR id value?
 ;;
 
 syntax functionTypeIR =
-  | BUILTIN_FUNCTION `( parameterTypeIR* ) `-> typeIR
-  | FUNCTION `( parameterTypeIR* ) `-> typeIR
-  | EXTERN_FUNCTION `( parameterTypeIR* ) `-> typeIR
-  | ACTION `( parameterTypeIR* )
+  | BUILTIN_FUNCTION `( parameterTypeIR* `) '->' typeIR
+  | FUNCTION `( parameterTypeIR* `) '->' typeIR
+  | EXTERN_FUNCTION `( parameterTypeIR* `) '->' typeIR
+  | ACTION `( parameterTypeIR* `)
 
 syntax methodTypeIR =
-  | BUILTIN_METHOD `( parameterTypeIR* ) `-> typeIR
-  | EXTERN_METHOD `( parameterTypeIR* ) `-> typeIR
-  | EXTERN_METHOD ABSTRACT `( parameterTypeIR* ) `-> typeIR
-  | PARSER_APPLY `( parameterTypeIR* )
-  | CONTROL_APPLY `( parameterTypeIR* )
-  | TABLE_APPLY `-> typeIR
+  | BUILTIN_METHOD `( parameterTypeIR* `) '->' typeIR
+  | EXTERN_METHOD `( parameterTypeIR* `) '->' typeIR
+  | EXTERN_METHOD ABSTRACT `( parameterTypeIR* `) '->' typeIR
+  | PARSER_APPLY `( parameterTypeIR* `)
+  | CONTROL_APPLY `( parameterTypeIR* `)
+  | TABLE_APPLY '->' typeIR
 
 syntax routineTypeIR =
   | functionTypeIR
@@ -191,7 +191,7 @@ syntax routineTypeIR =
 
 syntax monoRoutineTypeDefIR = routineTypeIR
 
-syntax polyRoutineTypeDefIR = routineTypeIR `< tid* `, tid* >
+syntax polyRoutineTypeDefIR = routineTypeIR `< tid* ',' tid* `>
 
 syntax routineTypeDefIR =
   | monoRoutineTypeDefIR
@@ -208,10 +208,10 @@ syntax constructorParameterTypeIR = parameterTypeIR
 ;;
 
 syntax constructorTypeIR =
-  CONSTRUCTOR `( constructorParameterTypeIR* ) `-> typeIR
+  CONSTRUCTOR `( constructorParameterTypeIR* `) '->' typeIR
 
 ;;
 ;; Constructor type definitions
 ;;
 
-syntax constructorTypeDefIR = constructorTypeIR `< tid* `, tid* >
+syntax constructorTypeDefIR = constructorTypeIR `< tid* ',' tid* `>

@@ -16,9 +16,9 @@ syntax matchKindTypeIR = MATCH_KIND
 syntax stringTypeIR = STRING
 
 syntax intTypeIR = INT
-syntax fixedIntTypeIR = INT `< nat >
-syntax fixedBitTypeIR = BIT `< nat >
-syntax varBitTypeIR = VARBIT `< nat >
+syntax fixedIntTypeIR = INT `< nat `>
+syntax fixedBitTypeIR = BIT `< nat `>
+syntax varBitTypeIR = VARBIT `< nat `>
 
 syntax integerTypeIR =
   | intTypeIR
@@ -38,7 +38,7 @@ syntax baseTypeIR =
 ;;;; Named types
 ;;
 
-syntax nameTypeIR = `` typeId hint(print %0)
+syntax nameTypeIR = _NAME typeId
 
 ;;
 ;;;; Alias types
@@ -60,29 +60,29 @@ syntax aliasTypeIR =
 ;;;; Data types
 ;;
 
-syntax listTypeIR = LIST `< typeIR >
-syntax tupleTypeIR = TUPLE `< typeIR* >
-syntax headerStackTypeIR = typeIR `[ nat ]
+syntax listTypeIR = LIST `< typeIR `>
+syntax tupleTypeIR = TUPLE `< typeIR* `>
+syntax headerStackTypeIR = typeIR `[ nat `]
 
-syntax fieldTypeIR = annotationList typeIR nameIR `;
+syntax fieldTypeIR = annotationList typeIR nameIR ';'
 
 syntax structTypeIR =
-  STRUCT typeId `< typeArgumentIR* > `{ fieldTypeIR* }
+  STRUCT typeId `< typeArgumentIR* `> `{ fieldTypeIR* `}
   hint(print %0#"<"#%1#">")
 syntax headerTypeIR =
-  HEADER typeId `< typeArgumentIR* > `{ fieldTypeIR* }
+  HEADER typeId `< typeArgumentIR* `> `{ fieldTypeIR* `}
   hint(print %0#"<"#%1#">")
 syntax headerUnionTypeIR =
-  HEADER_UNION typeId `< typeArgumentIR* > `{ fieldTypeIR* }
+  HEADER_UNION typeId `< typeArgumentIR* `> `{ fieldTypeIR* `}
   hint(print %0#"<"#%1#">")
 
-syntax valueFieldIR = nameIR `= value `;
+syntax valueFieldIR = nameIR '=' value ';'
 
 syntax simpleEnumTypeIR =
-  ENUM typeId `{ nameIR* } hint(print %0)
+  ENUM typeId `{ nameIR* `} hint(print %0)
 
 syntax serializableEnumTypeIR =
-  ENUM typeId `< typeIR > `{ valueFieldIR* } hint(print %0)
+  ENUM typeId `< typeIR `> `{ valueFieldIR* `} hint(print %0)
 
 syntax enumTypeIR =
   | simpleEnumTypeIR
@@ -109,23 +109,23 @@ syntax externMethodTypeDefEnv =
   map<callableId, externMethodTypeDefIR>
 
 syntax externObjectTypeIR =
-  EXTERN typeId `< typeArgumentIR* > externMethodTypeDefEnv
+  EXTERN typeId `< typeArgumentIR* `> externMethodTypeDefEnv
   hint(print %0#"<"#%1#">")
 
 syntax parserObjectTypeIR =
-  PARSER typeId `< typeArgumentIR* > `( parameterIR* )
+  PARSER typeId `< typeArgumentIR* `> `( parameterIR* `)
   hint(print %0#"<"#%1#">")
 
 syntax controlObjectTypeIR =
-  CONTROL typeId `< typeArgumentIR* > `( parameterIR* )
+  CONTROL typeId `< typeArgumentIR* `> `( parameterIR* `)
   hint(print %0#"<"#%1#">")
 
 syntax packageObjectTypeIR =
-  PACKAGE typeId `< typeArgumentIR* > `{ typeIR* }
+  PACKAGE typeId `< typeArgumentIR* `> `{ typeIR* `}
   hint(print %0#"<"#%1#">")
 
 syntax tableObjectTypeIR =
-  TABLE typeId `{ tableMetadataStructTypeIR }
+  TABLE typeId `{ tableMetadataStructTypeIR `}
   hint(print %0)
 
 syntax objectTypeIR =
@@ -144,23 +144,23 @@ syntax defaultTypeIR = DEFAULT
 syntax invalidHeaderTypeIR = HEADER_INVALID
 
 syntax sequenceTypeIR =
-  | SEQ `< typeIR* >
-  | SEQ `< typeIR* `, `... >
+  | SEQ `< typeIR* `>
+  | SEQ `< typeIR* ',' '...' `>
 
 syntax recordTypeIR =
-  | RECORD `{ fieldTypeIR* }
-  | RECORD `{ fieldTypeIR* `, `... }
+  | RECORD `{ fieldTypeIR* `}
+  | RECORD `{ fieldTypeIR* ',' '...' `}
 
-syntax setTypeIR = SET `< typeIR >
+syntax setTypeIR = SET `< typeIR `>
 
 syntax tableMetadataEnumTypeIR =
-  TABLE_ENUM typeId `{ nameIR* }
+  TABLE_ENUM typeId `{ nameIR* `}
   hint(print %0)
 
 syntax tableMetadataStructTypeIR =
-  TABLE_STRUCT typeId `{ HIT boolTypeIR `;
-                         MISS boolTypeIR `;
-                         ACTION_RUN tableMetadataEnumTypeIR `; }
+  TABLE_STRUCT typeId `{ HIT boolTypeIR ';'
+                         MISS boolTypeIR ';'
+                         ACTION_RUN tableMetadataEnumTypeIR ';' `}
   hint(print %0)
 
 syntax tableMetadataTypeIR =

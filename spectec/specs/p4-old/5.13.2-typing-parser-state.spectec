@@ -7,7 +7,7 @@
 
 rule ParserState_ok:
   TC_0 nameIR_state* |- annotationList STATE name
-                        `{ parserStatementList transitionStatement }
+                        `{ parserStatementList transitionStatement `}
                       : parserStateIR
   -- if nameIR = $name(name)
   ---- ;; enter block scope
@@ -23,7 +23,7 @@ rule ParserState_ok:
   -- if TC_3 = $exit(TC_2)
   ---- ;; create IR
   -- if parserStateIR
-      = annotationList STATE nameIR `{ parserStatementIR* transitionStatementIR }
+      = annotationList STATE nameIR `{ parserStatementIR* transitionStatementIR `}
 
 ;;
 ;; Parser state list typing
@@ -34,7 +34,7 @@ rule ParserState_ok:
 rule ParserStates_ok:
   TC |- parserState* : parserStateIR*
   ---- ;; check that state names are distinct
-  -- if (_ STATE name_state `{ _ _ } = parserState)*
+  -- if (_ STATE name_state `{ _ _ `} = parserState)*
   -- if (nameIR_state = $name(name_state))*
   -- if $distinct_<nameIR>(nameIR_state*)
   ---- ;; check that a "start" state exists

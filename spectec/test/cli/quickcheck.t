@@ -56,15 +56,15 @@ so a program like `1 <= false` typechecks but gets stuck in evaluation:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 500 --color never
   [Quickcheck Type_safety: Test]
-  Falsifiable, after 56 tests:
-    prog=while +1 <= false do skip end
+  Falsifiable, after 67 tests:
+    prog=while +8 <= false do skip end
 
 With --generalize, the shrunk counterexample is widened to the family of
 programs that exhibit the bug:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 500 --generalize --color never
   [Quickcheck Type_safety: Test]
-  Falsifiable, after 56 tests:
+  Falsifiable, after 67 tests:
     prog=while -3 <= true do skip end
     (Generalized)
     prog=while [int] <= [bool] do [command] end
@@ -76,7 +76,7 @@ Preservation property catches it directly with the offending expression:
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-preservation.spectec --num-tests 500 --color never
   [Quickcheck Type_safety: Test]
   Falsifiable, after 6 tests:
-    prog=bool x0 = ! +0 <= +1
+    prog=while +0 <= +0 do skip end
   [Quickcheck Preservation: Test]
   Falsifiable, after 14 tests:
     env=[], tenv=[], expr=+2 <= +2

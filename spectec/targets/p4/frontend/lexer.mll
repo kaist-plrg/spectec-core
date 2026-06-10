@@ -19,6 +19,7 @@ open Context
 open Lang
 open Il
 open Il.Value
+open Il.Case
 open Parser
 module F = Format
 
@@ -122,7 +123,7 @@ let parse_width_int s n _info =
         let value_int =
           NumV (`Int i) |> make_val (NumT `IntT)
         in
-        [ arg value_width; atom "S"; arg value_int ]
+        [ arg value_width; kw "S"; arg value_int ]
         |> case_v ~var:"number"
     | "w" ->
       let value_width =
@@ -131,7 +132,7 @@ let parse_width_int s n _info =
       let value_int =
         NumV (`Int i) |> make_val (NumT `IntT)
       in
-      [ arg value_width; atom "W"; arg value_int ]
+      [ arg value_width; kw "W"; arg value_int ]
       |> case_v ~var:"number"
     | _ ->
       raise (Error "Illegal integer constant")

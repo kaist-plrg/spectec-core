@@ -1,4 +1,4 @@
-;; A meta-variable identifier carries a numeric suffix (`_N`) that
+;; A meta-variable identifier carries a numeric suffix ('_'N`) that
 ;; strip_var_suffix would remove, leaving an invalid bare identifier.
 
 var x_1 : nat

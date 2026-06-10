@@ -68,7 +68,7 @@ builtin dec $assoc_<X, Y>(X, (X, Y)*)
 ;; ../../../../../spectec/specs/p4-old/0-aux.spectec:59:1-59:37:
 builtin dec $distinct_<K>(K*)
 
-;; ../../../../../spectec/specs/p4-old/0-aux.spectec:65:17-65:24:
+;; ../../../../../spectec/specs/p4-old/0-aux.spectec:65:17-65:25:
 syntax set<K> = 
    | { K* } (from set<K>)
 
@@ -100,7 +100,7 @@ builtin dec $sub_set<K>(set<K>, set<K>')
 ;; ../../../../../spectec/specs/p4-old/0-aux.spectec:83:1-83:46:
 builtin dec $eq_set<K>(set<K>, set<K>')
 
-;; ../../../../../spectec/specs/p4-old/0-aux.spectec:89:21-89:27:
+;; ../../../../../spectec/specs/p4-old/0-aux.spectec:89:21-89:28:
 syntax pair<K, V> = 
    | K : V (from pair<K, V>)
 
@@ -132,7 +132,7 @@ builtin dec $adds_map<K, V>(map<K, V>, K*, V*)
 ;; ../../../../../spectec/specs/p4-old/0-aux.spectec:107:1-107:59:
 builtin dec $update_map<K, V>(map<K, V>, K, V)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:6:1-7:7:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:6:1-7:8:
 syntax trailingCommaOpt = 
    |  (from trailingCommaOpt)
    | , (from trailingCommaOpt)
@@ -143,7 +143,7 @@ syntax number =
    | nat w int (from number) hint(print %#W#%)
    | nat s int (from number) hint(print %#S#%)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:22:24-22:57:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:22:24-22:61:
 syntax stringLiteral = 
    | " text " (from stringLiteral) hint(print "#%#")
 
@@ -166,7 +166,7 @@ syntax nonTypeName =
    | type (from nonTypeName)
    | priority (from nonTypeName)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:48:1-49:23:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:48:1-49:24:
 syntax prefixedNonTypeName = 
    | text (from identifier)
    | apply (from nonTypeName)
@@ -181,7 +181,7 @@ syntax prefixedNonTypeName =
 ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:55:19-55:33:
 syntax typeName = typeIdentifier
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:58:1-59:21:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:58:1-59:22:
 syntax prefixedTypeName = 
    | text (from typeIdentifier)
    | . typeName (from prefixedTypeName)
@@ -208,7 +208,7 @@ syntax name =
    | text (from typeIdentifier)
    | list (from name)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:80:1-81:21:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:80:1-81:22:
 syntax nameList = 
    | text (from identifier)
    | apply (from nonTypeName)
@@ -251,7 +251,7 @@ syntax direction =
    | out (from direction)
    | inout (from direction)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:107:1-118:32:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:107:1-118:34:
 syntax baseType = 
    | bool (from baseType)
    | error (from baseType)
@@ -266,7 +266,7 @@ syntax baseType =
    | varbit < int > (from baseType)
    | varbit < ( expression ) > (from baseType)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:126:26-126:64:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:126:26-126:65:
 syntax specializedType = 
    | prefixedTypeName < typeArgumentList > (from specializedType)
 
@@ -276,15 +276,15 @@ syntax namedType =
    | . typeName (from prefixedTypeName)
    | prefixedTypeName < typeArgumentList > (from specializedType)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:136:26-136:51:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:136:26-136:52:
 syntax headerStackType = 
    | namedType [ expression ] (from headerStackType)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:144:19-144:41:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:144:19-144:42:
 syntax listType = 
    | list < typeArgument > (from listType)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:150:20-150:47:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:150:20-150:48:
 syntax tupleType = 
    | tuple < typeArgumentList > (from tupleType)
 
@@ -335,7 +335,7 @@ syntax typeOrVoid =
 ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:172:24-172:28:
 syntax typeParameter = name
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:175:1-176:39:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:175:1-176:40:
 syntax typeParameterList = 
    | text (from identifier)
    | apply (from nonTypeName)
@@ -368,7 +368,7 @@ dec $flatten_typeParameterList(typeParameterList'')
 
 2. Else Phantom#3
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:184:1-185:27:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:184:1-185:28:
 syntax typeParameterListOpt = 
    |  (from typeParameterListOpt)
    | < typeParameterList > (from typeParameterListOpt)
@@ -378,7 +378,7 @@ dec $flatten_typeParameterListOpt(typeParameterListOpt)
 
 1. Case analysis on typeParameterListOpt
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -392,7 +392,7 @@ dec $flatten_typeParameterListOpt(typeParameterListOpt)
 syntax parameter = 
    | annotationList direction type name initializerOpt (from parameter)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:202:1-203:39:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:202:1-203:40:
 syntax nonEmptyParameterList = 
    | annotationList direction type name initializerOpt (from parameter)
    | nonEmptyParameterList , parameter (from nonEmptyParameterList)
@@ -406,7 +406,7 @@ syntax parameterList =
 ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:209:1-209:55:
 dec $flatten_parameterList(parameterList)
 
-1. If ((parameterList matches pattern ``EMPTY`)), then
+1. If ((parameterList matches pattern `_EMPTY`)), then
 
   1. Return []
 
@@ -440,7 +440,7 @@ syntax constructorParameter = parameter
 ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:221:35-221:48:
 syntax constructorParameterList = parameterList
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:224:1-225:23:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:224:1-225:24:
 syntax constructorParameterListOpt = 
    |  (from constructorParameterListOpt)
    | ( parameterList ) (from constructorParameterListOpt)
@@ -450,7 +450,7 @@ dec $flatten_constructorParameterListOpt(constructorParameterListOpt)
 
 1. Case analysis on constructorParameterListOpt
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -460,11 +460,11 @@ dec $flatten_constructorParameterListOpt(constructorParameterListOpt)
 
     2. Return $flatten_parameterList(parameterList)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:238:26-238:44:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:238:26-238:45:
 syntax namedExpression = 
    | name = expression (from namedExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:241:1-242:43:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:241:1-242:44:
 syntax namedExpressionList = 
    | name = expression (from namedExpression)
    | namedExpressionList , namedExpression (from namedExpressionList)
@@ -510,11 +510,11 @@ syntax referenceExpression =
    | . nonTypeName (from prefixedNonTypeName)
    | this (from referenceExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:274:28-274:32:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:274:28-274:33:
 syntax defaultExpression = 
    | ... (from defaultExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:282:15-282:32:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:282:15-282:36:
 syntax unop = 
    | ! (from unop)
    | ~ (from unop)
@@ -525,7 +525,7 @@ syntax unop =
 syntax unaryExpression = 
    | unop expression (from unaryExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:287:1-289:35:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:287:1-289:41:
 syntax binop = 
    | * (from binop)
    | / (from binop)
@@ -557,32 +557,32 @@ syntax binaryExpression =
 syntax binaryExpressionNonBrace = 
    | expressionNonBrace binop expression (from binaryExpressionNonBrace)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:297:3-297:41:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:297:3-297:43:
 syntax ternaryExpression = 
    | expression ? expression : expression (from ternaryExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:300:3-300:49:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:300:3-300:51:
 syntax ternaryExpressionNonBrace = 
    | expressionNonBrace ? expression : expression (from ternaryExpressionNonBrace)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:306:25-306:45:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:306:25-306:46:
 syntax castExpression = 
    | ( type ) expression (from castExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:315:1-316:48:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:315:1-316:49:
 syntax dataExpression = 
    | {#} (from dataExpression)
    | { dataElementExpression trailingCommaOpt } (from dataExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:325:3-325:18:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:325:3-325:19:
 syntax errorAccessExpression = 
    | error . member (from errorAccessExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:328:3-328:29:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:328:3-328:30:
 syntax memberAccessExpression = 
    | memberAccessBase . member (from memberAccessExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:331:1-332:45:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:331:1-332:47:
 syntax indexAccessExpression = 
    | expression [ expression ] (from indexAccessExpression)
    | expression [ expression : expression ] (from indexAccessExpression)
@@ -594,11 +594,11 @@ syntax accessExpression =
    | expression [ expression ] (from indexAccessExpression)
    | expression [ expression : expression ] (from indexAccessExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:340:3-340:37:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:340:3-340:38:
 syntax memberAccessExpressionNonBrace = 
    | memberAccessBaseNonBrace . member (from memberAccessExpressionNonBrace)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:343:1-344:53:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:343:1-344:55:
 syntax indexAccessExpressionNonBrace = 
    | expressionNonBrace [ expression ] (from indexAccessExpressionNonBrace)
    | expressionNonBrace [ expression : expression ] (from indexAccessExpressionNonBrace)
@@ -610,17 +610,17 @@ syntax accessExpressionNonBrace =
    | expressionNonBrace [ expression ] (from indexAccessExpressionNonBrace)
    | expressionNonBrace [ expression : expression ] (from indexAccessExpressionNonBrace)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:363:1-364:62:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:363:1-364:64:
 syntax callExpression = 
    | callTarget ( argumentList ) (from callExpression)
    | routineTarget < realTypeArgumentList > ( argumentList ) (from callExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:367:1-368:70:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:367:1-368:72:
 syntax callExpressionNonBrace = 
    | callTargetNonBrace ( argumentList ) (from callExpressionNonBrace)
    | routineTargetNonBrace < realTypeArgumentList > ( argumentList ) (from callExpressionNonBrace)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:374:34-374:49:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:374:34-374:50:
 syntax parenthesizedExpression = 
    | ( expression ) (from parenthesizedExpression)
 
@@ -657,7 +657,7 @@ syntax expression =
    | routineTarget < realTypeArgumentList > ( argumentList ) (from callExpression)
    | ( expression ) (from parenthesizedExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:395:1-397:33:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:395:1-397:34:
 syntax expressionList = 
    |  (from expressionList)
    | true (from literalExpression)
@@ -697,7 +697,7 @@ dec $flatten_expressionList(expressionList'')
 
 1. Case analysis on expressionList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -755,7 +755,7 @@ syntax memberAccessBase =
 ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:409:36-409:50:
 syntax sequenceElementExpression = expressionList
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:412:1-415:54:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:412:1-415:58:
 syntax recordElementExpression = 
    | name = expression (from recordElementExpression)
    | name = expression , ... (from recordElementExpression)
@@ -1074,7 +1074,7 @@ dec $expressionNonBrace(expressionNonBrace'')
 
     2. Return (parenthesizedExpression as expression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:505:1-509:7:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:505:1-509:8:
 syntax simpleKeysetExpression = 
    | true (from literalExpression)
    | false (from literalExpression)
@@ -1111,7 +1111,7 @@ syntax simpleKeysetExpression =
    | default (from simpleKeysetExpression)
    | _ (from simpleKeysetExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:512:1-513:57:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:512:1-513:58:
 syntax simpleKeysetExpressionList = 
    | true (from literalExpression)
    | false (from literalExpression)
@@ -1168,7 +1168,7 @@ dec $flatten_simpleKeysetExpressionList(simpleKeysetExpressionList'')
 
 2. Else Phantom#13
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:526:1-530:62:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:526:1-530:64:
 syntax tupleKeysetExpression = 
    | ( expression &&& expression ) (from tupleKeysetExpression)
    | ( expression .. expression ) (from tupleKeysetExpression)
@@ -1218,7 +1218,7 @@ syntax keysetExpression =
    | ( _ ) (from tupleKeysetExpression)
    | ( simpleKeysetExpression , simpleKeysetExpressionList ) (from tupleKeysetExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:541:1-543:7:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:541:1-543:8:
 syntax realTypeArgument = 
    | bool (from baseType)
    | error (from baseType)
@@ -1241,7 +1241,7 @@ syntax realTypeArgument =
    | void (from realTypeArgument)
    | _ (from realTypeArgument)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:546:1-547:45:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:546:1-547:46:
 syntax realTypeArgumentList = 
    | bool (from baseType)
    | error (from baseType)
@@ -1315,7 +1315,7 @@ syntax typeArgument =
    | type (from nonTypeName)
    | priority (from nonTypeName)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:560:1-562:37:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:560:1-562:38:
 syntax typeArgumentList = 
    |  (from typeArgumentList)
    | bool (from baseType)
@@ -1353,7 +1353,7 @@ dec $flatten_typeArgumentList(typeArgumentList'')
 
 1. Case analysis on typeArgumentList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -1373,7 +1373,7 @@ dec $flatten_typeArgumentList(typeArgumentList'')
 
 2. Else Phantom#17
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:575:1-578:7:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:575:1-578:8:
 syntax argument = 
    | true (from literalExpression)
    | false (from literalExpression)
@@ -1409,7 +1409,7 @@ syntax argument =
    | name = _ (from argument)
    | _ (from argument)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:581:1-582:37:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:581:1-582:38:
 syntax argumentListNonEmpty = 
    | true (from literalExpression)
    | false (from literalExpression)
@@ -1487,7 +1487,7 @@ syntax argumentList =
 ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:588:1-588:52:
 dec $flatten_argumentList(argumentList)
 
-1. If ((argumentList matches pattern ``EMPTY`)), then
+1. If ((argumentList matches pattern `_EMPTY`)), then
 
   1. Return []
 
@@ -1515,7 +1515,7 @@ dec $flatten_argumentList(argumentList)
 
 3. Else Phantom#21
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:599:1-603:16:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:599:1-603:17:
 syntax lvalue = 
    | text (from identifier)
    | apply (from nonTypeName)
@@ -1532,11 +1532,11 @@ syntax lvalue =
    | lvalue [ expression : expression ] (from lvalue)
    | ( lvalue ) (from lvalue)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:613:25-613:27:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:613:25-613:28:
 syntax emptyStatement = 
    | ; (from emptyStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:620:1-622:34:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:620:1-622:39:
 syntax assignop = 
    | = (from assignop)
    | += (from assignop)
@@ -1552,33 +1552,33 @@ syntax assignop =
    | ^= (from assignop)
    | |= (from assignop)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:624:30-624:59:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:624:30-624:60:
 syntax assignmentStatement = 
    | lvalue assignop expression ; (from assignmentStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:631:1-632:54:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:631:1-632:57:
 syntax callStatement = 
    | lvalue ( argumentList ) ; (from callStatement)
    | lvalue < typeArgumentList > ( argumentList ) ; (from callStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:638:37-638:76:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:638:37-638:79:
 syntax directApplicationStatement = 
    | namedType . apply ( argumentList ) ; (from directApplicationStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:645:1-646:25:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:645:1-646:26:
 syntax returnStatement = 
    | return ; (from returnStatement)
    | return expression ; (from returnStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:652:24-652:31:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:652:24-652:32:
 syntax exitStatement = 
    | exit ; (from exitStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:660:25-660:70:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:660:25-660:71:
 syntax blockStatement = 
    | annotationList { blockElementStatementList } (from blockStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:669:1-670:48:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:669:1-670:49:
 syntax conditionalStatement = 
    | if ( expression ) statement (from conditionalStatement)
    | if ( expression ) statement else statement (from conditionalStatement)
@@ -1590,7 +1590,7 @@ syntax forInitStatement =
    | lvalue < typeArgumentList > ( argumentList ) (from forInitStatement)
    | lvalue assignop expression (from forInitStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:685:1-686:53:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:685:1-686:54:
 syntax forInitStatementListNonEmpty = 
    | annotationList type name initializerOpt (from forInitStatement)
    | lvalue ( argumentList ) (from forInitStatement)
@@ -1610,7 +1610,7 @@ syntax forInitStatementList =
 ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:692:29-692:45:
 syntax forUpdateStatement = forInitStatement
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:695:1-696:57:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:695:1-696:58:
 syntax forUpdateStatementListNonEmpty = 
    | annotationList type name initializerOpt (from forInitStatement)
    | lvalue ( argumentList ) (from forInitStatement)
@@ -1627,7 +1627,7 @@ syntax forUpdateStatementList =
    | lvalue assignop expression (from forInitStatement)
    | forUpdateStatementListNonEmpty , forUpdateStatement (from forUpdateStatementListNonEmpty)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:703:1-704:30:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:703:1-704:31:
 syntax forCollectionExpression = 
    | true (from literalExpression)
    | false (from literalExpression)
@@ -1661,7 +1661,7 @@ syntax forCollectionExpression =
    | ( expression ) (from parenthesizedExpression)
    | expression .. expression (from forCollectionExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:707:1-712:81:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:707:1-712:82:
 syntax forStatement = 
    | annotationList for ( forInitStatementList ; expression ; forUpdateStatementList ) statement (from forStatement)
    | annotationList for ( type name in forCollectionExpression ) statement (from forStatement)
@@ -1698,7 +1698,7 @@ syntax switchLabel =
    | routineTargetNonBrace < realTypeArgumentList > ( argumentList ) (from callExpressionNonBrace)
    | ( expression ) (from parenthesizedExpression)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:723:1-724:19:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:723:1-724:20:
 syntax switchCase = 
    | switchLabel : blockStatement (from switchCase)
    | switchLabel : (from switchCase)
@@ -1713,7 +1713,7 @@ dec $flatten_switchCaseList(switchCaseList'')
 
 1. Case analysis on switchCaseList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -1723,15 +1723,15 @@ dec $flatten_switchCaseList(switchCaseList'')
 
     2. Return $flatten_switchCaseList(switchCaseList) ++ [switchCase]
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:735:26-735:68:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:735:26-735:70:
 syntax switchStatement = 
    | switch ( expression ) { switchCaseList } (from switchStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:741:25-741:33:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:741:25-741:34:
 syntax breakStatement = 
    | break ; (from breakStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:743:28-743:39:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:743:28-743:40:
 syntax continueStatement = 
    | continue ; (from continueStatement)
 
@@ -1755,11 +1755,11 @@ syntax statement =
    | continue ; (from continueStatement)
    | switch ( expression ) { switchCaseList } (from switchStatement)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:771:22-771:35:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:771:22-771:36:
 syntax initializer = 
    | = expression (from initializer)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:774:3-774:48:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:774:3-774:49:
 syntax constantDeclaration = 
    | annotationList const type name initializer ; (from constantDeclaration)
 
@@ -1768,7 +1768,7 @@ syntax initializerOpt =
    |  (from initializerOpt)
    | = expression (from initializer)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:781:3-781:45:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:781:3-781:46:
 syntax variableDeclaration = 
    | annotationList type name initializerOpt ; (from variableDeclaration)
 
@@ -1804,7 +1804,7 @@ dec $flatten_blockElementStatementList(blockElementStatementList'')
 
 1. Case analysis on blockElementStatementList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -1814,7 +1814,7 @@ dec $flatten_blockElementStatementList(blockElementStatementList'')
 
     2. Return $flatten_blockElementStatementList(blockElementStatementList) ++ [blockElementStatement]
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:806:3-806:58:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:806:3-806:59:
 syntax functionPrototype = 
    | typeOrVoid name typeParameterListOpt ( parameterList ) (from functionPrototype)
 
@@ -1822,15 +1822,15 @@ syntax functionPrototype =
 syntax functionDeclaration = 
    | annotationList functionPrototype blockStatement (from functionDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:816:3-816:63:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:816:3-816:64:
 syntax actionDeclaration = 
    | annotationList action name ( parameterList ) blockStatement (from actionDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:824:28-824:57:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:824:28-824:59:
 syntax objectInitializer = 
    | = { objectDeclarationList } (from objectInitializer)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:828:1-829:68:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:828:1-829:70:
 syntax instantiation = 
    | annotationList type ( argumentList ) name ; (from instantiation)
    | annotationList type ( argumentList ) name objectInitializer ; (from instantiation)
@@ -1851,7 +1851,7 @@ dec $flatten_objectDeclarationList(objectDeclarationList'')
 
 1. Case analysis on objectDeclarationList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -1861,20 +1861,20 @@ dec $flatten_objectDeclarationList(objectDeclarationList'')
 
     2. Return $flatten_objectDeclarationList(objectDeclarationList) ++ [objectDeclaration]
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:851:27-851:46:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:851:27-851:47:
 syntax errorDeclaration = 
    | error { nameList } (from errorDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:857:31-857:72:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:857:31-857:73:
 syntax matchKindDeclaration = 
    | match_kind { nameList trailingCommaOpt } (from matchKindDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:868:1-869:76:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:868:1-869:77:
 syntax enumTypeDeclaration = 
    | annotationList enum name { nameList trailingCommaOpt } (from enumTypeDeclaration)
    | annotationList enum type name { namedExpressionList trailingCommaOpt } (from enumTypeDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:875:20-875:47:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:875:20-875:48:
 syntax typeField = 
    | annotationList type name ; (from typeField)
 
@@ -1888,7 +1888,7 @@ dec $flatten_typeFieldList(typeFieldList'')
 
 1. Case analysis on typeFieldList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -1898,15 +1898,15 @@ dec $flatten_typeFieldList(typeFieldList'')
 
     2. Return $flatten_typeFieldList(typeFieldList) ++ [typeField]
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:887:3-887:69:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:887:3-887:70:
 syntax structTypeDeclaration = 
    | annotationList struct name typeParameterListOpt { typeFieldList } (from structTypeDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:890:3-890:69:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:890:3-890:70:
 syntax headerTypeDeclaration = 
    | annotationList header name typeParameterListOpt { typeFieldList } (from headerTypeDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:893:3-893:75:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:893:3-893:76:
 syntax headerUnionTypeDeclaration = 
    | annotationList header_union name typeParameterListOpt { typeFieldList } (from headerUnionTypeDeclaration)
 
@@ -1944,16 +1944,16 @@ syntax typedefType =
    | annotationList header name typeParameterListOpt { typeFieldList } (from headerTypeDeclaration)
    | annotationList header_union name typeParameterListOpt { typeFieldList } (from headerUnionTypeDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:910:1-911:37:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:910:1-911:38:
 syntax typedefDeclaration = 
    | annotationList typedef typedefType name ; (from typedefDeclaration)
    | annotationList type type name ; (from typedefDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:918:3-918:45:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:918:3-918:46:
 syntax externFunctionDeclaration = 
    | annotationList extern functionPrototype ; (from externFunctionDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:921:1-923:49:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:921:1-923:50:
 syntax methodPrototype = 
    | annotationList typeIdentifier ( parameterList ) ; (from methodPrototype)
    | annotationList functionPrototype ; (from methodPrototype)
@@ -1969,7 +1969,7 @@ dec $flatten_methodPrototypeList(methodPrototypeList'')
 
 1. Case analysis on methodPrototypeList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -1979,7 +1979,7 @@ dec $flatten_methodPrototypeList(methodPrototypeList'')
 
     2. Return $flatten_methodPrototypeList(methodPrototypeList) ++ [methodPrototype]
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:937:3-937:82:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:937:3-937:83:
 syntax externObjectDeclaration = 
    | annotationList extern nonTypeName typeParameterListOpt { methodPrototypeList } (from externObjectDeclaration)
 
@@ -1988,7 +1988,7 @@ syntax externDeclaration =
    | annotationList extern functionPrototype ; (from externFunctionDeclaration)
    | annotationList extern nonTypeName typeParameterListOpt { methodPrototypeList } (from externObjectDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:951:21-951:48:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:951:21-951:50:
 syntax selectCase = 
    | keysetExpression : name ; (from selectCase)
 
@@ -2002,7 +2002,7 @@ dec $flatten_selectCaseList(selectCaseList'')
 
 1. Case analysis on selectCaseList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2012,7 +2012,7 @@ dec $flatten_selectCaseList(selectCaseList'')
 
     2. Return $flatten_selectCaseList(selectCaseList) ++ [selectCase]
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:962:27-962:73:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:962:27-962:75:
 syntax selectExpression = 
    | select ( expressionList ) { selectCaseList } (from selectExpression)
 
@@ -2044,15 +2044,15 @@ syntax valueSetType =
    | text (from typeIdentifier)
    | . typeName (from prefixedTypeName)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:986:3-986:69:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:986:3-986:72:
 syntax valueSetDeclaration = 
    | annotationList value_set < valueSetType > ( expression ) name ; (from valueSetDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:993:3-993:72:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:993:3-993:74:
 syntax parserTypeDeclaration = 
    | annotationList parser name typeParameterListOpt ( parameterList ) ; (from parserTypeDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1001:31-1001:70:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1001:31-1001:71:
 syntax parserBlockStatement = 
    | annotationList { parserStatementList } (from parserBlockStatement)
 
@@ -2079,7 +2079,7 @@ dec $flatten_parserStatementList(parserStatementList'')
 
 1. Case analysis on parserStatementList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2089,7 +2089,7 @@ dec $flatten_parserStatementList(parserStatementList'')
 
     2. Return $flatten_parserStatementList(parserStatementList) ++ [parserStatement]
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1023:3-1023:73:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1023:3-1023:74:
 syntax parserState = 
    | annotationList state name { parserStatementList transitionStatement } (from parserState)
 
@@ -2135,7 +2135,7 @@ dec $flatten_parserLocalDeclarationList(parserLocalDeclarationList'')
 
 1. Case analysis on parserLocalDeclarationList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2145,7 +2145,7 @@ dec $flatten_parserLocalDeclarationList(parserLocalDeclarationList'')
 
     2. Return $flatten_parserLocalDeclarationList(parserLocalDeclarationList) ++ [parserLocalDeclaration]
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1054:3-1056:52:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1054:3-1056:53:
 syntax parserDeclaration = 
    | annotationList parser name typeParameterListOpt ( parameterList ) constructorParameterListOpt { parserLocalDeclarationList parserStateList } (from parserDeclaration)
 
@@ -2161,7 +2161,7 @@ syntax constOpt =
 ;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1072:1-1072:41:
 dec $flatten_constOpt(constOpt)
 
-1. If ((constOpt matches pattern ``EMPTY`)), then
+1. If ((constOpt matches pattern `_EMPTY`)), then
 
   1. Return ?()
 
@@ -2175,7 +2175,7 @@ dec $flatten_constOpt(constOpt)
 
 2. Else Phantom#25
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1080:19-1080:55:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1080:19-1080:57:
 syntax tableKey = 
    | expression : name annotationList ; (from tableKey)
 
@@ -2189,7 +2189,7 @@ dec $flatten_tableKeyList(tableKeyList'')
 
 1. Case analysis on tableKeyList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2199,7 +2199,7 @@ dec $flatten_tableKeyList(tableKeyList'')
 
     2. Return $flatten_tableKeyList(tableKeyList) ++ [tableKey]
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1096:1-1097:42:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1096:1-1097:43:
 syntax tableActionReference = 
    | text (from identifier)
    | apply (from nonTypeName)
@@ -2212,7 +2212,7 @@ syntax tableActionReference =
    | . nonTypeName (from prefixedNonTypeName)
    | prefixedNonTypeName ( argumentList ) (from tableActionReference)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1099:22-1099:60:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1099:22-1099:61:
 syntax tableAction = 
    | annotationList tableActionReference ; (from tableAction)
 
@@ -2226,7 +2226,7 @@ dec $flatten_tableActionList(tableActionList'')
 
 1. Case analysis on tableActionList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2236,12 +2236,12 @@ dec $flatten_tableActionList(tableActionList'')
 
     2. Return $flatten_tableActionList(tableActionList) ++ [tableAction]
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1115:1-1116:35:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1115:1-1116:38:
 syntax tableEntryPriority = 
    | priority = number : (from tableEntryPriority)
    | priority = ( expression ) : (from tableEntryPriority)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1119:1-1120:72:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1119:1-1120:74:
 syntax tableEntry = 
    | constOpt tableEntryPriority keysetExpression : tableActionReference annotationList ; (from tableEntry)
    | constOpt keysetExpression : tableActionReference annotationList ; (from tableEntry)
@@ -2256,7 +2256,7 @@ dec $flatten_tableEntryList(tableEntryList'')
 
 1. Case analysis on tableEntryList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2266,7 +2266,7 @@ dec $flatten_tableEntryList(tableEntryList'')
 
     2. Return $flatten_tableEntryList(tableEntryList) ++ [tableEntry]
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1136:1-1139:59:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1136:1-1139:60:
 syntax tableProperty = 
    | key = { tableKeyList } (from tableProperty)
    | actions = { tableActionList } (from tableProperty)
@@ -2283,7 +2283,7 @@ dec $flatten_tablePropertyList(tablePropertyList'')
 
 1. Case analysis on tablePropertyList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2293,11 +2293,11 @@ dec $flatten_tablePropertyList(tablePropertyList'')
 
     2. Return $flatten_tablePropertyList(tablePropertyList) ++ [tableProperty]
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1151:3-1151:51:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1151:3-1151:52:
 syntax tableDeclaration = 
    | annotationList table name { tablePropertyList } (from tableDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1158:3-1158:73:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1158:3-1158:75:
 syntax controlTypeDeclaration = 
    | annotationList control name typeParameterListOpt ( parameterList ) ; (from controlTypeDeclaration)
 
@@ -2323,7 +2323,7 @@ dec $flatten_controlLocalDeclarationList(controlLocalDeclarationList'')
 
 1. Case analysis on controlLocalDeclarationList''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2333,11 +2333,11 @@ dec $flatten_controlLocalDeclarationList(controlLocalDeclarationList'')
 
     2. Return $flatten_controlLocalDeclarationList(controlLocalDeclarationList) ++ [controlLocalDeclaration]
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1188:3-1190:55:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1188:3-1190:56:
 syntax controlDeclaration = 
    | annotationList control name typeParameterListOpt ( parameterList ) constructorParameterListOpt { controlLocalDeclarationList apply controlBody } (from controlDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1197:3-1197:73:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1197:3-1197:75:
 syntax packageTypeDeclaration = 
    | annotationList package name typeParameterListOpt ( parameterList ) ; (from packageTypeDeclaration)
 
@@ -2378,7 +2378,7 @@ syntax declaration =
    | annotationList control name typeParameterListOpt ( parameterList ) ; (from controlTypeDeclaration)
    | annotationList package name typeParameterListOpt ( parameterList ) ; (from packageTypeDeclaration)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1231:1-1248:27:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1231:1-1248:32:
 syntax annotationToken = 
    | unexpected_token (from annotationToken)
    | abstract (from annotationToken)
@@ -2482,7 +2482,7 @@ syntax annotationBody =
 syntax structuredAnnotationBody = 
    | dataElementExpression trailingCommaOpt (from structuredAnnotationBody)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1259:1-1262:74:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1259:1-1262:75:
 syntax annotation = 
    | @ name (from annotation) hint(print "@"#%0)
    | @ name ( annotationBody ) (from annotation) hint(print "@"#%0#"("#%1#")")
@@ -2506,7 +2506,7 @@ syntax annotationList =
    | @ pragma name annotationBody (from annotation) hint(print "@pragma" %0 %1)
    | annotationListNonEmpty annotation (from annotationListNonEmpty)
 
-;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1277:1-1279:17:
+;; ../../../../../spectec/specs/p4-old/1-syntax.spectec:1277:1-1279:18:
 syntax p4program = 
    |  (from p4program)
    | p4program declaration (from p4program)
@@ -2517,7 +2517,7 @@ dec $flatten_p4program(p4program'')
 
 1. Case analysis on p4program''
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return []
 
@@ -2658,11 +2658,11 @@ dec $fresh_tids(nat')
 
   1. Return $fresh_tid :: $fresh_tids((nat' - 1))
 
-;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:56:14-56:24:
+;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:56:14-56:25:
 syntax pid = 
    | id # bool (from pid)
 
-;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:57:14-57:26:
+;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:57:14-57:27:
 syntax rid = 
    | id ( pid* ) (from rid)
 
@@ -2674,7 +2674,7 @@ dec $rid(name, parameterList)
 ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:60:1-60:32:
 dec $pids(parameterList)
 
-1. If ((parameterList matches pattern ``EMPTY`)), then
+1. If ((parameterList matches pattern `_EMPTY`)), then
 
   1. Return []
 
@@ -2705,7 +2705,7 @@ dec $pids(parameterList)
 ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:61:1-61:26:
 dec $pid((_annotationList _direction _type name initializerOpt))
 
-1. If ((initializerOpt matches pattern ``EMPTY`)), then
+1. If ((initializerOpt matches pattern `_EMPTY`)), then
 
   1. Return ($name(name) # false)
 
@@ -2727,7 +2727,7 @@ dec $cid(name, constructorParameterListOpt)
 
 1. Case analysis on constructorParameterListOpt
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Return ($name(name) ( [] ))
 
@@ -2787,14 +2787,14 @@ dec $expression_as_lvalue(expression'')
 ;; ../../../../../spectec/specs/p4-old/2.0-domain.spectec:99:14-99:17:
 syntax oid = id*
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:14:1-17:15:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:14:1-17:17:
 syntax primitiveValue = 
    | b bool (from primitiveValue)
    | error . id (from primitiveValue)
    | match_kind . id (from primitiveValue)
    | " text " (from primitiveValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:24:1-25:21:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:24:1-25:22:
 syntax numberValue = 
    | d int (from number) hint(print %)
    | nat w int (from number) hint(print %#W#%)
@@ -2812,35 +2812,35 @@ syntax baseValue =
    | nat s int (from number) hint(print %#S#%)
    | nat v int # nat (from numberValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:35:20-35:31:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:35:20-35:32:
 syntax listValue = 
    | [ value* ] (from listValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:36:21-36:32:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:36:21-36:33:
 syntax tupleValue = 
    | ( value* ) (from tupleValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:37:27-37:55:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:37:27-37:58:
 syntax headerStackValue = 
    | [ value* # ( nat ; nat ) ] (from headerStackValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:39:21-39:32:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:39:21-39:33:
 syntax fieldValue = 
    | value id ; (from fieldValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:41:22-41:49:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:41:22-41:50:
 syntax structValue = 
    | struct tid { fieldValue* } (from structValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:42:22-42:49:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:42:22-42:50:
 syntax headerValue = 
    | header tid { fieldValue* } (from headerValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:43:27-43:60:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:43:27-43:61:
 syntax headerUnionValue = 
    | header_union tid { fieldValue* } (from headerUnionValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:46:1-47:23:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:46:1-47:25:
 syntax enumValue = 
    | tid . id (from enumValue)
    | tid . id # value (from enumValue)
@@ -2860,27 +2860,27 @@ syntax dataValue =
 syntax defaultValue = 
    | default (from defaultValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:64:29-64:33:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:64:29-64:34:
 syntax invalidHeaderValue = 
    | {#} (from invalidHeaderValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:67:1-68:28:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:67:1-68:31:
 syntax sequenceValue = 
    | seq ( value* ) (from sequenceValue)
    | seq ( value* , ... ) (from sequenceValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:71:1-72:36:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:71:1-72:39:
 syntax recordValue = 
    | record { fieldValue* } (from recordValue)
    | record { fieldValue* , ... } (from recordValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:75:1-77:29:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:75:1-77:31:
 syntax setValue = 
    | set { value } (from setValue)
    | set { value &&& value } (from setValue)
    | set { value .. value } (from setValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:80:1-81:38:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:80:1-81:39:
 syntax tableValue = 
    | table_enum tid . id (from tableValue)
    | table_struct tid { fieldValue* } (from tableValue)
@@ -2899,7 +2899,7 @@ syntax synthesizedValue =
    | table_enum tid . id (from tableValue)
    | table_struct tid { fieldValue* } (from tableValue)
 
-;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:95:31-95:37:
+;; ../../../../../spectec/specs/p4-old/2.1.1-value.spectec:95:31-95:38:
 syntax objectReferenceValue = 
    | ! oid (from objectReferenceValue)
 
@@ -2991,7 +2991,7 @@ syntax primitiveTypeIR =
    | match_kind (from primitiveTypeIR)
    | string (from primitiveTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:25:1-28:20:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:25:1-28:21:
 syntax numberTypeIR = 
    | int (from numberTypeIR)
    | int < nat > (from numberTypeIR)
@@ -3010,7 +3010,7 @@ syntax baseTypeIR =
    | bit < nat > (from numberTypeIR)
    | varbit < nat > (from numberTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:40:1-41:31:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:40:1-41:32:
 syntax namedTypeIR = 
    | tid tid (from namedTypeIR)
    | polyTypeDefIR < typeIR* > (from namedTypeIR)
@@ -3020,39 +3020,39 @@ syntax aliasTypeIR =
    | typedef tid typeIR (from aliasTypeIR)
    | type tid typeIR (from aliasTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:59:21-59:37:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:59:21-59:38:
 syntax listTypeIR = 
    | list < typeIR > (from listTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:60:22-60:40:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:60:22-60:41:
 syntax tupleTypeIR = 
    | tuple < typeIR* > (from tupleTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:61:28-61:43:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:61:28-61:44:
 syntax headerStackTypeIR = 
    | typeIR [ nat ] (from headerStackTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:63:22-63:34:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:63:22-63:35:
 syntax fieldTypeIR = 
    | typeIR id ; (from fieldTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:65:23-65:51:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:65:23-65:52:
 syntax structTypeIR = 
    | struct tid { fieldTypeIR* } (from structTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:66:23-66:51:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:66:23-66:52:
 syntax headerTypeIR = 
    | header tid { fieldTypeIR* } (from headerTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:67:28-67:62:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:67:28-67:63:
 syntax headerUnionTypeIR = 
    | header_union tid { fieldTypeIR* } (from headerUnionTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:69:23-69:37:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:69:23-69:39:
 syntax valueFieldIR = 
    | id = value ; (from valueFieldIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:72:1-73:42:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:72:1-73:44:
 syntax enumTypeIR = 
    | enum tid { id* } (from enumTypeIR)
    | enum tid # typeIR { valueFieldIR* } (from enumTypeIR)
@@ -3072,19 +3072,19 @@ syntax dataTypeIR =
 syntax externObjectTypeIR = 
    | extern tid map<rid, routineTypeDefIR> (from externObjectTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:93:29-93:57:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:93:29-93:58:
 syntax parserObjectTypeIR = 
    | parser ( parameterTypeIR* ) (from parserObjectTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:94:30-94:59:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:94:30-94:60:
 syntax controlObjectTypeIR = 
    | control ( parameterTypeIR* ) (from controlObjectTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:95:30-95:50:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:95:30-95:51:
 syntax packageObjectTypeIR = 
    | package < typeIR* > (from packageObjectTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:96:28-96:47:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:96:28-96:48:
 syntax tableObjectTypeIR = 
    | table tid # typeIR (from tableObjectTypeIR)
 
@@ -3122,21 +3122,21 @@ syntax defaultTypeIR =
 syntax invalidHeaderTypeIR = 
    | header_invalid (from invalidHeaderTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:119:1-120:29:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:119:1-120:32:
 syntax sequenceTypeIR = 
    | seq < typeIR* > (from sequenceTypeIR)
    | seq < typeIR* , ... > (from sequenceTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:123:1-124:37:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:123:1-124:40:
 syntax recordTypeIR = 
    | record { fieldTypeIR* } (from recordTypeIR)
    | record { fieldTypeIR* , ... } (from recordTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:126:20-126:36:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:126:20-126:37:
 syntax setTypeIR = 
    | set < typeIR* > (from setTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:129:1-130:39:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:129:1-130:40:
 syntax tableTypeIR = 
    | table_enum tid { id* } (from tableTypeIR)
    | table_struct tid { fieldTypeIR* } (from tableTypeIR)
@@ -3194,7 +3194,7 @@ syntax typeIR =
 ;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:154:24-154:30:
 syntax monoTypeDefIR = typeIR
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:156:24-156:48:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:156:24-156:50:
 syntax polyTypeDefIR = 
    | typeIR < tid* , tid* > (from polyTypeDefIR)
 
@@ -3241,14 +3241,14 @@ syntax typeDefIR =
 syntax parameterTypeIR = 
    | direction typeIR id value? (from parameterTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:171:1-174:33:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:171:1-174:34:
 syntax functionTypeIR = 
    | builtin_function ( parameterTypeIR* ) -> typeIR (from functionTypeIR)
    | function ( parameterTypeIR* ) -> typeIR (from functionTypeIR)
    | extern_function ( parameterTypeIR* ) -> typeIR (from functionTypeIR)
    | action ( parameterTypeIR* ) (from functionTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:177:1-182:27:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:177:1-182:28:
 syntax methodTypeIR = 
    | builtin_method ( parameterTypeIR* ) -> typeIR (from methodTypeIR)
    | extern_method ( parameterTypeIR* ) -> typeIR (from methodTypeIR)
@@ -3273,7 +3273,7 @@ syntax routineTypeIR =
 ;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:192:31-192:44:
 syntax monoRoutineTypeDefIR = routineTypeIR
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:194:31-194:62:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:194:31-194:64:
 syntax polyRoutineTypeDefIR = 
    | routineTypeIR < tid* , tid* > (from polyRoutineTypeDefIR)
 
@@ -3294,11 +3294,11 @@ syntax routineTypeDefIR =
 ;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:204:37-204:52:
 syntax constructorParameterTypeIR = parameterTypeIR
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:211:3-211:58:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:211:3-211:60:
 syntax constructorTypeIR = 
    | constructor ( constructorParameterTypeIR* ) -> typeIR (from constructorTypeIR)
 
-;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:217:31-217:66:
+;; ../../../../../spectec/specs/p4-old/2.2.1-type.spectec:217:31-217:68:
 syntax constructorTypeDefIR = 
    | constructorTypeIR < tid* , tid* > (from constructorTypeDefIR)
 
@@ -8707,9 +8707,9 @@ dec $sizeof_maxSizeInBytes(typeIR)
 
 2. Return ((d ((n_size / 8) as int)) as value)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:6:1-7:14:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:6:1-7:15:
 syntax prefixedNameIR = 
-   | ` nameIR (from prefixedNameIR)
+   | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:9:1-9:63:
@@ -8719,11 +8719,11 @@ dec $prefixedNonTypeName(prefixedNonTypeName)
 
   1. (Let nonTypeName be (prefixedNonTypeName as nonTypeName))
 
-  2. Return (` $name((nonTypeName as name)))
+  2. Return ($name((nonTypeName as name)))
 
 1. Else Phantom#405
 
-2. If ((prefixedNonTypeName matches pattern ``ID . %`)), then
+2. If ((prefixedNonTypeName matches pattern `_ID . %`)), then
 
   1. (Let (. nonTypeName) be prefixedNonTypeName)
 
@@ -8738,11 +8738,11 @@ dec $prefixedTypeName(prefixedTypeName)
 
   1. (Let typeName be (prefixedTypeName as typeName))
 
-  2. Return (` $name((typeName as name)))
+  2. Return ($name((typeName as name)))
 
 1. Else Phantom#407
 
-2. If ((prefixedTypeName matches pattern ``TID . %`)), then
+2. If ((prefixedTypeName matches pattern `_TID . %`)), then
 
   1. (Let (. typeName) be prefixedTypeName)
 
@@ -8755,9 +8755,9 @@ dec $flatten_prefixedNameIR(prefixedNameIR)
 
 1. Case analysis on prefixedNameIR
 
-  1. Case (% matches pattern `` %`)
+  1. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` nameIR) be prefixedNameIR)
+    1. (Let (nameIR) be prefixedNameIR)
 
     2. Return nameIR
 
@@ -8789,7 +8789,7 @@ syntax constructorParameterIR = parameterIR
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:48:37-48:49:
 syntax constructorParameterListIR = parameterIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:56:28-56:55:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:56:28-56:56:
 syntax namedExpressionIR = 
    | nameIR = typedExpressionIR (from namedExpressionIR)
 
@@ -8813,15 +8813,15 @@ syntax unaryExpressionIR =
 syntax binaryExpressionIR = 
    | typedExpressionIR binop typedExpressionIR (from binaryExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:92:3-92:62:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:92:3-92:64:
 syntax ternaryExpressionIR = 
    | typedExpressionIR ? typedExpressionIR : typedExpressionIR (from ternaryExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:98:27-98:56:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:98:27-98:57:
 syntax castExpressionIR = 
    | ( typeIR ) typedExpressionIR (from castExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:107:1-111:46:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:107:1-111:49:
 syntax dataExpressionIR = 
    | {#} (from dataExpressionIR)
    | seq { typedExpressionListIR } (from dataExpressionIR)
@@ -8829,15 +8829,15 @@ syntax dataExpressionIR =
    | record { namedExpressionListIR } (from dataExpressionIR)
    | record { namedExpressionListIR , ... } (from dataExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:120:3-120:18:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:120:3-120:19:
 syntax errorAccessExpressionIR = 
    | error . nameIR (from errorAccessExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:123:3-123:31:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:123:3-123:32:
 syntax memberAccessExpressionIR = 
    | memberAccessBaseIR . nameIR (from memberAccessExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:126:1-127:66:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:126:1-127:68:
 syntax indexAccessExpressionIR = 
    | typedExpressionIR [ typedExpressionIR ] (from indexAccessExpressionIR)
    | typedExpressionIR [ typedExpressionIR : typedExpressionIR ] (from indexAccessExpressionIR)
@@ -8849,24 +8849,24 @@ syntax accessExpressionIR =
    | typedExpressionIR [ typedExpressionIR ] (from indexAccessExpressionIR)
    | typedExpressionIR [ typedExpressionIR : typedExpressionIR ] (from indexAccessExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:143:1-146:25:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:143:1-146:26:
 syntax routineTargetIR = 
-   | ` nameIR (from prefixedNameIR)
+   | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
    | typedExpressionIR . nameIR (from routineTargetIR)
    | type prefixedNameIR . nameIR (from routineTargetIR)
    | ( routineTargetIR ) (from routineTargetIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:148:30-148:68:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:148:30-148:69:
 syntax constructorTargetIR = 
    | prefixedNameIR < typeArgumentListIR > (from constructorTargetIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:151:1-152:64:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:151:1-152:66:
 syntax callExpressionIR = 
    | constructorTargetIR ( argumentListIR ) (from callExpressionIR)
    | routineTargetIR < typeArgumentListIR > ( argumentListIR ) (from callExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:158:36-158:58:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:158:36-158:59:
 syntax parenthesizedExpressionIR = 
    | ( typedExpressionIR ) (from parenthesizedExpressionIR)
 
@@ -8878,7 +8878,7 @@ syntax expressionIR =
    | nat w int (from number) hint(print %#W#%)
    | nat s int (from number) hint(print %#S#%)
    | " text " (from stringLiteral) hint(print "#%#")
-   | ` nameIR (from prefixedNameIR)
+   | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
    | ... (from defaultExpression)
    | unop typedExpressionIR (from unaryExpressionIR)
@@ -8898,11 +8898,11 @@ syntax expressionIR =
    | routineTargetIR < typeArgumentListIR > ( argumentListIR ) (from callExpressionIR)
    | ( typedExpressionIR ) (from parenthesizedExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:177:27-177:42:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:177:27-177:43:
 syntax expressionNoteIR = 
    | ( typeIR ctk ) (from expressionNoteIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:180:3-180:35:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:180:3-180:36:
 syntax typedExpressionIR = 
    | expressionIR # expressionNoteIR (from typedExpressionIR)
 
@@ -8914,7 +8914,7 @@ syntax memberAccessBaseIR =
    | type prefixedNameIR (from memberAccessBaseIR)
    | expressionIR # expressionNoteIR (from typedExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:193:1-197:7:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:193:1-197:8:
 syntax simpleKeysetExpressionIR = 
    | expressionIR # expressionNoteIR (from typedExpressionIR)
    | typedExpressionIR &&& typedExpressionIR (from simpleKeysetExpressionIR)
@@ -8925,7 +8925,7 @@ syntax simpleKeysetExpressionIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:199:39-199:64:
 syntax simpleKeysetExpressionListIR = simpleKeysetExpressionIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:201:34-201:67:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:201:34-201:68:
 syntax tupleKeysetExpressionIR = 
    | ( simpleKeysetExpressionListIR ) (from tupleKeysetExpressionIR)
 
@@ -8944,7 +8944,7 @@ syntax typeArgumentIR = typeIR
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:213:29-213:44:
 syntax typeArgumentListIR = typeArgumentIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:220:1-223:7:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:220:1-223:8:
 syntax argumentIR = 
    | expressionIR # expressionNoteIR (from typedExpressionIR)
    | nameIR = typedExpressionIR (from argumentIR)
@@ -8954,35 +8954,35 @@ syntax argumentIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:225:25-225:36:
 syntax argumentListIR = argumentIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:232:1-236:23:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:232:1-236:24:
 syntax lvalueIR = 
-   | ` nameIR (from prefixedNameIR)
+   | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
    | typedLvalueIR . nameIR (from lvalueIR)
    | typedLvalueIR [ typedExpressionIR ] (from lvalueIR)
    | typedLvalueIR [ typedExpressionIR : typedExpressionIR ] (from lvalueIR)
    | ( typedLvalueIR ) (from lvalueIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:238:24-238:47:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:238:24-238:49:
 syntax typedLvalueIR = 
    | lvalueIR # ( typeIR ) (from typedLvalueIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:248:27-248:41:
 syntax emptyStatementIR = emptyStatement
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:255:3-255:46:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:255:3-255:47:
 syntax assignmentStatementIR = 
    | typedLvalueIR assignop typedExpressionIR ; (from assignmentStatementIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:262:3-262:65:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:262:3-262:68:
 syntax callStatementIR = 
    | routineTargetIR < typeArgumentListIR > ( argumentListIR ) ; (from callStatementIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:269:3-269:49:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:269:3-269:52:
 syntax directApplicationStatementIR = 
    | prefixedNameIR . apply ( argumentListIR ) ; (from directApplicationStatementIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:276:1-277:32:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:276:1-277:33:
 syntax returnStatementIR = 
    | return ; (from returnStatementIR)
    | return typedExpressionIR ; (from returnStatementIR)
@@ -8990,11 +8990,11 @@ syntax returnStatementIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:283:26-283:39:
 syntax exitStatementIR = exitStatement
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:292:3-292:50:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:292:3-292:51:
 syntax blockStatementIR = 
    | annotationList { blockElementStatementListIR } (from blockStatementIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:301:1-302:59:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:301:1-302:60:
 syntax conditionalStatementIR = 
    | if ( typedExpressionIR ) statementIR (from conditionalStatementIR)
    | if ( typedExpressionIR ) statementIR else statementIR (from conditionalStatementIR)
@@ -9015,7 +9015,7 @@ syntax forUpdateStatementIR = forInitStatementIR
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:320:35-320:56:
 syntax forUpdateStatementListIR = forUpdateStatementIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:323:1-324:44:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:323:1-324:45:
 syntax forCollectionExpressionIR = 
    | expressionIR # expressionNoteIR (from typedExpressionIR)
    | typedExpressionIR .. typedExpressionIR (from forCollectionExpressionIR)
@@ -9031,7 +9031,7 @@ syntax switchLabelIR =
    | default (from switchLabelIR)
    | expressionIR # expressionNoteIR (from typedExpressionIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:346:1-347:21:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:346:1-347:22:
 syntax switchCaseIR = 
    | switchLabelIR : blockStatementIR (from switchCaseIR)
    | switchLabelIR : (from switchCaseIR)
@@ -9039,7 +9039,7 @@ syntax switchCaseIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:349:27-349:40:
 syntax switchCaseListIR = switchCaseIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:352:3-352:54:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:352:3-352:56:
 syntax switchStatementIR = 
    | switch ( typedExpressionIR ) { switchCaseListIR } (from switchStatementIR)
 
@@ -9068,25 +9068,25 @@ syntax statementIR =
    | continue ; (from continueStatement)
    | switch ( typedExpressionIR ) { switchCaseListIR } (from switchStatementIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:388:32-388:40:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:388:32-388:41:
 syntax constantInitializerIR = 
    | = value (from constantInitializerIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:390:35-390:57:
 syntax constantInitializerOptIR = constantInitializerIR?
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:393:3-393:62:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:393:3-393:63:
 syntax constantDeclarationIR = 
    | annotationList const typeIR nameIR constantInitializerIR ; (from constantDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:395:24-395:44:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:395:24-395:45:
 syntax initializerIR = 
    | = typedExpressionIR (from initializerIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:397:27-397:41:
 syntax initializerOptIR = initializerIR?
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:400:3-400:51:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:400:3-400:52:
 syntax variableDeclarationIR = 
    | annotationList typeIR nameIR initializerOptIR ; (from variableDeclarationIR)
 
@@ -9114,7 +9114,7 @@ syntax blockElementStatementIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:407:38-407:62:
 syntax blockElementStatementListIR = blockElementStatementIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:414:3-415:73:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:414:3-415:76:
 syntax functionPrototypeIR = 
    | typeIR nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) (from functionPrototypeIR)
 
@@ -9122,18 +9122,18 @@ syntax functionPrototypeIR =
 syntax functionDeclarationIR = 
    | annotationList functionPrototypeIR blockStatementIR (from functionDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:425:3-425:69:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:425:3-425:70:
 syntax actionDeclarationIR = 
    | annotationList action nameIR ( parameterListIR ) blockStatementIR (from actionDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:433:30-433:61:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:433:30-433:63:
 syntax objectInitializerIR = 
    | = { objectDeclarationListIR } (from objectInitializerIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:435:33-435:53:
 syntax objectInitializerOptIR = objectInitializerIR?
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:438:3-440:30:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:438:3-440:31:
 syntax instantiationIR = 
    | annotationList typeIR prefixedNameIR < typeArgumentListIR > ( argumentListIR ) nameIR objectInitializerOptIR ; (from instantiationIR)
 
@@ -9145,35 +9145,35 @@ syntax objectDeclarationIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:446:34-446:54:
 syntax objectDeclarationListIR = objectDeclarationIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:452:29-452:50:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:452:29-452:51:
 syntax errorDeclarationIR = 
    | error { nameListIR } (from errorDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:458:33-458:59:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:458:33-458:60:
 syntax matchKindDeclarationIR = 
    | match_kind { nameListIR } (from matchKindDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:469:1-470:65:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:469:1-470:66:
 syntax enumTypeDeclarationIR = 
    | annotationList enum nameIR { nameListIR } (from enumTypeDeclarationIR)
    | annotationList enum typeIR nameIR { namedExpressionListIR } (from enumTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:476:22-476:53:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:476:22-476:54:
 syntax typeFieldIR = 
    | annotationList typeIR nameIR ; (from typeFieldIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:478:26-478:38:
 syntax typeFieldListIR = typeFieldIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:481:3-482:73:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:481:3-482:76:
 syntax structTypeDeclarationIR = 
    | annotationList struct nameIR < typeParameterListIR , typeParameterListIR > { typeFieldListIR } (from structTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:485:3-486:73:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:485:3-486:76:
 syntax headerTypeDeclarationIR = 
    | annotationList header nameIR < typeParameterListIR , typeParameterListIR > { typeFieldListIR } (from headerTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:489:3-490:73:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:489:3-490:76:
 syntax headerUnionTypeDeclarationIR = 
    | annotationList header_union nameIR < typeParameterListIR , typeParameterListIR > { typeFieldListIR } (from headerUnionTypeDeclarationIR)
 
@@ -9228,16 +9228,16 @@ syntax typedefTypeIR =
    | annotationList header nameIR < typeParameterListIR , typeParameterListIR > { typeFieldListIR } (from headerTypeDeclarationIR)
    | annotationList header_union nameIR < typeParameterListIR , typeParameterListIR > { typeFieldListIR } (from headerUnionTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:507:1-508:41:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:507:1-508:42:
 syntax typedefDeclarationIR = 
    | annotationList typedef typedefTypeIR nameIR ; (from typedefDeclarationIR)
    | annotationList type typeIR nameIR ; (from typedefDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:515:3-515:47:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:515:3-515:48:
 syntax externFunctionDeclarationIR = 
    | annotationList extern functionPrototypeIR ; (from externFunctionDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:518:1-520:51:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:518:1-520:52:
 syntax methodPrototypeIR = 
    | annotationList nameIR < , typeParameterListIR > ( parameterListIR ) ; (from methodPrototypeIR)
    | annotationList functionPrototypeIR ; (from methodPrototypeIR)
@@ -9246,7 +9246,7 @@ syntax methodPrototypeIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:522:32-522:50:
 syntax methodPrototypeListIR = methodPrototypeIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:525:3-527:31:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:525:3-527:32:
 syntax externObjectDeclarationIR = 
    | annotationList extern nameIR < typeParameterListIR , typeParameterListIR > { methodPrototypeListIR } (from externObjectDeclarationIR)
 
@@ -9255,14 +9255,14 @@ syntax externDeclarationIR =
    | annotationList extern functionPrototypeIR ; (from externFunctionDeclarationIR)
    | annotationList extern nameIR < typeParameterListIR , typeParameterListIR > { methodPrototypeListIR } (from externObjectDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:541:23-541:54:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:541:23-541:56:
 syntax selectCaseIR = 
    | keysetExpressionIR : nameIR ; (from selectCaseIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:543:27-543:40:
 syntax selectCaseListIR = selectCaseIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:546:3-546:58:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:546:3-546:60:
 syntax selectExpressionIR = 
    | select ( typedExpressionListIR ) { selectCaseListIR } (from selectExpressionIR)
 
@@ -9275,15 +9275,15 @@ syntax stateExpressionIR =
 syntax transitionStatementIR = 
    | transition stateExpressionIR (from transitionStatementIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:563:3-563:72:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:563:3-563:75:
 syntax valueSetDeclarationIR = 
    | annotationList value_set < typeIR > ( typedExpressionIR ) nameIR ; (from valueSetDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:570:3-571:76:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:570:3-571:80:
 syntax parserTypeDeclarationIR = 
    | annotationList parser nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ; (from parserTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:580:3-580:44:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:580:3-580:45:
 syntax parserBlockStatementIR = 
    | annotationList { parserStatementListIR } (from parserBlockStatementIR)
 
@@ -9302,7 +9302,7 @@ syntax parserStatementIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:592:32-592:50:
 syntax parserStatementListIR = parserStatementIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:595:3-596:53:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:595:3-596:54:
 syntax parserStateIR = 
    | annotationList state nameIR { parserStatementListIR transitionStatementIR } (from parserStateIR)
 
@@ -9319,7 +9319,7 @@ syntax parserLocalDeclarationIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:607:3-607:28:
 syntax parserLocalDeclarationListIR = parserLocalDeclarationIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:610:3-613:56:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:610:3-613:57:
 syntax parserDeclarationIR = 
    | annotationList parser nameIR < typeParameterListIR > ( parameterListIR ) ( constructorParameterListIR ) { parserLocalDeclarationListIR parserStateListIR } (from parserDeclarationIR)
 
@@ -9329,25 +9329,25 @@ syntax constIR = const
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:625:21-625:29:
 syntax constOptIR = constIR?
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:631:21-631:66:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:631:21-631:68:
 syntax tableKeyIR = 
    | typedExpressionIR : nameIR annotationList ; (from tableKeyIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:633:25-633:36:
 syntax tableKeyListIR = tableKeyIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:639:33-639:67:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:639:33-639:68:
 syntax tableActionReferenceIR = 
    | prefixedNameIR ( argumentListIR ) (from tableActionReferenceIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:641:24-641:64:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:641:24-641:65:
 syntax tableActionIR = 
    | annotationList tableActionReferenceIR ; (from tableActionIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:643:28-643:42:
 syntax tableActionListIR = tableActionIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:650:1-651:42:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:650:1-651:45:
 syntax tableEntryPriorityIR = 
    | priority = number : (from tableEntryPriorityIR)
    | priority = ( typedExpressionIR ) : (from tableEntryPriorityIR)
@@ -9355,14 +9355,14 @@ syntax tableEntryPriorityIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:653:34-653:55:
 syntax tableEntryPriorityOptIR = tableEntryPriorityIR?
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:656:3-657:67:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:656:3-657:69:
 syntax tableEntryIR = 
    | constOptIR tableEntryPriorityOptIR keysetExpressionIR : tableActionReferenceIR annotationList ; (from tableEntryIR)
 
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:659:27-659:40:
 syntax tableEntryListIR = tableEntryIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:666:1-672:75:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:666:1-672:76:
 syntax tablePropertyIR = 
    | key = { tableKeyListIR } (from tablePropertyIR)
    | actions = { tableActionListIR } (from tablePropertyIR)
@@ -9374,11 +9374,11 @@ syntax tablePropertyIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:674:30-674:46:
 syntax tablePropertyListIR = tablePropertyIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:677:3-677:62:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:677:3-677:63:
 syntax tableDeclarationIR = 
    | annotationList table typeIR nameIR { tablePropertyListIR } (from tableDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:684:3-686:28:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:684:3-686:30:
 syntax controlTypeDeclarationIR = 
    | annotationList control nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ; (from controlTypeDeclarationIR)
 
@@ -9396,11 +9396,11 @@ syntax controlLocalDeclarationIR =
 ;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:702:3-702:29:
 syntax controlLocalDeclarationListIR = controlLocalDeclarationIR*
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:705:3-708:59:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:705:3-708:60:
 syntax controlDeclarationIR = 
    | annotationList control nameIR < typeParameterListIR > ( parameterListIR ) ( constructorParameterListIR ) { controlLocalDeclarationListIR apply controlBodyIR } (from controlDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:715:3-717:28:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:715:3-717:30:
 syntax packageTypeDeclarationIR = 
    | annotationList package nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ; (from packageTypeDeclarationIR)
 
@@ -9440,7 +9440,7 @@ syntax declarationIR =
    | annotationList control nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ; (from controlTypeDeclarationIR)
    | annotationList package nameIR < typeParameterListIR , typeParameterListIR > ( parameterListIR ) ; (from packageTypeDeclarationIR)
 
-;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:750:22-750:39:
+;; ../../../../../spectec/specs/p4-old/4-ir-syntax.spectec:750:22-750:40:
 syntax p4programIR = 
    | declarationIR* ; (from p4programIR)
 
@@ -10092,7 +10092,7 @@ dec $add_parameter(cursor, TC, (direction typeIR id value?))
 
 1. Case analysis on direction
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. (Let varTypeIR be (() typeIR (ctk) value?))
 
@@ -10371,9 +10371,9 @@ dec $find_var(p', TC, prefixedNameIR)
 
   1. Case (% matches pattern `GLOBAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let frame be TC.global.frame)
 
@@ -10383,9 +10383,9 @@ dec $find_var(p', TC, prefixedNameIR)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let frame be TC.block.frame)
 
@@ -10401,7 +10401,7 @@ dec $find_var(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_map<id, varTypeIR>(frame, id))), then
 
-        1. Return $find_var((global), TC, (` id))
+        1. Return $find_var((global), TC, (id))
 
       5. Else Phantom#458
 
@@ -10409,9 +10409,9 @@ dec $find_var(p', TC, prefixedNameIR)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let frame* be TC.local.frames)
 
@@ -10427,7 +10427,7 @@ dec $find_var(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_maps<id, varTypeIR>(frame*, id))), then
 
-        1. Return $find_var((block), TC, (` id))
+        1. Return $find_var((block), TC, (id))
 
       5. Else Phantom#461
 
@@ -10464,9 +10464,9 @@ dec $find_value(p', TC, prefixedNameIR)
 
   1. Case (% matches pattern `GLOBAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let frame be TC.global.frame)
 
@@ -10490,9 +10490,9 @@ dec $find_value(p', TC, prefixedNameIR)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let frame be TC.block.frame)
 
@@ -10514,7 +10514,7 @@ dec $find_value(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_map<id, varTypeIR>(frame, id))), then
 
-        1. Return $find_value((global), TC, (` id))
+        1. Return $find_value((global), TC, (id))
 
       5. Else Phantom#471
 
@@ -10522,9 +10522,9 @@ dec $find_value(p', TC, prefixedNameIR)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let frame* be TC.local.frames)
 
@@ -10546,7 +10546,7 @@ dec $find_value(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_maps<id, varTypeIR>(frame*, id))), then
 
-        1. Return $find_value((block), TC, (` id))
+        1. Return $find_value((block), TC, (id))
 
       5. Else Phantom#475
 
@@ -10569,9 +10569,9 @@ dec $find_type(p', TC, prefixedNameIR)
 
   1. Case (% matches pattern `GLOBAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` tid) be prefixedNameIR)
+      1. (Let (tid) be prefixedNameIR)
 
       2. (Let tdenv be TC.global.tdenv)
 
@@ -10581,9 +10581,9 @@ dec $find_type(p', TC, prefixedNameIR)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` tid) be prefixedNameIR)
+      1. (Let (tid) be prefixedNameIR)
 
       2. (Let tdenv be TC.block.tdenv)
 
@@ -10599,7 +10599,7 @@ dec $find_type(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_map<tid, typeDefIR>(tdenv, tid))), then
 
-        1. Return $find_type((global), TC, (` tid))
+        1. Return $find_type((global), TC, (tid))
 
       5. Else Phantom#480
 
@@ -10607,9 +10607,9 @@ dec $find_type(p', TC, prefixedNameIR)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` tid) be prefixedNameIR)
+      1. (Let (tid) be prefixedNameIR)
 
       2. (Let tdenv* be [TC.local.tdenv])
 
@@ -10625,7 +10625,7 @@ dec $find_type(p', TC, prefixedNameIR)
 
       5. If ((?() = $find_maps<tid, typeDefIR>(tdenv*, tid))), then
 
-        1. Return $find_type((block), TC, (` tid))
+        1. Return $find_type((block), TC, (tid))
 
       5. Else Phantom#483
 
@@ -10686,9 +10686,9 @@ dec $find_routine_overloaded(cursor, TC, prefixedNameIR, argumentIR*)
 
         4. Return $find_overloaded<routineTypeDefIR>(rdenv, id, id_arg?*)
 
-      2. Case (% matches pattern `` %`)
+      2. Case (% matches pattern `_NAME %`)
 
-        1. (Let (` id) be prefixedNameIR)
+        1. (Let (id) be prefixedNameIR)
 
         2. (Let rdenv be TC.global.rdenv)
 
@@ -10698,9 +10698,9 @@ dec $find_routine_overloaded(cursor, TC, prefixedNameIR, argumentIR*)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let rdenv be TC.block.rdenv)
 
@@ -10718,7 +10718,7 @@ dec $find_routine_overloaded(cursor, TC, prefixedNameIR, argumentIR*)
 
       6. If ((?() = $find_overloaded<routineTypeDefIR>(rdenv, id, id_arg?*))), then
 
-        1. Return $find_routine_overloaded((global), TC, (` id), argumentIR*)
+        1. Return $find_routine_overloaded((global), TC, (id), argumentIR*)
 
       6. Else Phantom#488
 
@@ -10726,11 +10726,11 @@ dec $find_routine_overloaded(cursor, TC, prefixedNameIR, argumentIR*)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
-      2. Return $find_routine_overloaded((block), TC, (` id), argumentIR*)
+      2. Return $find_routine_overloaded((block), TC, (id), argumentIR*)
 
     1. Else Phantom#490
 
@@ -10749,9 +10749,9 @@ dec $find_routine_non_overloaded(p', TC, prefixedNameIR)
 
   1. Case (% matches pattern `GLOBAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. Return $find_non_overloaded<routineTypeDefIR>(TC.global.rdenv, id)
 
@@ -10759,9 +10759,9 @@ dec $find_routine_non_overloaded(p', TC, prefixedNameIR)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let routineTypeDefIR'? be $find_non_overloaded<routineTypeDefIR>(TC.block.rdenv, id))
 
@@ -10775,7 +10775,7 @@ dec $find_routine_non_overloaded(p', TC, prefixedNameIR)
 
       4. If ((?() = $find_non_overloaded<routineTypeDefIR>(TC.block.rdenv, id))), then
 
-        1. Return $find_routine_non_overloaded((global), TC, (` id))
+        1. Return $find_routine_non_overloaded((global), TC, (id))
 
       4. Else Phantom#494
 
@@ -10783,11 +10783,11 @@ dec $find_routine_non_overloaded(p', TC, prefixedNameIR)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
-      2. Return $find_routine_non_overloaded((block), TC, (` id))
+      2. Return $find_routine_non_overloaded((block), TC, (id))
 
     1. Else Phantom#496
 
@@ -10806,9 +10806,9 @@ dec $find_constructor_overloaded(TC, prefixedNameIR, argumentIR*)
 
     4. Return $find_overloaded<constructorTypeDefIR>(cdenv, id, id_arg?*)
 
-  2. Case (% matches pattern `` %`)
+  2. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` id) be prefixedNameIR)
+    1. (Let (id) be prefixedNameIR)
 
     2. (Let cdenv be TC.global.cdenv)
 
@@ -11579,7 +11579,7 @@ relation TypeDef_wf: bound, typeDefIR
 ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:13:1-15:20:
 relation ParameterType_wf: bound, (direction typeIR _id value''?)
 
-1. If ((direction matches pattern ``EMPTY`)), then
+1. If ((direction matches pattern `_EMPTY`)), then
 
   1. Case analysis on value''?
 
@@ -11895,7 +11895,7 @@ relation RoutineTypeDef_wf: bound, routineTypeDefIR
 ;; ../../../../../spectec/specs/p4-old/5.03-wellformed.spectec:29:1-31:20:
 relation ConstructorParameterType_wf: bound, (direction typeIR _id _value?)
 
-1. If ((direction matches pattern ``EMPTY`)), then
+1. If ((direction matches pattern `_EMPTY`)), then
 
   1. If (Type_wf: bound |- typeIR holds), then
 
@@ -13196,7 +13196,7 @@ dec $nestable_function'(direction', typeIR')
 
     2. If ((primitiveTypeIR matches pattern `STRING`)), then
 
-      1. If (~(direction' matches pattern ``EMPTY`)), then
+      1. If (~(direction' matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -13206,7 +13206,7 @@ dec $nestable_function'(direction', typeIR')
 
     2. If ((numberTypeIR matches pattern `INT`)), then
 
-      1. If (~(direction' matches pattern ``EMPTY`)), then
+      1. If (~(direction' matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -13238,7 +13238,7 @@ dec $directionless_trailing'(_bool', direction''*)
 
     1. (Let direction_h :: direction_t* be direction''*)
 
-    2. If (~(direction_h matches pattern ``EMPTY`)), then
+    2. If (~(direction_h matches pattern `_EMPTY`)), then
 
       1. Return $directionless_trailing'(false, direction_t*)
 
@@ -13252,7 +13252,7 @@ dec $directionless_trailing'(_bool', direction''*)
 
       1. (Let direction :: direction_t* be direction''*)
 
-      2. If ((direction matches pattern ``EMPTY`)), then
+      2. If ((direction matches pattern `_EMPTY`)), then
 
         1. Return $directionless_trailing'(true, direction_t*)
 
@@ -13266,7 +13266,7 @@ dec $directionless_trailing'(_bool', direction''*)
 
       1. (Let direction :: direction_t* be direction''*)
 
-      2. If ((direction matches pattern ``EMPTY`)), then
+      2. If ((direction matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -13292,7 +13292,7 @@ dec $nestable_action'(direction', typeIR')
 
     2. If ((primitiveTypeIR matches pattern `STRING`)), then
 
-      1. If (~(direction' matches pattern ``EMPTY`)), then
+      1. If (~(direction' matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -13330,7 +13330,7 @@ dec $nestable_externfunction'(direction', typeIR')
 
     2. If ((primitiveTypeIR matches pattern `STRING`)), then
 
-      1. If (~(direction' matches pattern ``EMPTY`)), then
+      1. If (~(direction' matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -13340,7 +13340,7 @@ dec $nestable_externfunction'(direction', typeIR')
 
     2. If ((numberTypeIR matches pattern `INT`)), then
 
-      1. If (~(direction' matches pattern ``EMPTY`)), then
+      1. If (~(direction' matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -13388,7 +13388,7 @@ dec $nestable_externmethod'(direction', typeIR')
 
     2. If ((primitiveTypeIR matches pattern `STRING`)), then
 
-      1. If (~(direction' matches pattern ``EMPTY`)), then
+      1. If (~(direction' matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -13398,7 +13398,7 @@ dec $nestable_externmethod'(direction', typeIR')
 
     2. If ((numberTypeIR matches pattern `INT`)), then
 
-      1. If (~(direction' matches pattern ``EMPTY`)), then
+      1. If (~(direction' matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -13446,7 +13446,7 @@ dec $nestable_externabstractmethod'(direction', typeIR')
 
     2. If ((primitiveTypeIR matches pattern `STRING`)), then
 
-      1. If (~(direction' matches pattern ``EMPTY`)), then
+      1. If (~(direction' matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -13456,7 +13456,7 @@ dec $nestable_externabstractmethod'(direction', typeIR')
 
     2. If ((numberTypeIR matches pattern `INT`)), then
 
-      1. If (~(direction' matches pattern ``EMPTY`)), then
+      1. If (~(direction' matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -13504,7 +13504,7 @@ dec $nestable_parserapplymethod'(direction', typeIR')
 
     2. If ((primitiveTypeIR matches pattern `STRING`)), then
 
-      1. If (~(direction' matches pattern ``EMPTY`)), then
+      1. If (~(direction' matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -13514,7 +13514,7 @@ dec $nestable_parserapplymethod'(direction', typeIR')
 
     2. If ((numberTypeIR matches pattern `INT`)), then
 
-      1. If (~(direction' matches pattern ``EMPTY`)), then
+      1. If (~(direction' matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -13562,7 +13562,7 @@ dec $nestable_controlapplymethod'(direction', typeIR')
 
     2. If ((primitiveTypeIR matches pattern `STRING`)), then
 
-      1. If (~(direction' matches pattern ``EMPTY`)), then
+      1. If (~(direction' matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -13572,7 +13572,7 @@ dec $nestable_controlapplymethod'(direction', typeIR')
 
     2. If ((numberTypeIR matches pattern `INT`)), then
 
-      1. If (~(direction' matches pattern ``EMPTY`)), then
+      1. If (~(direction' matches pattern `_EMPTY`)), then
 
         1. Return false
 
@@ -14177,7 +14177,7 @@ relation Eval_static: p, TC, (expressionIR # (( _typeIR' _ctk'' )))
 
     2. (Let nameIR_error be "error." ++ nameIR)
 
-    3. (Let value_error be $find_value(p, TC, (` nameIR_error)))
+    3. (Let value_error be $find_value(p, TC, (nameIR_error)))
 
     4. Result in value_error
 
@@ -14558,7 +14558,7 @@ relation Type_ok: p, TC, typeOrVoid
 
     1. (Let (prefixedTypeName < typeArgumentList >) be (typeOrVoid as specializedType))
 
-    2. If ((typeArgumentList matches pattern ``EMPTY`)), then
+    2. If ((typeArgumentList matches pattern `_EMPTY`)), then
 
       1. (Let prefixedNameIR be $prefixedTypeName(prefixedTypeName))
 
@@ -16577,7 +16577,7 @@ relation Expr_ok: p, TC, expression'''
 
     3. (Let nameIR_error be "error." ++ nameIR)
 
-    4. If ((((error . nameIR) as value) = $find_value(p, TC, (` nameIR_error)))), then
+    4. If ((((error . nameIR) as value) = $find_value(p, TC, (nameIR_error)))), then
 
       1. (Let expressionNoteIR be (( ((error) as typeIR) (lctk) )))
 
@@ -17185,7 +17185,7 @@ relation Expr_ok: p, TC, expression'''
 
     2. If ((referenceExpression matches pattern `THIS`)), then
 
-      1. (Let prefixedNameIR be (` "this"))
+      1. (Let prefixedNameIR be ("this"))
 
       2. (Let varTypeIR? be $find_var(p, TC, prefixedNameIR))
 
@@ -17630,7 +17630,7 @@ relation Stmt_ok: p', TC', f', statement
 
                 2. (Let (routineTargetIR < typeArgumentIR'* > ( argumentIR_cast* ) ;) be callStatementIR)
 
-                3. If ((routineTargetIR = ((((` nameIR_object) as expressionIR) # (( typeIR_object (ctk) ))) . "apply"))), then
+                3. If ((routineTargetIR = ((((nameIR_object) as expressionIR) # (( typeIR_object (ctk) ))) . "apply"))), then
 
                   1. If ((typeArgumentIR'* matches pattern [])), then
 
@@ -17856,7 +17856,7 @@ relation BlockElementStmt_ok: TC_0, f, blockElementStatement
 
     1. (Let (annotationList type name initializerOpt ;) be (blockElementStatement as variableDeclaration))
 
-    2. If ((initializerOpt matches pattern ``EMPTY`)), then
+    2. If ((initializerOpt matches pattern `_EMPTY`)), then
 
       1. (Type_ok: (local) TC_0 |- (type as typeOrVoid) : typeIR # tid*)
 
@@ -17965,7 +17965,7 @@ relation Block_ok: TC_0, f, (annotationList { blockElementStatementList })
 ;; ../../../../../spectec/specs/p4-old/5.04-typing-relation.spectec:95:1-97:23:
 relation Parameter_ok: p, TC, (annotationList direction type name initializerOpt)
 
-1. If ((initializerOpt matches pattern ``EMPTY`)), then
+1. If ((initializerOpt matches pattern `_EMPTY`)), then
 
   1. (Type_ok: p TC |- (type as typeOrVoid) : typeIR # tid_fresh*)
 
@@ -18213,7 +18213,7 @@ relation ExternConstructor_ok: TC_0, tid_extern, methodPrototype
 
     3. (Let constructorParameterTypeIR be $constructorParameterIR(constructorParameterIR))*
 
-    4. (Let typeDefIR'? be $find_type((global), TC_0, (` nameIR)))
+    4. (Let typeDefIR'? be $find_type((global), TC_0, (nameIR)))
 
     5. If ((typeDefIR'? matches pattern (_))), then
 
@@ -18277,7 +18277,7 @@ relation ParserTransition_ok: TC_0, nameIR_state*, transitionStatement
 
 1. Case analysis on transitionStatement
 
-  1. Case (% matches pattern ``EMPTY`)
+  1. Case (% matches pattern `_EMPTY`)
 
     1. Result in (transition ("reject" ;))
 
@@ -18348,7 +18348,7 @@ relation ParserStmt_ok: TC_0', parserStatement''
 
     1. (Let (annotationList type name initializerOpt ;) be (parserStatement'' as variableDeclaration))
 
-    2. If ((initializerOpt matches pattern ``EMPTY`)), then
+    2. If ((initializerOpt matches pattern `_EMPTY`)), then
 
       1. (Type_ok: (local) TC_0' |- (type as typeOrVoid) : typeIR # tid*)
 
@@ -18622,7 +18622,7 @@ relation ParserLocalDecl_ok: TC_0, parserLocalDeclaration
 
     1. (Let (annotationList type name initializerOpt ;) be (parserLocalDeclaration as variableDeclaration))
 
-    2. If ((initializerOpt matches pattern ``EMPTY`)), then
+    2. If ((initializerOpt matches pattern `_EMPTY`)), then
 
       1. (Type_ok: (block) TC_0 |- (type as typeOrVoid) : typeIR # tid*)
 
@@ -18746,7 +18746,7 @@ relation TableKey_ok: TC, TBLC_0, (expression : name_matchkind annotationList ;)
 
   1. (Let nameIR_matchkind be $name(name_matchkind))
 
-  2. If ((((match_kind . nameIR_matchkind) as value) = $find_value((local), TC, (` nameIR_matchkind)))), then
+  2. If ((((match_kind . nameIR_matchkind) as value) = $find_value((local), TC, (nameIR_matchkind)))), then
 
     1. If ($compat_table_key(nameIR_matchkind, typeIR)), then
 
@@ -19766,7 +19766,7 @@ relation ControlLocalDecl_ok: TC_0, controlLocalDeclaration
 
     1. (Let (annotationList type name initializerOpt ;) be (controlLocalDeclaration as variableDeclaration))
 
-    2. If ((initializerOpt matches pattern ``EMPTY`)), then
+    2. If ((initializerOpt matches pattern `_EMPTY`)), then
 
       1. (Type_ok: (block) TC_0 |- (type as typeOrVoid) : typeIR # tid*)
 
@@ -20354,7 +20354,7 @@ relation Decl_ok: p', TC_0, declaration
 
       1. (Let (annotationList parser name typeParameterListOpt ( parameterList ) constructorParameterListOpt { parserLocalDeclarationList parserStateList }) be (declaration as parserDeclaration))
 
-      2. If ((typeParameterListOpt matches pattern ``EMPTY`)), then
+      2. If ((typeParameterListOpt matches pattern `_EMPTY`)), then
 
         1. (Let TC_1 be TC_0[block.kind = (parser)])
 
@@ -20426,7 +20426,7 @@ relation Decl_ok: p', TC_0, declaration
 
       1. (Let (annotationList control name typeParameterListOpt ( parameterList ) constructorParameterListOpt { controlLocalDeclarationList apply controlBody }) be (declaration as controlDeclaration))
 
-      2. If ((typeParameterListOpt matches pattern ``EMPTY`)), then
+      2. If ((typeParameterListOpt matches pattern `_EMPTY`)), then
 
         1. (Let TC_1 be TC_0[block.kind = (control)])
 
@@ -20722,7 +20722,7 @@ relation Decl_ok: p', TC_0, declaration
 
                   1. (Let [tid] be tid'*)
 
-                  2. (Let typeDefIR'? be $find_type((global), TC_1, (` tid)))
+                  2. (Let typeDefIR'? be $find_type((global), TC_1, (tid)))
 
                   3. If ((typeDefIR'? matches pattern (_))), then
 
@@ -20766,7 +20766,7 @@ relation Decl_ok: p', TC_0, declaration
 
                   1. (Let [tid] be tid'*)
 
-                  2. (Let typeDefIR'? be $find_type((global), TC_1, (` tid)))
+                  2. (Let typeDefIR'? be $find_type((global), TC_1, (tid)))
 
                   3. If ((typeDefIR'? matches pattern (_))), then
 
@@ -21042,7 +21042,7 @@ relation Call_convention_expr_ok: p, TC, actctxt, (direction typeIR_param _id _v
 
   1. Case (% matches pattern `ACTION`)
 
-    1. If ((direction matches pattern ``EMPTY`)), then
+    1. If ((direction matches pattern `_EMPTY`)), then
 
       1. (Let typedExpressionIR? be $coerce_unary(typedExpressionIR_arg, typeIR_param))
 
@@ -21058,7 +21058,7 @@ relation Call_convention_expr_ok: p, TC, actctxt, (direction typeIR_param _id _v
 
   2. Case (% matches pattern `NOACTION`)
 
-    1. If ((direction matches pattern ``EMPTY`)), then
+    1. If ((direction matches pattern `_EMPTY`)), then
 
       1. (Let (_expressionIR # (( typeIR_arg ctk_arg ))) be typedExpressionIR_arg)
 
@@ -21186,7 +21186,7 @@ relation RoutineTarget_ok: p, TC, routineTarget'
 
     2. (Let prefixedNameIR be $prefixedNonTypeName(prefixedNonTypeName))
 
-    3. If ((((prefixedNameIR = (` "verify")) \/ (prefixedNameIR = (. "verify"))) => (((p = (block)) /\ $is_parser_blockKind(TC.block.kind)) \/ ((p = (local)) /\ $is_parser_state_localKind(TC.local.kind))))), then
+    3. If ((((prefixedNameIR = ("verify")) \/ (prefixedNameIR = (. "verify"))) => (((p = (block)) /\ $is_parser_blockKind(TC.block.kind)) \/ ((p = (local)) /\ $is_parser_state_localKind(TC.local.kind))))), then
 
       1. Result in (prefixedNameIR as routineTargetIR)
 
@@ -21234,7 +21234,7 @@ relation RoutineTarget_ok: p, TC, routineTarget'
 
   2. If ((referenceExpression matches pattern `THIS`)), then
 
-    1. Result in ((` "this") as routineTargetIR)
+    1. Result in (("this") as routineTargetIR)
 
   2. Else Phantom#1201
 
@@ -22943,15 +22943,15 @@ relation SwitchLabel_table_ok: TC, tid_table, bool', switchLabel
 
   2. (Let prefixedNameIR be $prefixedNonTypeName(prefixedNonTypeName))
 
-  3. If ((prefixedNameIR matches pattern `` %`)), then
+  3. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-    1. (Let (` nameIR_label) be prefixedNameIR)
+    1. (Let (nameIR_label) be prefixedNameIR)
 
     2. (Let tid_table_enum be "action_list(" ++ tid_table ++ ")")
 
     3. (Let id_label be tid_table_enum ++ "." ++ nameIR_label)
 
-    4. (Let varTypeIR? be $find_var((local), TC, (` id_label)))
+    4. (Let varTypeIR? be $find_var((local), TC, (id_label)))
 
     5. If ((varTypeIR? matches pattern (_))), then
 
@@ -22963,7 +22963,7 @@ relation SwitchLabel_table_ok: TC, tid_table, bool', switchLabel
 
         2. If ((value_label = ((table_enum tid_table_enum . nameIR_label) as value))), then
 
-          1. (Let typedExpressionIR_label be (((` nameIR_label) as expressionIR) # (( typeIR_label ctk_label ))))
+          1. (Let typedExpressionIR_label be (((nameIR_label) as expressionIR) # (( typeIR_label ctk_label ))))
 
           2. Result in (typedExpressionIR_label as switchLabelIR)
 
@@ -23241,7 +23241,7 @@ relation Decl_object_ok: p, TC_0, frame, rdenv, objectDeclaration
 
       2. (Let (_annotationList _typeIR _prefixedNameIR < _typeArgumentListIR > ( _argumentListIR ) nameIR _objectInitializerOptIR ;) be instantiationIR)
 
-      3. (Let varTypeIR'? be $find_var(p, TC_1, (` nameIR)))
+      3. (Let varTypeIR'? be $find_var(p, TC_1, (nameIR)))
 
       4. If ((varTypeIR'? matches pattern (_))), then
 
@@ -24083,7 +24083,7 @@ dec $split_dataplane_parameters(parameterTypeIR*)
 
     2. (Let (direction _typeIR _id _value?) be parameterTypeIR_h)
 
-    3. Case analysis on (direction matches pattern ``EMPTY`)
+    3. Case analysis on (direction matches pattern `_EMPTY`)
 
       1. Case true
 
@@ -25480,22 +25480,22 @@ dec $empty_senv
 
 1. Return $empty_map<nameIR, stateDyn>
 
-;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:28:1-31:34:
+;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:28:1-31:36:
 syntax lvalueDyn = 
-   | ` nameIR (from prefixedNameIR)
+   | nameIR (from prefixedNameIR)
    | . nameIR (from prefixedNameIR)
    | lvalueDyn . nameIR (from lvalueDyn)
    | lvalueDyn [ value ] (from lvalueDyn)
    | lvalueDyn [ value : value ] (from lvalueDyn)
 
-;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:40:1-43:96:
+;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:40:1-43:99:
 syntax funcDyn = 
    | builtin_function < typeParameterListIR > ( parameterListIR ) { blockElementStatementListIR } (from funcDyn)
    | function < typeParameterListIR > ( parameterListIR ) blockStatementIR (from funcDyn)
    | action ( parameterListIR ) { blockStatementIR } (from funcDyn)
    | extern_function < typeParameterListIR > ( parameterListIR ) { blockElementStatementIR? } (from funcDyn)
 
-;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:46:1-51:41:
+;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:46:1-51:42:
 syntax methodDyn = 
    | builtin_method ( parameterListIR ) # lvalueDyn (from methodDyn)
    | extern_method < typeParameterListIR > ( parameterListIR ) blockStatementIR? (from methodDyn)
@@ -25525,7 +25525,7 @@ dec $empty_renv
 
 1. Return $empty_map<rid, routineDyn>
 
-;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:68:1-72:42:
+;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:68:1-72:43:
 syntax consDyn = 
    | extern nameIR < typeParameterListIR > ( constructorParameterListIR ) { methodPrototypeListIR } (from consDyn)
    | parser < typeParameterListIR > ( parameterListIR ) ( constructorParameterListIR ) { parserLocalDeclarationListIR parserStateListIR } (from consDyn)
@@ -25541,7 +25541,7 @@ dec $empty_cenv
 
 1. Return $empty_map<cid, consDyn>
 
-;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:85:1-89:44:
+;; ../../../../../spectec/specs/p4-old/6.01-env-dynamic.spectec:85:1-89:45:
 syntax objDyn = 
    | extern { tid theta venv renv } (from objDyn)
    | parser { venv parameterListIR parserLocalDeclarationListIR senv } (from objDyn)
@@ -25877,9 +25877,9 @@ dec $find_value_inst(p', Ci, prefixedNameIR)
 
   1. Case (% matches pattern `GLOBAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let value'? be $find_map<id, value>(Ci.global.venv, id))
 
@@ -25895,9 +25895,9 @@ dec $find_value_inst(p', Ci, prefixedNameIR)
 
   2. Case (% matches pattern `BLOCK`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let value'? be $find_map<id, value>(Ci.block.venv, id))
 
@@ -25911,7 +25911,7 @@ dec $find_value_inst(p', Ci, prefixedNameIR)
 
       4. If (($find_map<id, value>(Ci.block.venv, id) = ?())), then
 
-        1. Return $find_value_inst((global), Ci, (` id))
+        1. Return $find_value_inst((global), Ci, (id))
 
       4. Else Phantom#1456
 
@@ -25919,9 +25919,9 @@ dec $find_value_inst(p', Ci, prefixedNameIR)
 
   3. Case (% matches pattern `LOCAL`)
 
-    1. If ((prefixedNameIR matches pattern `` %`)), then
+    1. If ((prefixedNameIR matches pattern `_NAME %`)), then
 
-      1. (Let (` id) be prefixedNameIR)
+      1. (Let (id) be prefixedNameIR)
 
       2. (Let venv* be Ci.local.venvs)
 
@@ -25937,7 +25937,7 @@ dec $find_value_inst(p', Ci, prefixedNameIR)
 
       5. If (($find_maps<id, value>(Ci.local.venvs, id) = ?())), then
 
-        1. Return $find_value_inst((block), Ci, (` id))
+        1. Return $find_value_inst((block), Ci, (id))
 
       5. Else Phantom#1459
 
@@ -25948,9 +25948,9 @@ dec $find_typedef_inst(_cursor, Ci, prefixedNameIR)
 
 1. Case analysis on prefixedNameIR
 
-  1. Case (% matches pattern `` %`)
+  1. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` nameIR) be prefixedNameIR)
+    1. (Let (nameIR) be prefixedNameIR)
 
     2. Return $find_map<tid, typeDefIR>(Ci.global.tdenv, nameIR)
 
@@ -26001,9 +26001,9 @@ dec $find_constructor_overloaded_inst(Ci, prefixedNameIR, argumentIR*)
 
 1. Case analysis on prefixedNameIR
 
-  1. Case (% matches pattern `` %`)
+  1. Case (% matches pattern `_NAME %`)
 
-    1. (Let (` id) be prefixedNameIR)
+    1. (Let (id) be prefixedNameIR)
 
     2. (Let id_arg?* be $ids_arguments_IR(argumentIR*))
 
@@ -26535,7 +26535,7 @@ relation Expr_inst: p, Ci, sto', (expressionIR # _expressionNoteIR')
 
     2. (Let nameIR_error be "error." ++ nameIR)
 
-    3. (Let value_error be $find_value_inst(p, Ci, (` nameIR_error)))
+    3. (Let value_error be $find_value_inst(p, Ci, (nameIR_error)))
 
     4. Result in sto', value_error
 
@@ -26856,7 +26856,7 @@ relation Stmt_inst: p, Ci, sto', statementIR'''
 
       9. (Let constantDeclarationIR be (() const typeIR nameIR (= ((! oid) as value)) ;))
 
-      10. (Let routineTargetIR be ((((` tid) as expressionIR) # (( typeIR (ctk) ))) . "apply"))
+      10. (Let routineTargetIR be ((((tid) as expressionIR) # (( typeIR (ctk) ))) . "apply"))
 
       11. (Let callStatementIR be (routineTargetIR < [] > ( argumentListIR ) ;))
 
@@ -27313,7 +27313,7 @@ relation ParserStmt_inst: Ci_0', sto_0, parserStatementIR
 
       9. (Let constantDeclarationIR be (() const typeIR nameIR (= ((! oid) as value)) ;))
 
-      10. (Let routineTargetIR be ((((` tid) as expressionIR) # (( typeIR (ctk) ))) . "apply"))
+      10. (Let routineTargetIR be ((((tid) as expressionIR) # (( typeIR (ctk) ))) . "apply"))
 
       11. (Let callStatementIR be (routineTargetIR < [] > ( argumentListIR ) ;))
 

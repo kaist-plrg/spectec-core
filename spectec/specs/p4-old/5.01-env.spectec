@@ -56,7 +56,7 @@ def $get_missing_parameters(
     id_arg*
   )
   = id_param_h :: $get_missing_parameters(id_param_t*, id_arg*)
-  -- if ~$in_set<id>(id_param_h, `{ id_arg* })
+  -- if ~$in_set<id>(id_param_h, `{ id_arg* `})
 def $get_missing_parameters(
     id_param_h :: id_param_t*,
     id_arg*
@@ -67,22 +67,22 @@ def $get_missing_parameters(
 ;; Check match between parameters and named arguments
 dec $find_match_named<V>(rid, V, id*, pid*) : (rid, V, id*)?
 
-def $find_match_named<V>(rid, V, id_arg*, (id_param `# bool_param)*)
+def $find_match_named<V>(rid, V, id_arg*, (id_param '#' bool_param)*)
   = (rid, V, eps)
-  -- if $eq_set<id>(`{ id_arg* }, `{ id_param* })
+  -- if $eq_set<id>(`{ id_arg* `}, `{ id_param* `})
 def $find_match_named<V>(rid, V, id_arg*, pid*) = eps
   -- otherwise
 
 ;; Check match between parameters and named arguments, with default arguments
 dec $find_match_named_default<V>(rid, V, id*, pid*) : (rid, V, id*)?
 
-def $find_match_named_default<V>(rid, V, id_arg*, (id_param `# bool_param)*)
+def $find_match_named_default<V>(rid, V, id_arg*, (id_param '#' bool_param)*)
   = (rid, V, id_default*)
   -- if id_default* = $get_missing_parameters(id_param*, id_arg*)
   -- if $find_match_named<V>(
           rid, V,
           id_arg* ++ id_default*,
-          (id_param `# bool_param)*
+          (id_param '#' bool_param)*
         ) =/= eps
 def $find_match_named_default<V>(rid, V, id_arg*, pid*) = eps
   -- otherwise
@@ -92,7 +92,7 @@ dec $find_match_unnamed_default<V>(rid, V, (id?)*, pid*) : (rid, V, id*)?
 
 def $find_match_unnamed_default<V>(rid, V, (id_arg?)*, pid*)
   = (rid, V, id_default*)
-  -- if (_, (id_default `# true)*) = $partition_<pid>(pid*, |(id_arg?)*|)
+  -- if (_, (id_default '#' true)*) = $partition_<pid>(pid*, |(id_arg?)*|)
 def $find_match_unnamed_default<V>(rid, V, (id_arg?)*, pid*) = eps
   -- otherwise
 
@@ -100,13 +100,13 @@ def $find_match_unnamed_default<V>(rid, V, (id_arg?)*, pid*) = eps
 dec $find_matching<V>(id, (id?)*, id*, rid, V) : (rid, V, id*)?
 
 ;; When callable names do not match
-def $find_matching<V>(id_r, (id_arg?)*, id_arg'*, id_r' `( pid_r'* ), V)
+def $find_matching<V>(id_r, (id_arg?)*, id_arg'*, id_r' `( pid_r'* `), V)
   = eps
   -- if ~$check_routine_name(id_r, id_r')
 ;; When callable names match, but the arity of arguments is greater than that of parameters
 def $find_matching<V>(
     id_r, (id_arg?)*, id_arg'*,
-    id_r' `( (id_param' `# bool_param')* ), V
+    id_r' `( (id_param' '#' bool_param')* `), V
   )
   = eps
   -- if $check_routine_name(id_r, id_r')
@@ -114,11 +114,11 @@ def $find_matching<V>(
 ;; When callable names and arity match on named arguments, i.e., no default arguments
 def $find_matching<V>(
     id_r, (id_arg?)*, id_arg'*,
-    id_r' `( (id_param' `# bool_param')* ), V
+    id_r' `( (id_param' '#' bool_param')* `), V
   )
   = $find_match_named<V>(
-      id_r' `( (id_param' `# bool_param')* ),
-      V, id_arg'*, (id_param' `# bool_param')*
+      id_r' `( (id_param' '#' bool_param')* `),
+      V, id_arg'*, (id_param' '#' bool_param')*
     )
   -- if $(|id_arg'*| > 0)
   -- if $check_routine_name(id_r, id_r')
@@ -126,19 +126,19 @@ def $find_matching<V>(
 ;; When callable names and arity match on unnamed arguments, i.e., no default arguments
 def $find_matching<V>(
     id_r, (id_arg?)*, eps,
-    id_r' `( (id_param' `# bool_param')* ), V
+    id_r' `( (id_param' '#' bool_param')* `), V
   )
-  = (id_r' `( (id_param' `# bool_param')* ), V, eps)
+  = (id_r' `( (id_param' '#' bool_param')* `), V, eps)
   -- if $check_routine_name(id_r, id_r')
   -- if $check_arity((id_arg?)*, id_param'*)
 ;; When callable names match and arity is less than that of parameters, with named arguments
 def $find_matching<V>(
     id_r, (id_arg?)*, id_arg'*,
-    id_r' `( (id_param' `# bool_param')* ), V
+    id_r' `( (id_param' '#' bool_param')* `), V
   )
   = $find_match_named_default<V>(
-      id_r' `( (id_param' `# bool_param')* ),
-      V, id_arg'*, (id_param' `# bool_param')*
+      id_r' `( (id_param' '#' bool_param')* `),
+      V, id_arg'*, (id_param' '#' bool_param')*
     )
   -- if $(|id_arg'*| > 0)
   -- if $check_routine_name(id_r, id_r')
@@ -146,11 +146,11 @@ def $find_matching<V>(
 ;; When callable names match and arity is less than that of parameters, with unnamed arguments
 def $find_matching<V>(
     id_r, (id_arg?)*, eps,
-    id_r' `( (id_param' `# bool_param')* ), V
+    id_r' `( (id_param' '#' bool_param')* `), V
   )
   = $find_match_unnamed_default<V>(
-      id_r' `( (id_param' `# bool_param' )* ),
-      V, (id_arg?)*, (id_param' `# bool_param')*
+      id_r' `( (id_param' '#' bool_param' )* `),
+      V, (id_arg?)*, (id_param' '#' bool_param')*
     )
   -- if $check_routine_name(id_r, id_r')
   -- if $check_arity_less((id_arg?)*, id_param'*)
@@ -182,14 +182,14 @@ dec $find_overloaded<V>(map<rid, V>, id, (id?)*) : (rid, V, id*)?
 
 ;; When all arguments are named
 def $find_overloaded<V>(
-    `{ (rid `: V)* }, id_r, (id_arg?)*
+    `{ (rid ':' V)* `}, id_r, (id_arg?)*
   )
   = eps
   -- if $(|(id_arg?)*| > 0)
   -- if (id_arg? = id_arg')*
   -- if $find_matchings<V>(id_r, (id_arg?)*, id_arg'*, rid*, V*) = eps
 def $find_overloaded<V>(
-    `{ (rid `: V)* }, id_r, (id_arg?)*
+    `{ (rid ':' V)* `}, id_r, (id_arg?)*
   )
   = (rid', V', id_default*)
   -- if $(|(id_arg?)*| > 0)
@@ -198,13 +198,13 @@ def $find_overloaded<V>(
       = $find_matchings<V>(id_r, (id_arg?)*, id_arg'*, rid*, V*)
 ;; When all arguments are unnamed
 def $find_overloaded<V>(
-    `{ (rid `: V)* }, id_r, (id_arg?)*
+    `{ (rid ':' V)* `}, id_r, (id_arg?)*
   )
   = eps
   -- if (id_arg? = eps)*
   -- if $find_matchings<V>(id_r, (id_arg?)*, eps, rid*, V*) = eps
 def $find_overloaded<V>(
-    `{ (rid `: V)* }, id_r, (id_arg?)*
+    `{ (rid ':' V)* `}, id_r, (id_arg?)*
   )
   = (rid', V', id_default*)
   -- if (id_arg? = eps)*
@@ -218,24 +218,24 @@ def $find_overloaded<V>(
 dec $find_non_overloaded<V>(map<rid, V>, id) : V?
 dec $find_non_overloaded'<V>(map<rid, V>, id) : V*
 
-def $find_non_overloaded<V>(`{ (rid `: V)* }, id) = V'
-  -- if V' = $find_non_overloaded'<V>(`{ (rid `: V)* }, id)
-def $find_non_overloaded<V>(`{ (rid `: V)* }, id) = eps
+def $find_non_overloaded<V>(`{ (rid ':' V)* `}, id) = V'
+  -- if V' = $find_non_overloaded'<V>(`{ (rid ':' V)* `}, id)
+def $find_non_overloaded<V>(`{ (rid ':' V)* `}, id) = eps
   -- otherwise
 
-def $find_non_overloaded'<V>(`{ eps }, id) = eps
+def $find_non_overloaded'<V>(`{ eps `}, id) = eps
 def $find_non_overloaded'<V>(
-    `{ (rid_h `: V_h) :: (rid_t `: V_t)* }, id
+    `{ (rid_h ':' V_h) :: (rid_t ':' V_t)* `}, id
   )
   = V_h :: V_t_found*
-  -- if id `( _ ) = rid_h
+  -- if id `( _ `) = rid_h
   -- if V_t_found*
-      = $find_non_overloaded'<V>(`{ (rid_t `: V_t)* }, id)
+      = $find_non_overloaded'<V>(`{ (rid_t ':' V_t)* `}, id)
 def $find_non_overloaded'<V>(
-    `{ (rid_h `: V_h) :: (rid_t `: V_t)* }, id
+    `{ (rid_h ':' V_h) :: (rid_t ':' V_t)* `}, id
   )
   = V_t_found*
-  -- if id_h `( _ ) = rid_h
+  -- if id_h `( _ `) = rid_h
   -- if id =/= id_h
   -- if V_t_found*
-      = $find_non_overloaded'<V>(`{ (rid_t `: V_t)* }, id)
+      = $find_non_overloaded'<V>(`{ (rid_t ':' V_t)* `}, id)

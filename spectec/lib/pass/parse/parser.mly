@@ -38,23 +38,10 @@ let exit_scope () = vars := List.hd !scopes; scopes := List.tl !scopes
 
 %}
 
-%token<string> TICK_UPID
-%token TICK_TICK TICK_DOUBLE_QUOTE TICK_UNDERSCORE TICK_ARROW TICK_DOUBLE_ARROW
-%token TICK_DOT TICK_DOT2 TICK_DOT3
-%token TICK_COMMA TICK_SEMICOLON TICK_COLON TICK_COLON_EQ
-%token TICK_HASH TICK_DOLLAR TICK_AT TICK_QUEST
-%token TICK_BANG TICK_BANG_EQ TICK_TILDE TICK_TILDE2
-%token TICK2_LANGLE TICK_LANGLE TICK_LANGLE2 TICK_LANGLE_EQ TICK_LANGLE2_EQ
-%token TICK2_RANGLE TICK_RANGLE2 TICK_RANGLE_EQ TICK_RANGLE2_EQ
-%token TICK_LPAREN TICK_LBRACK TICK2_LBRACK TICK2_RBRACK
-%token TICK_LBRACE TICK_LBRACE_HASH_RBRACE TICK2_LBRACE TICK2_RBRACE
-%token TICK_PLUS TICK_PLUS2 TICK_PLUS_EQ TICK_MINUS TICK_MINUS_EQ
-%token TICK_STAR TICK_STAR_EQ TICK_SLASH TICK_SLASH_EQ
-%token TICK_PERCENT TICK_PERCENT_EQ TICK_EQ TICK_EQ2
-%token TICK_AMP TICK_AMP2 TICK_AMP3 TICK_AMP_EQ
-%token TICK_UP TICK_UP_EQ
-%token TICK_BAR TICK_BAR2 TICK_BAR_EQ
-%token TICK_BAR_PLUS_BAR TICK_BAR_PLUS_BAR_EQ TICK_BAR_MINUS_BAR TICK_BAR_MINUS_BAR_EQ
+%token<string> TAG_UPID
+%token<string> OPERATOR
+%token TICK_LANGLE TICK_RANGLE TICK_LPAREN TICK_RPAREN
+%token TICK_LBRACK TICK_RBRACK TICK_LBRACE TICK_RBRACE
 
 %token NL_BAR NL2 NL3
 %token SUB TURNSTILE TILESTURN
@@ -160,10 +147,10 @@ atomid_lparen : UPID_LPAREN { $1 }
 atomid_langle : UPID_LANGLE { $1 }
 atomid : atomid_ { $1 } | atomid DOTID { $1 ^ "." ^ $2 }
 
-dotid : DOTID { Atom.Atom $1 @@@ $sloc }
+dotid : DOTID { Atom.keyword $1 @@@ $sloc }
 
 fieldid :
-  | atomid_ { Atom.Atom $1 @@@ $sloc }
+  | atomid_ { Atom.keyword $1 @@@ $sloc }
 
 relid : id { $1 @@@ $sloc }
 
@@ -194,69 +181,11 @@ synid :
 atom :
   | atom_ { $1 @@@ $sloc }
 atom_ :
-  | atomid { Atom.Atom $1 }
+  | atomid { Atom.keyword $1 }
   | atom_escape { $1 }
 atom_escape :
-  | TICK_UPID { Atom.SilentAtom $1 }
-  | TICK_TICK { Atom.Tick }
-  | TICK_DOUBLE_QUOTE { Atom.DoubleQuote }
-  | TICK_UNDERSCORE { Atom.Underscore }
-  | TICK_ARROW { Atom.Arrow `Tick }
-  | TICK_DOUBLE_ARROW { Atom.DoubleArrow }
-  | TICK_DOT { Atom.Dot `Tick }
-  | TICK_DOT2 { Atom.Dot2 `Tick }
-  | TICK_DOT3 { Atom.Dot3 `Tick }
-  | TICK_COMMA { Atom.Comma }
-  | TICK_SEMICOLON { Atom.Semicolon `Tick }
-  | TICK_COLON { Atom.Colon `Tick }
-  | TICK_COLON_EQ { Atom.ColonEq `Tick }
-  | TICK_HASH { Atom.Hash }
-  | TICK_DOLLAR { Atom.Dollar }
-  | TICK_AT { Atom.At }
-  | TICK_QUEST { Atom.Quest }
-  | TICK_BANG { Atom.Bang }
-  | TICK_BANG_EQ { Atom.BangEq }
-  | TICK_TILDE { Atom.Tilde }
-  | TICK_TILDE2 { Atom.Tilde2 `Tick }
-  | TICK2_LANGLE { Atom.LAngle `Tick2 }
-  | TICK_LANGLE2 { Atom.LAngle2 }
-  | TICK_LANGLE_EQ { Atom.LAngleEq }
-  | TICK_LANGLE2_EQ { Atom.LAngle2Eq }
-  | TICK2_RANGLE { Atom.RAngle `Tick2 }
-  | TICK_RANGLE2 { Atom.RAngle2 }
-  | TICK_RANGLE_EQ { Atom.RAngleEq }
-  | TICK_RANGLE2_EQ { Atom.RAngle2Eq }
-  | TICK2_LBRACK { Atom.LBrack `Tick2 }
-  | TICK2_RBRACK { Atom.RBrack `Tick2 }
-  | TICK2_LBRACE { Atom.LBrace `Tick2 }
-  | TICK_LBRACE_HASH_RBRACE { Atom.LBraceHashRBrace }
-  | TICK2_RBRACE { Atom.RBrace `Tick2 }
-  | TICK_PLUS { Atom.Plus }
-  | TICK_PLUS2 { Atom.Plus2 }
-  | TICK_PLUS_EQ { Atom.PlusEq }
-  | TICK_MINUS { Atom.Minus }
-  | TICK_MINUS_EQ { Atom.MinusEq }
-  | TICK_STAR { Atom.Star }
-  | TICK_STAR_EQ { Atom.StarEq }
-  | TICK_SLASH { Atom.Slash }
-  | TICK_SLASH_EQ { Atom.SlashEq }
-  | TICK_PERCENT { Atom.Percent }
-  | TICK_PERCENT_EQ { Atom.PercentEq }
-  | TICK_EQ { Atom.Eq }
-  | TICK_EQ2 { Atom.Eq2 }
-  | TICK_AMP { Atom.Amp }
-  | TICK_AMP2 { Atom.Amp2 }
-  | TICK_AMP3 { Atom.Amp3 }
-  | TICK_AMP_EQ { Atom.AmpEq }
-  | TICK_UP { Atom.Up }
-  | TICK_UP_EQ { Atom.UpEq }
-  | TICK_BAR { Atom.Bar }
-  | TICK_BAR2 { Atom.Bar2 }
-  | TICK_BAR_EQ { Atom.BarEq }
-  | TICK_BAR_PLUS_BAR { Atom.SPlus }
-  | TICK_BAR_PLUS_BAR_EQ { Atom.SPlusEq }
-  | TICK_BAR_MINUS_BAR { Atom.SMinus }
-  | TICK_BAR_MINUS_BAR_EQ { Atom.SMinusEq }
+  | TAG_UPID { Atom.tag $1 }
+  | OPERATOR { Atom.operator $1 }
 
 (* Iterations *)
 
@@ -305,21 +234,21 @@ typ_prim_ :
     {
       NotationT (AtomT $1 @@@ $loc($1))
     }
-  | TICK_LANGLE typ RANGLE
+  | TICK_LANGLE typ TICK_RANGLE
     {
-      NotationT (BrackT (Atom.LAngle `Tick @@@ $loc($1), $2, Atom.RAngle `Plain @@@ $loc($3)) @@@ $loc($1))
+      NotationT (BrackT (Atom.LAngle @@@ $loc($1), $2, Atom.RAngle @@@ $loc($3)) @@@ $loc($1))
     }
-  | TICK_LPAREN typ RPAREN
+  | TICK_LPAREN typ TICK_RPAREN
     {
       NotationT (BrackT (Atom.LParen @@@ $loc($1), $2, Atom.RParen @@@ $loc($3)) @@@ $loc($1))
     }
-  | TICK_LBRACK typ RBRACK
+  | TICK_LBRACK typ TICK_RBRACK
     {
-      NotationT (BrackT (Atom.LBrack `Tick @@@ $loc($1), $2, Atom.RBrack `Plain @@@ $loc($3)) @@@ $loc($1))
+      NotationT (BrackT (Atom.LBrack @@@ $loc($1), $2, Atom.RBrack @@@ $loc($3)) @@@ $loc($1))
     }
-  | TICK_LBRACE typ RBRACE
+  | TICK_LBRACE typ TICK_RBRACE
     {
-      NotationT (BrackT (Atom.LBrace `Tick @@@ $loc($1), $2, Atom.RBrace `Plain @@@ $loc($3)) @@@ $loc($1))
+      NotationT (BrackT (Atom.LBrace @@@ $loc($1), $2, Atom.RBrace @@@ $loc($3)) @@@ $loc($1))
     }
 
 typ_seq : typ_seq_ { $1 }
@@ -462,22 +391,22 @@ deftyp_ :
 %inline infixop :
   | infixop_ { $1 @@@ $sloc }
 %inline infixop_ :
-  | DOT { Atom.Dot `Plain }
-  | DOT2 { Atom.Dot2 `Plain }
-  | DOT3 { Atom.Dot3 `Plain }
-  | SEMICOLON { Atom.Semicolon `Plain }
+  | DOT { Atom.Dot }
+  | DOT2 { Atom.Dot2 }
+  | DOT3 { Atom.Dot3 }
+  | SEMICOLON { Atom.Semicolon }
   | BACKSLASH { Atom.Backslash }
-  | ARROW { Atom.Arrow `Plain }
+  | ARROW { Atom.Arrow }
   | ARROW_SUB { Atom.ArrowSub }
   | DOUBLE_ARROW_SUB { Atom.DoubleArrowSub }
   | DOUBLE_ARROW_LONG { Atom.DoubleArrowLong }
-  | COLON_EQ { Atom.ColonEq `Plain }
+  | COLON_EQ { Atom.ColonEq }
 
 %inline relop :
   | relop_ { $1 @@@ $sloc }
 %inline relop_ :
-  | COLON { Atom.Colon `Plain }
-  | TILDE2 { Atom.Tilde2 `Plain }
+  | COLON { Atom.Colon }
+  | TILDE2 { Atom.Tilde2 }
   | SQARROW { Atom.SqArrow }
   | SQARROW_STAR { Atom.SqArrowStar }
   | TILESTURN { Atom.Tilesturn }
@@ -573,14 +502,14 @@ exp_prim_ :
       | [ exp ] -> ParenE exp
       | exps -> TupleE exps
     }
-  | TICK_LANGLE exp RANGLE
-    { BrackE (Atom.LAngle `Tick @@@ $loc($1), $2, Atom.RAngle `Plain @@@ $loc($3)) }
-  | TICK_LPAREN exp RPAREN
+  | TICK_LANGLE exp TICK_RANGLE
+    { BrackE (Atom.LAngle @@@ $loc($1), $2, Atom.RAngle @@@ $loc($3)) }
+  | TICK_LPAREN exp TICK_RPAREN
     { BrackE (Atom.LParen @@@ $loc($1), $2, Atom.RParen @@@ $loc($3)) }
-  | TICK_LBRACK exp RBRACK
-    { BrackE (Atom.LBrack `Tick @@@ $loc($1), $2, Atom.RBrack `Plain @@@ $loc($3)) }
-  | TICK_LBRACE exp RBRACE
-    { BrackE (Atom.LBrace `Tick @@@ $loc($1), $2, Atom.RBrace `Plain @@@ $loc($3)) }
+  | TICK_LBRACK exp TICK_RBRACK
+    { BrackE (Atom.LBrack @@@ $loc($1), $2, Atom.RBrack @@@ $loc($3)) }
+  | TICK_LBRACE exp TICK_RBRACE
+    { BrackE (Atom.LBrace @@@ $loc($1), $2, Atom.RBrace @@@ $loc($3)) }
   | DOLLAR LPAREN arith RPAREN { $3.it }
   | HASH2 exp_prim { UnparenE $2 }
 
@@ -599,7 +528,7 @@ exp_atom_ :
   | atom { AtomE $1 }
   | atomid_lparen exp RPAREN
     { SeqE [
-        AtomE (Atom.Atom $1 @@@ $loc($1)) @@@ $loc($1);
+        AtomE (Atom.keyword $1 @@@ $loc($1)) @@@ $loc($1);
         ParenE $2 @@@ $loc($2)
       ] }
 

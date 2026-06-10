@@ -262,13 +262,13 @@ relation Program_inst:
 
 relation Copy_in_argument_inst:
   store cursor instContext argumentIR
-     `@ cursor instContext id
+     '@' cursor instContext id
   ~> store instContext
   hint(input %0 %1 %2 %3 %4 %5 %6)
 
 relation Copy_in_inst:
   store cursor instContext argumentIR*
-     `@ cursor instContext id*
+     '@' cursor instContext id*
   ~> store instContext
   hint(input %0 %1 %2 %3 %4 %5 %6)
   hint(prose_in "copy-in from" %2 "at" %1 "with" %3
@@ -277,13 +277,13 @@ relation Copy_in_inst:
 
 relation Copy_in_argument_inst_default:
   store cursor instContext
-     `@ cursor instContext parameterIR
+     '@' cursor instContext parameterIR
   ~> store instContext
   hint(input %0 %1 %2 %3 %4 %5)
 
 relation Copy_in_inst_default:
   store cursor instContext
-     `@ cursor instContext parameterIR*
+     '@' cursor instContext parameterIR*
   ~> store instContext
   hint(input %0 %1 %2 %3 %4 %5)
   hint(prose_in "copying defaults" %5 "from" %1 "at" %2
@@ -297,22 +297,22 @@ relation Copy_in_inst_default:
 
 relation Constructor_inst:
   cursor instContext |- prefixedNameIR
-                          `< typeArgumentListIR >
-                          `( argumentListIR )
-                      : constructorDef `< typeArgumentListIR > `( `# id* `# id* )
+                          `< typeArgumentListIR `>
+                          `( argumentListIR `)
+                      : constructorDef `< typeArgumentListIR `> `( '#' id* '#' id* `)
   hint(input %0 %1 %2 %3 %4)
-  hint(prose_in "finding constructor for" %2 `< %3 > `( %4 )
+  hint(prose_in "finding constructor for" %2 `< %3 `> `( %4 `)
                 "under context" %1 "at" %0)
-  hint(prose_out "constructor" %5 `< %6 >
+  hint(prose_out "constructor" %5 `< %6 `>
                  "with defaults" %7 "and optionals" %8)
 
 relation Constructor_call:
   cursor instContext store |- constructorDef
-                                `< typeArgumentListIR >
-                                `( argumentListIR `# id* `# id* )
+                                `< typeArgumentListIR `>
+                                `( argumentListIR '#' id* '#' id* `)
                              : store object
   hint(input %0 %1 %2 %3 %4 %5 %6 %7)
-  hint(prose_in "instantiating" %3 `< %4 > `( %5 )
+  hint(prose_in "instantiating" %3 `< %4 `> `( %5 `)
                 "with defaults" %6 "and optionals" %7#
                 ", under context" %1 "and store" %2 "at" %0)
   hint(prose_out "store" %8 "and instantiated" %9)

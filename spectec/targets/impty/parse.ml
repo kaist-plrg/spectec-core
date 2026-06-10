@@ -7,6 +7,7 @@
 open Common.Source
 open Lang.Il
 open Lang.Il.Value
+open Lang.Il.Case
 
 (* ----------------------------------------------------------------- *)
 (* Token cursor                                                       *)
@@ -67,7 +68,7 @@ let left_assoc ~op_token ~op_atom ~var ~next c =
     if Cursor.peek c = op_token then (
       Cursor.advance c;
       let rhs = next c in
-      loop ([ arg acc; atom op_atom; arg rhs ] |> case_v ~var))
+      loop ([ arg acc; op op_atom; arg rhs ] |> case_v ~var))
     else acc
   in
   loop lhs
@@ -76,13 +77,13 @@ let left_assoc ~op_token ~op_atom ~var ~next c =
 (* IL value constructors                                              *)
 (* ----------------------------------------------------------------- *)
 
-let v_id (s : string) : value = [ atom "`ID"; arg (text s) ] |> case_v ~var:"id"
+let v_id (s : string) : value = [ tag "ID"; arg (text s) ] |> case_v ~var:"id"
 
 let v_lit_num (n : int) : value =
-  [ atom "`NUM"; arg (nat (Bigint.of_int n)) ] |> case_v ~var:"literal"
+  [ tag "NUM"; arg (nat (Bigint.of_int n)) ] |> case_v ~var:"literal"
 
 let v_lit_bool (b : bool) : value =
-  [ atom "`BOOL"; arg (bool b) ] |> case_v ~var:"literal"
+  [ tag "BOOL"; arg (bool b) ] |> case_v ~var:"literal"
 
 (* ----------------------------------------------------------------- *)
 (* Types                                                              *)
@@ -95,17 +96,17 @@ let rec parse_type c : value =
   if Cursor.peek c = Lexer.Arrow then (
     Cursor.advance c;
     let rhs = parse_type c in
-    [ arg lhs; atom "`->"; arg rhs ] |> case_v ~var:"type")
+    [ arg lhs; op "->"; arg rhs ] |> case_v ~var:"type")
   else lhs
 
 and parse_type_atom c : value =
   match Cursor.peek c with
   | Lexer.KwInt ->
       Cursor.advance c;
-      [ atom "INT" ] |> case_v ~var:"type"
+      [ kw "INT" ] |> case_v ~var:"type"
   | Lexer.KwBool ->
       Cursor.advance c;
-      [ atom "BOOL" ] |> case_v ~var:"type"
+      [ kw "BOOL" ] |> case_v ~var:"type"
   | Lexer.Lparen ->
       surrounded ~left:Lexer.Lparen ~right:Lexer.Rparen parse_type c
   | tok ->
@@ -119,8 +120,8 @@ and parse_type_atom c : value =
 (* Precedence (loose to tight): ?: , && , <= , + , unary ! , postfix call,
    primary. Binary operators fold left; the ternary is looser than all of them,
    and its else-branch recurses so `a ? b : c ? d : e` reads as
-   `a ? b : (c ? d : e)`. The `?`/`:` atoms are Quest and Colon `Tick, matching
-   the spec's `expr `? expr `: expr`. *)
+   `a ? b : (c ? d : e)`. The `?`/`:` atoms are operators, matching the
+   spec's `expr '?' expr ':' expr`. *)
 
 let rec parse_expr c : value = parse_ternary c
 
@@ -131,8 +132,7 @@ and parse_ternary c : value =
     let e_then = parse_expr c in
     Cursor.expect c Lexer.Colon;
     let e_else = parse_ternary c in
-    [ arg cond; atom "?"; arg e_then; atom "`:"; arg e_else ]
-    |> case_v ~var:"expr")
+    [ arg cond; op "?"; arg e_then; op ":"; arg e_else ] |> case_v ~var:"expr")
   else cond
 
 and parse_and c =
@@ -148,7 +148,7 @@ and parse_unary c : value =
   if Cursor.peek c = Lexer.Bang then (
     Cursor.advance c;
     let e = parse_unary c in
-    [ atom "!"; arg e ] |> case_v ~var:"expr")
+    [ op "!"; arg e ] |> case_v ~var:"expr")
   else parse_postfix c
 
 (* A primary may be followed by zero or more `(expr)` applications. *)
@@ -159,7 +159,7 @@ and parse_postfix c : value =
       let arg_e =
         surrounded ~left:Lexer.Lparen ~right:Lexer.Rparen parse_expr c
       in
-      loop ([ arg acc; atom "("; arg arg_e; atom ")" ] |> case_v ~var:"expr")
+      loop ([ arg acc; lparen (); arg arg_e; rparen () ] |> case_v ~var:"expr")
     else acc
   in
   loop base
@@ -195,16 +195,16 @@ and parse_primary c : value =
         surrounded ~left:Lexer.Lbrace ~right:Lexer.Rbrace parse_expr c
       in
       [
-        atom "FUN";
-        atom "(";
+        kw "FUN";
+        lparen ();
         arg t_arg;
         arg (v_id id_str);
-        atom ")";
-        atom "`->";
+        rparen ();
+        op "->";
         arg t_ret;
-        atom "{";
+        lbrace ();
         arg body;
-        atom "}";
+        rbrace ();
       ]
       |> case_v ~var:"expr"
   | tok ->
@@ -218,14 +218,14 @@ and parse_primary c : value =
 
 (* Sequencing is left-associative via `;`. *)
 and parse_stmt c =
-  left_assoc ~op_token:Lexer.Semi ~op_atom:"`;" ~var:"command"
+  left_assoc ~op_token:Lexer.Semi ~op_atom:";" ~var:"command"
     ~next:parse_stmt_atom c
 
 and parse_stmt_atom c : value =
   match Cursor.peek c with
   | Lexer.KwSkip ->
       Cursor.advance c;
-      [ atom "SKIP" ] |> case_v ~var:"command"
+      [ kw "SKIP" ] |> case_v ~var:"command"
   | Lexer.KwIf ->
       Cursor.advance c;
       let cond = parse_expr c in
@@ -234,15 +234,7 @@ and parse_stmt_atom c : value =
       Cursor.expect c Lexer.KwElse;
       let s2 = parse_stmt c in
       Cursor.expect c Lexer.KwEnd;
-      [
-        atom "IF";
-        arg cond;
-        atom "THEN";
-        arg s1;
-        atom "ELSE";
-        arg s2;
-        atom "END";
-      ]
+      [ kw "IF"; arg cond; kw "THEN"; arg s1; kw "ELSE"; arg s2; kw "END" ]
       |> case_v ~var:"command"
   | Lexer.KwWhile ->
       Cursor.advance c;
@@ -250,7 +242,7 @@ and parse_stmt_atom c : value =
       Cursor.expect c Lexer.KwDo;
       let body = parse_stmt c in
       Cursor.expect c Lexer.KwEnd;
-      [ atom "WHILE"; arg cond; atom "DO"; arg body; atom "END" ]
+      [ kw "WHILE"; arg cond; kw "DO"; arg body; kw "END" ]
       |> case_v ~var:"command"
   | Lexer.KwRec ->
       Cursor.advance c;
@@ -268,17 +260,17 @@ and parse_stmt_atom c : value =
         surrounded ~left:Lexer.Lbrace ~right:Lexer.Rbrace parse_expr c
       in
       [
-        atom "REC";
+        kw "REC";
         arg (v_id fname);
-        atom "(";
+        lparen ();
         arg t_arg;
         arg (v_id x_str);
-        atom ")";
-        atom "`->";
+        rparen ();
+        op "->";
         arg t_ret;
-        atom "{";
+        lbrace ();
         arg body;
-        atom "}";
+        rbrace ();
       ]
       |> case_v ~var:"command"
   | Lexer.KwInt | Lexer.KwBool -> parse_var_decl c
@@ -289,7 +281,7 @@ and parse_stmt_atom c : value =
       let id_str = Cursor.expect_ident c in
       Cursor.expect c Lexer.Eq;
       let rhs = parse_expr c in
-      [ arg (v_id id_str); atom "="; arg rhs ] |> case_v ~var:"command"
+      [ arg (v_id id_str); op "="; arg rhs ] |> case_v ~var:"command"
   | tok ->
       Error.error (Cursor.region c)
         (Printf.sprintf "expected a command, got %s"
@@ -302,7 +294,7 @@ and parse_var_decl c : value =
   let id_str = Cursor.expect_ident c in
   Cursor.expect c Lexer.Eq;
   let rhs = parse_expr c in
-  [ arg t; arg (v_id id_str); atom "="; arg rhs ] |> case_v ~var:"command"
+  [ arg t; arg (v_id id_str); op "="; arg rhs ] |> case_v ~var:"command"
 
 (* ----------------------------------------------------------------- *)
 (* Entry points                                                       *)

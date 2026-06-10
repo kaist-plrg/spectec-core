@@ -6,8 +6,8 @@ syntax nameIR = text
 
 dec $name(name) : nameIR
 
-def $name(`ID t) = t
-def $name(`TID t) = t
+def $name(_ID t) = t
+def $name(_TID t) = t
 def $name(APPLY) = "apply"
 def $name(KEY) = "key"
 def $name(ACTIONS) = "actions"
@@ -19,8 +19,8 @@ def $name(LIST) = "list"
 
 dec $tableCustomName(tableCustomName) : nameIR
 
-def $tableCustomName(`ID t) = t
-def $tableCustomName(`TID t) = t
+def $tableCustomName(_ID t) = t
+def $tableCustomName(_TID t) = t
 def $tableCustomName(APPLY) = "apply"
 def $tableCustomName(STATE) = "state"
 def $tableCustomName(TYPE) = "type"
@@ -53,23 +53,23 @@ def $fresh_tids(n) = $fresh_tid() :: $fresh_tids($(n - 1))
 ;; a default value
 ;;
 
-syntax pid = id `# bool
-syntax rid = id `( pid* )
+syntax pid = id '#' bool
+syntax rid = id `( pid* `)
 
 dec $rid(name, parameterList) : rid
 dec $pids(parameterList) : pid*
 dec $pid(parameter) : pid
 
 def $rid(name, parameterList)
-  = $name(name) `( $pids(parameterList) )
+  = $name(name) `( $pids(parameterList) `)
 
-def $pids(`EMPTY) = eps
+def $pids(_EMPTY) = eps
 def $pids(parameter) = $pid(parameter)
-def $pids(nonEmptyParameterList `, parameter)
+def $pids(nonEmptyParameterList ',' parameter)
   = $pids(nonEmptyParameterList) ++ [ $pid(parameter) ]
 
-def $pid(_ _ _ name `EMPTY) = $name(name) `# false
-def $pid(_ _ _ name initializer) = $name(name) `# true
+def $pid(_ _ _ name _EMPTY) = $name(name) '#' false
+def $pid(_ _ _ name initializer) = $name(name) '#' true
 
 ;;
 ;; Constructor names
@@ -79,18 +79,18 @@ syntax cid = rid
 
 dec $cid(name, constructorParameterListOpt) : cid
 
-def $cid(name, `EMPTY) = $name(name) `( eps )
-def $cid(name, `( parameterList ))
-  = $name(name) `( $pids(parameterList) )
+def $cid(name, _EMPTY) = $name(name) `( eps `)
+def $cid(name, `( parameterList `))
+  = $name(name) `( $pids(parameterList) `)
 
 
 
 dec $expression_as_lvalue(expression) : lvalue?
 
 def $expression_as_lvalue(referenceExpression) = referenceExpression
-def $expression_as_lvalue(expression `. member) = lvalue `. member
+def $expression_as_lvalue(expression '.' member) = lvalue '.' member
   -- if lvalue = $expression_as_lvalue(expression)
-def $expression_as_lvalue(`( expression )) = `( lvalue )
+def $expression_as_lvalue(`( expression `)) = `( lvalue `)
   -- if lvalue = $expression_as_lvalue(expression)
 ;;
 ;; Object names

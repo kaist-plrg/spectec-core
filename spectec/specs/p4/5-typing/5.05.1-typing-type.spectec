@@ -9,43 +9,43 @@
 ;;;;; VOID
 
 rule Type_ok/void:
-  p TC |- VOID : VOID `# eps
+  p TC |- VOID : VOID '#' eps
 
 ;;;;; BOOL
 
 rule Type_ok/boolean:
-  p TC |- BOOL : BOOL `# eps
+  p TC |- BOOL : BOOL '#' eps
 
 ;;;;; ERROR
 
 rule Type_ok/error:
-  p TC |- ERROR : ERROR `# eps
+  p TC |- ERROR : ERROR '#' eps
 
 ;;;;; MATCH_KIND
 
 rule Type_ok/matchKind:
-  p TC |- MATCH_KIND : MATCH_KIND `# eps
+  p TC |- MATCH_KIND : MATCH_KIND '#' eps
 
 ;;;;; STRING
 
 rule Type_ok/string:
-  p TC |- STRING : STRING `# eps
+  p TC |- STRING : STRING '#' eps
 
 ;;;;; INT
 
 rule Type_ok/arbitraryInt:
-  p TC |- INT : INT `# eps
+  p TC |- INT : INT '#' eps
 
 ;;;;; INT `< int >
 ;;;;; INT `< `( expression ) >
 
 
 rule Type_ok/integer:
-  p TC |- INT `< n > : (INT `< n >) `# eps
+  p TC |- INT `< n `> : (INT `< n `>) '#' eps
   -- if $(n > 0)
 
 rule Type_ok/expression:
-  p TC |- INT `< `( expression ) > : (INT `< n >) `# eps
+  p TC |- INT `< `( expression `) `> : (INT `< n `>) '#' eps
   -- Expr_ok: p TC |- expression : typedExpressionIR
   -- if LCTK = $ctk_of_typedExpressionIR(typedExpressionIR)
   -- Expr_eval_lctk: p TC |- typedExpressionIR ~> integerValue
@@ -59,13 +59,13 @@ rule Type_ok/expression:
 
 
 rule Type_ok/none:
-  p TC |- BIT : (BIT `< 1 >) `# eps
+  p TC |- BIT : (BIT `< 1 `>) '#' eps
 
 rule Type_ok/integer:
-  p TC |- BIT `< n > : (BIT `< n >) `# eps
+  p TC |- BIT `< n `> : (BIT `< n `>) '#' eps
 
 rule Type_ok/expression:
-  p TC |- BIT `< `( expression ) > : (BIT `< n >) `# eps
+  p TC |- BIT `< `( expression `) `> : (BIT `< n `>) '#' eps
   -- Expr_ok: p TC |- expression : typedExpressionIR
   -- if LCTK = $ctk_of_typedExpressionIR(typedExpressionIR)
   -- Expr_eval_lctk: p TC |- typedExpressionIR ~> integerValue
@@ -77,10 +77,10 @@ rule Type_ok/expression:
 
 
 rule Type_ok/integer:
-  p TC |- VARBIT `< n > : (VARBIT `< n >) `# eps
+  p TC |- VARBIT `< n `> : (VARBIT `< n `>) '#' eps
 
 rule Type_ok/expression:
-  p TC |- VARBIT `< `( expression ) > : (VARBIT `< n >) `# eps
+  p TC |- VARBIT `< `( expression `) `> : (VARBIT `< n `>) '#' eps
   -- Expr_ok: p TC |- expression : typedExpressionIR
   -- if LCTK = $ctk_of_typedExpressionIR(typedExpressionIR)
   -- Expr_eval_lctk: p TC |- typedExpressionIR ~> integerValue
@@ -92,22 +92,22 @@ rule Type_ok/expression:
 
 ;;;;; prefixedTypeName
 ;;; identifier
-;;; syntax identifier = `ID text
+;;; syntax identifier = _ID text
 
 
 rule Type_ok/identifier:
-  p TC |- `ID typeId : typeIR `# typeId_fresh*
-  -- Type_ok: p TC |- `TID typeId : typeIR `# typeId_fresh*
+  p TC |- _ID typeId : typeIR '#' typeId_fresh*
+  -- Type_ok: p TC |- _TID typeId : typeIR '#' typeId_fresh*
 
 rule Type_ok/monomorphic:
-  p TC |- prefixedTypeName : typeIR `# eps
+  p TC |- prefixedTypeName : typeIR '#' eps
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
   -- if typeDefIR = $find_typeDef_t(p, TC, prefixedNameIR)
   -- if $is_monomorphic_typeDefIR(typeDefIR)
   -- if typeIR = $typeIR_of_typeDefIR(typeDefIR)
 
 rule Type_ok/polymorphic:
-  p TC |- prefixedTypeName : typeIR `# eps
+  p TC |- prefixedTypeName : typeIR '#' eps
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
   -- if typeDefIR = $find_typeDef_t(p, TC, prefixedNameIR)
   -- if ~$is_monomorphic_typeDefIR(typeDefIR)
@@ -118,23 +118,23 @@ rule Type_ok/polymorphic:
 ;;;;; syntax specializedType = prefixedTypeName `< typeArgumentList >
 
 rule Type_ok/specializedType:
-  p TC |- prefixedTypeName `< typeArgumentList >
-        : typeIR `# typeId_fresh*
+  p TC |- prefixedTypeName `< typeArgumentList `>
+        : typeIR '#' typeId_fresh*
   -- if prefixedNameIR = $prefixedTypeName(prefixedTypeName)
   -- if typeDefIR = $find_typeDef_t(p, TC, prefixedNameIR)
   -- if $is_polymorphic_typeDefIR(typeDefIR)
   -- TypeArgumentList_ok:
-      p TC |- typeArgumentList : typeIR_arg* `# typeId_fresh*
+      p TC |- typeArgumentList : typeIR_arg* '#' typeId_fresh*
   -- if typeIR = $specialize_typeDefIR(typeDefIR, typeIR_arg*)
 
 ;;;; headerStackType
 ;;;; syntax headerStackType = namedType `[ expression ]
 
 rule Type_ok/headerStackType:
-  p TC |- namedType `[ expression_size ]
-        : (typeIR_base `[ n_size ]) `# typeId_fresh*
+  p TC |- namedType `[ expression_size `]
+        : (typeIR_base `[ n_size `]) '#' typeId_fresh*
   ---- ;; check base type
-  -- Type_ok: p TC |- namedType : typeIR_base `# typeId_fresh*
+  -- Type_ok: p TC |- namedType : typeIR_base '#' typeId_fresh*
   ---- ;; check size
   -- Expr_ok: p TC |- expression_size : typedExpressionIR_size
   -- if LCTK = $ctk_of_typedExpressionIR(typedExpressionIR_size)
@@ -147,17 +147,17 @@ rule Type_ok/headerStackType:
 ;;;; syntax listType = LIST `< typeArgument >
 
 rule Type_ok/listType:
-  p TC |- LIST `< typeArgument >
-       : (LIST `< typeIR_arg >) `# typeId_fresh*
+  p TC |- LIST `< typeArgument `>
+       : (LIST `< typeIR_arg `>) '#' typeId_fresh*
   ---- ;; check type argument
-  -- TypeArgument_ok: p TC |- typeArgument : typeIR_arg `# typeId_fresh*
+  -- TypeArgument_ok: p TC |- typeArgument : typeIR_arg '#' typeId_fresh*
 
 ;;;; tupleType
 ;;;; syntax tupleType = TUPLE `< typeArgumentList >
 
 rule Type_ok/tupleType:
-  p TC |- TUPLE `< typeArgumentList >
-       : (TUPLE `< typeIR_arg* >) `# typeId_fresh*
+  p TC |- TUPLE `< typeArgumentList `>
+       : (TUPLE `< typeIR_arg* `>) '#' typeId_fresh*
   ---- ;; check type arguments
   -- TypeArgumentList_ok:
-      p TC |- typeArgumentList : typeIR_arg* `# typeId_fresh*
+      p TC |- typeArgumentList : typeIR_arg* '#' typeId_fresh*

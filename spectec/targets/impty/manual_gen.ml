@@ -1,50 +1,53 @@
 open Lang.Il
 open Common.Source
 open Value
+open Case
 open Quickcheck
 
 (* ===== Shared value construction helpers ===== *)
 
-let id_val name = case_v ~var:"id" [ atom "`ID"; arg (text name) ]
+let id_val name = case_v ~var:"id" [ tag "ID"; arg (text name) ]
 
 (* expr values: literal and id cases are FLAT in the IL (elab_typcase_plain
    expands | literal and | id into expr's VariantT directly, no wrapper) *)
-let expr_num n = case_v ~var:"expr" [ atom "`NUM"; arg (int (Bigint.of_int n)) ]
-let expr_bool b = case_v ~var:"expr" [ atom "`BOOL"; arg (bool b) ]
-let expr_var s = case_v ~var:"expr" [ atom "`ID"; arg (text s) ]
-let expr_add e1 e2 = case_v ~var:"expr" [ arg e1; atom "+"; arg e2 ]
-let expr_leq e1 e2 = case_v ~var:"expr" [ arg e1; atom "<="; arg e2 ]
-let expr_not e = case_v ~var:"expr" [ atom "!"; arg e ]
-let expr_and e1 e2 = case_v ~var:"expr" [ arg e1; atom "&&"; arg e2 ]
+let expr_num n = case_v ~var:"expr" [ tag "NUM"; arg (int (Bigint.of_int n)) ]
+let expr_bool b = case_v ~var:"expr" [ tag "BOOL"; arg (bool b) ]
+let expr_var s = case_v ~var:"expr" [ tag "ID"; arg (text s) ]
+let expr_add e1 e2 = case_v ~var:"expr" [ arg e1; op "+"; arg e2 ]
+let expr_leq e1 e2 = case_v ~var:"expr" [ arg e1; op "<="; arg e2 ]
+let expr_not e = case_v ~var:"expr" [ op "!"; arg e ]
+let expr_and e1 e2 = case_v ~var:"expr" [ arg e1; op "&&"; arg e2 ]
 
 (* closure-only expr constructors *)
 let expr_fun ta xa tr e =
   case_v ~var:"expr"
     [
-      atom "FUN";
-      atom "(";
+      kw "FUN";
+      lparen ();
       arg ta;
       arg xa;
-      atom ")";
-      atom "`->";
+      rparen ();
+      op "->";
       arg tr;
-      atom "{";
+      lbrace ();
       arg e;
-      atom "}";
+      rbrace ();
     ]
 
-let expr_call ef ea = case_v ~var:"expr" [ arg ef; atom "("; arg ea; atom ")" ]
-let cmd_skip = case_v ~var:"command" [ atom "SKIP" ]
-let cmd_decl ty id e = case_v ~var:"command" [ arg ty; arg id; atom "="; arg e ]
-let cmd_assign id e = case_v ~var:"command" [ arg id; atom "="; arg e ]
-let cmd_seq c1 c2 = case_v ~var:"command" [ arg c1; atom ";"; arg c2 ]
+let expr_call ef ea =
+  case_v ~var:"expr" [ arg ef; lparen (); arg ea; rparen () ]
+
+let cmd_skip = case_v ~var:"command" [ kw "SKIP" ]
+let cmd_decl ty id e = case_v ~var:"command" [ arg ty; arg id; op "="; arg e ]
+let cmd_assign id e = case_v ~var:"command" [ arg id; op "="; arg e ]
+let cmd_seq c1 c2 = case_v ~var:"command" [ arg c1; op ";"; arg c2 ]
 
 let cmd_ite e c1 c2 =
   case_v ~var:"command"
-    [ atom "IF"; arg e; atom "THEN"; arg c1; atom "ELSE"; arg c2; atom "END" ]
+    [ kw "IF"; arg e; kw "THEN"; arg c1; kw "ELSE"; arg c2; kw "END" ]
 
 let cmd_while e c =
-  case_v ~var:"command" [ atom "WHILE"; arg e; atom "DO"; arg c; atom "END" ]
+  case_v ~var:"command" [ kw "WHILE"; arg e; kw "DO"; arg c; kw "END" ]
 
 let fresh_name (ctx : ('a * 'b) list) = Printf.sprintf "x%d" (List.length ctx)
 let expr_typ = VarT { synid = "expr" $ no_region; targs = [] } $ no_region
@@ -53,9 +56,9 @@ let cmd_typ = VarT { synid = "command" $ no_region; targs = [] } $ no_region
 (* value (= literal) constructors, and env/tenv map values. A map<K,V> is a bare
    list of pairs; a pair K -> V is a CaseV around the plain "->" atom, matching
    how the interpreter builds (x -> v)::env in Eval_command/decl. *)
-let lit_num n = case_v ~var:"value" [ atom "`NUM"; arg (int (Bigint.of_int n)) ]
-let lit_bool b = case_v ~var:"value" [ atom "`BOOL"; arg (bool b) ]
-let pair_val k v = case_v ~var:"pair" [ arg k; atom "->"; arg v ]
+let lit_num n = case_v ~var:"value" [ tag "NUM"; arg (int (Bigint.of_int n)) ]
+let lit_bool b = case_v ~var:"value" [ tag "BOOL"; arg (bool b) ]
+let pair_val k v = case_v ~var:"pair" [ arg k; atom Xl.Atom.Arrow; arg v ]
 let pair_typ = VarT { synid = "pair" $ no_region; targs = [] } $ no_region
 let map_val pairs = Value.list pair_typ pairs
 
@@ -66,8 +69,8 @@ module Base = struct
   type ctx = (string * ty) list
 
   let type_val = function
-    | TInt -> case_v ~var:"type" [ atom "INT" ]
-    | TBool -> case_v ~var:"type" [ atom "BOOL" ]
+    | TInt -> case_v ~var:"type" [ kw "INT" ]
+    | TBool -> case_v ~var:"type" [ kw "BOOL" ]
 
   let vars_of ctx ty =
     List.filter_map (fun (name, t) -> if t = ty then Some name else None) ctx
@@ -277,10 +280,10 @@ type closure_ty = CInt | CBool | CFun of closure_ty * closure_ty
 type cctx = (string * closure_ty) list
 
 let rec ctype_val = function
-  | CInt -> case_v ~var:"type" [ atom "INT" ]
-  | CBool -> case_v ~var:"type" [ atom "BOOL" ]
+  | CInt -> case_v ~var:"type" [ kw "INT" ]
+  | CBool -> case_v ~var:"type" [ kw "BOOL" ]
   | CFun (t1, t2) ->
-      case_v ~var:"type" [ arg (ctype_val t1); atom "`->"; arg (ctype_val t2) ]
+      case_v ~var:"type" [ arg (ctype_val t1); op "->"; arg (ctype_val t2) ]
 
 let cvars_of (ctx : cctx) ty =
   List.filter_map (fun (name, t) -> if t = ty then Some name else None) ctx

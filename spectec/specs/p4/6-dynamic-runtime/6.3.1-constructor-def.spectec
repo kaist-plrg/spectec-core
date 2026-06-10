@@ -3,27 +3,27 @@
 ;;
 
 syntax externObjectConstructorDef =
-  EXTERN nameIR `< typeParameterListIR >
-    `( constructorParameterListIR )
-    `{ externMethodPrototypeListIR }
+  EXTERN nameIR `< typeParameterListIR `>
+    `( constructorParameterListIR `)
+    `{ externMethodPrototypeListIR `}
 
 syntax parserObjectConstructorDef =
-  PARSER `< typeParameterListIR >
-    `( parameterListIR )
-    `( constructorParameterListIR )
+  PARSER `< typeParameterListIR `>
+    `( parameterListIR `)
+    `( constructorParameterListIR `)
     `{ parserLocalDeclarationListIR
-       parserStateListIR }
+       parserStateListIR `}
 
 syntax controlObjectConstructorDef =
-  CONTROL `< typeParameterListIR >
-    `( parameterListIR )
-    `( constructorParameterListIR )
+  CONTROL `< typeParameterListIR `>
+    `( parameterListIR `)
+    `( constructorParameterListIR `)
     `{ controlLocalDeclarationListIR
-       APPLY controlBodyIR }
+       APPLY controlBodyIR `}
 
 syntax packageObjectConstructorDef =
-  PACKAGE `< typeParameterListIR >
-    `( constructorParameterListIR )
+  PACKAGE `< typeParameterListIR `>
+    `( constructorParameterListIR `)
 
 syntax constructorDef =
   | externObjectConstructorDef

@@ -7,30 +7,30 @@
 
 ;;; syntax initializerOpt
 
-;;;; `EMPTY
+;;;; _EMPTY
 
 rule Parameter_ok/empty:
-  p TC |- annotationList direction type name `EMPTY
+  p TC |- annotationList direction type name _EMPTY
         : (annotationList direction typeIR nameIR eps)
-            `# tid_fresh*
-  -- Type_ok: p TC |- type : typeIR `# tid_fresh*
-  -- if bound = $union_set<tid>($bound(p, TC), `{ tid_fresh* })
+            '#' tid_fresh*
+  -- Type_ok: p TC |- type : typeIR '#' tid_fresh*
+  -- if bound = $union_set<tid>($bound(p, TC), `{ tid_fresh* `})
   -- Type_wf: bound |- typeIR
   -- if nameIR = $name(name)
 
 ;;;; initializer
 
 rule Parameter_ok/empty:
-  p TC |- annotationList direction type name (`= expression_init)
-        : (annotationList direction typeIR nameIR (`= value_init))
-            `# tid_fresh*
+  p TC |- annotationList direction type name ('=' expression_init)
+        : (annotationList direction typeIR nameIR ('=' value_init))
+            '#' tid_fresh*
   ---- ;; check parameter type
-  -- Type_ok: p TC |- type : typeIR `# tid_fresh*
-  -- if bound = $union_set<tid>($bound(p, TC), `{ tid_fresh* })
+  -- Type_ok: p TC |- type : typeIR '#' tid_fresh*
+  -- if bound = $union_set<tid>($bound(p, TC), `{ tid_fresh* `})
   -- Type_wf: bound |- typeIR
   ---- ;; check initializer
   -- Expr_ok: p TC |- expression_init : typedExpressionIR_init
-  -- if _ `# `( typeIR_init LCTK ) = typedExpressionIR_init
+  -- if _ '#' `( typeIR_init LCTK `) = typedExpressionIR_init
   ---- ;; check that the initializer type is
   ---- ;; compatible with the parameter type
   ---- ;; while inserting implicit casts if necessary
@@ -47,13 +47,13 @@ rule Parameter_ok/empty:
 ;;
 
 rule Parameters_ok/nil:
-  p TC |- eps : eps `# eps
+  p TC |- eps : eps '#' eps
 
 rule Parameters_ok/cons:
   p TC |- parameter_h :: parameter_t*
-        : (parameterIR_h :: parameterIR_t*) `# (tid_fresh_h* ++ tid_fresh_t*)
-  -- Parameter_ok: p TC |- parameter_h : parameterIR_h `# tid_fresh_h*
-  -- Parameters_ok: p TC |- parameter_t* : parameterIR_t* `# tid_fresh_t*
+        : (parameterIR_h :: parameterIR_t*) '#' (tid_fresh_h* ++ tid_fresh_t*)
+  -- Parameter_ok: p TC |- parameter_h : parameterIR_h '#' tid_fresh_h*
+  -- Parameters_ok: p TC |- parameter_t* : parameterIR_t* '#' tid_fresh_t*
 
 ;;
 ;; Constructor typing
@@ -62,9 +62,9 @@ rule Parameters_ok/cons:
 ;;
 
 rule ConstructorParameter_ok:
-  p TC |- constructorParameter : constructorParameterIR `# tid_fresh*
+  p TC |- constructorParameter : constructorParameterIR '#' tid_fresh*
   -- Parameter_ok: p TC |- constructorParameter
-                         : constructorParameterIR `# tid_fresh*
+                         : constructorParameterIR '#' tid_fresh*
 
 ;;
 ;; Constructor list typing
@@ -73,6 +73,6 @@ rule ConstructorParameter_ok:
 ;;
 
 rule ConstructorParameters_ok:
-  p TC |- constructorParameter* : constructorParameterIR* `# tid_fresh*
+  p TC |- constructorParameter* : constructorParameterIR* '#' tid_fresh*
   -- Parameters_ok: p TC |- constructorParameter*
-                          : constructorParameterIR* `# tid_fresh*
+                          : constructorParameterIR* '#' tid_fresh*

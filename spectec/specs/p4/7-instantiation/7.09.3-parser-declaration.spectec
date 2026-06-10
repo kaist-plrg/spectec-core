@@ -29,11 +29,11 @@ rule ParserLocalDecl_inst/variableDeclarationIR:
 
 ;;; valueSetDeclarationIR
 ;;; syntax valueSetDeclarationIR =
-;;;   annotationList VALUE_SET `< typeIR > `( typedExpressionIR ) nameIR `;
+;;;   annotationList VALUE_SET `< typeIR > `( typedExpressionIR ) nameIR ';'
 
 rule ParserLocalDecl_inst/valueSetDeclarationIR:
-  IC STO_0 |- annotationList VALUE_SET `< typeIR >
-                  `( typedExpressionIR_size ) nameIR `;
+  IC STO_0 |- annotationList VALUE_SET `< typeIR `>
+                  `( typedExpressionIR_size `) nameIR ';'
             : IC STO_2 constantDeclarationIR
   ---- ;; evaluate the size of the value set
   -- Expr_inst:
@@ -43,14 +43,14 @@ rule ParserLocalDecl_inst/valueSetDeclarationIR:
   ---- ;; create the value set object
   -- if typeIR_subst = $subst_type_i(BLOCK, IC, typeIR)
   -- if valueSetObject
-      = VALUE_SET `{ eps `( n_size ) }
+      = VALUE_SET `{ eps `( n_size `) `}
   ---- ;; add the value set object to the store
   -- if objectId = IC.PATH ++ nameIR
   -- if STO_2 = $add_store(STO_1, objectId, valueSetObject)
   ---- ;; create the constant declaration
-  -- if typeIR_set = SET `< typeIR >
+  -- if typeIR_set = SET `< typeIR `>
   -- if constantDeclarationIR
-      = `EMPTY CONST typeIR_set nameIR (`= `VALUE (REF objectId)) `;
+      = _EMPTY CONST typeIR_set nameIR ('=' _VALUE (REF objectId)) ';'
 
 ;;
 ;; Parser local declaration list instantiation

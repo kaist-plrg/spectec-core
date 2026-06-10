@@ -2,11 +2,11 @@
 ;; Call target overload resolution
 ;;
 
-syntax callTargetKey = nameIR `( id?* )
-syntax namedCallTargetKey = nameIR `( id* )
-syntax unnamedCallTargetKey = nameIR `( nat )
+syntax callTargetKey = nameIR `( id?* `)
+syntax namedCallTargetKey = nameIR `( id* `)
+syntax unnamedCallTargetKey = nameIR `( nat `)
 
-syntax callTargetParameter = nameIR `# bool `# bool
+syntax callTargetParameter = nameIR '#' bool '#' bool
 syntax callTargetValue = callTargetParameter*
 
 syntax callTargetMatch =
@@ -14,21 +14,21 @@ syntax callTargetMatch =
   | NOMATCH
 
 syntax callResolution<V> =
-  callableId `: V `# nameIR* `# nameIR*
+  callableId ':' V '#' nameIR* '#' nameIR*
   hint(prose_fields "call target id" "call target" "defaults" "optionals")
 
 dec $callTargetKey(nameIR, argumentListIR) : callTargetKey
-  hint(prose_in "the call target key for" %0 `( %1 ))
+  hint(prose_in "the call target key for" %0 `( %1 `))
 dec $callTargetKey'(argumentIR) : id?
 
 def $callTargetKey(nameIR_f, argumentIR*)
-  = nameIR_f `( id_arg?* )
+  = nameIR_f `( id_arg?* `)
   -- if (id_arg? = $callTargetKey'(argumentIR))*
 
 def $callTargetKey'(typedExpressionIR) = eps
-def $callTargetKey'(id_arg `= _) = id_arg
-def $callTargetKey'(id_arg `= `_) = id_arg
-def $callTargetKey'(`_) = eps
+def $callTargetKey'(id_arg '=' _) = id_arg
+def $callTargetKey'(id_arg '=' '_') = id_arg
+def $callTargetKey'('_') = eps
 
 ;;
 ;;;; Match a single named call target against a named call target key
@@ -45,14 +45,14 @@ dec $match_overloaded_named<V>(
 ;;; i.e., no default parameters used
 
 def $match_overloaded_named<V>(
-    (callTargetId `: V),
-    nameIR_f `( id_arg* ),
+    (callTargetId ':' V),
+    nameIR_f `( id_arg* `),
     def $get_parameterListIR)
   = $ite<callTargetMatch>(
-      $eq_set<id>(`{ id_param* }, `{ id_arg* }),
+      $eq_set<id>(`{ id_param* `}, `{ id_arg* `}),
       MATCH eps eps, NOMATCH)
   ----
-  -- if nameIR_f `( id_param* ) = callTargetId
+  -- if nameIR_f `( id_param* `) = callTargetId
   ----
   -- if parameterIR* = $get_parameterListIR(V)
   -- if (id_param = $id_of_parameterIR(parameterIR))*
@@ -63,12 +63,12 @@ def $match_overloaded_named<V>(
 ;;; i.e., some default parameters used or some optional parameters omitted
 
 def $match_overloaded_named<V>(
-    (callTargetId `: V),
-    nameIR_f `( id_arg* ),
+    (callTargetId ':' V),
+    nameIR_f `( id_arg* `),
     def $get_parameterListIR)
   = MATCH id_default* id_optional*
   ----
-  -- if nameIR_f `( id_param* ) = callTargetId
+  -- if nameIR_f `( id_param* `) = callTargetId
   ----
   -- if parameterIR* = $get_parameterListIR(V)
   -- if (id_param = $id_of_parameterIR(parameterIR))*
@@ -76,8 +76,8 @@ def $match_overloaded_named<V>(
   -- if (b_optional = $is_optional_parameterIR(parameterIR))*
   ----
   -- if $(|id_param*| > |id_arg*|)
-  -- if `{ id_param_omitted* }
-      = $diff_set<id>(`{ id_param* }, `{ id_arg* })
+  -- if `{ id_param_omitted* `}
+      = $diff_set<id>(`{ id_param* `}, `{ id_arg* `})
   -- if id_default_param*
       = $filter_<id>(id_param*, $is_default_parameterIR(parameterIR)*)
   -- if id_default*
@@ -87,14 +87,14 @@ def $match_overloaded_named<V>(
   -- if id_optional*
       = $filter_<id>(id_param_omitted*, (id_param_omitted <- id_optional_param*)*)
   -- if $eq_set<id>(
-        `{ id_default* ++ id_optional* },
-        `{ id_param_omitted* })
+        `{ id_default* ++ id_optional* `},
+        `{ id_param_omitted* `})
 
 ;;; Otherwise
 
 def $match_overloaded_named<V>(
-    (callTargetId `: V),
-    nameIR_f `( id_arg* ),
+    (callTargetId ':' V),
+    nameIR_f `( id_arg* `),
     def $get_parameterListIR)
   = NOMATCH
   -- otherwise
@@ -116,12 +116,12 @@ dec $match_overloaded_unnamed<V>(
 ;;; default values then it can only be called using named arguments
 
 def $match_overloaded_unnamed<V>(
-    (callTargetId `: V),
-    nameIR_f `( n_arg ),
+    (callTargetId ':' V),
+    nameIR_f `( n_arg `),
     def $get_parameterListIR)
   = MATCH eps eps
   ----
-  -- if nameIR_f `( id_param* ) = callTargetId
+  -- if nameIR_f `( id_param* `) = callTargetId
   ----
   -- if parameterIR* = $get_parameterListIR(V)
   -- if (b_default = $is_default_parameterIR(parameterIR))*
@@ -134,12 +134,12 @@ def $match_overloaded_unnamed<V>(
 ;;; and some default parameters used
 
 def $match_overloaded_unnamed<V>(
-    (callTargetId `: V),
-    nameIR_f `( n_arg ),
+    (callTargetId ':' V),
+    nameIR_f `( n_arg `),
     def $get_parameterListIR)
   = MATCH id_default* eps
   ----
-  -- if nameIR_f `( id_param* ) = callTargetId
+  -- if nameIR_f `( id_param* `) = callTargetId
   ----
   -- if parameterIR* = $get_parameterListIR(V)
   -- if (b_default = $is_default_parameterIR(parameterIR))*
@@ -158,12 +158,12 @@ def $match_overloaded_unnamed<V>(
 ;;; and some optional parameters omitted
 
 def $match_overloaded_unnamed<V>(
-    (callTargetId `: V),
-    nameIR_f `( n_arg ),
+    (callTargetId ':' V),
+    nameIR_f `( n_arg `),
     def $get_parameterListIR)
   = MATCH eps id_optional*
   ----
-  -- if nameIR_f `( id_param* ) = callTargetId
+  -- if nameIR_f `( id_param* `) = callTargetId
   ----
   -- if parameterIR* = $get_parameterListIR(V)
   -- if (b_default = $is_default_parameterIR(parameterIR))*
@@ -181,8 +181,8 @@ def $match_overloaded_unnamed<V>(
 ;;; Otherwise
 
 def $match_overloaded_unnamed<V>(
-    (callTargetId `: V),
-    nameIR_f `( n_arg ),
+    (callTargetId ':' V),
+    nameIR_f `( n_arg `),
     def $get_parameterListIR)
   = NOMATCH
   -- otherwise
@@ -199,38 +199,38 @@ dec $find_overloadeds_named<V>(
   hint(prose_in "finding all items in" %0 "matching named key" %1 "using parameter getter" %2)
 
 def $find_overloadeds_named<V>(
-    `{ eps },
-    nameIR_f `( id_arg* ),
+    `{ eps `},
+    nameIR_f `( id_arg* `),
     def $get_parameterListIR)
   = eps
 
 def $find_overloadeds_named<V>(
-    `{ (callTargetId_h `: V_h) :: (callTargetId_t `: V_t)* },
-    nameIR_f `( id_arg* ),
+    `{ (callTargetId_h ':' V_h) :: (callTargetId_t ':' V_t)* `},
+    nameIR_f `( id_arg* `),
     def $get_parameterListIR)
   = $find_overloadeds_named<V>(
-      `{ (callTargetId_t `: V_t)* },
-      nameIR_f `( id_arg* ),
+      `{ (callTargetId_t ':' V_t)* `},
+      nameIR_f `( id_arg* `),
       def $get_parameterListIR)
   -- if NOMATCH
       = $match_overloaded_named<V>(
-          (callTargetId_h `: V_h),
-          nameIR_f `( id_arg* ),
+          (callTargetId_h ':' V_h),
+          nameIR_f `( id_arg* `),
           def $get_parameterListIR)
 
 def $find_overloadeds_named<V>(
-    `{ (callTargetId_h `: V_h) :: (callTargetId_t `: V_t)* },
-    nameIR_f `( id_arg* ),
+    `{ (callTargetId_h ':' V_h) :: (callTargetId_t ':' V_t)* `},
+    nameIR_f `( id_arg* `),
     def $get_parameterListIR)
-  =  (callTargetId_h `: V_h `# id_default* `# id_optional*) ::
+  =  (callTargetId_h ':' V_h '#' id_default* '#' id_optional*) ::
       $find_overloadeds_named<V>(
-        `{ (callTargetId_t `: V_t)* },
-        nameIR_f `( id_arg* ),
+        `{ (callTargetId_t ':' V_t)* `},
+        nameIR_f `( id_arg* `),
         def $get_parameterListIR)
   -- if MATCH id_default* id_optional*
       = $match_overloaded_named<V>(
-          (callTargetId_h `: V_h),
-          nameIR_f `( id_arg* ),
+          (callTargetId_h ':' V_h),
+          nameIR_f `( id_arg* `),
           def $get_parameterListIR)
 
 ;;
@@ -245,38 +245,38 @@ dec $find_overloadeds_unnamed<V>(
   hint(prose_in "finding all items in" %0 "matching unnamed key" %1 "using parameter getter" %2)
 
 def $find_overloadeds_unnamed<V>(
-    `{ eps },
-    nameIR_f `( nat ),
+    `{ eps `},
+    nameIR_f `( nat `),
     def $get_parameterListIR)
   = eps
 
 def $find_overloadeds_unnamed<V>(
-    `{ (callTargetId_h `: V_h) :: (callTargetId_t `: V_t)* },
-    nameIR_f `( n_arg ),
+    `{ (callTargetId_h ':' V_h) :: (callTargetId_t ':' V_t)* `},
+    nameIR_f `( n_arg `),
     def $get_parameterListIR)
   = $find_overloadeds_unnamed<V>(
-      `{ (callTargetId_t `: V_t)* },
-      nameIR_f `( n_arg ),
+      `{ (callTargetId_t ':' V_t)* `},
+      nameIR_f `( n_arg `),
       def $get_parameterListIR)
   -- if NOMATCH
       = $match_overloaded_unnamed<V>(
-          (callTargetId_h `: V_h),
-          nameIR_f `( n_arg ),
+          (callTargetId_h ':' V_h),
+          nameIR_f `( n_arg `),
           def $get_parameterListIR)
 
 def $find_overloadeds_unnamed<V>(
-    `{ (callTargetId_h `: V_h) :: (callTargetId_t `: V_t)* },
-    nameIR_f `( n_arg ),
+    `{ (callTargetId_h ':' V_h) :: (callTargetId_t ':' V_t)* `},
+    nameIR_f `( n_arg `),
     def $get_parameterListIR)
-  = (callTargetId_h `: V_h `# id_default* `# id_optional*) ::
+  = (callTargetId_h ':' V_h '#' id_default* '#' id_optional*) ::
       $find_overloadeds_unnamed<V>(
-        `{ (callTargetId_t `: V_t)* },
-        nameIR_f `( n_arg ),
+        `{ (callTargetId_t ':' V_t)* `},
+        nameIR_f `( n_arg `),
         def $get_parameterListIR)
   -- if MATCH id_default* id_optional*
       = $match_overloaded_unnamed<V>(
-          (callTargetId_h `: V_h),
-          nameIR_f `( n_arg ),
+          (callTargetId_h ':' V_h),
+          nameIR_f `( n_arg `),
           def $get_parameterListIR)
 
 ;;
@@ -293,55 +293,55 @@ dec $find_overloaded<V>(
 ;;; When all arguments are named
 
 def $find_overloaded<V>(
-    `{ (callableId `: V)* },
-    nameIR_f `( id_arg?* ),
+    `{ (callableId ':' V)* `},
+    nameIR_f `( id_arg?* `),
     def $get_parameterListIR)
   = eps
   -- if $(|(id_arg?)*| > 0)
   -- if (id_arg_inner = id_arg?)*
   -- if eps
       = $find_overloadeds_named<V>(
-          `{ (callableId `: V)* },
-          nameIR_f `( id_arg_inner* ),
+          `{ (callableId ':' V)* `},
+          nameIR_f `( id_arg_inner* `),
           def $get_parameterListIR)
 
 def $find_overloaded<V>(
-    `{ (callableId `: V)* },
-    nameIR_f `( id_arg?* ),
+    `{ (callableId ':' V)* `},
+    nameIR_f `( id_arg?* `),
     def $get_parameterListIR)
-  = callableId_found `: V_found `# id_default* `# id_optional*
+  = callableId_found ':' V_found '#' id_default* '#' id_optional*
   -- if $(|(id_arg?)*| > 0)
   -- if (id_arg_inner = id_arg?)*
-  -- if callableId_found `: V_found `# id_default* `# id_optional*
+  -- if callableId_found ':' V_found '#' id_default* '#' id_optional*
       = $find_overloadeds_named<V>(
-          `{ (callableId `: V)* },
-          nameIR_f `( id_arg_inner* ),
+          `{ (callableId ':' V)* `},
+          nameIR_f `( id_arg_inner* `),
           def $get_parameterListIR)
 
 ;;; When all arguments are unnamed
 
 def $find_overloaded<V>(
-    `{ (callableId `: V)* },
-    nameIR_f `( id_arg?* ),
+    `{ (callableId ':' V)* `},
+    nameIR_f `( id_arg?* `),
     def $get_parameterListIR)
   = eps
   -- if (id_arg? = eps)*
   -- if eps
       = $find_overloadeds_unnamed<V>(
-          `{ (callableId `: V)* },
-          nameIR_f `( |id_arg?*| ),
+          `{ (callableId ':' V)* `},
+          nameIR_f `( |id_arg?*| `),
           def $get_parameterListIR)
 
 def $find_overloaded<V>(
-    `{ (callableId `: V)* },
-    nameIR_f `( id_arg?* ),
+    `{ (callableId ':' V)* `},
+    nameIR_f `( id_arg?* `),
     def $get_parameterListIR)
-  = callableId_found `: V_found `# id_omitted* `# id_optional*
+  = callableId_found ':' V_found '#' id_omitted* '#' id_optional*
   -- if (id_arg? = eps)*
-  -- if callableId_found `: V_found `# id_omitted* `# id_optional*
+  -- if callableId_found ':' V_found '#' id_omitted* '#' id_optional*
       = $find_overloadeds_unnamed<V>(
-          `{ (callableId `: V)* },
-          nameIR_f `( |id_arg?*| ),
+          `{ (callableId ':' V)* `},
+          nameIR_f `( |id_arg?*| `),
           def $get_parameterListIR)
 
 ;;
@@ -354,26 +354,26 @@ dec $find_non_overloadeds<V>(map<callableId, V>, nameIR)
   : (callableId, V)*
 
 def $find_non_overloaded<V>(
-    `{ (callableId `: V)* }, nameIR_f)
+    `{ (callableId ':' V)* `}, nameIR_f)
   = (callableId_found, V_found)
   -- if (callableId_found, V_found)
-      = $find_non_overloadeds<V>(`{ (callableId `: V)* }, nameIR_f)
+      = $find_non_overloadeds<V>(`{ (callableId ':' V)* `}, nameIR_f)
 def $find_non_overloaded<V>(
-    `{ (callableId `: V)* }, nameIR_f)
+    `{ (callableId ':' V)* `}, nameIR_f)
   = eps
   -- otherwise
 
-def $find_non_overloadeds<V>(`{ eps }, nameIR_f) = eps
+def $find_non_overloadeds<V>(`{ eps `}, nameIR_f) = eps
 def $find_non_overloadeds<V>(
-    `{ (callableId_h `: V_h) :: (callableId_t `: V_t)* }, nameIR_f)
+    `{ (callableId_h ':' V_h) :: (callableId_t ':' V_t)* `}, nameIR_f)
   = (callableId_h, V_h) :: (callableId_t_found, V_t_found)*
-  -- if nameIR_f `( _ ) = callableId_h
+  -- if nameIR_f `( _ `) = callableId_h
   -- if (callableId_t_found, V_t_found)*
-      = $find_non_overloadeds<V>(`{ (callableId_t `: V_t)* }, nameIR_f)
+      = $find_non_overloadeds<V>(`{ (callableId_t ':' V_t)* `}, nameIR_f)
 def $find_non_overloadeds<V>(
-    `{ (callableId_h `: V_h) :: (callableId_t `: V_t)* }, nameIR_f)
+    `{ (callableId_h ':' V_h) :: (callableId_t ':' V_t)* `}, nameIR_f)
   = (callableId_t_found, V_t_found)*
-  -- if nameIR_f_h `( _ ) = callableId_h
+  -- if nameIR_f_h `( _ `) = callableId_h
   -- if nameIR_f =/= nameIR_f_h
   -- if (callableId_t_found, V_t_found)*
-      = $find_non_overloadeds<V>(`{ (callableId_t `: V_t)* }, nameIR_f)
+      = $find_non_overloadeds<V>(`{ (callableId_t ':' V_t)* `}, nameIR_f)

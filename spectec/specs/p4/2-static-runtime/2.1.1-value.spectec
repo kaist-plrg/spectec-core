@@ -6,14 +6,14 @@
 ;;;; Base values
 ;;
 
-syntax boolValue = `B bool
-syntax errorValue = ERROR `. nameIR
-syntax matchKindValue = MATCH_KIND `. nameIR
+syntax boolValue = _B bool
+syntax errorValue = ERROR '.' nameIR
+syntax matchKindValue = MATCH_KIND '.' nameIR
 syntax stringValue = stringLiteral
 
 syntax integerValue =
   | integerLiteral
-  | nat `. nat V int
+  | nat '.' nat V int
 
 syntax baseValue =
   | boolValue
@@ -28,19 +28,19 @@ syntax baseValue =
 
 syntax value
 
-syntax listValue = LIST `[ value* ]
-syntax tupleValue = TUPLE `( value* )
-syntax headerStackValue = HEADER_STACK `[ value* `( nat `; nat ) ]
+syntax listValue = LIST `[ value* `]
+syntax tupleValue = TUPLE `( value* `)
+syntax headerStackValue = HEADER_STACK `[ value* `( nat ';' nat `) `]
 
-syntax fieldValue = value nameIR `;
+syntax fieldValue = value nameIR ';'
 
-syntax structValue = STRUCT typeId `{ fieldValue* }
-syntax headerValue = HEADER typeId `{ bool `; fieldValue* }
-syntax headerUnionValue = HEADER_UNION typeId `{ fieldValue* }
+syntax structValue = STRUCT typeId `{ fieldValue* `}
+syntax headerValue = HEADER typeId `{ bool ';' fieldValue* `}
+syntax headerUnionValue = HEADER_UNION typeId `{ fieldValue* `}
 
 syntax enumValue =
-  | typeId `. nameIR
-  | typeId `. nameIR `. value
+  | typeId '.' nameIR
+  | typeId '.' nameIR '.' value
 
 syntax dataValue =
   | listValue
@@ -63,29 +63,29 @@ syntax objectReferenceValue = REF objectId
 
 syntax defaultValue = DEFAULT
 
-syntax invalidHeaderValue = `{#}
+syntax invalidHeaderValue = '{#}'
 
 syntax sequenceValue =
-  | SEQ `( value* )
-  | SEQ `( value* `, `... )
+  | SEQ `( value* `)
+  | SEQ `( value* ',' '...' `)
 
 syntax recordValue =
-  | RECORD `{ fieldValue* }
-  | RECORD `{ fieldValue* `, `... }
+  | RECORD `{ fieldValue* `}
+  | RECORD `{ fieldValue* ',' '...' `}
 
 syntax setValue =
-  | SET `{ value }
-  | SET `{ value* `( nat ) }
-  | SET `{ value `&&& value }
-  | SET `{ value `.. value }
-  | SET `{ `... }
+  | SET `{ value `}
+  | SET `{ value* `( nat `) `}
+  | SET `{ value '&&&' value `}
+  | SET `{ value '..' value `}
+  | SET `{ '...' `}
 
-syntax tableMetadataEnumValue = TABLE_ENUM typeId `. nameIR
+syntax tableMetadataEnumValue = TABLE_ENUM typeId '.' nameIR
 
 syntax tableMetadataStructValue =
-  TABLE_STRUCT typeId `{ HIT boolValue `;
-                         MISS boolValue `;
-                         ACTION_RUN tableMetadataEnumValue `; }
+  TABLE_STRUCT typeId `{ HIT boolValue ';'
+                         MISS boolValue ';'
+                         ACTION_RUN tableMetadataEnumValue ';' `}
 
 syntax tableMetadataValue =
   | tableMetadataEnumValue

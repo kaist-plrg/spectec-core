@@ -9,7 +9,7 @@ syntax infer =
 syntax constraint = map<typeId, infer>
 
 dec $empty_constraint(typeId*) : constraint
-def $empty_constraint(typeId*) = `{ (typeId `: UNKNOWN)* }
+def $empty_constraint(typeId*) = `{ (typeId ':' UNKNOWN)* `}
 
 syntax inference = map<typeId, typeIR>
 
@@ -55,26 +55,26 @@ def $infer'(constraint, parameterIR, typedExpressionIR)
   -- if _ _ typeIR_param _ _ = parameterIR
   -- if typeIR_arg = $type_of_typedExpressionIR(typedExpressionIR)
 
-def $infer'(constraint, parameterIR, nameIR `= typedExpressionIR)
+def $infer'(constraint, parameterIR, nameIR '=' typedExpressionIR)
   = $gen_constraint(constraint, typeIR_param, typeIR_arg)
   -- if _ _ typeIR_param _ _ = parameterIR
   -- if typeIR_arg = $type_of_typedExpressionIR(typedExpressionIR)
 
-def $infer'(constraint, parameterIR, nameIR `= `_) = constraint
+def $infer'(constraint, parameterIR, nameIR '=' '_') = constraint
 
-def $infer'(constraint, parameterIR, `_) = constraint
+def $infer'(constraint, parameterIR, '_') = constraint
 
 
 ;;
 ;;;; Synthesized type resolution
 ;;
 
-def $resolve_inference(`{ (typeId `: typeIR)* }) = `{ (typeId `: typeIR_resolved)* }
+def $resolve_inference(`{ (typeId ':' typeIR)* `}) = `{ (typeId ':' typeIR_resolved)* `}
   -- if (typeIR_resolved = $resolve_inference'(typeIR))*
 
 def $resolve_inference'(typeIR) = typeIR_resolved
-  -- if SEQ `< typeIR_arg* > = $unroll_typeIR(typeIR)
-  -- if typeIR_resolved = TUPLE `< typeIR_arg* >
+  -- if SEQ `< typeIR_arg* `> = $unroll_typeIR(typeIR)
+  -- if typeIR_resolved = TUPLE `< typeIR_arg* `>
 def $resolve_inference'(typeIR) = typeIR
   -- otherwise
 
@@ -84,7 +84,7 @@ def $resolve_inference'(typeIR) = typeIR
 
 ;;; Named types
 
-def $gen_constraint(constraint, `` typeId_param, typeIR_arg)
+def $gen_constraint(constraint, _NAME typeId_param, typeIR_arg)
   = $update_map<typeId, infer>(constraint, typeId_param, KNOWN AS typeIR_arg)
   -- if $in_set<typeId>(typeId_param, $dom_map<typeId, infer>(constraint))
 
@@ -105,40 +105,40 @@ def $gen_constraint(constraint, TYPE typeId typeIR_param, TYPE typeId typeIR_arg
 
 def $gen_constraint(
     constraint,
-    LIST `< typeIR_param >,
-    LIST `< typeIR_arg >)
+    LIST `< typeIR_param `>,
+    LIST `< typeIR_arg `>)
   = $gen_constraint(constraint, typeIR_param, typeIR_arg)
 
 def $gen_constraint(
     constraint,
-    TUPLE `< typeIR_param* >,
-    TUPLE `< typeIR_arg* >)
+    TUPLE `< typeIR_param* `>,
+    TUPLE `< typeIR_arg* `>)
   = $gen_constraints(constraint, typeIR_param*, typeIR_arg*)
 
 def $gen_constraint(
     constraint,
-    typeIR_param `[ n_size ],
-    typeIR_arg `[ n_size ])
+    typeIR_param `[ n_size `],
+    typeIR_arg `[ n_size `])
   = $gen_constraint(constraint, typeIR_param, typeIR_arg)
 
 def $gen_constraint(
     constraint,
-    STRUCT typeId `< typeIR_arg_a* > `{ _ },
-    STRUCT typeId `< typeIR_arg_b* > `{ _ })
+    STRUCT typeId `< typeIR_arg_a* `> `{ _ `},
+    STRUCT typeId `< typeIR_arg_b* `> `{ _ `})
   = $gen_constraints(
       constraint, typeIR_arg_a*, typeIR_arg_b*)
 
 def $gen_constraint(
     constraint,
-    HEADER typeId `< typeIR_arg_a* > `{ _ },
-    HEADER typeId `< typeIR_arg_b* >`{ _ })
+    HEADER typeId `< typeIR_arg_a* `> `{ _ `},
+    HEADER typeId `< typeIR_arg_b* `>`{ _ `})
   = $gen_constraints(
       constraint, typeIR_arg_a*, typeIR_arg_b*)
 
 def $gen_constraint(
     constraint,
-    HEADER_UNION typeId `< typeIR_arg_a* > `{ _ },
-    HEADER_UNION typeId `< typeIR_arg_b* > `{ _ })
+    HEADER_UNION typeId `< typeIR_arg_a* `> `{ _ `},
+    HEADER_UNION typeId `< typeIR_arg_b* `> `{ _ `})
   = $gen_constraints(
       constraint, typeIR_arg_a*, typeIR_arg_b*)
 
@@ -146,31 +146,31 @@ def $gen_constraint(
 
 def $gen_constraint(
     constraint,
-    EXTERN typeId `< typeIR_arg_a* > `{ _ },
-    EXTERN typeId `< typeIR_arg_b* > `{ _ })
+    EXTERN typeId `< typeIR_arg_a* `> `{ _ `},
+    EXTERN typeId `< typeIR_arg_b* `> `{ _ `})
   = $gen_constraints(
       constraint, typeIR_arg_a*, typeIR_arg_b*)
 
 def $gen_constraint(
     constraint,
-    PARSER _ `< _ > `( parameterIR_param* ),
-    PARSER _ `< _ > `( parameterIR_arg* ))
+    PARSER _ `< _ `> `( parameterIR_param* `),
+    PARSER _ `< _ `> `( parameterIR_arg* `))
   = $gen_constraints(constraint, typeIR_param*, typeIR_arg*)
   -- if (_ direction typeIR_param _ _ = parameterIR_param)*
   -- if (_ direction typeIR_arg _ _ = parameterIR_arg)*
 
 def $gen_constraint(
     constraint,
-    CONTROL _ `< _ > `( parameterIR_param* ),
-    CONTROL _ `< _ > `( parameterIR_arg* ))
+    CONTROL _ `< _ `> `( parameterIR_param* `),
+    CONTROL _ `< _ `> `( parameterIR_arg* `))
   = $gen_constraints(constraint, typeIR_param*, typeIR_arg*)
   -- if (_ direction typeIR_param _ _ = parameterIR_param)*
   -- if (_ direction typeIR_arg _ _ = parameterIR_arg)*
 
 def $gen_constraint(
     constraint,
-    PACKAGE _ `< _ > `{ typeIR_param* },
-    PACKAGE _ `< _ > `{ typeIR_arg* })
+    PACKAGE _ `< _ `> `{ typeIR_param* `},
+    PACKAGE _ `< _ `> `{ typeIR_arg* `})
   = $gen_constraints(constraint, typeIR_param*, typeIR_arg*)
 
 def $gen_constraint(constraint, typeIR_param, typeIR_arg)
@@ -189,10 +189,10 @@ def $gen_constraints(constraint, typeIR_param*, typeIR_arg*)
 ;;
 
 def $merge_constraint(constraint_pre, constraint_post)
-  = $merge_constraint'(constraint_pre, constraint_post, typeId_pre*, `{ eps })
-  -- if `{ typeId_pre* } = $dom_map<typeId, infer>(constraint_pre)
-  -- if `{ typeId_post* } = $dom_map<typeId, infer>(constraint_post)
-  -- if $eq_set<typeId>(`{ typeId_pre* }, `{ typeId_post* })
+  = $merge_constraint'(constraint_pre, constraint_post, typeId_pre*, `{ eps `})
+  -- if `{ typeId_pre* `} = $dom_map<typeId, infer>(constraint_pre)
+  -- if `{ typeId_post* `} = $dom_map<typeId, infer>(constraint_post)
+  -- if $eq_set<typeId>(`{ typeId_pre* `}, `{ typeId_post* `})
 
 def $merge_constraint'(
     constraint_pre, constraint_post, eps, constraint)
@@ -266,6 +266,6 @@ def $merge_constraints(
 ;;;; Constraint resolution
 ;;
 
-def $resolve_constraint(`{ (typeId `: infer)* })
-  = `{ (typeId `: typeIR)* }
+def $resolve_constraint(`{ (typeId ':' infer)* `})
+  = `{ (typeId ':' typeIR)* `}
   -- if (KNOWN AS typeIR = infer)*

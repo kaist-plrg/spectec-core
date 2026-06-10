@@ -29,10 +29,10 @@ instructions:
       -     Case (% has type literal):
       2       Let literal = (expr as literal)
       2         Case on literal
-      -           Case (% matches pattern ``NUM %`):
+      -           Case (% matches pattern `_NUM %`):
       2             Let (i) = literal
       2               Result (int)
-      -           Case (% matches pattern ``BOOL %`):
+      -           Case (% matches pattern `_BOOL %`):
    ####             Let (b) = literal
    ####               Result (bool)
       -     Case (% has type id):
@@ -111,10 +111,10 @@ instructions:
       -     Case (% has type literal):
       2       Let literal = (expr as literal)
       2         Case on literal
-      -           Case (% matches pattern ``NUM %`):
+      -           Case (% matches pattern `_NUM %`):
       2             Let (i) = literal
       2               Result (i)
-      -           Case (% matches pattern ``BOOL %`):
+      -           Case (% matches pattern `_BOOL %`):
    ####             Let (b) = literal
    ####               Result (b)
       -     Case (% has type id):
@@ -127,37 +127,37 @@ instructions:
       -     Case (% matches pattern `! %`):
    ####       Let (! e) = expr
    ####         Eval_expr: env |- e ==> literal
-   ####           If ((literal matches pattern ``BOOL %`))
+   ####           If ((literal matches pattern `_BOOL %`))
    ####             Let (b_e) = literal
    ####               Let b = ~b_e
    ####                 Result (b)
       -     Case (% matches pattern `% + %`):
    ####       Let (e_l + e_r) = expr
    ####         Eval_expr: env |- e_l ==> literal
-   ####           If ((literal matches pattern ``NUM %`))
+   ####           If ((literal matches pattern `_NUM %`))
    ####             Let (i_l) = literal
    ####               Eval_expr: env |- e_r ==> literal'
-   ####                 If ((literal' matches pattern ``NUM %`))
+   ####                 If ((literal' matches pattern `_NUM %`))
    ####                   Let (i_r) = literal'
    ####                     Let i = (i_l + i_r)
    ####                       Result (i)
       -     Case (% matches pattern `% <= %`):
       1       Let (e_l <= e_r) = expr
       1         Eval_expr: env |- e_l ==> literal
-      1           If ((literal matches pattern ``NUM %`))
+      1           If ((literal matches pattern `_NUM %`))
       1             Let (i_l) = literal
       1               Eval_expr: env |- e_r ==> literal'
-      1                 If ((literal' matches pattern ``NUM %`))
+      1                 If ((literal' matches pattern `_NUM %`))
       1                   Let (i_r) = literal'
       1                     Let b = (i_l <= i_r)
       1                       Result (b)
       -     Case (% matches pattern `% && %`):
    ####       Let (e_l && e_r) = expr
    ####         Eval_expr: env |- e_l ==> literal
-   ####           If ((literal matches pattern ``BOOL %`))
+   ####           If ((literal matches pattern `_BOOL %`))
    ####             Let (b_l) = literal
    ####               Eval_expr: env |- e_r ==> literal'
-   ####                 If ((literal' matches pattern ``BOOL %`))
+   ####                 If ((literal' matches pattern `_BOOL %`))
    ####                   Let (b_r) = literal'
    ####                     Let b = (b_l /\ b_r)
    ####                       Result (b)
@@ -209,10 +209,10 @@ instructions:
   
   relation Check_value:
    ####   Case on literal
-      -     Case (% matches pattern ``NUM %`):
+      -     Case (% matches pattern `_NUM %`):
    ####       Let (int) = literal
    ####         Result (int)
-      -     Case (% matches pattern ``BOOL %`):
+      -     Case (% matches pattern `_BOOL %`):
    ####       Let (bool) = literal
    ####         Result (bool)
   [

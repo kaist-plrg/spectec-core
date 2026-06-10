@@ -4,7 +4,7 @@
 ;;
 
 relation Constructor_inst:
-  cursor contextInst sto |- consDyn `< typeArgumentListIR > `( argumentListIR `# id* ) ==> sto objDyn
+  cursor contextInst sto |- consDyn `< typeArgumentListIR `> `( argumentListIR '#' id* `) ==> sto objDyn
   hint(input %0 %1 %2 %3 %4 %5 %6)
 
 ;;

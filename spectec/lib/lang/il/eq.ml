@@ -196,7 +196,7 @@ and eq_path (path_a : path) (path_b : path) : bool =
   | SliceP (path_a, exp_l_a, exp_h_a), SliceP (path_b, exp_l_b, exp_h_b) ->
       eq_path path_a path_b && eq_exp exp_l_a exp_l_b && eq_exp exp_h_a exp_h_b
   | DotP (path_a, atom_a), DotP (path_b, atom_b) ->
-      eq_path path_a path_b && Atom.eq atom_a atom_b
+      eq_path path_a path_b && eq_atom atom_a atom_b
   | _ -> false
 
 (* Arguments *)

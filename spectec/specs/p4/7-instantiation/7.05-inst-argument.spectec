@@ -10,14 +10,14 @@ rule Argument_inst/typedExpressionIR:
   p IC STO_0 |- typedExpressionIR : STO_1 value
   -- Expr_inst: p IC STO_0 |- typedExpressionIR : STO_1 value
 
-;;; nameIR `= typedExpressionIR
+;;; nameIR '=' typedExpressionIR
 
 rule Argument_inst/nameIR-typedExpressionIR:
-  p IC STO_0 |- nameIR `= typedExpressionIR : STO_1 value
+  p IC STO_0 |- nameIR '=' typedExpressionIR : STO_1 value
   -- Expr_inst: p IC STO_0 |- typedExpressionIR : STO_1 value
 
-;;; nameIR `= `_
+;;; nameIR '=' '_'
 ;;; instantiation arguments must not be missing
 
-;;; `_
+;;; '_'
 ;;; instantiation arguments must not be missing
