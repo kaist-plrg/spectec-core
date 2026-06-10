@@ -273,10 +273,8 @@ and parse_stmt_atom c : value =
         rbrace ();
       ]
       |> case_v ~var:"command"
-  | Lexer.KwInt | Lexer.KwBool -> parse_var_decl c
-  | Lexer.Lparen
-    when Cursor.peek2 c = Lexer.KwInt || Cursor.peek2 c = Lexer.KwBool ->
-      parse_var_decl c
+  (* No command other than a declaration starts with `(`. *)
+  | Lexer.KwInt | Lexer.KwBool | Lexer.Lparen -> parse_var_decl c
   | Lexer.Ident _ when Cursor.peek2 c = Lexer.Eq ->
       let id_str = Cursor.expect_ident c in
       Cursor.expect c Lexer.Eq;
