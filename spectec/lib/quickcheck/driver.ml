@@ -75,10 +75,11 @@ let run_property ~target ~generalize ~max_steps ~num_tests
       let generalize_fn =
         if generalize then Some (Generalize.generalize_env core_spec) else None
       in
-      (* Holds the most recent failing assignment. Shrinking re-runs the body
-         on smaller inputs, so by the time [Test.run] returns this is the
-         minimal counterexample. *)
-      let captured : (id' * value) list option ref = ref None in
+      (* Keyed by display text: shrink and generalize re-run the body, so a
+         single captured ref would end on the wrong input. *)
+      let env_by_display : (string, (id' * value) list) Hashtbl.t =
+        Hashtbl.create 16
+      in
       let prop =
         Property.for_all ~shrink:(shrink_env core_spec)
           ?generalize:generalize_fn ~show:show_env gen (fun bindings ->
@@ -94,7 +95,8 @@ let run_property ~target ~generalize ~max_steps ~num_tests
                   match Premise_eval.eval eval_env ~bindings:bindings' goal with
                   | Premise_eval.Holds _ -> Property.Verdict.pass
                   | Premise_eval.Fails ->
-                      captured := Some bindings;
+                      Hashtbl.replace env_by_display (show_env bindings)
+                        bindings;
                       Property.Verdict.fail
                   | Premise_eval.StepLimit | Premise_eval.Unsupported _ ->
                       Property.Verdict.discard)
@@ -110,7 +112,13 @@ let run_property ~target ~generalize ~max_steps ~num_tests
             Property.of_verdict verdict)
       in
       let outcome = Test.run ~num_tests prop in
-      Ok (outcome, !captured)
+      let counterexample_env =
+        match outcome with
+        | Test.Fail { counterexample; _ } ->
+            List.find_map (Hashtbl.find_opt env_by_display) counterexample
+        | Test.Pass _ | Test.Gave_up _ -> None
+      in
+      Ok (outcome, counterexample_env)
 
 type counterexample = { name : string; env : (id' * value) list }
 

@@ -76,3 +76,18 @@ program that typechecks but gets stuck in eval:
       |                         └── ../../testdata/quickcheck/buggy-leq.spectec:188:33-188:41:
       |                             condition literal' matches `_NUM %` was not met
   [1]
+
+With --generalize the report also prints an abstract generalized form. The
+saved file is the concrete, runnable counterexample, never the generalization:
+
+  $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 100 --generalize --save-dir gen --color never
+  [Quickcheck Type_safety: Test]
+  Falsifiable, after 67 tests:
+    prog=while 8 <= false do skip end
+    (Generalized)
+    prog=while [int] <= [bool] do [command] end
+    saved counterexample to gen/counter_Type_safety.imp
+
+  $ cat gen/counter_Type_safety.imp
+  // quickcheck counterexample for Type_safety
+  while 8 <= false do skip end
