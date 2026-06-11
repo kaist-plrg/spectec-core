@@ -14,10 +14,10 @@ A program counterexample (Type_safety) is saved; a non-program one
   $ spectec impty fuzz --spec ../../testdata/quickcheck/buggy-preservation.spectec --num-tests 500 --out-dir buggy --color never
   [Quickcheck Type_safety: Test]
   Falsifiable, after 6 tests:
-    prog=while +0 <= +0 do skip end
+    prog=while 0 <= 0 do skip end
   [Quickcheck Preservation: Test]
   Falsifiable, after 14 tests:
-    env=[], tenv=[], expr=+2 <= +2
+    env=[], tenv=[], expr=2 <= 2
     saved counterexample to buggy/counter_Type_safety.imp
   fuzz: Preservation: counterexample is not a program; not saved
 
@@ -32,7 +32,7 @@ that typechecks but gets stuck in eval:
   $ spectec impty fuzz --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 100 --out-dir leq --color never
   [Quickcheck Type_safety: Test]
   Falsifiable, after 67 tests:
-    prog=while +8 <= false do skip end
+    prog=while 8 <= false do skip end
     saved counterexample to leq/counter_Type_safety.imp
 
   $ cat leq/counter_Type_safety.imp

@@ -57,7 +57,7 @@ so a program like `1 <= false` typechecks but gets stuck in evaluation:
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 500 --color never
   [Quickcheck Type_safety: Test]
   Falsifiable, after 67 tests:
-    prog=while +8 <= false do skip end
+    prog=while 8 <= false do skip end
 
 With --generalize, the shrunk counterexample is widened to the family of
 programs that exhibit the bug:
@@ -76,10 +76,10 @@ Preservation property catches it directly with the offending expression:
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-preservation.spectec --num-tests 500 --color never
   [Quickcheck Type_safety: Test]
   Falsifiable, after 6 tests:
-    prog=while +0 <= +0 do skip end
+    prog=while 0 <= 0 do skip end
   [Quickcheck Preservation: Test]
   Falsifiable, after 14 tests:
-    env=[], tenv=[], expr=+2 <= +2
+    env=[], tenv=[], expr=2 <= 2
 
 The preservation-compat fixture spells out the environment/context agreement with
 let- and iteration-premises: it destructures `env` and `tenv` into key/value

@@ -5,7 +5,9 @@ open Common.Source
 
 (* Numbers *)
 
-let string_of_num = Num.string_of_num
+let string_of_num = function
+  | `Int i when i >= Bigint.zero -> Bigint.to_string i
+  | num -> Num.string_of_num num
 
 (* Texts *)
 
