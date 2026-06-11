@@ -76,6 +76,16 @@ jobs:
       - name: Build tutorial materials
         run: make bundle
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Package VS Code extension
+        run: |
+          make vsix
+          cp editors/vscode/spectecx.vsix release/
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -141,6 +151,16 @@ jobs:
             opam install -y --switch=spectecx --deps-only ./spectec
             make exe                           # produces ./spectecx
             ```
+
+            ### Optional: VS Code syntax highlighting
+
+            Download **`spectecx.vsix`** from this release page and install it:
+
+            ```bash
+            code --install-extension spectecx.vsix
+            ```
+
+            If `code` is not on your PATH, run "Shell Command: Install 'code' command in PATH" from the VS Code command palette first. For VSCodium, use `codium --install-extension spectecx.vsix`.
 
             ## 3. Start the session
 

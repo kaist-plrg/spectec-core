@@ -31,7 +31,9 @@ The commands below read `spectecx.config` from the current directory for their `
 
 Installation -- prebuilt binary, Docker, or build from source -- is on the
 project's [GitHub Releases](https://github.com/kaist-plrg/spectecx/releases)
-page, the same release you downloaded this bundle from.
+page, the same release you downloaded this bundle from. The release also has
+an optional VS Code extension (`spectecx.vsix`) that highlights the
+`.spectec` spec you will be editing.
 
 ## 1. Typed Imp: executable inference rules
 
