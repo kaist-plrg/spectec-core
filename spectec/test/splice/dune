@@ -1,0 +1,30 @@
+(executable
+ (name main)
+ (preprocess
+  (pps ppx_let))
+ (libraries
+  test_lib
+  core
+  core_unix
+  core_unix.command_unix
+  spectec.backend.splice))
+
+(rule
+ (target impty.actual)
+ (deps
+  (source_tree ../../specs/impty/closure)
+  ../../examples/splice/impty.adoc)
+ (action
+  (run
+   ./main.exe
+   -s
+   ../../../../../spectec/specs/impty/closure
+   -i
+   ../../../../../spectec/examples/splice/impty.adoc
+   -o
+   impty.actual)))
+
+(rule
+ (alias runtest)
+ (action
+  (diff impty.expected impty.actual)))

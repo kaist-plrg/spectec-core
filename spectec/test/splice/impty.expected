@@ -1,0 +1,644 @@
+= The Typed Imp Language Specification
+:toc: left
+:toclevels: 2
+:sectnums:
+:icons: font
+
+Typed Imp is a small typed imperative language. Its syntax covers
+integer and boolean literals, variables, arithmetic and boolean
+operators, sequencing, conditionals, `while` loops, and typed variable
+declarations. The static semantics assigns types to expressions and
+commands under a typing context; the dynamic semantics evaluates
+expressions and executes commands under an environment that maps
+variables to values.
+
+== Syntax
+
+The abstract syntax of Typed Imp distinguishes types, literals,
+variables, expressions, commands, and whole programs.
+
+[[type]]
+[[literal]]
+[[id]]
+[[expr]]
+[[command]]
+[[prog]]
+[source,bison]
+----
+syntax type = 
+   | INT
+   | BOOL
+   | {type -> type}
+
+syntax literal = 
+   | {_NUM int}
+   | {_BOOL bool}
+
+syntax id = 
+   | {_ID text}
+
+syntax expr = 
+   | literal
+   | id
+   | {! expr}
+   | {expr + expr}
+   | {expr <= expr}
+   | {expr && expr}
+   | {FUN `({type id}) -> type `{expr}}
+   | {expr `(expr)}
+
+syntax command = 
+   | SKIP
+   | {type id = expr}
+   | {id = expr}
+   | {IF expr THEN command ELSE command END}
+   | {WHILE expr DO command END}
+   | {command ; command}
+
+syntax prog = command
+----
+
+== Auxiliary definitions
+
+Lookup over an association list is shared by the static and dynamic
+semantics. Given a list of `(key, value)` pairs, it returns the first
+value bound to the requested key.
+
+ifdef::backend-html5[]
+.Click to view the specification source
+[%collapsible]
+====
+----
+dec $lookup<K, V>(map<K, V>, K) : V?
+----
+====
+
+[.empty]
+--
+
+
+--
+
+endif::[]
+
+[[lookup]]
+[.sidebar-title]
+****
+xref:lookup[$lookup]<K, V>(pair<K, V>^{asterisk}^, K~query~)
+****
+
+ifdef::backend-html5[]
+.Click to view the specification source
+[%collapsible]
+====
+----
+def $lookup<K, V>(eps, K_query) = eps
+
+def $lookup<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K_query) = V_h
+ -- if K_h = K_query
+
+def $lookup<K, V>((K_h -> V_h) :: (K_t -> V_t)*, K_query) = $lookup<K, V>((K_t -> V_t)*, K_query)
+ -- otherwise
+----
+====
+
+[.empty]
+--
+
+
+--
+
+endif::[]
+
+[[lookup]]
+****
+xref:lookup[$lookup<K, V>(pair<K, V>^{asterisk}^, K~query~)]
+
+. If ``pair<K, V>^{asterisk}^`` matches pattern ``[]``:
+ .. Return ``·``.
+. Else if let ``K~h~ → V~h~ {two-colons} ( K~t~ → V~t~ )^{asterisk}^`` be ``pair<K, V>^{asterisk}^``:
+ .. Check that ``K~h~`` is equal to ``K~query~``.
+
+ .. Return ``V~h~``.
+
+. Otherwise:
+ .. Otherwise:
+  ... Check that ``pair<K, V>^{asterisk}^`` is a non-empty list.
+
+  ... Let ``K~h~ → V~h~ {two-colons} ( K~t~ → V~t~ )^{asterisk}^`` be ``pair<K, V>^{asterisk}^``.
+  ... Return ``xref:lookup[$lookup<K, V>(( K~t~ → V~t~ )^{asterisk}^, K~query~)]``.
+****
+
+== Static semantics
+
+The typing judgments characterise well-formed expressions and commands
+under a typing context that maps each in-scope variable to its declared
+type.
+
+=== Expressions
+
+ifdef::backend-html5[]
+.Click to view the specification source
+[%collapsible]
+====
+----
+relation Check_expr: tenv |- expr : type
+----
+====
+
+[.empty]
+--
+
+
+--
+
+endif::[]
+
+[[Check_expr]]
+[.sidebar-title]
+****
+xref:Check_expr[Check_expr: ``tenv ⊢ expr +++:+++ %``]
+****
+
+ifdef::backend-html5[]
+.Click to view the specification source
+[%collapsible]
+====
+----
+rule Check_expr/num:
+  tenv |- (_NUM i) : INT
+
+rule Check_expr/boollit:
+  tenv |- (_BOOL b) : BOOL
+
+rule Check_expr/id:
+  tenv |- x : t
+ -- if $lookup<id, type>(tenv, x) = t
+
+rule Check_expr/not:
+  tenv |- ! e : BOOL
+ -- Check_expr: tenv |- e : BOOL
+
+rule Check_expr/add:
+  tenv |- e_l + e_r : INT
+ -- Check_expr: tenv |- e_l : INT
+ -- Check_expr: tenv |- e_r : INT
+
+rule Check_expr/leq:
+  tenv |- e_l <= e_r : BOOL
+ -- Check_expr: tenv |- e_l : INT
+ -- Check_expr: tenv |- e_r : INT
+
+rule Check_expr/and:
+  tenv |- e_l && e_r : BOOL
+ -- Check_expr: tenv |- e_l : BOOL
+ -- Check_expr: tenv |- e_r : BOOL
+
+rule Check_expr/fun:
+  tenv |- FUN `(t_arg x_arg) -> t_ret `{e} : t_arg -> t_ret
+ -- Check_expr: ((x_arg -> t_arg) :: tenv) |- e : t_ret
+
+rule Check_expr/call:
+  tenv |- (e_f `(e_a)) : t_ret
+ -- Check_expr: tenv |- e_f : t_arg -> t_ret
+ -- Check_expr: tenv |- e_a : t_arg
+----
+====
+
+[.empty]
+--
+
+
+--
+
+endif::[]
+
+****
+. Try:
+ .. {empty}
+  ... If let ``literal`` be ``expr``:
+   .... If let ``i`` be ``literal``:
+    ..... Result in ``+++INT+++``.
+   .... Else if let ``b`` be ``literal``:
+    ..... Result in ``+++BOOL+++``.
+  ... Else if let ``x`` be ``expr``:
+   .... Let ``t`` be xref:option_get[*!*] ``xref:lookup[$lookup<id, type>(tenv, x)]``.
+   .... Result in ``t``.
+ .. {empty}
+  ... If let ``+++!+++ e`` be ``expr``:
+   .... Let xref:Check_expr[``tenv ⊢ e +++:+++ type``].
+   .... Check that ``type`` matches pattern ``+++BOOL+++``.
+
+   .... Result in ``+++BOOL+++``.
+  ... Else if let ``e~l~ +++++++ e~r~`` be ``expr``:
+   .... Let xref:Check_expr[``tenv ⊢ e~l~ +++:+++ type``].
+   .... Check that ``type`` matches pattern ``+++INT+++``.
+
+   .... Let xref:Check_expr[``tenv ⊢ e~r~ +++:+++ type'``].
+   .... Check that ``type'`` matches pattern ``+++INT+++``.
+
+   .... Result in ``+++INT+++``.
+  ... Else if let ``e~l~ +++<=+++ e~r~`` be ``expr``:
+   .... Let xref:Check_expr[``tenv ⊢ e~l~ +++:+++ type``].
+   .... Check that ``type`` matches pattern ``+++INT+++``.
+
+   .... Let xref:Check_expr[``tenv ⊢ e~r~ +++:+++ type'``].
+   .... Check that ``type'`` matches pattern ``+++INT+++``.
+
+   .... Result in ``+++BOOL+++``.
+  ... Else if let ``e~l~ +++&&+++ e~r~`` be ``expr``:
+   .... Let xref:Check_expr[``tenv ⊢ e~l~ +++:+++ type``].
+   .... Check that ``type`` matches pattern ``+++BOOL+++``.
+
+   .... Let xref:Check_expr[``tenv ⊢ e~r~ +++:+++ type'``].
+   .... Check that ``type'`` matches pattern ``+++BOOL+++``.
+
+   .... Result in ``+++BOOL+++``.
+  ... Else if let ``+++FUN+++ +++(+++t~arg~ x~arg~+++)+++ +++->+++ t~ret~ +++{+++e+++}+++`` be ``expr``:
+   .... Let xref:Check_expr[``x~arg~ → t~arg~ {two-colons} tenv ⊢ e +++:+++ type``].
+   .... Check that ``type`` is equal to ``t~ret~``.
+
+   .... Result in ``t~arg~ +++->+++ t~ret~``.
+  ... Else if let ``e~f~ +++(+++e~a~+++)+++`` be ``expr``:
+   .... Let xref:Check_expr[``tenv ⊢ e~f~ +++:+++ type``].
+   .... Let!~type~ ``t~arg~ +++->+++ t~ret~`` be ``type``.
+
+   .... Let xref:Check_expr[``tenv ⊢ e~a~ +++:+++ type'``].
+   .... Check that ``type'`` is equal to ``t~arg~``.
+
+   .... Result in ``t~ret~``.
+****
+
+=== Commands
+
+ifdef::backend-html5[]
+.Click to view the specification source
+[%collapsible]
+====
+----
+relation Check_command: tenv |- command -| tenv
+----
+====
+
+[.empty]
+--
+
+
+--
+
+endif::[]
+
+[[Check_command]]
+[.sidebar-title]
+****
+xref:Check_command[Check_command: ``tenv ⊢ command ⊣ %``]
+****
+
+ifdef::backend-html5[]
+.Click to view the specification source
+[%collapsible]
+====
+----
+rule Check_command/skip:
+  tenv |- SKIP -| tenv
+
+rule Check_command/decl:
+  tenv |- (t x = e) -| (x -> t) :: tenv
+ -- Check_expr: tenv |- e : t
+
+rule Check_command/assign:
+  tenv |- (x = e) -| tenv
+ -- Check_expr: tenv |- e : t
+ -- if $lookup<id, type>(tenv, x) = t
+
+rule Check_command/ite:
+  tenv |- (IF e THEN c_1 ELSE c_2 END) -| tenv
+ -- Check_expr: tenv |- e : BOOL
+ -- Check_command: tenv |- c_1 -| tenv_1
+ -- Check_command: tenv |- c_2 -| tenv_2
+
+rule Check_command/while:
+  tenv |- (WHILE e DO c END) -| tenv
+ -- Check_expr: tenv |- e : BOOL
+ -- Check_command: tenv |- c -| tenv_1
+
+rule Check_command/seq:
+  tenv |- (c_1 ; c_2) -| tenv_2
+ -- Check_command: tenv |- c_1 -| tenv_1
+ -- Check_command: tenv_1 |- c_2 -| tenv_2
+----
+====
+
+[.empty]
+--
+
+
+--
+
+endif::[]
+
+****
+. If ``command`` matches pattern ``+++SKIP+++``:
+ .. Result in ``tenv``.
+. Else if let ``t x +++=+++ e`` be ``command``:
+ .. Let xref:Check_expr[``tenv ⊢ e +++:+++ type``].
+ .. Check that ``type`` is equal to ``t``.
+
+ .. Result in ``x → t {two-colons} tenv``.
+. Else if let ``x +++=+++ e`` be ``command``:
+ .. Let xref:Check_expr[``tenv ⊢ e +++:+++ t``].
+ .. Check that ``xref:lookup[$lookup<id, type>(tenv, x)]`` is equal to ``t``.
+
+ .. Result in ``tenv``.
+. Else if let ``+++IF+++ e +++THEN+++ c~1~ +++ELSE+++ c~2~ +++END+++`` be ``command``:
+ .. Let xref:Check_expr[``tenv ⊢ e +++:+++ type``].
+ .. Check that ``type`` matches pattern ``+++BOOL+++``.
+
+ .. Let xref:Check_command[``tenv ⊢ c~1~ ⊣ tenv~1~``].
+ .. Let xref:Check_command[``tenv ⊢ c~2~ ⊣ tenv~2~``].
+ .. Result in ``tenv``.
+. Else if let ``+++WHILE+++ e +++DO+++ c +++END+++`` be ``command``:
+ .. Let xref:Check_expr[``tenv ⊢ e +++:+++ type``].
+ .. Check that ``type`` matches pattern ``+++BOOL+++``.
+
+ .. Let xref:Check_command[``tenv ⊢ c ⊣ tenv~1~``].
+ .. Result in ``tenv``.
+. Else if let ``c~1~ +++;+++ c~2~`` be ``command``:
+ .. Let xref:Check_command[``tenv ⊢ c~1~ ⊣ tenv~1~``].
+ .. Let xref:Check_command[``tenv~1~ ⊢ c~2~ ⊣ tenv~2~``].
+ .. Result in ``tenv~2~``.
+****
+
+== Dynamic semantics
+
+The evaluation judgments give a big-step semantics. Expressions reduce
+to values; commands transform an environment to an environment.
+
+=== Expressions
+
+ifdef::backend-html5[]
+.Click to view the specification source
+[%collapsible]
+====
+----
+relation Eval_expr: env |- expr ==> value
+----
+====
+
+[.empty]
+--
+
+
+--
+
+endif::[]
+
+[[Eval_expr]]
+[.sidebar-title]
+****
+xref:Eval_expr[Eval_expr: ``env ⊢ expr ⟹ %``]
+****
+
+ifdef::backend-html5[]
+.Click to view the specification source
+[%collapsible]
+====
+----
+rule Eval_expr/num:
+  env |- (_NUM i) ==> (_NUM i)
+
+rule Eval_expr/boollit:
+  env |- (_BOOL b) ==> (_BOOL b)
+
+rule Eval_expr/id:
+  env |- x ==> v
+ -- if $lookup<id, value>(env, x) = v
+
+rule Eval_expr/not:
+  env |- (! e) ==> (_BOOL b)
+ -- Eval_expr: env |- e ==> (_BOOL b_e)
+ -- if b = ~b_e
+
+rule Eval_expr/add:
+  env |- (e_l + e_r) ==> (_NUM i)
+ -- Eval_expr: env |- e_l ==> (_NUM i_l)
+ -- Eval_expr: env |- e_r ==> (_NUM i_r)
+ -- if i = i_l + i_r
+
+rule Eval_expr/leq:
+  env |- (e_l <= e_r) ==> (_BOOL b)
+ -- Eval_expr: env |- e_l ==> (_NUM i_l)
+ -- Eval_expr: env |- e_r ==> (_NUM i_r)
+ -- if b = i_l <= i_r
+
+rule Eval_expr/and:
+  env |- (e_l && e_r) ==> (_BOOL b)
+ -- Eval_expr: env |- e_l ==> (_BOOL b_l)
+ -- Eval_expr: env |- e_r ==> (_BOOL b_r)
+ -- if b = (b_l /\ b_r)
+
+rule Eval_expr/fun:
+  env |- (FUN `(t_arg x_arg) -> t_ret `{e}) ==> (CLO x_arg e env)
+
+rule Eval_expr/call:
+  env |- (e_f `(e_a)) ==> v_ret
+ -- Eval_expr: env |- e_f ==> (CLO x_a e_body env_clo)
+ -- Eval_expr: env |- e_a ==> v
+ -- Eval_expr: ((x_a -> v) :: env_clo) |- e_body ==> v_ret
+----
+====
+
+[.empty]
+--
+
+
+--
+
+endif::[]
+
+****
+. Try:
+ .. {empty}
+  ... If let ``literal`` be ``expr``:
+   .... If let ``i`` be ``literal``:
+    ..... Result in ``i``.
+   .... Else if let ``b`` be ``literal``:
+    ..... Result in ``b``.
+  ... Else if let ``x`` be ``expr``:
+   .... Let ``v`` be xref:option_get[*!*] ``xref:lookup[$lookup<id, value>(env, x)]``.
+   .... Result in ``v``.
+ .. {empty}
+  ... If let ``+++!+++ e`` be ``expr``:
+   .... Let xref:Eval_expr[``env ⊢ e ⟹ value``].
+   .... Let!~type~ ``literal`` be ``value``.
+
+   .... Let!~type~ ``b~e~`` be ``literal``.
+
+   .... Let ``b`` be not ``b~e~``.
+   .... Result in ``b``.
+  ... Else if let ``e~l~ +++++++ e~r~`` be ``expr``:
+   .... Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
+   .... Let!~type~ ``literal`` be ``value``.
+
+   .... Let!~type~ ``i~l~`` be ``literal``.
+
+   .... Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
+   .... Let!~type~ ``literal'`` be ``value'``.
+
+   .... Let!~type~ ``i~r~`` be ``literal'``.
+
+   .... Let ``i`` be ``i~l~`` + ``i~r~``.
+   .... Result in ``i``.
+  ... Else if let ``e~l~ +++<=+++ e~r~`` be ``expr``:
+   .... Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
+   .... Let!~type~ ``literal`` be ``value``.
+
+   .... Let!~type~ ``i~l~`` be ``literal``.
+
+   .... Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
+   .... Let!~type~ ``literal'`` be ``value'``.
+
+   .... Let!~type~ ``i~r~`` be ``literal'``.
+
+   .... Let ``b`` be ``i~l~`` is less than or equal to ``i~r~``.
+   .... Result in ``b``.
+  ... Else if let ``e~l~ +++&&+++ e~r~`` be ``expr``:
+   .... Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
+   .... Let!~type~ ``literal`` be ``value``.
+
+   .... Let!~type~ ``b~l~`` be ``literal``.
+
+   .... Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
+   .... Let!~type~ ``literal'`` be ``value'``.
+
+   .... Let!~type~ ``b~r~`` be ``literal'``.
+
+   .... Let ``b`` be ``b~l~`` and ``b~r~``.
+   .... Result in ``b``.
+  ... Else if let ``+++FUN+++ +++(+++t~arg~ x~arg~+++)+++ +++->+++ t~ret~ +++{+++e+++}+++`` be ``expr``:
+   .... Result in ``+++CLO+++ x~arg~ e env``.
+  ... Else if let ``e~f~ +++(+++e~a~+++)+++`` be ``expr``:
+   .... Let xref:Eval_expr[``env ⊢ e~f~ ⟹ value``].
+   .... Let!~type~ ``+++CLO+++ x~a~ e~body~ env~clo~`` be ``value``.
+
+   .... Let xref:Eval_expr[``env ⊢ e~a~ ⟹ v``].
+   .... Let xref:Eval_expr[``x~a~ → v {two-colons} env~clo~ ⊢ e~body~ ⟹ v~ret~``].
+   .... Result in ``v~ret~``.
+****
+
+=== Commands
+
+ifdef::backend-html5[]
+.Click to view the specification source
+[%collapsible]
+====
+----
+relation Eval_command: env |- command -| env
+----
+====
+
+[.empty]
+--
+
+
+--
+
+endif::[]
+
+[[Eval_command]]
+[.sidebar-title]
+****
+xref:Eval_command[Eval_command: ``env ⊢ command ⊣ %``]
+****
+
+ifdef::backend-html5[]
+.Click to view the specification source
+[%collapsible]
+====
+----
+rule Eval_command/skip:
+  env |- SKIP -| env
+
+rule Eval_command/decl:
+  env |- (t x = e) -| (x -> v) :: env
+ -- Eval_expr: env |- e ==> v
+
+rule Eval_command/assign:
+  env |- (x = e) -| (x -> v) :: env
+ -- Eval_expr: env |- e ==> v
+
+rule Eval_command/ite-true:
+  env |- (IF e THEN c_1 ELSE c_2 END) -| env_1
+ -- Eval_expr: env |- e ==> (_BOOL true)
+ -- Eval_command: env |- c_1 -| env_1
+
+rule Eval_command/ite-false:
+  env |- (IF e THEN c_1 ELSE c_2 END) -| env_2
+ -- Eval_expr: env |- e ==> (_BOOL false)
+ -- Eval_command: env |- c_2 -| env_2
+
+rule Eval_command/while-false:
+  env |- (WHILE e DO c END) -| env
+ -- Eval_expr: env |- e ==> (_BOOL false)
+
+rule Eval_command/while-true:
+  env |- (WHILE e DO c END) -| env_2
+ -- Eval_expr: env |- e ==> (_BOOL true)
+ -- Eval_command: env |- c -| env_1
+ -- Eval_command: env_1 |- (WHILE e DO c END) -| env_2
+
+rule Eval_command/seq:
+  env |- (c_1 ; c_2) -| env_2
+ -- Eval_command: env |- c_1 -| env_1
+ -- Eval_command: env_1 |- c_2 -| env_2
+----
+====
+
+[.empty]
+--
+
+
+--
+
+endif::[]
+
+****
+. If ``command`` matches pattern ``+++SKIP+++``:
+ .. Result in ``env``.
+. Else if let ``t x +++=+++ e`` be ``command``:
+ .. Let xref:Eval_expr[``env ⊢ e ⟹ v``].
+ .. Result in ``x → v {two-colons} env``.
+. Else if let ``x +++=+++ e`` be ``command``:
+ .. Let xref:Eval_expr[``env ⊢ e ⟹ v``].
+ .. Result in ``x → v {two-colons} env``.
+. Else if let ``+++IF+++ e +++THEN+++ c~1~ +++ELSE+++ c~2~ +++END+++`` be ``command``:
+ .. Let xref:Eval_expr[``env ⊢ e ⟹ value``].
+ .. Try:
+  ... {empty}
+   .... Check that ``value`` is equal to ``true``.
+
+   .... Let xref:Eval_command[``env ⊢ c~1~ ⊣ env~1~``].
+   .... Result in ``env~1~``.
+  ... {empty}
+   .... Check that ``value`` is equal to ``false``.
+
+   .... Let xref:Eval_command[``env ⊢ c~2~ ⊣ env~2~``].
+   .... Result in ``env~2~``.
+. Else if let ``+++WHILE+++ e +++DO+++ c +++END+++`` be ``command``:
+ .. Let xref:Eval_expr[``env ⊢ e ⟹ value``].
+ .. Try:
+  ... {empty}
+   .... Check that ``value`` is equal to ``false``.
+
+   .... Result in ``env``.
+  ... {empty}
+   .... Check that ``value`` is equal to ``true``.
+
+   .... Let xref:Eval_command[``env ⊢ c ⊣ env~1~``].
+   .... Let xref:Eval_command[``env~1~ ⊢ +++WHILE+++ e +++DO+++ c +++END+++ ⊣ env~2~``].
+   .... Result in ``env~2~``.
+. Else if let ``c~1~ +++;+++ c~2~`` be ``command``:
+ .. Let xref:Eval_command[``env ⊢ c~1~ ⊣ env~1~``].
+ .. Let xref:Eval_command[``env~1~ ⊢ c~2~ ⊣ env~2~``].
+ .. Result in ``env~2~``.
+****

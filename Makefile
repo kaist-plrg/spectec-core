@@ -152,7 +152,7 @@ vsix:
 #
 #   make test            - quick + new p4 il/sl
 
-.PHONY: test test-quick test-elab test-elab-neg test-interp-neg test-cli test-struct test-roundtrip-il test-roundtrip-el
+.PHONY: test test-quick test-elab test-elab-neg test-interp-neg test-cli test-struct test-splice test-roundtrip-il test-roundtrip-el
 .PHONY: test-il test-il-pos test-il-neg
 .PHONY: test-sl test-sl-pos test-sl-neg
 .PHONY: test-old test-il-old test-il-pos-old test-il-neg-old
@@ -189,6 +189,10 @@ test-cli:
 test-struct:
 	@echo "#### Running structuring test"
 	@$(DUNE) build @test/struct/runtest --profile=release && echo OK
+
+test-splice:
+	@echo "#### Running splice prose test"
+	@$(DUNE) build @test/splice/runtest --profile=release && echo OK
 
 test-roundtrip-il:
 	@echo "#### Running EL<->IL premise roundtrip test"
@@ -228,7 +232,7 @@ test-sl-pos-old:
 test-sl-neg-old:
 	$(call run_interp_test,p4-old,sl,neg)
 
-test-quick: test-elab test-elab-neg test-interp-neg test-cli test-struct test-roundtrip-il test-roundtrip-el test-impty
+test-quick: test-elab test-elab-neg test-interp-neg test-cli test-struct test-splice test-roundtrip-il test-roundtrip-el test-impty
 	@echo "#### Quick tests passed"
 
 test-il: test-il-pos test-il-neg
