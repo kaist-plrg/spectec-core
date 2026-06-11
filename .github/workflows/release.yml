@@ -86,6 +86,7 @@ jobs:
           make vsix
           cp editors/vscode/spectecx.vsix release/
           cp editors/emacs/spectec-ts-mode.el release/
+          tar -czf release/spectec-vim.tar.gz -C editors/vim syntax ftdetect
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -163,13 +164,25 @@ jobs:
 
             If `code` is not on your PATH, run "Shell Command: Install 'code' command in PATH" from the command palette first. For VSCodium, use `codium --install-extension spectecx.vsix`.
 
-            **Neovim** -- a self-contained tree-sitter plugin (needs a C compiler; no nvim-treesitter required). With lazy.nvim:
+            **Neovim** (0.9+) -- self-contained tree-sitter plugin (needs a C compiler; no nvim-treesitter required). With lazy.nvim:
 
             ```lua
             { "KunJeong/tree-sitter-spectec", build = "make parser" }
             ```
 
             See [the grammar repo](https://github.com/KunJeong/tree-sitter-spectec) for other plugin managers.
+
+            **Vim, or Neovim before 0.9** -- a lightweight regex highlighter without build or dependencies. It ships in the bundle; run it on a spec directly:
+
+            ```bash
+            vim --cmd 'set rtp^=editors/vim' impty.spectec
+            ```
+
+            Or install it permanently: download **`spectec-vim.tar.gz`** and unpack it into your Vim runtime (`~/.config/nvim` for Neovim):
+
+            ```bash
+            mkdir -p ~/.vim && tar -xzf spectec-vim.tar.gz -C ~/.vim
+            ```
 
             **Emacs** -- (29+ with tree-sitter, plus a C compiler) `spectec-ts-mode.el` ships in the bundle (and on this release page). Run it on a spec; it offers to build the grammar on first use:
 

@@ -83,17 +83,18 @@ bundle:
 	cp LICENSE $(BUNDLE_DIR)/
 	cp $(BUNDLE_SRC)/impty.spectec $(BUNDLE_DIR)/impty.spectec
 	cp editors/emacs/spectec-ts-mode.el $(BUNDLE_DIR)/
-	# The recursion exercise is a self-contained sub-bundle: its own spec,
-	# config, Makefile, README, and a spectecx symlink to the parent binary.
+	mkdir -p $(BUNDLE_DIR)/editors/vim/syntax $(BUNDLE_DIR)/editors/vim/ftdetect
+	cp editors/vim/syntax/spectec.vim $(BUNDLE_DIR)/editors/vim/syntax/
+	cp editors/vim/ftdetect/spectec.vim $(BUNDLE_DIR)/editors/vim/ftdetect/
+	# Recursion sub-bundle, with a spectecx symlink to the parent binary.
 	cp $(BUNDLE_SRC)/recursion/recursion.spectec \
 	   $(BUNDLE_SRC)/recursion/spectecx.config \
 	   $(BUNDLE_SRC)/recursion/Makefile \
 	   $(BUNDLE_SRC)/recursion/import-functions.sh \
 	   $(BUNDLE_SRC)/recursion/README.md $(BUNDLE_DIR)/recursion/
 	ln -sf ../spectecx $(BUNDLE_DIR)/recursion/spectecx
-	# Ship the whole corpus, including the negative (_errors_) cases: `impty
-	# batch` classifies those as expected failures, and they drive error paths
-	# (e.g. lookup-not-found) that the positive tests never reach.
+	# Ship the whole corpus, negative (_errors_) cases included: `impty batch`
+	# expects them to fail, and they drive error paths the positive tests miss.
 	cp $(IMPTY_TESTS)/base/*.imp $(BUNDLE_DIR)/tests/base/
 	cp $(IMPTY_TESTS)/base/*.imp $(BUNDLE_DIR)/recursion/tests/base/
 	cp $(IMPTY_TESTS)/closure/*.imp $(BUNDLE_DIR)/tests/functions/

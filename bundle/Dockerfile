@@ -1,26 +1,12 @@
-# Typed Imp tutorial - a self-contained image: `spectecx`, the tutorial
-# materials, an editor, and asciidoctor, so participants need no host
-# toolchain.
-#
-# A prebuilt image is published, so most people can skip this build:
-#
-#   docker pull kaistplrg/spectecx:tutorial
-#   docker run -it kaistplrg/spectecx:tutorial
-#
-# To build the image yourself instead, work entirely inside the container:
-#
-#   docker build -t spectecx-tutorial .
-#   docker run -it spectecx-tutorial          # shell in /work; edit and run here
-#
-# Inside, every README command runs as written (./spectecx ..., make test, ...).
-# To keep edits across sessions, drop --rm and reuse a named container, or
-# mount your spec: -v "$PWD/impty.spectec":/work/impty.spectec
-#
+# Self-contained tutorial image: spectecx, the materials, an editor, and
+# asciidoctor. A prebuilt image is published (docker pull
+# kaistplrg/spectecx:tutorial); to build it yourself:
+#   docker build -t spectecx-tutorial . && docker run -it spectecx-tutorial
 # Override the revision with --build-arg SPECTECX_REF=<tag-or-branch>.
 
 FROM ocaml/opam:debian-12-ocaml-5.1
 
-# opam deps need GMP (bignum); asciidoctor needs Ruby; vim/nano to edit the spec.
+# opam deps need GMP; asciidoctor needs Ruby; vim/nano to edit the spec.
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
       libgmp-dev pkg-config m4 \
@@ -40,10 +26,15 @@ RUN opam install -y --deps-only . \
  && opam exec -- dune build bin/main.exe \
  && sudo install _build/default/bin/main.exe /usr/local/bin/spectecx
 
-# Bake the tutorial materials in, and expose the binary as ./spectecx so the
-# README commands run unchanged from /work.
+# Symlink the binary as ./spectecx so README commands run verbatim from /work.
 COPY --chown=opam . /work
 RUN ln -sf /usr/local/bin/spectecx /work/spectecx
+
+# Preconfigure Vim with the bundled highlighter and a dark theme.
+RUN mkdir -p /home/opam/.vim \
+ && cp -r /work/editors/vim/syntax /work/editors/vim/ftdetect /home/opam/.vim/ \
+ && printf 'syntax on\nfiletype plugin on\nset background=dark\nsilent! colorscheme habamax\n' \
+      > /home/opam/.vimrc
 
 WORKDIR /work
 ENTRYPOINT []
