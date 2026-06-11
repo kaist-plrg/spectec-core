@@ -176,25 +176,6 @@ let quickcheck_command =
     |> Result.map_error (fun e ->
            Error.QuickcheckError (Quickcheck.Driver.error_to_string e))
 
-(* Create [dir] and any missing parents, like `mkdir -p`. *)
-let rec ensure_dir dir =
-  if dir = "" || dir = "." || dir = Filename.dirname dir then ()
-  else if Sys.file_exists dir then ()
-  else (
-    ensure_dir (Filename.dirname dir);
-    try Sys.mkdir dir 0o755 with Sys_error _ -> ())
-
-(* Replace characters unsafe in a file name with '_'. *)
-let sanitize_name =
-  String.map (fun c ->
-      if
-        (c >= 'a' && c <= 'z')
-        || (c >= 'A' && c <= 'Z')
-        || (c >= '0' && c <= '9')
-        || c = '_' || c = '-'
-      then c
-      else '_')
-
 (* Render the [prog] of [env] to [.imp] source. *)
 let render_imp env : (string, string) result =
   match List.assoc_opt "prog" env with
@@ -205,43 +186,21 @@ let render_imp env : (string, string) result =
           Error (Printf.sprintf "no surface syntax (%s)" what)
       | text -> Ok text)
 
-(* Lowest-numbered [counter_<name>[_k].imp] slot in [dir] not already taken. *)
-let rec free_slot dir base i =
-  let candidate =
-    if i = 0 then base ^ ".imp" else Printf.sprintf "%s_%d.imp" base i
-  in
-  if Sys.file_exists (Filename.concat dir candidate) then
-    free_slot dir base (i + 1)
-  else candidate
-
 let save_counterexample ~out_dir name env =
   match render_imp env with
   | Error reason -> Printf.eprintf "fuzz: %s: %s; not saved\n%!" name reason
-  | Ok text ->
-      ensure_dir out_dir;
+  | Ok text -> (
       let content =
         Printf.sprintf "// quickcheck counterexample for %s\n%s\n" name text
       in
-      (* Skip exact duplicates already on disk, and never overwrite an existing
-         file: each distinct counterexample lands in its own numbered slot. *)
-      let read f =
-        try Some (Parse.read_file (Filename.concat out_dir f)) with _ -> None
-      in
-      let entries = try Sys.readdir out_dir with Sys_error _ -> [||] in
-      if
-        Array.exists
-          (fun f -> Filename.check_suffix f ".imp" && read f = Some content)
-          entries
-      then Printf.printf "  counterexample for %s already saved\n%!" name
-      else
-        let file =
-          Filename.concat out_dir
-            (free_slot out_dir ("counter_" ^ sanitize_name name) 0)
-        in
-        let oc = open_out file in
-        output_string oc content;
-        close_out oc;
-        Printf.printf "  saved counterexample to %s\n%!" file
+      match
+        Corpus.save ~out_dir ~base:("counter_" ^ name) ~ext:".imp" ~content
+      with
+      | Ok (Corpus.Saved path) ->
+          Printf.printf "  saved counterexample to %s\n%!" path
+      | Ok Corpus.Duplicate ->
+          Printf.printf "  counterexample for %s already saved\n%!" name
+      | Error msg -> Printf.eprintf "fuzz: %s: %s; not saved\n%!" name msg)
 
 let fuzz_command =
   Core.Command.basic
