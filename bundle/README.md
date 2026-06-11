@@ -20,9 +20,10 @@ The `spectecx` binary is obtained separately -- see [Getting the tool](#getting-
 |   |-- README.md          the exercise
 |   |-- Makefile           `make test-rec`
 |   `-- tests/             base + functions + recursion programs
+|-- skeleton/
+|   `-- impty.adoc        prose document source (AsciiDoc + splice directives)
 `-- documentation/
-    |-- impty.adoc        prose document source (AsciiDoc + splice directives)
-    `-- docinfo.html      stylesheet for the rendered output
+    `-- docinfo.html      stylesheet; `make doc` writes impty.adoc here
 ```
 
 The commands below read `spectecx.config` from the current directory for their `--spec` and `--batch-dir` defaults, so run them from this directory.
@@ -52,14 +53,20 @@ plugin.
 
 ## 2. Documentation: generated prose
 
-The prose document splices straight from `impty.spectec`. Needs [asciidoctor](https://asciidoctor.org/) (`gem install asciidoctor asciidoctor-pdf`), or use Docker (see the release page).
+`make doc` splices `impty.spectec` into an AsciiDoc document:
+
+```sh
+make doc          # -> documentation/impty.adoc
+```
+
+Read `documentation/impty.adoc` in any editor, or preview it with the VS Code / JetBrains AsciiDoc extension (`Ctrl+Shift+V`).
+
+For HTML or PDF, install [asciidoctor](https://asciidoctor.org/) (`gem install asciidoctor asciidoctor-pdf`, or use the Docker image):
 
 ```sh
 make doc-html    # -> documentation/impty.html
 make doc-pdf     # -> documentation/impty.pdf
 ```
-
-Then open `documentation/impty.html` (or `documentation/impty.pdf`).
 
 ## 3-a. Adding first-class functions (test-driven)
 

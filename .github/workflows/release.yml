@@ -132,7 +132,7 @@ jobs:
 
             Every command runs the binary as `./spectecx`, so there is no `PATH` setup to do.
 
-            For the optional prose build (`make doc-html`), also install asciidoctor: `gem install asciidoctor asciidoctor-pdf`. The Docker image below already bundles it.
+            `make doc` splices the spec into AsciiDoc at `documentation/impty.adoc`. Read it in any editor, or preview it with the VS Code / JetBrains AsciiDoc extension. For HTML/PDF (`make doc-html` / `make doc-pdf`), install asciidoctor (`gem install asciidoctor asciidoctor-pdf`, already in the Docker image).
 
             ### Alternatives
 

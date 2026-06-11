@@ -77,6 +77,7 @@ bundle:
 	         $(BUNDLE_DIR)/recursion/tests/base \
 	         $(BUNDLE_DIR)/recursion/tests/functions \
 	         $(BUNDLE_DIR)/recursion/tests/recursion \
+	         $(BUNDLE_DIR)/skeleton \
 	         $(BUNDLE_DIR)/documentation
 	cp $(BUNDLE_SRC)/README.md $(BUNDLE_SRC)/Makefile $(BUNDLE_SRC)/Dockerfile \
 	   $(BUNDLE_SRC)/spectecx.config $(BUNDLE_DIR)/
@@ -100,8 +101,8 @@ bundle:
 	cp $(IMPTY_TESTS)/closure/*.imp $(BUNDLE_DIR)/tests/functions/
 	cp $(IMPTY_TESTS)/closure/*.imp $(BUNDLE_DIR)/recursion/tests/functions/
 	cp $(IMPTY_TESTS)/recursion/*.imp $(BUNDLE_DIR)/recursion/tests/recursion/
-	cp $(BUNDLE_SRC)/documentation/impty.adoc \
-	   $(BUNDLE_SRC)/documentation/docinfo.html $(BUNDLE_DIR)/documentation/
+	cp $(BUNDLE_SRC)/skeleton/impty.adoc $(BUNDLE_DIR)/skeleton/
+	cp $(BUNDLE_SRC)/documentation/docinfo.html $(BUNDLE_DIR)/documentation/
 	tar -czf dist/$(BUNDLE_NAME).tar.gz -C dist $(BUNDLE_NAME)
 	@echo "#### bundle written to dist/$(BUNDLE_NAME).tar.gz"
 
