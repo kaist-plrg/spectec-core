@@ -218,7 +218,7 @@ let fuzz_command =
   @@
   let open Core.Command.Let_syntax in
   let open Core.Command.Param in
-  let%map filenames_spec = Cli.Cli_args.Spec.files_flag
+  let%map cli_source = Cli.Cli_args.Spec.source_flag
   and max_steps =
     flag "--max-steps"
       (optional_with_default 100 int)
@@ -237,11 +237,15 @@ let fuzz_command =
     let module T = Target in
     let open Spectec in
     let ( let* ) = Result.bind in
-    let* filenames =
-      match filenames_spec with
-      | [] -> Cli.Spec_source.files (Cli.Spec_source.Dir T.spec_dir)
-      | files -> Ok files
+    let* cfg = Cli.Config_file.load ~target:T.name () in
+    let source =
+      match cli_source with
+      | Some s -> s
+      | None ->
+          Option.value cfg.Cli.Config_file.spec_source
+            ~default:(Cli.Spec_source.Dir T.spec_dir)
     in
+    let* filenames = Cli.Spec_source.files source in
     let* spec = parse_spec_files filenames in
     let* { lang; qc } = elaborate spec in
     (* Premise evaluation drives the instrumentation dispatcher, so a session
