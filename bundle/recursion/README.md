@@ -29,7 +29,7 @@ rebinds that name to the closure before evaluating the body.
 
 Complete `recursion.spectec` by filling the stubs, each tagged in the file:
 
-  - `(Part 2)`     -- the four function rules. Paste in your answers from the
+  - `(functions)`  -- the four function rules. Paste in your answers from the
                       main exercise (`../impty.spectec`).
   - `(recursion)`  -- the conditional and recursion rules: typing and
                       evaluation for `e ? e : e`, and for the `rec` declaration

@@ -3,8 +3,8 @@
 ;; An optional exercise for early finishers, extending the main language with a
 ;; conditional expression and recursive function declarations. See README.md.
 ;;
-;; Stubs are tagged two ways:
-;;   (Part 2)     -- the function rules. Paste in the answers you completed in
+;; Stubs are tagged the same way as the syntax productions above them:
+;;   (functions)  -- the function rules. Paste in the answers you completed in
 ;;                   the main exercise (../impty.spectec); recursion builds on them.
 ;;   (recursion)  -- new rules for the conditional expression and recursive
 ;;                   declarations. Work these out yourself.
@@ -116,14 +116,14 @@ rule Check_expr/and:
   -- Check_expr: tenv |- e_l : BOOL
   -- Check_expr: tenv |- e_r : BOOL
 
-;; rule Check_expr/cond:   (recursion)
-;;   -- TODO
+;; rule Check_expr/cond:
+;;   tenv |- e_1 '?' e_2 ':' e_3 : _    ;; (recursion) TODO: result type + premises
 
-;; rule Check_expr/fun:    (Part 2 -- carry over)
-;;   -- TODO
+;; rule Check_expr/fun:
+;;   tenv |- FUN `( t_1 x `) '->' t_2 `{ e `} : _    ;; (functions) carry over from ../impty.spectec
 
-;; rule Check_expr/call:   (Part 2 -- carry over)
-;;   -- TODO
+;; rule Check_expr/call:
+;;   tenv |- e_f `( e_a `) : _    ;; (functions) carry over from ../impty.spectec
 
 ;;--- Commands ---
 
@@ -161,8 +161,8 @@ rule Check_command/seq:
   -- Check_command: tenv |- c_1 -| tenv_1
   -- Check_command: tenv_1 |- c_2 -| tenv_2
 
-;; rule Check_command/rec:   (recursion)
-;;   -- TODO
+;; rule Check_command/rec:
+;;   tenv |- REC f `( t_1 x `) '->' t_2 `{ e `} -| _    ;; (recursion) TODO: result context + premises
 
 ;;--- Program ---
 
@@ -231,20 +231,20 @@ rule Eval_expr/and:
   -- Eval_expr: env |- e_r ==> _BOOL b_r
   -- if b = (b_l /\ b_r)
 
-;; rule Eval_expr/cond-true:    (recursion)
-;;   -- TODO
+;; rule Eval_expr/cond-true:
+;;   env |- e_1 '?' e_2 ':' e_3 ==> _    ;; (recursion) TODO: result value + premises
 
-;; rule Eval_expr/cond-false:   (recursion)
-;;   -- TODO
+;; rule Eval_expr/cond-false:
+;;   env |- e_1 '?' e_2 ':' e_3 ==> _    ;; (recursion) TODO: result value + premises
 
-;; rule Eval_expr/fun:     (Part 2 -- carry over)
-;;   -- TODO
+;; rule Eval_expr/fun:
+;;   env |- FUN `( t_1 x `) '->' t_2 `{ e `} ==> _    ;; (functions) carry over from ../impty.spectec
 
-;; rule Eval_expr/call:    (Part 2 -- carry over)
-;;   -- TODO
+;; rule Eval_expr/call:
+;;   env |- e_f `( e_a `) ==> _    ;; (functions) carry over from ../impty.spectec
 
-;; rule Eval_expr/call-rec:   (recursion)
-;;   -- TODO
+;; rule Eval_expr/call-rec:
+;;   env |- e_f `( e_a `) ==> _    ;; (recursion) TODO: result value + premises (applying a RECCLO)
 
 ;;--- Commands ---
 
@@ -289,8 +289,8 @@ rule Eval_command/seq:
   -- Eval_command: env |- c_1 -| env_1
   -- Eval_command: env_1 |- c_2 -| env_2
 
-;; rule Eval_command/rec:   (recursion)
-;;   -- TODO
+;; rule Eval_command/rec:
+;;   env |- REC f `( t_1 x `) '->' t_2 `{ e `} -| _    ;; (recursion) TODO: result env + premises
 
 ;;--- Program ---
 
