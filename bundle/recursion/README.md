@@ -6,7 +6,9 @@ is provided; the rules you wrote in the main exercise are the model.
 
 The skeleton in `recursion.spectec` is a superset of the main language, so the
 function rules are stubbed here as well. Recursion is defined on top of
-closures, so begin by carrying over your completed function rules.
+closures, so begin by importing your completed function rules with `make
+import` -- it copies them from `../impty.spectec`, once the main exercise is
+finished.
 
 ## New constructs
 
@@ -29,8 +31,8 @@ rebinds that name to the closure before evaluating the body.
 
 Complete `recursion.spectec` by filling the stubs, each tagged in the file:
 
-  - `(functions)`  -- the four function rules. Paste in your answers from the
-                      main exercise (`../impty.spectec`).
+  - `(functions)`  -- the four function rules. `make import` copies them over
+                      from the main exercise; or paste them in by hand.
   - `(recursion)`  -- the conditional and recursion rules: typing and
                       evaluation for `e ? e : e`, and for the `rec` declaration
                       and its application.
@@ -39,6 +41,7 @@ Complete `recursion.spectec` by filling the stubs, each tagged in the file:
 
 Work from this directory. `./spectecx` is the same binary as the main exercise.
 
+    make import       # bring your finished function rules in from ../impty.spectec
     make test-rec     # whole suite: base + functions + recursion programs
     make test-base    # base programs only (a quick sanity check)
 
@@ -46,5 +49,6 @@ Work from this directory. `./spectecx` is the same binary as the main exercise.
     ./spectecx impty typecheck -p tests/recursion/rec_sum.imp
     ./spectecx impty eval      -p tests/recursion/rec_sum.imp
 
-The base programs pass immediately; the function programs pass once you carry
-your rules over; the recursion programs pass once you complete the new rules.
+The base programs pass immediately; the function programs pass once you import
+your rules (`make import`); the recursion programs pass once you complete the
+new rules.

@@ -107,10 +107,10 @@ rule Check_expr/and:
   -- Check_expr: tenv |- e_r : BOOL
 
 ;; rule Check_expr/fun:
-;;   tenv |- FUN `( t_1 x `) '->' t_2 `{ e `} : _    ;; TODO: result type + premises
+;;   tenv |- FUN `( t_1 x `) '->' t_2 `{ e `} : ???    ;; TODO: result type + premises
 
 ;; rule Check_expr/call:
-;;   tenv |- e_f `( e_a `) : _    ;; TODO: result type + premises
+;;   tenv |- e_f `( e_a `) : ???    ;; TODO: result type + premises
 
 ;;--- Commands ---
 
@@ -215,10 +215,10 @@ rule Eval_expr/and:
   -- if b = (b_l /\ b_r)
 
 ;; rule Eval_expr/fun:
-;;   env |- FUN `( t_1 x `) '->' t_2 `{ e `} ==> _    ;; TODO: result value + premises
+;;   env |- FUN `( t_1 x `) '->' t_2 `{ e `} ==> ???    ;; TODO: result value + premises
 
 ;; rule Eval_expr/call:
-;;   env |- e_f `( e_a `) ==> _    ;; TODO: result value + premises
+;;   env |- e_f `( e_a `) ==> ???    ;; TODO: result value + premises
 
 ;;--- Commands ---
 

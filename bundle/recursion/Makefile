@@ -7,14 +7,20 @@
 SPECTECX ?= ./spectecx
 SPEC      = recursion.spectec
 
-.PHONY: check test-rec test-base help
+.PHONY: check import test-rec test-base help
 
 help:
 	@echo "Recursion exercise helpers (see README.md):"
+	@echo "  make import      bring your completed function rules over from ../impty.spectec"
 	@echo "  make check       type-check the spec (errors and warnings, no IL)"
 	@echo "  make test-rec    run the whole suite (tests/: base + functions + recursion)"
 	@echo "  make test-base   run the base-language tests only (tests/base/)"
 	@echo "Override the tool with SPECTECX=... (default: $(SPECTECX))."
+
+# Copy the completed (functions) rules over from the main exercise. Refuses
+# until ../impty.spectec is finished (see import-functions.sh).
+import:
+	@sh import-functions.sh
 
 check:
 	$(SPECTECX) elab --check $(SPEC)

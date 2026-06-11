@@ -88,6 +88,7 @@ bundle:
 	cp $(BUNDLE_SRC)/recursion/recursion.spectec \
 	   $(BUNDLE_SRC)/recursion/spectecx.config \
 	   $(BUNDLE_SRC)/recursion/Makefile \
+	   $(BUNDLE_SRC)/recursion/import-functions.sh \
 	   $(BUNDLE_SRC)/recursion/README.md $(BUNDLE_DIR)/recursion/
 	ln -sf ../spectecx $(BUNDLE_DIR)/recursion/spectecx
 	# Ship the whole corpus, including the negative (_errors_) cases: `impty
