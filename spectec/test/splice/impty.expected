@@ -129,6 +129,13 @@ xref:lookup[$lookup<K, V>(pair<K, V>^{asterisk}^, K~query~)]
   ... Return ``xref:lookup[$lookup<K, V>(( K~t~ → V~t~ )^{asterisk}^, K~query~)]``.
 ****
 
+=== Shorthands
+
+[#option_get]
+==== Force-unwrap (`?`)
+
+Force-unwraps an optional. If the value is none, the rule does not apply.
+
 == Static semantics
 
 The typing judgments characterise well-formed expressions and commands
@@ -220,7 +227,7 @@ endif::[]
  .. Else if let ``b`` be ``literal``:
   ... Result in ``+++BOOL+++``.
 . Else if let ``x`` be ``expr``:
- .. Let ``t`` be xref:option_get[*!*] ``xref:lookup[$lookup<id, type>(tenv, x)]``.
+ .. Let~xref:option_get[?]~ ``t`` be ``xref:lookup[$lookup<id, type>(tenv, x)]``.
  .. Result in ``t``.
 . Else if let ``+++!+++ e`` be ``expr``:
  .. Let xref:Check_expr[``tenv ⊢ e +++:+++ type``].
@@ -460,7 +467,7 @@ endif::[]
  .. Else if let ``b`` be ``literal``:
   ... Result in ``b``.
 . Else if let ``x`` be ``expr``:
- .. Let ``v`` be xref:option_get[*!*] ``xref:lookup[$lookup<id, value>(env, x)]``.
+ .. Let~xref:option_get[?]~ ``v`` be ``xref:lookup[$lookup<id, value>(env, x)]``.
  .. Result in ``v``.
 . Else if let ``+++!+++ e`` be ``expr``:
  .. Let xref:Eval_expr[``env ⊢ e ⟹ value``].

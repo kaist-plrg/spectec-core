@@ -611,9 +611,9 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
       in
       if block = [] then head else head ^ "\n" ^ render_instrs ~level block
   | OptionGetI (exp_l, exp_r) ->
-      F.asprintf "%sLet %s be %s %s." bullet
+      F.asprintf "%sLet%s %s be %s." bullet
+        (adoc_subscript (adoc_link ~link:"option_get" "?"))
         (render_exp_as_code in_prose exp_l)
-        (adoc_link ~link:"option_get" "*!*")
         (render_exp in_prose exp_r)
 
 and render_instrs ?(level = 0) (instrs : instr list) : string =

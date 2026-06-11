@@ -33,6 +33,13 @@ ${func-source: lookup}
 
 ${func-prose: lookup}
 
+=== Shorthands
+
+[#option_get]
+==== Force-unwrap (`?`)
+
+Force-unwraps an optional. If the value is none, the rule does not apply.
+
 == Static semantics
 
 The typing judgments characterise well-formed expressions and commands
