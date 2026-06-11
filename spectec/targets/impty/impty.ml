@@ -186,9 +186,18 @@ let render_imp env : (string, string) result =
           Error (Printf.sprintf "no surface syntax (%s)" what)
       | text -> Ok text)
 
+(* Drop a render that no longer parses. *)
+let parses_back text =
+  match Parse.parse_string_exn ~filename:"<counterexample>" text with
+  | _ -> true
+  | exception Error.ImptyParseError _ -> false
+
 let save_counterexample ~out_dir name env =
   match render_imp env with
   | Error reason -> Printf.eprintf "fuzz: %s: %s; not saved\n%!" name reason
+  | Ok text when not (parses_back text) ->
+      Printf.eprintf
+        "fuzz: %s: rendered program does not parse back; not saved\n%!" name
   | Ok text -> (
       let content =
         Printf.sprintf "// quickcheck counterexample for %s\n%s\n" name text
