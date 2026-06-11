@@ -1,0 +1,240 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "SpecTecX",
+  "scopeName": "source.spectec",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#var-block" },
+    { "include": "#syntax-block" },
+    { "include": "#relation-block" },
+    { "include": "#dec-block" },
+    { "include": "#rule-block" },
+    { "include": "#def-block" },
+    { "include": "#expression-content" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.double-semicolon.spectec", "match": ";;.*$" },
+        { "include": "#block-comment" }
+      ]
+    },
+    "block-comment": {
+      "name": "comment.block.spectec",
+      "begin": "\\(;",
+      "end": ";\\)",
+      "patterns": [{ "include": "#block-comment" }]
+    },
+    "strings": {
+      "name": "string.quoted.double.spectec",
+      "begin": "\"",
+      "end": "\"|$",
+      "patterns": [
+        {
+          "name": "constant.character.escape.spectec",
+          "match": "\\\\(?:[nrt\\\\'\"]|[0-9A-Fa-f]{2}|u\\{[0-9A-Fa-f_]+\\})"
+        }
+      ]
+    },
+    "hint": {
+      "name": "meta.hint.spectec",
+      "begin": "\\b(hint)(\\()",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.hint.spectec" },
+        "2": { "name": "punctuation.section.hint.begin.spectec" }
+      },
+      "end": "\\)",
+      "endCaptures": {
+        "0": { "name": "punctuation.section.hint.end.spectec" }
+      },
+      "patterns": [
+        {
+          "match": "\\G\\s*([a-z_][\\w']*)",
+          "captures": { "1": { "name": "entity.other.attribute-name.spectec support.function.hint-name.spectec" } }
+        },
+        { "include": "#hint-contents" }
+      ]
+    },
+    "hint-contents": {
+      "patterns": [
+        { "include": "#strings" },
+        { "include": "#latex" },
+        { "include": "#holes" },
+        {
+          "begin": "\\(",
+          "end": "\\)",
+          "patterns": [{ "include": "#hint-contents" }]
+        }
+      ]
+    },
+    "var-block": {
+      "begin": "^(var)\\b[ \\t]*([a-z_][\\w']*)?",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.spectec" },
+        "2": { "name": "entity.other.attribute-name.spectec variable.other.metavariable.spectec" }
+      },
+      "end": "^(?=\\S)",
+      "patterns": [
+        { "include": "#expression-content" },
+        { "include": "#type-metavar" }
+      ]
+    },
+    "syntax-block": {
+      "begin": "^(syntax)\\b[ \\t]*([a-z_][\\w']*)?",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.spectec" },
+        "2": { "name": "storage.type.spectec entity.name.type.spectec" }
+      },
+      "end": "^(?=\\S)",
+      "patterns": [
+        { "include": "#expression-content" },
+        { "include": "#type-metavar" }
+      ]
+    },
+    "relation-block": {
+      "begin": "^(relation|property)\\b[ \\t]*([A-Za-z_][\\w']*)?",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.spectec" },
+        "2": { "name": "entity.other.attribute-name.spectec entity.name.function.relation.spectec" }
+      },
+      "end": "^(?=\\S)",
+      "patterns": [
+        { "include": "#expression-content" },
+        { "include": "#type-metavar" }
+      ]
+    },
+    "dec-block": {
+      "begin": "^(dec)\\b[ \\t]*(\\$[A-Za-z_][\\w']*)?",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.spectec" },
+        "2": { "name": "entity.other.attribute-name.spectec entity.name.function.spectec" }
+      },
+      "end": "^(?=\\S)",
+      "patterns": [
+        { "include": "#expression-content" },
+        { "include": "#type-metavar" }
+      ]
+    },
+    "rule-block": {
+      "begin": "^(rule)\\b[ \\t]*([A-Za-z_][\\w'/]*)?",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.spectec" },
+        "2": { "name": "entity.other.attribute-name.spectec entity.name.function.rule.spectec" }
+      },
+      "end": "^(?=\\S)",
+      "patterns": [
+        { "include": "#expression-content" },
+        { "include": "#term-metavar" }
+      ]
+    },
+    "def-block": {
+      "begin": "^(def)\\b[ \\t]*(\\$[A-Za-z_][\\w']*)?",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.spectec" },
+        "2": { "name": "entity.other.attribute-name.spectec entity.name.function.spectec" }
+      },
+      "end": "^(?=\\S)",
+      "patterns": [
+        { "include": "#expression-content" },
+        { "include": "#term-metavar" }
+      ]
+    },
+    "expression-content": {
+      "patterns": [
+        { "include": "#comments" },
+        { "include": "#strings" },
+        { "include": "#hint" },
+        { "include": "#premise" },
+        { "include": "#keywords" },
+        { "include": "#builtin-types" },
+        { "include": "#constants" },
+        { "include": "#latex" },
+        { "include": "#holes" },
+        { "include": "#numbers" },
+        { "include": "#quoted-operator" },
+        { "include": "#tick-brackets" },
+        { "include": "#tags" },
+        { "include": "#atoms" },
+        { "include": "#functions" },
+        { "include": "#notation-atoms" },
+        { "include": "#operators" },
+        { "include": "#punctuation" }
+      ]
+    },
+    "type-metavar": {
+      "name": "storage.type.spectec entity.name.type.spectec",
+      "match": "(?<![\\w'$])[a-z_][\\w']*"
+    },
+    "term-metavar": {
+      "name": "entity.other.attribute-name.spectec variable.other.spectec",
+      "match": "(?<![\\w'$])[a-z_][\\w']*"
+    },
+    "premise": {
+      "match": "(--)(?:\\s+(?:(if|otherwise)\\b|([A-Za-z_][\\w'/]*)\\s*(:)))?",
+      "captures": {
+        "1": { "name": "keyword.control.premise.spectec" },
+        "2": { "name": "keyword.control.spectec" },
+        "3": { "name": "entity.other.attribute-name.spectec entity.name.function.relation.spectec" },
+        "4": { "name": "punctuation.separator.spectec" }
+      }
+    },
+    "keywords": {
+      "name": "keyword.control.spectec",
+      "match": "\\b(?:builtin|generator|debug|if|otherwise)\\b"
+    },
+    "builtin-types": {
+      "name": "storage.type.spectec support.type.primitive.spectec",
+      "match": "\\b(?:bool|nat|int|text)\\b"
+    },
+    "constants": {
+      "name": "constant.language.spectec",
+      "match": "\\b(?:true|false|eps)\\b"
+    },
+    "latex": {
+      "name": "keyword.other.latex.spectec",
+      "match": "%latex\\b"
+    },
+    "holes": {
+      "name": "constant.numeric.placeholder.spectec constant.other.placeholder.spectec",
+      "match": "!%|%%|%\\d*"
+    },
+    "numbers": {
+      "patterns": [
+        { "name": "constant.numeric.hex.spectec", "match": "\\b0x[0-9A-F](?:_?[0-9A-F])*\\b" },
+        { "name": "constant.numeric.decimal.spectec", "match": "\\b\\d(?:_?\\d)*\\b" }
+      ]
+    },
+    "quoted-operator": {
+      "name": "entity.name.tag.operator.spectec",
+      "match": "(?<![\\w'])'[^'\\n]*'"
+    },
+    "tick-brackets": {
+      "name": "entity.name.tag.bracket.spectec",
+      "match": "`[()\\[\\]{}<>]"
+    },
+    "tags": {
+      "name": "entity.name.tag.abstract.spectec",
+      "match": "(?<![\\w'])_[A-Z][A-Z0-9_]*\\b"
+    },
+    "atoms": {
+      "name": "entity.name.tag.atom.spectec",
+      "match": "\\b[A-Z][A-Z0-9_]*\\b(?!')"
+    },
+    "functions": {
+      "name": "entity.other.attribute-name.spectec entity.name.function.spectec",
+      "match": "(?<![\\w'])\\$[A-Za-z_][\\w']*"
+    },
+    "notation-atoms": {
+      "name": "punctuation.separator.notation.spectec",
+      "match": "<=>|==>|~>\\*|->_|=>_|\\|-|-\\||<-|->|=>|~>"
+    },
+    "operators": {
+      "name": "keyword.operator.spectec",
+      "match": "=/=|<=|>=|<:|::|:/|:=|\\+\\+|##|/\\\\|\\\\/|\\.\\.\\.|\\.\\.|[~^#?*/\\\\+=<>-]"
+    },
+    "punctuation": {
+      "name": "punctuation.separator.spectec",
+      "match": "[|,.:;]"
+    }
+  }
+}

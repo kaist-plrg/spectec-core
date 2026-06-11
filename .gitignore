@@ -8,5 +8,8 @@ spectecx
 # tutorial bundle staging + tarball (make bundle)
 dist/
 
+# packaged VS Code extension (make vsix)
+editors/vscode/*.vsix
+
 # MacOS
 *.DS_Store
