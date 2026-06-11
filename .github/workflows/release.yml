@@ -81,10 +81,11 @@ jobs:
         with:
           node-version: 20
 
-      - name: Package VS Code extension
+      - name: Package editor extensions
         run: |
           make vsix
           cp editors/vscode/spectecx.vsix release/
+          cp editors/emacs/spectec-ts-mode.el release/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -152,15 +153,36 @@ jobs:
             make exe                           # produces ./spectecx
             ```
 
-            ### Optional: VS Code syntax highlighting
+            ### Optional: editor syntax highlighting
 
-            Download **`spectecx.vsix`** from this release page and install it:
+            **VS Code** -- download **`spectecx.vsix`** from this release page and install it:
 
             ```bash
             code --install-extension spectecx.vsix
             ```
 
-            If `code` is not on your PATH, run "Shell Command: Install 'code' command in PATH" from the VS Code command palette first. For VSCodium, use `codium --install-extension spectecx.vsix`.
+            If `code` is not on your PATH, run "Shell Command: Install 'code' command in PATH" from the command palette first. For VSCodium, use `codium --install-extension spectecx.vsix`.
+
+            **Neovim** -- a self-contained tree-sitter plugin (needs a C compiler; no nvim-treesitter required). With lazy.nvim:
+
+            ```lua
+            { "KunJeong/tree-sitter-spectec", build = "make parser" }
+            ```
+
+            See [the grammar repo](https://github.com/KunJeong/tree-sitter-spectec) for other plugin managers.
+
+            **Emacs** -- (29+ with tree-sitter, plus a C compiler) `spectec-ts-mode.el` ships in the bundle (and on this release page). Run it on a spec; it offers to build the grammar on first use:
+
+            ```bash
+            emacs -l spectec-ts-mode.el impty.spectec
+            ```
+
+            To make it permanent, load it from your init instead, so every `.spectec` file opens highlighted:
+
+            ```elisp
+            (add-to-list 'load-path "/directory/holding/spectec-ts-mode.el")
+            (require 'spectec-ts-mode)
+            ```
 
             ## 3. Start the session
 

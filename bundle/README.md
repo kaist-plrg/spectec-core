@@ -31,9 +31,10 @@ The commands below read `spectecx.config` from the current directory for their `
 
 Installation -- prebuilt binary, Docker, or build from source -- is on the
 project's [GitHub Releases](https://github.com/kaist-plrg/spectecx/releases)
-page, the same release you downloaded this bundle from. The release also has
-an optional VS Code extension (`spectecx.vsix`) that highlights the
-`.spectec` spec you will be editing.
+page, the same release you downloaded this bundle from. For highlighting while
+you edit, this bundle ships an Emacs mode -- `emacs -l spectec-ts-mode.el
+impty.spectec` -- and the release page also links a VS Code extension and a
+Neovim plugin.
 
 ## 1. Typed Imp: executable inference rules
 

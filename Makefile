@@ -82,6 +82,7 @@ bundle:
 	   $(BUNDLE_SRC)/spectecx.config $(BUNDLE_DIR)/
 	cp LICENSE $(BUNDLE_DIR)/
 	cp $(BUNDLE_SRC)/impty.spectec $(BUNDLE_DIR)/impty.spectec
+	cp editors/emacs/spectec-ts-mode.el $(BUNDLE_DIR)/
 	# The recursion exercise is a self-contained sub-bundle: its own spec,
 	# config, Makefile, README, and a spectecx symlink to the parent binary.
 	cp $(BUNDLE_SRC)/recursion/recursion.spectec \
