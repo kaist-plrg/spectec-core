@@ -67,11 +67,9 @@ let rec generalize_paths (spec : spec) (v : Value.t) :
   let open Common.Source in
   let t = v.note.typ in
   let root =
-    [
-      ( 0,
-        "[" ^ Print.string_of_typ (t $ no_region) ^ "]",
-        gen_of_typ spec (t $ no_region) );
-    ]
+    match gen_of_typ spec (t $ no_region) with
+    | gen -> [ (0, "[" ^ Print.string_of_typ (t $ no_region) ^ "]", gen) ]
+    | exception (Invalid_argument _ | Failure _) -> []
   in
 
   let sub_paths =

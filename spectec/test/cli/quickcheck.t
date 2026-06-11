@@ -83,6 +83,21 @@ Preservation property catches it directly with the offending expression:
   Falsifiable, after 14 tests:
     env=[], tenv=[], expr=2 <= 2
 
+Generalizing widens the expression but skips the map-typed env and tenv, which
+have no generator:
+
+  $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-preservation.spectec --num-tests 500 --generalize --color never
+  [Quickcheck Type_safety: Test]
+  Falsifiable, after 6 tests:
+    prog=while 0 <= 0 do skip end
+    (Generalized)
+    prog=while [int] <= [int] do [command] end
+  [Quickcheck Preservation: Test]
+  Falsifiable, after 14 tests:
+    env=[], tenv=[], expr=2 <= 2
+    (Generalized)
+    env=[], tenv=[], expr=[int] <= [int]
+
 The preservation-compat fixture spells out the environment/context agreement with
 let- and iteration-premises: it destructures `env` and `tenv` into key/value
 sequences and requires their keys to match pointwise. Evaluating it exercises
