@@ -643,6 +643,13 @@ let overlap_typ (tdenv : TDEnv.t) (exp : exp) (typ_a : typ) (typ_b : typ) :
       else Fuzzy
   | _ -> Fuzzy
 
+let distinct_sub_match (tdenv : TDEnv.t) (typ : typ) (pattern : pattern) : bool
+    =
+  match (typ_as_variant tdenv typ, pattern) with
+  | Some mixops, CaseP mixop ->
+      not (List.exists (Il.Mixfix.eq_mixop mixop) mixops)
+  | _ -> false
+
 let rec overlap_exp (tdenv : TDEnv.t) (exp_a : exp) (exp_b : exp) : overlap =
   let overlap_exp_unequal () : overlap =
     match (exp_a.it, exp_b.it) with
@@ -696,6 +703,17 @@ let rec overlap_exp (tdenv : TDEnv.t) (exp_a : exp) (exp_b : exp) : overlap =
     | MatchE (exp_a, pattern_a), MatchE (exp_b, pattern_b)
       when Sl.Eq.eq_exp exp_a exp_b ->
         overlap_pattern exp_a pattern_a pattern_b
+    (* Subtype injection versus constructor pattern *)
+    | SubE (exp_a, typ_a), MatchE (exp_b, pattern_b)
+      when Sl.Eq.eq_exp exp_a exp_b ->
+        if distinct_sub_match tdenv typ_a pattern_b then
+          Disjoint (exp_a, SubG typ_a, MatchG pattern_b)
+        else Fuzzy
+    | MatchE (exp_a, pattern_a), SubE (exp_b, typ_b)
+      when Sl.Eq.eq_exp exp_a exp_b ->
+        if distinct_sub_match tdenv typ_b pattern_a then
+          Disjoint (exp_a, MatchG pattern_a, SubG typ_b)
+        else Fuzzy
     (* Membership on literals *)
     | ( MemE (exp_e_a, ({ it = ListE exps_s_a; _ } as exp_s_a)),
         MemE (exp_e_b, ({ it = ListE exps_s_b; _ } as exp_s_b)) )

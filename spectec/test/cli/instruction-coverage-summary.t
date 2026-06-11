@@ -10,7 +10,7 @@ lists only the uncovered SL instructions:
   
   === SL Node Coverage ===
   
-  SL Instructions: 65/152 (42.76%)
+  SL Instructions: 63/150 (42.00%)
   
   Uncovered SL instructions:
     lookup:

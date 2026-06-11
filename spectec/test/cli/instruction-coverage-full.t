@@ -10,7 +10,7 @@ instructions:
   
   === SL Node Coverage ===
   
-  SL Instructions: 65/152 (42.76%)
+  SL Instructions: 63/150 (42.00%)
   
   def $lookup:
       2   Case on pair<K, V>*
@@ -41,7 +41,6 @@ instructions:
       1           If ((type? matches pattern (_)))
       1             Let ?(t) = type?
       1               Result t
-      1   Case on expr
       -     Case (% matches pattern `! %`):
    ####       Let (! e) = expr
    ####         Check_expr: tenv |- e : type
@@ -123,7 +122,6 @@ instructions:
       1           If ((value? matches pattern (_)))
       1             Let ?(v) = value?
       1               Result v
-      1   Case on expr
       -     Case (% matches pattern `! %`):
    ####       Let (! e) = expr
    ####         Eval_expr: env |- e ==> literal
