@@ -1,0 +1,38 @@
+{
+  "name": "spectecx-syntax",
+  "displayName": "SpecTecX Syntax Highlighting",
+  "description": "Syntax highlighting for SpecTecX specification files (.spectec).",
+  "categories": ["Programming Languages"],
+  "version": "0.1.0",
+  "publisher": "kaist-plrg",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaist-plrg/spectecx.git",
+    "directory": "editors/vscode"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "spectec",
+        "aliases": [
+          "SpecTecX"
+        ],
+        "extensions": [
+          ".spectec"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "spectec",
+        "scopeName": "source.spectec",
+        "path": "./syntaxes/spectec.tmLanguage.json"
+      }
+    ]
+  }
+}

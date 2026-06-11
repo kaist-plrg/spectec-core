@@ -5,5 +5,8 @@ _test
 # spectec build and executables
 spectecx
 
+# packaged VS Code extension (make vsix)
+editors/vscode/*.vsix
+
 # MacOS
 *.DS_Store
