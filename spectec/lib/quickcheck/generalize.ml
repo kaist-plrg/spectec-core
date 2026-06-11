@@ -209,7 +209,4 @@ let generalize_env spec (counter_env : (id' * value) list) :
             sub_paths)
         (List.mapi (fun i p -> (i, p)) counter_env)
     in
-    List.map
-      (fun (s, gens) ->
-        (show_env counter_env ^ "\n  (Generalized)\n  " ^ s, gens))
-      candidates
+    candidates

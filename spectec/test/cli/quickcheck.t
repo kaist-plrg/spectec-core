@@ -67,7 +67,7 @@ programs that exhibit the bug:
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 500 --generalize --color never
   [Quickcheck Type_safety: Test]
   Falsifiable, after 67 tests:
-    prog=while -3 <= true do skip end
+    prog=while 8 <= false do skip end
     (Generalized)
     prog=while [int] <= [bool] do [command] end
 

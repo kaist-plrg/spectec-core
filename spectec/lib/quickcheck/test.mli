@@ -11,7 +11,11 @@ val default_config : config
 
 type outcome =
   | Pass of { num_tests : int; stamps : (string * int) list }
-  | Fail of { num_tests : int; counterexample : string list }
+  | Fail of {
+      num_tests : int;
+      counterexample : string list;
+      generalized : string list option;
+    }
   | Gave_up of { num_tests : int }
       (** Triggered when discarded trials exceed 10x [num_tests]. *)
 

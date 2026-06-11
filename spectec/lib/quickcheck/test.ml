@@ -9,7 +9,11 @@ let default_config =
 
 type outcome =
   | Pass of { num_tests : int; stamps : (string * int) list }
-  | Fail of { num_tests : int; counterexample : string list }
+  | Fail of {
+      num_tests : int;
+      counterexample : string list;
+      generalized : string list option;
+    }
   | Gave_up of { num_tests : int }
 
 let count_stamps stamps =
@@ -84,10 +88,14 @@ let run ~num_tests ?(config = default_config) prop =
       | `Fail ->
           let minimal = shrink_loop verdict in
           let generalized = generalize_loop minimal in
+          let counterexample = minimal.Property.Verdict.arguments in
+          let generalized = generalized.Property.Verdict.arguments in
           Fail
             {
               num_tests = i + 1;
-              counterexample = generalized.Property.Verdict.arguments;
+              counterexample;
+              generalized =
+                (if generalized = counterexample then None else Some generalized);
             }
       | `Pass ->
           loop (i + 1) discarded
@@ -104,8 +112,11 @@ let print_outcome = function
         (fun (lbl, count) ->
           Printf.printf "%3d%% %s\n\n" (count * 100 / num_tests) lbl)
         stamps
-  | Fail { num_tests; counterexample } ->
+  | Fail { num_tests; counterexample; generalized } ->
       Printf.printf "Falsifiable, after %d tests:\n" num_tests;
-      List.iter (fun s -> Printf.printf "  %s\n" s) counterexample
+      List.iter (fun s -> Printf.printf "  %s\n" s) counterexample;
+      Option.iter
+        (List.iter (fun s -> Printf.printf "  (Generalized)\n  %s\n" s))
+        generalized
   | Gave_up { num_tests } ->
       Printf.printf "Gave up after %d tests (too many discarded).\n" num_tests
