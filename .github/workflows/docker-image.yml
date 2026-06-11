@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 env:
-  IMAGE: docker.io/kunjeong/spectecx
+  IMAGE: docker.io/kaistplrg/spectecx
   TAG: tutorial
 
 jobs:

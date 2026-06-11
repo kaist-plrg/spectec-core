@@ -137,8 +137,8 @@ jobs:
             **Docker** -- a prebuilt, self-contained image (tool, materials, an editor, and asciidoctor), for anyone without a native binary. No download needed -- pull and run:
 
             ```bash
-            docker pull kunjeong/spectecx:tutorial
-            docker run -it kunjeong/spectecx:tutorial
+            docker pull kaistplrg/spectecx:tutorial
+            docker run -it kaistplrg/spectecx:tutorial
             ```
 
             This opens a shell in the bundle; from there step 3 and the whole README run exactly as written (`./spectecx ...`, `make test`, ...).
