@@ -127,9 +127,15 @@ module Eval_cli : Cli.Task_cli.S = struct
   let flags = cli_flags
 end
 
-(* Render the [prog] of [env] to [.imp] source. *)
+(* Render a counterexample to [.imp]: its [prog], or a reconstructed
+   Preservation triple. *)
 let render_imp env : (string, string) result =
-  match List.assoc_opt "prog" env with
+  let prog =
+    match List.assoc_opt "prog" env with
+    | Some _ as v -> v
+    | None -> Reproduce.prog_of_env env
+  in
+  match prog with
   | None -> Error "counterexample is not a program"
   | Some v -> (
       match Unparse.string_of_prog v with

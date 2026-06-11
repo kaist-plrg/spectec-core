@@ -6,8 +6,11 @@ A sound spec saves nothing:
   Type_safety: passed 50 tests
   Preservation: passed 50 tests
 
-A program counterexample (Type_safety) is saved; a non-program one
-(Preservation, a typing triple) is skipped, not crashed on:
+Both counterexamples are saved. The Type_safety one is already a program; the
+Preservation one is a typing triple (a value environment, a typing context, and
+an expression), reconstructed into an equivalent program: the expression bound
+under its static type, preceded by a declaration for each environment binding
+(here the environment is empty):
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-preservation.spectec --num-tests 500 --save-dir buggy --color never
   Type_safety: falsified after 6 tests
@@ -15,11 +18,27 @@ A program counterexample (Type_safety) is saved; a non-program one
     saved            buggy/counter_Type_safety.imp
   Preservation: falsified after 14 tests
     counterexample   env: [], tenv: [], expr: 2 <= 2
-    not saved        counterexample is not a program
+    saved            buggy/counter_Preservation.imp
 
   $ cat buggy/counter_Type_safety.imp
   // quickcheck counterexample for Type_safety
   while 0 <= 0 do skip end
+
+  $ cat buggy/counter_Preservation.imp
+  // quickcheck counterexample for Preservation
+  bool result = 2 <= 2
+
+The reconstructed program typechecks and runs to completion. Unlike a Type_safety
+counterexample, running it does not surface the bug: `result` is declared bool yet
+evaluation binds it to a number. The Preservation property is what catches that.
+
+  $ spectec impty typecheck --spec ../../testdata/quickcheck/buggy-preservation.spectec -p buggy/counter_Preservation.imp --color never
+  Typecheck succeeded
+
+  $ spectec impty eval --spec ../../testdata/quickcheck/buggy-preservation.spectec -p buggy/counter_Preservation.imp --color never
+  [
+    result -> 2
+  ]
 
 The saved counterexample is a runnable test. Under a spec that forgets
 to constrain the right operand of a comparison, quickcheck finds a
