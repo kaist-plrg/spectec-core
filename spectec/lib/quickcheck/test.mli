@@ -15,6 +15,8 @@ type outcome =
       num_tests : int;
       counterexample : string list;
       generalized : string list option;
+          (** The widened counterexample family, when generalization found one.
+          *)
     }
   | Gave_up of { num_tests : int }
       (** Triggered when discarded trials exceed 10x [num_tests]. *)
@@ -25,5 +27,10 @@ type outcome =
     [Property.for_all] before reporting the counterexample. *)
 val run : num_tests:int -> ?config:config -> Property.t -> outcome
 
-(** [print_outcome outcome] prints a human-readable report. *)
-val print_outcome : outcome -> unit
+(** [print_detail ~ansi ~label text] prints one indented report line with a
+    dimmed fixed-width label column, for details nested under a verdict. *)
+val print_detail : ansi:Diag.Ansi.t -> label:string -> string -> unit
+
+(** [print_outcome ~ansi outcome] completes the property's report line with a
+    colored verdict, followed by one detail line per counterexample part. *)
+val print_outcome : ansi:Diag.Ansi.t -> outcome -> unit

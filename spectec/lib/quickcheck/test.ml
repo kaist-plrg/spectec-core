@@ -105,18 +105,32 @@ let run ~num_tests ?(config = default_config) prop =
   in
   loop 0 0 [] rand
 
-let print_outcome = function
+let print_detail ~ansi ~label text =
+  Printf.printf "  %s %s\n"
+    (Diag.Ansi.style ansi [ Diag.Ansi.Dim ] (Printf.sprintf "%-16s" label))
+    text
+
+let print_outcome ~ansi = function
   | Pass { num_tests; stamps } ->
-      Printf.printf "OK, passed %d samples.\n" num_tests;
+      Printf.printf "%s\n"
+        (Diag.Ansi.style ansi [ Diag.Ansi.Green ]
+           (Printf.sprintf "passed %d tests" num_tests));
       List.iter
         (fun (lbl, count) ->
-          Printf.printf "%3d%% %s\n\n" (count * 100 / num_tests) lbl)
+          print_detail ~ansi
+            ~label:(Printf.sprintf "%3d%%" (count * 100 / num_tests))
+            lbl)
         stamps
   | Fail { num_tests; counterexample; generalized } ->
-      Printf.printf "Falsifiable, after %d tests:\n" num_tests;
-      List.iter (fun s -> Printf.printf "  %s\n" s) counterexample;
+      Printf.printf "%s\n"
+        (Diag.Ansi.style ansi [ Diag.Ansi.Red ]
+           (Printf.sprintf "falsified after %d tests" num_tests));
+      List.iter (print_detail ~ansi ~label:"counterexample") counterexample;
       Option.iter
-        (List.iter (fun s -> Printf.printf "  (Generalized)\n  %s\n" s))
+        (List.iter (print_detail ~ansi ~label:"generalized"))
         generalized
   | Gave_up { num_tests } ->
-      Printf.printf "Gave up after %d tests (too many discarded).\n" num_tests
+      Printf.printf "%s\n"
+        (Diag.Ansi.style ansi [ Diag.Ansi.Yellow ]
+           (Printf.sprintf "gave up after %d tests (too many discarded)"
+              num_tests))

@@ -171,11 +171,19 @@ let rec generalize_paths (spec : spec) (v : Value.t) :
       if c <> 0 then c else compare d2 d1)
     sub_paths
 
-let show_env (bindings : (id' * value) list) : string =
-  String.concat ", "
-    (List.map (fun (id, v) -> id ^ "=" ^ Print.string_of_value v) bindings)
+let show_binding ~ansi id value =
+  Diag.Ansi.style ansi [ Diag.Ansi.Blue ] id
+  ^ Diag.Ansi.style ansi [ Diag.Ansi.Dim ] ": "
+  ^ value
 
-let generalize_env spec (counter_env : (id' * value) list) :
+let show_env ~ansi (bindings : (id' * value) list) : string =
+  String.concat
+    (Diag.Ansi.style ansi [ Diag.Ansi.Dim ] ", ")
+    (List.map
+       (fun (id, v) -> show_binding ~ansi id (Print.string_of_value v))
+       bindings)
+
+let generalize_env ~ansi spec (counter_env : (id' * value) list) :
     (string * (id' * value) list Gen.t) list =
   let n = List.length counter_env in
   if n = 0 then []
@@ -187,11 +195,12 @@ let generalize_env spec (counter_env : (id' * value) list) :
           List.map
             (fun (_, display, path_gen) ->
               let label =
-                String.concat ", "
+                String.concat
+                  (Diag.Ansi.style ansi [ Diag.Ansi.Dim ] ", ")
                   (List.mapi
                      (fun j (id_j, v_j) ->
-                       if j = i then id_j ^ "=" ^ display
-                       else id_j ^ "=" ^ Print.string_of_value v_j)
+                       if j = i then show_binding ~ansi id_j display
+                       else show_binding ~ansi id_j (Print.string_of_value v_j))
                      counter_env)
               in
               let gen' =

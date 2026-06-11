@@ -3,23 +3,19 @@ impty quickcheck --save-dir: save counterexamples as runnable .imp programs.
 A sound spec saves nothing:
 
   $ spectec impty quickcheck --spec ../../specs/impty/base/spec.spectec --num-tests 50 --save-dir sound --color never
-  [Quickcheck Type_safety: Test]
-  OK, passed 50 samples.
-  [Quickcheck Preservation: Test]
-  OK, passed 50 samples.
+  Type_safety: passed 50 tests
+  Preservation: passed 50 tests
 
 A program counterexample (Type_safety) is saved; a non-program one
 (Preservation, a typing triple) is skipped, not crashed on:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-preservation.spectec --num-tests 500 --save-dir buggy --color never
-  [Quickcheck Type_safety: Test]
-  Falsifiable, after 6 tests:
-    prog=while 0 <= 0 do skip end
-  [Quickcheck Preservation: Test]
-  Falsifiable, after 14 tests:
-    env=[], tenv=[], expr=2 <= 2
-    saved counterexample to buggy/counter_Type_safety.imp
-  quickcheck: Preservation: counterexample is not a program; not saved
+  Type_safety: falsified after 6 tests
+    counterexample   prog: while 0 <= 0 do skip end
+    saved            buggy/counter_Type_safety.imp
+  Preservation: falsified after 14 tests
+    counterexample   env: [], tenv: [], expr: 2 <= 2
+    not saved        counterexample is not a program
 
   $ cat buggy/counter_Type_safety.imp
   // quickcheck counterexample for Type_safety
@@ -30,10 +26,9 @@ to constrain the right operand of a comparison, quickcheck finds a
 program that typechecks but gets stuck in eval:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 100 --save-dir leq --color never
-  [Quickcheck Type_safety: Test]
-  Falsifiable, after 67 tests:
-    prog=while 8 <= false do skip end
-    saved counterexample to leq/counter_Type_safety.imp
+  Type_safety: falsified after 67 tests
+    counterexample   prog: while 8 <= false do skip end
+    saved            leq/counter_Type_safety.imp
 
   $ cat leq/counter_Type_safety.imp
   // quickcheck counterexample for Type_safety
@@ -81,12 +76,10 @@ With --generalize the report also prints an abstract generalized form. The
 saved file is the concrete, runnable counterexample, never the generalization:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 100 --generalize --save-dir gen --color never
-  [Quickcheck Type_safety: Test]
-  Falsifiable, after 67 tests:
-    prog=while 8 <= false do skip end
-    (Generalized)
-    prog=while [int] <= [bool] do [command] end
-    saved counterexample to gen/counter_Type_safety.imp
+  Type_safety: falsified after 67 tests
+    counterexample   prog: while 8 <= false do skip end
+    generalized      prog: while [int] <= [bool] do [command] end
+    saved            gen/counter_Type_safety.imp
 
   $ cat gen/counter_Type_safety.imp
   // quickcheck counterexample for Type_safety

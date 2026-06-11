@@ -143,14 +143,12 @@ let parses_back text =
   | _ -> true
   | exception Error.ImptyParseError _ -> false
 
-let save_counterexample ~out_dir name env =
+let save_counterexample ~ansi ~out_dir name env =
+  let detail = Quickcheck.Test.print_detail ~ansi in
   match render_imp env with
-  | Error reason ->
-      Printf.eprintf "quickcheck: %s: %s; not saved\n%!" name reason
+  | Error reason -> detail ~label:"not saved" reason
   | Ok text when not (parses_back text) ->
-      Printf.eprintf
-        "quickcheck: %s: rendered program does not parse back; not saved\n%!"
-        name
+      detail ~label:"not saved" "rendered program does not parse back"
   | Ok text -> (
       let content =
         Printf.sprintf "// quickcheck counterexample for %s\n%s\n" name text
@@ -158,10 +156,8 @@ let save_counterexample ~out_dir name env =
       match
         Corpus.save ~out_dir ~base:("counter_" ^ name) ~ext:".imp" ~content
       with
-      | Ok (Corpus.Saved path) ->
-          Printf.printf "  saved counterexample to %s\n%!" path
-      | Ok Corpus.Duplicate ->
-          Printf.printf "  counterexample for %s already saved\n%!" name
+      | Ok (Corpus.Saved path) -> detail ~label:"saved" path
+      | Ok Corpus.Duplicate -> detail ~label:"saved" "already saved"
       | Error msg -> Printf.eprintf "quickcheck: %s: %s; not saved\n%!" name msg
       )
 
@@ -193,6 +189,7 @@ let quickcheck_command =
     (* Alias before [open Spectec] so [(module T)] packs impty's Target rather
        than the Spectec.Target module type holder. *)
     let module T = Target in
+    let ansi = Cli.Error_handling.resolve_ansi color in
     let open Spectec in
     let ( let* ) = Result.bind in
     let* cfg = Cli.Config_file.load ~target:T.name () in
@@ -211,16 +208,14 @@ let quickcheck_command =
     @@ fun () ->
     Quickcheck.Driver.check
       ~target:(module T)
+      ~ansi
+      ~on_counterexample:(fun (cx : Quickcheck.Driver.counterexample) ->
+        match save_dir with
+        | None -> ()
+        | Some out_dir -> save_counterexample ~ansi ~out_dir cx.name cx.env)
       ~generalize ~max_steps ~num_tests ~manual_gens:Manual_gen.manual_gens lang
       qc
-    |> Result.map (fun cxs ->
-           match save_dir with
-           | None -> ()
-           | Some out_dir ->
-               List.iter
-                 (fun (cx : Quickcheck.Driver.counterexample) ->
-                   save_counterexample ~out_dir cx.name cx.env)
-                 cxs)
+    |> Result.map ignore
     |> Result.map_error (fun e ->
            Error.QuickcheckError (Quickcheck.Driver.error_to_string e))
 

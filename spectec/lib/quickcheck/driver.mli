@@ -20,9 +20,13 @@ type counterexample = { name : string; env : (id' * Value.t) list }
 
 (** Drives every checkable declaration in [qc_spec], running each property and
     generator [num_tests] times through [target]. Outcomes are printed as they
-    run; the result lists every falsified property as a {!counterexample}. *)
+    run, and [on_counterexample] fires under each falsified property's report so
+    callers can append their own detail lines (e.g. saving); the result lists
+    every falsified property as a {!counterexample}. *)
 val check :
   target:(module Target.S) ->
+  ansi:Diag.Ansi.t ->
+  ?on_counterexample:(counterexample -> unit) ->
   generalize:bool ->
   max_steps:int ->
   num_tests:int ->

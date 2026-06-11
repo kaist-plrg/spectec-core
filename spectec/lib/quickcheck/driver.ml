@@ -37,10 +37,6 @@ let shrink_env spec (env : (id' * value) list) : (id' * value) list list =
         (shrink_value vi))
     (List.mapi (fun i p -> (i, p)) env)
 
-let show_env (bindings : (id' * value) list) : string =
-  String.concat ", "
-    (List.map (fun (id, v) -> id ^ "=" ^ Print.string_of_value v) bindings)
-
 let gen_free_vars (spec_il : spec) (inputs : (id * typ) list) :
     (id' * value) list Gen.t =
   Gen.sequence
@@ -58,13 +54,14 @@ let gen_free_vars_manual ~(manual_gens : (string * manual_gen) list)
   | Some gen_fn -> Ok (gen_fn spec_il)
   | None -> Error (NoManualGenerator name)
 
-let run_property ~target ~generalize ~max_steps ~num_tests
+let run_property ~target ~ansi ~generalize ~max_steps ~num_tests
     ~(manual_gens : (string * manual_gen) list) (core_spec : spec)
     ~(side_prems : prem list) ~(goal : prem) ~(hints : hint list) :
     (Test.outcome * (id' * value) list option, error) Stdlib.result =
   let generator = find_generator_hint hints in
   let inputs = Free_vars.of_premises ~core_spec (side_prems @ [ goal ]) in
   let eval_env = Premise_eval.{ target; core_spec; max_steps } in
+  let show_env = Generalize.show_env ~ansi in
   match
     match generator with
     | Some gen_name -> gen_free_vars_manual ~manual_gens core_spec gen_name
@@ -73,7 +70,8 @@ let run_property ~target ~generalize ~max_steps ~num_tests
   | Error _ as e -> e
   | Ok gen ->
       let generalize_fn =
-        if generalize then Some (Generalize.generalize_env core_spec) else None
+        if generalize then Some (Generalize.generalize_env ~ansi core_spec)
+        else None
       in
       (* Keyed by display text: shrink and generalize re-run the body, so a
          single captured ref would end on the wrong input. *)
@@ -122,8 +120,9 @@ let run_property ~target ~generalize ~max_steps ~num_tests
 
 type counterexample = { name : string; env : (id' * value) list }
 
-let check ~target ~generalize ~max_steps ~num_tests ~manual_gens
-    (spec_il : spec) (qc_spec : Qc_il.spec) : counterexample list result =
+let check ~target ~ansi ?(on_counterexample = fun _ -> ()) ~generalize
+    ~max_steps ~num_tests ~manual_gens (spec_il : spec) (qc_spec : Qc_il.spec) :
+    counterexample list result =
   List.fold_left
     (fun acc qc_def ->
       match acc with
@@ -133,17 +132,21 @@ let check ~target ~generalize ~max_steps ~num_tests ~manual_gens
           | Qc_il.BuiltinGeneratorD _ -> Ok counterexamples
           | Qc_il.PropertyD (name_id, side_prems, goal, hints) -> (
               let name = name_id.it in
-              Printf.printf "[Quickcheck %s: Test]\n" name;
+              (* Name first (a progress marker); the verdict completes it. *)
+              Printf.printf "%s: %!" name;
               match
-                run_property ~target ~generalize ~max_steps ~num_tests
+                run_property ~target ~ansi ~generalize ~max_steps ~num_tests
                   ~manual_gens spec_il ~side_prems ~goal ~hints
               with
               | Error _ as e -> e
               | Ok (outcome, captured) ->
-                  Test.print_outcome outcome;
+                  Test.print_outcome ~ansi outcome;
                   Ok
                     (match (outcome, captured) with
-                    | Test.Fail _, Some env -> { name; env } :: counterexamples
+                    | Test.Fail _, Some env ->
+                        let cx = { name; env } in
+                        on_counterexample cx;
+                        cx :: counterexamples
                     | _ -> counterexamples))))
     (Ok []) qc_spec
   |> Result.map List.rev

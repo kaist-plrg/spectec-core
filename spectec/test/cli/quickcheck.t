@@ -48,55 +48,44 @@ also evaluates (Type_safety), and every well-typed expression evaluates to a
 value of its static type (Preservation).
 
   $ spectec impty quickcheck --spec ../../specs/impty/base/spec.spectec --num-tests 50 --color never
-  [Quickcheck Type_safety: Test]
-  OK, passed 50 samples.
-  [Quickcheck Preservation: Test]
-  OK, passed 50 samples.
+  Type_safety: passed 50 tests
+  Preservation: passed 50 tests
 
 The buggy-leq fixture types `e <= e'` without constraining the right operand,
 so a program like `1 <= false` typechecks but gets stuck in evaluation:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 500 --color never
-  [Quickcheck Type_safety: Test]
-  Falsifiable, after 67 tests:
-    prog=while 8 <= false do skip end
+  Type_safety: falsified after 67 tests
+    counterexample   prog: while 8 <= false do skip end
 
 With --generalize, the shrunk counterexample is widened to the family of
 programs that exhibit the bug:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 500 --generalize --color never
-  [Quickcheck Type_safety: Test]
-  Falsifiable, after 67 tests:
-    prog=while 8 <= false do skip end
-    (Generalized)
-    prog=while [int] <= [bool] do [command] end
+  Type_safety: falsified after 67 tests
+    counterexample   prog: while 8 <= false do skip end
+    generalized      prog: while [int] <= [bool] do [command] end
 
 The buggy-preservation fixture evaluates `e <= e'` to a NUM while still typing it
 as BOOL, so a well-typed expression evaluates to a value of the wrong type. The
 Preservation property catches it directly with the offending expression:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-preservation.spectec --num-tests 500 --color never
-  [Quickcheck Type_safety: Test]
-  Falsifiable, after 6 tests:
-    prog=while 0 <= 0 do skip end
-  [Quickcheck Preservation: Test]
-  Falsifiable, after 14 tests:
-    env=[], tenv=[], expr=2 <= 2
+  Type_safety: falsified after 6 tests
+    counterexample   prog: while 0 <= 0 do skip end
+  Preservation: falsified after 14 tests
+    counterexample   env: [], tenv: [], expr: 2 <= 2
 
 Generalizing widens the expression but skips the map-typed env and tenv, which
 have no generator:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-preservation.spectec --num-tests 500 --generalize --color never
-  [Quickcheck Type_safety: Test]
-  Falsifiable, after 6 tests:
-    prog=while 0 <= 0 do skip end
-    (Generalized)
-    prog=while [int] <= [int] do [command] end
-  [Quickcheck Preservation: Test]
-  Falsifiable, after 14 tests:
-    env=[], tenv=[], expr=2 <= 2
-    (Generalized)
-    env=[], tenv=[], expr=[int] <= [int]
+  Type_safety: falsified after 6 tests
+    counterexample   prog: while 0 <= 0 do skip end
+    generalized      prog: while [int] <= [int] do [command] end
+  Preservation: falsified after 14 tests
+    counterexample   env: [], tenv: [], expr: 2 <= 2
+    generalized      env: [], tenv: [], expr: [int] <= [int]
 
 The preservation-compat fixture spells out the environment/context agreement with
 let- and iteration-premises: it destructures `env` and `tenv` into key/value
@@ -104,7 +93,5 @@ sequences and requires their keys to match pointwise. Evaluating it exercises
 let, if, and iteration premises, which the property evaluator now supports:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/preservation-compat.spectec --num-tests 50 --color never
-  [Quickcheck Type_safety: Test]
-  OK, passed 50 samples.
-  [Quickcheck Preservation: Test]
-  OK, passed 50 samples.
+  Type_safety: passed 50 tests
+  Preservation: passed 50 tests
