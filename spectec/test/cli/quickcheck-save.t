@@ -30,6 +30,14 @@ program that typechecks but gets stuck in eval:
     counterexample   prog: while 8 <= false do skip end
     saved            leq/counter_Type_safety.imp
 
+Re-running finds the same counterexample; rather than write a duplicate, it
+reports the path of the file that already holds it:
+
+  $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 100 --save-dir leq --color never
+  Type_safety: falsified after 67 tests
+    counterexample   prog: while 8 <= false do skip end
+    saved            leq/counter_Type_safety.imp (already saved)
+
   $ cat leq/counter_Type_safety.imp
   // quickcheck counterexample for Type_safety
   while 8 <= false do skip end

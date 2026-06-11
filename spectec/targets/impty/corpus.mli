@@ -3,7 +3,8 @@
 
 type outcome =
   | Saved of string  (** Written to this path. *)
-  | Duplicate  (** A file already held this content; nothing written. *)
+  | Duplicate of string
+      (** A file at this path already held the content; nothing written. *)
 
 (** Write [content] to a fresh [<base>[_k]<ext>] slot under [out_dir] (created
     if needed; [base] is sanitized). [Duplicate] if some [ext] file there

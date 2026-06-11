@@ -144,7 +144,9 @@ let parses_back text =
   | exception Error.ImptyParseError _ -> false
 
 let save_counterexample ~ansi ~out_dir name env =
+  let module Ansi = Spectec.Diagnostic.Ansi in
   let detail = Quickcheck.Test.print_detail ~ansi in
+  let dim s = Ansi.style ansi [ Ansi.Dim ] s in
   match render_imp env with
   | Error reason -> detail ~label:"not saved" reason
   | Ok text when not (parses_back text) ->
@@ -157,7 +159,8 @@ let save_counterexample ~ansi ~out_dir name env =
         Corpus.save ~out_dir ~base:("counter_" ^ name) ~ext:".imp" ~content
       with
       | Ok (Corpus.Saved path) -> detail ~label:"saved" path
-      | Ok Corpus.Duplicate -> detail ~label:"saved" "already saved"
+      | Ok (Corpus.Duplicate path) ->
+          detail ~label:"saved" (path ^ dim " (already saved)")
       | Error msg -> Printf.eprintf "quickcheck: %s: %s; not saved\n%!" name msg
       )
 

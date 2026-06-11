@@ -1,4 +1,4 @@
-type outcome = Saved of string | Duplicate
+type outcome = Saved of string | Duplicate of string
 
 (* mkdir -p. *)
 let rec ensure_dir dir =
@@ -40,19 +40,20 @@ let save ~out_dir ~base ~ext ~content =
   try
     ensure_dir out_dir;
     let entries = try Sys.readdir out_dir with Sys_error _ -> [||] in
-    let already_saved =
-      Array.exists
+    let existing =
+      Array.find_opt
         (fun f ->
           Filename.check_suffix f ext
           && read_file (Filename.concat out_dir f) = Some content)
         entries
     in
-    if already_saved then Ok Duplicate
-    else
-      let path = Filename.concat out_dir (free_slot out_dir base ext 0) in
-      let oc = open_out_bin path in
-      Fun.protect
-        ~finally:(fun () -> close_out oc)
-        (fun () -> output_string oc content);
-      Ok (Saved path)
+    match existing with
+    | Some f -> Ok (Duplicate (Filename.concat out_dir f))
+    | None ->
+        let path = Filename.concat out_dir (free_slot out_dir base ext 0) in
+        let oc = open_out_bin path in
+        Fun.protect
+          ~finally:(fun () -> close_out oc)
+          (fun () -> output_string oc content);
+        Ok (Saved path)
   with Sys_error msg -> Error msg
