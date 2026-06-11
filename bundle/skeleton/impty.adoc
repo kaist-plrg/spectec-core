@@ -21,15 +21,15 @@ ${syntax: type literal id expr command prog}
 
 == Auxiliary definitions
 
-Lookup over an association list is shared by the static and dynamic
-semantics. Given a list of `(key, value)` pairs, it returns the first
-value bound to the requested key.
+These auxiliary functions are shared by the static and dynamic
+semantics.
 
-${func-title-source: lookup}
+=== Lookup
+
+Lookup over an association list takes a list of `(key, value)` pairs and
+returns the first value bound to the requested key.
 
 ${func-title-prose: lookup}
-
-${func-source: lookup}
 
 ${func-prose: lookup}
 
@@ -53,21 +53,13 @@ type.
 
 === Expressions
 
-${rel-title-source: Check_expr}
-
 ${rel-title-prose: Check_expr}
-
-${rel-source: Check_expr}
 
 ${rel-prose: Check_expr}
 
 === Commands
 
-${rel-title-source: Check_command}
-
 ${rel-title-prose: Check_command}
-
-${rel-source: Check_command}
 
 ${rel-prose: Check_command}
 
@@ -78,20 +70,12 @@ to values; commands transform an environment to an environment.
 
 === Expressions
 
-${rel-title-source: Eval_expr}
-
 ${rel-title-prose: Eval_expr}
-
-${rel-source: Eval_expr}
 
 ${rel-prose: Eval_expr}
 
 === Commands
 
-${rel-title-source: Eval_command}
-
 ${rel-title-prose: Eval_command}
-
-${rel-source: Eval_command}
 
 ${rel-prose: Eval_command}
