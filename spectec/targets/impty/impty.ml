@@ -127,6 +127,44 @@ module Eval_cli : Cli.Task_cli.S = struct
   let flags = cli_flags
 end
 
+(* Render the [prog] of [env] to [.imp] source. *)
+let render_imp env : (string, string) result =
+  match List.assoc_opt "prog" env with
+  | None -> Error "counterexample is not a program"
+  | Some v -> (
+      match Unparse.string_of_prog v with
+      | exception Unparse.Unsupported what ->
+          Error (Printf.sprintf "no surface syntax (%s)" what)
+      | text -> Ok text)
+
+(* Drop a render that no longer parses. *)
+let parses_back text =
+  match Parse.parse_string_exn ~filename:"<counterexample>" text with
+  | _ -> true
+  | exception Error.ImptyParseError _ -> false
+
+let save_counterexample ~out_dir name env =
+  match render_imp env with
+  | Error reason ->
+      Printf.eprintf "quickcheck: %s: %s; not saved\n%!" name reason
+  | Ok text when not (parses_back text) ->
+      Printf.eprintf
+        "quickcheck: %s: rendered program does not parse back; not saved\n%!"
+        name
+  | Ok text -> (
+      let content =
+        Printf.sprintf "// quickcheck counterexample for %s\n%s\n" name text
+      in
+      match
+        Corpus.save ~out_dir ~base:("counter_" ^ name) ~ext:".imp" ~content
+      with
+      | Ok (Corpus.Saved path) ->
+          Printf.printf "  saved counterexample to %s\n%!" path
+      | Ok Corpus.Duplicate ->
+          Printf.printf "  counterexample for %s already saved\n%!" name
+      | Error msg -> Printf.eprintf "quickcheck: %s: %s; not saved\n%!" name msg
+      )
+
 let quickcheck_command =
   Core.Command.basic
     ~summary:"run quickcheck properties declared in an impty spec"
@@ -145,6 +183,9 @@ let quickcheck_command =
     flag "--num-tests"
       (optional_with_default 500 int)
       ~doc:"N number of test cases to generate (default 500)"
+  and save_dir =
+    flag "--save-dir" (optional string)
+      ~doc:"DIR save program counterexamples as .imp files under DIR"
   and config = Cli.Cli_args.Interpreter.config_flags
   and color = Cli.Cli_args.Output.color_flag in
   fun () ->
@@ -172,94 +213,14 @@ let quickcheck_command =
       ~target:(module T)
       ~generalize ~max_steps ~num_tests ~manual_gens:Manual_gen.manual_gens lang
       qc
-    |> Result.map ignore
-    |> Result.map_error (fun e ->
-           Error.QuickcheckError (Quickcheck.Driver.error_to_string e))
-
-(* Render the [prog] of [env] to [.imp] source. *)
-let render_imp env : (string, string) result =
-  match List.assoc_opt "prog" env with
-  | None -> Error "counterexample is not a program"
-  | Some v -> (
-      match Unparse.string_of_prog v with
-      | exception Unparse.Unsupported what ->
-          Error (Printf.sprintf "no surface syntax (%s)" what)
-      | text -> Ok text)
-
-(* Drop a render that no longer parses. *)
-let parses_back text =
-  match Parse.parse_string_exn ~filename:"<counterexample>" text with
-  | _ -> true
-  | exception Error.ImptyParseError _ -> false
-
-let save_counterexample ~out_dir name env =
-  match render_imp env with
-  | Error reason -> Printf.eprintf "fuzz: %s: %s; not saved\n%!" name reason
-  | Ok text when not (parses_back text) ->
-      Printf.eprintf
-        "fuzz: %s: rendered program does not parse back; not saved\n%!" name
-  | Ok text -> (
-      let content =
-        Printf.sprintf "// quickcheck counterexample for %s\n%s\n" name text
-      in
-      match
-        Corpus.save ~out_dir ~base:("counter_" ^ name) ~ext:".imp" ~content
-      with
-      | Ok (Corpus.Saved path) ->
-          Printf.printf "  saved counterexample to %s\n%!" path
-      | Ok Corpus.Duplicate ->
-          Printf.printf "  counterexample for %s already saved\n%!" name
-      | Error msg -> Printf.eprintf "fuzz: %s: %s; not saved\n%!" name msg)
-
-let fuzz_command =
-  Core.Command.basic
-    ~summary:
-      "run quickcheck properties and save counterexamples as .imp test files"
-  @@
-  let open Core.Command.Let_syntax in
-  let open Core.Command.Param in
-  let%map cli_source = Cli.Cli_args.Spec.source_flag
-  and max_steps =
-    flag "--max-steps"
-      (optional_with_default 100 int)
-      ~doc:"N max steps per relation evaluation (default 100)"
-  and num_tests =
-    flag "--num-tests"
-      (optional_with_default 100 int)
-      ~doc:"N number of test cases to generate (default 100)"
-  and out_dir =
-    flag "--out-dir"
-      (optional_with_default "tests/fuzz" string)
-      ~doc:"DIR directory for counterexample .imp files (default tests/fuzz)"
-  and color = Cli.Cli_args.Output.color_flag in
-  fun () ->
-    Cli.Error_handling.guard_unit ~color @@ fun () ->
-    let module T = Target in
-    let open Spectec in
-    let ( let* ) = Result.bind in
-    let* cfg = Cli.Config_file.load ~target:T.name () in
-    let source =
-      match cli_source with
-      | Some s -> s
-      | None ->
-          Option.value cfg.Cli.Config_file.spec_source
-            ~default:(Cli.Spec_source.Dir T.spec_dir)
-    in
-    let* filenames = Cli.Spec_source.files source in
-    let* spec = parse_spec_files filenames in
-    let* { lang; qc } = elaborate spec in
-    (* Premise evaluation drives the instrumentation dispatcher, so a session
-       must be active even though fuzzing registers no coverage handlers. *)
-    Instrumentation.with_instrumentation Instrumentation.Config.default
-      (Instrumentation.Static.IlSpec lang)
-    @@ fun () ->
-    Quickcheck.Driver.check
-      ~target:(module T)
-      ~generalize:false ~max_steps ~num_tests
-      ~manual_gens:Manual_gen.manual_gens lang qc
-    |> Result.map
-         (List.iter (fun (cx : Quickcheck.Driver.counterexample) ->
-              save_counterexample ~out_dir cx.name cx.env))
+    |> Result.map (fun cxs ->
+           match save_dir with
+           | None -> ()
+           | Some out_dir ->
+               List.iter
+                 (fun (cx : Quickcheck.Driver.counterexample) ->
+                   save_counterexample ~out_dir cx.name cx.env)
+                 cxs)
     |> Result.map_error (fun e ->
            Error.QuickcheckError (Quickcheck.Driver.error_to_string e))
 
@@ -285,6 +246,5 @@ module Cli : Cli.Target_cli.S = struct
           [ (module Typecheck_cli); (module Eval_cli) ];
         Subcommand.make_checkpoint target ~name:"checkpoint";
         ("quickcheck", quickcheck_command);
-        ("fuzz", fuzz_command);
       ]
 end

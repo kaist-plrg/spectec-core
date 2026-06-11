@@ -31,6 +31,8 @@ The flag surface, including the default sample count:
     [--premise-coverage.output FILE]
                                . output destination file
     [--profile.output FILE]    . output destination file
+    [--save-dir DIR]           . save program counterexamples as .imp files under
+                                 DIR
     [--spec FILES] ...         . spec files; mutually exclusive with --spec-dir
     [--spec-dir DIR]           . directory of .spectec files, collected
                                  recursively; mutually exclusive with --spec
