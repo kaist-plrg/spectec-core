@@ -610,12 +610,18 @@ let rec distinct_exp_literal (exp_a : exp) (exp_b : exp) : bool =
   | TupleE exps_a, TupleE exps_b ->
       assert (List.length exps_a = List.length exps_b);
       List.exists2 distinct_exp_literal exps_a exps_b
-  | CaseE notexp_a, CaseE notexp_b
-    when Il.Mixfix.args notexp_a = [] && Il.Mixfix.args notexp_b = [] ->
-      not (Il.Mixfix.eq_mixop notexp_a notexp_b)
+  | CaseE notexp_a, CaseE notexp_b ->
+      let same_constructor = Il.Mixfix.eq_mixop notexp_a notexp_b in
+      let args_a = Il.Mixfix.args notexp_a in
+      let args_b = Il.Mixfix.args notexp_b in
+      (not same_constructor) || List.exists2 distinct_exp_literal args_a args_b
   | ListE exps_a, ListE exps_b when List.length exps_a = List.length exps_b ->
       List.exists2 distinct_exp_literal exps_a exps_b
   | ListE _, ListE _ -> true
+  | (UpCastE (_, exp_a) | DownCastE (_, exp_a)), _ ->
+      distinct_exp_literal exp_a exp_b
+  | _, (UpCastE (_, exp_b) | DownCastE (_, exp_b)) ->
+      distinct_exp_literal exp_a exp_b
   | _ -> false
 
 let overlap_typ (tdenv : TDEnv.t) (exp : exp) (typ_a : typ) (typ_b : typ) :

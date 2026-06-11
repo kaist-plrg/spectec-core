@@ -10,7 +10,7 @@ instructions:
   
   === SL Node Coverage ===
   
-  SL Instructions: 65/154 (42.21%)
+  SL Instructions: 65/152 (42.76%)
   
   def $lookup:
       2   Case on pair<K, V>*
@@ -177,21 +177,23 @@ instructions:
       -     Case (% matches pattern `IF % THEN % ELSE % END`):
    ####       Let (if e then c_1 else c_2 end) = command
    ####         Eval_expr: env |- e ==> literal
-   ####           If ((literal = (true)))
-   ####             Eval_command: env |- c_1 -| env_1
-   ####               Result env_1
-   ####           If ((literal = (false)))
-   ####             Eval_command: env |- c_2 -| env_2
-   ####               Result env_2
+   ####           Case on literal
+      -             Case (% = (true)):
+   ####               Eval_command: env |- c_1 -| env_1
+   ####                 Result env_1
+      -             Case (% = (false)):
+   ####               Eval_command: env |- c_2 -| env_2
+   ####                 Result env_2
       -     Case (% matches pattern `WHILE % DO % END`):
    ####       Let (while e do c end) = command
    ####         Eval_expr: env |- e ==> literal
-   ####           If ((literal = (false)))
-   ####             Result env
-   ####           If ((literal = (true)))
-   ####             Eval_command: env |- c -| env_1
-   ####               Eval_command: env_1 |- (while e do c end) -| env_2
-   ####                 Result env_2
+   ####           Case on literal
+      -             Case (% = (false)):
+   ####               Result env
+      -             Case (% = (true)):
+   ####               Eval_command: env |- c -| env_1
+   ####                 Eval_command: env_1 |- (while e do c end) -| env_2
+   ####                   Result env_2
       -     Case (% matches pattern `% ; %`):
       1       Let (c_1 ; c_2) = command
       1         Eval_command: env |- c_1 -| env_1

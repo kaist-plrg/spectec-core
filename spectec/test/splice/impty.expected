@@ -613,30 +613,20 @@ endif::[]
  .. Result in ``x → v {two-colons} env``.
 . Else if let ``+++IF+++ e +++THEN+++ c~1~ +++ELSE+++ c~2~ +++END+++`` be ``command``:
  .. Let xref:Eval_expr[``env ⊢ e ⟹ value``].
- .. Try:
-  ... {empty}
-   .... Check that ``value`` is equal to ``true``.
-
-   .... Let xref:Eval_command[``env ⊢ c~1~ ⊣ env~1~``].
-   .... Result in ``env~1~``.
-  ... {empty}
-   .... Check that ``value`` is equal to ``false``.
-
-   .... Let xref:Eval_command[``env ⊢ c~2~ ⊣ env~2~``].
-   .... Result in ``env~2~``.
+ .. If ``value`` is equal to ``true``:
+  ... Let xref:Eval_command[``env ⊢ c~1~ ⊣ env~1~``].
+  ... Result in ``env~1~``.
+ .. Else if ``value`` is equal to ``false``:
+  ... Let xref:Eval_command[``env ⊢ c~2~ ⊣ env~2~``].
+  ... Result in ``env~2~``.
 . Else if let ``+++WHILE+++ e +++DO+++ c +++END+++`` be ``command``:
  .. Let xref:Eval_expr[``env ⊢ e ⟹ value``].
- .. Try:
-  ... {empty}
-   .... Check that ``value`` is equal to ``false``.
-
-   .... Result in ``env``.
-  ... {empty}
-   .... Check that ``value`` is equal to ``true``.
-
-   .... Let xref:Eval_command[``env ⊢ c ⊣ env~1~``].
-   .... Let xref:Eval_command[``env~1~ ⊢ +++WHILE+++ e +++DO+++ c +++END+++ ⊣ env~2~``].
-   .... Result in ``env~2~``.
+ .. If ``value`` is equal to ``false``:
+  ... Result in ``env``.
+ .. Else if ``value`` is equal to ``true``:
+  ... Let xref:Eval_command[``env ⊢ c ⊣ env~1~``].
+  ... Let xref:Eval_command[``env~1~ ⊢ +++WHILE+++ e +++DO+++ c +++END+++ ⊣ env~2~``].
+  ... Result in ``env~2~``.
 . Else if let ``c~1~ +++;+++ c~2~`` be ``command``:
  .. Let xref:Eval_command[``env ⊢ c~1~ ⊣ env~1~``].
  .. Let xref:Eval_command[``env~1~ ⊢ c~2~ ⊣ env~2~``].
