@@ -605,7 +605,8 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
             (render_exp in_prose exp_source))
   | CheckLetI (exp_l, exp_r, block) ->
       let head =
-        F.asprintf "%sLet!~type~ %s be %s." bullet
+        F.asprintf "%sLet%s %s be %s." bullet
+          (adoc_subscript (adoc_link ~link:"subtype_check" "<:"))
           (render_exp_as_code in_prose exp_l)
           (render_exp in_prose exp_r)
       in

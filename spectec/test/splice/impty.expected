@@ -136,6 +136,11 @@ xref:lookup[$lookup<K, V>(pair<K, V>^{asterisk}^, K~query~)]
 
 Force-unwraps an optional. If the value is none, the rule does not apply.
 
+[#subtype_check]
+==== Subtype check (`<:`)
+
+The value must belong to this subtype; otherwise the rule does not apply.
+
 == Static semantics
 
 The typing judgments characterise well-formed expressions and commands
@@ -265,7 +270,7 @@ endif::[]
  .. Result in ``t~arg~ +++->+++ t~ret~``.
 . Else if let ``e~f~ +++(+++e~a~+++)+++`` be ``expr``:
  .. Let xref:Check_expr[``tenv ⊢ e~f~ +++:+++ type``].
- .. Let!~type~ ``t~arg~ +++->+++ t~ret~`` be ``type``.
+ .. Let~xref:subtype_check[<:]~ ``t~arg~ +++->+++ t~ret~`` be ``type``.
 
  .. Let xref:Check_expr[``tenv ⊢ e~a~ +++:+++ type'``].
  .. Check that ``type'`` is equal to ``t~arg~``.
@@ -471,48 +476,48 @@ endif::[]
  .. Result in ``v``.
 . Else if let ``+++!+++ e`` be ``expr``:
  .. Let xref:Eval_expr[``env ⊢ e ⟹ value``].
- .. Let!~type~ ``literal`` be ``value``.
+ .. Let~xref:subtype_check[<:]~ ``literal`` be ``value``.
 
- .. Let!~type~ ``b~e~`` be ``literal``.
+ .. Let~xref:subtype_check[<:]~ ``b~e~`` be ``literal``.
 
  .. Let ``b`` be not ``b~e~``.
  .. Result in ``b``.
 . Else if let ``e~l~ +++++++ e~r~`` be ``expr``:
  .. Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
- .. Let!~type~ ``literal`` be ``value``.
+ .. Let~xref:subtype_check[<:]~ ``literal`` be ``value``.
 
- .. Let!~type~ ``i~l~`` be ``literal``.
+ .. Let~xref:subtype_check[<:]~ ``i~l~`` be ``literal``.
 
  .. Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
- .. Let!~type~ ``literal'`` be ``value'``.
+ .. Let~xref:subtype_check[<:]~ ``literal'`` be ``value'``.
 
- .. Let!~type~ ``i~r~`` be ``literal'``.
+ .. Let~xref:subtype_check[<:]~ ``i~r~`` be ``literal'``.
 
  .. Let ``i`` be ``i~l~`` + ``i~r~``.
  .. Result in ``i``.
 . Else if let ``e~l~ +++<=+++ e~r~`` be ``expr``:
  .. Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
- .. Let!~type~ ``literal`` be ``value``.
+ .. Let~xref:subtype_check[<:]~ ``literal`` be ``value``.
 
- .. Let!~type~ ``i~l~`` be ``literal``.
+ .. Let~xref:subtype_check[<:]~ ``i~l~`` be ``literal``.
 
  .. Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
- .. Let!~type~ ``literal'`` be ``value'``.
+ .. Let~xref:subtype_check[<:]~ ``literal'`` be ``value'``.
 
- .. Let!~type~ ``i~r~`` be ``literal'``.
+ .. Let~xref:subtype_check[<:]~ ``i~r~`` be ``literal'``.
 
  .. Let ``b`` be ``i~l~`` is less than or equal to ``i~r~``.
  .. Result in ``b``.
 . Else if let ``e~l~ +++&&+++ e~r~`` be ``expr``:
  .. Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
- .. Let!~type~ ``literal`` be ``value``.
+ .. Let~xref:subtype_check[<:]~ ``literal`` be ``value``.
 
- .. Let!~type~ ``b~l~`` be ``literal``.
+ .. Let~xref:subtype_check[<:]~ ``b~l~`` be ``literal``.
 
  .. Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
- .. Let!~type~ ``literal'`` be ``value'``.
+ .. Let~xref:subtype_check[<:]~ ``literal'`` be ``value'``.
 
- .. Let!~type~ ``b~r~`` be ``literal'``.
+ .. Let~xref:subtype_check[<:]~ ``b~r~`` be ``literal'``.
 
  .. Let ``b`` be ``b~l~`` and ``b~r~``.
  .. Result in ``b``.
@@ -520,7 +525,7 @@ endif::[]
  .. Result in ``+++CLO+++ x~arg~ e env``.
 . Else if let ``e~f~ +++(+++e~a~+++)+++`` be ``expr``:
  .. Let xref:Eval_expr[``env ⊢ e~f~ ⟹ value``].
- .. Let!~type~ ``+++CLO+++ x~a~ e~body~ env~clo~`` be ``value``.
+ .. Let~xref:subtype_check[<:]~ ``+++CLO+++ x~a~ e~body~ env~clo~`` be ``value``.
 
  .. Let xref:Eval_expr[``env ⊢ e~a~ ⟹ v``].
  .. Let xref:Eval_expr[``x~a~ → v {two-colons} env~clo~ ⊢ e~body~ ⟹ v~ret~``].

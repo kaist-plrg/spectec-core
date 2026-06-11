@@ -40,6 +40,11 @@ ${func-prose: lookup}
 
 Force-unwraps an optional. If the value is none, the rule does not apply.
 
+[#subtype_check]
+==== Subtype check (`<:`)
+
+The value must belong to this subtype; otherwise the rule does not apply.
+
 == Static semantics
 
 The typing judgments characterise well-formed expressions and commands
