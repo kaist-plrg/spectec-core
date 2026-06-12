@@ -106,6 +106,10 @@ let run ~num_tests ?(config = default_config) prop =
   loop 0 0 [] rand
 
 let print_detail ~ansi ~label text =
+  (* Indent continuations to the value column: 2 + 16-wide label + 1. *)
+  let text =
+    String.concat ("\n" ^ String.make 19 ' ') (String.split_on_char '\n' text)
+  in
   Printf.printf "  %s %s\n"
     (Diag.Ansi.style ansi [ Diag.Ansi.Dim ] (Printf.sprintf "%-16s" label))
     text

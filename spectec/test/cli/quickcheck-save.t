@@ -18,6 +18,7 @@ under its static type, preceded by a declaration for each environment binding
     saved            buggy/counter_Type_safety.imp
   Type_preservation: falsified after 14 tests
     counterexample   tenv: [], env: [], expr: 2 <= 2
+    program          bool result = 2 <= 2
     saved            buggy/counter_Type_preservation.imp
 
   $ cat buggy/counter_Type_safety.imp

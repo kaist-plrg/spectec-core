@@ -158,6 +158,8 @@ let save_counterexample ~ansi ~out_dir name env =
   | Ok text when not (parses_back text) ->
       detail ~label:"not saved" "rendered program does not parse back"
   | Ok text -> (
+      (* A [prog] counterexample is already shown; only reconstructions need this. *)
+      if not (List.mem_assoc "prog" env) then detail ~label:"program" text;
       let content =
         Printf.sprintf "// quickcheck counterexample for %s\n%s\n" name text
       in
