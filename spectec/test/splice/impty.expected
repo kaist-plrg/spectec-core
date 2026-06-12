@@ -74,10 +74,7 @@ returns the first value bound to the requested key.
 xref:lookup[$lookup]<K, V>(pair<K, V>^{asterisk}^, K~query~)
 ****
 
-[[lookup]]
 ****
-xref:lookup[$lookup<K, V>(pair<K, V>^{asterisk}^, K~query~)]
-
 . If ``pair<K, V>^{asterisk}^`` matches pattern ``[]``:
  .. Return ``·``.
 . Else if let ``K~h~ → V~h~ {two-colons} ( K~t~ → V~t~ )^{asterisk}^`` be ``pair<K, V>^{asterisk}^``:

@@ -37,11 +37,11 @@ let prose_extract (spec_pl : Pl.spec) : (string * string) list =
   List.filter_map
     (fun (def_pl : Pl.def) ->
       match def_pl.node.it with
-      | DecD (id, tparams, args, block, elseblock_opt) ->
+      | DecD (id, _, _, block, elseblock_opt) ->
           Some
             ( id.it,
-              Pl.Render.render_defined_func_def def_pl.hints
-                (id, tparams, args, block, elseblock_opt) )
+              Pl.Render.strip_leading_newline (Pl.Render.render_instrs block)
+              ^ Pl.Render.render_elseblock elseblock_opt )
       | _ -> None)
     spec_pl
 
@@ -52,7 +52,7 @@ let prose : Anchor.Prose.entry =
         name = "func-prose";
         prefix = Anchor.prefix_prose;
         suffix = Anchor.suffix_prose;
-        header = true;
+        header = false;
       };
     extract = prose_extract;
   }
