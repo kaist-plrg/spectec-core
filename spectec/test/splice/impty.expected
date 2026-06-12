@@ -82,13 +82,11 @@ xref:lookup[$lookup<K, V>(pair<K, V>^{asterisk}^, K~query~)]
  .. Return ``·``.
 . Else if let ``K~h~ → V~h~ {two-colons} ( K~t~ → V~t~ )^{asterisk}^`` be ``pair<K, V>^{asterisk}^``:
  .. Check that ``K~h~`` is equal to ``K~query~``.
-
  .. Return ``V~h~``.
 
 . Otherwise:
  .. Otherwise:
   ... Check that ``pair<K, V>^{asterisk}^`` is a non-empty list.
-
   ... Let ``K~h~ → V~h~ {two-colons} ( K~t~ → V~t~ )^{asterisk}^`` be ``pair<K, V>^{asterisk}^``.
   ... Return ``xref:lookup[$lookup<K, V>(( K~t~ → V~t~ )^{asterisk}^, K~query~)]``.
 ****
@@ -131,44 +129,34 @@ xref:Check_expr[Check_expr: ``tenv ⊢ expr +++:+++ %``]
 . Else if let ``+++!+++ e`` be ``expr``:
  .. Let xref:Check_expr[``tenv ⊢ e +++:+++ type``].
  .. Check that ``type`` matches pattern ``+++BOOL+++``.
-
  .. Result in ``+++BOOL+++``.
 . Else if let ``e~l~ +++++++ e~r~`` be ``expr``:
  .. Let xref:Check_expr[``tenv ⊢ e~l~ +++:+++ type``].
  .. Check that ``type`` matches pattern ``+++INT+++``.
-
  .. Let xref:Check_expr[``tenv ⊢ e~r~ +++:+++ type'``].
  .. Check that ``type'`` matches pattern ``+++INT+++``.
-
  .. Result in ``+++INT+++``.
 . Else if let ``e~l~ +++<=+++ e~r~`` be ``expr``:
  .. Let xref:Check_expr[``tenv ⊢ e~l~ +++:+++ type``].
  .. Check that ``type`` matches pattern ``+++INT+++``.
-
  .. Let xref:Check_expr[``tenv ⊢ e~r~ +++:+++ type'``].
  .. Check that ``type'`` matches pattern ``+++INT+++``.
-
  .. Result in ``+++BOOL+++``.
 . Else if let ``e~l~ +++&&+++ e~r~`` be ``expr``:
  .. Let xref:Check_expr[``tenv ⊢ e~l~ +++:+++ type``].
  .. Check that ``type`` matches pattern ``+++BOOL+++``.
-
  .. Let xref:Check_expr[``tenv ⊢ e~r~ +++:+++ type'``].
  .. Check that ``type'`` matches pattern ``+++BOOL+++``.
-
  .. Result in ``+++BOOL+++``.
 . Else if let ``+++FUN+++ +++(+++t~arg~ x~arg~+++)+++ +++->+++ t~ret~ +++{+++e+++}+++`` be ``expr``:
  .. Let xref:Check_expr[``x~arg~ → t~arg~ {two-colons} tenv ⊢ e +++:+++ type``].
  .. Check that ``type`` is equal to ``t~ret~``.
-
  .. Result in ``t~arg~ +++->+++ t~ret~``.
 . Else if let ``e~f~ +++(+++e~a~+++)+++`` be ``expr``:
  .. Let xref:Check_expr[``tenv ⊢ e~f~ +++:+++ type``].
  .. Let~xref:subtype_check[<:]~ ``t~arg~ +++->+++ t~ret~`` be ``type``.
-
  .. Let xref:Check_expr[``tenv ⊢ e~a~ +++:+++ type'``].
  .. Check that ``type'`` is equal to ``t~arg~``.
-
  .. Result in ``t~ret~``.
 ****
 
@@ -186,24 +174,20 @@ xref:Check_command[Check_command: ``tenv ⊢ command ⊣ %``]
 . Else if let ``t x +++=+++ e`` be ``command``:
  .. Let xref:Check_expr[``tenv ⊢ e +++:+++ type``].
  .. Check that ``type`` is equal to ``t``.
-
  .. Result in ``x → t {two-colons} tenv``.
 . Else if let ``x +++=+++ e`` be ``command``:
  .. Let xref:Check_expr[``tenv ⊢ e +++:+++ t``].
  .. Check that ``xref:lookup[$lookup<id, type>(tenv, x)]`` is equal to ``t``.
-
  .. Result in ``tenv``.
 . Else if let ``+++IF+++ e +++THEN+++ c~1~ +++ELSE+++ c~2~ +++END+++`` be ``command``:
  .. Let xref:Check_expr[``tenv ⊢ e +++:+++ type``].
  .. Check that ``type`` matches pattern ``+++BOOL+++``.
-
  .. Let xref:Check_command[``tenv ⊢ c~1~ ⊣ tenv~1~``].
  .. Let xref:Check_command[``tenv ⊢ c~2~ ⊣ tenv~2~``].
  .. Result in ``tenv``.
 . Else if let ``+++WHILE+++ e +++DO+++ c +++END+++`` be ``command``:
  .. Let xref:Check_expr[``tenv ⊢ e +++:+++ type``].
  .. Check that ``type`` matches pattern ``+++BOOL+++``.
-
  .. Let xref:Check_command[``tenv ⊢ c ⊣ tenv~1~``].
  .. Result in ``tenv``.
 . Else if let ``c~1~ +++;+++ c~2~`` be ``command``:
@@ -237,48 +221,34 @@ xref:Eval_expr[Eval_expr: ``env ⊢ expr ⟹ %``]
 . Else if let ``+++!+++ e`` be ``expr``:
  .. Let xref:Eval_expr[``env ⊢ e ⟹ value``].
  .. Let~xref:subtype_check[<:]~ ``literal`` be ``value``.
-
  .. Let~xref:subtype_check[<:]~ ``b~e~`` be ``literal``.
-
  .. Let ``b`` be not ``b~e~``.
  .. Result in ``b``.
 . Else if let ``e~l~ +++++++ e~r~`` be ``expr``:
  .. Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
  .. Let~xref:subtype_check[<:]~ ``literal`` be ``value``.
-
  .. Let~xref:subtype_check[<:]~ ``i~l~`` be ``literal``.
-
  .. Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
  .. Let~xref:subtype_check[<:]~ ``literal'`` be ``value'``.
-
  .. Let~xref:subtype_check[<:]~ ``i~r~`` be ``literal'``.
-
  .. Let ``i`` be ``i~l~`` + ``i~r~``.
  .. Result in ``i``.
 . Else if let ``e~l~ +++<=+++ e~r~`` be ``expr``:
  .. Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
  .. Let~xref:subtype_check[<:]~ ``literal`` be ``value``.
-
  .. Let~xref:subtype_check[<:]~ ``i~l~`` be ``literal``.
-
  .. Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
  .. Let~xref:subtype_check[<:]~ ``literal'`` be ``value'``.
-
  .. Let~xref:subtype_check[<:]~ ``i~r~`` be ``literal'``.
-
  .. Let ``b`` be ``i~l~`` is less than or equal to ``i~r~``.
  .. Result in ``b``.
 . Else if let ``e~l~ +++&&+++ e~r~`` be ``expr``:
  .. Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
  .. Let~xref:subtype_check[<:]~ ``literal`` be ``value``.
-
  .. Let~xref:subtype_check[<:]~ ``b~l~`` be ``literal``.
-
  .. Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
  .. Let~xref:subtype_check[<:]~ ``literal'`` be ``value'``.
-
  .. Let~xref:subtype_check[<:]~ ``b~r~`` be ``literal'``.
-
  .. Let ``b`` be ``b~l~`` and ``b~r~``.
  .. Result in ``b``.
 . Else if let ``+++FUN+++ +++(+++t~arg~ x~arg~+++)+++ +++->+++ t~ret~ +++{+++e+++}+++`` be ``expr``:
@@ -286,7 +256,6 @@ xref:Eval_expr[Eval_expr: ``env ⊢ expr ⟹ %``]
 . Else if let ``e~f~ +++(+++e~a~+++)+++`` be ``expr``:
  .. Let xref:Eval_expr[``env ⊢ e~f~ ⟹ value``].
  .. Let~xref:subtype_check[<:]~ ``+++CLO+++ x~a~ e~body~ env~clo~`` be ``value``.
-
  .. Let xref:Eval_expr[``env ⊢ e~a~ ⟹ v``].
  .. Let xref:Eval_expr[``x~a~ → v {two-colons} env~clo~ ⊢ e~body~ ⟹ v~ret~``].
  .. Result in ``v~ret~``.

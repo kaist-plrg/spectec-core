@@ -471,8 +471,7 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
         F.asprintf "%sCheck that %s%s." bullet (render_exp in_prose cond)
           (render_iterexp_suffix in_prose iterexps)
       in
-      if block = [] then check_line
-      else check_line ^ "\n" ^ render_instrs ~level block
+      if block = [] then check_line else check_line ^ render_instrs ~level block
   | IfHoldI (id_rel, notexp, iterexps, block, _phantom) ->
       let head =
         let mixop = Mixfix.to_mixop notexp in
@@ -610,7 +609,7 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
           (render_exp_as_code in_prose exp_l)
           (render_exp in_prose exp_r)
       in
-      if block = [] then head else head ^ "\n" ^ render_instrs ~level block
+      if block = [] then head else head ^ render_instrs ~level block
   | OptionGetI (exp_l, exp_r) ->
       F.asprintf "%sLet%s %s be %s." bullet
         (adoc_subscript (adoc_link ~link:"option_get" "?"))
