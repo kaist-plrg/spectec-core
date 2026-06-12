@@ -8836,7 +8836,7 @@ syntax tablePropertyListIR = tablePropertyIR*
 
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:822:3-823:36:
 syntax tableDeclarationIR = 
-   | annotationList table typeIR nameIR { tablePropertyListIR } (from tableDeclarationIR) hint(print %0 TABLE %2 `{%3})
+   | annotationList table typeIR nameIR { tablePropertyListIR } (from tableDeclarationIR) hint(print %0 TABLE %2 {%3})
 
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:830:3-832:30:
 syntax controlTypeDeclarationIR = 
@@ -8851,7 +8851,7 @@ syntax controlLocalDeclarationIR =
    | annotationList typeIR constructorTargetIR ( argumentListIR ) nameIR objectInitializerOptIR ; (from instantiationIR) hint(prose_fields "annotations" "type" "constructor target" "arguments" "name" "object initializer")
    | annotationList typeIR nameIR initializerOptIR ; (from variableDeclarationIR)
    | annotationList action nameIR ( parameterListIR ) blockStatementIR (from actionDeclarationIR)
-   | annotationList table typeIR nameIR { tablePropertyListIR } (from tableDeclarationIR) hint(print %0 TABLE %2 `{%3})
+   | annotationList table typeIR nameIR { tablePropertyListIR } (from tableDeclarationIR) hint(print %0 TABLE %2 {%3})
 
 ;; ../../../../../spectec/specs/p4/4-p4-ir/4.0-ir-syntax.spectec:848:3-848:29:
 syntax controlLocalDeclarationListIR = controlLocalDeclarationIR*

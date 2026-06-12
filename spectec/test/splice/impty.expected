@@ -28,32 +28,32 @@ variables, expressions, commands, and whole programs.
 syntax type = 
    | INT
    | BOOL
-   | {type -> type}
+   | type -> type
 
 syntax literal = 
-   | {_NUM int}
-   | {_BOOL bool}
+   | _NUM int
+   | _BOOL bool
 
 syntax id = 
-   | {_ID text}
+   | _ID text
 
 syntax expr = 
    | literal
    | id
-   | {! expr}
-   | {expr + expr}
-   | {expr <= expr}
-   | {expr && expr}
-   | {FUN `({type id}) -> type `{expr}}
-   | {expr `(expr)}
+   | ! expr
+   | expr + expr
+   | expr <= expr
+   | expr && expr
+   | FUN (type id) -> type {expr}
+   | expr (expr)
 
 syntax command = 
    | SKIP
-   | {type id = expr}
-   | {id = expr}
-   | {IF expr THEN command ELSE command END}
-   | {WHILE expr DO command END}
-   | {command ; command}
+   | type id = expr
+   | id = expr
+   | IF expr THEN command ELSE command END
+   | WHILE expr DO command END
+   | command ; command
 
 syntax prog = command
 ----

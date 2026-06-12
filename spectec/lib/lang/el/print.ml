@@ -51,12 +51,12 @@ and string_of_plaintyps sep plaintyps =
 and string_of_nottyp nottyp =
   match nottyp.it with
   | AtomT atom -> string_of_atom atom
-  | SeqT typs -> "{" ^ string_of_typs " " typs ^ "}"
+  | SeqT typs -> string_of_typs " " typs
   | InfixT (typ_l, atom, typ_r) ->
       string_of_typ typ_l ^ " " ^ string_of_atom atom ^ " "
       ^ string_of_typ typ_r
   | BrackT (atom_l, typ, atom_r) ->
-      "`" ^ string_of_atom atom_l ^ string_of_typ typ ^ string_of_atom atom_r
+      string_of_atom atom_l ^ string_of_typ typ ^ string_of_atom atom_r
 
 and string_of_nottyps sep nottyps =
   String.concat sep (List.map string_of_nottyp nottyps)
@@ -147,7 +147,7 @@ and string_of_exp exp =
       string_of_exp exp_l ^ " " ^ string_of_atom atom ^ " "
       ^ string_of_exp exp_r
   | BrackE (atom_l, exp, atom_r) ->
-      "`" ^ string_of_atom atom_l ^ string_of_exp exp ^ string_of_atom atom_r
+      string_of_atom atom_l ^ string_of_exp exp ^ string_of_atom atom_r
   | HoleE (`Num i) -> "%" ^ string_of_int i
   | HoleE `Next -> "%"
   | HoleE `Rest -> "%%"
