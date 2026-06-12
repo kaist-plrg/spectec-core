@@ -288,3 +288,34 @@ rule Run_prog:
 ;;--- Properties ---
 
 builtin generator $base_prog : prog
+builtin generator $functions_prog : prog
+
+;; Type safety: every program that typechecks also evaluates.
+property Type_safety:
+  Eval_prog: |- prog -| env
+  -- Check_prog: |- prog
+  hint(generator $functions_prog)
+
+;; The value matches the provided type.
+relation Has_type:
+  |- value : type
+  hint(input %0 %1)
+
+rule Has_type/num:
+  |- _NUM int : INT
+
+rule Has_type/boollit:
+  |- _BOOL bool : BOOL
+
+;; Closure values are type-erased thus ignored.
+rule Has_type/clo:
+  |- (CLO x e env) : _
+
+builtin generator $preservation : (env, expr, tenv)
+
+;; Preservation: a well-typed expression evaluates to a value of that type.
+property Preservation:
+  Has_type: |- value : type
+  -- Check_expr: tenv |- expr : type
+  -- Eval_expr: env |- expr ==> value
+  hint(generator $preservation)
