@@ -236,9 +236,12 @@ let next st : token * region =
             advance st;
             advance st;
             Arrow
+        | Some d when is_digit d -> (
+            advance st;
+            match lex_number st with Num n -> Num (-n) | tok -> tok)
         | _ ->
             let here = region_from left (current_pos st) in
-            Error.error here "expected '->' (bare '-' is not used)")
+            Error.error here "expected '->' or a negative number")
     | Some c ->
         let here = region_from left (current_pos st) in
         Error.error here (Printf.sprintf "unexpected character %C" c)
