@@ -4,6 +4,7 @@ A sound spec saves nothing:
 
   $ spectec impty quickcheck --spec ../../specs/impty/base/spec.spectec --num-tests 50 --save-dir sound --color never
   Type_safety: passed 50 tests
+  
   Type_preservation: passed 50 tests
 
 Both counterexamples are saved. The Type_safety one is already a program; the
@@ -16,6 +17,7 @@ under its static type, preceded by a declaration for each environment binding
   Type_safety: falsified after 6 tests
     counterexample   prog: while 0 <= 0 do skip end
     saved            buggy/counter_Type_safety.imp
+  
   Type_preservation: falsified after 14 tests
     counterexample   tenv: [], env: [], expr: 2 <= 2
     program          bool result = 2 <= 2

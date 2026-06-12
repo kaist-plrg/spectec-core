@@ -123,6 +123,7 @@ type counterexample = { name : string; env : (id' * value) list }
 let check ~target ~ansi ?(on_counterexample = fun _ -> ()) ~generalize
     ~max_steps ~num_tests ~manual_gens (spec_il : spec) (qc_spec : Qc_il.spec) :
     counterexample list result =
+  let first = ref true in
   List.fold_left
     (fun acc qc_def ->
       match acc with
@@ -132,6 +133,8 @@ let check ~target ~ansi ?(on_counterexample = fun _ -> ()) ~generalize
           | Qc_il.BuiltinGeneratorD _ -> Ok counterexamples
           | Qc_il.PropertyD (name_id, side_prems, goal, hints) -> (
               let name = name_id.it in
+              (* Blank line between properties, but not before the first. *)
+              if !first then first := false else print_newline ();
               (* Name first (a progress marker); the verdict completes it. *)
               Printf.printf "%s: %!" name;
               match
