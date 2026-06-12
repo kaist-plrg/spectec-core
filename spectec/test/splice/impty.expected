@@ -83,12 +83,10 @@ xref:lookup[$lookup<K, V>(pair<K, V>^{asterisk}^, K~query~)]
 . Else if let ``K~h~ → V~h~ {two-colons} ( K~t~ → V~t~ )^{asterisk}^`` be ``pair<K, V>^{asterisk}^``:
  .. Check that ``K~h~`` is equal to ``K~query~``.
  .. Return ``V~h~``.
-
 . Otherwise:
- .. Otherwise:
-  ... Check that ``pair<K, V>^{asterisk}^`` is a non-empty list.
-  ... Let ``K~h~ → V~h~ {two-colons} ( K~t~ → V~t~ )^{asterisk}^`` be ``pair<K, V>^{asterisk}^``.
-  ... Return ``xref:lookup[$lookup<K, V>(( K~t~ → V~t~ )^{asterisk}^, K~query~)]``.
+ .. Check that ``pair<K, V>^{asterisk}^`` is a non-empty list.
+ .. Let ``K~h~ → V~h~ {two-colons} ( K~t~ → V~t~ )^{asterisk}^`` be ``pair<K, V>^{asterisk}^``.
+ .. Return ``xref:lookup[$lookup<K, V>(( K~t~ → V~t~ )^{asterisk}^, K~query~)]``.
 ****
 
 === Shorthands

@@ -687,9 +687,7 @@ let strip_leading_newline (s : string) : string =
 let render_elseblock (elseblock_opt : elseblock option) : string =
   match elseblock_opt with
   | None | Some [] -> ""
-  | Some block ->
-      "\n\n" ^ adoc_ordered_bullet 0 ^ "Otherwise:"
-      ^ render_instrs ~level:1 block
+  | Some block -> render_instrs ~level:0 block
 
 let render_defined_rel_def (hints : hints)
     ((id_rel, sig_, exps, block, elseblock_opt) :
