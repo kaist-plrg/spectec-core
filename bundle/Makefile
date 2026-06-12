@@ -5,17 +5,19 @@
 
 SPECTECX ?= ./spectecx
 SPEC      = impty.spectec
+QC_DIR    = counterexamples
 
 SKEL_DIR  = skeleton
 DOC_DIR   = documentation
 
-.PHONY: check test test-base doc doc-html doc-pdf clean help
+.PHONY: check test test-base quickcheck doc doc-html doc-pdf clean help
 
 help:
 	@echo "Tutorial helpers (see README.md for the full 'spectecx impty ...' set):"
 	@echo "  make check         type-check the spec (errors and warnings, no IL)"
 	@echo "  make test          run the full test suite (tests/)"
 	@echo "  make test-base     run the base-language tests only (tests/base/)"
+	@echo "  make quickcheck    property-test type safety (saves to $(QC_DIR)/)"
 	@echo "  make doc           splice the prose to documentation/impty.adoc (no extra tools)"
 	@echo "  make doc-html      render the prose document to documentation/impty.html"
 	@echo "  make doc-pdf       render the prose document as documentation/impty.pdf"
@@ -31,6 +33,9 @@ test:
 
 test-base:
 	$(SPECTECX) impty batch --batch-dir tests/base
+
+quickcheck:
+	$(SPECTECX) impty quickcheck --generalize --save-dir $(QC_DIR)
 
 # doc-html needs asciidoctor; doc-pdf needs asciidoctor-pdf.
 
@@ -51,3 +56,4 @@ doc-pdf: doc
 
 clean:
 	rm -f $(DOC_DIR)/impty.adoc $(DOC_DIR)/impty.html $(DOC_DIR)/impty.pdf
+	rm -rf $(QC_DIR)
