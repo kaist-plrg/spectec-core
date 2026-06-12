@@ -241,9 +241,9 @@ module Base = struct
         let* b = Arbitrary.Bool.arbitrary in
         return (lit_bool b)
 
-  (* Inputs for Preservation: a typing context [tenv] and a value-compatible
+  (* Inputs for Type_preservation: a typing context [tenv] and a value-compatible
      [env] sharing the same identifiers, plus a well-typed [expr] over them. By
-     construction Check_expr and Eval_expr both hold, so the only way Preserves
+     construction Check_expr and Eval_expr both hold, so the only way the property
      fails is a genuine preservation violation in the spec. *)
   let gen_preservation (spec : spec) : (string * value) list Gen.t =
     let open Gen in
@@ -271,7 +271,7 @@ module Base = struct
     in
     let* ty = elements [ TInt; TBool ] in
     let* expr = gen_expr ~typed_only:true spec ctx ty in
-    return [ ("env", env); ("tenv", tenv); ("expr", expr) ]
+    return [ ("tenv", tenv); ("env", env); ("expr", expr) ]
 end
 
 (* ===== Closure Impty generator (INT, BOOL, function types) ===== *)

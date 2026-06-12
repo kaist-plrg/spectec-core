@@ -49,7 +49,7 @@ value of its static type (Preservation).
 
   $ spectec impty quickcheck --spec ../../specs/impty/base/spec.spectec --num-tests 50 --color never
   Type_safety: passed 50 tests
-  Preservation: passed 50 tests
+  Type_preservation: passed 50 tests
 
 The buggy-leq fixture types `e <= e'` without constraining the right operand,
 so a program like `1 <= false` typechecks but gets stuck in evaluation:
@@ -73,8 +73,8 @@ Preservation property catches it directly with the offending expression:
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-preservation.spectec --num-tests 500 --color never
   Type_safety: falsified after 6 tests
     counterexample   prog: while 0 <= 0 do skip end
-  Preservation: falsified after 14 tests
-    counterexample   env: [], tenv: [], expr: 2 <= 2
+  Type_preservation: falsified after 14 tests
+    counterexample   tenv: [], env: [], expr: 2 <= 2
 
 Generalizing widens the expression but skips the map-typed env and tenv, which
 have no generator:
@@ -83,9 +83,9 @@ have no generator:
   Type_safety: falsified after 6 tests
     counterexample   prog: while 0 <= 0 do skip end
     generalized      prog: while [int] <= [int] do [command] end
-  Preservation: falsified after 14 tests
-    counterexample   env: [], tenv: [], expr: 2 <= 2
-    generalized      env: [], tenv: [], expr: [int] <= [int]
+  Type_preservation: falsified after 14 tests
+    counterexample   tenv: [], env: [], expr: 2 <= 2
+    generalized      tenv: [], env: [], expr: [int] <= [int]
 
 The preservation-compat fixture spells out the environment/context agreement with
 let- and iteration-premises: it destructures `env` and `tenv` into key/value
@@ -94,4 +94,4 @@ let, if, and iteration premises, which the property evaluator now supports:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/preservation-compat.spectec --num-tests 50 --color never
   Type_safety: passed 50 tests
-  Preservation: passed 50 tests
+  Type_preservation: passed 50 tests

@@ -311,10 +311,10 @@ rule Has_type/boollit:
 rule Has_type/clo:
   |- (CLO x e env) : _
 
-builtin generator $preservation : (env, expr, tenv)
+builtin generator $preservation : (tenv, env, expr)
 
-;; Preservation: a well-typed expression evaluates to a value of that type.
-property Preservation:
+;; Type_preservation: a well-typed expression evaluates to a value of that type.
+property Type_preservation:
   Has_type: |- value : type
   -- Check_expr: tenv |- expr : type
   -- Eval_expr: env |- expr ==> value

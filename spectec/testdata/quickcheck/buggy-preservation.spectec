@@ -278,9 +278,9 @@ rule Has_type/num:
 rule Has_type/boollit:
   |- _BOOL bool : BOOL
 
-builtin generator $preservation : (env, expr, tenv)
+builtin generator $preservation : (tenv, env, expr)
 
-property Preservation :
+property Type_preservation :
   Has_type: |- value : type
   -- Check_expr: tenv |- expr : type
   -- Eval_expr: env |- expr ==> value

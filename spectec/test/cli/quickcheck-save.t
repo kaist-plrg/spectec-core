@@ -4,10 +4,10 @@ A sound spec saves nothing:
 
   $ spectec impty quickcheck --spec ../../specs/impty/base/spec.spectec --num-tests 50 --save-dir sound --color never
   Type_safety: passed 50 tests
-  Preservation: passed 50 tests
+  Type_preservation: passed 50 tests
 
 Both counterexamples are saved. The Type_safety one is already a program; the
-Preservation one is a typing triple (a value environment, a typing context, and
+Type_preservation one is a typing triple (a value environment, a typing context, and
 an expression), reconstructed into an equivalent program: the expression bound
 under its static type, preceded by a declaration for each environment binding
 (here the environment is empty):
@@ -16,26 +16,26 @@ under its static type, preceded by a declaration for each environment binding
   Type_safety: falsified after 6 tests
     counterexample   prog: while 0 <= 0 do skip end
     saved            buggy/counter_Type_safety.imp
-  Preservation: falsified after 14 tests
-    counterexample   env: [], tenv: [], expr: 2 <= 2
-    saved            buggy/counter_Preservation.imp
+  Type_preservation: falsified after 14 tests
+    counterexample   tenv: [], env: [], expr: 2 <= 2
+    saved            buggy/counter_Type_preservation.imp
 
   $ cat buggy/counter_Type_safety.imp
   // quickcheck counterexample for Type_safety
   while 0 <= 0 do skip end
 
-  $ cat buggy/counter_Preservation.imp
-  // quickcheck counterexample for Preservation
+  $ cat buggy/counter_Type_preservation.imp
+  // quickcheck counterexample for Type_preservation
   bool result = 2 <= 2
 
 The reconstructed program typechecks and runs to completion. Unlike a Type_safety
 counterexample, running it does not surface the bug: `result` is declared bool yet
-evaluation binds it to a number. The Preservation property is what catches that.
+evaluation binds it to a number. The Type_preservation property is what catches that.
 
-  $ spectec impty typecheck --spec ../../testdata/quickcheck/buggy-preservation.spectec -p buggy/counter_Preservation.imp --color never
+  $ spectec impty typecheck --spec ../../testdata/quickcheck/buggy-preservation.spectec -p buggy/counter_Type_preservation.imp --color never
   Typecheck succeeded
 
-  $ spectec impty eval --spec ../../testdata/quickcheck/buggy-preservation.spectec -p buggy/counter_Preservation.imp --color never
+  $ spectec impty eval --spec ../../testdata/quickcheck/buggy-preservation.spectec -p buggy/counter_Type_preservation.imp --color never
   [
     result -> 2
   ]
