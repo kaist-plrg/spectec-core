@@ -71,7 +71,9 @@ returns the first value bound to the requested key.
 [[lookup]]
 [.sidebar-title]
 ****
-xref:lookup[$lookup]<K, V>(pair<K, V>^{asterisk}^, K~query~)
+xref:lookup[$lookup]:
+
+* Lookup of ``K~query~`` in ``pair<K, V>^{asterisk}^``
 ****
 
 ****
@@ -83,7 +85,7 @@ xref:lookup[$lookup]<K, V>(pair<K, V>^{asterisk}^, K~query~)
 . Otherwise:
  .. Check that ``pair<K, V>^{asterisk}^`` is a non-empty list.
  .. Let ``K~h~ → V~h~ {two-colons} ( K~t~ → V~t~ )^{asterisk}^`` be ``pair<K, V>^{asterisk}^``.
- .. Return ``xref:lookup[$lookup<K, V>(( K~t~ → V~t~ )^{asterisk}^, K~query~)]``.
+ .. Return xref:lookup[lookup of ``K~query~`` in ``( K~t~ → V~t~ )^{asterisk}^``].
 ****
 
 === Shorthands
@@ -109,7 +111,9 @@ type.
 [[Check_expr]]
 [.sidebar-title]
 ****
-xref:Check_expr[Check_expr: ``tenv ⊢ expr : %``]
+xref:Check_expr[Check_expr]:
+
+* Typechecking ``expr`` under context ``tenv``.
 ****
 
 ****
@@ -119,38 +123,38 @@ xref:Check_expr[Check_expr: ``tenv ⊢ expr : %``]
  .. Else if let ``b`` be ``literal``:
   ... Result in ``BOOL``.
 . Else if let ``x`` be ``expr``:
- .. Let~xref:option_get[?]~ ``t`` be ``xref:lookup[$lookup<id, type>(tenv, x)]``.
+ .. Let~xref:option_get[?]~ ``t`` be xref:lookup[lookup of ``x`` in ``tenv``].
  .. Result in ``t``.
 . Else if let ``! e`` be ``expr``:
- .. Let xref:Check_expr[``tenv ⊢ e : type``].
+ .. Let ``type`` be the result of xref:Check_expr[typechecking ``e`` under context ``tenv``].
  .. Check that ``type`` matches pattern ``BOOL``.
  .. Result in ``BOOL``.
 . Else if let ``e~l~ {plus} e~r~`` be ``expr``:
- .. Let xref:Check_expr[``tenv ⊢ e~l~ : type``].
+ .. Let ``type`` be the result of xref:Check_expr[typechecking ``e~l~`` under context ``tenv``].
  .. Check that ``type`` matches pattern ``INT``.
- .. Let xref:Check_expr[``tenv ⊢ e~r~ : type'``].
+ .. Let ``type'`` be the result of xref:Check_expr[typechecking ``e~r~`` under context ``tenv``].
  .. Check that ``type'`` matches pattern ``INT``.
  .. Result in ``INT``.
 . Else if let ``e~l~ {lt}= e~r~`` be ``expr``:
- .. Let xref:Check_expr[``tenv ⊢ e~l~ : type``].
+ .. Let ``type`` be the result of xref:Check_expr[typechecking ``e~l~`` under context ``tenv``].
  .. Check that ``type`` matches pattern ``INT``.
- .. Let xref:Check_expr[``tenv ⊢ e~r~ : type'``].
+ .. Let ``type'`` be the result of xref:Check_expr[typechecking ``e~r~`` under context ``tenv``].
  .. Check that ``type'`` matches pattern ``INT``.
  .. Result in ``BOOL``.
 . Else if let ``e~l~ {amp}{amp} e~r~`` be ``expr``:
- .. Let xref:Check_expr[``tenv ⊢ e~l~ : type``].
+ .. Let ``type`` be the result of xref:Check_expr[typechecking ``e~l~`` under context ``tenv``].
  .. Check that ``type`` matches pattern ``BOOL``.
- .. Let xref:Check_expr[``tenv ⊢ e~r~ : type'``].
+ .. Let ``type'`` be the result of xref:Check_expr[typechecking ``e~r~`` under context ``tenv``].
  .. Check that ``type'`` matches pattern ``BOOL``.
  .. Result in ``BOOL``.
 . Else if let ``FUN (t~arg~ x~arg~) -> t~ret~ +++{+++e+++}+++`` be ``expr``:
- .. Let xref:Check_expr[``x~arg~ → t~arg~ {two-colons} tenv ⊢ e : type``].
+ .. Let ``type`` be the result of xref:Check_expr[typechecking ``e`` under context ``x~arg~ → t~arg~ {two-colons} tenv``].
  .. Check that ``type`` is equal to ``t~ret~``.
  .. Result in ``t~arg~ -> t~ret~``.
 . Else if let ``e~f~ (e~a~)`` be ``expr``:
- .. Let xref:Check_expr[``tenv ⊢ e~f~ : type``].
+ .. Let ``type`` be the result of xref:Check_expr[typechecking ``e~f~`` under context ``tenv``].
  .. Let~xref:subtype_check[<:]~ ``t~arg~ -> t~ret~`` be ``type``.
- .. Let xref:Check_expr[``tenv ⊢ e~a~ : type'``].
+ .. Let ``type'`` be the result of xref:Check_expr[typechecking ``e~a~`` under context ``tenv``].
  .. Check that ``type'`` is equal to ``t~arg~``.
  .. Result in ``t~ret~``.
 ****
@@ -160,34 +164,36 @@ xref:Check_expr[Check_expr: ``tenv ⊢ expr : %``]
 [[Check_command]]
 [.sidebar-title]
 ****
-xref:Check_command[Check_command: ``tenv ⊢ command ⊣ %``]
+xref:Check_command[Check_command]:
+
+* Typechecking ``command`` under context ``tenv``.
 ****
 
 ****
 . If ``command`` matches pattern ``SKIP``:
  .. Result in ``tenv``.
 . Else if let ``t x = e`` be ``command``:
- .. Let xref:Check_expr[``tenv ⊢ e : type``].
+ .. Let ``type`` be the result of xref:Check_expr[typechecking ``e`` under context ``tenv``].
  .. Check that ``type`` is equal to ``t``.
  .. Result in ``x → t {two-colons} tenv``.
 . Else if let ``x = e`` be ``command``:
- .. Let xref:Check_expr[``tenv ⊢ e : t``].
- .. Check that ``xref:lookup[$lookup<id, type>(tenv, x)]`` is equal to ``t``.
+ .. Let ``t`` be the result of xref:Check_expr[typechecking ``e`` under context ``tenv``].
+ .. Check that xref:lookup[lookup of ``x`` in ``tenv``] is equal to ``t``.
  .. Result in ``tenv``.
 . Else if let ``IF e THEN c~1~ ELSE c~2~ END`` be ``command``:
- .. Let xref:Check_expr[``tenv ⊢ e : type``].
+ .. Let ``type`` be the result of xref:Check_expr[typechecking ``e`` under context ``tenv``].
  .. Check that ``type`` matches pattern ``BOOL``.
- .. Let xref:Check_command[``tenv ⊢ c~1~ ⊣ tenv~1~``].
- .. Let xref:Check_command[``tenv ⊢ c~2~ ⊣ tenv~2~``].
+ .. Let ``tenv~1~`` be the result of xref:Check_command[typechecking ``c~1~`` under context ``tenv``].
+ .. Let ``tenv~2~`` be the result of xref:Check_command[typechecking ``c~2~`` under context ``tenv``].
  .. Result in ``tenv``.
 . Else if let ``WHILE e DO c END`` be ``command``:
- .. Let xref:Check_expr[``tenv ⊢ e : type``].
+ .. Let ``type`` be the result of xref:Check_expr[typechecking ``e`` under context ``tenv``].
  .. Check that ``type`` matches pattern ``BOOL``.
- .. Let xref:Check_command[``tenv ⊢ c ⊣ tenv~1~``].
+ .. Let ``tenv~1~`` be the result of xref:Check_command[typechecking ``c`` under context ``tenv``].
  .. Result in ``tenv``.
 . Else if let ``c~1~ ; c~2~`` be ``command``:
- .. Let xref:Check_command[``tenv ⊢ c~1~ ⊣ tenv~1~``].
- .. Let xref:Check_command[``tenv~1~ ⊢ c~2~ ⊣ tenv~2~``].
+ .. Let ``tenv~1~`` be the result of xref:Check_command[typechecking ``c~1~`` under context ``tenv``].
+ .. Let ``tenv~2~`` be the result of xref:Check_command[typechecking ``c~2~`` under context ``tenv~1~``].
  .. Result in ``tenv~2~``.
 ****
 
@@ -201,7 +207,9 @@ to values; commands transform an environment to an environment.
 [[Eval_expr]]
 [.sidebar-title]
 ****
-xref:Eval_expr[Eval_expr: ``env ⊢ expr ⟹ %``]
+xref:Eval_expr[Eval_expr]:
+
+* Evaluating ``expr`` in environment ``env``.
 ****
 
 ****
@@ -211,37 +219,37 @@ xref:Eval_expr[Eval_expr: ``env ⊢ expr ⟹ %``]
  .. Else if let ``b`` be ``literal``:
   ... Result in ``b``.
 . Else if let ``x`` be ``expr``:
- .. Let~xref:option_get[?]~ ``v`` be ``xref:lookup[$lookup<id, value>(env, x)]``.
+ .. Let~xref:option_get[?]~ ``v`` be xref:lookup[lookup of ``x`` in ``env``].
  .. Result in ``v``.
 . Else if let ``! e`` be ``expr``:
- .. Let xref:Eval_expr[``env ⊢ e ⟹ value``].
+ .. Let ``value`` be the result of xref:Eval_expr[evaluating ``e`` in environment ``env``].
  .. Let~xref:subtype_check[<:]~ ``literal`` be ``value``.
  .. Let~xref:subtype_check[<:]~ ``b~e~`` be ``literal``.
  .. Let ``b`` be not ``b~e~``.
  .. Result in ``b``.
 . Else if let ``e~l~ {plus} e~r~`` be ``expr``:
- .. Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
+ .. Let ``value`` be the result of xref:Eval_expr[evaluating ``e~l~`` in environment ``env``].
  .. Let~xref:subtype_check[<:]~ ``literal`` be ``value``.
  .. Let~xref:subtype_check[<:]~ ``i~l~`` be ``literal``.
- .. Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
+ .. Let ``value'`` be the result of xref:Eval_expr[evaluating ``e~r~`` in environment ``env``].
  .. Let~xref:subtype_check[<:]~ ``literal'`` be ``value'``.
  .. Let~xref:subtype_check[<:]~ ``i~r~`` be ``literal'``.
  .. Let ``i`` be ``i~l~`` + ``i~r~``.
  .. Result in ``i``.
 . Else if let ``e~l~ {lt}= e~r~`` be ``expr``:
- .. Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
+ .. Let ``value`` be the result of xref:Eval_expr[evaluating ``e~l~`` in environment ``env``].
  .. Let~xref:subtype_check[<:]~ ``literal`` be ``value``.
  .. Let~xref:subtype_check[<:]~ ``i~l~`` be ``literal``.
- .. Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
+ .. Let ``value'`` be the result of xref:Eval_expr[evaluating ``e~r~`` in environment ``env``].
  .. Let~xref:subtype_check[<:]~ ``literal'`` be ``value'``.
  .. Let~xref:subtype_check[<:]~ ``i~r~`` be ``literal'``.
  .. Let ``b`` be ``i~l~`` is less than or equal to ``i~r~``.
  .. Result in ``b``.
 . Else if let ``e~l~ {amp}{amp} e~r~`` be ``expr``:
- .. Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
+ .. Let ``value`` be the result of xref:Eval_expr[evaluating ``e~l~`` in environment ``env``].
  .. Let~xref:subtype_check[<:]~ ``literal`` be ``value``.
  .. Let~xref:subtype_check[<:]~ ``b~l~`` be ``literal``.
- .. Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
+ .. Let ``value'`` be the result of xref:Eval_expr[evaluating ``e~r~`` in environment ``env``].
  .. Let~xref:subtype_check[<:]~ ``literal'`` be ``value'``.
  .. Let~xref:subtype_check[<:]~ ``b~r~`` be ``literal'``.
  .. Let ``b`` be ``b~l~`` and ``b~r~``.
@@ -249,10 +257,10 @@ xref:Eval_expr[Eval_expr: ``env ⊢ expr ⟹ %``]
 . Else if let ``FUN (t~arg~ x~arg~) -> t~ret~ +++{+++e+++}+++`` be ``expr``:
  .. Result in ``CLO x~arg~ e env``.
 . Else if let ``e~f~ (e~a~)`` be ``expr``:
- .. Let xref:Eval_expr[``env ⊢ e~f~ ⟹ value``].
+ .. Let ``value`` be the result of xref:Eval_expr[evaluating ``e~f~`` in environment ``env``].
  .. Let~xref:subtype_check[<:]~ ``CLO x~a~ e~body~ env~clo~`` be ``value``.
- .. Let xref:Eval_expr[``env ⊢ e~a~ ⟹ v``].
- .. Let xref:Eval_expr[``x~a~ → v {two-colons} env~clo~ ⊢ e~body~ ⟹ v~ret~``].
+ .. Let ``v`` be the result of xref:Eval_expr[evaluating ``e~a~`` in environment ``env``].
+ .. Let ``v~ret~`` be the result of xref:Eval_expr[evaluating ``e~body~`` in environment ``x~a~ → v {two-colons} env~clo~``].
  .. Result in ``v~ret~``.
 ****
 
@@ -261,36 +269,38 @@ xref:Eval_expr[Eval_expr: ``env ⊢ expr ⟹ %``]
 [[Eval_command]]
 [.sidebar-title]
 ****
-xref:Eval_command[Eval_command: ``env ⊢ command ⊣ %``]
+xref:Eval_command[Eval_command]:
+
+* Executing ``command`` in environment ``env``.
 ****
 
 ****
 . If ``command`` matches pattern ``SKIP``:
  .. Result in ``env``.
 . Else if let ``t x = e`` be ``command``:
- .. Let xref:Eval_expr[``env ⊢ e ⟹ v``].
+ .. Let ``v`` be the result of xref:Eval_expr[evaluating ``e`` in environment ``env``].
  .. Result in ``x → v {two-colons} env``.
 . Else if let ``x = e`` be ``command``:
- .. Let xref:Eval_expr[``env ⊢ e ⟹ v``].
+ .. Let ``v`` be the result of xref:Eval_expr[evaluating ``e`` in environment ``env``].
  .. Result in ``x → v {two-colons} env``.
 . Else if let ``IF e THEN c~1~ ELSE c~2~ END`` be ``command``:
- .. Let xref:Eval_expr[``env ⊢ e ⟹ value``].
+ .. Let ``value`` be the result of xref:Eval_expr[evaluating ``e`` in environment ``env``].
  .. If ``value`` is equal to ``true``:
-  ... Let xref:Eval_command[``env ⊢ c~1~ ⊣ env~1~``].
+  ... Let ``env~1~`` be the result of xref:Eval_command[executing ``c~1~`` in environment ``env``].
   ... Result in ``env~1~``.
  .. Else if ``value`` is equal to ``false``:
-  ... Let xref:Eval_command[``env ⊢ c~2~ ⊣ env~2~``].
+  ... Let ``env~2~`` be the result of xref:Eval_command[executing ``c~2~`` in environment ``env``].
   ... Result in ``env~2~``.
 . Else if let ``WHILE e DO c END`` be ``command``:
- .. Let xref:Eval_expr[``env ⊢ e ⟹ value``].
+ .. Let ``value`` be the result of xref:Eval_expr[evaluating ``e`` in environment ``env``].
  .. If ``value`` is equal to ``false``:
   ... Result in ``env``.
  .. Else if ``value`` is equal to ``true``:
-  ... Let xref:Eval_command[``env ⊢ c ⊣ env~1~``].
-  ... Let xref:Eval_command[``env~1~ ⊢ WHILE e DO c END ⊣ env~2~``].
+  ... Let ``env~1~`` be the result of xref:Eval_command[executing ``c`` in environment ``env``].
+  ... Let ``env~2~`` be the result of xref:Eval_command[executing ``WHILE e DO c END`` in environment ``env~1~``].
   ... Result in ``env~2~``.
 . Else if let ``c~1~ ; c~2~`` be ``command``:
- .. Let xref:Eval_command[``env ⊢ c~1~ ⊣ env~1~``].
- .. Let xref:Eval_command[``env~1~ ⊢ c~2~ ⊣ env~2~``].
+ .. Let ``env~1~`` be the result of xref:Eval_command[executing ``c~1~`` in environment ``env``].
+ .. Let ``env~2~`` be the result of xref:Eval_command[executing ``c~2~`` in environment ``env~1~``].
  .. Result in ``env~2~``.
 ****
