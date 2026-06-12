@@ -28,6 +28,29 @@ let adoc_mono (s : string) = "``" ^ s ^ "``"
    word boundaries, so a bracket abutting other markup leaks its delimiters. *)
 let adoc_passthrough (s : string) = "+++" ^ s ^ "+++"
 
+(* Escape a literal string for inline AsciiDoc: a character the inline
+   substitutor would re-read becomes its named entity (or a passthrough span
+   where none exists); benign characters stay bare so the source reads
+   naturally. *)
+let adoc_escape (s : string) : string =
+  let escape_char = function
+    | '*' -> "{asterisk}"
+    | '+' -> "{plus}"
+    | '<' -> "{lt}"
+    | '&' -> "{amp}"
+    | '[' -> "{startsb}"
+    | ']' -> "{endsb}"
+    | '^' -> "{caret}"
+    | '~' -> "{tilde}"
+    | '`' -> "{backtick}"
+    | '\\' -> "{backslash}"
+    | ('{' | '}' | '#' | '_') as c -> adoc_passthrough (String.make 1 c)
+    | c -> String.make 1 c
+  in
+  let buf = Buffer.create (String.length s) in
+  String.iter (fun c -> Buffer.add_string buf (escape_char c)) s;
+  Buffer.contents buf
+
 let adoc_as_code (ctx : context) (s : string) : string =
   if ctx.in_code then s else adoc_mono s
 
@@ -103,7 +126,7 @@ let code_of_atom (atom : Mixfix.atom) =
   | a -> (
       match unicode_of_atom a with
       | Some s -> s
-      | None -> adoc_passthrough (Xl.Atom.to_string a))
+      | None -> adoc_escape (Xl.Atom.to_string a))
 
 let code_of_mixop (mixop : mixop) : string =
   let arity = Mixfix.arity mixop in
