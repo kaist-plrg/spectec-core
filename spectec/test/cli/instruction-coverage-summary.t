@@ -15,7 +15,7 @@ lists only the uncovered SL instructions:
   Uncovered SL instructions:
     lookup:
       If ((pair<K, V>* matches pattern _ :: _))
-    Check_value:
+    Has_type:
       Case on literal
   [
     y -> true,

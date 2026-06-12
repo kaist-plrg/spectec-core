@@ -267,20 +267,20 @@ property Type_safety :
   hint(generator $base_prog)
 
 
-relation Check_value:
+relation Has_type:
   |- value : type
   hint(input %0)
 
-rule Check_value/num:
+rule Has_type/num:
   |- _NUM int : INT
 
-rule Check_value/boollit:
+rule Has_type/boollit:
   |- _BOOL bool : BOOL
 
 builtin generator $preservation : (env, expr, tenv)
 
 property Preservation :
-  Check_value: |- value : type
+  Has_type: |- value : type
   -- Check_expr: tenv |- expr : type
   -- Eval_expr: env |- expr ==> value
   hint(generator $preservation)

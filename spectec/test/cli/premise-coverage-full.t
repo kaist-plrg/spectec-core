@@ -244,7 +244,7 @@ Full premise coverage emits a GCOV-style annotated spec with per-premise counts:
    146: ####/####     -- rel Eval_prog: |- command -| env
         ####          |- command -| env
   
-  relation Check_value:
+  relation Has_type:
         rule num:
    147: ####/####     -- if literal matches `_NUM %`
    148: ####         -- let int = literal

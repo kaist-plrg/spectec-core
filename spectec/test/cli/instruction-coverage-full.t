@@ -207,7 +207,7 @@ instructions:
       1     Eval_prog: |- command -| env
       1       Result env
   
-  relation Check_value:
+  relation Has_type:
    ####   Case on literal
       -     Case (% matches pattern `_NUM %`):
    ####       Let (int) = literal

@@ -21,8 +21,6 @@ IL interpreter:
     Check_expr/not
     Check_expr/add
     Check_expr/and
-    Check_value/num
-    Check_value/boollit
     Eval_command/skip
     Eval_command/assign
     Eval_command/ite-true
@@ -33,6 +31,8 @@ IL interpreter:
     Eval_expr/not
     Eval_expr/add
     Eval_expr/and
+    Has_type/num
+    Has_type/boollit
   
   Clauses: 1/3 (33.33%)
   

@@ -255,12 +255,12 @@ premises that never succeeded:
       if Check_prog: |- command holds
     Run_prog/:
       rel Eval_prog: |- command -| env
-    Check_value/num:
+    Has_type/num:
       if literal matches `_NUM %`
-    Check_value/num:
+    Has_type/num:
       let int = literal
-    Check_value/boollit:
+    Has_type/boollit:
       if literal matches `_BOOL %`
-    Check_value/boollit:
+    Has_type/boollit:
       let bool = literal
   Typecheck succeeded
