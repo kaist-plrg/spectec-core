@@ -22,7 +22,7 @@ let link (ctx : context) = { ctx with in_link = true }
 
 let adoc_subscript (s : string) = "~" ^ s ^ "~"
 let adoc_superscript (s : string) = "^" ^ s ^ "^"
-let adoc_mono (s : string) = "``" ^ s ^ "``"
+let adoc_mono (s : string) = "`" ^ s ^ "`"
 
 (* Unconstrained (triple `+`): the constrained single-`+` form only pairs at
    word boundaries, so a bracket abutting other markup leaks its delimiters. *)
