@@ -215,19 +215,9 @@ let rec render_exp (ctx : context) (exp : exp) : string =
       F.asprintf "%s has type %s"
         (render_exp_as_code ctx exp_inner)
         (code_of_typ ctx typ)
-  | MatchE (exp_inner, Il.ListP `Nil) ->
-      F.asprintf "%s is an empty list" (render_exp ctx exp_inner)
-  | MatchE (exp_inner, Il.ListP `Cons) ->
-      F.asprintf "%s is a non-empty list" (render_exp ctx exp_inner)
-  | MatchE (exp_inner, Il.ListP (`Fixed len)) ->
-      F.asprintf "%s is a list of length %d" (render_exp ctx exp_inner) len
-  | MatchE (exp_inner, Il.OptP `None) ->
-      F.asprintf "%s is none" (render_exp ctx exp_inner)
-  | MatchE (exp_inner, Il.OptP `Some) ->
-      F.asprintf "%s is defined" (render_exp ctx exp_inner)
   | MatchE (exp_inner, pattern) ->
-      F.asprintf "%s matches pattern %s" (render_exp ctx exp_inner)
-        (code_of_pattern pattern |> adoc_as_code ctx)
+      F.asprintf "%s is %s" (render_exp ctx exp_inner)
+        (prose_of_pattern ctx pattern)
   | TupleE exps -> "( " ^ render_exps ctx ~sep:", " exps ^ " )"
   | CaseE notexp -> (
       if ctx.in_code then code_of_notexp ctx notexp
@@ -333,8 +323,8 @@ and render_negated_exp_opt (ctx : context) (exp_inner : exp) : string option =
   match exp_inner.node.it with
   | MatchE (exp_e, pattern) ->
       Some
-        (F.asprintf "%s does not match pattern %s" (render_exp ctx exp_e)
-           (code_of_pattern pattern |> adoc_as_code ctx))
+        (F.asprintf "%s is not %s" (render_exp ctx exp_e)
+           (prose_of_pattern ctx pattern))
   | SubE (exp_e, typ) ->
       Some
         (F.asprintf "%s does not have type %s"
@@ -381,6 +371,15 @@ and code_of_pattern (pattern : pattern) =
   | Il.ListP `Nil -> "[]"
   | Il.OptP `Some -> "(_)"
   | Il.OptP `None -> "()"
+
+and prose_of_pattern (ctx : context) (pattern : pattern) : string =
+  match pattern with
+  | Il.ListP `Nil -> "an empty list"
+  | Il.ListP `Cons -> "a non-empty list"
+  | Il.ListP (`Fixed len) -> F.asprintf "a list of length %d" len
+  | Il.OptP `None -> "none"
+  | Il.OptP `Some -> "defined"
+  | Il.CaseP _ -> code_of_pattern pattern |> adoc_as_code ctx
 
 and render_path (ctx : context) (path : path) : string =
   match path.it with
@@ -433,13 +432,32 @@ let render_guard (ctx : context) (exp_scrut : exp) (guard : guard) : string =
         (render_exp_as_code ctx exp_scrut)
         (code_of_typ ctx typ)
   | MatchG pattern ->
-      F.asprintf "%s matches pattern %s" (render_exp ctx exp_scrut)
-        (code_of_pattern pattern |> adoc_as_code ctx)
+      F.asprintf "%s is %s" (render_exp ctx exp_scrut)
+        (prose_of_pattern ctx pattern)
   | MemG e -> render_exp ctx exp_scrut ^ " is in " ^ render_exp ctx e
   | CheckLetSubG (_, target) | CheckLetMatchG (_, target) ->
-      F.asprintf "let %s be %s"
+      F.asprintf "%s is %s" (render_exp ctx exp_scrut)
         (render_exp_as_code ctx target)
-        (render_exp ctx exp_scrut)
+
+let render_condition (ctx : context) (cond : exp) : string =
+  match cond.node.it with
+  | CmpE (cmpop, _, exp_l, exp_r) -> (
+      let l = render_exp ctx exp_l and r = render_exp ctx exp_r in
+      match cmpop with
+      | `EqOp -> F.asprintf "%s must equal %s" l r
+      | `NeOp -> F.asprintf "%s must not equal %s" l r
+      | `LtOp -> F.asprintf "%s must be less than %s" l r
+      | `GtOp -> F.asprintf "%s must be greater than %s" l r
+      | `LeOp -> F.asprintf "%s must be less than or equal to %s" l r
+      | `GeOp -> F.asprintf "%s must be greater than or equal to %s" l r)
+  | MatchE (exp_l, pattern) ->
+      F.asprintf "%s must be %s" (render_exp ctx exp_l)
+        (prose_of_pattern ctx pattern)
+  | SubE (exp_l, typ) ->
+      F.asprintf "%s must have type %s"
+        (render_exp_as_code ctx exp_l)
+        (code_of_typ ctx typ)
+  | _ -> F.asprintf "Check that %s" (render_exp ctx cond)
 
 let render_iterexp_suffix (ctx : context) (iterexps : iterexp list) : string =
   match iterexps with
@@ -491,7 +509,8 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
   match instr.node.it with
   | IfI (cond, iterexps, block, _phantom) ->
       let check_line =
-        F.asprintf "%sCheck that %s%s." bullet (render_exp in_prose cond)
+        F.asprintf "%s%s%s." bullet
+          (render_condition in_prose cond)
           (render_iterexp_suffix in_prose iterexps)
       in
       if block = [] then check_line else check_line ^ render_instrs ~level block
@@ -537,7 +556,7 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
             (render_instrs ~level:(level + 1) arm_body)
       | _ ->
           let render_arm idx ((guard, arm_body) : case) =
-            let kw = if idx = 0 then "If" else "Else if" in
+            let kw = if idx = 0 then "If" else "Otherwise, if" in
             F.asprintf "%s%s %s:%s" bullet kw
               (render_guard in_prose exp_scrut guard)
               (render_instrs ~level:(level + 1) arm_body)
