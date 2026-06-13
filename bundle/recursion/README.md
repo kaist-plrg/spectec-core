@@ -42,12 +42,13 @@ Complete `recursion.spectec` by filling the stubs, each tagged in the file:
 Work from this directory. `./spectecx` is the same binary as the main exercise.
 
     make import       # bring your finished function rules in from ../impty.spectec
-    make test-rec     # whole suite: base + functions + recursion programs
-    make test-base    # base programs only (a quick sanity check)
+    make test         # whole suite: base + functions + recursion programs
+    make test-base    # base + functions (a quick sanity check, before recursion)
 
-    # debug one program at a time
+    # debug one program at a time -- debug adds the full derivation tree + trace
     ./spectecx impty typecheck -p tests/recursion/rec_sum.imp
     ./spectecx impty eval      -p tests/recursion/rec_sum.imp
+    ./spectecx impty debug     -p tests/recursion/rec_sum.imp
 
 The base programs pass immediately; the function programs pass once you import
 your rules (`make import`); the recursion programs pass once you complete the
