@@ -27,8 +27,8 @@ let config = ref default_config
 let fmt = ref Format.std_formatter
 let ansi = ref Ansi.plain
 
-let summarize_value (v : Il.Value.t) : string =
-  Il.Print.string_of_value v |> summarize ~max_len:100
+let render_value (v : Il.Value.t) : string =
+  Il.Print.string_of_value v |> normalize_whitespace
 
 (* === Tree representation =========================================== *)
 
@@ -191,14 +191,11 @@ let render_judgment c =
   let string_of_atom a =
     match Il.Print.string_of_atom a with "" -> "" | s -> dim s
   in
-  let string_of_arg = function
-    | Some v -> summarize_value v
-    | None -> dim "?"
-  in
+  let string_of_arg = function Some v -> render_value v | None -> dim "?" in
   Il.Mode.render ~pad_brackets:true ~string_of_atom ~string_of_arg c
 
 let render_call node =
-  let args = List.map summarize_value node.inputs |> String.concat ", " in
+  let args = List.map render_value node.inputs |> String.concat ", " in
   Format.sprintf "$%s(%s)" node.id args
 
 let render_tag node ~rule =
@@ -242,7 +239,7 @@ let render_lines node =
   | Func -> (
       match (!config.level, node.outcome) with
       | Premise, Func_ok v ->
-          [ Format.sprintf "%s = %s" (render_call node) (summarize_value v) ]
+          [ Format.sprintf "%s = %s" (render_call node) (render_value v) ]
       | _ -> [ "$" ^ node.id ])
 
 let render_prem ~binding_env entry =
@@ -250,7 +247,7 @@ let render_prem ~binding_env entry =
      for an unbound variable instead. *)
   let values varid =
     match List.find_opt (fun (id, _) -> id.it = varid.it) binding_env with
-    | Some (_, v) -> Some (summarize_value v)
+    | Some (_, v) -> Some (render_value v)
     | None -> Some (dim "?")
   in
   match prov entry.prem with
