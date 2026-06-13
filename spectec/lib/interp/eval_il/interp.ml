@@ -899,8 +899,7 @@ and eval_prem (ctx : Ctx.t) (prem : prem) : Ctx.t attempt =
     | Ok _, true | Error _, false -> Ok ctx
     | Ok _, false ->
         fail id.at (F.asprintf "condition not-hold %s was not met" id.it)
-    | Error _, true ->
-        fail id.at (F.asprintf "condition hold %s was not met" id.it)
+    | Error failtraces, true -> Error failtraces
   in
   let eval_let_prem ctx exp_l exp_r =
     let ctx, value = eval_exp ctx exp_r in
