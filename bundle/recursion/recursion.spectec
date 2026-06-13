@@ -3,14 +3,10 @@
 ;; An optional exercise for early finishers, extending the main language with a
 ;; conditional expression and recursive function declarations. See README.md.
 ;;
-;; Stubs are tagged the same way as the syntax productions above them:
-;;   (functions)  -- the function rules. Bring over the answers you completed in
-;;                   the main exercise (../impty.spectec); recursion builds on them.
-;;   (recursion)  -- new rules for the conditional expression and recursive
-;;                   declarations. Work these out yourself.
+;;   (functions)  -- the function rules. Import your answers to the main
+;;                   exercise (../impty.spectec) by running `make import`.
+;;   (recursion)  -- new rules for you to fill in.
 ;;
-;; Run `make import` first to carry your function rules over from the main
-;; exercise; then fill a rule, run `make test-rec`, repeat.
 
 ;;--------------------
 ;; Standard functions
@@ -33,7 +29,7 @@ def $lookup<K, V>((K_h -> V_h):: (K_t -> V_t)*, K_query)
 syntax type =
   | INT
   | BOOL
-  | type '->' type                        ;; (functions) function type
+  | type '->' type                             ;; (functions) function type
 
 syntax literal =
   | _NUM int      hint(prose "the integer" %0)
@@ -47,14 +43,14 @@ syntax expr =
   | expr '+' expr
   | expr '<=' expr
   | expr '&&' expr
-  | expr '?' expr ':' expr                 ;; (recursion) conditional expression
-  | FUN `( type id `) '->' type `{ expr `}  ;; (functions) anonymous function (returning a value)
-  | expr `( expr `)                       ;; (functions) function call
+  | expr '?' expr ':' expr                     ;; (recursion) conditional expression
+  | FUN `( type id `) '->' type `{ expr `}     ;; (functions) anonymous function (returning a value)
+  | expr `( expr `)                            ;; (functions) function call
 
 syntax command =
   | SKIP
-  | type id '=' expr                      ;; variable declaration with initializer
-  | id '=' expr                           ;; assignment
+  | type id '=' expr                           ;; variable declaration with initializer
+  | id '=' expr                                ;; assignment
   | IF expr THEN command ELSE command END
   | WHILE expr DO command END
   | command ';' command
@@ -118,10 +114,10 @@ rule Check_expr/and:
   -- Check_expr: tenv |- e_r : BOOL
 
 ;; rule Check_expr/cond:
-;;   tenv |- e_1 '?' e_2 ':' e_3 : ???    ;; (recursion) TODO: result type + premises
+;;   tenv |- e_c '?' e_t ':' e_f : ???    ;; (recursion) TODO: result type + premises
 
 ;; rule Check_expr/fun:
-;;   tenv |- FUN `( t_1 x `) '->' t_2 `{ e `} : ???    ;; (functions) carry over from ../impty.spectec
+;;   tenv |- FUN `( t_a x `) '->' t_r `{ e `} : ???    ;; (functions) carry over from ../impty.spectec
 
 ;; rule Check_expr/call:
 ;;   tenv |- e_f `( e_a `) : ???    ;; (functions) carry over from ../impty.spectec
@@ -163,7 +159,7 @@ rule Check_command/seq:
   -- Check_command: tenv_1 |- c_2 -| tenv_2
 
 ;; rule Check_command/rec:
-;;   tenv |- REC f `( t_1 x `) '->' t_2 `{ e `} -| ???    ;; (recursion) TODO: result context + premises
+;;   tenv |- REC f `( t_a x `) '->' t_r `{ e `} -| ???    ;; (recursion) TODO: result context + premises
 
 ;;--- Program ---
 
@@ -185,8 +181,8 @@ syntax value, env
 
 syntax value =
   | literal
-  | CLO id expr env                      ;; (functions) (parameter, body, captured env)
-  | RECCLO id id expr env                ;; (recursion) (self-name, parameter, body, captured env)
+  | CLO id expr env       ;; (functions) (parameter, body, captured env)
+  | RECCLO id id expr env ;; (recursion) (self-name, parameter, body, captured env)
 
 syntax env = map<id, value>
 
@@ -233,13 +229,13 @@ rule Eval_expr/and:
   -- if b = (b_l /\ b_r)
 
 ;; rule Eval_expr/cond-true:
-;;   env |- e_1 '?' e_2 ':' e_3 ==> ???    ;; (recursion) TODO: result value + premises
+;;   env |- e_c '?' e_t ':' e_f ==> ???    ;; (recursion) TODO: result value + premises
 
 ;; rule Eval_expr/cond-false:
-;;   env |- e_1 '?' e_2 ':' e_3 ==> ???    ;; (recursion) TODO: result value + premises
+;;   env |- e_c '?' e_t ':' e_f ==> ???    ;; (recursion) TODO: result value + premises
 
 ;; rule Eval_expr/fun:
-;;   env |- FUN `( t_1 x `) '->' t_2 `{ e `} ==> ???    ;; (functions) carry over from ../impty.spectec
+;;   env |- FUN `( t_a x `) '->' t_r `{ e `} ==> ???    ;; (functions) carry over from ../impty.spectec
 
 ;; rule Eval_expr/call:
 ;;   env |- e_f `( e_a `) ==> ???    ;; (functions) carry over from ../impty.spectec
@@ -291,7 +287,7 @@ rule Eval_command/seq:
   -- Eval_command: env_1 |- c_2 -| env_2
 
 ;; rule Eval_command/rec:
-;;   env |- REC f `( t_1 x `) '->' t_2 `{ e `} -| ???    ;; (recursion) TODO: result env + premises
+;;   env |- REC f `( t_a x `) '->' t_r `{ e `} -| ???    ;; (recursion) TODO: result env + premises
 
 ;;--- Program ---
 

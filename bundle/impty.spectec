@@ -1,8 +1,8 @@
 ;; Typed Imp -- tutorial skeleton.
 ;;
 ;; The complete base language plus the syntax for first-class functions. The
-;; four function rules are left as TODO stubs; fill them in to make the
-;; programs under tests/functions run.
+;; four function rules are left as TODO stubs; fill them in to pass all tests
+;; and property-based testing.
 
 ;;--------------------
 ;; Standard functions
@@ -25,7 +25,7 @@ def $lookup<K, V>((K_h -> V_h):: (K_t -> V_t)*, K_query)
 syntax type =
   | INT
   | BOOL
-  | type '->' type                        ;; (functions) function type
+  | type '->' type                          ;; (functions) function type
 
 syntax literal =
   | _NUM int      hint(prose "the integer" %0)
@@ -40,12 +40,12 @@ syntax expr =
   | expr '<=' expr
   | expr '&&' expr
   | FUN `( type id `) '->' type `{ expr `}  ;; (functions) anonymous function (returning a value)
-  | expr `( expr `)                       ;; (functions) function call
+  | expr `( expr `)                         ;; (functions) function call
 
 syntax command =
   | SKIP
-  | type id '=' expr                      ;; variable declaration with initializer
-  | id '=' expr                           ;; assignment
+  | type id '=' expr                        ;; variable declaration with initializer
+  | id '=' expr                             ;; assignment
   | IF expr THEN command ELSE command END
   | WHILE expr DO command END
   | command ';' command
@@ -107,7 +107,7 @@ rule Check_expr/and:
   -- Check_expr: tenv |- e_r : BOOL
 
 ;; rule Check_expr/fun:
-;;   tenv |- FUN `( t_1 x `) '->' t_2 `{ e `} : ???    ;; TODO: result type + premises
+;;   tenv |- FUN `( t_a x `) '->' t_r `{ e `} : ???    ;; TODO: result type + premises
 
 ;; rule Check_expr/call:
 ;;   tenv |- e_f `( e_a `) : ???    ;; TODO: result type + premises
@@ -168,7 +168,7 @@ syntax value, env
 
 syntax value =
   | literal
-  | CLO id expr env                      ;; (functions) (parameter, body, captured env)
+  | CLO id expr env ;; (functions) (parameter, body, captured env)
 
 syntax env = map<id, value>
 
@@ -215,7 +215,7 @@ rule Eval_expr/and:
   -- if b = (b_l /\ b_r)
 
 ;; rule Eval_expr/fun:
-;;   env |- FUN `( t_1 x `) '->' t_2 `{ e `} ==> ???    ;; TODO: result value + premises
+;;   env |- FUN `( t_a x `) '->' t_r `{ e `} ==> ???    ;; TODO: result value + premises
 
 ;; rule Eval_expr/call:
 ;;   env |- e_f `( e_a `) ==> ???    ;; TODO: result value + premises
