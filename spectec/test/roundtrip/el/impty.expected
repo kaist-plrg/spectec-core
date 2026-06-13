@@ -5,7 +5,7 @@ syntax pair<K, V> =
 syntax map<K, V> = (pair<K, V>)*
 
 dec $lookup<K, V>(map<K, V>, K) : V?
-  hint(prose_in "lookup of" %1 "in" %0)
+  hint(prose_in "the binding of" %1 "in" %0)
 
 def $lookup<K, V>(eps, K_query) = eps
 
@@ -262,7 +262,7 @@ syntax pair<K, V> =
 syntax map<K, V> = (pair<K, V>)*
 
 dec $lookup<K, V>(map<K, V>, K) : V?
-  hint(prose_in "lookup of" %1 "in" %0)
+  hint(prose_in "the binding of" %1 "in" %0)
 
 def $lookup<K, V>(eps, K_query) = eps
 

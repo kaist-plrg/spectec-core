@@ -66,7 +66,7 @@ returns the first value bound to the requested key.
 ****
 xref:lookup[$lookup]:
 
-* Lookup of `K~query~` in `pair<K, V>^{asterisk}^`
+* The binding of `K~query~` in `pair<K, V>^{asterisk}^`
 ****
 
 ****
@@ -78,7 +78,7 @@ xref:lookup[$lookup]:
 . Otherwise:
  .. `pair<K, V>^{asterisk}^` must be a non-empty list.
  .. Let `K~h~ → V~h~ {two-colons} ( K~t~ → V~t~ )^{asterisk}^` be `pair<K, V>^{asterisk}^`.
- .. Return xref:lookup[lookup of `K~query~` in `( K~t~ → V~t~ )^{asterisk}^`].
+ .. Return xref:lookup[the binding of `K~query~` in `( K~t~ → V~t~ )^{asterisk}^`].
 ****
 
 == Static semantics
@@ -104,7 +104,7 @@ xref:Check_expr[Check_expr]:
  .. Otherwise, if `literal` is the boolean `b`:
   ... Result in `BOOL`.
 . Otherwise, if `expr` is `x`:
- .. Let `t` be xref:lookup[lookup of `x` in `tenv`], which must exist.
+ .. Let `t` be xref:lookup[the binding of `x` in `tenv`], which must exist.
  .. Result in `t`.
 . Otherwise, if `expr` is `! e`:
  .. Let `type` be the result of xref:Check_expr[typechecking `e` under context `tenv`].
@@ -159,7 +159,7 @@ xref:Check_command[Check_command]:
  .. Result in `x → t {two-colons} tenv`.
 . Otherwise, if `command` is `x = e`:
  .. Let `t` be the result of xref:Check_expr[typechecking `e` under context `tenv`].
- .. xref:lookup[lookup of `x` in `tenv`] must equal `t`.
+ .. xref:lookup[the binding of `x` in `tenv`] must equal `t`.
  .. Result in `tenv`.
 . Otherwise, if `command` is `IF e THEN c~1~ ELSE c~2~ END`:
  .. Let `type` be the result of xref:Check_expr[typechecking `e` under context `tenv`].
@@ -200,7 +200,7 @@ xref:Eval_expr[Eval_expr]:
  .. Otherwise, if `literal` is the boolean `b`:
   ... Result in the boolean `b`.
 . Otherwise, if `expr` is `x`:
- .. Let `v` be xref:lookup[lookup of `x` in `env`], which must exist.
+ .. Let `v` be xref:lookup[the binding of `x` in `env`], which must exist.
  .. Result in `v`.
 . Otherwise, if `expr` is `! e`:
  .. Let `value` be the result of xref:Eval_expr[evaluating `e` in environment `env`].
