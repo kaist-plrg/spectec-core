@@ -116,6 +116,24 @@ let shorten_option_get (instrs : Pl.instr list) :
       | _ -> None)
   | _ -> None
 
+(* Nested downcasting:
+     CheckLetI (x, value, [CheckLetI (target, x, rest)])
+   becomes
+     CheckLetI (target, value, rest) *)
+let collapse_rename (e_l : Pl.exp) (e_r : Pl.exp) (block : Pl.instr list) :
+    Pl.instr' option =
+  match (e_l.node.it, block) with
+  | Pl.VarE x, [ inner ] -> (
+      match inner.node.it with
+      | Pl.CheckLetI (target, source, rest)
+        when (match source.node.it with
+             | Pl.VarE x' -> x'.it = x.it
+             | _ -> false)
+             && not (Common.Domain.IdSet.mem x (Pl.Free.free_block rest)) ->
+          Some (Pl.CheckLetI (target, e_r, rest))
+      | _ -> None)
+  | _ -> None
+
 (* Recursive traversal *)
 
 let rec shorten_block (block : Pl.instr list) : Pl.instr list =
@@ -141,8 +159,11 @@ and recurse_into_nested (instr : Pl.instr) : Pl.instr =
         Pl.CaseI (exp, cases', phantom)
     | Pl.OtherwiseI inner -> Pl.OtherwiseI (recurse_into_nested inner)
     | Pl.TryI arms -> Pl.TryI (List.map shorten_block arms)
-    | Pl.CheckLetI (e_l, e_r, block_inner) ->
-        Pl.CheckLetI (e_l, e_r, shorten_block block_inner)
+    | Pl.CheckLetI (e_l, e_r, block_inner) -> (
+        let block_inner = shorten_block block_inner in
+        match collapse_rename e_l e_r block_inner with
+        | Some it' -> it'
+        | None -> Pl.CheckLetI (e_l, e_r, block_inner))
     | Pl.LetI _ | Pl.RuleI _ | Pl.ResultI _ | Pl.ReturnI _ | Pl.DebugI _
     | Pl.DestructI _ | Pl.OptionGetI _ ->
         instr.node.it

@@ -211,35 +211,28 @@ xref:Eval_expr[Eval_expr]:
  .. Result in `v`.
 . Otherwise, if `expr` is `! e`:
  .. Let `value` be the result of xref:Eval_expr[evaluating `e` in environment `env`].
- .. Let `literal` be `value`, which must be a `literal`.
- .. `literal` must be the boolean `b~e~`.
+ .. `value` must be the boolean `b~e~`.
  .. Let `b` be not `b~e~`.
  .. Result in the boolean `b`.
 . Otherwise, if `expr` is `e~l~ {plus} e~r~`:
  .. Let `value` be the result of xref:Eval_expr[evaluating `e~l~` in environment `env`].
- .. Let `literal` be `value`, which must be a `literal`.
- .. `literal` must be the integer `i~l~`.
+ .. `value` must be the integer `i~l~`.
  .. Let `value'` be the result of xref:Eval_expr[evaluating `e~r~` in environment `env`].
- .. Let `literal'` be `value'`, which must be a `literal`.
- .. `literal'` must be the integer `i~r~`.
+ .. `value'` must be the integer `i~r~`.
  .. Let `i` be `i~l~` + `i~r~`.
  .. Result in the integer `i`.
 . Otherwise, if `expr` is `e~l~ {lt}= e~r~`:
  .. Let `value` be the result of xref:Eval_expr[evaluating `e~l~` in environment `env`].
- .. Let `literal` be `value`, which must be a `literal`.
- .. `literal` must be the integer `i~l~`.
+ .. `value` must be the integer `i~l~`.
  .. Let `value'` be the result of xref:Eval_expr[evaluating `e~r~` in environment `env`].
- .. Let `literal'` be `value'`, which must be a `literal`.
- .. `literal'` must be the integer `i~r~`.
+ .. `value'` must be the integer `i~r~`.
  .. Let `b` be `i~l~` is less than or equal to `i~r~`.
  .. Result in the boolean `b`.
 . Otherwise, if `expr` is `e~l~ {amp}{amp} e~r~`:
  .. Let `value` be the result of xref:Eval_expr[evaluating `e~l~` in environment `env`].
- .. Let `literal` be `value`, which must be a `literal`.
- .. `literal` must be the boolean `b~l~`.
+ .. `value` must be the boolean `b~l~`.
  .. Let `value'` be the result of xref:Eval_expr[evaluating `e~r~` in environment `env`].
- .. Let `literal'` be `value'`, which must be a `literal`.
- .. `literal'` must be the boolean `b~r~`.
+ .. `value'` must be the boolean `b~r~`.
  .. Let `b` be `b~l~` and `b~r~`.
  .. Result in the boolean `b`.
 . Otherwise, if `expr` is `FUN (t~arg~ x~arg~) -> t~ret~ +++{+++e+++}+++`:
