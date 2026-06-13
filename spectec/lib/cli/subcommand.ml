@@ -55,6 +55,49 @@ let make_task (module Tgt : Spectec.Target.S) ~name ~summary
   in
   (name, cmd)
 
+(* A single-program debug run forces the derivation-tree handler at premise
+   level — its most detailed view — rather than reading the level from a flag. *)
+let tree_premise_config () : Instrumentation.Config.t =
+  List.filter_map
+    (fun (module S : Instrumentation.Handler.Spec.S) ->
+      if S.name = "tree" then
+        S.parse [ ("level", Some "premise"); ("output", None) ]
+      else None)
+    Instrumentation.builtin_handler_specs
+
+let make_debug (module Tgt : Spectec.Target.S) ~name ~summary
+    (module TC : Task_cli.S) =
+  (* Best-effort echo of the program in surface syntax above the tree. *)
+  let print_program ~spec_il input =
+    match TC.Task.parse_input ~spec:spec_il input with
+    | Ok (_, values) -> (
+        match TC.Task.unparse ~spec:spec_il values with
+        | text -> Format.printf "%s@.@." text
+        | exception _ -> ())
+    | Error _ -> ()
+  in
+  let cmd =
+    Core.Command.basic ~summary
+    @@
+    let open Core.Command.Let_syntax in
+    let%map cli_source = Cli_args.Spec.source_flag
+    and input = TC.flags
+    and color = Cli_args.Output.color_flag in
+    fun () ->
+      guard_unit ~color @@ fun () ->
+      let* cfg = Config_file.load ~target:Tgt.name () in
+      let source =
+        resolve_source ~cli:cli_source ~config:cfg.Config_file.spec_source
+          ~default_dir:Tgt.spec_dir
+      in
+      let* _files, spec_il = load_spec source in
+      print_program ~spec_il input;
+      Batch.run_and_print_single
+        (module TC.Task)
+        ~config:(tree_premise_config ()) ~sl_mode:false ~spec_il input
+  in
+  (name, cmd)
+
 let make_parse (module Tgt : Spectec.Target.S) ~name ~summary
     (module TC : Task_cli.S) =
   let cmd =

@@ -15,6 +15,16 @@ val make_task :
   (module Task_cli.S) ->
   string * Core.Command.t
 
+(** Like {!make_task}, but runs a single input with the derivation-tree handler
+    forced to premise level — a one-program debug view, no instrumentation flags
+    to spell out. *)
+val make_debug :
+  (module Spectec.Target.S) ->
+  name:string ->
+  summary:string ->
+  (module Task_cli.S) ->
+  string * Core.Command.t
+
 val make_parse :
   (module Spectec.Target.S) ->
   name:string ->
