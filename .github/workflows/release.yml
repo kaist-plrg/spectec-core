@@ -73,17 +73,16 @@ jobs:
           path: release
           merge-multiple: true
 
-      - name: Build tutorial materials
-        run: make bundle
-
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      - name: Build tutorial materials
+        run: make bundle
+
       - name: Package editor extensions
         run: |
-          make vsix
           cp editors/vscode/spectecx.vsix release/
           cp editors/emacs/spectec-ts-mode.el release/
           tar -czf release/spectec-vim.tar.gz -C editors/vim syntax ftdetect

@@ -70,7 +70,9 @@ BUNDLE_NAME = spectecx-tutorial
 BUNDLE_DIR  = dist/$(BUNDLE_NAME)
 IMPTY_TESTS = spectec/testdata/interp/impty
 
-bundle:
+# `vsix` runs first so the packaged extension ships inside the bundle; this
+# pulls a Node/npx toolchain into `make bundle`.
+bundle: vsix
 	rm -rf $(BUNDLE_DIR)
 	mkdir -p $(BUNDLE_DIR)/tests/base \
 	         $(BUNDLE_DIR)/tests/functions \
@@ -84,6 +86,7 @@ bundle:
 	cp LICENSE $(BUNDLE_DIR)/
 	cp $(BUNDLE_SRC)/impty.spectec $(BUNDLE_DIR)/impty.spectec
 	cp editors/emacs/spectec-ts-mode.el $(BUNDLE_DIR)/
+	cp editors/vscode/$(NAME).vsix $(BUNDLE_DIR)/
 	mkdir -p $(BUNDLE_DIR)/editors/vim/syntax $(BUNDLE_DIR)/editors/vim/ftdetect
 	cp editors/vim/syntax/spectec.vim $(BUNDLE_DIR)/editors/vim/syntax/
 	cp editors/vim/ftdetect/spectec.vim $(BUNDLE_DIR)/editors/vim/ftdetect/
