@@ -124,6 +124,80 @@ and gen_of_deftyp (spec : spec) (outer_typ : typ) (deftyp : deftyp) :
           | [] -> failwith "Il_gen.gen_of_deftyp: VariantT with no cases"
           | gens -> Gen.oneof gens)
 
+let case_is_recursive (typename : string) (case : typcase) : bool =
+  List.exists (typ_has_varname typename) (Mixfix.args case.notation.it)
+
+let same_named_typ (a : typ') (b : typ') : bool =
+  match (a, b) with
+  | VarT { synid = ia; _ }, VarT { synid = ib; _ } -> ia.it = ib.it
+  | _ -> false
+
+let rec minimal_value (spec : spec) (typ : typ) : Value.t =
+  match typ.it with
+  | BoolT -> Value.make_val BoolT (BoolV false)
+  | NumT `NatT -> Value.make_val (NumT `NatT) (NumV (`Nat (Bigint.of_int 0)))
+  | NumT `IntT -> Value.make_val (NumT `IntT) (NumV (`Int (Bigint.of_int 0)))
+  | TextT -> Value.make_val TextT (TextV "x")
+  | TupleT typs ->
+      Value.make_val typ.it (TupleV (List.map (minimal_value spec) typs))
+  | IterT { iter = Opt; _ } -> Value.make_val typ.it (OptV None)
+  | IterT { iter = List; _ } -> Value.make_val typ.it (ListV [])
+  | VarT { synid = id; _ } -> (
+      match find_typdef spec id.it with
+      | Some (_, deftyp) -> minimal_of_deftyp spec typ.it id.it deftyp
+      | None ->
+          failwith
+            (Printf.sprintf "Il_gen.minimal_value: unknown type '%s'" id.it))
+  | FuncT -> failwith "Il_gen.minimal_value: cannot build FuncT"
+
+and minimal_of_deftyp (spec : spec) (outer : typ') (name : string)
+    (deftyp : deftyp) : Value.t =
+  match deftyp.it with
+  | PlainT inner -> Value.make_val outer (minimal_value spec inner).it
+  | StructT fields ->
+      Value.make_val outer
+        (StructV (List.map (fun (a, ft) -> (a, minimal_value spec ft)) fields))
+  | VariantT cases ->
+      let case =
+        match
+          List.find_opt (fun case -> not (case_is_recursive name case)) cases
+        with
+        | Some case -> case
+        | None -> List.hd cases
+      in
+      let mixop, typs = Mixfix.split case.notation.it in
+      Value.make_val outer
+        (CaseV (Mixfix.fill mixop (List.map (minimal_value spec) typs)))
+
+(* Every base case of the variant, so the shrinker can keep whichever fill still
+   triggers the failure. *)
+let minimal_fills (spec : spec) (typ : typ) : Value.t list =
+  match typ.it with
+  | VarT { synid = id; _ } -> (
+      match find_typdef spec id.it with
+      | Some (_, { it = VariantT cases; _ }) ->
+          let base_cases =
+            List.filter (fun case -> not (case_is_recursive id.it case)) cases
+          in
+          let chosen = if base_cases = [] then cases else base_cases in
+          List.map
+            (fun (case : typcase) ->
+              let mixop, typs = Mixfix.split case.notation.it in
+              Value.make_val typ.it
+                (CaseV (Mixfix.fill mixop (List.map (minimal_value spec) typs))))
+            chosen
+      | _ -> [ minimal_value spec typ ])
+  | _ -> [ minimal_value spec typ ]
+
+let rec cross_product = function
+  | [] -> [ [] ]
+  | options :: rest ->
+      List.concat_map
+        (fun head -> List.map (fun tail -> head :: tail) (cross_product rest))
+        options
+
+let take n lst = List.filteri (fun i _ -> i < n) lst
+
 let shrink (spec : spec) =
   let rec shrink (v : Value.t) : Value.t list =
     let t = v.note.typ in
@@ -180,8 +254,7 @@ let shrink (spec : spec) =
                 match deftyp.it with
                 | VariantT cases ->
                     let outer_name = id.it in
-                    (* Find which case in the variant matches the current value
-                  by comparing atom structure after filling the type-level mixop *)
+                    (* Which variant case is this value built from? *)
                     let current_case =
                       List.find_opt
                         (fun { notation = nottyp; _ } ->
@@ -200,7 +273,6 @@ let shrink (spec : spec) =
                                vc filled)
                         cases
                     in
-                    (* Strategy 1: if current case is recursive, return same-type subcomponents *)
                     let recursive_subcomponents =
                       match current_case with
                       | None -> []
@@ -215,7 +287,6 @@ let shrink (spec : spec) =
                               | _ -> None)
                             (List.combine typs args)
                     in
-                    (* Shrink each argument of the current case *)
                     let shrunk_args =
                       List.concat_map
                         (fun (i, vi) ->
@@ -239,7 +310,63 @@ let shrink (spec : spec) =
                             (shrink vi))
                         (List.mapi (fun i vi -> (i, vi)) args)
                     in
-                    recursive_subcomponents @ shrunk_args
+                    (* Constructor switch: replace a recursive case with a
+                       non-recursive one of the same type, reusing type-matching
+                       arguments (e.g. while -> decl). *)
+                    let switch_candidates =
+                      match current_case with
+                      | Some cur when case_is_recursive outer_name cur ->
+                          let _, current_typs = Mixfix.split cur.notation.it in
+                          let typed_args = List.combine current_typs args in
+                          let target_cases =
+                            List.filter
+                              (fun case ->
+                                (not (case == cur))
+                                && not (case_is_recursive outer_name case))
+                              cases
+                          in
+                          List.concat_map
+                            (fun (target_case : typcase) ->
+                              try
+                                let target_mixop, target_typs =
+                                  Mixfix.split target_case.notation.it
+                                in
+                                let slot_options, _, reused =
+                                  List.fold_left
+                                    (fun (options, available, reused) slot_typ
+                                       ->
+                                      match
+                                        List.partition
+                                          (fun (arg_typ, _) ->
+                                            same_named_typ arg_typ.it
+                                              slot_typ.it)
+                                          available
+                                      with
+                                      | (_, arg) :: more_matches, non_matches ->
+                                          ( [ arg ] :: options,
+                                            more_matches @ non_matches,
+                                            reused + 1 )
+                                      | [], _ ->
+                                          ( minimal_fills spec slot_typ
+                                            :: options,
+                                            available,
+                                            reused ))
+                                    ([], typed_args, 0) target_typs
+                                in
+                                if reused >= 1 then
+                                  (* cap the fan-out *)
+                                  List.rev slot_options |> cross_product
+                                  |> take 8
+                                  |> List.map (fun vals ->
+                                         Value.make_val t
+                                           (CaseV
+                                              (Mixfix.fill target_mixop vals)))
+                                else []
+                              with Failure _ -> [])
+                            target_cases
+                      | _ -> []
+                    in
+                    recursive_subcomponents @ switch_candidates @ shrunk_args
                 | _ -> [])
             | None -> [])
         | _ -> [])

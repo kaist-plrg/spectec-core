@@ -49,7 +49,7 @@ program that typechecks but gets stuck in eval:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 100 --save-dir leq --color never
   Type_safety: falsified after 67 tests
-    counterexample   prog: while 8 <= false do skip end
+    counterexample   prog: bool x = 8 <= false
     saved            leq/counter_Type_safety.imp
 
 Re-running finds the same counterexample; rather than write a duplicate, it
@@ -57,12 +57,12 @@ reports the path of the file that already holds it:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 100 --save-dir leq --color never
   Type_safety: falsified after 67 tests
-    counterexample   prog: while 8 <= false do skip end
+    counterexample   prog: bool x = 8 <= false
     saved            leq/counter_Type_safety.imp (already saved)
 
   $ cat leq/counter_Type_safety.imp
   // quickcheck counterexample for Type_safety
-  while 8 <= false do skip end
+  bool x = 8 <= false
 
   $ spectec impty typecheck --spec ../../testdata/quickcheck/buggy-leq.spectec -p leq/counter_Type_safety.imp --color never
   Typecheck succeeded
@@ -84,19 +84,11 @@ reports the path of the file that already holds it:
       |         application of rule Eval_prog/ failed
       |         └── ../../testdata/quickcheck/buggy-leq.spectec:249:6-249:18:
       |             invocation of relation Eval_command failed
-      |             ├── ../../testdata/quickcheck/buggy-leq.spectec:249:6-249:18:
-      |             │   application of rule Eval_command/while-false failed
-      |             │   └── ../../testdata/quickcheck/buggy-leq.spectec:227:6-227:15:
-      |             │       invocation of relation Eval_expr failed
-      |             │       └── ../../testdata/quickcheck/buggy-leq.spectec:227:6-227:15:
-      |             │           application of rule Eval_expr/leq failed
-      |             │           └── ../../testdata/quickcheck/buggy-leq.spectec:188:33-188:41:
-      |             │               condition literal' matches `_NUM %` was not met
       |             └── ../../testdata/quickcheck/buggy-leq.spectec:249:6-249:18:
-      |                 application of rule Eval_command/while-true failed
-      |                 └── ../../testdata/quickcheck/buggy-leq.spectec:231:6-231:15:
+      |                 application of rule Eval_command/decl failed
+      |                 └── ../../testdata/quickcheck/buggy-leq.spectec:209:6-209:15:
       |                     invocation of relation Eval_expr failed
-      |                     └── ../../testdata/quickcheck/buggy-leq.spectec:231:6-231:15:
+      |                     └── ../../testdata/quickcheck/buggy-leq.spectec:209:6-209:15:
       |                         application of rule Eval_expr/leq failed
       |                         └── ../../testdata/quickcheck/buggy-leq.spectec:188:33-188:41:
       |                             condition literal' matches `_NUM %` was not met
@@ -107,10 +99,10 @@ saved file is the concrete, runnable counterexample, never the generalization:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 100 --generalize --save-dir gen --color never
   Type_safety: falsified after 67 tests
-    counterexample   prog: while 8 <= false do skip end
-    generalized      prog: while [int] <= [bool] do [command] end
+    counterexample   prog: bool x = 8 <= false
+    generalized      prog: [type] [id] = [int] <= [bool]
     saved            gen/counter_Type_safety.imp
 
   $ cat gen/counter_Type_safety.imp
   // quickcheck counterexample for Type_safety
-  while 8 <= false do skip end
+  bool x = 8 <= false

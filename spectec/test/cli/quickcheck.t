@@ -57,15 +57,15 @@ so a program like `1 <= false` typechecks but gets stuck in evaluation:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 500 --color never
   Type_safety: falsified after 67 tests
-    counterexample   prog: while 8 <= false do skip end
+    counterexample   prog: bool x = 8 <= false
 
 With --generalize, the shrunk counterexample is widened to the family of
 programs that exhibit the bug:
 
   $ spectec impty quickcheck --spec ../../testdata/quickcheck/buggy-leq.spectec --num-tests 500 --generalize --color never
   Type_safety: falsified after 67 tests
-    counterexample   prog: while 8 <= false do skip end
-    generalized      prog: while [int] <= [bool] do [command] end
+    counterexample   prog: bool x = 8 <= false
+    generalized      prog: [type] [id] = [int] <= [bool]
 
 The buggy-preservation fixture evaluates `e <= e'` to a NUM while still typing it
 as BOOL, so a well-typed expression evaluates to a value of the wrong type. The
