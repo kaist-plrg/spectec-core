@@ -13,11 +13,6 @@ let extract (spec_el : El.spec) : (string * string) list =
 let source : Anchor.Source.entry =
   {
     frame =
-      {
-        name = "syntax";
-        prefix = "[source,bison]\n----\n";
-        suffix = "\n----";
-        header = true;
-      };
+      { name = "syntax"; prefix = "----\n"; suffix = "\n----"; header = false };
     extract;
   }

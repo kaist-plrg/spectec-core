@@ -17,13 +17,6 @@ variables to values.
 The abstract syntax of Typed Imp distinguishes types, literals,
 variables, expressions, commands, and whole programs.
 
-[[type]]
-[[literal]]
-[[id]]
-[[expr]]
-[[command]]
-[[prog]]
-[source,bison]
 ----
 syntax type = 
    | INT
