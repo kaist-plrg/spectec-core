@@ -143,8 +143,12 @@ let code_of_iterexp ((iter, _) : iterexp) = code_of_iter iter
 let code_of_typ (ctx : context) (typ : typ) : string =
   Sl.Print.string_of_typ typ |> adoc_as_code ctx
 
-let tid_of_typ (typ' : typ') : id option =
-  match typ' with Il.VarT { synid; _ } -> Some synid | _ -> None
+let render_required_typ (ctx : context) (typ : typ) : string =
+  let name = Sl.Print.string_of_typ typ in
+  let article =
+    if name <> "" && String.contains "aeiouAEIOU" name.[0] then "an" else "a"
+  in
+  article ^ " " ^ code_of_typ ctx typ
 
 let render_unop = Sl.Print.string_of_unop
 
@@ -210,7 +214,7 @@ let rec render_exp (ctx : context) (exp : exp) : string =
       render_exp ctx exp_l ^ " " ^ render_cmpop ctx cmpop ^ " "
       ^ render_exp ctx exp_r
   | UpCastE (_, exp_inner) | DownCastE (_, exp_inner) ->
-      render_exp_as_code ctx exp_inner
+      render_exp ctx exp_inner
   | SubE (exp_inner, typ) ->
       F.asprintf "%s has type %s"
         (render_exp_as_code ctx exp_inner)
@@ -222,15 +226,12 @@ let rec render_exp (ctx : context) (exp : exp) : string =
   | CaseE notexp -> (
       if ctx.in_code then code_of_notexp ctx notexp
       else
-        let hint_opt = exp.hints.prose in
-        let link_opt = tid_of_typ exp.node.note in
-        match (hint_opt, link_opt) with
-        | Some hints, Some tid ->
+        match exp.hints.prose with
+        | Some hints ->
             let exps = Mixfix.args notexp in
-            render_alter_hint (link ctx) hints (reindent_lines ~level:0)
-              render_exp exps
-            |> adoc_as_link ctx ~link:tid.it
-        | _ -> code_of_notexp ctx notexp)
+            render_alter_hint ctx hints (reindent_lines ~level:0) render_exp
+              exps
+        | None -> code_of_notexp ctx notexp)
   | StrE expfields ->
       adoc_passthrough "{"
       ^ String.concat ", "
@@ -436,8 +437,7 @@ let render_guard (ctx : context) (exp_scrut : exp) (guard : guard) : string =
         (prose_of_pattern ctx pattern)
   | MemG e -> render_exp ctx exp_scrut ^ " is in " ^ render_exp ctx e
   | CheckLetSubG (_, target) | CheckLetMatchG (_, target) ->
-      F.asprintf "%s is %s" (render_exp ctx exp_scrut)
-        (render_exp_as_code ctx target)
+      F.asprintf "%s is %s" (render_exp ctx exp_scrut) (render_exp ctx target)
 
 let render_condition (ctx : context) (cond : exp) : string =
   match cond.node.it with
@@ -646,15 +646,20 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
             (render_exp in_prose exp_source))
   | CheckLetI (exp_l, exp_r, block) ->
       let head =
-        F.asprintf "%sLet%s %s be %s." bullet
-          (adoc_subscript (adoc_link ~link:"subtype_check" "<:"))
-          (render_exp_as_code in_prose exp_l)
-          (render_exp in_prose exp_r)
+        match exp_l.node.it with
+        | CaseE _ ->
+            F.asprintf "%s%s must be %s." bullet
+              (render_exp in_prose exp_r)
+              (render_exp in_prose exp_l)
+        | _ ->
+            F.asprintf "%sLet %s be %s, which must be %s." bullet
+              (render_exp_as_code in_prose exp_l)
+              (render_exp in_prose exp_r)
+              (render_required_typ in_prose (exp_l.node.note $ exp_l.node.at))
       in
       if block = [] then head else head ^ render_instrs ~level block
   | OptionGetI (exp_l, exp_r) ->
-      F.asprintf "%sLet%s %s be %s." bullet
-        (adoc_subscript (adoc_link ~link:"option_get" "?"))
+      F.asprintf "%sLet %s be %s, which must exist." bullet
         (render_exp_as_code in_prose exp_l)
         (render_exp in_prose exp_r)
 

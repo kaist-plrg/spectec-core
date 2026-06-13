@@ -88,18 +88,6 @@ xref:lookup[$lookup]:
  .. Return xref:lookup[lookup of `K~query~` in `( K~t~ → V~t~ )^{asterisk}^`].
 ****
 
-=== Shorthands
-
-[#option_get]
-==== Force-unwrap (`?`)
-
-Force-unwraps an optional. If the value is none, the rule does not apply.
-
-[#subtype_check]
-==== Subtype check (`<:`)
-
-The value must belong to this subtype; otherwise the rule does not apply.
-
 == Static semantics
 
 The typing judgments characterise well-formed expressions and commands
@@ -118,12 +106,12 @@ xref:Check_expr[Check_expr]:
 
 ****
 . If `expr` is `literal`:
- .. If `literal` is `i`:
+ .. If `literal` is the integer `i`:
   ... Result in `INT`.
- .. Otherwise, if `literal` is `b`:
+ .. Otherwise, if `literal` is the boolean `b`:
   ... Result in `BOOL`.
 . Otherwise, if `expr` is `x`:
- .. Let~xref:option_get[?]~ `t` be xref:lookup[lookup of `x` in `tenv`].
+ .. Let `t` be xref:lookup[lookup of `x` in `tenv`], which must exist.
  .. Result in `t`.
 . Otherwise, if `expr` is `! e`:
  .. Let `type` be the result of xref:Check_expr[typechecking `e` under context `tenv`].
@@ -153,7 +141,7 @@ xref:Check_expr[Check_expr]:
  .. Result in `t~arg~ -> t~ret~`.
 . Otherwise, if `expr` is `e~f~ (e~a~)`:
  .. Let `type` be the result of xref:Check_expr[typechecking `e~f~` under context `tenv`].
- .. Let~xref:subtype_check[<:]~ `t~arg~ -> t~ret~` be `type`.
+ .. `type` must be `t~arg~ -> t~ret~`.
  .. Let `type'` be the result of xref:Check_expr[typechecking `e~a~` under context `tenv`].
  .. `type'` must equal `t~arg~`.
  .. Result in `t~ret~`.
@@ -214,51 +202,51 @@ xref:Eval_expr[Eval_expr]:
 
 ****
 . If `expr` is `literal`:
- .. If `literal` is `i`:
-  ... Result in `i`.
- .. Otherwise, if `literal` is `b`:
-  ... Result in `b`.
+ .. If `literal` is the integer `i`:
+  ... Result in the integer `i`.
+ .. Otherwise, if `literal` is the boolean `b`:
+  ... Result in the boolean `b`.
 . Otherwise, if `expr` is `x`:
- .. Let~xref:option_get[?]~ `v` be xref:lookup[lookup of `x` in `env`].
+ .. Let `v` be xref:lookup[lookup of `x` in `env`], which must exist.
  .. Result in `v`.
 . Otherwise, if `expr` is `! e`:
  .. Let `value` be the result of xref:Eval_expr[evaluating `e` in environment `env`].
- .. Let~xref:subtype_check[<:]~ `literal` be `value`.
- .. Let~xref:subtype_check[<:]~ `b~e~` be `literal`.
+ .. Let `literal` be `value`, which must be a `literal`.
+ .. `literal` must be the boolean `b~e~`.
  .. Let `b` be not `b~e~`.
- .. Result in `b`.
+ .. Result in the boolean `b`.
 . Otherwise, if `expr` is `e~l~ {plus} e~r~`:
  .. Let `value` be the result of xref:Eval_expr[evaluating `e~l~` in environment `env`].
- .. Let~xref:subtype_check[<:]~ `literal` be `value`.
- .. Let~xref:subtype_check[<:]~ `i~l~` be `literal`.
+ .. Let `literal` be `value`, which must be a `literal`.
+ .. `literal` must be the integer `i~l~`.
  .. Let `value'` be the result of xref:Eval_expr[evaluating `e~r~` in environment `env`].
- .. Let~xref:subtype_check[<:]~ `literal'` be `value'`.
- .. Let~xref:subtype_check[<:]~ `i~r~` be `literal'`.
+ .. Let `literal'` be `value'`, which must be a `literal`.
+ .. `literal'` must be the integer `i~r~`.
  .. Let `i` be `i~l~` + `i~r~`.
- .. Result in `i`.
+ .. Result in the integer `i`.
 . Otherwise, if `expr` is `e~l~ {lt}= e~r~`:
  .. Let `value` be the result of xref:Eval_expr[evaluating `e~l~` in environment `env`].
- .. Let~xref:subtype_check[<:]~ `literal` be `value`.
- .. Let~xref:subtype_check[<:]~ `i~l~` be `literal`.
+ .. Let `literal` be `value`, which must be a `literal`.
+ .. `literal` must be the integer `i~l~`.
  .. Let `value'` be the result of xref:Eval_expr[evaluating `e~r~` in environment `env`].
- .. Let~xref:subtype_check[<:]~ `literal'` be `value'`.
- .. Let~xref:subtype_check[<:]~ `i~r~` be `literal'`.
+ .. Let `literal'` be `value'`, which must be a `literal`.
+ .. `literal'` must be the integer `i~r~`.
  .. Let `b` be `i~l~` is less than or equal to `i~r~`.
- .. Result in `b`.
+ .. Result in the boolean `b`.
 . Otherwise, if `expr` is `e~l~ {amp}{amp} e~r~`:
  .. Let `value` be the result of xref:Eval_expr[evaluating `e~l~` in environment `env`].
- .. Let~xref:subtype_check[<:]~ `literal` be `value`.
- .. Let~xref:subtype_check[<:]~ `b~l~` be `literal`.
+ .. Let `literal` be `value`, which must be a `literal`.
+ .. `literal` must be the boolean `b~l~`.
  .. Let `value'` be the result of xref:Eval_expr[evaluating `e~r~` in environment `env`].
- .. Let~xref:subtype_check[<:]~ `literal'` be `value'`.
- .. Let~xref:subtype_check[<:]~ `b~r~` be `literal'`.
+ .. Let `literal'` be `value'`, which must be a `literal`.
+ .. `literal'` must be the boolean `b~r~`.
  .. Let `b` be `b~l~` and `b~r~`.
- .. Result in `b`.
+ .. Result in the boolean `b`.
 . Otherwise, if `expr` is `FUN (t~arg~ x~arg~) -> t~ret~ +++{+++e+++}+++`:
  .. Result in `CLO x~arg~ e env`.
 . Otherwise, if `expr` is `e~f~ (e~a~)`:
  .. Let `value` be the result of xref:Eval_expr[evaluating `e~f~` in environment `env`].
- .. Let~xref:subtype_check[<:]~ `CLO x~a~ e~body~ env~clo~` be `value`.
+ .. `value` must be `CLO x~a~ e~body~ env~clo~`.
  .. Let `v` be the result of xref:Eval_expr[evaluating `e~a~` in environment `env`].
  .. Let `v~ret~` be the result of xref:Eval_expr[evaluating `e~body~` in environment `x~a~ → v {two-colons} env~clo~`].
  .. Result in `v~ret~`.
@@ -285,17 +273,17 @@ xref:Eval_command[Eval_command]:
  .. Result in `x → v {two-colons} env`.
 . Otherwise, if `command` is `IF e THEN c~1~ ELSE c~2~ END`:
  .. Let `value` be the result of xref:Eval_expr[evaluating `e` in environment `env`].
- .. If `value` is equal to `true`:
+ .. If `value` is equal to the boolean `true`:
   ... Let `env~1~` be the result of xref:Eval_command[executing `c~1~` in environment `env`].
   ... Result in `env~1~`.
- .. Otherwise, if `value` is equal to `false`:
+ .. Otherwise, if `value` is equal to the boolean `false`:
   ... Let `env~2~` be the result of xref:Eval_command[executing `c~2~` in environment `env`].
   ... Result in `env~2~`.
 . Otherwise, if `command` is `WHILE e DO c END`:
  .. Let `value` be the result of xref:Eval_expr[evaluating `e` in environment `env`].
- .. If `value` is equal to `false`:
+ .. If `value` is equal to the boolean `false`:
   ... Result in `env`.
- .. Otherwise, if `value` is equal to `true`:
+ .. Otherwise, if `value` is equal to the boolean `true`:
   ... Let `env~1~` be the result of xref:Eval_command[executing `c` in environment `env`].
   ... Let `env~2~` be the result of xref:Eval_command[executing `WHILE e DO c END` in environment `env~1~`].
   ... Result in `env~2~`.
