@@ -1,6 +1,20 @@
 # SpecTecX hands-on session
 
-Tool and materials for the SpecTecX hands-on: the `spectecx` binary and a small typed imperative language ("Typed Imp") to read, run, and extend.
+Everything you need for the SpecTecX hands-on. You'll read, run, and extend **Typed Imp** -- a small typed imperative language -- using the `spectecx` tool.
+
+Setup is three steps: **(1)** download the materials, **(2)** install the `spectecx` binary, **(3)** follow the bundled `README.md`.
+
+## Pick your setup
+
+Decide based on what your machine already has:
+
+| Path | Works on | What you need | Effort |
+|------|----------|---------------|--------|
+| **Prebuilt binary** (recommended) | macOS Apple Silicon, Linux x86_64 | a terminal -- nothing to install | ~5 min |
+| **Docker image** | any platform | Docker | ~5 min + one large pull |
+| **Build from source** | any platform | opam, OCaml >= 5.1, GMP headers | ~15-20 min |
+
+If a native binary covers your platform, take the prebuilt path. On macOS Intel or Windows, choose Docker (easiest) or build from source.
 
 ## 1. Get the materials
 
@@ -11,34 +25,40 @@ curl -L -O https://github.com/kaist-plrg/spectecx/releases/download/${TAG}/spect
 tar -xzf spectecx-tutorial.tar.gz && cd spectecx-tutorial
 ```
 
-The unpacked `README.md` drives the session; the steps below just put the `spectecx` binary alongside it first.
+The unpacked `README.md` drives the session; the steps below just put the `spectecx` binary alongside it first. (Using Docker? Skip ahead -- the image already contains the materials.)
 
 ## 2. Install the tool
 
-Pick the binary for your platform:
+Two prebuilt binaries are attached. Pick yours and download it into the unpacked bundle directory as `spectecx`:
 
-- **macOS Apple Silicon (M series):** `spectecx-darwin-arm64`
-- **Linux x86_64:** `spectecx-linux-x64`
-- **macOS Intel:** no native binary; use Docker or build from source (below).
-- **Windows:** use WSL2 with the Linux binary, or Docker.
-
-Download it into the unpacked bundle directory as `spectecx`, make it executable, and check it runs:
+**macOS (Apple Silicon / M-series):**
 
 ```bash
-curl -L -o spectecx https://github.com/kaist-plrg/spectecx/releases/download/${TAG}/spectecx-<your-platform>
+curl -L -o spectecx https://github.com/kaist-plrg/spectecx/releases/download/${TAG}/spectecx-darwin-arm64
+```
+
+**Linux (x86_64):**
+
+```bash
+curl -L -o spectecx https://github.com/kaist-plrg/spectecx/releases/download/${TAG}/spectecx-linux-x64
+```
+
+*macOS Intel or Windows:* no native binary -- use Docker or build from source (below).
+
+Then make it executable and check it runs:
+
+```bash
 chmod +x spectecx
 ./spectecx help
 ```
 
-Downloaded with the browser instead? Rename the file to `spectecx` (`mv spectecx-<your-platform> spectecx`) before `chmod`. On macOS, clear the quarantine flag with `xattr -d com.apple.quarantine spectecx`.
+Downloaded with the browser instead? The file keeps its asset name, so rename it to `spectecx` (e.g. `mv spectecx-darwin-arm64 spectecx`) before `chmod`. On macOS, clear the quarantine flag with `xattr -d com.apple.quarantine spectecx`.
 
-Every command runs the binary as `./spectecx`, so there is no `PATH` setup to do.
-
-`make doc` splices the spec into AsciiDoc at `documentation/impty.adoc`. Read it in any editor, or preview it with the VS Code / JetBrains AsciiDoc extension. For HTML/PDF (`make doc-html` / `make doc-pdf`), install asciidoctor (`gem install asciidoctor asciidoctor-pdf`, already in the Docker image).
+Every command runs the binary as `./spectecx`.
 
 ### Alternatives
 
-**Docker** -- a prebuilt, self-contained image (tool, materials, an editor, and asciidoctor), for anyone without a native binary. No download needed -- pull and run:
+**Docker** -- a prebuilt, self-contained image (tool, materials, an editor, and asciidoctor), for anyone without a native binary. Pull and run:
 
 ```bash
 docker pull kaistplrg/spectecx:tutorial
@@ -50,15 +70,24 @@ This opens a shell in the bundle; from there step 3 and the whole README run exa
 **Build from source** -- opam, OCaml >= 5.1, GMP headers:
 
 ```bash
-git clone https://github.com/kaist-plrg/spectecx.git && cd spectecx
+git clone -b tutorial-pldi26 https://github.com/kaist-plrg/spectecx.git
+cd spectecx
 opam switch create spectecx 5.1.0
 opam install -y --switch=spectecx --deps-only ./spectec
-make exe                           # produces ./spectecx
+make exe                              # produces ./spectecx in the repo root
 ```
 
-### Optional: editor syntax highlighting
+Then copy the binary into your unpacked bundle, so `./spectecx` works there:
 
-**VS Code** -- download **`spectecx.vsix`** from this release page and install it:
+```bash
+cp spectecx /path/to/spectecx-tutorial/spectecx
+```
+
+## Editor syntax highlighting (recommended)
+
+Highlighters for four editors come with this release. **The VS Code, Emacs, and Vim highlighters already sit in your unpacked bundle** -- nothing to download. All three are also attached to this release page as standalone assets (`spectecx.vsix`, `spectec-ts-mode.el`, `spectec-vim.tar.gz`) if you'd rather grab them directly; Neovim builds from its own grammar repo.
+
+**VS Code** -- install the bundled **`spectecx.vsix`** (also on this release page):
 
 ```bash
 code --install-extension spectecx.vsix
@@ -99,10 +128,22 @@ To make it permanent, load it from your init instead, so every `.spectec` file o
 (require 'spectec-ts-mode)
 ```
 
-## 3. Start the session
+## Prose document (optional)
 
-From the unpacked bundle, follow `README.md` from the top:
+`make doc` splices the spec into AsciiDoc at `documentation/impty.adoc` with no extra tools -- read it in any editor, or preview it with the VS Code / JetBrains AsciiDoc extension. For HTML or PDF (`make doc-html` / `make doc-pdf`), install asciidoctor:
+
+```bash
+gem install asciidoctor asciidoctor-pdf
+```
+
+It is already present in the Docker image.
+
+## 3. Verification
+
+From the unpacked bundle, run:
 
 ```bash
 ./spectecx impty eval -p tests/base/hello.imp
 ```
+
+The hands-on exercise will proceed after the demo.
