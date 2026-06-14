@@ -59,6 +59,7 @@ eval shares this exact set:
     [--tree.level LEVEL]       . verbosity level: rule|conclusion|premise
     [--tree.output FILE]       . output destination file
     [-v]                       . verbose output
+    [-w]                       . suppress warnings (show only errors)
     [-help], -?                . print this help text and exit
   
 
@@ -118,5 +119,6 @@ batch drops -p and adds the checkpoint-persistence flags:
     [--tree.level LEVEL]       . verbosity level: rule|conclusion|premise
     [--tree.output FILE]       . output destination file
     [-v]                       . verbose: print progress for each test
+    [-w]                       . suppress warnings (show only errors)
     [-help], -?                . print this help text and exit
   

@@ -3,6 +3,10 @@ let resolve_ansi : Cli_args.color -> Spectec.Diagnostic.Ansi.t = function
   | Never -> Spectec.Diagnostic.Ansi.plain
   | Auto -> Spectec.Diagnostic.Ansi.auto ~tty:(Unix.isatty Unix.stderr)
 
+let apply_no_warnings = function
+  | true -> Spectec.Diagnostic.Sink.set_min_severity Spectec.Diagnostic.Error
+  | false -> ()
+
 let guard ~color ~on_ok f =
   let ansi = resolve_ansi color in
   let result, bag = Spectec.with_diagnostics f in

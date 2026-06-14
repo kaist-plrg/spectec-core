@@ -14,8 +14,10 @@ let elab_command =
   and check =
     flag "--check" no_arg
       ~doc:" report errors and warnings without printing the elaborated IL"
+  and no_warnings = Cli.Cli_args.Output.no_warnings_flag
   and color = Cli.Cli_args.Output.color_flag in
   fun () ->
+    Cli.Error_handling.apply_no_warnings no_warnings;
     let on_ok spec_il =
       if not check then
         Format.printf "%s\n" (Lang.Il.Print.string_of_spec spec_il)

@@ -23,12 +23,14 @@ let make_task (module Tgt : Spectec.Target.S) ~name ~summary
     let%map cli_source = Cli_args.Spec.source_flag
     and sl_mode = Cli_args.Interpreter.sl_mode_flag
     and verbose = flag "-v" no_arg ~doc:" verbose output"
+    and no_warnings = Cli_args.Output.no_warnings_flag
     and batch_mode = Cli_args.Batch.mode_flag
     and batch_dir = Cli_args.Batch.dir_flag
     and input = TC.flags
     and config = Cli_args.Interpreter.config_flags
     and color = Cli_args.Output.color_flag in
     fun () ->
+      apply_no_warnings no_warnings;
       guard_unit ~color @@ fun () ->
       let ansi = resolve_ansi color in
       let open Spectec in
@@ -82,8 +84,10 @@ let make_debug (module Tgt : Spectec.Target.S) ~name ~summary
     let open Core.Command.Let_syntax in
     let%map cli_source = Cli_args.Spec.source_flag
     and input = TC.flags
+    and no_warnings = Cli_args.Output.no_warnings_flag
     and color = Cli_args.Output.color_flag in
     fun () ->
+      apply_no_warnings no_warnings;
       guard_unit ~color @@ fun () ->
       let* cfg = Config_file.load ~target:Tgt.name () in
       let source =
@@ -149,12 +153,14 @@ let make_batch (module Tgt : Spectec.Target.S) ~name
     let open Core.Command.Param in
     let%map sl_mode = Cli_args.Interpreter.sl_mode_flag
     and verbose = flag "-v" no_arg ~doc:" verbose: print progress for each test"
+    and no_warnings = Cli_args.Output.no_warnings_flag
     and batch_dir = Cli_args.Batch.dir_flag
     and cli_source = Cli_args.Spec.source_flag
     and checkpoint = Cli_args.Checkpoint.flags
     and config = Cli_args.Interpreter.config_flags
     and color = Cli_args.Output.color_flag in
     fun () ->
+      apply_no_warnings no_warnings;
       guard_errors_only ~color @@ fun () ->
       let open Spectec in
       let ansi = resolve_ansi color in

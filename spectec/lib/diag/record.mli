@@ -104,6 +104,10 @@ module Sink : sig
   val create : unit -> t
   val emit : t -> diagnostic -> unit
 
+  (** Collect only diagnostics at least as severe as [s] ([Error] drops
+      warnings); default [Hint] keeps all. *)
+  val set_min_severity : severity -> unit
+
   (** Returns collected diagnostics and resets the sink. *)
   val drain : t -> Bag.t
 

@@ -8,6 +8,10 @@
     stderr TTY check under [Auto]. *)
 val resolve_ansi : Cli_args.color -> Spectec.Diagnostic.Ansi.t
 
+(** When [true], suppress warnings (keeping errors) for the rest of the
+    process; backs the [-w] flag. *)
+val apply_no_warnings : bool -> unit
+
 val guard :
   color:Cli_args.color ->
   on_ok:('a -> unit) ->

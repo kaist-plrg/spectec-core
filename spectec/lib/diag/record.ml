@@ -160,8 +160,14 @@ module Sink = struct
   type diagnostic = t
   type t = { mutable diagnostics : diagnostic list }
 
+  let min_severity = ref Hint
+  let set_min_severity s = min_severity := s
+
   let create () = { diagnostics = [] }
-  let emit sink diag = sink.diagnostics <- diag :: sink.diagnostics
+
+  let emit sink diag =
+    if severity_rank diag.severity <= severity_rank !min_severity then
+      sink.diagnostics <- diag :: sink.diagnostics
 
   let drain sink =
     let ds = Bag.of_list (List.rev sink.diagnostics) in

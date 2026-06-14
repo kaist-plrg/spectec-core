@@ -20,6 +20,10 @@ module Output = struct
     flag "--color"
       (optional_with_default Auto color_arg)
       ~doc:"WHEN colorize diagnostics: auto|always|never (default: auto)"
+
+  let no_warnings_flag : bool Core.Command.Param.t =
+    let open Core.Command.Param in
+    flag "-w" no_arg ~doc:" suppress warnings (show only errors)"
 end
 
 (** Spec source override — an explicit list of files or a directory (mutually
