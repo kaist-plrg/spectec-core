@@ -60,6 +60,15 @@ splice-pdf: splice
 splice-clean:
 	rm -rf $(SPLICE_BUILD)
 
+# VS Code extension: package editors/vscode into a sideloadable .vsix
+# (install with `code --install-extension spectecx.vsix`).
+
+.PHONY: vsix
+
+vsix:
+	cd editors/vscode && npx -y @vscode/vsce package -o $(NAME).vsix
+	@echo "#### extension written to editors/vscode/$(NAME).vsix"
+
 # Tests
 #
 # Individual tests (run against the new p4 spec by default):
