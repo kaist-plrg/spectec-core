@@ -80,7 +80,7 @@ let left_assoc ~op_token ~op_atom ~var ~next c =
 let v_id (s : string) : value = [ tag "ID"; arg (text s) ] |> case_v ~var:"id"
 
 let v_lit_num (n : int) : value =
-  [ tag "NUM"; arg (nat (Bigint.of_int n)) ] |> case_v ~var:"literal"
+  [ tag "NUM"; arg (int (Bigint.of_int n)) ] |> case_v ~var:"literal"
 
 let v_lit_bool (b : bool) : value =
   [ tag "BOOL"; arg (bool b) ] |> case_v ~var:"literal"

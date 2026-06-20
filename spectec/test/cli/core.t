@@ -27,7 +27,7 @@ The SL interpreter (--sl) produces the same environment:
 Parse it to an IL value:
 
   $ spectec impty parse --spec $SPEC -p $BASE/hello.imp --color never
-  (((INT) (_ID "x") = (_NUM 5)) ; ((BOOL) (_ID "y") = ((_ID "x") <= (_NUM 10))))
+  (((INT) (_ID "x") = (_NUM +5)) ; ((BOOL) (_ID "y") = ((_ID "x") <= (_NUM +10))))
 
 A static type error renders a diagnostic to stderr and exits nonzero:
 
