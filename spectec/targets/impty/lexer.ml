@@ -16,6 +16,7 @@ type token =
   | KwWhile
   | KwDo
   | KwFun
+  | KwRec
   | KwTrue
   | KwFalse
   | Semi
@@ -29,6 +30,8 @@ type token =
   | Lbrace
   | Rbrace
   | Arrow
+  | Question
+  | Colon
   | Num of int
   | Ident of string
   | Eof
@@ -44,6 +47,7 @@ let string_of_token = function
   | KwWhile -> "while"
   | KwDo -> "do"
   | KwFun -> "fun"
+  | KwRec -> "rec"
   | KwTrue -> "true"
   | KwFalse -> "false"
   | Semi -> ";"
@@ -57,6 +61,8 @@ let string_of_token = function
   | Lbrace -> "{"
   | Rbrace -> "}"
   | Arrow -> "->"
+  | Question -> "?"
+  | Colon -> ":"
   | Num n -> string_of_int n
   | Ident s -> s
   | Eof -> "<eof>"
@@ -154,6 +160,7 @@ let keyword_of = function
   | "while" -> Some KwWhile
   | "do" -> Some KwDo
   | "fun" -> Some KwFun
+  | "rec" -> Some KwRec
   | "true" -> Some KwTrue
   | "false" -> Some KwFalse
   | _ -> None
@@ -196,6 +203,12 @@ let next st : token * region =
     | Some '}' ->
         advance st;
         Rbrace
+    | Some '?' ->
+        advance st;
+        Question
+    | Some ':' ->
+        advance st;
+        Colon
     | Some '=' ->
         advance st;
         Eq
