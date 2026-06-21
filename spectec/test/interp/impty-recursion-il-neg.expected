@@ -1,0 +1,97 @@
+Running typechecker test on 9 files
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_add_bool.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_add_bool.imp
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/decl failed
+        └── invocation of relation Check_expr failed
+            └── application of rule Check_expr/add failed
+                └── condition type matches `INT` was not met
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_assign_mismatch.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_assign_mismatch.imp
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/seq failed
+        └── invocation of relation Check_command failed
+            └── application of rule Check_command/assign failed
+                └── condition ($lookup<id, type>(tenv, x) = ?(t)) was not met
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_bad_assign.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_bad_assign.imp
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/decl failed
+        └── condition (type = t) was not met
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_if_not_bool.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_if_not_bool.imp
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/seq failed
+        └── invocation of relation Check_command failed
+            └── application of rule Check_command/ite failed
+                └── condition type matches `BOOL` was not met
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_not_int.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_not_int.imp
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/decl failed
+        └── invocation of relation Check_expr failed
+            └── application of rule Check_expr/not failed
+                └── condition type matches `BOOL` was not met
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_undeclared.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_undeclared.imp
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/assign failed
+        └── condition ($lookup<id, type>(tenv, x) = ?(t)) was not met
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/closure/_errors_arg_type.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/closure/_errors_arg_type.imp
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/seq failed
+        └── invocation of relation Check_command failed
+            └── application of rule Check_command/decl failed
+                └── invocation of relation Check_expr failed
+                    └── application of rule Check_expr/call failed
+                        └── condition (type' = t_arg) was not met
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/closure/_errors_call_non_function.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/closure/_errors_call_non_function.imp
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/seq failed
+        └── invocation of relation Check_command failed
+            └── application of rule Check_command/decl failed
+                └── invocation of relation Check_expr failed
+                    └── application of rule Check_expr/call failed
+                        └── condition type matches `% -> %` was not met
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/recursion/_errors_rec_ret.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/recursion/_errors_rec_ret.imp
+error: invocation of relation Check_prog failed
+application of rule Check_prog/ failed
+└── invocation of relation Check_command failed
+    └── application of rule Check_command/rec failed
+        └── condition (type = t_ret) was not met
+
+Typechecker (il) summary
+  Ran:          9 / 9      (100.00%)
+  Passed:       9 (100.00% of ran)
+  Failed:       0 (0.00% of ran)
+  Skipped:      0 (0.00% of total)
+
+

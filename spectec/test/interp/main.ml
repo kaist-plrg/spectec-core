@@ -136,7 +136,8 @@ let command =
   and impty = flag "--impty" no_arg ~doc:" use impty target (default: p4)"
   and variant =
     flag "--variant" (optional string)
-      ~doc:"VARIANT impty variant (base|closure); required with --impty"
+      ~doc:
+        "VARIANT impty variant (base|closure|recursion); required with --impty"
   in
   fun () ->
     if impty then

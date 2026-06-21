@@ -1,0 +1,51 @@
+Running typechecker test on 14 files
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/arith.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/base/arith.imp
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/assign.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/base/assign.imp
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/bool_ops.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/base/bool_ops.imp
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/hello.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/base/hello.imp
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/ite.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/base/ite.imp
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/loop.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/base/loop.imp
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/shadow.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/base/shadow.imp
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/skip.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/base/skip.imp
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/closure/closure.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/closure/closure.imp
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/closure/curried.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/closure/curried.imp
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/closure/higher_order.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/closure/higher_order.imp
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/closure/static-vs-dynamic.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/closure/static-vs-dynamic.imp
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/recursion/rec_countup.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/recursion/rec_countup.imp
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/recursion/rec_sum.imp
+Typechecker success: ../../../../../spectec/testdata/interp/impty/recursion/rec_sum.imp
+
+Typechecker (sl) summary
+  Ran:         14 / 14     (100.00%)
+  Passed:      14 (100.00% of ran)
+  Failed:       0 (0.00% of ran)
+  Skipped:      0 (0.00% of total)
+
+
