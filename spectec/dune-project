@@ -19,4 +19,6 @@
     (core (>= 0.17.1))
     (core_unix (>= 0.17.0))
     ppx_let
-    pprint))
+    pprint
+    linol-eio
+    eio_main))

@@ -1,0 +1,3 @@
+## end-to-end (spectecx-lsp over stdio)
+initialize: ok
+publishDiagnostics file:///e2e.spectec: 1 diagnostic(s) [elab/ctx-type-undefined]

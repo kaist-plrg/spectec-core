@@ -12,17 +12,22 @@ type 'a result = ('a, Error.t) Stdlib.result
 
 (** {1 Diagnostics}
 
-    Warnings emitted during pipeline passes (parse, elaborate, interpret) are
-    collected automatically. Use {!with_diagnostics} as the single entry point
-    for running pipeline operations that may emit warnings — it handles the
-    collection lifecycle so callers cannot forget to reset or drain. *)
+    A diagnostic is a single message about the spec (an error, a warning, or a
+    note) tied to a place in the source. The pipeline passes (parse, elaborate,
+    interpret) report warnings as they run; {!with_warnings} and
+    {!with_diagnostics} run a pass and hand those back as a [Diag.Bag.t], so
+    callers gather them in one place instead of by hand. *)
 
-(** [with_diagnostics f] runs [f] with a fresh diagnostic context and returns
-    its result paired with all diagnostics emitted during the call. The sink is
-    reset on entry, so sequential calls are independent. If [f] raises, the
-    exception propagates and diagnostics emitted so far are discarded (the next
-    call to [with_diagnostics] resets the sink regardless). *)
-val with_diagnostics : (unit -> 'a) -> 'a * Diag.Bag.t
+(** [with_warnings f] runs [f] and returns its result together with every
+    warning [f] reported. Warnings are cleared first, so the bag holds only the
+    ones from this call. *)
+val with_warnings : (unit -> 'a) -> 'a * Diag.Bag.t
+
+(** [with_diagnostics f] is like {!with_warnings}, but when [f] returns
+    [Error e] the error [e] is turned into a diagnostic and added to the bag
+    too. The bag is then the complete set to show the user: the warnings plus
+    the error the run failed with. *)
+val with_diagnostics : (unit -> 'a result) -> 'a result * Diag.Bag.t
 
 (** {1 Pipeline transformations} *)
 

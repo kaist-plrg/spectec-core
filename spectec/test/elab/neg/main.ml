@@ -6,21 +6,14 @@
 
 let () =
   let file = Sys.argv.(1) in
-  let result, bag =
+  let _, bag =
     Spectec.with_diagnostics (fun () ->
         match Spectec.parse_spec_files [ file ] with
         | Error e -> Error e
         | Ok spec_el -> Spectec.elaborate spec_el)
   in
-  let combined =
-    match result with
-    | Ok _ -> bag
-    | Error e ->
-        Spectec.Diagnostic.Bag.merge bag (Spectec.Error.to_diagnostics e)
-  in
   let rendered =
-    Spectec.Diagnostic.Render.render_bag ~ansi:Spectec.Diagnostic.Ansi.plain
-      combined
+    Spectec.Diagnostic.Render.render_bag ~ansi:Spectec.Diagnostic.Ansi.plain bag
   in
   prerr_string rendered;
-  if Spectec.Diagnostic.Bag.is_empty combined then exit 0 else exit 1
+  if Spectec.Diagnostic.Bag.is_empty bag then exit 0 else exit 1

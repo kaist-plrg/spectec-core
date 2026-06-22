@@ -13,3 +13,9 @@
   core
   core_unix
   core_unix.command_unix))
+
+(executable
+ (public_name spectecx-lsp)
+ (name lsp_main)
+ (modules lsp_main)
+ (libraries spectec.lsp))
