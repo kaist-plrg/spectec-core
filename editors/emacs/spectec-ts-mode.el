@@ -161,5 +161,10 @@ Skipped in batch sessions and once the grammar is available."
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.spectec\\'" . spectec-ts-mode))
 
+;; Use eglot, if present, for diagnostics; finds `spectecx-lsp' on PATH.
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs
+               '(spectec-ts-mode . ("spectecx-lsp"))))
+
 (provide 'spectec-ts-mode)
 ;;; spectec-ts-mode.el ends here
