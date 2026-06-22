@@ -1,0 +1,16 @@
+(executable
+ (name main)
+ (modules main)
+ (libraries spectec.lsp linol-eio yojson))
+
+(rule
+ (target main.actual)
+ (action
+  (with-stdout-to
+   %{target}
+   (run ./main.exe))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff main.expected main.actual)))
