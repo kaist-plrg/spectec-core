@@ -7,15 +7,22 @@ DUNE = cd spectec && $(OPAM_EXEC) dune
 
 # Compile & Format
 
-.PHONY: exe check fmt fmt-check promote clean
+.PHONY: exe lsp check fmt fmt-check promote clean
 
 EXESPEC = spectec/_build/default/bin/main.exe
+EXELSP = spectec/_build/default/bin/lsp_main.exe
 
 exe:
 	rm -f ./$(NAME)
 	$(DUNE) build bin/main.exe
 	@echo
 	ln -f $(EXESPEC) ./$(NAME)
+
+lsp:
+	rm -f ./$(NAME)-lsp
+	$(DUNE) build bin/lsp_main.exe
+	@echo
+	ln -f $(EXELSP) ./$(NAME)-lsp
 
 check:
 	$(DUNE) build @check
@@ -30,7 +37,7 @@ promote:
 	$(DUNE) promote
 
 clean:
-	rm -f ./$(NAME)
+	rm -f ./$(NAME) ./$(NAME)-lsp
 	$(DUNE) clean
 
 # Splice and render. `splice-html` requires `asciidoctor`; `splice-pdf`

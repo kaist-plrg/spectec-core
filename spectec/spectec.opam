@@ -13,6 +13,8 @@ depends: [
   "core_unix" {>= "0.17.0"}
   "ppx_let"
   "pprint"
+  "linol-eio"
+  "eio_main"
   "odoc" {with-doc}
 ]
 build: [
