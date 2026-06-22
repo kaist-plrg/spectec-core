@@ -67,6 +67,15 @@ spectec/testdata/        test inputs
 ./spectecx p4 typecheck -i spectec/testdata/interp/p4-tests/includes -p target/file.p4 --sl
 ```
 
+### Editor support
+
+Integrations for `.spectec` files live in `editors/`:
+
+- **Syntax highlighting** for VS Code, Emacs, and Vim/Neovim, one per subdirectory.
+- **Diagnostics**: `make lsp` builds `spectecx-lsp`, a language server that reports parse and elaboration errors as you edit.
+
+See [editors/README.md](editors/README.md) for installing a highlighter and turning on the language server.
+
 ### Testing
 ```bash
 make test
