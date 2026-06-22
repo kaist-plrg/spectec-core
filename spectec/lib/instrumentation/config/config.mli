@@ -12,6 +12,9 @@ val register_static_dependencies : t -> unit
 (** Extract the configured runtime handlers. *)
 val handlers : t -> (module Instrumentation_api.Handler.S) list
 
+(** Whether a handler with the given [name] is configured. *)
+val has_handler : t -> name:string -> bool
+
 (** [Error msg] when any configured handler is incompatible with the chosen
     interpreter mode ([sl_mode] selects SL vs IL). *)
 val validate_mode : t -> sl_mode:bool -> (unit, string) result

@@ -63,10 +63,11 @@ The conclusion level renders each relation's conclusion as an inference figure:
   ]
 
 On failure the conclusion level renders the partial derivation with values,
-crossing the rule that could not be completed and leaving its output slot blank:
+crossing the rule that could not be completed and leaving its output slot blank.
+With the tree shown, the diagnostic keeps only its headline:
 
   $ ERR=../../testdata/interp/impty/base/_errors_not_int.imp
-  $ spectec impty eval --spec $SPEC -p $ERR --color never --tree.level conclusion 2>/dev/null
+  $ spectec impty eval --spec $SPEC -p $ERR --color never --tree.level conclusion
   Run_prog:
   |- bool b = ! 5 -| ?
   ────────────────────
@@ -82,4 +83,11 @@ crossing the rule that could not be completed and leaving its output slot blank:
            -- Check_expr/num:
               [] |- 5 : int
               ─────────────
+  error: invocation of relation Run_prog failed
+    --> ../../specs/impty/base/spec.spectec:256:6
+      |
+  256 |   -- Check_prog: |- command
+      |      ^^^^^^^^^^
+      |
+      | source: il-interp
   [1]

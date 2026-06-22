@@ -67,11 +67,11 @@ author syntax with runtime values substituted at variable leaves. It is IL only.
   ]
 
 On failure the premise level still renders the partial derivation, crossing the
-premise that defeated the rule. The failtrace is covered elsewhere, so only the
-tree is captured here:
+premise that defeated the rule. With the tree shown, the diagnostic keeps only
+its headline:
 
   $ ERR=../../testdata/interp/impty/base/_errors_not_int.imp
-  $ spectec impty eval --spec $SPEC -p $ERR --color never --tree.level premise 2>/dev/null
+  $ spectec impty eval --spec $SPEC -p $ERR --color never --tree.level premise
   Run_prog:
   |- bool b = ! 5 -| ?
   ────────────────────
@@ -85,6 +85,13 @@ tree is captured here:
            [] |- ! 5 : ?
            ─────────────
            ✗  Check_expr: [] |- 5 : BOOL
+  error: invocation of relation Run_prog failed
+    --> ../../specs/impty/base/spec.spectec:256:6
+      |
+  256 |   -- Check_prog: |- command
+      |      ^^^^^^^^^^
+      |
+      | source: il-interp
   [1]
 
 The SL interpreter reports no premises, so the premise level is refused rather

@@ -29,7 +29,9 @@ let make_task (module Tgt : Spectec.Target.S) ~name ~summary
     and config = Cli_args.Interpreter.config_flags
     and color = Cli_args.Output.color_flag in
     fun () ->
-      guard_unit ~color @@ fun () ->
+      guard_unit ~color
+        ~suppress_trace:(Instrumentation.Config.has_handler config ~name:"tree")
+      @@ fun () ->
       let ansi = resolve_ansi color in
       let open Spectec in
       let* () = validate_config config ~sl_mode in

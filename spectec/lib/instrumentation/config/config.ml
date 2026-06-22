@@ -9,6 +9,9 @@ let register_static_dependencies (config : t) =
 
 let handlers (config : t) = List.map Handler_config.to_handler config
 
+let has_handler (config : t) ~name =
+  List.exists (fun (hc : Handler_config.t) -> hc.name = name) config
+
 let validate_mode (config : t) ~sl_mode =
   let interp_mode = if sl_mode then `SL else `IL in
   let incompatible =

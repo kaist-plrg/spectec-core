@@ -5,13 +5,13 @@
     diagnostic representation. The same layout is produced whether color is on
     or off; only the styling differs. *)
 
-(** Render a single diagnostic. The [cache] is used to look up source snippets
-    for the location section. *)
-val render : ansi:Ansi.t -> cache:Source_cache.t -> Record.t -> string
+(** Render a single diagnostic. *)
+val render :
+  ?show_trace:bool -> ansi:Ansi.t -> cache:Source_cache.t -> Record.t -> string
 
 (** Render a bag of diagnostics, one per entry, in sorted order. Manages an
     internal {!Source_cache.t} so callers don't have to. *)
-val render_bag : ansi:Ansi.t -> Record.Bag.t -> string
+val render_bag : ?show_trace:bool -> ansi:Ansi.t -> Record.Bag.t -> string
 
 (** Render each diagnostic as severity, headline, and nested trace messages only
     -- no locations, code, notes, or related entries. For interpreter failure
