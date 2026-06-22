@@ -14,10 +14,19 @@ let ( let* ) = Result.bind
 
 (* --- Diagnostics --- *)
 
-let with_diagnostics f =
+let with_warnings f =
   Diag.Sink.reset_global ();
   let result = f () in
   let bag = Diag.Sink.drain (Diag.Sink.global ()) in
+  (result, bag)
+
+let with_diagnostics f =
+  let result, bag = with_warnings f in
+  let bag =
+    match result with
+    | Ok _ -> bag
+    | Error e -> Diag.Bag.merge bag (Error.to_diagnostics e)
+  in
   (result, bag)
 
 (* --- Pipeline transformations --- *)

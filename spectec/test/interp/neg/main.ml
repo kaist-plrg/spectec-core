@@ -25,11 +25,6 @@ let run spec_dir file =
 let () =
   let spec_dir = Sys.argv.(1) in
   let file = Sys.argv.(2) in
-  let result, bag = Spectec.with_diagnostics (fun () -> run spec_dir file) in
-  let combined =
-    match result with
-    | Ok () -> bag
-    | Error e -> D.Bag.merge bag (Spectec.Error.to_diagnostics e)
-  in
-  prerr_string (D.Render.render_bag ~ansi:D.Ansi.plain combined);
-  if D.Bag.is_empty combined then exit 0 else exit 1
+  let _, bag = Spectec.with_diagnostics (fun () -> run spec_dir file) in
+  prerr_string (D.Render.render_bag ~ansi:D.Ansi.plain bag);
+  if D.Bag.is_empty bag then exit 0 else exit 1
