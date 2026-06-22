@@ -3,6 +3,11 @@
  (modules main)
  (libraries spectec.lsp linol-eio yojson))
 
+(executable
+ (name e2e)
+ (modules e2e)
+ (libraries yojson unix))
+
 (rule
  (target main.actual)
  (action
@@ -14,3 +19,16 @@
  (alias runtest)
  (action
   (diff main.expected main.actual)))
+
+(rule
+ (target e2e.actual)
+ (deps %{exe:../../bin/lsp_main.exe})
+ (action
+  (with-stdout-to
+   %{target}
+   (run ./e2e.exe %{exe:../../bin/lsp_main.exe}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff e2e.expected e2e.actual)))
