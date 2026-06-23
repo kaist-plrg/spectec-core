@@ -501,6 +501,142 @@
   (diff impty-closure-sl-neg.expected impty-closure-sl-neg.actual)))
 
 ;; ============================================================
+;; impty target tests (recursion variant)
+;; ============================================================
+
+;; IL Positive
+
+(rule
+ (target impty-recursion-il-pos.actual)
+ (deps
+  (source_tree ../../specs/impty/recursion)
+  (source_tree ../../testdata/interp/impty/base)
+  (source_tree ../../testdata/interp/impty/closure)
+  (source_tree ../../testdata/interp/impty/recursion))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    impty-recursion-il-pos.err
+    (run
+     ./main.exe
+     --impty
+     --variant
+     recursion
+     -d
+     ../../../../../spectec/testdata/interp/impty/base
+     -d
+     ../../../../../spectec/testdata/interp/impty/closure
+     -d
+     ../../../../../spectec/testdata/interp/impty/recursion)))))
+
+(rule
+ (alias impty-recursion-il-pos)
+ (deps impty-recursion-il-pos.err impty-recursion-il-pos.actual)
+ (action
+  (diff impty-recursion-il-pos.expected impty-recursion-il-pos.actual)))
+
+;; IL Negative
+
+(rule
+ (target impty-recursion-il-neg.actual)
+ (deps
+  (source_tree ../../specs/impty/recursion)
+  (source_tree ../../testdata/interp/impty/base)
+  (source_tree ../../testdata/interp/impty/closure)
+  (source_tree ../../testdata/interp/impty/recursion))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    impty-recursion-il-neg.err
+    (run
+     ./main.exe
+     --impty
+     --variant
+     recursion
+     -neg
+     -d
+     ../../../../../spectec/testdata/interp/impty/base
+     -d
+     ../../../../../spectec/testdata/interp/impty/closure
+     -d
+     ../../../../../spectec/testdata/interp/impty/recursion)))))
+
+(rule
+ (alias impty-recursion-il-neg)
+ (deps impty-recursion-il-neg.err impty-recursion-il-neg.actual)
+ (action
+  (diff impty-recursion-il-neg.expected impty-recursion-il-neg.actual)))
+
+;; SL Positive
+
+(rule
+ (target impty-recursion-sl-pos.actual)
+ (deps
+  (source_tree ../../specs/impty/recursion)
+  (source_tree ../../testdata/interp/impty/base)
+  (source_tree ../../testdata/interp/impty/closure)
+  (source_tree ../../testdata/interp/impty/recursion))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    impty-recursion-sl-pos.err
+    (run
+     ./main.exe
+     --impty
+     --variant
+     recursion
+     --sl
+     -d
+     ../../../../../spectec/testdata/interp/impty/base
+     -d
+     ../../../../../spectec/testdata/interp/impty/closure
+     -d
+     ../../../../../spectec/testdata/interp/impty/recursion)))))
+
+(rule
+ (alias impty-recursion-sl-pos)
+ (deps impty-recursion-sl-pos.err impty-recursion-sl-pos.actual)
+ (action
+  (diff impty-recursion-sl-pos.expected impty-recursion-sl-pos.actual)))
+
+;; SL Negative
+
+(rule
+ (target impty-recursion-sl-neg.actual)
+ (deps
+  (source_tree ../../specs/impty/recursion)
+  (source_tree ../../testdata/interp/impty/base)
+  (source_tree ../../testdata/interp/impty/closure)
+  (source_tree ../../testdata/interp/impty/recursion))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    impty-recursion-sl-neg.err
+    (run
+     ./main.exe
+     --impty
+     --variant
+     recursion
+     --sl
+     -neg
+     -d
+     ../../../../../spectec/testdata/interp/impty/base
+     -d
+     ../../../../../spectec/testdata/interp/impty/closure
+     -d
+     ../../../../../spectec/testdata/interp/impty/recursion)))))
+
+(rule
+ (alias impty-recursion-sl-neg)
+ (deps impty-recursion-sl-neg.err impty-recursion-sl-neg.actual)
+ (action
+  (diff impty-recursion-sl-neg.expected impty-recursion-sl-neg.actual)))
+
+;; ============================================================
 ;; Combined aliases for running all tests
 ;; ============================================================
 
@@ -553,6 +689,18 @@
   (alias impty-closure-sl-neg)))
 
 (alias
+ (name impty-recursion-il)
+ (deps
+  (alias impty-recursion-il-pos)
+  (alias impty-recursion-il-neg)))
+
+(alias
+ (name impty-recursion-sl)
+ (deps
+  (alias impty-recursion-sl-pos)
+  (alias impty-recursion-sl-neg)))
+
+(alias
  (name impty-base)
  (deps
   (alias impty-base-il)
@@ -565,10 +713,17 @@
   (alias impty-closure-sl)))
 
 (alias
+ (name impty-recursion)
+ (deps
+  (alias impty-recursion-il)
+  (alias impty-recursion-sl)))
+
+(alias
  (name impty)
  (deps
   (alias impty-base)
-  (alias impty-closure)))
+  (alias impty-closure)
+  (alias impty-recursion)))
 
 (alias
  (name runtest)

@@ -1,0 +1,3 @@
+int limit = 5 ;
+rec up (int i) -> int { (limit <= i) ? i : up(i + 1) } ;
+int r = up(0)

@@ -74,7 +74,7 @@ module Task_common = struct
 
   type nonrec input = input
 
-  let unparse = Parse.unparse
+  let unparse = Unparse.unparse
   let parse_string = Parse.parse_string
   let source ({ filename; _ } : input) = filename
   let expectation ({ expect; _ } : input) = expect

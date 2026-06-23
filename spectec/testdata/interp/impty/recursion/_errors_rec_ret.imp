@@ -1,0 +1,1 @@
+rec bad (int i) -> bool { i + 1 }
