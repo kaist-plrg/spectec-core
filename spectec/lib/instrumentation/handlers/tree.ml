@@ -40,7 +40,7 @@ type kind = Rel | Func
 
 type outcome =
   | Failed
-  | Rel_ok of (Il.Value.t, Il.Value.t) Il.Mode.t
+  | Rel_ok of (Il.Value.t, Il.Value.t option) Il.Mode.t
   | Func_ok of Il.Value.t
 
 type node = {
@@ -77,7 +77,6 @@ let new_node kind id inputs =
     binding_env = [];
   }
 
-let outcome_of_conclusion = function Some c -> Rel_ok c | None -> Failed
 let outcome_of_output = function Some v -> Func_ok v | None -> Failed
 
 (* === Mutable state ================================================= *)
@@ -151,8 +150,12 @@ let render_judgment c =
   let string_of_atom a =
     match Il.Print.string_of_atom a with "" -> "" | s -> dim s
   in
+  let string_of_out = function
+    | Some v -> summarize_value v
+    | None -> dim "?"
+  in
   Il.Mode.render ~pad_brackets:true ~string_of_atom
-    ~string_of_in:summarize_value ~string_of_out:summarize_value c
+    ~string_of_in:summarize_value ~string_of_out c
 
 let render_call node =
   let args = List.map summarize_value node.inputs |> String.concat ", " in
@@ -251,8 +254,9 @@ module M : Instrumentation_api.Handler.S = struct
   let handle : Instrumentation_api.Event.t -> unit = function
     | Test_start _ | Test_end _ -> State.reset ()
     | Rel_enter { id; at = _; inputs } -> State.push (new_node Rel id inputs)
-    | Rel_exit { id = _; at = _; conclusion } ->
-        pop_and_maybe_print ~outcome:(outcome_of_conclusion conclusion)
+    | Rel_exit { id = _; at = _; success; conclusion } ->
+        pop_and_maybe_print
+          ~outcome:(if success then Rel_ok conclusion else Failed)
     | Rule_enter _ -> State.begin_rule_attempt ()
     | Rule_exit { id = _; rule_id; at = _; success } ->
         State.end_rule_attempt ~rule_id ~success
