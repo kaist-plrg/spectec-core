@@ -152,7 +152,7 @@ let render_judgment c =
     match Il.Print.string_of_atom a with "" -> "" | s -> dim s
   in
   Il.Mode.render ~pad_brackets:true ~string_of_atom
-    ~string_of_arg:summarize_value c
+    ~string_of_in:summarize_value ~string_of_out:summarize_value c
 
 let render_call node =
   let args = List.map summarize_value node.inputs |> String.concat ", " in

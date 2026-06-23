@@ -62,8 +62,8 @@ and string_of_nottyp nottyp =
     nottyp.it
 
 and string_of_reltyp reltyp =
-  Mode.render ~pad_brackets:true ~string_of_atom ~string_of_arg:string_of_typ
-    reltyp.it
+  Mode.render ~pad_brackets:true ~string_of_atom ~string_of_in:string_of_typ
+    ~string_of_out:string_of_typ reltyp.it
 
 and string_of_deftyp deftyp =
   match deftyp.it with
