@@ -40,19 +40,21 @@ val partition : ('i, 'o) t -> 'a list -> 'a list * 'a list
     length mismatch. *)
 val interleave : ('i, 'o) t -> ins:'a list -> outs:'a list -> 'a list
 
-(** Like [interleave] but keeps the direction tags. Raises
-    [Mixfix.Arity_mismatch] on per-direction length mismatch. *)
-val fill : ('i, 'o) t -> ins:'a list -> outs:'a list -> ('a, 'a) t
+(** Like [interleave] but keeps the direction tags. Inputs and outputs may carry
+    distinct types. Raises [Mixfix.Arity_mismatch] on per-direction length
+    mismatch. *)
+val fill : ('i, 'o) t -> ins:'a list -> outs:'b list -> ('a, 'b) t
 
 (** {1 Rendering} *)
 
-(** Render via [Mixfix.render] with one [string_of_arg] used for both
-    directions. *)
+(** Render via [Mixfix.render] with separate renderers for input and output
+    payloads. *)
 val render :
   ?pad_brackets:bool ->
   string_of_atom:(Mixfix.atom -> string) ->
-  string_of_arg:('a -> string) ->
-  ('a, 'a) t ->
+  string_of_in:('i -> string) ->
+  string_of_out:('o -> string) ->
+  ('i, 'o) t ->
   string
 
 (** Render input payloads only, joined by [sep]. *)

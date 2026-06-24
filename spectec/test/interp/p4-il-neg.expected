@@ -718,7 +718,13 @@ application of rule Program_ok/ failed
     └── application of rule Decls_ok/cons failed
         └── invocation of relation Decl_ok failed
             └── application of rule Decl_ok/externFunctionDeclaration failed
-                └── condition hold CallableTypeDef_wf was not met
+                └── invocation of relation CallableTypeDef_wf failed
+                    └── application of rule CallableTypeDef_wf/ failed
+                        └── invocation of relation CallableType_wf failed
+                            └── application of rule CallableType_wf/externFunctionTypeIR failed
+                                └── invocation of relation ParameterType_wf failed
+                                    └── application of rule ParameterType_wf/default failed
+                                        └── condition ((direction = in) \/ (direction = )) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default_action.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/default_action.p4
@@ -818,7 +824,11 @@ application of rule Program_ok/ failed
                                     └── application of rule ControlLocalDecl_ok/actionDeclaration failed
                                         └── invocation of relation ActionDecl_ok failed
                                             └── application of rule ActionDecl_ok/ failed
-                                                └── condition hold CallableTypeDef_wf was not met
+                                                └── invocation of relation CallableTypeDef_wf failed
+                                                    └── application of rule CallableTypeDef_wf/ failed
+                                                        └── invocation of relation CallableType_wf failed
+                                                            └── application of rule CallableType_wf/actionTypeIR failed
+                                                                └── condition $directionless_trailing(direction*{direction <- direction*}) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/div.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/div.p4
@@ -1154,7 +1164,13 @@ application of rule Program_ok/ failed
             └── application of rule Decls_ok/cons failed
                 └── invocation of relation Decl_ok failed
                     └── application of rule Decl_ok/controlDeclaration failed
-                        └── condition hold CallableTypeDef_wf was not met
+                        └── invocation of relation CallableTypeDef_wf failed
+                            └── application of rule CallableTypeDef_wf/ failed
+                                └── invocation of relation CallableType_wf failed
+                                    └── application of rule CallableType_wf/controlApplyMethodTypeIR failed
+                                        └── invocation of relation ParameterType_wf failed
+                                            └── application of rule ParameterType_wf/non-default failed
+                                                └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/extract.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/extract.p4
@@ -1188,7 +1204,13 @@ application of rule Program_ok/ failed
                                                                             └── application of rule Decls_ok/cons failed
                                                                                 └── invocation of relation Decl_ok failed
                                                                                     └── application of rule Decl_ok/externFunctionDeclaration failed
-                                                                                        └── condition hold CallableTypeDef_wf was not met
+                                                                                        └── invocation of relation CallableTypeDef_wf failed
+                                                                                            └── application of rule CallableTypeDef_wf/ failed
+                                                                                                └── invocation of relation CallableType_wf failed
+                                                                                                    └── application of rule CallableType_wf/externFunctionTypeIR failed
+                                                                                                        └── invocation of relation ReturnType_wf failed
+                                                                                                            └── application of rule ReturnType_wf/ failed
+                                                                                                                └── condition ((~(typeIR_unroll = int as typeIR) /\ ~typeIR_unroll <: synthesizedTypeIR) /\ ~typeIR_unroll <: objectTypeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/function1_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/function1_e.p4
@@ -1218,7 +1240,7 @@ application of rule Program_ok/ failed
                                                             │                       └── application of rule Call_convention_argument_ok/typedExpression failed
                                                             │                           └── invocation of relation Call_convention_expr_ok failed
                                                             │                               └── application of rule Call_convention_expr_ok/out-inout failed
-                                                            │                                   └── condition hold Expr_lvalue_ok was not met
+                                                            │                                   └── invocation of relation Expr_lvalue_ok failed
                                                             └── application of rule Stmt_ok/callStatement-no-typeArgumentList failed
                                                                 └── invocation of relation Call_ok failed
                                                                     └── application of rule Call_ok/externFunctionTypeIR failed
@@ -1228,7 +1250,7 @@ application of rule Program_ok/ failed
                                                                                     └── application of rule Call_convention_argument_ok/typedExpression failed
                                                                                         └── invocation of relation Call_convention_expr_ok failed
                                                                                             └── application of rule Call_convention_expr_ok/out-inout failed
-                                                                                                └── condition hold Expr_lvalue_ok was not met
+                                                                                                └── invocation of relation Expr_lvalue_ok failed
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/function_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/function_e.p4
@@ -1440,7 +1462,11 @@ application of rule Program_ok/ failed
                             └── application of rule Decls_ok/cons failed
                                 └── invocation of relation Decl_ok failed
                                     └── application of rule Decl_ok/structTypeDeclaration failed
-                                        └── condition hold TypeDef_wf was not met
+                                        └── invocation of relation TypeDef_wf failed
+                                            └── application of rule TypeDef_wf/ failed
+                                                └── invocation of relation Type_wf failed
+                                                    └── application of rule Type_wf/structTypeIR failed
+                                                        └── condition $nestable_struct(typeIR_field) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/header3.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/header3.p4
@@ -1450,7 +1476,11 @@ application of rule Program_ok/ failed
     └── application of rule Decls_ok/cons failed
         └── invocation of relation Decl_ok failed
             └── application of rule Decl_ok/headerTypeDeclaration failed
-                └── condition hold TypeDef_wf was not met
+                └── invocation of relation TypeDef_wf failed
+                    └── application of rule TypeDef_wf/ failed
+                        └── invocation of relation Type_wf failed
+                            └── application of rule Type_wf/headerTypeIR failed
+                                └── condition $nestable_header(typeIR_field) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/implicit.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/implicit.p4
@@ -1954,7 +1984,57 @@ application of rule Program_ok/ failed
                                                                                                             ├── application of rule ConstructorType_ok/non-aliased-none-type failed
                                                                                                             │   └── condition (?() = $find_typeDef_t(p, TC, prefixedNameIR)) was not met
                                                                                                             └── application of rule ConstructorType_ok/non-aliased-some-type failed
-                                                                                                                └── condition hold ConstructorType_wf was not met
+                                                                                                                └── invocation of relation ConstructorType_wf failed
+                                                                                                                    ├── application of rule ConstructorType_wf/externObjectTypeIR failed
+                                                                                                                    │   └── invocation of relation Type_wf failed
+                                                                                                                    │       └── application of rule Type_wf/externObjectTypeIR failed
+                                                                                                                    │           └── invocation of relation CallableTypeDef_wf failed
+                                                                                                                    │               └── application of rule CallableTypeDef_wf/ failed
+                                                                                                                    │                   └── invocation of relation CallableType_wf failed
+                                                                                                                    │                       └── application of rule CallableType_wf/non-abstract failed
+                                                                                                                    │                           └── invocation of relation ParameterType_wf failed
+                                                                                                                    │                               └── application of rule ParameterType_wf/non-default failed
+                                                                                                                    │                                   └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
+                                                                                                                    ├── application of rule ConstructorType_wf/parserObjectTypeIR failed
+                                                                                                                    │   └── invocation of relation Type_wf failed
+                                                                                                                    │       └── application of rule Type_wf/externObjectTypeIR failed
+                                                                                                                    │           └── invocation of relation CallableTypeDef_wf failed
+                                                                                                                    │               └── application of rule CallableTypeDef_wf/ failed
+                                                                                                                    │                   └── invocation of relation CallableType_wf failed
+                                                                                                                    │                       └── application of rule CallableType_wf/non-abstract failed
+                                                                                                                    │                           └── invocation of relation ParameterType_wf failed
+                                                                                                                    │                               └── application of rule ParameterType_wf/non-default failed
+                                                                                                                    │                                   └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
+                                                                                                                    ├── application of rule ConstructorType_wf/controlObjectTypeIR failed
+                                                                                                                    │   └── invocation of relation Type_wf failed
+                                                                                                                    │       └── application of rule Type_wf/externObjectTypeIR failed
+                                                                                                                    │           └── invocation of relation CallableTypeDef_wf failed
+                                                                                                                    │               └── application of rule CallableTypeDef_wf/ failed
+                                                                                                                    │                   └── invocation of relation CallableType_wf failed
+                                                                                                                    │                       └── application of rule CallableType_wf/non-abstract failed
+                                                                                                                    │                           └── invocation of relation ParameterType_wf failed
+                                                                                                                    │                               └── application of rule ParameterType_wf/non-default failed
+                                                                                                                    │                                   └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
+                                                                                                                    ├── application of rule ConstructorType_wf/tableObjectTypeIR failed
+                                                                                                                    │   └── invocation of relation Type_wf failed
+                                                                                                                    │       └── application of rule Type_wf/externObjectTypeIR failed
+                                                                                                                    │           └── invocation of relation CallableTypeDef_wf failed
+                                                                                                                    │               └── application of rule CallableTypeDef_wf/ failed
+                                                                                                                    │                   └── invocation of relation CallableType_wf failed
+                                                                                                                    │                       └── application of rule CallableType_wf/non-abstract failed
+                                                                                                                    │                           └── invocation of relation ParameterType_wf failed
+                                                                                                                    │                               └── application of rule ParameterType_wf/non-default failed
+                                                                                                                    │                                   └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
+                                                                                                                    └── application of rule ConstructorType_wf/packageObjectTypeIR failed
+                                                                                                                        └── invocation of relation Type_wf failed
+                                                                                                                            └── application of rule Type_wf/externObjectTypeIR failed
+                                                                                                                                └── invocation of relation CallableTypeDef_wf failed
+                                                                                                                                    └── application of rule CallableTypeDef_wf/ failed
+                                                                                                                                        └── invocation of relation CallableType_wf failed
+                                                                                                                                            └── application of rule CallableType_wf/non-abstract failed
+                                                                                                                                                └── invocation of relation ParameterType_wf failed
+                                                                                                                                                    └── application of rule ParameterType_wf/non-default failed
+                                                                                                                                                        └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1331.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue1331.p4
@@ -2389,7 +2469,11 @@ application of rule Program_ok/ failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     │       ├── application of rule SelectCase_keyset_simple_ok/set-subtype failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     │       │   └── condition typeIR' <: setTypeIR was not met
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     │       └── application of rule SelectCase_keyset_simple_ok/non-set failed
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │           └── condition hold Cast_impl was not met
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │           └── invocation of relation Cast_impl failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │               ├── application of rule Cast_impl/equals failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │               │   └── invocation of relation Type_alpha failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │               └── application of rule Cast_impl/not-equals failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │                   └── invocation of relation Cast_impl_neq failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     └── application of rule SelectCase_keyset_ok/expression-list failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         └── condition (|typeIR_key*{typeIR_key <- typeIR_key*}| > 1) was not met
 
@@ -2527,7 +2611,11 @@ application of rule Program_ok/ failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             │       ├── application of rule SelectCase_keyset_simple_ok/set-subtype failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             │       │   └── condition typeIR' <: setTypeIR was not met
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             │       └── application of rule SelectCase_keyset_simple_ok/non-set failed
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            │           └── condition hold Cast_impl was not met
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            │           └── invocation of relation Cast_impl failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            │               ├── application of rule Cast_impl/equals failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            │               │   └── invocation of relation Type_alpha failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            │               └── application of rule Cast_impl/not-equals failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            │                   └── invocation of relation Cast_impl_neq failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             └── application of rule SelectCase_keyset_ok/expression-list failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 └── condition (|typeIR_key*{typeIR_key <- typeIR_key*}| > 1) was not met
 
@@ -2683,7 +2771,7 @@ application of rule Program_ok/ failed
                                                                             │                       └── application of rule Call_convention_argument_ok/typedExpression failed
                                                                             │                           └── invocation of relation Call_convention_expr_ok failed
                                                                             │                               └── application of rule Call_convention_expr_ok/out-inout failed
-                                                                            │                                   └── condition hold Type_alpha was not met
+                                                                            │                                   └── invocation of relation Type_alpha failed
                                                                             └── application of rule Stmt_ok/callStatement-no-typeArgumentList failed
                                                                                 └── invocation of relation Call_ok failed
                                                                                     └── application of rule Call_ok/externFunctionTypeIR failed
@@ -2693,7 +2781,7 @@ application of rule Program_ok/ failed
                                                                                                     └── application of rule Call_convention_argument_ok/typedExpression failed
                                                                                                         └── invocation of relation Call_convention_expr_ok failed
                                                                                                             └── application of rule Call_convention_expr_ok/out-inout failed
-                                                                                                                └── condition hold Type_alpha was not met
+                                                                                                                └── invocation of relation Type_alpha failed
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2036.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2036.p4
@@ -2966,7 +3054,7 @@ application of rule Program_ok/ failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     │                       └── application of rule Call_convention_argument_ok/typedExpression failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     │                           └── invocation of relation Call_convention_expr_ok failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     │                               └── application of rule Call_convention_expr_ok/out-inout failed
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │                                   └── condition hold Type_alpha was not met
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │                                   └── invocation of relation Type_alpha failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     └── application of rule Stmt_ok/callStatement-no-typeArgumentList failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         └── invocation of relation Call_ok failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             └── application of rule Call_ok/controlApplyMethodTypeIR failed
@@ -2976,7 +3064,7 @@ application of rule Program_ok/ failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             └── application of rule Call_convention_argument_ok/typedExpression failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 └── invocation of relation Call_convention_expr_ok failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     └── application of rule Call_convention_expr_ok/out-inout failed
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        └── condition hold Type_alpha was not met
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        └── invocation of relation Type_alpha failed
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2230.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2230.p4
@@ -3242,7 +3330,11 @@ application of rule Program_ok/ failed
                                                                                                                                                                                                                                                                                                                                                                                                                                             └── application of rule Decls_ok/cons failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                 └── invocation of relation Decl_ok failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                     └── application of rule Decl_ok/headerTypeDeclaration failed
-                                                                                                                                                                                                                                                                                                                                                                                                                                                        └── condition hold TypeDef_wf was not met
+                                                                                                                                                                                                                                                                                                                                                                                                                                                        └── invocation of relation TypeDef_wf failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            └── application of rule TypeDef_wf/ failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                └── invocation of relation Type_wf failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                    └── application of rule Type_wf/headerTypeIR failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                        └── condition $nestable_header(typeIR_field) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2317.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2317.p4
@@ -3358,7 +3450,11 @@ application of rule Program_ok/ failed
                                     └── application of rule ControlLocalDecl_ok/actionDeclaration failed
                                         └── invocation of relation ActionDecl_ok failed
                                             └── application of rule ActionDecl_ok/ failed
-                                                └── condition hold CallableTypeDef_wf was not met
+                                                └── invocation of relation CallableTypeDef_wf failed
+                                                    └── application of rule CallableTypeDef_wf/ failed
+                                                        └── invocation of relation CallableType_wf failed
+                                                            └── application of rule CallableType_wf/actionTypeIR failed
+                                                                └── condition $nestable_action(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2354.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2354.p4
@@ -3486,7 +3582,13 @@ application of rule Program_ok/ failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             └── application of rule ControlLocalDecl_ok/actionDeclaration failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 └── invocation of relation ActionDecl_ok failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     └── application of rule ActionDecl_ok/ failed
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        └── condition hold CallableTypeDef_wf was not met
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        └── invocation of relation CallableTypeDef_wf failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            └── application of rule CallableTypeDef_wf/ failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                └── invocation of relation CallableType_wf failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    └── application of rule CallableType_wf/actionTypeIR failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        └── invocation of relation ParameterType_wf failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            └── application of rule ParameterType_wf/non-default failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2373.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2373.p4
@@ -3691,11 +3793,15 @@ application of rule Program_ok/ failed
                                                                     ├── application of rule Stmt_ok/callStatement-no-typeArgumentList-static_assert failed
                                                                     │   └── invocation of relation Call_ok failed
                                                                     │       └── application of rule Call_ok/definedFunctionTypeIR failed
-                                                                    │           └── condition hold CallableType_wf was not met
+                                                                    │           └── invocation of relation CallableType_wf failed
+                                                                    │               └── application of rule CallableType_wf/definedFunctionTypeIR failed
+                                                                    │                   └── condition $nestable_definedFunction(typeIR) was not met
                                                                     └── application of rule Stmt_ok/callStatement-no-typeArgumentList failed
                                                                         └── invocation of relation Call_ok failed
                                                                             └── application of rule Call_ok/definedFunctionTypeIR failed
-                                                                                └── condition hold CallableType_wf was not met
+                                                                                └── invocation of relation CallableType_wf failed
+                                                                                    └── application of rule CallableType_wf/definedFunctionTypeIR failed
+                                                                                        └── condition $nestable_definedFunction(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2496.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue2496.p4
@@ -3961,7 +4067,11 @@ application of rule Program_ok/ failed
                                                                                     └── application of rule Decl_ok/functionDeclaration failed
                                                                                         └── invocation of relation FuncDecl_ok failed
                                                                                             └── application of rule FuncDecl_ok/ failed
-                                                                                                └── condition hold CallableTypeDef_wf was not met
+                                                                                                └── invocation of relation CallableTypeDef_wf failed
+                                                                                                    └── application of rule CallableTypeDef_wf/ failed
+                                                                                                        └── invocation of relation CallableType_wf failed
+                                                                                                            └── application of rule CallableType_wf/definedFunctionTypeIR failed
+                                                                                                                └── condition $nestable_definedFunction(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3045-2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3045-2.p4
@@ -3991,7 +4101,11 @@ application of rule Program_ok/ failed
                                                                                     └── application of rule Decl_ok/functionDeclaration failed
                                                                                         └── invocation of relation FuncDecl_ok failed
                                                                                             └── application of rule FuncDecl_ok/ failed
-                                                                                                └── condition hold CallableTypeDef_wf was not met
+                                                                                                └── invocation of relation CallableTypeDef_wf failed
+                                                                                                    └── application of rule CallableTypeDef_wf/ failed
+                                                                                                        └── invocation of relation CallableType_wf failed
+                                                                                                            └── application of rule CallableType_wf/definedFunctionTypeIR failed
+                                                                                                                └── condition $nestable_definedFunction(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3045.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3045.p4
@@ -4021,7 +4135,11 @@ application of rule Program_ok/ failed
                                                                                     └── application of rule Decl_ok/functionDeclaration failed
                                                                                         └── invocation of relation FuncDecl_ok failed
                                                                                             └── application of rule FuncDecl_ok/ failed
-                                                                                                └── condition hold CallableTypeDef_wf was not met
+                                                                                                └── invocation of relation CallableTypeDef_wf failed
+                                                                                                    └── application of rule CallableTypeDef_wf/ failed
+                                                                                                        └── invocation of relation CallableType_wf failed
+                                                                                                            └── application of rule CallableType_wf/definedFunctionTypeIR failed
+                                                                                                                └── condition $nestable_definedFunction(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3057-1.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3057-1.p4
@@ -4634,7 +4752,9 @@ application of rule Program_ok/ failed
                             └── application of rule Decls_ok/cons failed
                                 └── invocation of relation Decl_ok failed
                                     └── application of rule Decl_ok/type failed
-                                        └── condition hold Type_wf was not met
+                                        └── invocation of relation Type_wf failed
+                                            └── application of rule Type_wf/headerTypeIR failed
+                                                └── condition $nestable_header(typeIR_field) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3170.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3170.p4
@@ -4828,7 +4948,17 @@ application of rule Program_ok/ failed
                                                                                             └── application of rule Stmt_ok/expression failed
                                                                                                 └── invocation of relation Expr_ok failed
                                                                                                     └── application of rule Expr_ok/castExpression failed
-                                                                                                        └── condition hold Cast_expl was not met
+                                                                                                        └── invocation of relation Cast_expl failed
+                                                                                                            ├── application of rule Cast_expl/equals failed
+                                                                                                            │   └── invocation of relation Type_alpha failed
+                                                                                                            └── application of rule Cast_expl/not-equals failed
+                                                                                                                └── invocation of relation Cast_expl_neq failed
+                                                                                                                    └── application of rule Cast_expl_neq/right failed
+                                                                                                                        └── invocation of relation Cast_impl failed
+                                                                                                                            ├── application of rule Cast_impl/equals failed
+                                                                                                                            │   └── invocation of relation Type_alpha failed
+                                                                                                                            └── application of rule Cast_impl/not-equals failed
+                                                                                                                                └── invocation of relation Cast_impl_neq failed
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3233.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3233.p4
@@ -4964,7 +5094,9 @@ application of rule Program_ok/ failed
                                                                             └── application of rule BlockElementStmt_ok/variableDeclaration failed
                                                                                 └── invocation of relation VarDecl_ok failed
                                                                                     └── application of rule VarDecl_ok/initializer failed
-                                                                                        └── condition hold Type_wf was not met
+                                                                                        └── invocation of relation Type_wf failed
+                                                                                            └── application of rule Type_wf/structTypeIR failed
+                                                                                                └── condition $nestable_struct(typeIR_field) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3305.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3305.p4
@@ -5010,7 +5142,9 @@ application of rule Program_ok/ failed
                                     └── application of rule ParserTransition_ok/select failed
                                         └── invocation of relation ParserSelect_ok failed
                                             └── application of rule ParserSelect_ok/ failed
-                                                └── condition hold Type_wf was not met
+                                                └── invocation of relation Type_wf failed
+                                                    └── application of rule Type_wf/setTypeIR failed
+                                                        └── condition $nestable_set(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3338.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3338.p4
@@ -5050,7 +5184,11 @@ application of rule Program_ok/ failed
                                                             │       ├── application of rule SelectCase_keyset_simple_ok/set-subtype failed
                                                             │       │   └── condition typeIR' <: setTypeIR was not met
                                                             │       └── application of rule SelectCase_keyset_simple_ok/non-set failed
-                                                            │           └── condition hold Cast_impl was not met
+                                                            │           └── invocation of relation Cast_impl failed
+                                                            │               ├── application of rule Cast_impl/equals failed
+                                                            │               │   └── invocation of relation Type_alpha failed
+                                                            │               └── application of rule Cast_impl/not-equals failed
+                                                            │                   └── invocation of relation Cast_impl_neq failed
                                                             └── application of rule SelectCase_keyset_ok/expression-list failed
                                                                 └── condition (|typeIR_key*{typeIR_key <- typeIR_key*}| > 1) was not met
 
@@ -5068,7 +5206,9 @@ application of rule Program_ok/ failed
                             └── application of rule ParserLocalDecls_ok/cons failed
                                 └── invocation of relation ParserLocalDecl_ok failed
                                     └── application of rule ParserLocalDecl_ok/valueSetDeclaration failed
-                                        └── condition hold Type_wf was not met
+                                        └── invocation of relation Type_wf failed
+                                            └── application of rule Type_wf/setTypeIR failed
+                                                └── condition $nestable_set(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3359.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3359.p4
@@ -5113,7 +5253,9 @@ application of rule Program_ok/ failed
                                     └── application of rule ParameterList_ok_inner/cons failed
                                         └── invocation of relation Parameter_ok failed
                                             └── application of rule Parameter_ok/non-initializer failed
-                                                └── condition hold Type_wf was not met
+                                                └── invocation of relation Type_wf failed
+                                                    └── application of rule Type_wf/tupleTypeIR failed
+                                                        └── condition $nestable_tuple(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3430.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3430.p4
@@ -5562,7 +5704,9 @@ application of rule Program_ok/ failed
                                                     └── application of rule ParameterList_ok_inner/cons failed
                                                         └── invocation of relation Parameter_ok failed
                                                             └── application of rule Parameter_ok/non-initializer failed
-                                                                └── condition hold Type_wf was not met
+                                                                └── invocation of relation Type_wf failed
+                                                                    └── application of rule Type_wf/tupleTypeIR failed
+                                                                        └── condition $nestable_tuple(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3750.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3750.p4
@@ -5582,7 +5726,9 @@ application of rule Program_ok/ failed
                                             └── application of rule ParameterList_ok_inner/cons failed
                                                 └── invocation of relation Parameter_ok failed
                                                     └── application of rule Parameter_ok/non-initializer failed
-                                                        └── condition hold Type_wf was not met
+                                                        └── invocation of relation Type_wf failed
+                                                            └── application of rule Type_wf/tupleTypeIR failed
+                                                                └── condition $nestable_tuple(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3751.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3751.p4
@@ -5612,7 +5758,13 @@ application of rule Program_ok/ failed
                     └── application of rule Decls_ok/cons failed
                         └── invocation of relation Decl_ok failed
                             └── application of rule Decl_ok/controlTypeDeclaration failed
-                                └── condition hold TypeDef_wf was not met
+                                └── invocation of relation TypeDef_wf failed
+                                    └── application of rule TypeDef_wf/ failed
+                                        └── invocation of relation Type_wf failed
+                                            └── application of rule Type_wf/controlObjectTypeIR failed
+                                                └── invocation of relation ParameterType_wf failed
+                                                    └── application of rule ParameterType_wf/non-default failed
+                                                        └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3808-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3808-1.p4
@@ -5652,7 +5804,13 @@ application of rule Program_ok/ failed
                                                                     └── application of rule Stmt_ok/callStatement-typeArgumentList failed
                                                                         └── invocation of relation CallableType_ok failed
                                                                             └── application of rule CallableType_ok/functionTypeIR failed
-                                                                                └── condition hold CallableType_wf was not met
+                                                                                └── invocation of relation CallableType_wf failed
+                                                                                    └── application of rule CallableType_wf/externFunctionTypeIR failed
+                                                                                        └── invocation of relation ParameterType_wf failed
+                                                                                            └── application of rule ParameterType_wf/non-default failed
+                                                                                                └── invocation of relation Type_wf failed
+                                                                                                    └── application of rule Type_wf/nameTypeIR failed
+                                                                                                        └── condition $in_set<typeId>(typeId, B) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3813.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3813.p4
@@ -5664,7 +5822,11 @@ application of rule Program_ok/ failed
             └── application of rule Decl_ok/functionDeclaration failed
                 └── invocation of relation FuncDecl_ok failed
                     └── application of rule FuncDecl_ok/ failed
-                        └── condition hold CallableTypeDef_wf was not met
+                        └── invocation of relation CallableTypeDef_wf failed
+                            └── application of rule CallableTypeDef_wf/ failed
+                                └── invocation of relation CallableType_wf failed
+                                    └── application of rule CallableType_wf/definedFunctionTypeIR failed
+                                        └── condition ~$is_optional_parameterIR(parameterIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3814.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3814.p4
@@ -5676,7 +5838,17 @@ application of rule Program_ok/ failed
             └── application of rule Decls_ok/cons failed
                 └── invocation of relation Decl_ok failed
                     └── application of rule Decl_ok/controlDeclaration failed
-                        └── condition hold ConstructorTypeDef_wf was not met
+                        └── invocation of relation ConstructorTypeDef_wf failed
+                            └── application of rule ConstructorTypeDef_wf/ failed
+                                └── invocation of relation ConstructorType_wf failed
+                                    ├── application of rule ConstructorType_wf/externObjectTypeIR failed
+                                    │   └── condition typeIR' <: externObjectTypeIR was not met
+                                    ├── application of rule ConstructorType_wf/parserObjectTypeIR failed
+                                    │   └── condition ~$is_optional_parameterIR(parameterIR) was not met
+                                    ├── application of rule ConstructorType_wf/controlObjectTypeIR failed
+                                    │   └── condition ~$is_optional_parameterIR(parameterIR) was not met
+                                    └── application of rule ConstructorType_wf/packageObjectTypeIR failed
+                                        └── condition typeIR' <: packageObjectTypeIR was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3846.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue3846.p4
@@ -6074,7 +6246,11 @@ application of rule Program_ok/ failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     └── application of rule VarDecl_ok/initializer failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         └── invocation of relation Expr_ok failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             └── application of rule Expr_ok/castExpression failed
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                └── condition hold Cast_expl was not met
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                └── invocation of relation Cast_expl failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ├── application of rule Cast_expl/equals failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │   └── invocation of relation Type_alpha failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    └── application of rule Cast_expl/not-equals failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        └── invocation of relation Cast_expl_neq failed
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue407-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue407-1.p4
@@ -6114,7 +6290,11 @@ application of rule Program_ok/ failed
                                                                                                                             └── application of rule Decls_ok/cons failed
                                                                                                                                 └── invocation of relation Decl_ok failed
                                                                                                                                     └── application of rule Decl_ok/headerTypeDeclaration failed
-                                                                                                                                        └── condition hold TypeDef_wf was not met
+                                                                                                                                        └── invocation of relation TypeDef_wf failed
+                                                                                                                                            └── application of rule TypeDef_wf/ failed
+                                                                                                                                                └── invocation of relation Type_wf failed
+                                                                                                                                                    └── application of rule Type_wf/headerTypeIR failed
+                                                                                                                                                        └── condition $nestable_header(typeIR_field) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue413.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue413.p4
@@ -6550,11 +6730,19 @@ application of rule Program_ok/ failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ├── application of rule Stmt_ok/callStatement-no-typeArgumentList-static_assert failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     │   └── invocation of relation Call_ok failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     │       └── application of rule Call_ok/externFunctionTypeIR failed
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │           └── condition hold CallableType_wf was not met
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │           └── invocation of relation CallableType_wf failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │               └── application of rule CallableType_wf/externFunctionTypeIR failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │                   └── invocation of relation ParameterType_wf failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │                       └── application of rule ParameterType_wf/non-default failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │                           └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     └── application of rule Stmt_ok/callStatement-no-typeArgumentList failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         └── invocation of relation Call_ok failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             └── application of rule Call_ok/externFunctionTypeIR failed
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                └── condition hold CallableType_wf was not met
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                └── invocation of relation CallableType_wf failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    └── application of rule CallableType_wf/externFunctionTypeIR failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        └── invocation of relation ParameterType_wf failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            └── application of rule ParameterType_wf/non-default failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue600.p4
 Excluding file: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue600.p4
@@ -6597,11 +6785,19 @@ application of rule Program_ok/ failed
                                                                             ├── application of rule Stmt_ok/callStatement-no-typeArgumentList-static_assert failed
                                                                             │   └── invocation of relation Call_ok failed
                                                                             │       └── application of rule Call_ok/externFunctionTypeIR failed
-                                                                            │           └── condition hold CallableType_wf was not met
+                                                                            │           └── invocation of relation CallableType_wf failed
+                                                                            │               └── application of rule CallableType_wf/externFunctionTypeIR failed
+                                                                            │                   └── invocation of relation ParameterType_wf failed
+                                                                            │                       └── application of rule ParameterType_wf/non-default failed
+                                                                            │                           └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
                                                                             └── application of rule Stmt_ok/callStatement-no-typeArgumentList failed
                                                                                 └── invocation of relation Call_ok failed
                                                                                     └── application of rule Call_ok/externFunctionTypeIR failed
-                                                                                        └── condition hold CallableType_wf was not met
+                                                                                        └── invocation of relation CallableType_wf failed
+                                                                                            └── application of rule CallableType_wf/externFunctionTypeIR failed
+                                                                                                └── invocation of relation ParameterType_wf failed
+                                                                                                    └── application of rule ParameterType_wf/non-default failed
+                                                                                                        └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue774-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue774-1.p4
@@ -6735,7 +6931,11 @@ application of rule Program_ok/ failed
                                                                                                     └── application of rule Decl_ok/externObjectDeclaration failed
                                                                                                         └── invocation of relation ExternMethod_ok failed
                                                                                                             └── application of rule ExternMethod_ok/non-abstract failed
-                                                                                                                └── condition hold CallableTypeDef_wf was not met
+                                                                                                                └── invocation of relation CallableTypeDef_wf failed
+                                                                                                                    └── application of rule CallableTypeDef_wf/ failed
+                                                                                                                        └── invocation of relation CallableType_wf failed
+                                                                                                                            └── application of rule CallableType_wf/non-abstract failed
+                                                                                                                                └── condition $nestable_externMethod(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue816-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue816-1.p4
@@ -6769,7 +6969,17 @@ application of rule Program_ok/ failed
                                                                                                     └── application of rule Decls_ok/cons failed
                                                                                                         └── invocation of relation Decl_ok failed
                                                                                                             └── application of rule Decl_ok/controlDeclaration failed
-                                                                                                                └── condition hold ConstructorTypeDef_wf was not met
+                                                                                                                └── invocation of relation ConstructorTypeDef_wf failed
+                                                                                                                    └── application of rule ConstructorTypeDef_wf/ failed
+                                                                                                                        └── invocation of relation ConstructorType_wf failed
+                                                                                                                            ├── application of rule ConstructorType_wf/externObjectTypeIR failed
+                                                                                                                            │   └── condition typeIR' <: externObjectTypeIR was not met
+                                                                                                                            ├── application of rule ConstructorType_wf/parserObjectTypeIR failed
+                                                                                                                            │   └── condition typeIR' <: parserObjectTypeIR was not met
+                                                                                                                            ├── application of rule ConstructorType_wf/controlObjectTypeIR failed
+                                                                                                                            │   └── condition $nestable_constructor_control(typeIR) was not met
+                                                                                                                            └── application of rule ConstructorType_wf/packageObjectTypeIR failed
+                                                                                                                                └── condition typeIR' <: packageObjectTypeIR was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue816.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue816.p4
@@ -6871,7 +7081,17 @@ application of rule Program_ok/ failed
                                                                                                             └── application of rule Decl_ok/externObjectDeclaration failed
                                                                                                                 └── invocation of relation ExternConstructor_ok failed
                                                                                                                     └── application of rule ExternConstructor_ok/ failed
-                                                                                                                        └── condition hold ConstructorTypeDef_wf was not met
+                                                                                                                        └── invocation of relation ConstructorTypeDef_wf failed
+                                                                                                                            └── application of rule ConstructorTypeDef_wf/ failed
+                                                                                                                                └── invocation of relation ConstructorType_wf failed
+                                                                                                                                    ├── application of rule ConstructorType_wf/externObjectTypeIR failed
+                                                                                                                                    │   └── condition $nestable_constructor_extern(typeIR) was not met
+                                                                                                                                    ├── application of rule ConstructorType_wf/parserObjectTypeIR failed
+                                                                                                                                    │   └── condition typeIR' <: parserObjectTypeIR was not met
+                                                                                                                                    ├── application of rule ConstructorType_wf/controlObjectTypeIR failed
+                                                                                                                                    │   └── condition typeIR' <: controlObjectTypeIR was not met
+                                                                                                                                    └── application of rule ConstructorType_wf/packageObjectTypeIR failed
+                                                                                                                                        └── condition typeIR' <: packageObjectTypeIR was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue819-1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/issue819-1.p4
@@ -6995,7 +7215,67 @@ application of rule Program_ok/ failed
                                                                     ├── application of rule ConstructorType_ok/non-aliased-none-type failed
                                                                     │   └── condition (?() = $find_typeDef_t(p, TC, prefixedNameIR)) was not met
                                                                     └── application of rule ConstructorType_ok/non-aliased-some-type failed
-                                                                        └── condition hold ConstructorType_wf was not met
+                                                                        └── invocation of relation ConstructorType_wf failed
+                                                                            ├── application of rule ConstructorType_wf/externObjectTypeIR failed
+                                                                            │   └── invocation of relation Type_wf failed
+                                                                            │       └── application of rule Type_wf/externObjectTypeIR failed
+                                                                            │           └── invocation of relation CallableTypeDef_wf failed
+                                                                            │               └── application of rule CallableTypeDef_wf/ failed
+                                                                            │                   └── invocation of relation CallableType_wf failed
+                                                                            │                       └── application of rule CallableType_wf/non-abstract failed
+                                                                            │                           └── invocation of relation ParameterType_wf failed
+                                                                            │                               └── application of rule ParameterType_wf/non-default failed
+                                                                            │                                   └── invocation of relation Type_wf failed
+                                                                            │                                       └── application of rule Type_wf/nameTypeIR failed
+                                                                            │                                           └── condition $in_set<typeId>(typeId, B) was not met
+                                                                            ├── application of rule ConstructorType_wf/parserObjectTypeIR failed
+                                                                            │   └── invocation of relation Type_wf failed
+                                                                            │       └── application of rule Type_wf/externObjectTypeIR failed
+                                                                            │           └── invocation of relation CallableTypeDef_wf failed
+                                                                            │               └── application of rule CallableTypeDef_wf/ failed
+                                                                            │                   └── invocation of relation CallableType_wf failed
+                                                                            │                       └── application of rule CallableType_wf/non-abstract failed
+                                                                            │                           └── invocation of relation ParameterType_wf failed
+                                                                            │                               └── application of rule ParameterType_wf/non-default failed
+                                                                            │                                   └── invocation of relation Type_wf failed
+                                                                            │                                       └── application of rule Type_wf/nameTypeIR failed
+                                                                            │                                           └── condition $in_set<typeId>(typeId, B) was not met
+                                                                            ├── application of rule ConstructorType_wf/controlObjectTypeIR failed
+                                                                            │   └── invocation of relation Type_wf failed
+                                                                            │       └── application of rule Type_wf/externObjectTypeIR failed
+                                                                            │           └── invocation of relation CallableTypeDef_wf failed
+                                                                            │               └── application of rule CallableTypeDef_wf/ failed
+                                                                            │                   └── invocation of relation CallableType_wf failed
+                                                                            │                       └── application of rule CallableType_wf/non-abstract failed
+                                                                            │                           └── invocation of relation ParameterType_wf failed
+                                                                            │                               └── application of rule ParameterType_wf/non-default failed
+                                                                            │                                   └── invocation of relation Type_wf failed
+                                                                            │                                       └── application of rule Type_wf/nameTypeIR failed
+                                                                            │                                           └── condition $in_set<typeId>(typeId, B) was not met
+                                                                            ├── application of rule ConstructorType_wf/tableObjectTypeIR failed
+                                                                            │   └── invocation of relation Type_wf failed
+                                                                            │       └── application of rule Type_wf/externObjectTypeIR failed
+                                                                            │           └── invocation of relation CallableTypeDef_wf failed
+                                                                            │               └── application of rule CallableTypeDef_wf/ failed
+                                                                            │                   └── invocation of relation CallableType_wf failed
+                                                                            │                       └── application of rule CallableType_wf/non-abstract failed
+                                                                            │                           └── invocation of relation ParameterType_wf failed
+                                                                            │                               └── application of rule ParameterType_wf/non-default failed
+                                                                            │                                   └── invocation of relation Type_wf failed
+                                                                            │                                       └── application of rule Type_wf/nameTypeIR failed
+                                                                            │                                           └── condition $in_set<typeId>(typeId, B) was not met
+                                                                            └── application of rule ConstructorType_wf/packageObjectTypeIR failed
+                                                                                └── invocation of relation Type_wf failed
+                                                                                    └── application of rule Type_wf/externObjectTypeIR failed
+                                                                                        └── invocation of relation CallableTypeDef_wf failed
+                                                                                            └── application of rule CallableTypeDef_wf/ failed
+                                                                                                └── invocation of relation CallableType_wf failed
+                                                                                                    └── application of rule CallableType_wf/non-abstract failed
+                                                                                                        └── invocation of relation ParameterType_wf failed
+                                                                                                            └── application of rule ParameterType_wf/non-default failed
+                                                                                                                └── invocation of relation Type_wf failed
+                                                                                                                    └── application of rule Type_wf/nameTypeIR failed
+                                                                                                                        └── condition $in_set<typeId>(typeId, B) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/minWidth.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/minWidth.p4
@@ -7490,7 +7770,25 @@ application of rule Program_ok/ failed
             └── application of rule Decls_ok/cons failed
                 └── invocation of relation Decl_ok failed
                     └── application of rule Decl_ok/packageTypeDeclaration failed
-                        └── condition hold ConstructorTypeDef_wf was not met
+                        └── invocation of relation ConstructorTypeDef_wf failed
+                            └── application of rule ConstructorTypeDef_wf/ failed
+                                └── invocation of relation ConstructorType_wf failed
+                                    ├── application of rule ConstructorType_wf/externObjectTypeIR failed
+                                    │   └── invocation of relation ConstructorParameterType_wf failed
+                                    │       └── application of rule ConstructorParameterType_wf/ failed
+                                    │           └── condition direction matches `_EMPTY` was not met
+                                    ├── application of rule ConstructorType_wf/parserObjectTypeIR failed
+                                    │   └── invocation of relation ConstructorParameterType_wf failed
+                                    │       └── application of rule ConstructorParameterType_wf/ failed
+                                    │           └── condition direction matches `_EMPTY` was not met
+                                    ├── application of rule ConstructorType_wf/controlObjectTypeIR failed
+                                    │   └── invocation of relation ConstructorParameterType_wf failed
+                                    │       └── application of rule ConstructorParameterType_wf/ failed
+                                    │           └── condition direction matches `_EMPTY` was not met
+                                    └── application of rule ConstructorType_wf/packageObjectTypeIR failed
+                                        └── invocation of relation ConstructorParameterType_wf failed
+                                            └── application of rule ConstructorParameterType_wf/ failed
+                                                └── condition direction matches `_EMPTY` was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/param.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/param.p4
@@ -7510,7 +7808,11 @@ application of rule Program_ok/ failed
                                             └── application of rule ControlLocalDecl_ok/actionDeclaration failed
                                                 └── invocation of relation ActionDecl_ok failed
                                                     └── application of rule ActionDecl_ok/ failed
-                                                        └── condition hold CallableTypeDef_wf was not met
+                                                        └── invocation of relation CallableTypeDef_wf failed
+                                                            └── application of rule CallableTypeDef_wf/ failed
+                                                                └── invocation of relation CallableType_wf failed
+                                                                    └── application of rule CallableType_wf/actionTypeIR failed
+                                                                        └── condition $nestable_action(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/parser-arg.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/parser-arg.p4
@@ -7526,7 +7828,11 @@ application of rule Program_ok/ failed
                             └── application of rule Decls_ok/cons failed
                                 └── invocation of relation Decl_ok failed
                                     └── application of rule Decl_ok/parserDeclaration failed
-                                        └── condition hold CallableTypeDef_wf was not met
+                                        └── invocation of relation CallableTypeDef_wf failed
+                                            └── application of rule CallableTypeDef_wf/ failed
+                                                └── invocation of relation CallableType_wf failed
+                                                    └── application of rule CallableType_wf/parserApplyMethodTypeIR failed
+                                                        └── condition $nestable_parserApplyMethod(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/persistent_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/persistent_e.p4
@@ -7598,7 +7904,9 @@ application of rule Program_ok/ failed
                                                                                                                             └── application of rule ParserTransition_ok/select failed
                                                                                                                                 └── invocation of relation ParserSelect_ok failed
                                                                                                                                     └── application of rule ParserSelect_ok/ failed
-                                                                                                                                        └── condition hold Type_wf was not met
+                                                                                                                                        └── invocation of relation Type_wf failed
+                                                                                                                                            └── application of rule Type_wf/setTypeIR failed
+                                                                                                                                                └── condition $nestable_set(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/psa-meter2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/psa-meter2.p4
@@ -7848,7 +8156,11 @@ application of rule Program_ok/ failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ├── application of rule Stmt_ok/eq failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     │   └── invocation of relation Expr_ok failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     │       └── application of rule Expr_ok/castExpression failed
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │           └── condition hold Cast_expl was not met
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │           └── invocation of relation Cast_expl failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │               ├── application of rule Cast_expl/equals failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │               │   └── invocation of relation Type_alpha failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │               └── application of rule Cast_expl/not-equals failed
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    │                   └── invocation of relation Cast_expl_neq failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     └── application of rule Stmt_ok/compound failed
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         └── condition (assignop =/= =) was not met
 
@@ -7882,7 +8194,11 @@ application of rule Program_ok/ failed
                                                                                             └── application of rule Decls_ok/cons failed
                                                                                                 └── invocation of relation Decl_ok failed
                                                                                                     └── application of rule Decl_ok/typedefDeclaration-newtype failed
-                                                                                                        └── condition hold TypeDef_wf was not met
+                                                                                                        └── invocation of relation TypeDef_wf failed
+                                                                                                            └── application of rule TypeDef_wf/ failed
+                                                                                                                └── invocation of relation Type_wf failed
+                                                                                                                    └── application of rule Type_wf/newTypeIR failed
+                                                                                                                        └── condition $nestable_new(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/push_nonconstant.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/push_nonconstant.p4
@@ -8046,7 +8362,9 @@ application of rule Program_ok/ failed
                                                                                                             └── application of rule ParserTransition_ok/select failed
                                                                                                                 └── invocation of relation ParserSelect_ok failed
                                                                                                                     └── application of rule ParserSelect_ok/ failed
-                                                                                                                        └── condition hold Type_wf was not met
+                                                                                                                        └── invocation of relation Type_wf failed
+                                                                                                                            └── application of rule Type_wf/setTypeIR failed
+                                                                                                                                └── condition $nestable_set(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/select-varbits.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/select-varbits.p4
@@ -8084,7 +8402,9 @@ application of rule Program_ok/ failed
                                                                                                                     └── application of rule ParserTransition_ok/select failed
                                                                                                                         └── invocation of relation ParserSelect_ok failed
                                                                                                                             └── application of rule ParserSelect_ok/ failed
-                                                                                                                                └── condition hold Type_wf was not met
+                                                                                                                                └── invocation of relation Type_wf failed
+                                                                                                                                    └── application of rule Type_wf/setTypeIR failed
+                                                                                                                                        └── condition $nestable_set(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/self-call.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/self-call.p4
@@ -8890,7 +9210,9 @@ application of rule Program_ok/ failed
                                                                     └── application of rule BlockElementStmt_ok/variableDeclaration failed
                                                                         └── invocation of relation VarDecl_ok failed
                                                                             └── application of rule VarDecl_ok/non-initializer failed
-                                                                                └── condition hold Type_wf was not met
+                                                                                └── invocation of relation Type_wf failed
+                                                                                    └── application of rule Type_wf/headerStackTypeIR failed
+                                                                                        └── condition $nestable_headerStack(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/string-e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/string-e.p4
@@ -8900,7 +9222,13 @@ application of rule Program_ok/ failed
     └── application of rule Decls_ok/cons failed
         └── invocation of relation Decl_ok failed
             └── application of rule Decl_ok/externFunctionDeclaration failed
-                └── condition hold CallableTypeDef_wf was not met
+                └── invocation of relation CallableTypeDef_wf failed
+                    └── application of rule CallableTypeDef_wf/ failed
+                        └── invocation of relation CallableType_wf failed
+                            └── application of rule CallableType_wf/externFunctionTypeIR failed
+                                └── invocation of relation ParameterType_wf failed
+                                    └── application of rule ParameterType_wf/non-default failed
+                                        └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/string-e1.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/string-e1.p4
@@ -8910,7 +9238,11 @@ application of rule Program_ok/ failed
     └── application of rule Decls_ok/cons failed
         └── invocation of relation Decl_ok failed
             └── application of rule Decl_ok/structTypeDeclaration failed
-                └── condition hold TypeDef_wf was not met
+                └── invocation of relation TypeDef_wf failed
+                    └── application of rule TypeDef_wf/ failed
+                        └── invocation of relation Type_wf failed
+                            └── application of rule Type_wf/structTypeIR failed
+                                └── condition $nestable_struct(typeIR_field) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/string-e2.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/string-e2.p4
@@ -8934,11 +9266,19 @@ application of rule Program_ok/ failed
                                                             ├── application of rule Stmt_ok/callStatement-no-typeArgumentList-static_assert failed
                                                             │   └── invocation of relation Call_ok failed
                                                             │       └── application of rule Call_ok/externFunctionTypeIR failed
-                                                            │           └── condition hold CallableType_wf was not met
+                                                            │           └── invocation of relation CallableType_wf failed
+                                                            │               └── application of rule CallableType_wf/externFunctionTypeIR failed
+                                                            │                   └── invocation of relation ParameterType_wf failed
+                                                            │                       └── application of rule ParameterType_wf/non-default failed
+                                                            │                           └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
                                                             └── application of rule Stmt_ok/callStatement-no-typeArgumentList failed
                                                                 └── invocation of relation Call_ok failed
                                                                     └── application of rule Call_ok/externFunctionTypeIR failed
-                                                                        └── condition hold CallableType_wf was not met
+                                                                        └── invocation of relation CallableType_wf failed
+                                                                            └── application of rule CallableType_wf/externFunctionTypeIR failed
+                                                                                └── invocation of relation ParameterType_wf failed
+                                                                                    └── application of rule ParameterType_wf/non-default failed
+                                                                                        └── condition ((((typeIR_unroll = int as typeIR) \/ typeIR_unroll <: stringTypeIR) \/ typeIR_unroll <: objectTypeIR) => (direction = )) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/struct_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/struct_e.p4
@@ -10139,7 +10479,11 @@ application of rule Program_ok/ failed
                                                                             └── application of rule Decls_ok/cons failed
                                                                                 └── invocation of relation Decl_ok failed
                                                                                     └── application of rule Decl_ok/typedefDeclaration-newtype failed
-                                                                                        └── condition hold TypeDef_wf was not met
+                                                                                        └── invocation of relation TypeDef_wf failed
+                                                                                            └── application of rule TypeDef_wf/ failed
+                                                                                                └── invocation of relation Type_wf failed
+                                                                                                    └── application of rule Type_wf/newTypeIR failed
+                                                                                                        └── condition $nestable_new(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/tuple-to-header.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/tuple-to-header.p4
@@ -10351,7 +10695,13 @@ application of rule Program_ok/ failed
                                     └── application of rule ParameterList_ok_inner/cons failed
                                         └── invocation of relation Parameter_ok failed
                                             └── application of rule Parameter_ok/non-initializer failed
-                                                └── condition hold Type_wf was not met
+                                                └── invocation of relation Type_wf failed
+                                                    └── application of rule Type_wf/parserObjectTypeIR failed
+                                                        └── invocation of relation ParameterType_wf failed
+                                                            └── application of rule ParameterType_wf/non-default failed
+                                                                └── invocation of relation Type_wf failed
+                                                                    └── application of rule Type_wf/nameTypeIR failed
+                                                                        └── condition $in_set<typeId>(typeId, B) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/typecheck1_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/typecheck1_e.p4
@@ -10471,7 +10821,11 @@ application of rule Program_ok/ failed
                                                                                                                                                                                                                                                     └── application of rule Decls_ok/cons failed
                                                                                                                                                                                                                                                         └── invocation of relation Decl_ok failed
                                                                                                                                                                                                                                                             └── application of rule Decl_ok/typedefDeclaration-newtype failed
-                                                                                                                                                                                                                                                                └── condition hold TypeDef_wf was not met
+                                                                                                                                                                                                                                                                └── invocation of relation TypeDef_wf failed
+                                                                                                                                                                                                                                                                    └── application of rule TypeDef_wf/ failed
+                                                                                                                                                                                                                                                                        └── invocation of relation Type_wf failed
+                                                                                                                                                                                                                                                                            └── application of rule Type_wf/newTypeIR failed
+                                                                                                                                                                                                                                                                                └── condition $nestable_new(typeIR) was not met
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore1_e.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/underscore1_e.p4
@@ -10657,7 +11011,11 @@ application of rule Program_ok/ failed
                             └── application of rule ConstDecl_ok/ failed
                                 └── invocation of relation Expr_ok failed
                                     └── application of rule Expr_ok/castExpression failed
-                                        └── condition hold Cast_expl was not met
+                                        └── invocation of relation Cast_expl failed
+                                            ├── application of rule Cast_expl/equals failed
+                                            │   └── invocation of relation Type_alpha failed
+                                            └── application of rule Cast_expl/not-equals failed
+                                                └── invocation of relation Cast_expl_neq failed
 
 Typechecker (il) summary
   Ran:        253 / 310    (81.61%)

@@ -28,3 +28,23 @@ tagged with the rule that fired:
     y -> true,
     x -> 5
   ]
+
+On failure the rule level renders the partial derivation down to the rule that
+could not be completed, crossed out. With the tree shown, the diagnostic keeps
+only its headline:
+
+  $ ERR=../../testdata/interp/impty/base/_errors_not_int.imp
+  $ spectec impty eval --spec $SPEC -p $ERR --color never --tree.level rule
+  Run_prog
+  ✗  Check_prog
+     ✗  Check_command/decl
+        ✗  Check_expr/not
+           -- Check_expr/num
+  error: invocation of relation Run_prog failed
+    --> ../../specs/impty/base/spec.spectec:256:6
+      |
+  256 |   -- Check_prog: |- command
+      |      ^^^^^^^^^^
+      |
+      | source: il-interp
+  [1]

@@ -25,6 +25,7 @@ module Config = struct
   let default = Run_config.default
   let register_static_dependencies = Run_config.register_static_dependencies
   let handlers = Run_config.handlers
+  let has_handler = Run_config.has_handler
   let validate_mode = Run_config.validate_mode
   let close_outputs = Run_config.close_outputs
 end

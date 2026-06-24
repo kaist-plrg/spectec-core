@@ -278,7 +278,7 @@ let render_trace ~ansi (d : Record.t) : string option =
 
 (* --- Public API --- *)
 
-let render ~ansi ~cache (d : Record.t) : string =
+let render ?(show_trace = true) ~ansi ~cache (d : Record.t) : string =
   let intro =
     [ Some (render_header ~ansi d); render_location ~ansi ~cache d ]
     |> List.filter_map Fun.id |> String.concat "\n"
@@ -289,15 +289,15 @@ let render ~ansi ~cache (d : Record.t) : string =
         render_source_tag ~ansi d;
         render_detail ~ansi d;
         render_related ~ansi ~cache d;
-        render_trace ~ansi d;
+        (if show_trace then render_trace ~ansi d else None);
       ]
   in
   String.concat (field_separator d) (intro :: fields)
 
-let render_bag ~ansi bag =
+let render_bag ?(show_trace = true) ~ansi bag =
   let cache = Source_cache.create () in
   Record.Bag.to_sorted_list bag
-  |> List.map (render ~ansi ~cache)
+  |> List.map (render ~show_trace ~ansi ~cache)
   |> String.concat "\n\n"
 
 let rec render_trace_branch ~indent ~is_last (node : Record.trace_node) : string

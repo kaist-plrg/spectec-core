@@ -899,8 +899,7 @@ and eval_prem (ctx : Ctx.t) (prem : prem) : Ctx.t attempt =
     | Ok _, true | Error _, false -> Ok ctx
     | Ok _, false ->
         fail id.at (F.asprintf "condition not-hold %s was not met" id.it)
-    | Error _, true ->
-        fail id.at (F.asprintf "condition hold %s was not met" id.it)
+    | Error failtraces, true -> Error failtraces
   in
   let eval_let_prem ctx exp_l exp_r =
     let ctx, value = eval_exp ctx exp_r in
@@ -1174,13 +1173,14 @@ and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
   in
   let result = invoke_rel' () in
   Instrumentation.Dispatcher.emit_on_demand (fun () ->
-      let conclusion =
+      let outs =
         match result with
-        | Ok (_, values_output) ->
-            Some (Mode.fill reltyp.it ~ins:values_input ~outs:values_output)
-        | Error _ -> None
+        | Ok (_, values_output) -> List.map Option.some values_output
+        | Error _ -> List.map (fun _ -> None) (Mode.outputs reltyp.it)
       in
-      Events.Rel_exit { id = id.it; at = id.at; conclusion });
+      let conclusion = Mode.fill reltyp.it ~ins:values_input ~outs in
+      Events.Rel_exit
+        { id = id.it; at = id.at; success = Result.is_ok result; conclusion });
   result |> nest id.at (F.asprintf "invocation of relation %s failed" id.it)
 
 (* Invoke a function *)

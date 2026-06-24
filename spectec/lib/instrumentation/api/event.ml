@@ -9,7 +9,8 @@ type t =
   | Rel_exit of {
       id : string;
       at : region;
-      conclusion : (Il.Value.t, Il.Value.t) Il.Mode.t option;
+      success : bool;
+      conclusion : (Il.Value.t, Il.Value.t option) Il.Mode.t;
     }
   | Rule_enter of { id : string; rule_id : string; at : region }
   | Rule_exit of { id : string; rule_id : string; at : region; success : bool }

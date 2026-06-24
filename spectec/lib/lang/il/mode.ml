@@ -64,9 +64,11 @@ let interleave t ~ins ~outs =
   in
   go (Mixfix.args t) ins outs
 
-let render ?(pad_brackets = false) ~string_of_atom ~string_of_arg t =
+let render ?(pad_brackets = false) ~string_of_atom ~string_of_in ~string_of_out
+    t =
   Mixfix.render ~pad_brackets ~string_of_atom
-    ~string_of_arg:(function In v | Out v -> string_of_arg v)
+    ~string_of_arg:(function
+      | In v -> string_of_in v | Out v -> string_of_out v)
     t
 
 let render_inputs ~sep ~string_of_arg t =
