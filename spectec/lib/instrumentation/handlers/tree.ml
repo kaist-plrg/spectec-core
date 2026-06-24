@@ -37,47 +37,61 @@ let summarize_value (v : Il.Value.t) : string =
 (* === Tree representation =========================================== *)
 
 type kind = Rel | Func
+type judgment = (Il.Value.t, Il.Value.t option) Il.Mode.t
 
 type outcome =
-  | Failed
-  | Rel_ok of (Il.Value.t, Il.Value.t option) Il.Mode.t
-  | Func_ok of Il.Value.t
+  | Rel_result of { conclusion : judgment; holds : bool }
+  | Func_result of Il.Value.t option (* [None] if the call got stuck. *)
 
 type node = {
   kind : kind;
   id : string;
   inputs : Il.Value.t list;
-  mutable rule : string option;
-  mutable outcome : outcome;
-  mutable children_rev : node list;
-  mutable rollback_children : node list option;
-  (* Premise level only. *)
-  mutable prems_rev : prem_entry list;
+  mutable outcome : outcome option; (* [None] while still on the stack. *)
+  (* The rule that fired, or the function body; each attempt restarts it. *)
+  mutable derivation : derivation;
+  (* Applied-but-failed rules; guard failures are dropped. *)
+  mutable failures_rev : derivation list;
+  (* The premise being evaluated now, awaiting its sub-derivation; premise level. *)
   mutable pending_prem : prem_entry option;
-  mutable rollback_prems : prem_entry list option;
-  (* Variable values across all the rule's premises; synthesized sideconditions
-     are included because they bind an author premise's output variables. *)
+  (* Variable values across the rule's premises, synthesized binders included. *)
   mutable binding_env : (Il.id * Il.Value.t) list;
 }
 
 and prem_entry = { prem : Il.prem; mutable subderiv : node option }
+
+(* One rule's attempt at a goal; [unmet_prem] is the premise that defeated it, or
+   [None] if the rule fired. *)
+and derivation = {
+  mutable rule : string option;
+  mutable prems_rev : prem_entry list;
+  mutable children_rev : node list;
+  mutable unmet_prem : Il.prem option;
+}
+
+let empty_derivation () =
+  { rule = None; prems_rev = []; children_rev = []; unmet_prem = None }
 
 let new_node kind id inputs =
   {
     kind;
     id;
     inputs;
-    rule = None;
-    outcome = Failed;
-    children_rev = [];
-    rollback_children = None;
-    prems_rev = [];
+    outcome = None;
+    derivation = empty_derivation ();
+    failures_rev = [];
     pending_prem = None;
-    rollback_prems = None;
     binding_env = [];
   }
 
-let outcome_of_output = function Some v -> Func_ok v | None -> Failed
+let is_failed node =
+  match node.outcome with
+  | Some (Rel_result { holds = false; _ }) | Some (Func_result None) -> true
+  | _ -> false
+
+let is_applied = function
+  | Some { it = Il.IfPr { role = Il.Guard; _ }; _ } -> false
+  | _ -> true
 
 (* === Mutable state ================================================= *)
 
@@ -93,13 +107,14 @@ module State = struct
     | Premise, Some entry, Rel -> entry.subderiv <- Some node
     (* A function under a premise is absorbed into its text, not a node. *)
     | Premise, Some _, Func -> ()
-    | _ -> parent.children_rev <- node :: parent.children_rev
+    | _ ->
+        parent.derivation.children_rev <- node :: parent.derivation.children_rev
 
   let pop ~outcome =
     match !stack with
     | [] -> assert false
     | current :: rest -> (
-        current.outcome <- outcome;
+        current.outcome <- Some outcome;
         stack := rest;
         match rest with
         | [] -> Some current
@@ -108,22 +123,14 @@ module State = struct
             None)
 
   let begin_rule_attempt () =
-    with_current (fun current ->
-        current.rollback_children <- Some current.children_rev;
-        current.rollback_prems <- Some current.prems_rev)
+    with_current (fun current -> current.derivation <- empty_derivation ())
 
   let end_rule_attempt ~rule_id ~success =
     with_current (fun current ->
-        if success then current.rule <- Some rule_id
-        else (
-          Option.iter
-            (fun saved -> current.children_rev <- saved)
-            current.rollback_children;
-          Option.iter
-            (fun saved -> current.prems_rev <- saved)
-            current.rollback_prems);
-        current.rollback_children <- None;
-        current.rollback_prems <- None)
+        let derivation = current.derivation in
+        derivation.rule <- Some rule_id;
+        if (not success) && is_applied derivation.unmet_prem then
+          current.failures_rev <- derivation :: current.failures_rev)
 
   let enter_premise prem =
     with_current (fun current ->
@@ -132,13 +139,18 @@ module State = struct
   let record_premise () =
     with_current (fun current ->
         Option.iter
-          (fun entry -> current.prems_rev <- entry :: current.prems_rev)
+          (fun entry ->
+            current.derivation.prems_rev <-
+              entry :: current.derivation.prems_rev)
           current.pending_prem;
         current.pending_prem <- None)
 
   let record_bindings ~bindings =
     with_current (fun current ->
         current.binding_env <- bindings @ current.binding_env)
+
+  let record_unmet_prem prem =
+    with_current (fun current -> current.derivation.unmet_prem <- Some prem)
 end
 
 (* === Rendering ===================================================== *)
@@ -162,7 +174,9 @@ let render_call node =
   Format.sprintf "$%s(%s)" node.id args
 
 let render_tag node =
-  match node.rule with Some r when r <> "" -> node.id ^ "/" ^ r | _ -> node.id
+  match node.derivation.rule with
+  | Some r when r <> "" -> node.id ^ "/" ^ r
+  | _ -> node.id
 
 (* Count code points, not bytes, and skip ANSI escapes, so the bar matches the
    conclusion's visible width. *)
@@ -178,20 +192,20 @@ let measure_width s =
   in
   width
 
-(* Box-drawing glyph so that the bar consistently renders connected. *)
+(* Box-drawing dash so the bar renders as one connected line. *)
 let render_bar n = String.concat "" (List.init n (fun _ -> "─"))
 
 let render_lines node =
   match (node.kind, !config.level, node.outcome) with
-  | Rel, (Conclusion | Premise), Rel_ok c ->
-      let notation = render_judgment c in
+  | Rel, (Conclusion | Premise), Some (Rel_result { conclusion; _ }) ->
+      let notation = render_judgment conclusion in
       [
         accent (render_tag node ^ ":");
         notation;
         dim (render_bar (measure_width notation));
       ]
   | Rel, _, _ -> [ accent (render_tag node) ]
-  | Func, Premise, Func_ok v ->
+  | Func, Premise, Some (Func_result (Some v)) ->
       [ Format.sprintf "%s = %s" (render_call node) (summarize_value v) ]
   | Func, _, _ -> [ "$" ^ node.id ]
 
@@ -225,10 +239,10 @@ let rec print_node ~first_lead ~rest_prefix node out =
           | _ ->
               Format.fprintf out "%s%s\n" child_lead
                 (render_prem ~binding_env:node.binding_env entry))
-        (List.rev node.prems_rev);
-      List.iter print_child (List.rev node.children_rev)
+        (List.rev node.derivation.prems_rev);
+      List.iter print_child (List.rev node.derivation.children_rev)
   | Rule | Conclusion ->
-      List.rev node.children_rev
+      List.rev node.derivation.children_rev
       |> List.iter (fun child ->
              match child.kind with Rel -> print_child child | Func -> ())
 
@@ -238,7 +252,8 @@ let print_root node =
 
 let pop_and_maybe_print ~outcome =
   match State.pop ~outcome with
-  | Some { outcome = Failed; _ } | None -> ()
+  | None -> ()
+  | Some root when is_failed root -> ()
   | Some root -> print_root root
 
 (* === Handler module ================================================ *)
@@ -256,13 +271,13 @@ module M : Instrumentation_api.Handler.S = struct
     | Rel_enter { id; at = _; inputs } -> State.push (new_node Rel id inputs)
     | Rel_exit { id = _; at = _; success; conclusion } ->
         pop_and_maybe_print
-          ~outcome:(if success then Rel_ok conclusion else Failed)
+          ~outcome:(Rel_result { conclusion; holds = success })
     | Rule_enter _ -> State.begin_rule_attempt ()
     | Rule_exit { id = _; rule_id; at = _; success } ->
         State.end_rule_attempt ~rule_id ~success
     | Func_enter { id; at = _; inputs } -> State.push (new_node Func id inputs)
     | Func_exit { id = _; at = _; output } ->
-        pop_and_maybe_print ~outcome:(outcome_of_output output)
+        pop_and_maybe_print ~outcome:(Func_result output)
     (* Function clauses are tried like rules, but functions never invoke
        relations, so a failed clause leaves no sub-derivation to roll back. *)
     | Clause_enter _ | Clause_exit _ -> ()
@@ -270,7 +285,8 @@ module M : Instrumentation_api.Handler.S = struct
     | Prem_enter { prem; at = _ } ->
         if !config.level = Premise && is_authored_prem prem then
           State.enter_premise prem
-    | Prem_exit { prem; at = _; success = _; bindings } ->
+    | Prem_exit { prem; at = _; success; bindings } ->
+        if not success then State.record_unmet_prem prem;
         if !config.level = Premise then (
           State.record_bindings ~bindings;
           if is_authored_prem prem then State.record_premise ())
