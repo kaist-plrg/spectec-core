@@ -28,3 +28,16 @@ tagged with the rule that fired:
     y -> true,
     x -> 5
   ]
+
+On failure the rule level renders the partial derivation down to the rule that
+could not be completed, crossed out. The failtrace is covered elsewhere, so
+only the tree is captured here:
+
+  $ ERR=../../testdata/interp/impty/base/_errors_not_int.imp
+  $ spectec impty eval --spec $SPEC -p $ERR --color never --tree.level rule 2>/dev/null
+  Run_prog
+  ✗  Check_prog
+     ✗  Check_command/decl
+        ✗  Check_expr/not
+           -- Check_expr/num
+  [1]

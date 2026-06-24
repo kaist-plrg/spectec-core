@@ -61,3 +61,25 @@ The conclusion level renders each relation's conclusion as an inference figure:
     y -> true,
     x -> 5
   ]
+
+On failure the conclusion level renders the partial derivation with values,
+crossing the rule that could not be completed and leaving its output slot blank:
+
+  $ ERR=../../testdata/interp/impty/base/_errors_not_int.imp
+  $ spectec impty eval --spec $SPEC -p $ERR --color never --tree.level conclusion 2>/dev/null
+  Run_prog:
+  |- bool b = ! 5 -| ?
+  ────────────────────
+  ✗  Check_prog:
+     |- bool b = ! 5
+     ───────────────
+     ✗  Check_command/decl:
+        [] |- bool b = ! 5 -| ?
+        ───────────────────────
+        ✗  Check_expr/not:
+           [] |- ! 5 : ?
+           ─────────────
+           -- Check_expr/num:
+              [] |- 5 : int
+              ─────────────
+  [1]

@@ -1,12 +1,10 @@
-(** Tree: buffered derivation-tree renderer for a successful evaluation.
+(** Tree: buffers a top-level relation invocation and emits one ASCII derivation
+    tree when it completes: conclusion on top, sub-derivations below as premises
+    led by [--]. Unlike {!Trace}, backtracking is pruned to the rules that
+    applied, yielding a clean derivation tree.
 
-    Unlike {!Trace} (which streams every event), Tree accumulates events inside
-    a top-level relation invocation and emits a single ASCII tree once that
-    invocation completes. Failed rule attempts are pruned: only the rule that
-    actually fired at each relation invocation remains visible.
-
-    Each relation is drawn as a derivation tree in spec syntax: its conclusion
-    on top, its sub-derivations below as premises led by [--].
+    A failed run is rendered like a successful one, with the rule that could not
+    be completed crossed out.
 
     Levels:
     - [Rule]: each relation node tagged with the rule that matched.
@@ -153,30 +151,29 @@ module State = struct
     with_current (fun current -> current.derivation.unmet_prem <- Some prem)
 end
 
+let is_authored_prem prem =
+  match prov prem with Some Il.Synthesized -> false | _ -> true
+
 (* === Rendering ===================================================== *)
 
 let dim s = Ansi.style !ansi [ Dim ] s
 let accent s = Ansi.style !ansi [ Yellow ] s
+let alarm s = Ansi.style !ansi [ Bold; Red ] s
 
 let render_judgment c =
   let string_of_atom a =
     match Il.Print.string_of_atom a with "" -> "" | s -> dim s
   in
-  let string_of_out = function
-    | Some v -> summarize_value v
-    | None -> dim "?"
-  in
-  Il.Mode.render ~pad_brackets:true ~string_of_atom
-    ~string_of_in:summarize_value ~string_of_out c
+  let string_of_out = function Some v -> summarize_value v | None -> dim "?" in
+  Il.Mode.render ~pad_brackets:true ~string_of_atom ~string_of_in:summarize_value
+    ~string_of_out c
 
 let render_call node =
   let args = List.map summarize_value node.inputs |> String.concat ", " in
   Format.sprintf "$%s(%s)" node.id args
 
-let render_tag node =
-  match node.derivation.rule with
-  | Some r when r <> "" -> node.id ^ "/" ^ r
-  | _ -> node.id
+let render_tag node ~rule =
+  match rule with Some r when r <> "" -> node.id ^ "/" ^ r | _ -> node.id
 
 (* Count code points, not bytes, and skip ANSI escapes, so the bar matches the
    conclusion's visible width. *)
@@ -195,71 +192,117 @@ let measure_width s =
 (* Box-drawing dash so the bar renders as one connected line. *)
 let render_bar n = String.concat "" (List.init n (fun _ -> "─"))
 
-let render_lines node =
-  match (node.kind, !config.level, node.outcome) with
-  | Rel, (Conclusion | Premise), Some (Rel_result { conclusion; _ }) ->
+(* The cross is padded to the width of [--] so crossed and uncrossed siblings
+   stay aligned. *)
+let connector marked = if marked then alarm "✗" ^ "  " else dim "--" ^ " "
+
+let rel_head node ~rule =
+  match (!config.level, node.outcome) with
+  | (Conclusion | Premise), Some (Rel_result { conclusion; _ }) ->
       let notation = render_judgment conclusion in
       [
-        accent (render_tag node ^ ":");
+        accent (render_tag node ~rule ^ ":");
         notation;
         dim (render_bar (measure_width notation));
       ]
-  | Rel, _, _ -> [ accent (render_tag node) ]
-  | Func, Premise, Some (Func_result (Some v)) ->
+  | _ -> [ accent (render_tag node ~rule) ]
+
+let render_func_lines node =
+  match (!config.level, node.outcome) with
+  | Premise, Some (Func_result (Some v)) ->
       [ Format.sprintf "%s = %s" (render_call node) (summarize_value v) ]
-  | Func, _, _ -> [ "$" ^ node.id ]
+  | _ -> [ "$" ^ node.id ]
 
 let render_prem ~binding_env entry =
+  (* Returning [None] would let the unparser print the variable's name; show [?]
+     for an unbound variable instead. *)
   let values varid =
-    List.find_opt (fun (id, _) -> id.it = varid.it) binding_env
-    |> Option.map (fun (_, v) -> summarize_value v)
+    match List.find_opt (fun (id, _) -> id.it = varid.it) binding_env with
+    | Some (_, v) -> Some (summarize_value v)
+    | None -> Some (dim "?")
   in
   match prov entry.prem with
   | Some (Il.Source el_prem) -> El.Unparse.string_of_prem ~values el_prem
   | _ -> Il.Print.string_of_prem entry.prem
 
-let rec print_node ~first_lead ~rest_prefix node out =
-  (match render_lines node with
+let derivations_of node =
+  if is_failed node then List.rev node.failures_rev else [ node.derivation ]
+
+let print_lines out ~first_lead ~rest_prefix = function
   | [] -> ()
   | head :: rest ->
       Format.fprintf out "%s%s\n" first_lead head;
-      List.iter (fun l -> Format.fprintf out "%s%s\n" rest_prefix l) rest);
-  let child_lead = rest_prefix ^ dim "--" ^ " " in
-  let child_rest = rest_prefix ^ "   " in
-  let print_child child =
-    print_node ~first_lead:child_lead ~rest_prefix:child_rest child out
-  in
-  match !config.level with
-  | Premise ->
+      List.iter (fun l -> Format.fprintf out "%s%s\n" rest_prefix l) rest
+
+let rec print_node ~first_lead ~rest_prefix node out =
+  match node.kind with
+  | Rel -> print_rel ~first_lead ~rest_prefix node out
+  | Func ->
+      print_lines out ~first_lead ~rest_prefix (render_func_lines node);
       List.iter
-        (fun entry ->
-          match (entry.prem.it, entry.subderiv) with
-          | (Il.RelPr _ | Il.RelAssertPr { expect = true; _ }), Some subderiv ->
-              print_child subderiv
-          | _ ->
-              Format.fprintf out "%s%s\n" child_lead
-                (render_prem ~binding_env:node.binding_env entry))
-        (List.rev node.derivation.prems_rev);
-      List.iter print_child (List.rev node.derivation.children_rev)
-  | Rule | Conclusion ->
-      List.rev node.derivation.children_rev
-      |> List.iter (fun child ->
-             match child.kind with Rel -> print_child child | Func -> ())
+        (print_child ~rest_prefix out)
+        (List.rev node.derivation.children_rev)
+
+and print_child ~rest_prefix out child =
+  print_node
+    ~first_lead:(rest_prefix ^ connector (is_failed child))
+    ~rest_prefix:(rest_prefix ^ "   ") child out
+
+and print_rel ~first_lead ~rest_prefix node out =
+  match derivations_of node with
+  | [ derivation ] ->
+      print_lines out ~first_lead ~rest_prefix
+        (rel_head node ~rule:derivation.rule);
+      print_derivation_body ~rest_prefix node derivation out
+  | derivations ->
+      print_lines out ~first_lead ~rest_prefix (rel_head node ~rule:None);
+      List.iter
+        (fun derivation ->
+          Format.fprintf out "%s%s\n"
+            (rest_prefix ^ connector true)
+            (accent (render_tag node ~rule:derivation.rule));
+          print_derivation_body ~rest_prefix:(rest_prefix ^ "   ") node
+            derivation out)
+        derivations
+
+and print_derivation_body ~rest_prefix node derivation out =
+  let print_prem ?(marked = false) entry =
+    let text = render_prem ~binding_env:node.binding_env entry in
+    Format.fprintf out "%s%s\n" (rest_prefix ^ connector marked) text
+  in
+  let is_synthesized =
+    match derivation.unmet_prem with
+    | Some p -> not (is_authored_prem p)
+    | None -> false
+  in
+  let entries = List.rev derivation.prems_rev in
+  let last = List.length entries - 1 in
+  List.iteri
+    (fun i entry ->
+      let is_culprit = Option.is_some derivation.unmet_prem && i = last in
+      let show_as_text = is_culprit && is_synthesized in
+      match (entry.prem.it, entry.subderiv) with
+      | (Il.RelPr _ | Il.RelAssertPr { expect = true; _ }), Some subderiv
+        when not show_as_text ->
+          print_child ~rest_prefix out subderiv
+      | _ -> print_prem ~marked:is_culprit entry)
+    entries;
+  let children =
+    match !config.level with
+    | Premise -> List.rev derivation.children_rev
+    | Rule | Conclusion ->
+        List.rev derivation.children_rev |> List.filter (fun c -> c.kind = Rel)
+  in
+  List.iter (print_child ~rest_prefix out) children
 
 let print_root node =
   print_node ~first_lead:"" ~rest_prefix:"" node !fmt;
   Format.pp_print_flush !fmt ()
 
 let pop_and_maybe_print ~outcome =
-  match State.pop ~outcome with
-  | None -> ()
-  | Some root when is_failed root -> ()
-  | Some root -> print_root root
+  match State.pop ~outcome with None -> () | Some root -> print_root root
 
 (* === Handler module ================================================ *)
-
-let is_authored_prem prem =
-  match prov prem with Some Il.Synthesized -> false | _ -> true
 
 module M : Instrumentation_api.Handler.S = struct
   let static_dependencies = []
