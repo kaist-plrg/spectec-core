@@ -83,7 +83,7 @@ vsix:
 #   make test-struct     - Structuring test (both p4 and p4-old)
 #   make test-roundtrip-il - EL<->IL premise roundtrip test (impty base + closure, p4)
 #   make test-roundtrip-el - EL pretty-printer roundtrip test (mini-spec, p4-old, p4, impty)
-#   make test-parsegen   - Grammar-driven parser differential test (impty expressions)
+#   make test-parsegen   - Grammar-driven parser differential test (impty expressions + programs)
 #   make test-il-pos     - IL interpreter positive tests (slow)
 #   make test-il-neg     - IL interpreter negative tests
 #   make test-sl-pos     - SL interpreter positive tests (slow)

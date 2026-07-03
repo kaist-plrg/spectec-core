@@ -140,7 +140,11 @@ let find_operator state min_rank (operators : operator list) =
         operators
   | _ -> None
 
-let starts_with (terminal : Terminal.t) (prod : Grammar.production) : bool =
+(* A production that leads with a syntax reference can be started by
+   whatever can start that syntax. [seen] guards the mutual recursion
+   from looping on a cyclic reference. *)
+let rec starts_with state seen (terminal : Terminal.t)
+    (prod : Grammar.production) : bool =
   match
     List.find_opt
       (function Mixfix.Atom { it = Xl.Atom.Tag _; _ } -> false | _ -> true)
@@ -149,8 +153,21 @@ let starts_with (terminal : Terminal.t) (prod : Grammar.production) : bool =
   | Some (Mixfix.Atom atom) -> terminal_is_atom atom.it terminal
   | Some (Mixfix.Arg (Grammar.Primitive prim)) ->
       terminal_is_primitive prim terminal
-  | Some (Mixfix.Arg (Grammar.Nonterminal _)) -> true
+  | Some (Mixfix.Arg (Grammar.Nonterminal sub)) ->
+      syntax_starts_with state seen sub.it terminal
   | None -> false
+
+(* What can start a syntax: one of its primaries or a prefix operator. Infixes
+   lead with the syntax itself, so they never start it. *)
+and syntax_starts_with state seen name (terminal : Terminal.t) : bool =
+  (not (List.mem name seen))
+  &&
+  let compiled = find_syntax state name in
+  let starters =
+    compiled.primaries
+    @ List.map (fun (op : operator) -> op.prod) compiled.prefixes
+  in
+  List.exists (starts_with state (name :: seen) terminal) starters
 
 (* Parse algorithm: one function per accepted role (table above), where a
    phrase is one complete instance of a syntax. Each level parses its own role
@@ -188,7 +205,11 @@ and parse_primary state compiled =
   | Some (Terminal.Atom a) when Xl.Atom.eq a Xl.Atom.LParen ->
       parse_grouped state compiled
   | Some terminal -> (
-      match List.find_opt (starts_with terminal) compiled.primaries with
+      match
+        List.find_opt
+          (starts_with state [ compiled.name ] terminal)
+          compiled.primaries
+      with
       | Some prod -> parse_production state compiled 0 prod
       | None -> raise (Error "no production matches the current token"))
   | None -> raise (Error "unexpected end of input")

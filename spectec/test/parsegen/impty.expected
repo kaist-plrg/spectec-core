@@ -1,3 +1,4 @@
+=== expressions ===
 1                                OK
   generated: (_NUM +1)
   reference: (_NUM +1)
@@ -25,3 +26,47 @@ a <= b + c                       OK
 1 + (2 + 3)                      OK
   generated: ((_NUM +1) + ((_NUM +2) + (_NUM +3)))
   reference: ((_NUM +1) + ((_NUM +2) + (_NUM +3)))
+
+=== programs (base .imp corpus) ===
+_errors_add_bool.imp             OK
+  generated: ((INT) (_ID "x") = ((_BOOL true) + (_NUM +1)))
+  reference: ((INT) (_ID "x") = ((_BOOL true) + (_NUM +1)))
+_errors_assign_mismatch.imp      OK
+  generated: (((INT) (_ID "x") = (_NUM +0)) ; ((_ID "x") = (_BOOL true)))
+  reference: (((INT) (_ID "x") = (_NUM +0)) ; ((_ID "x") = (_BOOL true)))
+_errors_bad_assign.imp           OK
+  generated: ((INT) (_ID "x") = (_BOOL true))
+  reference: ((INT) (_ID "x") = (_BOOL true))
+_errors_if_not_bool.imp          OK
+  generated: (((INT) (_ID "n") = (_NUM +1)) ; (IF (_ID "n") THEN (SKIP) ELSE (SKIP) END))
+  reference: (((INT) (_ID "n") = (_NUM +1)) ; (IF (_ID "n") THEN (SKIP) ELSE (SKIP) END))
+_errors_not_int.imp              OK
+  generated: ((BOOL) (_ID "b") = (! (_NUM +5)))
+  reference: ((BOOL) (_ID "b") = (! (_NUM +5)))
+_errors_undeclared.imp           OK
+  generated: ((_ID "x") = (_NUM +5))
+  reference: ((_ID "x") = (_NUM +5))
+arith.imp                        OK
+  generated: (((INT) (_ID "x") = (((_NUM +1) + (_NUM +2)) + (_NUM +3))) ; ((INT) (_ID "y") = ((_ID "x") + (_ID "x"))))
+  reference: (((INT) (_ID "x") = (((_NUM +1) + (_NUM +2)) + (_NUM +3))) ; ((INT) (_ID "y") = ((_ID "x") + (_ID "x"))))
+assign.imp                       OK
+  generated: (((INT) (_ID "x") = (_NUM +1)) ; ((_ID "x") = ((_ID "x") + (_NUM +5))))
+  reference: (((INT) (_ID "x") = (_NUM +1)) ; ((_ID "x") = ((_ID "x") + (_NUM +5))))
+bool_ops.imp                     OK
+  generated: (((BOOL) (_ID "t") = ((! (_BOOL false)) && (_BOOL true))) ; ((BOOL) (_ID "f") = ((! (_ID "t")) && (_BOOL false))))
+  reference: (((BOOL) (_ID "t") = ((! (_BOOL false)) && (_BOOL true))) ; ((BOOL) (_ID "f") = ((! (_ID "t")) && (_BOOL false))))
+hello.imp                        OK
+  generated: (((INT) (_ID "x") = (_NUM +5)) ; ((BOOL) (_ID "y") = ((_ID "x") <= (_NUM +10))))
+  reference: (((INT) (_ID "x") = (_NUM +5)) ; ((BOOL) (_ID "y") = ((_ID "x") <= (_NUM +10))))
+ite.imp                          OK
+  generated: (((((INT) (_ID "x") = (_NUM +0)) ; ((INT) (_ID "y") = (_NUM +0))) ; (IF (_BOOL true) THEN ((_ID "x") = (_NUM +1)) ELSE ((_ID "x") = (_NUM +2)) END)) ; (IF (_BOOL false) THEN ((_ID "y") = (_NUM +1)) ELSE ((_ID "y") = (_NUM +2)) END))
+  reference: (((((INT) (_ID "x") = (_NUM +0)) ; ((INT) (_ID "y") = (_NUM +0))) ; (IF (_BOOL true) THEN ((_ID "x") = (_NUM +1)) ELSE ((_ID "x") = (_NUM +2)) END)) ; (IF (_BOOL false) THEN ((_ID "y") = (_NUM +1)) ELSE ((_ID "y") = (_NUM +2)) END))
+loop.imp                         OK
+  generated: ((((INT) (_ID "i") = (_NUM +0)) ; ((INT) (_ID "sum") = (_NUM +0))) ; (WHILE ((_ID "i") <= (_NUM +10)) DO (((_ID "sum") = ((_ID "sum") + (_ID "i"))) ; ((_ID "i") = ((_ID "i") + (_NUM +1)))) END))
+  reference: ((((INT) (_ID "i") = (_NUM +0)) ; ((INT) (_ID "sum") = (_NUM +0))) ; (WHILE ((_ID "i") <= (_NUM +10)) DO (((_ID "sum") = ((_ID "sum") + (_ID "i"))) ; ((_ID "i") = ((_ID "i") + (_NUM +1)))) END))
+shadow.imp                       OK
+  generated: (((INT) (_ID "x") = (_NUM +1)) ; ((INT) (_ID "x") = ((_ID "x") + (_NUM +100))))
+  reference: (((INT) (_ID "x") = (_NUM +1)) ; ((INT) (_ID "x") = ((_ID "x") + (_NUM +100))))
+skip.imp                         OK
+  generated: (SKIP)
+  reference: (SKIP)

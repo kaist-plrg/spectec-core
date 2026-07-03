@@ -14,13 +14,20 @@
 
 (rule
  (target impty.actual)
- (deps main.exe)
+ (deps
+  (source_tree ../../testdata/interp/impty/base)
+  main.exe)
  (action
   (with-stdout-to
    %{target}
    (with-stderr-to
     impty.err
-    (run ./main.exe -s %{dep:../../specs/impty/base/spec.spectec})))))
+    (run
+     ./main.exe
+     -s
+     %{dep:../../specs/impty/base/spec.spectec}
+     -d
+     ../../testdata/interp/impty/base)))))
 
 (rule
  (alias runtest)
