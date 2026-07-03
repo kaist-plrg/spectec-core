@@ -25,9 +25,9 @@ syntax id = _ID text
 syntax expr =
   | literal
   | id
-  | '!' expr
-  | expr '+' expr
-  | expr '<=' expr
+  | '!' expr         hint(tighter_than '+')
+  | expr '+' expr    hint(tighter_than '<=')
+  | expr '<=' expr   hint(tighter_than '&&')
   | expr '&&' expr
 
 syntax command =

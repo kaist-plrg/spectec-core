@@ -9,13 +9,18 @@ type arg = Nonterminal of Il.id | Primitive of primitive
 (** Whether the production is left- and/or right-recursive in its own syntax. *)
 type recursion = Neither | Left | Right | Both
 
-(** [Case] builds a node from the matched production; [Alias] (a plain
-    inclusion) passes its single argument through unchanged. *)
+(** [Tighter a]: binds more tightly than the sibling production whose operator
+    is [a]. *)
+type precedence = Tighter of Xl.Atom.t
+
+(** [Case] builds a node tagged with the syntax; [Alias] (a plain inclusion like
+    [prog = command]) passes its single argument through unchanged. *)
 type construction = Case | Alias
 
 type production = {
   notation : arg Il.Mixfix.t;
   recursion : recursion;
+  precedence : precedence option;
   construction : construction;
   origin : Il.id;
 }

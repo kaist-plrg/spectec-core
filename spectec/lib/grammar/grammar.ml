@@ -3,11 +3,13 @@ open Common.Source
 type primitive = Num of Xl.Num.typ | Bool | Text
 type arg = Nonterminal of Il.id | Primitive of primitive
 type recursion = Neither | Left | Right | Both
+type precedence = Tighter of Xl.Atom.t
 type construction = Case | Alias
 
 type production = {
   notation : arg Il.Mixfix.t;
   recursion : recursion;
+  precedence : precedence option;
   construction : construction;
   origin : Il.id;
 }
@@ -43,16 +45,22 @@ let is_plain_inclusion (notation : arg Il.Mixfix.t) : bool =
   Il.Mixfix.atoms notation = [] && Il.Mixfix.arity notation = 1
 
 let production_of_notation (self : Il.id) ~(origin : Il.id)
-    (notation : arg Il.Mixfix.t) : production =
+    ~(precedence : precedence option) (notation : arg Il.Mixfix.t) : production
+    =
   {
     notation;
     recursion = recursion_of self notation;
+    precedence;
     construction = (if is_plain_inclusion notation then Alias else Case);
     origin;
   }
 
+let precedence_of_typcase (typcase : Il.typcase) : precedence option =
+  Option.map (fun atom -> Tighter atom) (Hints.Precedence.find typcase.hints)
+
 let production_of_typcase (self : Il.id) (typcase : Il.typcase) : production =
   production_of_notation self ~origin:typcase.origin.it.synid
+    ~precedence:(precedence_of_typcase typcase)
     (Il.Mixfix.map arg_of_typ typcase.notation.it)
 
 let syntax_of_def (def : Il.def) : syntax option =
@@ -69,7 +77,7 @@ let syntax_of_def (def : Il.def) : syntax option =
           name = synid;
           productions =
             [
-              production_of_notation synid ~origin:synid
+              production_of_notation synid ~origin:synid ~precedence:None
                 [ Il.Mixfix.Arg (arg_of_typ typ) ];
             ];
         }
@@ -143,17 +151,28 @@ let string_of_recursion = function
   | Right -> "right"
   | Both -> "both"
 
+let string_of_precedence = function
+  | None -> ""
+  | Some (Tighter atom) -> "tighter than " ^ Xl.Atom.unparse atom
+
 let string_of_production (self : Il.id) (production : production) : string =
   let notation =
     String.concat " " (List.map string_of_mixeme production.notation)
   in
   let from =
     if production.origin.it = self.it then ""
-    else Printf.sprintf "  (from %s)" production.origin.it
+    else Printf.sprintf "(from %s)" production.origin.it
+  in
+  let suffix =
+    [ string_of_precedence production.precedence; from ]
+    |> List.filter (fun s -> s <> "")
+  in
+  let suffix =
+    match suffix with [] -> "" | parts -> "  " ^ String.concat "  " parts
   in
   Printf.sprintf "  | %-44s %-7s%s" notation
     (string_of_recursion production.recursion)
-    from
+    suffix
 
 let string_of_syntax (syntax : syntax) : string =
   Printf.sprintf "syntax %s:\n%s" syntax.name.it
