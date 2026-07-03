@@ -298,17 +298,25 @@ and parse_var_decl c : value =
 (* `prog = stmt`, so a program is just a stmt — no enclosing block. *)
 let parse_prog c : value = parse_stmt c
 
-(* Raises [Error.ImptyParseError] on failure. *)
-let parse_string_exn ~filename (source : string) : value =
-  let c = Cursor.make (Lexer.tokenize ~filename source) in
-  let v = parse_prog c in
-  (match Cursor.peek c with
+(* Requires every token to be consumed. Raises [Error.ImptyParseError] on a parse
+   failure or a trailing token. *)
+let parse_to_eof ~filename (parse : Cursor.t -> value) (source : string) : value
+    =
+  let cursor = Cursor.make (Lexer.tokenize ~filename source) in
+  let result = parse cursor in
+  (match Cursor.peek cursor with
   | Lexer.Eof -> ()
   | tok ->
-      Error.error (Cursor.region c)
+      Error.error (Cursor.region cursor)
         (Printf.sprintf "unexpected trailing token %s"
            (Lexer.string_of_token tok)));
-  v
+  result
+
+let parse_string_exn ~filename source = parse_to_eof ~filename parse_prog source
+
+(* An expression on its own is not a valid program, so it needs its own
+   entrypoint. *)
+let parse_expr_exn ~filename source = parse_to_eof ~filename parse_expr source
 
 let read_file filename =
   let ic = open_in filename in

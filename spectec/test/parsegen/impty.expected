@@ -1,0 +1,27 @@
+1                                OK
+  generated: (_NUM +1)
+  reference: (_NUM +1)
+x                                OK
+  generated: (_ID "x")
+  reference: (_ID "x")
+true                             OK
+  generated: (_BOOL true)
+  reference: (_BOOL true)
+1 + 2 + 3                        OK
+  generated: (((_NUM +1) + (_NUM +2)) + (_NUM +3))
+  reference: (((_NUM +1) + (_NUM +2)) + (_NUM +3))
+1 + 2 <= 3                       OK
+  generated: (((_NUM +1) + (_NUM +2)) <= (_NUM +3))
+  reference: (((_NUM +1) + (_NUM +2)) <= (_NUM +3))
+a <= b + c                       OK
+  generated: ((_ID "a") <= ((_ID "b") + (_ID "c")))
+  reference: ((_ID "a") <= ((_ID "b") + (_ID "c")))
+! a && b                         OK
+  generated: ((! (_ID "a")) && (_ID "b"))
+  reference: ((! (_ID "a")) && (_ID "b"))
+! (a + b) <= c && d              OK
+  generated: (((! ((_ID "a") + (_ID "b"))) <= (_ID "c")) && (_ID "d"))
+  reference: (((! ((_ID "a") + (_ID "b"))) <= (_ID "c")) && (_ID "d"))
+1 + (2 + 3)                      OK
+  generated: ((_NUM +1) + ((_NUM +2) + (_NUM +3)))
+  reference: ((_NUM +1) + ((_NUM +2) + (_NUM +3)))
