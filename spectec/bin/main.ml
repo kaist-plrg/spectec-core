@@ -55,6 +55,26 @@ let unparse_command =
           Format.printf "%s" (Lang.El.Unparse.string_of_spec spec_el))
       @@ fun () -> parse_spec_files filenames
 
+let grammar_command =
+  Core.Command.basic
+    ~summary:"extract the object-language grammar reachable from a start symbol"
+  @@
+  let open Core.Command.Let_syntax in
+  let open Core.Command.Param in
+  let%map filenames = anon (sequence ("spec files" %: string))
+  and start =
+    flag "--start" (required string)
+      ~doc:"SYMBOL syntax to extract the reachable grammar from"
+  and color = Cli.Cli_args.Output.color_flag in
+  fun () ->
+    Cli.Error_handling.guard ~color ~on_ok:(fun spec_il ->
+        Format.printf "%s\n"
+          (Grammar.string_of_t (Grammar.extract ~start spec_il)))
+    @@ fun () ->
+    let* spec = parse_spec_files filenames in
+    let* spec_il = elaborate spec in
+    Ok spec_il
+
 let structure_command =
   Core.Command.basic ~summary:"structure a spec"
   @@
@@ -171,6 +191,7 @@ let command =
     [
       ("unparse", unparse_command);
       ("elab", elab_command);
+      ("grammar", grammar_command);
       ("struct", structure_command);
       ("annotate", annotate_command);
       ("splice", splice_command);

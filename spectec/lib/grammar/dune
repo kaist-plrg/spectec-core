@@ -1,0 +1,4 @@
+(library
+ (name grammar)
+ (public_name spectec.grammar)
+ (libraries spectec.common xl il))
