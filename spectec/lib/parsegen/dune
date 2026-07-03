@@ -1,0 +1,4 @@
+(library
+ (name parsegen)
+ (public_name spectec.parsegen)
+ (libraries spectec.grammar xl il))

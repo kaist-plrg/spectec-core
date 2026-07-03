@@ -132,6 +132,31 @@ let extract ~(start : string) (spec : Il.spec) : t =
     (fun def -> if is_reachable def then syntax_of_def def else None)
     spec
 
+let operator_atom (production : production) : Xl.Atom.t option =
+  List.find_map
+    (function
+      | Il.Mixfix.Atom { it = (Xl.Atom.Operator _ | Xl.Atom.Keyword _) as a; _ }
+        ->
+          Some a
+      | _ -> None)
+    production.notation
+
+(* Assumes the [tighter_than] edges form a chain (one precedence ladder). *)
+let rank (syntax : syntax) (atom : Xl.Atom.t) : int =
+  let prod_of a =
+    List.find_opt (fun prod -> operator_atom prod = Some a) syntax.productions
+  in
+  let rec height a =
+    match prod_of a with
+    | Some { precedence = Some (Tighter tighter); _ } -> 1 + height tighter
+    | _ -> 0
+  in
+  height atom
+
+module Terminal = struct
+  type t = Atom of Xl.Atom.t | Primitive of primitive * Il.value
+end
+
 let string_of_primitive = function
   | Num numtyp -> Xl.Num.string_of_typ numtyp
   | Bool -> "bool"

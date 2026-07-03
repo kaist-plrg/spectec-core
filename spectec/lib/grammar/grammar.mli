@@ -34,4 +34,18 @@ type t = syntax list
     surface syntax. *)
 val extract : start:string -> Il.spec -> t
 
+(** The operator or keyword atom that names a production, if it has one. *)
+val operator_atom : production -> Xl.Atom.t option
+
+(** [rank syntax atom] is the precedence height of the production named by
+    [atom] within [syntax], counted along the [tighter_than] chain (0 = loosest
+    bind). *)
+val rank : syntax -> Xl.Atom.t -> int
+
+(** What a lexer token denotes: a fixed atom, or a primitive carrying its IL
+    value. *)
+module Terminal : sig
+  type t = Atom of Xl.Atom.t | Primitive of primitive * Il.value
+end
+
 val string_of_t : t -> string
