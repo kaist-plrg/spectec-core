@@ -29,6 +29,15 @@ val with_warnings : (unit -> 'a) -> 'a * Diag.Bag.t
     the error the run failed with. *)
 val with_diagnostics : (unit -> 'a result) -> 'a result * Diag.Bag.t
 
+(** {1 Spec membership}
+
+    A spec is elaborated from an ordered set of [.spectec] files. *)
+
+(** [collect_spec_files dir] is the [.spectec] files under [dir], gathered
+    recursively; digit runs in names compare as numbers ([5.9-] before [5.11-]),
+    so section numbers order without zero-padding. *)
+val collect_spec_files : string -> string list
+
 (** {1 Pipeline transformations} *)
 
 val parse_spec_files : string list -> Lang.El.spec result

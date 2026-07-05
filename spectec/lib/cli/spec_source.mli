@@ -4,6 +4,6 @@
 type t = Files of string list | Dir of string
 
 (** [files src] is the spec files for [src]: a {!Files} list as given, or the
-    [.spectec] files under a {!Dir}, collected recursively in sorted order.
-    Errors when the directory is missing or is not a directory. *)
+    [.spectec] files under a {!Dir} via {!Spectec.collect_spec_files}. Errors
+    when the directory is missing or is not a directory. *)
 val files : t -> (string list, Spectec.Error.t) result

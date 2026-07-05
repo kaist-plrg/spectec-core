@@ -29,6 +29,10 @@ let with_diagnostics f =
   in
   (result, bag)
 
+(* --- Spec membership --- *)
+
+let collect_spec_files dir = Spec_files.collect dir
+
 (* --- Pipeline transformations --- *)
 
 let parse_spec_files filenames =
