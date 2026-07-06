@@ -59,8 +59,11 @@ let unreadable ~open_path file message : Spectec.Diagnostic.t =
     (Printf.sprintf "cannot read spec file %s: %s" (Filename.basename file)
        message)
 
-let run ~path text : Lsp.Diagnostic.t list =
-  let open_path = canonical path in
+let internal_error ~open_path exn : Spectec.Diagnostic.t =
+  Spectec.Diagnostic.error ~source:"internal" (region_of_file open_path)
+    ("internal error: " ^ Printexc.to_string exn)
+
+let diagnose ~open_path text =
   let read file =
     if String.equal file open_path then Either.Right (file, text)
     else
@@ -85,3 +88,8 @@ let run ~path text : Lsp.Diagnostic.t list =
       in
       List.filter_map (report_for ~open_path)
         (Spectec.Diagnostic.Bag.to_sorted_list bag)
+
+let run ~path text : Lsp.Diagnostic.t list =
+  let open_path = canonical path in
+  try diagnose ~open_path text
+  with exn -> [ of_diagnostic (internal_error ~open_path exn) ]
