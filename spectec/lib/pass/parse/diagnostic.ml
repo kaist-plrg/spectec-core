@@ -32,6 +32,8 @@ type code =
   | Hint_on_plain_no_bar_multi
   (* parser: menhir fallback *)
   | Unexpected_token
+  (* parser: an atom constructor rejected the token *)
+  | Malformed_atom
 
 let string_of_code = function
   | Stray_printable -> "stray-printable"
@@ -54,6 +56,7 @@ let string_of_code = function
   | Hint_on_plain_no_bar_single -> "hint-on-plain-no-bar-single"
   | Hint_on_plain_no_bar_multi -> "hint-on-plain-no-bar-multi"
   | Unexpected_token -> "unexpected-token"
+  | Malformed_atom -> "malformed-atom"
 
 let render_code (c : code) : string = "parse/" ^ string_of_code c
 

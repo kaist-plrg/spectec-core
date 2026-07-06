@@ -28,5 +28,6 @@ let project_case name path =
 let () =
   case "valid" "syntax type =\n  | INT\n  | type -> type\n";
   case "parse error" "syntax type =\n  | INT\n  | type ->\n";
+  case "malformed atom" "syntax t = | X.foo\n";
   case "elab error" "syntax t = foo\n";
   project_case "cross-file type resolves" "multifile/2-use.spectec"

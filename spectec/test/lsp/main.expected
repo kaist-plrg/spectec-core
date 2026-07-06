@@ -4,6 +4,9 @@
 ## parse error
 {"code":"parse/unexpected-token","message":"syntax error: unexpected token","range":{"end":{"character":0,"line":3},"start":{"character":0,"line":3}},"severity":1,"source":"parse"}
 
+## malformed atom
+{"code":"parse/malformed-atom","message":"malformed atom","range":{"end":{"character":18,"line":0},"start":{"character":13,"line":0}},"severity":1,"source":"parse"}
+
 ## elab error
 {"code":"elab/ctx-type-undefined","message":"type `foo` is undefined","range":{"end":{"character":14,"line":0},"start":{"character":11,"line":0}},"severity":1,"source":"elab"}
 

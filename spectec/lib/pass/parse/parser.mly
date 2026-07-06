@@ -23,6 +23,10 @@ let positions_to_region position_left position_right =
 let at (position_left, position_right) = positions_to_region position_left position_right
 let (@@@) it pos = it $ at pos
 
+let keyword sloc s =
+  try Atom.keyword s
+  with Invalid_argument _ -> error ~code:Malformed_atom (at sloc) "malformed atom"
+
 (* Identifiers *)
 
 module Ids = Set.Make (String)
@@ -147,10 +151,10 @@ atomid_lparen : UPID_LPAREN { $1 }
 atomid_langle : UPID_LANGLE { $1 }
 atomid : atomid_ { $1 } | atomid DOTID { $1 ^ "." ^ $2 }
 
-dotid : DOTID { Atom.keyword $1 @@@ $sloc }
+dotid : DOTID { keyword $sloc $1 @@@ $sloc }
 
 fieldid :
-  | atomid_ { Atom.keyword $1 @@@ $sloc }
+  | atomid_ { keyword $sloc $1 @@@ $sloc }
 
 relid : id { $1 @@@ $sloc }
 
@@ -181,7 +185,7 @@ synid :
 atom :
   | atom_ { $1 @@@ $sloc }
 atom_ :
-  | atomid { Atom.keyword $1 }
+  | atomid { keyword $sloc $1 }
   | atom_escape { $1 }
 atom_escape :
   | TAG_UPID { Atom.tag $1 }
@@ -528,7 +532,7 @@ exp_atom_ :
   | atom { AtomE $1 }
   | atomid_lparen exp RPAREN
     { SeqE [
-        AtomE (Atom.keyword $1 @@@ $loc($1)) @@@ $loc($1);
+        AtomE (keyword $loc($1) $1 @@@ $loc($1)) @@@ $loc($1);
         ParenE $2 @@@ $loc($2)
       ] }
 
