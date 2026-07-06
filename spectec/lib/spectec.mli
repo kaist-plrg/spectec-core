@@ -31,7 +31,13 @@ val with_diagnostics : (unit -> 'a result) -> 'a result * Diag.Bag.t
 
 (** {1 Spec membership}
 
-    A spec is elaborated from an ordered set of [.spectec] files. *)
+    A spec is elaborated from an ordered set of [.spectec] files; a [*.spec]
+    marker file (e.g. [specs/p4/p4.spec]) marks its directory as the root of one
+    spec. *)
+
+(** [spec_root_of_file file] is the nearest ancestor directory of [file] that
+    holds a [*.spec] marker, if any. *)
+val spec_root_of_file : string -> string option
 
 (** [collect_spec_files dir] is the [.spectec] files under [dir], gathered
     recursively; digit runs in names compare as numbers ([5.9-] before [5.11-]),
@@ -44,6 +50,12 @@ val parse_spec_files : string list -> Lang.El.spec result
 
 (** [origin] is the label used in diagnostic messages. *)
 val parse_spec_string : origin:string -> string -> Lang.El.spec result
+
+(** Parses [(origin, text)] pairs into one concatenated spec, the in-memory
+    counterpart of {!parse_spec_files}. Order matters: parsing shares an atom
+    and variable table, so each [origin] must follow those it takes names from.
+*)
+val parse_spec_sources : (string * string) list -> Lang.El.spec result
 
 val elaborate : Lang.El.spec -> Lang.Il.spec result
 val structure : Lang.Il.spec -> Lang.Sl.spec

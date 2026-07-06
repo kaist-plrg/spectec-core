@@ -1,4 +1,5 @@
 let spec_file_suffix = ".spectec"
+let root_marker_suffix = ".spec"
 
 let compare_natural a b =
   let is_digit c = '0' <= c && c <= '9' in
@@ -46,3 +47,20 @@ let collect root =
            else [])
   in
   gather root
+
+let root_of_file file =
+  let holds_marker dir =
+    match Sys.readdir dir with
+    | exception Sys_error _ -> false
+    | entries ->
+        Array.exists
+          (fun entry -> Filename.check_suffix entry root_marker_suffix)
+          entries
+  in
+  let rec search dir =
+    if holds_marker dir then Some dir
+    else
+      let parent = Filename.dirname dir in
+      if String.equal parent dir then None else search parent
+  in
+  search (Filename.dirname file)

@@ -10,6 +10,8 @@
 
 (rule
  (target main.actual)
+ (deps
+  (source_tree multifile))
  (action
   (with-stdout-to
    %{target}

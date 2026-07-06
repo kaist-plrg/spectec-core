@@ -7,3 +7,6 @@
 ## elab error
 {"code":"elab/ctx-type-undefined","message":"type `foo` is undefined","range":{"end":{"character":14,"line":0},"start":{"character":11,"line":0}},"severity":1,"source":"elab"}
 
+## cross-file type resolves
+(no diagnostics)
+

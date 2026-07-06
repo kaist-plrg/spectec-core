@@ -1,0 +1,1 @@
+impty specification, recursion variant.

@@ -2,7 +2,7 @@ open Linol_eio
 
 let publish ~(notify_back : Jsonrpc2.notify_back) uri text =
   notify_back#set_uri uri;
-  notify_back#send_diagnostic (Check.run ~origin:(DocumentUri.to_path uri) text)
+  notify_back#send_diagnostic (Check.run ~path:(DocumentUri.to_path uri) text)
 
 let server =
   object
