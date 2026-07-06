@@ -1,6 +1,10 @@
 open Diagnostic
 module Source = Common.Source
 
+let ( let* ) = Result.bind
+
+type spec_source = { filename : string; contents : string }
+
 let with_lexbuf name lexbuf start =
   let open Lexing in
   lexbuf.lex_curr_p <- { lexbuf.lex_curr_p with pos_fname = name };
@@ -9,33 +13,34 @@ let with_lexbuf name lexbuf start =
     error ~code:Unexpected_token (Lexer.region lexbuf)
       "syntax error: unexpected token"
 
-let parse_file file : Lang.El.spec result =
-  try
-    let ic = open_in file in
-    let spec =
-      Fun.protect
-        (fun () -> with_lexbuf file (Lexing.from_channel ic) Parser.spec)
-        ~finally:(fun () -> close_in ic)
-    in
-    Ok spec
-  with
-  | ParseError e -> Error e
-  | Sys_error msg ->
-      Error (Diag.error ~source:"io" (Source.region_of_file file) msg)
+let rec map_in_order f = function
+  | [] -> Ok []
+  | x :: rest ->
+      let* y = f x in
+      let* ys = map_in_order f rest in
+      Ok (y :: ys)
 
-let parse_string ~origin source : Lang.El.spec result =
-  try Ok (with_lexbuf origin (Lexing.from_string source) Parser.spec)
+let parse_source { filename; contents } : Lang.El.spec result =
+  try Ok (with_lexbuf filename (Lexing.from_string contents) Parser.spec)
   with ParseError e -> Error e
 
+let parse_sources sources : Lang.El.spec result =
+  let* specs = map_in_order parse_source sources in
+  Ok (List.concat specs)
+
+let read_source filename : spec_source result =
+  try
+    Ok
+      {
+        filename;
+        contents = In_channel.with_open_bin filename In_channel.input_all;
+      }
+  with Sys_error msg ->
+    Error (Diag.error ~source:"io" (Source.region_of_file filename) msg)
+
 let parse_files filenames : Lang.El.spec result =
-  let rec parse_files' acc = function
-    | [] -> Ok (List.concat (List.rev acc))
-    | file :: rest -> (
-        match parse_file file with
-        | Ok spec -> parse_files' (spec :: acc) rest
-        | Error e -> Error e)
-  in
-  parse_files' [] filenames
+  let* sources = map_in_order read_source filenames in
+  parse_sources sources
 
 type error = Diagnostic.error
 type 'a result = 'a Diagnostic.result

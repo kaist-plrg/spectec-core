@@ -1,10 +1,14 @@
 type error = ParseError of Parse.error | ElaborateError of Elaborate.error
+type spec_source = Parse.spec_source = { filename : string; contents : string }
 
 let parse_files filenames =
   Parse.parse_files filenames |> Result.map_error (fun e -> ParseError e)
 
-let parse_string ~origin source =
-  Parse.parse_string ~origin source |> Result.map_error (fun e -> ParseError e)
+let parse_source source =
+  Parse.parse_source source |> Result.map_error (fun e -> ParseError e)
+
+let parse_sources sources =
+  Parse.parse_sources sources |> Result.map_error (fun e -> ParseError e)
 
 let elaborate spec_el =
   Elaborate.elab_spec spec_el |> Result.map_error (fun e -> ElaborateError e)

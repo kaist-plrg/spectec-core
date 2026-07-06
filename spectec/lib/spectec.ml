@@ -36,23 +36,16 @@ let collect_spec_files dir = Spec_files.collect dir
 
 (* --- Pipeline transformations --- *)
 
+type spec_source = Pass.spec_source = { filename : string; contents : string }
+
 let parse_spec_files filenames =
   Pass.parse_files filenames |> Result.map_error (fun e -> Error.PassError e)
 
-let parse_spec_string ~origin source =
-  Pass.parse_string ~origin source
-  |> Result.map_error (fun e -> Error.PassError e)
+let parse_spec_source source =
+  Pass.parse_source source |> Result.map_error (fun e -> Error.PassError e)
 
 let parse_spec_sources sources =
-  let rec parse_all = function
-    | [] -> Ok []
-    | (origin, source) :: rest ->
-        let* spec = parse_spec_string ~origin source in
-        let* specs = parse_all rest in
-        Ok (spec :: specs)
-  in
-  let* specs = parse_all sources in
-  Ok (List.concat specs)
+  Pass.parse_sources sources |> Result.map_error (fun e -> Error.PassError e)
 
 let elaborate spec_el =
   Pass.elaborate spec_el |> Result.map_error (fun e -> Error.PassError e)

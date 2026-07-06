@@ -64,12 +64,13 @@ let internal_error ~open_path exn : Spectec.Diagnostic.t =
     ("internal error: " ^ Printexc.to_string exn)
 
 let diagnose ~open_path text =
-  let read file =
-    if String.equal file open_path then Either.Right (file, text)
+  let read filename =
+    if String.equal filename open_path then
+      Either.Right Spectec.{ filename; contents = text }
     else
-      match read_file file with
-      | source -> Either.Right (file, source)
-      | exception Sys_error message -> Either.Left (file, message)
+      match read_file filename with
+      | contents -> Either.Right Spectec.{ filename; contents }
+      | exception Sys_error message -> Either.Left (filename, message)
   in
   let unreadable_files, sources =
     List.partition_map read (spec_files_of open_path)
@@ -77,8 +78,8 @@ let diagnose ~open_path text =
   match unreadable_files with
   | _ :: _ ->
       List.map
-        (fun (file, message) ->
-          of_diagnostic (unreadable ~open_path file message))
+        (fun (filename, message) ->
+          of_diagnostic (unreadable ~open_path filename message))
         unreadable_files
   | [] ->
       let _, bag =

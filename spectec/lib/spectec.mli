@@ -46,16 +46,23 @@ val collect_spec_files : string -> string list
 
 (** {1 Pipeline transformations} *)
 
+(** Spec source [contents] paired with the [filename] its diagnostics are
+    attributed to. [contents] may be a file's bytes on disk or an unsaved editor
+    buffer; a synthetic input, such as a reparse check, uses an angle-bracketed
+    name like [<roundtrip>]. *)
+type spec_source = Pass.spec_source = { filename : string; contents : string }
+
+val parse_spec_source : spec_source -> Lang.El.spec result
+
+(** Parses each source in order into one concatenated spec. Order matters:
+    parsing shares an atom and variable table, so each source must follow those
+    it takes names from. *)
+val parse_spec_sources : spec_source list -> Lang.El.spec result
+
+(** Reads and parses each path in order into one concatenated spec; each path
+    becomes the [filename] labeling its own diagnostics. The on-disk counterpart
+    of {!parse_spec_sources}. *)
 val parse_spec_files : string list -> Lang.El.spec result
-
-(** [origin] is the label used in diagnostic messages. *)
-val parse_spec_string : origin:string -> string -> Lang.El.spec result
-
-(** Parses [(origin, text)] pairs into one concatenated spec, the in-memory
-    counterpart of {!parse_spec_files}. Order matters: parsing shares an atom
-    and variable table, so each [origin] must follow those it takes names from.
-*)
-val parse_spec_sources : (string * string) list -> Lang.El.spec result
 
 val elaborate : Lang.El.spec -> Lang.Il.spec result
 val structure : Lang.Il.spec -> Lang.Sl.spec
