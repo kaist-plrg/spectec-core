@@ -33,7 +33,10 @@ let dump_one (file : string) ~label : unit =
   | Ok spec1 -> (
       let printed = Unparse.string_of_spec spec1 in
       print_string printed;
-      match Spectec.parse_spec_string ~origin:"<roundtrip>" printed with
+      match
+        Spectec.parse_spec_source
+          Spectec.{ filename = "<roundtrip>"; contents = printed }
+      with
       | Error e -> fail (Printf.sprintf "reparse: %s" (render_error e))
       | Ok spec2 ->
           if not (Eq.eq_spec spec1 spec2) then

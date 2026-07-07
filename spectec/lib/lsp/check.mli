@@ -1,5 +1,6 @@
-(** [run ~origin text] parses and elaborates [text] in memory and returns the
-    resulting errors and warnings as LSP diagnostics. [origin] labels the buffer
-    in diagnostic messages. *)
+(** [run ~path text] returns LSP diagnostics for the document at [path], with
+    [text] as its current contents. The document is checked as part of its whole
+    spec (the other [.spectec] files in its [*.spec]-marked directory, read from
+    disk), so cross-file references resolve. *)
 
-val run : origin:string -> string -> Linol_eio.Diagnostic.t list
+val run : path:string -> string -> Linol_eio.Diagnostic.t list

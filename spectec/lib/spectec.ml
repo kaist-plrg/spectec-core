@@ -29,14 +29,23 @@ let with_diagnostics f =
   in
   (result, bag)
 
+(* --- Spec membership --- *)
+
+let spec_root_of_file file = Spec_files.root_of_file file
+let collect_spec_files dir = Spec_files.collect dir
+
 (* --- Pipeline transformations --- *)
+
+type spec_source = Pass.spec_source = { filename : string; contents : string }
 
 let parse_spec_files filenames =
   Pass.parse_files filenames |> Result.map_error (fun e -> Error.PassError e)
 
-let parse_spec_string ~origin source =
-  Pass.parse_string ~origin source
-  |> Result.map_error (fun e -> Error.PassError e)
+let parse_spec_source source =
+  Pass.parse_source source |> Result.map_error (fun e -> Error.PassError e)
+
+let parse_spec_sources sources =
+  Pass.parse_sources sources |> Result.map_error (fun e -> Error.PassError e)
 
 let elaborate spec_el =
   Pass.elaborate spec_el |> Result.map_error (fun e -> Error.PassError e)

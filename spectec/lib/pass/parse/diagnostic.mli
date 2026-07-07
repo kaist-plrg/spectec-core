@@ -45,6 +45,8 @@ type code =
   | Hint_on_plain_no_bar_multi
   (* parser: menhir fallback *)
   | Unexpected_token
+  (* parser: an atom constructor rejected the token *)
+  | Malformed_atom
 
 (** {1 Raising}
 

@@ -23,7 +23,9 @@ let elab_command =
 let unparse_roundtrip filenames =
   let* spec_el = parse_spec_files filenames in
   let printed = Lang.El.Unparse.string_of_spec spec_el in
-  let* spec_el' = parse_spec_string ~origin:"<roundtrip>" printed in
+  let* spec_el' =
+    parse_spec_source { filename = "<roundtrip>"; contents = printed }
+  in
   if Lang.El.Eq.eq_spec spec_el spec_el' then Ok ()
   else
     Error
