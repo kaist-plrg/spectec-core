@@ -8,6 +8,7 @@ type atom = Sl.atom
 type mixop = Sl.mixop
 type exp = Sl.exp
 type notexp = Sl.notexp
+type relcall = Sl.relcall
 type iterexp = Sl.iterexp
 type pattern = Sl.pattern
 type tparam = Sl.tparam
@@ -34,13 +35,12 @@ and guard =
 and instr = instr' phrase
 and instr' =
   | IfI of exp * iterexp list * block * phantom option
-  | IfHoldI of id * notexp * iterexp list * block * phantom option
-  | IfNotHoldI of id * notexp * iterexp list * block * phantom option
+  | RelAssertI of { call : relcall; expect : bool; iterexps : iterexp list; block : block; phantom : phantom option }
   | CaseI of exp * case list * phantom option
   | OtherwiseI of block
   | TryI of block list
   | LetI of exp * exp * iterexp list
-  | RuleI of id * notexp * iterexp list
+  | RelI of { call : relcall; iterexps : iterexp list }
   | ResultI of exp list
   | ReturnI of exp
   | DebugI of exp

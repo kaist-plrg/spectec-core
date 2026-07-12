@@ -63,8 +63,7 @@ let rec negate_pathcond (pathcond : pathcond) : pathcond =
   | ForallC (pathcond, iterexps) -> ExistsC (negate_pathcond pathcond, iterexps)
   | ExistsC (pathcond, iterexps) -> ForallC (negate_pathcond pathcond, iterexps)
   | PlainC exp_cond -> PlainC (negate_exp exp_cond)
-  | HoldC (id, notexp) -> NotHoldC (id, notexp)
-  | NotHoldC (id, notexp) -> HoldC (id, notexp)
+  | RelAssertC { call; expect } -> RelAssertC { call; expect = not expect }
 
 (* Phantom insertion *)
 
@@ -91,36 +90,22 @@ and insert_phantom' (tdenv : TDEnv.t) (pathconds : pathcond list)
         (pid, pathconds)
       in
       Sl.IfI (exp_cond, iterexps, instrs_then, Some phantom) $ at
-  | IfHoldI (id, notexp, iterexps, instrs_then) ->
+  | RelAssertI { call; expect; iterexps; block } ->
       let pathcond =
-        if iterexps = [] then HoldC (id, notexp)
-        else ForallC (HoldC (id, notexp), iterexps)
+        if iterexps = [] then RelAssertC { call; expect }
+        else ForallC (RelAssertC { call; expect }, iterexps)
       in
-      let instrs_then =
+      let block =
         let pathconds = pathconds @ [ pathcond ] in
-        insert_phantom tdenv pathconds instrs_then
+        insert_phantom tdenv pathconds block
       in
       let phantom =
         let pid = pid () in
         let pathconds = pathconds @ [ negate_pathcond pathcond ] in
         (pid, pathconds)
       in
-      Sl.IfHoldI (id, notexp, iterexps, instrs_then, Some phantom) $ at
-  | IfNotHoldI (id, notexp, iterexps, instrs_then) ->
-      let pathcond =
-        if iterexps = [] then NotHoldC (id, notexp)
-        else ForallC (NotHoldC (id, notexp), iterexps)
-      in
-      let instrs_then =
-        let pathconds = pathconds @ [ pathcond ] in
-        insert_phantom tdenv pathconds instrs_then
-      in
-      let phantom =
-        let pid = pid () in
-        let pathconds = pathconds @ [ negate_pathcond pathcond ] in
-        (pid, pathconds)
-      in
-      Sl.IfNotHoldI (id, notexp, iterexps, instrs_then, Some phantom) $ at
+      Sl.RelAssertI { call; expect; iterexps; block; phantom = Some phantom }
+      $ at
   | CaseI (exp, cases, total) ->
       let pathconds_cases =
         List.map
@@ -164,9 +149,9 @@ and insert_phantom' (tdenv : TDEnv.t) (pathconds : pathcond list)
   | LetI (exp_l, exp_r, iterexps, block) ->
       let block = insert_phantom tdenv pathconds block in
       Sl.LetI (exp_l, exp_r, iterexps, block) $ at
-  | RuleI (id, notexp, iterexps, block) ->
+  | RelI { call; iterexps; block } ->
       let block = insert_phantom tdenv pathconds block in
-      Sl.RuleI (id, notexp, iterexps, block) $ at
+      Sl.RelI { call; iterexps; block } $ at
   | ResultI exps -> Sl.ResultI exps $ at
   | ReturnI exp -> Sl.ReturnI exp $ at
   | DebugI (exp, instr_body) ->
@@ -184,12 +169,9 @@ and insert_nothing' (instr : instr) : Sl.instr =
   | IfI (exp_cond, iterexps, instrs_then) ->
       let instrs_then = insert_nothing instrs_then in
       Sl.IfI (exp_cond, iterexps, instrs_then, None) $ at
-  | IfHoldI (id, notexp, iterexps, instrs_then) ->
-      let instrs_then = insert_nothing instrs_then in
-      Sl.IfHoldI (id, notexp, iterexps, instrs_then, None) $ at
-  | IfNotHoldI (id, notexp, iterexps, instrs_then) ->
-      let instrs_then = insert_nothing instrs_then in
-      Sl.IfNotHoldI (id, notexp, iterexps, instrs_then, None) $ at
+  | RelAssertI { call; expect; iterexps; block } ->
+      let block = insert_nothing block in
+      Sl.RelAssertI { call; expect; iterexps; block; phantom = None } $ at
   | CaseI (exp, cases, _total) ->
       let cases =
         let guards, blocks = List.split cases in
@@ -213,9 +195,9 @@ and insert_nothing' (instr : instr) : Sl.instr =
   | LetI (exp_l, exp_r, iterexps, block) ->
       let block = insert_nothing block in
       Sl.LetI (exp_l, exp_r, iterexps, block) $ at
-  | RuleI (id, notexp, iterexps, block) ->
+  | RelI { call; iterexps; block } ->
       let block = insert_nothing block in
-      Sl.RuleI (id, notexp, iterexps, block) $ at
+      Sl.RelI { call; iterexps; block } $ at
   | ResultI exps -> Sl.ResultI exps $ at
   | ReturnI exp -> Sl.ReturnI exp $ at
   | DebugI (exp, instr_body) ->

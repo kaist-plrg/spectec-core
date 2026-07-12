@@ -189,12 +189,10 @@ and string_of_pathcond pathcond =
         (string_of_pathcond pathcond)
         (string_of_iterexps iterexps)
   | PlainC exp -> "(" ^ string_of_exp exp ^ ")"
-  | HoldC (relid, notexp) ->
-      Format.asprintf "(%s: %s holds)" (string_of_relid relid)
+  | RelAssertC { call = { relid; notexp }; expect } ->
+      Format.asprintf "(%s: %s %s)" (string_of_relid relid)
         (string_of_notexp notexp)
-  | NotHoldC (relid, notexp) ->
-      Format.asprintf "(%s: %s does not hold)" (string_of_relid relid)
-        (string_of_notexp notexp)
+        (if expect then "holds" else "does not hold")
 
 and string_of_pathconds pathconds =
   List.map string_of_pathcond pathconds |> String.concat " /\\ "
@@ -239,26 +237,30 @@ and string_of_instr ?(level = 0) ?(index = 0) instr =
         (string_of_instrs ~level:(level + 1) instrs_then)
         order
         (string_of_phantom phantom)
-  | IfHoldI (id_rel, notexp, iterexps, instrs_then, None) ->
-      Format.asprintf "%sIf (%s: %s holds)%s, then\n\n%s" order
-        (string_of_relid id_rel) (string_of_notexp notexp)
+  | RelAssertI
+      {
+        call = { relid; notexp };
+        expect;
+        iterexps;
+        block = instrs_then;
+        phantom = None;
+      } ->
+      Format.asprintf "%sIf (%s: %s %s)%s, then\n\n%s" order
+        (string_of_relid relid) (string_of_notexp notexp)
+        (if expect then "holds" else "does not hold")
         (string_of_iterexps iterexps)
         (string_of_instrs ~level:(level + 1) instrs_then)
-  | IfHoldI (id_rel, notexp, iterexps, instrs_then, Some phantom) ->
-      Format.asprintf "%sIf (%s: %s holds)%s, then\n\n%s\n\n%sElse %s" order
-        (string_of_relid id_rel) (string_of_notexp notexp)
-        (string_of_iterexps iterexps)
-        (string_of_instrs ~level:(level + 1) instrs_then)
-        order
-        (string_of_phantom phantom)
-  | IfNotHoldI (id_rel, notexp, iterexps, instrs_then, None) ->
-      Format.asprintf "%sIf (%s: %s does not hold)%s, then\n\n%s" order
-        (string_of_relid id_rel) (string_of_notexp notexp)
-        (string_of_iterexps iterexps)
-        (string_of_instrs ~level:(level + 1) instrs_then)
-  | IfNotHoldI (id_rel, notexp, iterexps, instrs_then, Some phantom) ->
-      Format.asprintf "%sIf (%s: %s does not hold)%s, then\n\n%s\n\n%sElse %s"
-        order (string_of_relid id_rel) (string_of_notexp notexp)
+  | RelAssertI
+      {
+        call = { relid; notexp };
+        expect;
+        iterexps;
+        block = instrs_then;
+        phantom = Some phantom;
+      } ->
+      Format.asprintf "%sIf (%s: %s %s)%s, then\n\n%s\n\n%sElse %s" order
+        (string_of_relid relid) (string_of_notexp notexp)
+        (if expect then "holds" else "does not hold")
         (string_of_iterexps iterexps)
         (string_of_instrs ~level:(level + 1) instrs_then)
         order
@@ -280,8 +282,8 @@ and string_of_instr ?(level = 0) ?(index = 0) instr =
         (string_of_exp exp_r)
         (string_of_iterexps iterexps)
         (fst (string_of_instrs_from ~level ~index:(index + 1) block))
-  | RuleI (id_rel, notexp, iterexps, block) ->
-      Format.asprintf "%s(%s: %s)%s\n\n%s" order (string_of_relid id_rel)
+  | RelI { call = { relid; notexp }; iterexps; block } ->
+      Format.asprintf "%s(%s: %s)%s\n\n%s" order (string_of_relid relid)
         (string_of_notexp notexp)
         (string_of_iterexps iterexps)
         (fst (string_of_instrs_from ~level ~index:(index + 1) block))
@@ -306,9 +308,9 @@ and string_of_instr_with_next ?(level = 0) ~(index : int) instr =
           (string_of_iterexps iterexps)
           block,
         next )
-  | RuleI (id_rel, notexp, iterexps, block) ->
+  | RelI { call = { relid; notexp }; iterexps; block } ->
       let block, next = string_of_instrs_from ~level ~index:(index + 1) block in
-      ( Format.asprintf "%s(%s: %s)%s\n\n%s" order (string_of_relid id_rel)
+      ( Format.asprintf "%s(%s: %s)%s\n\n%s" order (string_of_relid relid)
           (string_of_notexp notexp)
           (string_of_iterexps iterexps)
           block,

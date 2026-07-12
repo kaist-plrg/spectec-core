@@ -466,11 +466,19 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
       in
       if block = [] then check_line
       else check_line ^ "\n" ^ render_instrs ~level block
-  | IfHoldI (id_rel, notexp, iterexps, block, _phantom) ->
+  | RelAssertI
+      {
+        call = { relid = id_rel; notexp };
+        expect;
+        iterexps;
+        block;
+        phantom = _;
+      } ->
       let head =
         let mixop = Mixfix.to_mixop notexp in
         let exps = Mixfix.args notexp in
-        match hints.prose_true with
+        let hint = if expect then hints.prose_true else hints.prose_false in
+        match hint with
         | Some h ->
             render_alter_hint in_link h (reindent_lines ~level:0) render_exp
               exps
@@ -478,24 +486,7 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
         | None ->
             (code_of_notexp in_prose (Mixfix.fill mixop exps)
             |> adoc_as_link in_prose ~link:(string_of_relid id_rel))
-            ^ " holds"
-      in
-      F.asprintf "%sIf %s%s:%s" bullet head
-        (render_iterexp_suffix in_prose iterexps)
-        (render_instrs ~level:(level + 1) block)
-  | IfNotHoldI (id_rel, notexp, iterexps, block, _phantom) ->
-      let head =
-        let mixop = Mixfix.to_mixop notexp in
-        let exps = Mixfix.args notexp in
-        match hints.prose_false with
-        | Some h ->
-            render_alter_hint in_link h (reindent_lines ~level:0) render_exp
-              exps
-            |> adoc_as_link in_prose ~link:(string_of_relid id_rel)
-        | None ->
-            (code_of_notexp in_prose (Mixfix.fill mixop exps)
-            |> adoc_as_link in_prose ~link:(string_of_relid id_rel))
-            ^ " does not hold"
+            ^ if expect then " holds" else " does not hold"
       in
       F.asprintf "%sIf %s%s:%s" bullet head
         (render_iterexp_suffix in_prose iterexps)
@@ -532,14 +523,14 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
         (render_exp_as_code in_prose exp_l)
         (render_exp in_prose exp_r)
         (render_iterexp_suffix in_prose iterexps)
-  | RuleI (id_rel, notexp, iterexps) ->
+  | RelI { call = { relid = id_rel; notexp }; iterexps } ->
       let mixop = Mixfix.to_mixop notexp in
       let exps = Mixfix.args notexp in
       let hint_in = hints.prose_in in
       let hint_out = hints.prose_out in
       let inputs = hints.rel_inputs |> Option.value ~default:[] in
       let exps_in, exps_out = Hints.Input.split inputs exps in
-      let rule_body =
+      let rel_body =
         match (hint_in, hint_out, exps_out) with
         | Some h_in, _, [] when hint_out = None ->
             (* Predicate-shaped relation called as a result-less premise. *)
@@ -563,7 +554,7 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
               (code_of_notexp in_prose (Mixfix.fill mixop exps)
               |> adoc_as_link in_prose ~link:(string_of_relid id_rel))
       in
-      F.asprintf "%s%s%s." bullet rule_body
+      F.asprintf "%s%s%s." bullet rel_body
         (render_iterexp_suffix in_prose iterexps)
   | ResultI exps -> (
       match (hints.prose_out, exps) with

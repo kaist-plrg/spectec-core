@@ -106,14 +106,15 @@ type targ' = Il.targ'
 
 and pid = int
 
+and relcall = { relid : id; notexp : notexp }
+
 and phantom = pid * pathcond list
 
 and pathcond =
   | ForallC of pathcond * iterexp list
   | ExistsC of pathcond * iterexp list
   | PlainC of exp
-  | HoldC of id * notexp
-  | NotHoldC of id * notexp
+  | RelAssertC of { call : relcall; expect : bool }
 
 (* Case analysis *)
 
@@ -131,12 +132,17 @@ and guard =
 and instr = instr' phrase
 and instr' =
   | IfI of exp * iterexp list * instr list * phantom option
-  | IfHoldI of id * notexp * iterexp list * instr list * phantom option
-  | IfNotHoldI of id * notexp * iterexp list * instr list * phantom option
+  | RelAssertI of {
+      call : relcall;
+      expect : bool;
+      iterexps : iterexp list;
+      block : instr list;
+      phantom : phantom option;
+    }
   | CaseI of exp * case list * phantom option
   | OtherwiseI of instr
   | LetI of exp * exp * iterexp list * instr list
-  | RuleI of id * notexp * iterexp list * instr list
+  | RelI of { call : relcall; iterexps : iterexp list; block : instr list }
   | ResultI of exp list
   | ReturnI of exp
   | DebugI of exp * instr

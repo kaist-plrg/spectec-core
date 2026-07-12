@@ -51,6 +51,12 @@ let eq_iterexp (iterexp_a : iterexp) (iterexp_b : iterexp) : bool =
 let eq_iterexps (iterexps_a : iterexp list) (iterexps_b : iterexp list) : bool =
   Il.Eq.eq_iterexps iterexps_a iterexps_b
 
+(* Relation calls *)
+
+let eq_relcall (call_a : relcall) (call_b : relcall) : bool =
+  eq_id call_a.relid call_b.relid
+  && Il.Mixfix.eq ~eq_arg:eq_exp call_a.notexp call_b.notexp
+
 (* Patterns *)
 
 let eq_pattern (pattern_a : pattern) (pattern_b : pattern) : bool =
@@ -95,10 +101,9 @@ and eq_pathcond (pathcond_a : pathcond) (pathcond_b : pathcond) : bool =
   | ExistsC (pathcond_a, iterexps_a), ExistsC (pathcond_b, iterexps_b) ->
       eq_pathcond pathcond_a pathcond_b && eq_iterexps iterexps_a iterexps_b
   | PlainC exp_a, PlainC exp_b -> eq_exp exp_a exp_b
-  | HoldC (id_a, ne_a), HoldC (id_b, ne_b) ->
-      eq_id id_a id_b && Il.Mixfix.eq ~eq_arg:eq_exp ne_a ne_b
-  | NotHoldC (id_a, ne_a), NotHoldC (id_b, ne_b) ->
-      eq_id id_a id_b && Il.Mixfix.eq ~eq_arg:eq_exp ne_a ne_b
+  | ( RelAssertC { call = call_a; expect = expect_a },
+      RelAssertC { call = call_b; expect = expect_b } ) ->
+      eq_relcall call_a call_b && Bool.equal expect_a expect_b
   | _ -> false
 
 and eq_pathconds (pathconds_a : pathcond list) (pathconds_b : pathcond list) :
@@ -136,20 +141,27 @@ and eq_instr (instr_a : instr) (instr_b : instr) : bool =
       && eq_iterexps iterexps_a iterexps_b
       && eq_instrs instrs_then_a instrs_then_b
       && eq_phantom_opt phantom_opt_a phantom_opt_b
-  | ( IfHoldI (id_a, ne_a, iterexps_a, instrs_then_a, phantom_opt_a),
-      IfHoldI (id_b, ne_b, iterexps_b, instrs_then_b, phantom_opt_b) ) ->
-      eq_id id_a id_b
-      && Il.Mixfix.eq ~eq_arg:eq_exp ne_a ne_b
+  | ( RelAssertI
+        {
+          call = call_a;
+          expect = expect_a;
+          iterexps = iterexps_a;
+          block = block_a;
+          phantom = phantom_a;
+        },
+      RelAssertI
+        {
+          call = call_b;
+          expect = expect_b;
+          iterexps = iterexps_b;
+          block = block_b;
+          phantom = phantom_b;
+        } ) ->
+      eq_relcall call_a call_b
+      && Bool.equal expect_a expect_b
       && eq_iterexps iterexps_a iterexps_b
-      && eq_instrs instrs_then_a instrs_then_b
-      && eq_phantom_opt phantom_opt_a phantom_opt_b
-  | ( IfNotHoldI (id_a, ne_a, iterexps_a, instrs_then_a, phantom_opt_a),
-      IfNotHoldI (id_b, ne_b, iterexps_b, instrs_then_b, phantom_opt_b) ) ->
-      eq_id id_a id_b
-      && Il.Mixfix.eq ~eq_arg:eq_exp ne_a ne_b
-      && eq_iterexps iterexps_a iterexps_b
-      && eq_instrs instrs_then_a instrs_then_b
-      && eq_phantom_opt phantom_opt_a phantom_opt_b
+      && eq_instrs block_a block_b
+      && eq_phantom_opt phantom_a phantom_b
   | CaseI (exp_a, cases_a, phantom_opt_a), CaseI (exp_b, cases_b, phantom_opt_b)
     ->
       eq_exp exp_a exp_b && eq_cases cases_a cases_b
@@ -160,10 +172,9 @@ and eq_instr (instr_a : instr) (instr_b : instr) : bool =
       eq_exp exp_l_a exp_l_b && eq_exp exp_r_a exp_r_b
       && eq_iterexps iterexps_a iterexps_b
       && eq_instrs block_a block_b
-  | ( RuleI (id_a, ne_a, iterexps_a, block_a),
-      RuleI (id_b, ne_b, iterexps_b, block_b) ) ->
-      eq_id id_a id_b
-      && Il.Mixfix.eq ~eq_arg:eq_exp ne_a ne_b
+  | ( RelI { call = call_a; iterexps = iterexps_a; block = block_a },
+      RelI { call = call_b; iterexps = iterexps_b; block = block_b } ) ->
+      eq_relcall call_a call_b
       && eq_iterexps iterexps_a iterexps_b
       && eq_instrs block_a block_b
   | ResultI exps_a, ResultI exps_b -> eq_exps exps_a exps_b

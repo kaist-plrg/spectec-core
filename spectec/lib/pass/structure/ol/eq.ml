@@ -31,18 +31,24 @@ and eq_instr (instr_a : instr) (instr_b : instr) : bool =
       Sl.Eq.eq_exp exp_cond_a exp_cond_b
       && Sl.Eq.eq_iterexps iterexps_a iterexps_b
       && eq_instrs instrs_then_a instrs_then_b
-  | ( IfHoldI (id_a, notexp_a, iterexps_a, instrs_then_a),
-      IfHoldI (id_b, notexp_b, iterexps_b, instrs_then_b) ) ->
-      Sl.Eq.eq_id id_a id_b
-      && Il.Mixfix.eq ~eq_arg:Sl.Eq.eq_exp notexp_a notexp_b
+  | ( RelAssertI
+        {
+          call = call_a;
+          expect = expect_a;
+          iterexps = iterexps_a;
+          block = block_a;
+        },
+      RelAssertI
+        {
+          call = call_b;
+          expect = expect_b;
+          iterexps = iterexps_b;
+          block = block_b;
+        } ) ->
+      Sl.Eq.eq_relcall call_a call_b
+      && Bool.equal expect_a expect_b
       && Sl.Eq.eq_iterexps iterexps_a iterexps_b
-      && eq_instrs instrs_then_a instrs_then_b
-  | ( IfNotHoldI (id_a, notexp_a, iterexps_a, instrs_then_a),
-      IfNotHoldI (id_b, notexp_b, iterexps_b, instrs_then_b) ) ->
-      Sl.Eq.eq_id id_a id_b
-      && Il.Mixfix.eq ~eq_arg:Sl.Eq.eq_exp notexp_a notexp_b
-      && Sl.Eq.eq_iterexps iterexps_a iterexps_b
-      && eq_instrs instrs_then_a instrs_then_b
+      && eq_instrs block_a block_b
   | CaseI (exp_a, cases_a, total_a), CaseI (exp_b, cases_b, total_b) ->
       Sl.Eq.eq_exp exp_a exp_b && eq_cases cases_a cases_b && total_a = total_b
   | OtherwiseI instr_a, OtherwiseI instr_b -> eq_instr instr_a instr_b
@@ -52,10 +58,9 @@ and eq_instr (instr_a : instr) (instr_b : instr) : bool =
       && Sl.Eq.eq_exp exp_r_a exp_r_b
       && Sl.Eq.eq_iterexps iterexps_a iterexps_b
       && eq_instrs block_a block_b
-  | ( RuleI (id_a, notexp_a, iterexps_a, block_a),
-      RuleI (id_b, notexp_b, iterexps_b, block_b) ) ->
-      Sl.Eq.eq_id id_a id_b
-      && Il.Mixfix.eq ~eq_arg:Sl.Eq.eq_exp notexp_a notexp_b
+  | ( RelI { call = call_a; iterexps = iterexps_a; block = block_a },
+      RelI { call = call_b; iterexps = iterexps_b; block = block_b } ) ->
+      Sl.Eq.eq_relcall call_a call_b
       && Sl.Eq.eq_iterexps iterexps_a iterexps_b
       && eq_instrs block_a block_b
   | ResultI exps_a, ResultI exps_b -> Sl.Eq.eq_exps exps_a exps_b
