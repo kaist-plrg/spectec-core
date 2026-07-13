@@ -158,11 +158,11 @@ and rename_guard (rename : t) (guard : guard) : guard =
 and rename_instr (rename : t) (instr : instr) : instr =
   let at = instr.at in
   match instr.it with
-  | IfI (exp_cond, iterexps, instrs_then) ->
-      let exp_cond = rename_exp rename exp_cond in
+  | RelI { call; iterexps; block } ->
+      let notexp = Il.Mixfix.map (rename_exp rename) call.notexp in
       let iterexps = List.map (rename_iterexp rename) iterexps in
-      let instrs_then = List.map (rename_instr rename) instrs_then in
-      IfI (exp_cond, iterexps, instrs_then) $ at
+      let block = List.map (rename_instr rename) block in
+      RelI { call = { relid = call.relid; notexp }; iterexps; block } $ at
   | RelAssertI { call; expect; iterexps; block } ->
       let notexp = Il.Mixfix.map (rename_exp rename) call.notexp in
       let iterexps = List.map (rename_iterexp rename) iterexps in
@@ -170,6 +170,11 @@ and rename_instr (rename : t) (instr : instr) : instr =
       RelAssertI
         { call = { relid = call.relid; notexp }; expect; iterexps; block }
       $ at
+  | IfI (exp_cond, iterexps, instrs_then) ->
+      let exp_cond = rename_exp rename exp_cond in
+      let iterexps = List.map (rename_iterexp rename) iterexps in
+      let instrs_then = List.map (rename_instr rename) instrs_then in
+      IfI (exp_cond, iterexps, instrs_then) $ at
   | CaseI (exp, cases, total) ->
       let exp = rename_exp rename exp in
       let cases = List.map (rename_case rename) cases in
@@ -183,11 +188,6 @@ and rename_instr (rename : t) (instr : instr) : instr =
       let iterexps = List.map (rename_iterexp rename) iterexps in
       let block = List.map (rename_instr rename) block in
       LetI (exp_l, exp_r, iterexps, block) $ at
-  | RelI { call; iterexps; block } ->
-      let notexp = Il.Mixfix.map (rename_exp rename) call.notexp in
-      let iterexps = List.map (rename_iterexp rename) iterexps in
-      let block = List.map (rename_instr rename) block in
-      RelI { call = { relid = call.relid; notexp }; iterexps; block } $ at
   | ResultI exps ->
       let exps = List.map (rename_exp rename) exps in
       ResultI exps $ at

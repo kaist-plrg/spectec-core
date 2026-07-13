@@ -459,70 +459,6 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
   in
   let hints = instr.hints in
   match instr.node.it with
-  | IfI (cond, iterexps, block, _phantom) ->
-      let check_line =
-        F.asprintf "%sCheck that %s%s." bullet (render_exp in_prose cond)
-          (render_iterexp_suffix in_prose iterexps)
-      in
-      if block = [] then check_line
-      else check_line ^ "\n" ^ render_instrs ~level block
-  | RelAssertI
-      {
-        call = { relid = id_rel; notexp };
-        expect;
-        iterexps;
-        block;
-        phantom = _;
-      } ->
-      let head =
-        let mixop = Mixfix.to_mixop notexp in
-        let exps = Mixfix.args notexp in
-        let hint = if expect then hints.prose_true else hints.prose_false in
-        match hint with
-        | Some h ->
-            render_alter_hint in_link h (reindent_lines ~level:0) render_exp
-              exps
-            |> adoc_as_link in_prose ~link:(string_of_relid id_rel)
-        | None ->
-            (code_of_notexp in_prose (Mixfix.fill mixop exps)
-            |> adoc_as_link in_prose ~link:(string_of_relid id_rel))
-            ^ if expect then " holds" else " does not hold"
-      in
-      F.asprintf "%sIf %s%s:%s" bullet head
-        (render_iterexp_suffix in_prose iterexps)
-        (render_instrs ~level:(level + 1) block)
-  | CaseI (exp_scrut, cases, _phantom) -> (
-      match cases with
-      | [ (guard, arm_body) ] ->
-          F.asprintf "%sCheck that %s:%s" bullet
-            (render_guard in_prose exp_scrut guard)
-            (render_instrs ~level:(level + 1) arm_body)
-      | _ ->
-          let render_arm idx ((guard, arm_body) : case) =
-            let kw = if idx = 0 then "If" else "Else if" in
-            F.asprintf "%s%s %s:%s" bullet kw
-              (render_guard in_prose exp_scrut guard)
-              (render_instrs ~level:(level + 1) arm_body)
-          in
-          String.concat "\n" (List.mapi render_arm cases))
-  | OtherwiseI inner ->
-      F.asprintf "%sOtherwise:\n%s" bullet
-        (render_instr ~level:(level + 1) inner)
-  | TryI arms ->
-      let arm_level = level + 1 in
-      let body_level = level + 2 in
-      let render_arm arm =
-        F.asprintf "%s{empty}%s"
-          (adoc_ordered_bullet arm_level)
-          (render_instrs ~level:body_level arm)
-      in
-      F.asprintf "%sTry:\n%s" bullet
-        (String.concat "\n" (List.map render_arm arms))
-  | LetI (exp_l, exp_r, iterexps) ->
-      F.asprintf "%sLet %s be %s%s." bullet
-        (render_exp_as_code in_prose exp_l)
-        (render_exp in_prose exp_r)
-        (render_iterexp_suffix in_prose iterexps)
   | RelI { call = { relid = id_rel; notexp }; iterexps } ->
       let mixop = Mixfix.to_mixop notexp in
       let exps = Mixfix.args notexp in
@@ -555,6 +491,70 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
               |> adoc_as_link in_prose ~link:(string_of_relid id_rel))
       in
       F.asprintf "%s%s%s." bullet rel_body
+        (render_iterexp_suffix in_prose iterexps)
+  | RelAssertI
+      {
+        call = { relid = id_rel; notexp };
+        expect;
+        iterexps;
+        block;
+        phantom = _;
+      } ->
+      let head =
+        let mixop = Mixfix.to_mixop notexp in
+        let exps = Mixfix.args notexp in
+        let hint = if expect then hints.prose_true else hints.prose_false in
+        match hint with
+        | Some h ->
+            render_alter_hint in_link h (reindent_lines ~level:0) render_exp
+              exps
+            |> adoc_as_link in_prose ~link:(string_of_relid id_rel)
+        | None ->
+            (code_of_notexp in_prose (Mixfix.fill mixop exps)
+            |> adoc_as_link in_prose ~link:(string_of_relid id_rel))
+            ^ if expect then " holds" else " does not hold"
+      in
+      F.asprintf "%sIf %s%s:%s" bullet head
+        (render_iterexp_suffix in_prose iterexps)
+        (render_instrs ~level:(level + 1) block)
+  | IfI (cond, iterexps, block, _phantom) ->
+      let check_line =
+        F.asprintf "%sCheck that %s%s." bullet (render_exp in_prose cond)
+          (render_iterexp_suffix in_prose iterexps)
+      in
+      if block = [] then check_line
+      else check_line ^ "\n" ^ render_instrs ~level block
+  | CaseI (exp_scrut, cases, _phantom) -> (
+      match cases with
+      | [ (guard, arm_body) ] ->
+          F.asprintf "%sCheck that %s:%s" bullet
+            (render_guard in_prose exp_scrut guard)
+            (render_instrs ~level:(level + 1) arm_body)
+      | _ ->
+          let render_arm idx ((guard, arm_body) : case) =
+            let kw = if idx = 0 then "If" else "Else if" in
+            F.asprintf "%s%s %s:%s" bullet kw
+              (render_guard in_prose exp_scrut guard)
+              (render_instrs ~level:(level + 1) arm_body)
+          in
+          String.concat "\n" (List.mapi render_arm cases))
+  | OtherwiseI inner ->
+      F.asprintf "%sOtherwise:\n%s" bullet
+        (render_instr ~level:(level + 1) inner)
+  | TryI arms ->
+      let arm_level = level + 1 in
+      let body_level = level + 2 in
+      let render_arm arm =
+        F.asprintf "%s{empty}%s"
+          (adoc_ordered_bullet arm_level)
+          (render_instrs ~level:body_level arm)
+      in
+      F.asprintf "%sTry:\n%s" bullet
+        (String.concat "\n" (List.map render_arm arms))
+  | LetI (exp_l, exp_r, iterexps) ->
+      F.asprintf "%sLet %s be %s%s." bullet
+        (render_exp_as_code in_prose exp_l)
+        (render_exp in_prose exp_r)
         (render_iterexp_suffix in_prose iterexps)
   | ResultI exps -> (
       match (hints.prose_out, exps) with

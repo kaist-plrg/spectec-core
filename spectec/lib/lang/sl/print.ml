@@ -226,17 +226,11 @@ and string_of_instr ?(level = 0) ?(index = 0) instr =
   let indent = String.make (level * 2) ' ' in
   let order = Format.asprintf "%s%d. " indent index in
   match instr.it with
-  | IfI (exp_cond, iterexps, instrs_then, None) ->
-      Format.asprintf "%sIf (%s)%s, then\n\n%s" order (string_of_exp exp_cond)
+  | RelI { call = { relid; notexp }; iterexps; block } ->
+      Format.asprintf "%s(%s: %s)%s\n\n%s" order (string_of_relid relid)
+        (string_of_notexp notexp)
         (string_of_iterexps iterexps)
-        (string_of_instrs ~level:(level + 1) instrs_then)
-  | IfI (exp_cond, iterexps, instrs_then, Some phantom) ->
-      Format.asprintf "%sIf (%s)%s, then\n\n%s\n\n%sElse %s" order
-        (string_of_exp exp_cond)
-        (string_of_iterexps iterexps)
-        (string_of_instrs ~level:(level + 1) instrs_then)
-        order
-        (string_of_phantom phantom)
+        (fst (string_of_instrs_from ~level ~index:(index + 1) block))
   | RelAssertI
       {
         call = { relid; notexp };
@@ -265,6 +259,17 @@ and string_of_instr ?(level = 0) ?(index = 0) instr =
         (string_of_instrs ~level:(level + 1) instrs_then)
         order
         (string_of_phantom phantom)
+  | IfI (exp_cond, iterexps, instrs_then, None) ->
+      Format.asprintf "%sIf (%s)%s, then\n\n%s" order (string_of_exp exp_cond)
+        (string_of_iterexps iterexps)
+        (string_of_instrs ~level:(level + 1) instrs_then)
+  | IfI (exp_cond, iterexps, instrs_then, Some phantom) ->
+      Format.asprintf "%sIf (%s)%s, then\n\n%s\n\n%sElse %s" order
+        (string_of_exp exp_cond)
+        (string_of_iterexps iterexps)
+        (string_of_instrs ~level:(level + 1) instrs_then)
+        order
+        (string_of_phantom phantom)
   | CaseI (exp, cases, None) ->
       Format.asprintf "%sCase analysis on %s\n\n%s" order (string_of_exp exp)
         (string_of_cases ~level:(level + 1) cases)
@@ -280,11 +285,6 @@ and string_of_instr ?(level = 0) ?(index = 0) instr =
   | LetI (exp_l, exp_r, iterexps, block) ->
       Format.asprintf "%s(Let %s be %s)%s\n\n%s" order (string_of_exp exp_l)
         (string_of_exp exp_r)
-        (string_of_iterexps iterexps)
-        (fst (string_of_instrs_from ~level ~index:(index + 1) block))
-  | RelI { call = { relid; notexp }; iterexps; block } ->
-      Format.asprintf "%s(%s: %s)%s\n\n%s" order (string_of_relid relid)
-        (string_of_notexp notexp)
         (string_of_iterexps iterexps)
         (fst (string_of_instrs_from ~level ~index:(index + 1) block))
   | ResultI [] -> Format.asprintf "%sThe relation holds" order

@@ -75,21 +75,9 @@ and insert_phantom' (tdenv : TDEnv.t) (pathconds : pathcond list)
     (instr : instr) : Sl.instr =
   let at = instr.at in
   match instr.it with
-  | IfI (exp_cond, iterexps, instrs_then) ->
-      let pathcond =
-        if iterexps = [] then PlainC exp_cond
-        else ForallC (PlainC exp_cond, iterexps)
-      in
-      let instrs_then =
-        let pathconds = pathconds @ [ pathcond ] in
-        insert_phantom tdenv pathconds instrs_then
-      in
-      let phantom =
-        let pid = pid () in
-        let pathconds = pathconds @ [ negate_pathcond pathcond ] in
-        (pid, pathconds)
-      in
-      Sl.IfI (exp_cond, iterexps, instrs_then, Some phantom) $ at
+  | RelI { call; iterexps; block } ->
+      let block = insert_phantom tdenv pathconds block in
+      Sl.RelI { call; iterexps; block } $ at
   | RelAssertI { call; expect; iterexps; block } ->
       let pathcond =
         if iterexps = [] then RelAssertC { call; expect }
@@ -106,6 +94,21 @@ and insert_phantom' (tdenv : TDEnv.t) (pathconds : pathcond list)
       in
       Sl.RelAssertI { call; expect; iterexps; block; phantom = Some phantom }
       $ at
+  | IfI (exp_cond, iterexps, instrs_then) ->
+      let pathcond =
+        if iterexps = [] then PlainC exp_cond
+        else ForallC (PlainC exp_cond, iterexps)
+      in
+      let instrs_then =
+        let pathconds = pathconds @ [ pathcond ] in
+        insert_phantom tdenv pathconds instrs_then
+      in
+      let phantom =
+        let pid = pid () in
+        let pathconds = pathconds @ [ negate_pathcond pathcond ] in
+        (pid, pathconds)
+      in
+      Sl.IfI (exp_cond, iterexps, instrs_then, Some phantom) $ at
   | CaseI (exp, cases, total) ->
       let pathconds_cases =
         List.map
@@ -149,9 +152,6 @@ and insert_phantom' (tdenv : TDEnv.t) (pathconds : pathcond list)
   | LetI (exp_l, exp_r, iterexps, block) ->
       let block = insert_phantom tdenv pathconds block in
       Sl.LetI (exp_l, exp_r, iterexps, block) $ at
-  | RelI { call; iterexps; block } ->
-      let block = insert_phantom tdenv pathconds block in
-      Sl.RelI { call; iterexps; block } $ at
   | ResultI exps -> Sl.ResultI exps $ at
   | ReturnI exp -> Sl.ReturnI exp $ at
   | DebugI (exp, instr_body) ->
@@ -166,12 +166,15 @@ let rec insert_nothing (instrs : instr list) : Sl.instr list =
 and insert_nothing' (instr : instr) : Sl.instr =
   let at = instr.at in
   match instr.it with
-  | IfI (exp_cond, iterexps, instrs_then) ->
-      let instrs_then = insert_nothing instrs_then in
-      Sl.IfI (exp_cond, iterexps, instrs_then, None) $ at
+  | RelI { call; iterexps; block } ->
+      let block = insert_nothing block in
+      Sl.RelI { call; iterexps; block } $ at
   | RelAssertI { call; expect; iterexps; block } ->
       let block = insert_nothing block in
       Sl.RelAssertI { call; expect; iterexps; block; phantom = None } $ at
+  | IfI (exp_cond, iterexps, instrs_then) ->
+      let instrs_then = insert_nothing instrs_then in
+      Sl.IfI (exp_cond, iterexps, instrs_then, None) $ at
   | CaseI (exp, cases, _total) ->
       let cases =
         let guards, blocks = List.split cases in
@@ -195,9 +198,6 @@ and insert_nothing' (instr : instr) : Sl.instr =
   | LetI (exp_l, exp_r, iterexps, block) ->
       let block = insert_nothing block in
       Sl.LetI (exp_l, exp_r, iterexps, block) $ at
-  | RelI { call; iterexps; block } ->
-      let block = insert_nothing block in
-      Sl.RelI { call; iterexps; block } $ at
   | ResultI exps -> Sl.ResultI exps $ at
   | ReturnI exp -> Sl.ReturnI exp $ at
   | DebugI (exp, instr_body) ->

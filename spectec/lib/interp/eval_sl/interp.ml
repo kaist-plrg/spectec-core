@@ -910,16 +910,16 @@ and eval_instr (ctx : Ctx.t) (instr : instr) : Ctx.t * Sign.t =
     ctx
   in
   match instr.it with
-  | IfI (exp_cond, iterexps, instrs_then, _phantom_opt) ->
-      eval_if_instr ctx exp_cond iterexps instrs_then
+  | RelI { call; iterexps; block } ->
+      eval_rel_instr ctx call.relid call.notexp iterexps block
   | RelAssertI { call; expect; iterexps; block; phantom = _ } ->
       eval_rel_assert_instr ctx call.relid call.notexp expect iterexps block
+  | IfI (exp_cond, iterexps, instrs_then, _phantom_opt) ->
+      eval_if_instr ctx exp_cond iterexps instrs_then
   | CaseI (exp, cases, _phantom_opt) -> eval_case_instr ctx exp cases
   | OtherwiseI instr -> eval_instr ctx instr
   | LetI (exp_l, exp_r, iterexps, block) ->
       eval_let_instr ctx exp_l exp_r iterexps block
-  | RelI { call; iterexps; block } ->
-      eval_rel_instr ctx call.relid call.notexp iterexps block
   | ResultI exps -> eval_result_instr ctx exps
   | ReturnI exp -> eval_return_instr ctx exp
   | DebugI (exp, instr_body) ->

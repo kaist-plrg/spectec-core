@@ -36,15 +36,20 @@ end
 (* Get short header for instruction (without recursive children) *)
 let instr_header instr =
   match instr.it with
-  | Sl.IfI (exp, iterexps, _, _) ->
-      Format.sprintf "If (%s)%s"
-        (Sl.Print.string_of_exp exp)
+  | Sl.RelI { call; iterexps; _ } ->
+      Format.sprintf "%s: %s%s"
+        (Sl.Print.string_of_relid call.relid)
+        (Sl.Print.string_of_notexp call.notexp)
         (Sl.Print.string_of_iterexps iterexps)
   | Sl.RelAssertI { call; expect; iterexps; _ } ->
       Format.sprintf "If (%s: %s %s)%s"
         (Sl.Print.string_of_relid call.relid)
         (Sl.Print.string_of_notexp call.notexp)
         (if expect then "holds" else "does not hold")
+        (Sl.Print.string_of_iterexps iterexps)
+  | Sl.IfI (exp, iterexps, _, _) ->
+      Format.sprintf "If (%s)%s"
+        (Sl.Print.string_of_exp exp)
         (Sl.Print.string_of_iterexps iterexps)
   | Sl.CaseI (exp, _, _) ->
       Format.sprintf "Case on %s" (Sl.Print.string_of_exp exp)
@@ -53,11 +58,6 @@ let instr_header instr =
       Format.sprintf "Let %s = %s%s"
         (Sl.Print.string_of_exp exp_l)
         (Sl.Print.string_of_exp exp_r)
-        (Sl.Print.string_of_iterexps iterexps)
-  | Sl.RelI { call; iterexps; _ } ->
-      Format.sprintf "%s: %s%s"
-        (Sl.Print.string_of_relid call.relid)
-        (Sl.Print.string_of_notexp call.notexp)
         (Sl.Print.string_of_iterexps iterexps)
   | Sl.ResultI [] -> "Relation holds"
   | Sl.ResultI exps ->
@@ -77,13 +77,13 @@ module M : Instrumentation_api.Handler.S = struct
   let rec count_instr instr =
     State.total_instrs := !State.total_instrs + 1;
     match instr.it with
-    | Sl.IfI (_, _, instrs, _) -> List.iter count_instr instrs
+    | Sl.RelI { block; _ } -> List.iter count_instr block
     | Sl.RelAssertI { block; _ } -> List.iter count_instr block
+    | Sl.IfI (_, _, instrs, _) -> List.iter count_instr instrs
     | Sl.CaseI (_, cases, _) ->
         List.iter (fun (_, instrs) -> List.iter count_instr instrs) cases
     | Sl.OtherwiseI inner -> count_instr inner
     | Sl.LetI (_, _, _, block) -> List.iter count_instr block
-    | Sl.RelI { block; _ } -> List.iter count_instr block
     | _ -> ()
 
   let init ~spec =
@@ -170,9 +170,10 @@ module M : Instrumentation_api.Handler.S = struct
     let content = instr_header instr |> summarize ~max_len in
     Format.fprintf !fmt "%5s %s%s\n" count indent content;
     match instr.it with
-    | Sl.IfI (_, _, instrs, _) -> List.iter (print_instr (indent ^ "  ")) instrs
+    | Sl.RelI { block; _ } -> List.iter (print_instr (indent ^ "  ")) block
     | Sl.RelAssertI { block; _ } ->
         List.iter (print_instr (indent ^ "  ")) block
+    | Sl.IfI (_, _, instrs, _) -> List.iter (print_instr (indent ^ "  ")) instrs
     | Sl.CaseI (_, cases, _) ->
         List.iter
           (fun (guard, instrs) ->
@@ -183,7 +184,6 @@ module M : Instrumentation_api.Handler.S = struct
           cases
     | Sl.OtherwiseI inner -> print_instr (indent ^ "  ") inner
     | Sl.LetI (_, _, _, block) -> List.iter (print_instr (indent ^ "  ")) block
-    | Sl.RelI { block; _ } -> List.iter (print_instr (indent ^ "  ")) block
     | _ -> ()
 
   let print_full () =

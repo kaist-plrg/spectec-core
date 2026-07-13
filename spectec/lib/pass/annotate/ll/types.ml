@@ -34,13 +34,13 @@ and guard =
 
 and instr = instr' phrase
 and instr' =
-  | IfI of exp * iterexp list * block * phantom option
+  | RelI of { call : relcall; iterexps : iterexp list }
   | RelAssertI of { call : relcall; expect : bool; iterexps : iterexp list; block : block; phantom : phantom option }
+  | IfI of exp * iterexp list * block * phantom option
   | CaseI of exp * case list * phantom option
   | OtherwiseI of block
   | TryI of block list
   | LetI of exp * exp * iterexp list
-  | RelI of { call : relcall; iterexps : iterexp list }
   | ResultI of exp list
   | ReturnI of exp
   | DebugI of exp

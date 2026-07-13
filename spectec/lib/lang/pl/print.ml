@@ -160,18 +160,13 @@ and string_of_instr ?(short = false) ?(level = 0) ?(index = 0) instr =
   let indent = String.make (level * 2) ' ' in
   let order = Format.asprintf "%s%d. " indent index in
   match instr.node.it with
-  | IfI (exp_cond, iterexps, block, phantom_opt) ->
+  | RelI { call = { relid = id_rel; notexp }; iterexps } ->
       let s_short =
-        Format.asprintf "If (%s)%s, then" (string_of_exp exp_cond)
+        Format.asprintf "(%s: %s)%s" (string_of_relid id_rel)
+          (string_of_notexp notexp)
           (string_of_iterexps iterexps)
       in
-      if short then s_short
-      else
-        Format.asprintf "%s%s\n\n%s%s" order s_short
-          (string_of_block ~level:(level + 1) block)
-          (match phantom_opt with
-          | Some phantom -> "\n\n" ^ order ^ "Else " ^ string_of_phantom phantom
-          | None -> "")
+      if short then s_short else Format.asprintf "%s%s" order s_short
   | RelAssertI { call = { relid; notexp }; expect; iterexps; block; phantom } ->
       let s_short =
         Format.asprintf "If (%s: %s %s)%s, then" (string_of_relid relid)
@@ -184,6 +179,18 @@ and string_of_instr ?(short = false) ?(level = 0) ?(index = 0) instr =
         Format.asprintf "%s%s\n\n%s%s" order s_short
           (string_of_block ~level:(level + 1) block)
           (match phantom with
+          | Some phantom -> "\n\n" ^ order ^ "Else " ^ string_of_phantom phantom
+          | None -> "")
+  | IfI (exp_cond, iterexps, block, phantom_opt) ->
+      let s_short =
+        Format.asprintf "If (%s)%s, then" (string_of_exp exp_cond)
+          (string_of_iterexps iterexps)
+      in
+      if short then s_short
+      else
+        Format.asprintf "%s%s\n\n%s%s" order s_short
+          (string_of_block ~level:(level + 1) block)
+          (match phantom_opt with
           | Some phantom -> "\n\n" ^ order ^ "Else " ^ string_of_phantom phantom
           | None -> "")
   | CaseI (exp, cases, phantom_opt) ->
@@ -216,13 +223,6 @@ and string_of_instr ?(short = false) ?(level = 0) ?(index = 0) instr =
       let s_short =
         Format.asprintf "(Let %s be %s)%s" (string_of_exp exp_l)
           (string_of_exp exp_r)
-          (string_of_iterexps iterexps)
-      in
-      if short then s_short else Format.asprintf "%s%s" order s_short
-  | RelI { call = { relid = id_rel; notexp }; iterexps } ->
-      let s_short =
-        Format.asprintf "(%s: %s)%s" (string_of_relid id_rel)
-          (string_of_notexp notexp)
           (string_of_iterexps iterexps)
       in
       if short then s_short else Format.asprintf "%s%s" order s_short

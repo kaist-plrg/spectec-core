@@ -126,13 +126,13 @@ and guard =
 
 and instr = (instr' phrase) Annot.t
 and instr' =
-  | IfI of exp * iterexp list * instr list * phantom option
+  | RelI of { call : relcall; iterexps : iterexp list }
   | RelAssertI of { call : relcall; expect : bool; iterexps : iterexp list; block : instr list; phantom : phantom option }
+  | IfI of exp * iterexp list * instr list * phantom option
   | CaseI of exp * case list * phantom option
   | OtherwiseI of instr
   | TryI of block list
   | LetI of exp * exp * iterexp list
-  | RelI of { call : relcall; iterexps : iterexp list }
   | ResultI of exp list
   | ReturnI of exp
   | DebugI of exp

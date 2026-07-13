@@ -4,15 +4,19 @@ module Sl = Lang.Sl
 let rec linearize_instr (instr : Sl.instr) : Ll.block =
   let at = instr.at in
   match instr.it with
-  | Sl.IfI (exp_cond, iterexps, block_then, phantom_opt) ->
-      let block_then_ll = linearize_block block_then in
-      [ Ll.IfI (exp_cond, iterexps, block_then_ll, phantom_opt) $ at ]
+  | Sl.RelI { call; iterexps; block } ->
+      let block_ll = linearize_block block in
+      let instr_ll = Ll.RelI { call; iterexps } $ at in
+      instr_ll :: block_ll
   | Sl.RelAssertI { call; expect; iterexps; block = block_then; phantom } ->
       let block_then_ll = linearize_block block_then in
       [
         Ll.RelAssertI { call; expect; iterexps; block = block_then_ll; phantom }
         $ at;
       ]
+  | Sl.IfI (exp_cond, iterexps, block_then, phantom_opt) ->
+      let block_then_ll = linearize_block block_then in
+      [ Ll.IfI (exp_cond, iterexps, block_then_ll, phantom_opt) $ at ]
   | Sl.CaseI (exp, cases, phantom_opt) ->
       let cases_ll =
         List.map
@@ -28,10 +32,6 @@ let rec linearize_instr (instr : Sl.instr) : Ll.block =
   | Sl.LetI (exp_l, exp_r, iterexps, block) ->
       let block_ll = linearize_block block in
       let instr_ll = Ll.LetI (exp_l, exp_r, iterexps) $ at in
-      instr_ll :: block_ll
-  | Sl.RelI { call; iterexps; block } ->
-      let block_ll = linearize_block block in
-      let instr_ll = Ll.RelI { call; iterexps } $ at in
       instr_ll :: block_ll
   | Sl.ResultI exps -> [ Ll.ResultI exps $ at ]
   | Sl.ReturnI exp -> [ Ll.ReturnI exp $ at ]
