@@ -1,0 +1,230 @@
+xref:lookup[$lookup<K, V>(pair<K, V>^{asterisk}^, K~query~)]
+
+. If ``pair<K, V>^{asterisk}^`` matches pattern ``[]``:
+ .. Return ``·``.
+. Else if let ``K~h~ → V~h~ {two-colons} ( K~t~ → V~t~ )^{asterisk}^`` be ``pair<K, V>^{asterisk}^``:
+ .. Check that ``K~h~`` is equal to ``K~query~``.
+
+ .. Return ``V~h~``.
+
+. Otherwise:
+ .. Otherwise:
+  ... Check that ``pair<K, V>^{asterisk}^`` is a non-empty list.
+
+  ... Let ``K~h~ → V~h~ {two-colons} ( K~t~ → V~t~ )^{asterisk}^`` be ``pair<K, V>^{asterisk}^``.
+  ... Return ``xref:lookup[$lookup<K, V>(( K~t~ → V~t~ )^{asterisk}^, K~query~)]``.
+
+xref:Check_expr[Check_expr: ``tenv ⊢ expr +:+ %``]
+
+. Try:
+ .. {empty}
+  ... If let ``literal`` be ``expr``:
+   .... If let ``i`` be ``literal``:
+    ..... Result in ``+INT+``.
+   .... Else if let ``b`` be ``literal``:
+    ..... Result in ``+BOOL+``.
+  ... Else if let ``x`` be ``expr``:
+   .... Let ``t`` be xref:option_get[*!*] ``xref:lookup[$lookup<id, type>(tenv, x)]``.
+   .... Result in ``t``.
+ .. {empty}
+  ... If let ``+!+ e`` be ``expr``:
+   .... Let xref:Check_expr[``tenv ⊢ e +:+ type``].
+   .... Check that ``type`` matches pattern ``+BOOL+``.
+
+   .... Result in ``+BOOL+``.
+  ... Else if let ``e~l~ +++ e~r~`` be ``expr``:
+   .... Let xref:Check_expr[``tenv ⊢ e~l~ +:+ type``].
+   .... Check that ``type`` matches pattern ``+INT+``.
+
+   .... Let xref:Check_expr[``tenv ⊢ e~r~ +:+ type'``].
+   .... Check that ``type'`` matches pattern ``+INT+``.
+
+   .... Result in ``+INT+``.
+  ... Else if let ``e~l~ +<=+ e~r~`` be ``expr``:
+   .... Let xref:Check_expr[``tenv ⊢ e~l~ +:+ type``].
+   .... Check that ``type`` matches pattern ``+INT+``.
+
+   .... Let xref:Check_expr[``tenv ⊢ e~r~ +:+ type'``].
+   .... Check that ``type'`` matches pattern ``+INT+``.
+
+   .... Result in ``+BOOL+``.
+  ... Else if let ``e~l~ +&&+ e~r~`` be ``expr``:
+   .... Let xref:Check_expr[``tenv ⊢ e~l~ +:+ type``].
+   .... Check that ``type`` matches pattern ``+BOOL+``.
+
+   .... Let xref:Check_expr[``tenv ⊢ e~r~ +:+ type'``].
+   .... Check that ``type'`` matches pattern ``+BOOL+``.
+
+   .... Result in ``+BOOL+``.
+  ... Else if let ``+FUN+ +(+t~arg~ x~arg~+)+ +->+ t~ret~ +{+e+}+`` be ``expr``:
+   .... Let xref:Check_expr[``x~arg~ → t~arg~ {two-colons} tenv ⊢ e +:+ type``].
+   .... Check that ``type`` is equal to ``t~ret~``.
+
+   .... Result in ``t~arg~ +->+ t~ret~``.
+  ... Else if let ``e~f~ +(+e~a~+)+`` be ``expr``:
+   .... Let xref:Check_expr[``tenv ⊢ e~f~ +:+ type``].
+   .... Let!~type~ ``t~arg~ +->+ t~ret~`` be ``type``.
+
+   .... Let xref:Check_expr[``tenv ⊢ e~a~ +:+ type'``].
+   .... Check that ``type'`` is equal to ``t~arg~``.
+
+   .... Result in ``t~ret~``.
+
+xref:Check_command[Check_command: ``tenv ⊢ command ⊣ %``]
+
+. If ``command`` matches pattern ``+SKIP+``:
+ .. Result in ``tenv``.
+. Else if let ``t x +=+ e`` be ``command``:
+ .. Let xref:Check_expr[``tenv ⊢ e +:+ type``].
+ .. Check that ``type`` is equal to ``t``.
+
+ .. Result in ``x → t {two-colons} tenv``.
+. Else if let ``x +=+ e`` be ``command``:
+ .. Let xref:Check_expr[``tenv ⊢ e +:+ t``].
+ .. Check that ``xref:lookup[$lookup<id, type>(tenv, x)]`` is equal to ``t``.
+
+ .. Result in ``tenv``.
+. Else if let ``+IF+ e +THEN+ c~1~ +ELSE+ c~2~ +END+`` be ``command``:
+ .. Let xref:Check_expr[``tenv ⊢ e +:+ type``].
+ .. Check that ``type`` matches pattern ``+BOOL+``.
+
+ .. Let xref:Check_command[``tenv ⊢ c~1~ ⊣ tenv~1~``].
+ .. Let xref:Check_command[``tenv ⊢ c~2~ ⊣ tenv~2~``].
+ .. Result in ``tenv``.
+. Else if let ``+WHILE+ e +DO+ c +END+`` be ``command``:
+ .. Let xref:Check_expr[``tenv ⊢ e +:+ type``].
+ .. Check that ``type`` matches pattern ``+BOOL+``.
+
+ .. Let xref:Check_command[``tenv ⊢ c ⊣ tenv~1~``].
+ .. Result in ``tenv``.
+. Else if let ``c~1~ +;+ c~2~`` be ``command``:
+ .. Let xref:Check_command[``tenv ⊢ c~1~ ⊣ tenv~1~``].
+ .. Let xref:Check_command[``tenv~1~ ⊢ c~2~ ⊣ tenv~2~``].
+ .. Result in ``tenv~2~``.
+
+xref:Check_prog[Check_prog: ``⊢ command``]
+
+. Let xref:Check_command[``· ⊢ command ⊣ tenv``].
+. The relation holds.
+
+xref:Eval_expr[Eval_expr: ``env ⊢ expr ⟹ %``]
+
+. Try:
+ .. {empty}
+  ... If let ``literal`` be ``expr``:
+   .... If let ``i`` be ``literal``:
+    ..... Result in ``i``.
+   .... Else if let ``b`` be ``literal``:
+    ..... Result in ``b``.
+  ... Else if let ``x`` be ``expr``:
+   .... Let ``v`` be xref:option_get[*!*] ``xref:lookup[$lookup<id, value>(env, x)]``.
+   .... Result in ``v``.
+ .. {empty}
+  ... If let ``+!+ e`` be ``expr``:
+   .... Let xref:Eval_expr[``env ⊢ e ⟹ value``].
+   .... Let!~type~ ``literal`` be ``value``.
+
+   .... Let!~type~ ``b~e~`` be ``literal``.
+
+   .... Let ``b`` be not ``b~e~``.
+   .... Result in ``b``.
+  ... Else if let ``e~l~ +++ e~r~`` be ``expr``:
+   .... Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
+   .... Let!~type~ ``literal`` be ``value``.
+
+   .... Let!~type~ ``i~l~`` be ``literal``.
+
+   .... Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
+   .... Let!~type~ ``literal'`` be ``value'``.
+
+   .... Let!~type~ ``i~r~`` be ``literal'``.
+
+   .... Let ``i`` be ``i~l~`` + ``i~r~``.
+   .... Result in ``i``.
+  ... Else if let ``e~l~ +<=+ e~r~`` be ``expr``:
+   .... Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
+   .... Let!~type~ ``literal`` be ``value``.
+
+   .... Let!~type~ ``i~l~`` be ``literal``.
+
+   .... Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
+   .... Let!~type~ ``literal'`` be ``value'``.
+
+   .... Let!~type~ ``i~r~`` be ``literal'``.
+
+   .... Let ``b`` be ``i~l~`` is less than or equal to ``i~r~``.
+   .... Result in ``b``.
+  ... Else if let ``e~l~ +&&+ e~r~`` be ``expr``:
+   .... Let xref:Eval_expr[``env ⊢ e~l~ ⟹ value``].
+   .... Let!~type~ ``literal`` be ``value``.
+
+   .... Let!~type~ ``b~l~`` be ``literal``.
+
+   .... Let xref:Eval_expr[``env ⊢ e~r~ ⟹ value'``].
+   .... Let!~type~ ``literal'`` be ``value'``.
+
+   .... Let!~type~ ``b~r~`` be ``literal'``.
+
+   .... Let ``b`` be ``b~l~`` and ``b~r~``.
+   .... Result in ``b``.
+  ... Else if let ``+FUN+ +(+t~arg~ x~arg~+)+ +->+ t~ret~ +{+e+}+`` be ``expr``:
+   .... Result in ``+CLO+ x~arg~ e env``.
+  ... Else if let ``e~f~ +(+e~a~+)+`` be ``expr``:
+   .... Let xref:Eval_expr[``env ⊢ e~f~ ⟹ value``].
+   .... Let!~type~ ``+CLO+ x~a~ e~body~ env~clo~`` be ``value``.
+
+   .... Let xref:Eval_expr[``env ⊢ e~a~ ⟹ v``].
+   .... Let xref:Eval_expr[``x~a~ → v {two-colons} env~clo~ ⊢ e~body~ ⟹ v~ret~``].
+   .... Result in ``v~ret~``.
+
+xref:Eval_command[Eval_command: ``env ⊢ command ⊣ %``]
+
+. If ``command`` matches pattern ``+SKIP+``:
+ .. Result in ``env``.
+. Else if let ``t x +=+ e`` be ``command``:
+ .. Let xref:Eval_expr[``env ⊢ e ⟹ v``].
+ .. Result in ``x → v {two-colons} env``.
+. Else if let ``x +=+ e`` be ``command``:
+ .. Let xref:Eval_expr[``env ⊢ e ⟹ v``].
+ .. Result in ``x → v {two-colons} env``.
+. Else if let ``+IF+ e +THEN+ c~1~ +ELSE+ c~2~ +END+`` be ``command``:
+ .. Let xref:Eval_expr[``env ⊢ e ⟹ value``].
+ .. Try:
+  ... {empty}
+   .... Check that ``value`` is equal to ``true``.
+
+   .... Let xref:Eval_command[``env ⊢ c~1~ ⊣ env~1~``].
+   .... Result in ``env~1~``.
+  ... {empty}
+   .... Check that ``value`` is equal to ``false``.
+
+   .... Let xref:Eval_command[``env ⊢ c~2~ ⊣ env~2~``].
+   .... Result in ``env~2~``.
+. Else if let ``+WHILE+ e +DO+ c +END+`` be ``command``:
+ .. Let xref:Eval_expr[``env ⊢ e ⟹ value``].
+ .. Try:
+  ... {empty}
+   .... Check that ``value`` is equal to ``false``.
+
+   .... Result in ``env``.
+  ... {empty}
+   .... Check that ``value`` is equal to ``true``.
+
+   .... Let xref:Eval_command[``env ⊢ c ⊣ env~1~``].
+   .... Let xref:Eval_command[``env~1~ ⊢ +WHILE+ e +DO+ c +END+ ⊣ env~2~``].
+   .... Result in ``env~2~``.
+. Else if let ``c~1~ +;+ c~2~`` be ``command``:
+ .. Let xref:Eval_command[``env ⊢ c~1~ ⊣ env~1~``].
+ .. Let xref:Eval_command[``env~1~ ⊢ c~2~ ⊣ env~2~``].
+ .. Result in ``env~2~``.
+
+xref:Eval_prog[Eval_prog: ``⊢ command ⊣ %``]
+
+. Let xref:Eval_command[``· ⊢ command ⊣ env``].
+. Result in ``env``.
+
+xref:Run_prog[Run_prog: ``⊢ command ⊣ %``]
+
+. If xref:Check_prog[``⊢ command``] holds:
+ .. Let xref:Eval_prog[``⊢ command ⊣ env``].
+ .. Result in ``env``.

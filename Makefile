@@ -81,6 +81,7 @@ vsix:
 # Individual tests (run against the new p4 spec by default):
 #   make test-elab       - Elaboration test (both p4 and p4-old)
 #   make test-struct     - Structuring test (both p4 and p4-old)
+#   make test-annotate   - Annotate/prose render test (impty x3 + p4-old)
 #   make test-roundtrip-il - EL<->IL premise roundtrip test (impty base + closure, p4)
 #   make test-roundtrip-el - EL pretty-printer roundtrip test (mini-spec, p4-old, p4, impty)
 #   make test-parsegen   - Grammar-driven parser differential test (impty expressions + programs)
@@ -100,7 +101,7 @@ vsix:
 #   make test-lsp        - LSP diagnostics snapshot (Check.run -> LSP JSON)
 #
 # Grouped tests:
-#   make test-quick      - Fast tests (elab + elab-neg + interp-neg + cli + struct + roundtrip-il + roundtrip-el + impty + parsegen)
+#   make test-quick      - Fast tests (elab + elab-neg + interp-neg + cli + struct + annotate + roundtrip-il + roundtrip-el + impty + parsegen)
 #   make test-il         - IL tests for new p4 (pos + neg)
 #   make test-sl         - SL tests for new p4 (pos + neg)
 #   make test-il-old     - IL tests for p4-old (pos + neg)
@@ -115,7 +116,7 @@ vsix:
 #
 #   make test            - quick + new p4 il/sl
 
-.PHONY: test test-quick test-elab test-elab-neg test-interp-neg test-cli test-lsp test-struct test-roundtrip-il test-roundtrip-el test-parsegen
+.PHONY: test test-quick test-elab test-elab-neg test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-parsegen
 .PHONY: test-il test-il-pos test-il-neg
 .PHONY: test-sl test-sl-pos test-sl-neg
 .PHONY: test-old test-il-old test-il-pos-old test-il-neg-old
@@ -156,6 +157,10 @@ test-lsp:
 test-struct:
 	@echo "#### Running structuring test"
 	@$(DUNE) build @test/struct/runtest --profile=release && echo OK
+
+test-annotate:
+	@echo "#### Running annotate test"
+	@$(DUNE) build @test/annotate/runtest --profile=release && echo OK
 
 test-roundtrip-il:
 	@echo "#### Running EL<->IL premise roundtrip test"
@@ -199,7 +204,7 @@ test-sl-pos-old:
 test-sl-neg-old:
 	$(call run_interp_test,p4-old,sl,neg)
 
-test-quick: test-elab test-elab-neg test-interp-neg test-cli test-lsp test-struct test-roundtrip-il test-roundtrip-el test-impty test-parsegen
+test-quick: test-elab test-elab-neg test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-impty test-parsegen
 	@echo "#### Quick tests passed"
 
 test-il: test-il-pos test-il-neg
