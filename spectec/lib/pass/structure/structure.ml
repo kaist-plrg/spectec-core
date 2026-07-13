@@ -29,17 +29,17 @@ and struct_prems' (prems_internalized : (prem * iterexp list) list)
       match prem_h.it with
       | RelPr { relid = id; notexp } ->
           let instr_t = struct_prems' prems_internalized_t instr_ret in
-          Ol.Ast.RuleI (id, notexp, iterexps_h, [ instr_t ]) $ at
+          let call = Ol.Ast.{ relid = id; notexp } in
+          Ol.Ast.RelI { call; iterexps = iterexps_h; block = [ instr_t ] } $ at
       | IfPr { cond; _ } ->
           let instr_t = struct_prems' prems_internalized_t instr_ret in
           Ol.Ast.IfI (cond, iterexps_h, [ instr_t ]) $ at
       | RelAssertPr { call = { relid = id; notexp }; expect } ->
           let instr_t = struct_prems' prems_internalized_t instr_ret in
-          let instr_h' =
-            if expect then Ol.Ast.IfHoldI (id, notexp, iterexps_h, [ instr_t ])
-            else Ol.Ast.IfNotHoldI (id, notexp, iterexps_h, [ instr_t ])
-          in
-          instr_h' $ at
+          let call = Ol.Ast.{ relid = id; notexp } in
+          Ol.Ast.RelAssertI
+            { call; expect; iterexps = iterexps_h; block = [ instr_t ] }
+          $ at
       | LetPr (exp_l, exp_r) ->
           let instr_t = struct_prems' prems_internalized_t instr_ret in
           Ol.Ast.LetI (exp_l, exp_r, iterexps_h, [ instr_t ]) $ at

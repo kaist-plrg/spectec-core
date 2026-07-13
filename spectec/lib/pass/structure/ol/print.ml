@@ -31,18 +31,21 @@ and string_of_instr ?(level = 0) ?(index = 0) instr =
   let indent = String.make (level * 2) ' ' in
   let order = Format.asprintf "%s%d. " indent index in
   match instr.it with
+  | RelI { call = { relid; notexp }; iterexps; block } ->
+      Format.asprintf "%s(%s: %s)%s" order (string_of_relid relid)
+        (string_of_notexp notexp)
+        (string_of_iterexps iterexps)
+      ^ "\n\n"
+      ^ string_of_instrs ~level:(level + 1) block
+  | RelAssertI
+      { call = { relid; notexp }; expect; iterexps; block = instrs_then } ->
+      Format.asprintf "%sIf (%s: %s %s)%s, then\n\n%s" order
+        (string_of_relid relid) (string_of_notexp notexp)
+        (if expect then "holds" else "does not hold")
+        (string_of_iterexps iterexps)
+        (string_of_instrs ~level:(level + 1) instrs_then)
   | IfI (exp_cond, iterexps, instrs_then) ->
       Format.asprintf "%sIf (%s)%s, then\n\n%s" order (string_of_exp exp_cond)
-        (string_of_iterexps iterexps)
-        (string_of_instrs ~level:(level + 1) instrs_then)
-  | IfHoldI (id_rel, notexp, iterexps, instrs_then) ->
-      Format.asprintf "%sIf (%s: %s holds)%s, then\n\n%s" order
-        (string_of_relid id_rel) (string_of_notexp notexp)
-        (string_of_iterexps iterexps)
-        (string_of_instrs ~level:(level + 1) instrs_then)
-  | IfNotHoldI (id_rel, notexp, iterexps, instrs_then) ->
-      Format.asprintf "%sIf (%s: %s does not hold)%s, then\n\n%s" order
-        (string_of_relid id_rel) (string_of_notexp notexp)
         (string_of_iterexps iterexps)
         (string_of_instrs ~level:(level + 1) instrs_then)
   | CaseI (exp, cases, _) ->
@@ -54,12 +57,6 @@ and string_of_instr ?(level = 0) ?(index = 0) instr =
   | LetI (exp_l, exp_r, iterexps, block) ->
       Format.asprintf "%s(Let %s be %s)%s" order (string_of_exp exp_l)
         (string_of_exp exp_r)
-        (string_of_iterexps iterexps)
-      ^ "\n\n"
-      ^ string_of_instrs ~level:(level + 1) block
-  | RuleI (id_rel, notexp, iterexps, block) ->
-      Format.asprintf "%s(%s: %s)%s" order (string_of_relid id_rel)
-        (string_of_notexp notexp)
         (string_of_iterexps iterexps)
       ^ "\n\n"
       ^ string_of_instrs ~level:(level + 1) block

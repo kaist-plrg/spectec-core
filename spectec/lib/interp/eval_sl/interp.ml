@@ -910,18 +910,16 @@ and eval_instr (ctx : Ctx.t) (instr : instr) : Ctx.t * Sign.t =
     ctx
   in
   match instr.it with
+  | RelI { call; iterexps; block } ->
+      eval_rel_instr ctx call.relid call.notexp iterexps block
+  | RelAssertI { call; expect; iterexps; block; phantom = _ } ->
+      eval_rel_assert_instr ctx call.relid call.notexp expect iterexps block
   | IfI (exp_cond, iterexps, instrs_then, _phantom_opt) ->
       eval_if_instr ctx exp_cond iterexps instrs_then
-  | IfHoldI (id, notexp, iterexps, instrs_then, _phantom_opt) ->
-      eval_if_hold_instr ctx id notexp iterexps instrs_then
-  | IfNotHoldI (id, notexp, iterexps, instrs_then, _phantom_opt) ->
-      eval_if_not_hold_instr ctx id notexp iterexps instrs_then
   | CaseI (exp, cases, _phantom_opt) -> eval_case_instr ctx exp cases
   | OtherwiseI instr -> eval_instr ctx instr
   | LetI (exp_l, exp_r, iterexps, block) ->
       eval_let_instr ctx exp_l exp_r iterexps block
-  | RuleI (id, notexp, iterexps, block) ->
-      eval_rule_instr ctx id notexp iterexps block
   | ResultI exps -> eval_result_instr ctx exps
   | ReturnI exp -> eval_return_instr ctx exp
   | DebugI (exp, instr_body) ->
@@ -985,23 +983,24 @@ and eval_if_instr (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list)
   let ctx, cond, _value_cond = eval_if_cond_iter ctx exp_cond iterexps in
   if cond then eval_instrs ctx Cont instrs_then else (ctx, Cont)
 
-(* If-hold instruction evaluation *)
+(* Relation-assertion instruction evaluation *)
 
-and eval_if_hold_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
-    (iterexps : iterexp list) (instrs_then : instr list) : Ctx.t * Sign.t =
-  let eval_if_hold_cond_iter ctx id notexp iterexps =
-    let rec eval_if_hold_cond_iter' ctx id notexp iterexps =
-      let eval_if_hold_cond ctx id notexp =
+and eval_rel_assert_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
+    (expect : bool) (iterexps : iterexp list) (block : instr list) :
+    Ctx.t * Sign.t =
+  let eval_rel_assert_cond_iter ctx id notexp iterexps =
+    let rec eval_rel_assert_cond_iter' ctx id notexp iterexps =
+      let eval_rel_assert_cond ctx id notexp =
         let ctx, values_input = eval_exps ctx (Mixop.args notexp) in
-        let ctx, hold =
+        let ctx, cond =
           match invoke_rel ctx id values_input with
-          | Some (ctx, _) -> (ctx, true)
-          | None -> (ctx, false)
+          | Some (ctx, _) -> (ctx, expect)
+          | None -> (ctx, not expect)
         in
-        let value_res = Value.Make.bool Il.BoolT hold in
-        (ctx, hold, value_res)
+        let value_res = Value.Make.bool Il.BoolT cond in
+        (ctx, cond, value_res)
       in
-      let eval_if_hold_cond_list ctx id notexp vars iterexps =
+      let eval_rel_assert_cond_list ctx id notexp vars iterexps =
         let ctxs_sub = Ctx.sub_list ctx vars in
         let ctx, cond, values_cond_rev =
           List.fold_left
@@ -1009,7 +1008,7 @@ and eval_if_hold_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
               if not cond then (ctx, cond, values_cond_rev)
               else
                 let ctx_sub, cond, value_cond =
-                  eval_if_hold_cond_iter' ctx_sub id notexp iterexps
+                  eval_rel_assert_cond_iter' ctx_sub id notexp iterexps
                 in
                 let ctx = Ctx.commit ctx ctx_sub in
                 let values_cond_rev = value_cond :: values_cond_rev in
@@ -1019,14 +1018,14 @@ and eval_if_hold_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
         (ctx, cond, List.rev values_cond_rev)
       in
       match iterexps with
-      | [] -> eval_if_hold_cond ctx id notexp
+      | [] -> eval_rel_assert_cond ctx id notexp
       | iterexp_h :: iterexps_t -> (
           let iter_h, vars_h = iterexp_h in
           match iter_h with
           | Il.Opt -> error no_region "(TODO)"
           | Il.List ->
               let ctx, cond, values_cond =
-                eval_if_hold_cond_list ctx id notexp vars_h iterexps_t
+                eval_rel_assert_cond_list ctx id notexp vars_h iterexps_t
               in
               let value_cond =
                 let typ_inner = Il.BoolT $ no_region in
@@ -1035,67 +1034,12 @@ and eval_if_hold_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
               (ctx, cond, value_cond))
     in
     let iterexps = List.rev iterexps in
-    eval_if_hold_cond_iter' ctx id notexp iterexps
-  in
-  let ctx, cond, _value_cond = eval_if_hold_cond_iter ctx id notexp iterexps in
-  if cond then eval_instrs ctx Cont instrs_then else (ctx, Cont)
-
-(* If-not-hold instruction evaluation *)
-
-and eval_if_not_hold_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
-    (iterexps : iterexp list) (instrs_then : instr list) : Ctx.t * Sign.t =
-  let eval_if_not_hold_cond_iter ctx id notexp iterexps =
-    let rec eval_if_not_hold_cond_iter' ctx id notexp iterexps =
-      let eval_if_not_hold_cond ctx id notexp =
-        let ctx, values_input = eval_exps ctx (Mixop.args notexp) in
-        let ctx, nothold =
-          match invoke_rel ctx id values_input with
-          | Some (ctx, _) -> (ctx, false)
-          | None -> (ctx, true)
-        in
-        let value_res = Value.Make.bool Il.BoolT nothold in
-        (ctx, nothold, value_res)
-      in
-      let eval_if_not_hold_cond_list ctx id notexp vars iterexps =
-        let ctxs_sub = Ctx.sub_list ctx vars in
-        let ctx, cond, values_cond_rev =
-          List.fold_left
-            (fun (ctx, cond, values_cond_rev) ctx_sub ->
-              if not cond then (ctx, cond, values_cond_rev)
-              else
-                let ctx_sub, cond, value_cond =
-                  eval_if_not_hold_cond_iter' ctx_sub id notexp iterexps
-                in
-                let ctx = Ctx.commit ctx ctx_sub in
-                let values_cond_rev = value_cond :: values_cond_rev in
-                (ctx, cond, values_cond_rev))
-            (ctx, true, []) ctxs_sub
-        in
-        (ctx, cond, List.rev values_cond_rev)
-      in
-      match iterexps with
-      | [] -> eval_if_not_hold_cond ctx id notexp
-      | iterexp_h :: iterexps_t -> (
-          let iter_h, vars_h = iterexp_h in
-          match iter_h with
-          | Il.Opt -> error no_region "(TODO)"
-          | Il.List ->
-              let ctx, cond, values_cond =
-                eval_if_not_hold_cond_list ctx id notexp vars_h iterexps_t
-              in
-              let value_cond =
-                let typ_inner = Il.BoolT $ no_region in
-                Value.list typ_inner values_cond
-              in
-              (ctx, cond, value_cond))
-    in
-    let iterexps = List.rev iterexps in
-    eval_if_not_hold_cond_iter' ctx id notexp iterexps
+    eval_rel_assert_cond_iter' ctx id notexp iterexps
   in
   let ctx, cond, _value_cond =
-    eval_if_not_hold_cond_iter ctx id notexp iterexps
+    eval_rel_assert_cond_iter ctx id notexp iterexps
   in
-  if cond then eval_instrs ctx Cont instrs_then else (ctx, Cont)
+  if cond then eval_instrs ctx Cont block else (ctx, Cont)
 
 (* Case analysis instruction evaluation *)
 
@@ -1288,14 +1232,14 @@ and eval_let_instr (ctx : Ctx.t) (exp_l : exp) (exp_r : exp)
   let ctx, sign = eval_instrs ctx Cont block in
   (ctx, sign)
 
-(* Rule instruction evaluation *)
+(* Relation instruction evaluation *)
 
-and eval_rule_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
+and eval_rel_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
     (iterexps : iterexp list) (block : block) : Ctx.t * Sign.t =
-  let eval_rule_iter ctx id notexp iterexps =
-    let rec eval_rule_iter' ctx id notexp iterexps =
-      (* Single rule evaluation *)
-      let eval_rule ctx id notexp =
+  let eval_rel_iter ctx id notexp iterexps =
+    let rec eval_rel_iter' ctx id notexp iterexps =
+      (* Single relation evaluation *)
+      let eval_rel ctx id notexp =
         let mode, _, _ = Ctx.find_rel Local ctx id in
         let exps_input, exps_output =
           Lang.Il.Mode.partition mode (Mixop.args notexp)
@@ -1308,8 +1252,8 @@ and eval_rule_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
         in
         assign_exps ctx exps_output values_output
       in
-      (* Rule list evaluation *)
-      let eval_rule_list ctx id notexp vars iterexps =
+      (* Relation list evaluation *)
+      let eval_rel_list ctx id notexp vars iterexps =
         (* Discriminate between bound and binding variables *)
         let vars_bound, vars_binding =
           List.partition
@@ -1334,7 +1278,7 @@ and eval_rule_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
               let ctx, values_binding_batch_rev =
                 List.fold_left
                   (fun (ctx, values_binding_batch_rev) ctx_sub ->
-                    let ctx_sub = eval_rule_iter' ctx_sub id notexp iterexps in
+                    let ctx_sub = eval_rel_iter' ctx_sub id notexp iterexps in
                     let ctx = Ctx.commit ctx ctx_sub in
                     let value_binding_batch =
                       List.map
@@ -1374,22 +1318,22 @@ and eval_rule_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
               value_binding)
           ctx vars_binding values_binding
       in
-      (* Optional rule evaluation *)
-      let eval_rule_opt _ctx _id _notexp _vars _iterexps =
-        failwith "TODO: eval_rule_opt"
+      (* Optional relation evaluation *)
+      let eval_rel_opt _ctx _id _notexp _vars _iterexps =
+        failwith "TODO: eval_rel_opt"
       in
       match iterexps with
-      | [] -> eval_rule ctx id notexp
+      | [] -> eval_rel ctx id notexp
       | iterexp_h :: iterexps_t -> (
           let iter_h, vars_h = iterexp_h in
           match iter_h with
-          | Il.Opt -> eval_rule_opt ctx id notexp vars_h iterexps_t
-          | Il.List -> eval_rule_list ctx id notexp vars_h iterexps_t)
+          | Il.Opt -> eval_rel_opt ctx id notexp vars_h iterexps_t
+          | Il.List -> eval_rel_list ctx id notexp vars_h iterexps_t)
     in
     let iterexps = List.rev iterexps in
-    eval_rule_iter' ctx id notexp iterexps
+    eval_rel_iter' ctx id notexp iterexps
   in
-  let ctx = eval_rule_iter ctx id notexp iterexps in
+  let ctx = eval_rel_iter ctx id notexp iterexps in
   let ctx, sign = eval_instrs ctx Cont block in
   (ctx, sign)
 

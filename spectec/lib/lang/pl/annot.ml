@@ -1,5 +1,5 @@
 (** Per-node hint annotation, denormalized from the EL spec by the annotate pass
-    alongside pass-derived rulegroup I/O. *)
+    alongside pass-derived relation I/O. *)
 
 type hints = {
   prose : Hints.Alter.t option;

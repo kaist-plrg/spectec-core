@@ -128,10 +128,9 @@ and recurse_into_nested (instr : Pl.instr) : Pl.instr =
     match instr.node.it with
     | Pl.IfI (cond, iterexps, block_then, phantom) ->
         Pl.IfI (cond, iterexps, shorten_block block_then, phantom)
-    | Pl.IfHoldI (id, notexp, iterexps, block, phantom) ->
-        Pl.IfHoldI (id, notexp, iterexps, shorten_block block, phantom)
-    | Pl.IfNotHoldI (id, notexp, iterexps, block, phantom) ->
-        Pl.IfNotHoldI (id, notexp, iterexps, shorten_block block, phantom)
+    | Pl.RelAssertI { call; expect; iterexps; block; phantom } ->
+        Pl.RelAssertI
+          { call; expect; iterexps; block = shorten_block block; phantom }
     | Pl.CaseI (exp, cases, phantom) ->
         let cases' =
           cases
@@ -143,7 +142,7 @@ and recurse_into_nested (instr : Pl.instr) : Pl.instr =
     | Pl.TryI arms -> Pl.TryI (List.map shorten_block arms)
     | Pl.CheckLetI (e_l, e_r, block_inner) ->
         Pl.CheckLetI (e_l, e_r, shorten_block block_inner)
-    | Pl.LetI _ | Pl.RuleI _ | Pl.ResultI _ | Pl.ReturnI _ | Pl.DebugI _
+    | Pl.LetI _ | Pl.RelI _ | Pl.ResultI _ | Pl.ReturnI _ | Pl.DebugI _
     | Pl.DestructI _ | Pl.OptionGetI _ ->
         instr.node.it
   in
