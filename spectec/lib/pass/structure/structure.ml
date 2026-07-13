@@ -105,6 +105,22 @@ let struct_clause_path ((prems, exp_output) : prem list * exp) :
 
 (* Structuring definitions *)
 
+let args_input_of_params (params : param list) : arg list =
+  List.fold_left
+    (fun (args_input, frees) param ->
+      let arg_input, frees =
+        match param.it with
+        | ExpP typ ->
+            let exp_input, frees =
+              Elaborate.Fresh.fresh_exp_from_typ frees typ
+            in
+            (ExpA exp_input $ param.at, frees)
+        | DefP { defid = id_def; _ } -> (DefA id_def $ param.at, frees)
+      in
+      (args_input @ [ arg_input ], frees))
+    ([], IdSet.empty) params
+  |> fst
+
 let rec struct_def (rtenv : RTEnv.t) (tdenv : TDEnv.t) (def : def) : Sl.def =
   let at = def.at in
   match def.it with
@@ -113,8 +129,8 @@ let rec struct_def (rtenv : RTEnv.t) (tdenv : TDEnv.t) (def : def) : Sl.def =
       struct_rel_def rtenv tdenv at id reltyp rules
   | BuiltinDecD { defid = id; tparams; params; _ } ->
       struct_builtin_dec_def at id tparams params
-  | DecD { defid = id; tparams; clauses; _ } ->
-      struct_dec_def rtenv tdenv at id tparams clauses
+  | DecD { defid = id; tparams; params; clauses; _ } ->
+      struct_dec_def rtenv tdenv at id tparams params clauses
 
 (* Structuring relation definitions *)
 
@@ -157,31 +173,18 @@ and struct_rel_def (rtenv : RTEnv.t) (tdenv : TDEnv.t) (at : region)
 
 and struct_builtin_dec_def (at : region) (id_dec : id) (tparams : tparam list)
     (params : param list) : Sl.def =
-  let args_input, _ =
-    List.fold_left
-      (fun (args_input, frees) param ->
-        let arg_input, frees =
-          match param.it with
-          | ExpP typ ->
-              let exp_input, frees =
-                Elaborate.Fresh.fresh_exp_from_typ frees typ
-              in
-              let arg_input = ExpA exp_input $ param.at in
-              (arg_input, frees)
-          | DefP { defid = id_def; _ } ->
-              let arg_input = DefA id_def $ param.at in
-              (arg_input, frees)
-        in
-        (args_input @ [ arg_input ], frees))
-      ([], IdSet.empty) params
-  in
-  Sl.BuiltinDecD (id_dec, tparams, args_input) $ at
+  Sl.BuiltinDecD (id_dec, tparams, args_input_of_params params) $ at
 
 (* Structuring declaration definitions *)
 
 and struct_dec_def (rtenv : RTEnv.t) (tdenv : TDEnv.t) (at : region)
-    (id_dec : id) (tparams : tparam list) (clauses : clause list) : Sl.def =
-  let args_input, paths = Antiunify.antiunify_clauses clauses in
+    (id_dec : id) (tparams : tparam list) (params : param list)
+    (clauses : clause list) : Sl.def =
+  let args_input, paths =
+    match clauses with
+    | [] -> (args_input_of_params params, [])
+    | _ -> Antiunify.antiunify_clauses clauses
+  in
   let block_paths, else_path_opt = partition_else_paths paths in
   let block =
     List.concat_map struct_clause_path block_paths

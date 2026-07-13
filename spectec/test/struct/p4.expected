@@ -28351,7 +28351,7 @@ dec $parameterListIR_of_constructorDef(constructorDef)
 syntax externMethodDefEnv = map<callableId, externMethodDef>
 
 ;; ../../../../../spectec/specs/p4/6-dynamic-runtime/6.4.1-object.spectec:15:1-16:70:
-dec $init_objectState
+dec $init_objectState(nameIR, typeIR*, value*)
 
 
 
