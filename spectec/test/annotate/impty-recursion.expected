@@ -2,7 +2,7 @@ xref:lookup[$lookup<K, V>(pair<K, V>^{asterisk}^, K~query~)]
 
 . If ``pair<K, V>^{asterisk}^`` matches pattern ``[]``:
  .. Return ``·``.
-. Else if let ``K~h~ → V~h~ {two-colons} ( K~t~ → V~t~ )^{asterisk}^`` be ``pair<K, V>^{asterisk}^``:
+. Else:
  .. Check that ``K~h~`` is equal to ``K~query~``.
 
  .. Return ``V~h~``.
@@ -21,7 +21,7 @@ xref:Check_expr[Check_expr: ``tenv ⊢ expr +:+ %``]
   ... If let ``literal`` be ``expr``:
    .... If let ``i`` be ``literal``:
     ..... Result in ``+INT+``.
-   .... Else if let ``b`` be ``literal``:
+   .... Else:
     ..... Result in ``+BOOL+``.
   ... Else if let ``x`` be ``expr``:
    .... Let ``t`` be xref:option_get[*!*] ``xref:lookup[$lookup<id, type>(tenv, x)]``.
@@ -110,7 +110,7 @@ xref:Check_command[Check_command: ``tenv ⊢ command ⊣ %``]
  .. Let xref:Check_command[``tenv ⊢ c~1~ ⊣ tenv~1~``].
  .. Let xref:Check_command[``tenv~1~ ⊢ c~2~ ⊣ tenv~2~``].
  .. Result in ``tenv~2~``.
-. Else if let ``+REC+ f +(+t~arg~ x~arg~+)+ +->+ t~ret~ +{+e+}+`` be ``command``:
+. Else:
  .. Let xref:Check_expr[``x~arg~ → t~arg~ {two-colons} f → t~arg~ +->+ t~ret~ {two-colons} tenv ⊢ e +:+ type``].
  .. Check that ``type`` is equal to ``t~ret~``.
 
@@ -128,7 +128,7 @@ xref:Eval_expr[Eval_expr: ``env ⊢ expr ⟹ %``]
   ... If let ``literal`` be ``expr``:
    .... If let ``i`` be ``literal``:
     ..... Result in ``i``.
-   .... Else if let ``b`` be ``literal``:
+   .... Else:
     ..... Result in ``b``.
   ... Else if let ``x`` be ``expr``:
    .... Let ``v`` be xref:option_get[*!*] ``xref:lookup[$lookup<id, value>(env, x)]``.
@@ -247,7 +247,7 @@ xref:Eval_command[Eval_command: ``env ⊢ command ⊣ %``]
  .. Let xref:Eval_command[``env ⊢ c~1~ ⊣ env~1~``].
  .. Let xref:Eval_command[``env~1~ ⊢ c~2~ ⊣ env~2~``].
  .. Result in ``env~2~``.
-. Else if let ``+REC+ f +(+t~arg~ x~arg~+)+ +->+ t~ret~ +{+e+}+`` be ``command``:
+. Else:
  .. Result in ``f → +RECCLO+ f x~arg~ e env {two-colons} env``.
 
 xref:Eval_prog[Eval_prog: ``⊢ command ⊣ %``]

@@ -27,7 +27,7 @@ xref:concat_text[The concatenation of ``text^{asterisk}^``]
 
 . If ``text^{asterisk}^`` matches pattern ``[]``:
  .. Return ``""``.
-. Else if let ``t~h~ {two-colons} t~t~^{asterisk}^`` be ``text^{asterisk}^``:
+. Else:
  .. Return ``t~h~`` concatenated with xref:concat_text[the concatenation of ``t~t~^{asterisk}^``].
 
 xref:join_text[The result of joining ``text''^{asterisk}^`` with separator ``t~sep~``]
@@ -109,7 +109,7 @@ xref:strip_prefix_rec[The text ``t`` with the prefix ``t~prefix~`` removed many 
 . If xref:starts_with[the text ``t`` starts with ``t~prefix~``]:
  .. Let ``t~stripped~`` be xref:strip_prefix[the text ``t`` with the prefix ``t~prefix~`` removed].
  .. Return xref:strip_prefix_rec[the text ``t~stripped~`` with the prefix ``t~prefix~`` removed many times as possible].
-. Else if ``~xref:starts_with[$starts_with(t, t~prefix~)]``:
+. Else:
  .. Return ``t``.
 
 xref:strip_suffix_rec[The text ``t`` with the suffix ``t~suffix~`` removed many times as possible]
@@ -117,7 +117,7 @@ xref:strip_suffix_rec[The text ``t`` with the suffix ``t~suffix~`` removed many 
 . If xref:ends_with[the text ``t`` ends with ``t~suffix~``]:
  .. Let ``t~stripped~`` be xref:strip_suffix[the text ``t`` with the suffix ``t~suffix~`` removed].
  .. Return xref:strip_suffix_rec[the text ``t~stripped~`` with the suffix ``t~suffix~`` removed many times as possible].
-. Else if ``~xref:ends_with[$ends_with(t, t~suffix~)]``:
+. Else:
  .. Return ``t``.
 
 xref:contains[The text ``t`` contains ``t~c~``]
@@ -134,38 +134,38 @@ xref:contains'[$contains'(n~len''~, n~len'''~, t, t~c~)]
   ... Check that ``n~len''~`` is less than ``n~len'''~``.
 
   ... If ``t[n~len''~]`` is equal to ``t~c~``: return ``true``.
-  ... Else if ``t[n~len''~]`` is not equal to ``t~c~``:
+  ... Else:
    .... Return ``xref:contains'[$contains'(n~len''~ + 1, n~len'''~, t, t~c~)]``.
 
 xref:is_some_[$is_some_<X>(X''^?^)]
 
 . If ``X''^?^`` matches pattern ``()``: return ``false``.
-. Else if let ``X`` be ``X''^?^``: return ``true``.
+. Else: return ``true``.
 
 xref:opt_as_seq_[$opt_as_seq_<X>(X''^?^)]
 
 . If ``X''^?^`` matches pattern ``()``:
  .. Return ``·``.
-. Else if let ``X`` be ``X''^?^``:
+. Else:
  .. Return ``X``.
 
 xref:exists_[Some of ``bool^{asterisk}^`` is true]
 
 . If ``bool^{asterisk}^`` matches pattern ``[]``: return ``false``.
-. Else if let ``b~h~ {two-colons} b~t~^{asterisk}^`` be ``bool^{asterisk}^``:
+. Else:
  .. Return ``b~h~`` or xref:exists_[some of ``b~t~^{asterisk}^`` is true].
 
 xref:forall_[All ``bool^{asterisk}^`` are true]
 
 . If ``bool^{asterisk}^`` matches pattern ``[]``: return ``true``.
-. Else if let ``b~h~ {two-colons} b~t~^{asterisk}^`` be ``bool^{asterisk}^``:
+. Else:
  .. Return ``b~h~`` and xref:forall_[all ``b~t~^{asterisk}^`` are true].
 
 xref:init_[The list of the first ``nat'`` natural numbers]
 
 . If ``nat'`` is equal to ``0``:
  .. Return ``·``.
-. Else if ``nat'`` is not equal to ``0``:
+. Else:
  .. Let ``n'`` be ``nat'`` - ``1``.
  .. Return ``n' {two-colons} xref:init_[$init_(n')]``.
 
@@ -173,7 +173,7 @@ xref:repeat_[A list of ``nat'`` copies of ``X``]
 
 . If ``nat'`` is equal to ``0``:
  .. Return ``·``.
-. Else if ``nat'`` is not equal to ``0``:
+. Else:
  .. Let ``n'`` be ``nat'`` - ``1``.
  .. Return ``X`` concatenated with xref:repeat_[a list of ``n'`` copies of ``X``].
 
@@ -189,12 +189,12 @@ xref:filter_[``X^{asterisk}^`` filtered by ``bool^{asterisk}^``]
  .. Check that ``bool^{asterisk}^`` is an empty list.
 
  .. Return ``·``.
-. Else if let ``X~h~ {two-colons} X~t~^{asterisk}^`` be ``X^{asterisk}^``:
+. Else:
  .. Let!~type~ ``b~h~ {two-colons} b~t~^{asterisk}^`` be ``bool^{asterisk}^``.
 
  .. If ``b~h~``:
   ... Return ``X~h~ {two-colons} xref:filter_[$filter_<X>(X~t~^{asterisk}^, b~t~^{asterisk}^)]``.
- .. Else if not ``b~h~``:
+ .. Else:
   ... Return xref:filter_[``X~t~^{asterisk}^`` filtered by ``b~t~^{asterisk}^``].
 
 xref:assoc_[The value associated to ``X`` in ``(X, Y)^{asterisk}^``]
@@ -295,7 +295,7 @@ xref:flatten_typeParameterListOpt[``typeParameterListOpt`` flattened]
 
 . If ``typeParameterListOpt`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``+<+typeParameterList+>+`` be ``typeParameterListOpt``:
+. Else:
  .. Return xref:flatten_typeParameterList[``typeParameterList`` flattened].
 
 xref:flatten_parameterList[``parameterList`` flattened]
@@ -320,7 +320,7 @@ xref:flatten_constructorParameterListOpt[``constructorParameterListOpt`` flatten
 
 . If ``constructorParameterListOpt`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``+(+parameterList+)+`` be ``constructorParameterListOpt``:
+. Else:
  .. Return xref:flatten_parameterList[``parameterList`` flattened].
 
 xref:flatten_namedExpressionList[``namedExpressionList''`` flattened]
@@ -369,7 +369,7 @@ xref:expressionNonBrace_as_expression[The expression corresponding to ``expressi
 . Else if let ``memberAccessBaseNonBrace +.+ member`` be ``expressionNonBrace''``:
  .. If let ``prefixedTypeName`` be ``memberAccessBaseNonBrace``:
   ... Return ``prefixedTypeName +.+ member``.
- .. Else if let ``expressionNonBrace~base~`` be ``memberAccessBaseNonBrace``:
+ .. Else:
   ... Let ``expression~base~`` be xref:expressionNonBrace_as_expression[the expression corresponding to ``expressionNonBrace~base~``].
   ... Return ``expression~base~ +.+ member``.
 . Else if let ``expressionNonBrace~base~ +[+expression~index~+]+`` be ``expressionNonBrace''``:
@@ -379,7 +379,7 @@ xref:expressionNonBrace_as_expression[The expression corresponding to ``expressi
  .. If let ``expressionNonBrace~base~ +[+expression~hi~ +:+ expression~lo~+]+`` be ``sliceAccessExpressionNonBrace``:
   ... Let ``expression~base~`` be xref:expressionNonBrace_as_expression[the expression corresponding to ``expressionNonBrace~base~``].
   ... Return ``expression~base~ +[+expression~hi~ +:+ expression~lo~+]+``.
- .. Else if let ``expressionNonBrace~base~ +[+expression~l~ +++ +:+ expression~w~+]+`` be ``sliceAccessExpressionNonBrace``:
+ .. Else:
   ... Let ``expression~base~`` be xref:expressionNonBrace_as_expression[the expression corresponding to ``expressionNonBrace~base~``].
   ... Return ``expression~base~ +[+expression~l~ +++ +:+ expression~w~+]+``.
 . Else if let ``callExpressionNonBrace`` be ``expressionNonBrace''``:
@@ -387,12 +387,12 @@ xref:expressionNonBrace_as_expression[The expression corresponding to ``expressi
   ... If let ``expressionNonBrace`` be ``callTargetNonBrace``:
    .... Let ``expression`` be xref:expressionNonBrace_as_expression[the expression corresponding to ``expressionNonBrace``].
    .... Return ``expression +(+argumentList+)+``.
-  ... Else if let ``constructorTarget`` be ``callTargetNonBrace``:
+  ... Else:
    .... Return ``constructorTarget +(+argumentList+)+``.
- .. Else if let ``expressionNonBrace +<+realTypeArgumentList+>+ +(+argumentList+)+`` be ``callExpressionNonBrace``:
+ .. Else:
   ... Let ``expression`` be xref:expressionNonBrace_as_expression[the expression corresponding to ``expressionNonBrace``].
   ... Return ``expression +<+realTypeArgumentList+>+ +(+argumentList+)+``.
-. Else if let ``parenthesizedExpression`` be ``expressionNonBrace''``:
+. Else:
  .. Return ``parenthesizedExpression``.
 
 xref:flatten_simpleKeysetExpressionList[``simpleKeysetExpressionList''`` flattened]
@@ -490,7 +490,7 @@ xref:expression_as_lvalue[The l-value corresponding to ``expression''``]
  .. If let ``expression~base~ +[+expression~hi~ +:+ expression~lo~+]+`` be ``sliceAccessExpression``:
   ... Let ``lvalue~base~`` be xref:option_get[*!*] xref:expression_as_lvalue[the l-value corresponding to ``expression~base~``].
   ... Return ``lvalue~base~ +[+expression~hi~ +:+ expression~lo~+]+``.
- .. Else if let ``expression~base~ +[+expression~hi~ +++ +:+ expression~lo~+]+`` be ``sliceAccessExpression``:
+ .. Else:
   ... Let ``lvalue~base~`` be xref:option_get[*!*] xref:expression_as_lvalue[the l-value corresponding to ``expression~base~``].
   ... Return ``lvalue~base~ +[+expression~hi~ +++ +:+ expression~lo~+]+``.
 . Else if let ``+(+expression+)+`` be ``expression''``:
@@ -521,7 +521,7 @@ xref:assignop_as_binop[The binary operator corresponding to ``assignop``]
  .. Return ``+&+``.
 . Else if ``assignop`` matches pattern ``+^=+``:
  .. Return ``+^+``.
-. Else if ``assignop`` matches pattern ``+|=+``:
+. Else:
  .. Return ``+|+``.
 
 . Otherwise:
@@ -568,28 +568,28 @@ xref:flatten_switchCaseList[``switchCaseList''`` flattened]
 
 . If ``switchCaseList''`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``switchCaseList switchCase`` be ``switchCaseList''``:
+. Else:
  .. Return xref:flatten_switchCaseList[``switchCaseList`` flattened] concatenated with ``switchCase``.
 
 xref:flatten_blockElementStatementList[``blockElementStatementList''`` flattened]
 
 . If ``blockElementStatementList''`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``blockElementStatementList blockElementStatement`` be ``blockElementStatementList''``:
+. Else:
  .. Return xref:flatten_blockElementStatementList[``blockElementStatementList`` flattened] concatenated with ``blockElementStatement``.
 
 xref:flatten_objectDeclarationList[``objectDeclarationList''`` flattened]
 
 . If ``objectDeclarationList''`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``objectDeclarationList objectDeclaration`` be ``objectDeclarationList''``:
+. Else:
  .. Return xref:flatten_objectDeclarationList[``objectDeclarationList`` flattened] concatenated with ``objectDeclaration``.
 
 xref:flatten_typeFieldList[``typeFieldList''`` flattened]
 
 . If ``typeFieldList''`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``typeFieldList typeField`` be ``typeFieldList''``:
+. Else:
  .. Return xref:flatten_typeFieldList[``typeFieldList`` flattened] concatenated with ``typeField``.
 
 xref:is_externConstructorPrototype[$is_externConstructorPrototype(externConstructorOrMethodPrototype)]
@@ -609,21 +609,21 @@ xref:flatten_externConstructorOrMethodPrototypeList[``externConstructorOrMethodP
 
 . If ``externConstructorOrMethodPrototypeList''`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``externConstructorOrMethodPrototypeList externConstructorOrMethodPrototype`` be ``externConstructorOrMethodPrototypeList''``:
+. Else:
  .. Return xref:flatten_externConstructorOrMethodPrototypeList[``externConstructorOrMethodPrototypeList`` flattened] concatenated with ``externConstructorOrMethodPrototype``.
 
 xref:flatten_selectCaseList[``selectCaseList''`` flattened]
 
 . If ``selectCaseList''`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``selectCaseList selectCase`` be ``selectCaseList''``:
+. Else:
  .. Return xref:flatten_selectCaseList[``selectCaseList`` flattened] concatenated with ``selectCase``.
 
 xref:flatten_parserStatementList[``parserStatementList''`` flattened]
 
 . If ``parserStatementList''`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``parserStatementList parserStatement`` be ``parserStatementList''``:
+. Else:
  .. Return xref:flatten_parserStatementList[``parserStatementList`` flattened] concatenated with ``parserStatement``.
 
 xref:flatten_parserStateList[``parserStateList''`` flattened]
@@ -642,7 +642,7 @@ xref:flatten_parserLocalDeclarationList[``parserLocalDeclarationList''`` flatten
 
 . If ``parserLocalDeclarationList''`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``parserLocalDeclarationList parserLocalDeclaration`` be ``parserLocalDeclarationList''``:
+. Else:
  .. Return xref:flatten_parserLocalDeclarationList[``parserLocalDeclarationList`` flattened] concatenated with ``parserLocalDeclaration``.
 
 xref:flatten_constOpt[The optional const qualifier in ``constOpt``]
@@ -661,35 +661,35 @@ xref:flatten_tableKeyList[``tableKeyList''`` flattened]
 
 . If ``tableKeyList''`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``tableKeyList tableKey`` be ``tableKeyList''``:
+. Else:
  .. Return xref:flatten_tableKeyList[``tableKeyList`` flattened] concatenated with ``tableKey``.
 
 xref:flatten_tableActionList[``tableActionList''`` flattened]
 
 . If ``tableActionList''`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``tableActionList tableAction`` be ``tableActionList''``:
+. Else:
  .. Return xref:flatten_tableActionList[``tableActionList`` flattened] concatenated with ``tableAction``.
 
 xref:flatten_tableEntryList[``tableEntryList''`` flattened]
 
 . If ``tableEntryList''`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``tableEntryList tableEntry`` be ``tableEntryList''``:
+. Else:
  .. Return xref:flatten_tableEntryList[``tableEntryList`` flattened] concatenated with ``tableEntry``.
 
 xref:flatten_tablePropertyList[``tablePropertyList''`` flattened]
 
 . If ``tablePropertyList''`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``tablePropertyList tableProperty`` be ``tablePropertyList''``:
+. Else:
  .. Return xref:flatten_tablePropertyList[``tablePropertyList`` flattened] concatenated with ``tableProperty``.
 
 xref:flatten_controlLocalDeclarationList[``controlLocalDeclarationList''`` flattened]
 
 . If ``controlLocalDeclarationList''`` matches pattern ````:
  .. Return ``·``.
-. Else if let ``controlLocalDeclarationList controlLocalDeclaration`` be ``controlLocalDeclarationList''``:
+. Else:
  .. Return xref:flatten_controlLocalDeclarationList[``controlLocalDeclarationList`` flattened] concatenated with ``controlLocalDeclaration``.
 
 xref:flatten_annotationList[``annotationList`` flattened]
@@ -716,7 +716,7 @@ xref:flatten_p4program[The list of declarations in ``p4program''``]
  .. Return ``·``.
 . Else if let ``p4program declaration`` be ``p4program''``:
  .. Return xref:flatten_p4program[the list of declarations in ``p4program``] concatenated with ``declaration``.
-. Else if let ``p4program +;+`` be ``p4program''``:
+. Else:
  .. Return xref:flatten_p4program[the list of declarations in ``p4program``].
 
 xref:name[The name of ``name``]
@@ -773,7 +773,7 @@ xref:fresh_typeIds[``nat'`` fresh type variables]
 
 . If ``nat'`` is equal to ``0``:
  .. Return ``·``.
-. Else if ``nat'`` is not equal to ``0``:
+. Else:
  .. Let ``n'`` be ``nat'`` - ``1``.
  .. Return ``xref:fresh_typeId[$fresh_typeId] {two-colons} xref:fresh_typeIds[$fresh_typeIds(n')]``.
 
@@ -803,7 +803,7 @@ xref:constructorId[The constructor identifier for ``name`` ``constructorParamete
 
 . If ``constructorParameterListOpt`` matches pattern ````:
  .. Return ``xref:name[$name(name)] +(+·+)+``.
-. Else if let ``+(+parameterList+)+`` be ``constructorParameterListOpt``:
+. Else:
  .. Return xref:callableId[the callable identifier for ``name`` ``+(+`` ``parameterList`` ``+)+``].
 
 xref:objectId_ends_with[``objectId`` is an object name that ends with ``nameIR``]
@@ -840,7 +840,7 @@ xref:int_of_integerValue[The integer representation of  ``integerValue``]
    .... Return ``i``.
   ... Else if let ``w +S+ i`` be ``integerLiteral``:
    .... Return xref:bitstr_to_int[the two's complement representation of bitstring ``i`` of width ``w``].
-  ... Else if let ``w +W+ i`` be ``integerLiteral``:
+  ... Else:
    .... Return ``i``.
  .. {empty}
   ... Let!~type~ ``++_++ +.+ ++_++ +V+ i`` be ``integerValue``.
@@ -862,20 +862,20 @@ xref:update_fieldValue[$update_fieldValue(fieldValue^{asterisk}^, nameIR, value)
 
 . If ``fieldValue^{asterisk}^`` matches pattern ``[]``:
  .. Return ``·``.
-. Else if let ``value~field_h~ nameIR~field_h~ +;+ {two-colons} fieldValue~t~^{asterisk}^`` be ``fieldValue^{asterisk}^``:
+. Else:
  .. If ``nameIR~field_h~`` is equal to ``nameIR``:
   ... Return ``value nameIR +;+ {two-colons} fieldValue~t~^{asterisk}^``.
- .. Else if ``nameIR~field_h~`` is not equal to ``nameIR``:
+ .. Else:
   ... Return ``value~field_h~ nameIR~field_h~ +;+ {two-colons} xref:update_fieldValue[$update_fieldValue(fieldValue~t~^{asterisk}^, nameIR, value)]``.
 
 xref:update_headerUnion[$update_headerUnion(fieldValue''^{asterisk}^, nameIR)]
 
 . If ``fieldValue''^{asterisk}^`` matches pattern ``[]``:
  .. Return ``·``.
-. Else if let ``value~field_h~ nameIR~field_h~ +;+ {two-colons} fieldValue~t~^{asterisk}^`` be ``fieldValue''^{asterisk}^``:
+. Else:
  .. If ``nameIR~field_h~`` is equal to ``nameIR``:
   ... Return ``value~field_h~ nameIR~field_h~ +;+ {two-colons} xref:update_headerUnion[$update_headerUnion(fieldValue~t~^{asterisk}^, nameIR)]``.
- .. Else if ``nameIR~field_h~`` is not equal to ``nameIR``:
+ .. Else:
   ... Let!~type~ ``+HEADER+ typeId +{+++_++ +;+ fieldValue^{asterisk}^+}+`` be ``value~field_h~``.
 
   ... Let ``value~field_h_update~`` be ``+HEADER+ typeId +{+false +;+ fieldValue^{asterisk}^+}+``.
@@ -973,7 +973,7 @@ xref:write_values_from_bits'[$write_values_from_bits'(value^{asterisk}^, n~var~,
 
 . If ``value^{asterisk}^`` matches pattern ``[]``:
  .. Return ( ``·``, ``b^{asterisk}^`` ).
-. Else if let ``value~h~ {two-colons} value~t~^{asterisk}^`` be ``value^{asterisk}^``:
+. Else:
  .. Let ``( value~h_updated~, b~t~^{asterisk}^ )`` be ``xref:write_value_from_bits'[$write_value_from_bits'(value~h~, n~var~, b^{asterisk}^)]``.
  .. Let ``( value~t_updated~^{asterisk}^, b~rest~^{asterisk}^ )`` be ``xref:write_values_from_bits'[$write_values_from_bits'(value~t~^{asterisk}^, n~var~, b~t~^{asterisk}^)]``.
  .. Return ( ``value~h_updated~ {two-colons} value~t_updated~^{asterisk}^``, ``b~rest~^{asterisk}^`` ).
@@ -982,7 +982,7 @@ xref:write_value_fields_from_bits'[$write_value_fields_from_bits'(fieldValue^{as
 
 . If ``fieldValue^{asterisk}^`` matches pattern ``[]``:
  .. Return ( ``·``, ``b^{asterisk}^`` ).
-. Else if let ``fieldValue~h~ {two-colons} fieldValue~t~^{asterisk}^`` be ``fieldValue^{asterisk}^``:
+. Else:
  .. Let ``( fieldValue~h_updated~, b~t~^{asterisk}^ )`` be ``xref:write_value_field_from_bits'[$write_value_field_from_bits'(fieldValue~h~, n~var~, b^{asterisk}^)]``.
  .. Let ``( fieldValue~t_updated~^{asterisk}^, b~rest~^{asterisk}^ )`` be ``xref:write_value_fields_from_bits'[$write_value_fields_from_bits'(fieldValue~t~^{asterisk}^, n~var~, b~t~^{asterisk}^)]``.
  .. Return ( ``fieldValue~h_updated~ {two-colons} fieldValue~t_updated~^{asterisk}^``, ``b~rest~^{asterisk}^`` ).
@@ -1042,7 +1042,7 @@ xref:unroll_aliasType[``typeIR''`` with aliases unrolled]
 
 . If let ``+TYPE+ ++_++ typeIR`` be ``typeIR''``:
  .. Return xref:unroll_aliasType[``typeIR`` with aliases unrolled].
-. Else if let ``+TYPEDEF+ ++_++ typeIR`` be ``typeIR''``:
+. Else:
  .. Return xref:unroll_aliasType[``typeIR`` with aliases unrolled].
 
 . Otherwise:
@@ -1059,7 +1059,7 @@ xref:width_of_integerTypeIR[Width of integer type ``integerTypeIR``]
  .. Return ``n``.
 . Else if let ``+BIT+ +<+n+>+`` be ``integerTypeIR``:
  .. Return ``n``.
-. Else if let ``+VARBIT+ +<+n+>+`` be ``integerTypeIR``:
+. Else:
  .. Return ``n``.
 
 xref:is_defaultable_typeIR[``typeIR''`` can be default-initialized]
@@ -1161,7 +1161,7 @@ xref:typeId_of_typeDefIR[The name of ``typeDefIR``]
  .. Return ``typeId``.
 . Else if let ``+PACKAGE+ typeId +<+++_++^{asterisk}^ +,+ ++_++^{asterisk}^+>+ +{+++_++^{asterisk}^+}+`` be ``typeDefIR``:
  .. Return ``typeId``.
-. Else if let ``+TABLE+ typeId +{+++_+++}+`` be ``typeDefIR``:
+. Else:
  .. Return ``typeId``.
 
 xref:typeIR_of_typeDefIR[The underlying type of ``typeDefIR``]
@@ -1190,7 +1190,7 @@ xref:typeIR_of_typeDefIR[The underlying type of ``typeDefIR``]
 . Else if let ``+PACKAGE+ typeId +<+typeParameterIR~expl~^{asterisk}^ +,+ typeParameterIR~impl~^{asterisk}^+>+ +{+typeIR^{asterisk}^+}+`` be ``typeDefIR``:
  .. Let ``typeParameterIR^{asterisk}^`` be ``typeParameterIR~expl~^{asterisk}^`` concatenated with ``typeParameterIR~impl~^{asterisk}^``.
  .. Return ``+PACKAGE+ typeId +<+typeParameterIR^{asterisk}^+>+ +{+typeIR^{asterisk}^+}+``.
-. Else if let ``tableObjectTypeDefIR`` be ``typeDefIR``:
+. Else:
  .. Return ``tableObjectTypeDefIR``.
 
 xref:typeParameterListIR_of_typeDefIR[The type parameters of ``typeDefIR``]
@@ -1215,7 +1215,7 @@ xref:typeParameterListIR_of_typeDefIR[The type parameters of ``typeDefIR``]
  .. Return ( ``typeParameterIR~expl~^{asterisk}^``, ``typeParameterIR~impl~^{asterisk}^`` ).
 . Else if let ``+PACKAGE+ ++_++ +<+typeParameterIR~expl~^{asterisk}^ +,+ typeParameterIR~impl~^{asterisk}^+>+ +{+++_++^{asterisk}^+}+`` be ``typeDefIR``:
  .. Return ( ``typeParameterIR~expl~^{asterisk}^``, ``typeParameterIR~impl~^{asterisk}^`` ).
-. Else if let ``tableObjectTypeDefIR`` be ``typeDefIR``:
+. Else:
  .. Return ( ``·``, ``·`` ).
 
 xref:is_monomorphic_typeDefIR[``typeDefIR`` is monomorphic]
@@ -1223,7 +1223,7 @@ xref:is_monomorphic_typeDefIR[``typeDefIR`` is monomorphic]
 . If let ``nameTypeDefIR`` be ``typeDefIR``: return ``true``.
 . Else if let ``aliasTypeDefIR`` be ``typeDefIR``: return ``true``.
 . Else if let ``enumTypeDefIR`` be ``typeDefIR``: return ``true``.
-. Else if let ``tableObjectTypeDefIR`` be ``typeDefIR``: return ``true``.
+. Else: return ``true``.
 
 . Otherwise:
  .. Otherwise:
@@ -1288,7 +1288,7 @@ xref:callableTypeIR_of_callableTypeDefIR[The underlying type of ``callableTypeDe
 . Else if let ``externMethodTypeDefIR`` be ``callableTypeDefIR``:
  .. If let ``+EXTERN_METHOD+ nameIR +<+++_++^{asterisk}^ +,+ ++_++^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ +:+ typeIR`` be ``externMethodTypeDefIR``:
   ... Return ``+EXTERN_METHOD+ nameIR +(+parameterIR^{asterisk}^+)+ +:+ typeIR``.
- .. Else if let ``+EXTERN_METHOD+ +ABSTRACT+ nameIR +<+++_++^{asterisk}^ +,+ ++_++^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ +:+ typeIR`` be ``externMethodTypeDefIR``:
+ .. Else:
   ... Return ``+EXTERN_METHOD+ +ABSTRACT+ nameIR +(+parameterIR^{asterisk}^+)+ +:+ typeIR``.
 . Else if let ``parserApplyMethodTypeDefIR`` be ``callableTypeDefIR``:
  .. Return ``parserApplyMethodTypeDefIR``.
@@ -1306,7 +1306,7 @@ xref:typeParameterListIR_of_callableTypeDefIR[The type parameters of ``callableT
 . Else if let ``externMethodTypeDefIR`` be ``callableTypeDefIR``:
  .. If let ``+EXTERN_METHOD+ ++_++ +<+typeParameterIR~expl~^{asterisk}^ +,+ typeParameterIR~impl~^{asterisk}^+>+ +(+++_++^{asterisk}^+)+ +:+ ++_++`` be ``externMethodTypeDefIR``:
   ... Return ( ``typeParameterIR~expl~^{asterisk}^``, ``typeParameterIR~impl~^{asterisk}^`` ).
- .. Else if let ``+EXTERN_METHOD+ +ABSTRACT+ ++_++ +<+typeParameterIR~expl~^{asterisk}^ +,+ typeParameterIR~impl~^{asterisk}^+>+ +(+++_++^{asterisk}^+)+ +:+ ++_++`` be ``externMethodTypeDefIR``:
+ .. Else:
   ... Return ( ``typeParameterIR~expl~^{asterisk}^``, ``typeParameterIR~impl~^{asterisk}^`` ).
 . Else if let ``parserApplyMethodTypeDefIR`` be ``callableTypeDefIR``:
  .. Return ( ``·``, ``·`` ).
@@ -1319,7 +1319,7 @@ xref:parameterListIR_of_callableTypeDefIR[The parameters of ``callableTypeDefIR`
  .. Return ``xref:parameterListIR_of_actionTypeDefIR[$parameterListIR_of_actionTypeDefIR(actionTypeDefIR)]``.
 . Else if let ``functionTypeDefIR`` be ``callableTypeDefIR``:
  .. Return ``xref:parameterListIR_of_functionTypeDefIR[$parameterListIR_of_functionTypeDefIR(functionTypeDefIR)]``.
-. Else if let ``methodTypeDefIR`` be ``callableTypeDefIR``:
+. Else:
  .. Return ``xref:parameterListIR_of_methodTypeDefIR[$parameterListIR_of_methodTypeDefIR(methodTypeDefIR)]``.
 
 xref:parameterListIR_of_actionTypeDefIR[$parameterListIR_of_actionTypeDefIR(++_++ +ACTION+ ++_++ +(+parameterIR^{asterisk}^+)+)]
@@ -1330,7 +1330,7 @@ xref:parameterListIR_of_functionTypeDefIR[$parameterListIR_of_functionTypeDefIR(
 
 . If let ``definedFunctionTypeDefIR`` be ``functionTypeDefIR``:
  .. Return ``xref:parameterListIR_of_definedFunctionTypeDefIR[$parameterListIR_of_definedFunctionTypeDefIR(definedFunctionTypeDefIR)]``.
-. Else if let ``externFunctionTypeDefIR`` be ``functionTypeDefIR``:
+. Else:
  .. Return ``xref:parameterListIR_of_externFunctionTypeDefIR[$parameterListIR_of_externFunctionTypeDefIR(externFunctionTypeDefIR)]``.
 
 xref:parameterListIR_of_definedFunctionTypeDefIR[$parameterListIR_of_definedFunctionTypeDefIR(+FUNCTION+ ++_++ +<+++_++^{asterisk}^ +,+ ++_++^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ +:+ ++_++)]
@@ -1349,14 +1349,14 @@ xref:parameterListIR_of_methodTypeDefIR[$parameterListIR_of_methodTypeDefIR(meth
  .. Return ``xref:parameterListIR_of_parserApplyMethodTypeIR[$parameterListIR_of_parserApplyMethodTypeIR(parserApplyMethodTypeIR)]``.
 . Else if let ``controlApplyMethodTypeIR`` be ``methodTypeDefIR``:
  .. Return ``xref:parameterListIR_of_controlApplyMethodTypeIR[$parameterListIR_of_controlApplyMethodTypeIR(controlApplyMethodTypeIR)]``.
-. Else if let ``tableApplyMethodTypeDefIR`` be ``methodTypeDefIR``:
+. Else:
  .. Return ``xref:parameterListIR_of_tableApplyMethodTypeDefIR[$parameterListIR_of_tableApplyMethodTypeDefIR(tableApplyMethodTypeDefIR)]``.
 
 xref:parameterListIR_of_externMethodTypeDefIR[$parameterListIR_of_externMethodTypeDefIR(externMethodTypeDefIR)]
 
 . If let ``+EXTERN_METHOD+ ++_++ +<+++_++^{asterisk}^ +,+ ++_++^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ +:+ ++_++`` be ``externMethodTypeDefIR``:
  .. Return ``parameterIR^{asterisk}^``.
-. Else if let ``+EXTERN_METHOD+ +ABSTRACT+ ++_++ +<+++_++^{asterisk}^ +,+ ++_++^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ +:+ ++_++`` be ``externMethodTypeDefIR``:
+. Else:
  .. Return ``parameterIR^{asterisk}^``.
 
 xref:parameterListIR_of_parserApplyMethodTypeIR[$parameterListIR_of_parserApplyMethodTypeIR(+PARSER_APPLY+ +(+parameterIR^{asterisk}^+)+)]
@@ -1422,16 +1422,16 @@ xref:free_typeIR[Free type identifiers in ``typeIR''``]
 . Else if let ``sequenceTypeIR`` be ``typeIR''``:
  .. If let ``+SEQ+ +<+typeIR^{asterisk}^+>+`` be ``sequenceTypeIR``:
   ... Return xref:unions_set[the union of the sets ``$free_typeIR(typeIR)^{asterisk}^``].
- .. Else if let ``+SEQ+ +<+typeIR^{asterisk}^ +,+ +...++>+`` be ``sequenceTypeIR``:
+ .. Else:
   ... Return xref:unions_set[the union of the sets ``$free_typeIR(typeIR)^{asterisk}^``].
 . Else if let ``recordTypeIR`` be ``typeIR''``:
  .. If let ``+RECORD+ +{+( ++_++ typeIR ++_++ +;+ )^{asterisk}^+}+`` be ``recordTypeIR``:
   ... Return xref:unions_set[the union of the sets ``$free_typeIR(typeIR)^{asterisk}^``].
- .. Else if let ``+RECORD+ +{+( ++_++ typeIR ++_++ +;+ )^{asterisk}^ +,+ +...++}+`` be ``recordTypeIR``:
+ .. Else:
   ... Return xref:unions_set[the union of the sets ``$free_typeIR(typeIR)^{asterisk}^``].
 . Else if let ``+SET+ +<+typeIR+>+`` be ``typeIR''``:
  .. Return xref:free_typeIR[free type identifiers in ``typeIR``].
-. Else if let ``tableMetadataTypeIR`` be ``typeIR''``:
+. Else:
  .. Return ``+{+·+}+``.
 
 xref:free_typeDefIR[Free type identifiers in ``typeDefIR``]
@@ -1468,7 +1468,7 @@ xref:free_callableTypeIR[Free type identifiers in ``callableTypeIR``]
   ... Let ``B~params~`` be xref:unions_set[the union of the sets ``$free_parameterIR(parameterIR)^{asterisk}^``].
   ... Let ``B~ret~`` be xref:free_typeIR[free type identifiers in ``typeIR``].
   ... Return xref:union_set[the union of the sets ``B~params~`` and ``B~ret~``].
- .. Else if let ``+EXTERN_METHOD+ +ABSTRACT+ ++_++ +(+parameterIR^{asterisk}^+)+ +:+ typeIR`` be ``externMethodTypeIR``:
+ .. Else:
   ... Let ``B~params~`` be xref:unions_set[the union of the sets ``$free_parameterIR(parameterIR)^{asterisk}^``].
   ... Let ``B~ret~`` be xref:free_typeIR[free type identifiers in ``typeIR``].
   ... Return xref:union_set[the union of the sets ``B~params~`` and ``B~ret~``].
@@ -1478,7 +1478,7 @@ xref:free_callableTypeIR[Free type identifiers in ``callableTypeIR``]
 . Else if let ``+CONTROL_APPLY+ +(+parameterIR^{asterisk}^+)+`` be ``callableTypeIR``:
  .. Let ``B~params~`` be xref:unions_set[the union of the sets ``$free_parameterIR(parameterIR)^{asterisk}^``].
  .. Return ``B~params~``.
-. Else if let ``+TABLE_APPLY+ +:+ ++_++`` be ``callableTypeIR``:
+. Else:
  .. Return ``+{+·+}+``.
 
 xref:free_callableTypeDefIR[Free type identifiers in ``callableTypeDefIR``]
@@ -1627,20 +1627,20 @@ xref:subst_typeIR'[``typeIR'''`` substituted by a non-empty ``theta``]
  .. If let ``+SEQ+ +<+typeIR^{asterisk}^+>+`` be ``sequenceTypeIR``:
   ... Let ``typeIR~subst~`` be xref:subst_typeIR'[``typeIR`` substituted by a non-empty ``theta``], for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``typeIR~subst~`` in ``typeIR~subst~^{asterisk}^``.
   ... Return ``+SEQ+ +<+typeIR~subst~^{asterisk}^+>+``.
- .. Else if let ``+SEQ+ +<+typeIR^{asterisk}^ +,+ +...++>+`` be ``sequenceTypeIR``:
+ .. Else:
   ... Let ``typeIR~subst~`` be xref:subst_typeIR'[``typeIR`` substituted by a non-empty ``theta``], for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``typeIR~subst~`` in ``typeIR~subst~^{asterisk}^``.
   ... Return ``+SEQ+ +<+typeIR~subst~^{asterisk}^ +,+ +...++>+``.
 . Else if let ``recordTypeIR`` be ``typeIR'''``:
  .. If let ``+RECORD+ +{+( annotationList typeIR~field~ id~field~ +;+ )^{asterisk}^+}+`` be ``recordTypeIR``:
   ... Let ``typeIR~field_subst~`` be xref:subst_typeIR'[``typeIR~field~`` substituted by a non-empty ``theta``], for all ``typeIR~field~`` in ``typeIR~field~^{asterisk}^`` and ``typeIR~field_subst~`` in ``typeIR~field_subst~^{asterisk}^``.
   ... Return ``+RECORD+ +{+( annotationList typeIR~field_subst~ id~field~ +;+ )^{asterisk}^+}+``.
- .. Else if let ``+RECORD+ +{+( annotationList typeIR~field~ id~field~ +;+ )^{asterisk}^ +,+ +...++}+`` be ``recordTypeIR``:
+ .. Else:
   ... Let ``typeIR~field_subst~`` be xref:subst_typeIR'[``typeIR~field~`` substituted by a non-empty ``theta``], for all ``typeIR~field~`` in ``typeIR~field~^{asterisk}^`` and ``typeIR~field_subst~`` in ``typeIR~field_subst~^{asterisk}^``.
   ... Return ``+RECORD+ +{+( annotationList typeIR~field_subst~ id~field~ +;+ )^{asterisk}^ +,+ +...++}+``.
 . Else if let ``+SET+ +<+typeIR+>+`` be ``typeIR'''``:
  .. Let ``typeIR~subst~`` be xref:subst_typeIR'[``typeIR`` substituted by a non-empty ``theta``].
  .. Return ``+SET+ +<+typeIR~subst~+>+``.
-. Else if let ``tableMetadataTypeIR`` be ``typeIR'''``:
+. Else:
  .. Return ``tableMetadataTypeIR``.
 
 xref:subst_parameterIR[``parameterIR`` substituted by ``set<pair<typeId, typeIR>>'``]
@@ -1690,7 +1690,7 @@ xref:subst_callableTypeIR'[``callableTypeIR`` substituted by a non-empty ``theta
   ... Let ``parameterIR~subst~`` be xref:subst_parameterIR'[``parameterIR`` substituted by a non-empty ``theta``], for all ``parameterIR`` in ``parameterIR^{asterisk}^`` and ``parameterIR~subst~`` in ``parameterIR~subst~^{asterisk}^``.
   ... Let ``typeIR~subst~`` be xref:subst_typeIR'[``typeIR`` substituted by a non-empty ``theta``].
   ... Return ``+EXTERN_METHOD+ nameIR +(+parameterIR~subst~^{asterisk}^+)+ +:+ typeIR~subst~``.
- .. Else if let ``+EXTERN_METHOD+ +ABSTRACT+ nameIR +(+parameterIR^{asterisk}^+)+ +:+ typeIR`` be ``externMethodTypeIR``:
+ .. Else:
   ... Let ``parameterIR~subst~`` be xref:subst_parameterIR'[``parameterIR`` substituted by a non-empty ``theta``], for all ``parameterIR`` in ``parameterIR^{asterisk}^`` and ``parameterIR~subst~`` in ``parameterIR~subst~^{asterisk}^``.
   ... Let ``typeIR~subst~`` be xref:subst_typeIR'[``typeIR`` substituted by a non-empty ``theta``].
   ... Return ``+EXTERN_METHOD+ +ABSTRACT+ nameIR +(+parameterIR~subst~^{asterisk}^+)+ +:+ typeIR~subst~``.
@@ -1700,7 +1700,7 @@ xref:subst_callableTypeIR'[``callableTypeIR`` substituted by a non-empty ``theta
 . Else if let ``+CONTROL_APPLY+ +(+parameterIR^{asterisk}^+)+`` be ``callableTypeIR``:
  .. Let ``parameterIR~subst~`` be xref:subst_parameterIR'[``parameterIR`` substituted by a non-empty ``theta``], for all ``parameterIR`` in ``parameterIR^{asterisk}^`` and ``parameterIR~subst~`` in ``parameterIR~subst~^{asterisk}^``.
  .. Return ``+CONTROL_APPLY+ +(+parameterIR~subst~^{asterisk}^+)+``.
-. Else if let ``tableApplyMethodTypeIR`` be ``callableTypeIR``:
+. Else:
  .. Return ``tableApplyMethodTypeIR``.
 
 xref:subst_callableTypeDefIR[``callableTypeDefIR`` substituted by ``set<pair<typeId, typeIR>>'``]
@@ -1739,7 +1739,7 @@ xref:subst_callableTypeDefIR'[``callableTypeDefIR`` substituted by a non-empty `
   ... Let ``parameterIR~subst~`` be xref:subst_parameterIR[``parameterIR`` substituted by ``theta~fresh~``], for all ``parameterIR`` in ``parameterIR^{asterisk}^`` and ``parameterIR~subst~`` in ``parameterIR~subst~^{asterisk}^``.
   ... Let ``typeIR~subst~`` be xref:subst_typeIR[``typeIR`` substituted by ``theta~fresh~``].
   ... Return ``+EXTERN_METHOD+ nameIR +<+typeParameterIR~expl_fresh~^{asterisk}^ +,+ typeParameterIR~impl_fresh~^{asterisk}^+>+ +(+parameterIR~subst~^{asterisk}^+)+ +:+ typeIR~subst~``.
- .. Else if let ``+EXTERN_METHOD+ +ABSTRACT+ nameIR +<+typeParameterIR~expl~^{asterisk}^ +,+ typeParameterIR~impl~^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ +:+ typeIR`` be ``externMethodTypeDefIR``:
+ .. Else:
   ... Let ``B`` be xref:free_callableTypeIR[free type identifiers in ``+EXTERN_METHOD+ +ABSTRACT+ nameIR +(+parameterIR^{asterisk}^+)+ +:+ typeIR``].
   ... Let ``( theta~fresh~, typeParameterIR~expl_fresh~^{asterisk}^, typeParameterIR~impl_fresh~^{asterisk}^ )`` be ``xref:capture_avoiding[$capture_avoiding(theta, typeParameterIR~expl~^{asterisk}^, typeParameterIR~impl~^{asterisk}^, B)]``.
   ... Let ``parameterIR~subst~`` be xref:subst_parameterIR[``parameterIR`` substituted by ``theta~fresh~``], for all ``parameterIR`` in ``parameterIR^{asterisk}^`` and ``parameterIR~subst~`` in ``parameterIR~subst~^{asterisk}^``.
@@ -1965,7 +1965,7 @@ xref:Type_alpha[Type_alpha]:
 
     ..... If xref:Type_alpha[``typeIR~a~`` and ``typeIR~b~`` are the same type], for all ``typeIR~a~`` in ``typeIR~a~^{asterisk}^`` and ``typeIR~b~`` in ``typeIR~b~^{asterisk}^``:
      ...... The relation holds.
-   .... Else if let ``+SEQ+ +<+typeIR~a~^{asterisk}^ +,+ +...++>+`` be ``sequenceTypeIR``:
+   .... Else:
     ..... Let!~type~ ``sequenceTypeIR'`` be ``typeIR'''``.
 
     ..... Let!~type~ ``+SEQ+ +<+typeIR~b~^{asterisk}^ +,+ +...++>+`` be ``sequenceTypeIR'``.
@@ -1984,7 +1984,7 @@ xref:Type_alpha[Type_alpha]:
 
     ..... If xref:Type_alpha[``typeIR~field_a~`` and ``typeIR~field_b~`` are the same type], for all ``typeIR~field_a~`` in ``typeIR~field_a~^{asterisk}^`` and ``typeIR~field_b~`` in ``typeIR~field_b~^{asterisk}^``:
      ...... The relation holds.
-   .... Else if let ``+RECORD+ +{+( annotationList typeIR~field_a~ nameIR~field~ +;+ )^{asterisk}^ +,+ +...++}+`` be ``recordTypeIR``:
+   .... Else:
     ..... Let!~type~ ``recordTypeIR'`` be ``typeIR'''``.
 
     ..... Let!~type~ ``+RECORD+ +{+( annotationList' typeIR~field_b~ nameIR~field'~ +;+ )^{asterisk}^ +,+ +...++}+`` be ``recordTypeIR'``.
@@ -2000,7 +2000,7 @@ xref:Type_alpha[Type_alpha]:
 
    .... If xref:Type_alpha[``typeIR~a~`` and ``typeIR~b~`` are the same type]:
     ..... The relation holds.
-  ... Else if let ``tableMetadataTypeIR`` be ``typeIR''``:
+  ... Else:
    .... Let!~type~ ``tableMetadataTypeIR'`` be ``typeIR'''``.
 
    .... Check that ``tableMetadataTypeIR`` is equal to ``tableMetadataTypeIR'``.
@@ -2035,7 +2035,7 @@ xref:ExternMethodType_alpha[ExternMethodType_alpha]:
  .. If xref:ParameterType_alpha[``parameterIR~a~`` and ``parameterIR~b~`` are the same type], for all ``parameterIR~a~`` in ``parameterIR~a~^{asterisk}^`` and ``parameterIR~b~`` in ``parameterIR~b~^{asterisk}^``:
   ... If xref:Type_alpha[``typeIR~a~`` and ``typeIR~b~`` are the same type]:
    .... The relation holds.
-. Else if let ``+EXTERN_METHOD+ +ABSTRACT+ nameIR +(+parameterIR~a~^{asterisk}^+)+ +:+ typeIR~a~`` be ``externMethodTypeIR``:
+. Else:
  .. Let!~type~ ``+EXTERN_METHOD+ +ABSTRACT+ nameIR' +(+parameterIR~b~^{asterisk}^+)+ +:+ typeIR~b~`` be ``externMethodTypeIR'``.
 
  .. Check that ``nameIR`` is equal to ``nameIR'``.
@@ -2079,12 +2079,12 @@ xref:join_ctk[The join of ``ctk''`` and ``ctk'''``]
 . If ``ctk''`` matches pattern ``+LCTK+``:
  .. If ``ctk'''`` matches pattern ``+LCTK+``:
   ... Return ``+LCTK+``.
- .. Else if ``ctk'''`` matches pattern ``+CTK+``:
+ .. Else:
   ... Return ``+CTK+``.
-. Else if ``ctk''`` matches pattern ``+CTK+``:
+. Else:
  .. If ``ctk'''`` matches pattern ``+LCTK+``:
   ... Return ``+CTK+``.
- .. Else if ``ctk'''`` matches pattern ``+CTK+``:
+ .. Else:
   ... Return ``+CTK+``.
 
 . Otherwise:
@@ -2134,7 +2134,7 @@ xref:un_op[``unop`` ``value``]
  .. Return xref:un_lnot[``+!+`` ``value``].
 . Else if ``unop`` matches pattern ``+++``:
  .. Return xref:un_plus[``+++`` ``value``].
-. Else if ``unop`` matches pattern ``+-+``:
+. Else:
  .. Return xref:un_minus[``+-+`` ``value``].
 
 xref:un_bnot[``+~+`` ``value``]
@@ -2161,7 +2161,7 @@ xref:un_plus[``+++`` ``value``]
  .. Return ``+D+ i``.
 . Else if let ``w +W+ i`` be ``integerLiteral``:
  .. Return ``w +W+ i``.
-. Else if let ``w +S+ i`` be ``integerLiteral``:
+. Else:
  .. Return ``w +S+ i``.
 
 xref:un_minus[``+-+`` ``value``]
@@ -2173,7 +2173,7 @@ xref:un_minus[``+-+`` ``value``]
 . Else if let ``w +W+ i`` be ``integerLiteral``:
  .. Let ``i'`` be xref:pow2[2 to the power of ``w``] - ``i``.
  .. Return ``w +W+ i'``.
-. Else if let ``w +S+ i`` be ``integerLiteral``:
+. Else:
  .. Let ``i'`` be xref:int_to_bitstr[the bitstring of width ``w`` representing the integer the two's complement representation of bitstring ``-i`` of width ``w``].
  .. Return ``w +S+ i'``.
 
@@ -2239,7 +2239,7 @@ xref:bin_plus[``value`` ``+++`` ``value'``]
  .. Let ``i~r'~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i~r~`` of width ``w``].
  .. Let ``i'`` be xref:int_to_bitstr[the bitstring of width ``w`` representing the integer ``i~l'~`` + ``i~r'~``].
  .. Return ``w +W+ i'``.
-. Else if let ``w +S+ i~l~`` be ``integerLiteral``:
+. Else:
  .. Let!~type~ ``integerLiteral'`` be ``value'``.
 
  .. Let!~type~ ``w' +S+ i~r~`` be ``integerLiteral'``.
@@ -2315,7 +2315,7 @@ xref:bin_minus[``value`` ``+-+`` ``value'``]
  .. Let ``i~r'~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i~r~`` of width ``w``].
  .. Let ``i'`` be xref:int_to_bitstr[the bitstring of width ``w`` representing the integer ``i~l'~`` - ``i~r'~``].
  .. Return ``w +W+ i'``.
-. Else if let ``w +S+ i~l~`` be ``integerLiteral``:
+. Else:
  .. Let!~type~ ``integerLiteral'`` be ``value'``.
 
  .. Let!~type~ ``w' +S+ i~r~`` be ``integerLiteral'``.
@@ -2390,7 +2390,7 @@ xref:bin_mul[``value`` ``+*+`` ``value'``]
  .. Let ``i~r'~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i~r~`` of width ``w``].
  .. Let ``i'`` be xref:int_to_bitstr[the bitstring of width ``w`` representing the integer ``i~l'~`` * ``i~r'~``].
  .. Return ``w +W+ i'``.
-. Else if let ``w +S+ i~l~`` be ``integerLiteral``:
+. Else:
  .. Let!~type~ ``integerLiteral'`` be ``value'``.
 
  .. Let!~type~ ``w' +S+ i~r~`` be ``integerLiteral'``.
@@ -2437,7 +2437,7 @@ xref:bin_shl[``value`` ``+<<+`` ``value'``]
   ... Return ``+D+ xref:shl[$shl(i~l~, i~r~)]``.
  .. Else if let ``w~r~ +W+ i~r~`` be ``integerLiteral'``:
   ... Return ``+D+ xref:shl[$shl(i~l~, i~r~)]``.
- .. Else if let ``w~r~ +S+ i~r~`` be ``integerLiteral'``:
+ .. Else:
   ... Let ``i~r'~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i~r~`` of width ``w~r~``].
   ... Return ``+D+ xref:shl[$shl(i~l~, i~r'~)]``.
 . Else if let ``w~l~ +W+ i~l~`` be ``integerLiteral``:
@@ -2448,11 +2448,11 @@ xref:bin_shl[``value`` ``+<<+`` ``value'``]
  .. Else if let ``w~r~ +W+ i~r~`` be ``integerLiteral'``:
   ... Let ``i'`` be xref:int_to_bitstr[the bitstring of width ``w~l~`` representing the integer the left shift of ``i~l~`` by ``i~r~``].
   ... Return ``w~l~ +W+ i'``.
- .. Else if let ``w~r~ +S+ i~r~`` be ``integerLiteral'``:
+ .. Else:
   ... Let ``i~r'~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i~r~`` of width ``w~r~``].
   ... Let ``i'`` be xref:int_to_bitstr[the bitstring of width ``w~l~`` representing the integer the left shift of ``i~l~`` by ``i~r'~``].
   ... Return ``w~l~ +W+ i'``.
-. Else if let ``w~l~ +S+ i~l~`` be ``integerLiteral``:
+. Else:
  .. Let!~type~ ``integerLiteral'`` be ``value'``.
 
  .. If let ``+D+ i~r~`` be ``integerLiteral'``:
@@ -2461,7 +2461,7 @@ xref:bin_shl[``value`` ``+<<+`` ``value'``]
   ... Let ``i~l'~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i~l~`` of width ``w~l~``].
   ... Let ``i'`` be xref:int_to_bitstr[the bitstring of width ``w~l~`` representing the integer the left shift of ``i~l'~`` by ``i~r~``].
   ... Return ``w~l~ +S+ i'``.
- .. Else if let ``w~r~ +S+ i~r~`` be ``integerLiteral'``:
+ .. Else:
   ... Let ``i~l'~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i~l~`` of width ``w~l~``].
   ... Let ``i~r'~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i~r~`` of width ``w~r~``].
   ... Let ``i'`` be xref:int_to_bitstr[the bitstring of width ``w~l~`` representing the integer the left shift of ``i~l'~`` by ``i~r'~``].
@@ -2478,7 +2478,7 @@ xref:bin_shr[``value`` ``+>>+`` ``value'``]
   ... Return ``+D+ xref:shr[$shr(i~l~, i~r~)]``.
  .. Else if let ``w~r~ +W+ i~r~`` be ``integerLiteral'``:
   ... Return ``+D+ xref:shr[$shr(i~l~, i~r~)]``.
- .. Else if let ``w~r~ +S+ i~r~`` be ``integerLiteral'``:
+ .. Else:
   ... Let ``i~r'~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i~r~`` of width ``w~r~``].
   ... Return ``+D+ xref:shr[$shr(i~l~, i~r'~)]``.
 . Else if let ``w~l~ +W+ i~l~`` be ``integerLiteral``:
@@ -2489,11 +2489,11 @@ xref:bin_shr[``value`` ``+>>+`` ``value'``]
  .. Else if let ``w~r~ +W+ i~r~`` be ``integerLiteral'``:
   ... Let ``i'`` be xref:int_to_bitstr[the bitstring of width ``w~l~`` representing the integer the logical right shift of ``i~l~`` by ``i~r~``].
   ... Return ``w~l~ +W+ i'``.
- .. Else if let ``w~r~ +S+ i~r~`` be ``integerLiteral'``:
+ .. Else:
   ... Let ``i~r'~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i~r~`` of width ``w~r~``].
   ... Let ``i'`` be xref:int_to_bitstr[the bitstring of width ``w~l~`` representing the integer the logical right shift of ``i~l~`` by ``i~r'~``].
   ... Return ``w~l~ +W+ i'``.
-. Else if let ``w~l~ +S+ i~l~`` be ``integerLiteral``:
+. Else:
  .. Let!~type~ ``integerLiteral'`` be ``value'``.
 
  .. If let ``+D+ i~r~`` be ``integerLiteral'``:
@@ -2528,7 +2528,7 @@ xref:bin_shr[``value`` ``+>>+`` ``value'``]
     ..... Let ``i'`` be xref:shr[the logical right shift of ``i~l~`` by ``i~r~``].
     ..... Let ``i''`` be xref:int_to_bitstr[the bitstring of width ``w~l~`` representing the integer ``i'``].
     ..... Return ``w~l~ +S+ i''``.
- .. Else if let ``w~r~ +S+ i~r~`` be ``integerLiteral'``:
+ .. Else:
   ... Let ``i~l'~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i~l~`` of width ``w~l~``].
   ... Let ``i~r'~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i~r~`` of width ``w~r~``].
   ... Try:
@@ -2564,7 +2564,7 @@ xref:bin_le[``value`` ``+<=+`` ``value'``]
  .. Check that ``w`` is equal to ``w'``.
 
  .. Return ``i~l~`` is less than or equal to ``i~r~``.
-. Else if let ``w +S+ i~l~`` be ``integerLiteral``:
+. Else:
  .. Let!~type~ ``integerLiteral'`` be ``value'``.
 
  .. Let!~type~ ``w' +S+ i~r~`` be ``integerLiteral'``.
@@ -2593,7 +2593,7 @@ xref:bin_ge[``value`` ``+>=+`` ``value'``]
  .. Check that ``w`` is equal to ``w'``.
 
  .. Return ``i~l~`` is greater than or equal to ``i~r~``.
-. Else if let ``w +S+ i~l~`` be ``integerLiteral``:
+. Else:
  .. Let!~type~ ``integerLiteral'`` be ``value'``.
 
  .. Let!~type~ ``w' +S+ i~r~`` be ``integerLiteral'``.
@@ -2622,7 +2622,7 @@ xref:bin_lt[``value`` ``+<+`` ``value'``]
  .. Check that ``w`` is equal to ``w'``.
 
  .. Return ``i~l~`` is less than ``i~r~``.
-. Else if let ``w +S+ i~l~`` be ``integerLiteral``:
+. Else:
  .. Let!~type~ ``integerLiteral'`` be ``value'``.
 
  .. Let!~type~ ``w' +S+ i~r~`` be ``integerLiteral'``.
@@ -2651,7 +2651,7 @@ xref:bin_gt[``value`` ``+>+`` ``value'``]
  .. Check that ``w`` is equal to ``w'``.
 
  .. Return ``i~l~`` is greater than ``i~r~``.
-. Else if let ``w +S+ i~l~`` be ``integerLiteral``:
+. Else:
  .. Let!~type~ ``integerLiteral'`` be ``value'``.
 
  .. Let!~type~ ``w' +S+ i~r~`` be ``integerLiteral'``.
@@ -2695,7 +2695,7 @@ xref:bin_eq[``value`` ``+==+`` ``value'``]
     ..... Let!~type~ ``w~b~ +W+ i~b~`` be ``integerLiteral'``.
 
     ..... Return ``w~a~`` is equal to ``w~b~`` and ``i~a~`` is equal to ``i~b~``.
-   .... Else if let ``w~a~ +S+ i~a~`` be ``integerLiteral``:
+   .... Else:
     ..... Let!~type~ ``integerLiteral'`` be ``value'``.
 
     ..... Let!~type~ ``w~b~ +S+ i~b~`` be ``integerLiteral'``.
@@ -2738,7 +2738,7 @@ xref:bin_eq[``value`` ``+==+`` ``value'``]
     ..... Let!~type~ ``typeId~b~ +.+ nameIR~field_b~`` be ``enumValue'``.
 
     ..... Return ``typeId~a~`` is equal to ``typeId~b~`` and ``nameIR~field_a~`` is equal to ``nameIR~field_b~``.
-   .... Else if let ``typeId~a~ +.+ ++_++ +.+ value~field_a~`` be ``enumValue``:
+   .... Else:
     ..... Let!~type~ ``enumValue'`` be ``value'``.
 
     ..... Let!~type~ ``typeId~b~ +.+ ++_++ +.+ value~field_b~`` be ``enumValue'``.
@@ -2995,11 +2995,11 @@ xref:cast_to_enum'[$cast_to_enum'(typeId, typeIR, valueFieldIR^{asterisk}^, valu
  .. Let ``value~idx~`` be xref:cast_op[``value~target~`` casted to type ``typeIR``].
  .. Let ``id~unnamed~`` be ``"__UNSPECIFIED"``.
  .. Return ``typeId +.+ id~unnamed~ +.+ value~idx~``.
-. Else if let ``valueFieldIR~h~ {two-colons} valueFieldIR~t~^{asterisk}^`` be ``valueFieldIR^{asterisk}^``:
+. Else:
  .. Let ``nameIR +=+ value +;+`` be ``valueFieldIR~h~``.
  .. If xref:bin_eq[``value`` ``+==+`` ``value~target~``]:
   ... Return ``typeId +.+ nameIR +.+ value``.
- .. Else if xref:bin_eq[not ``value`` ``+==+`` ``value~target~``]:
+ .. Else:
   ... Return ``xref:cast_to_enum'[$cast_to_enum'(typeId, typeIR, valueFieldIR~t~^{asterisk}^, value~target~)]``.
 
 xref:cast_bool[``boolValue'`` casted to type ``typeIR''``]
@@ -3048,7 +3048,7 @@ xref:cast_int[``integerValue`` casted to type ``typeIR''``]
   ... Return ``+D+ i``.
  .. Else if let ``++_++ +W+ i`` be ``integerLiteral``:
   ... Return ``+D+ i``.
- .. Else if let ``w +S+ i`` be ``integerLiteral``:
+ .. Else:
   ... Return ``+D+ xref:bitstr_to_int[$bitstr_to_int(w, i)]``.
 . Else if let ``+BIT+ +<+w~to~+>+`` be ``typeIR''``:
  .. Let!~type~ ``integerLiteral`` be ``integerValue``.
@@ -3059,7 +3059,7 @@ xref:cast_int[``integerValue`` casted to type ``typeIR''``]
  .. Else if let ``++_++ +W+ i`` be ``integerLiteral``:
   ... Let ``i~cast~`` be xref:int_to_bitstr[the bitstring of width ``w~to~`` representing the integer ``i``].
   ... Return ``w~to~ +W+ i~cast~``.
- .. Else if let ``w~from~ +S+ i`` be ``integerLiteral``:
+ .. Else:
   ... Let ``i~from~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i`` of width ``w~from~``].
   ... Let ``i~cast~`` be xref:int_to_bitstr[the bitstring of width ``w~to~`` representing the integer ``i~from~``].
   ... Return ``w~to~ +W+ i~cast~``.
@@ -3072,7 +3072,7 @@ xref:cast_int[``integerValue`` casted to type ``typeIR''``]
  .. Else if let ``++_++ +W+ i`` be ``integerLiteral``:
   ... Let ``i~cast~`` be xref:int_to_bitstr[the bitstring of width ``w~to~`` representing the integer ``i``].
   ... Return ``w~to~ +S+ i~cast~``.
- .. Else if let ``w~from~ +S+ i`` be ``integerLiteral``:
+ .. Else:
   ... Let ``i~from~`` be xref:bitstr_to_int[the two's complement representation of bitstring ``i`` of width ``w~from~``].
   ... Let ``i~cast~`` be xref:int_to_bitstr[the bitstring of width ``w~to~`` representing the integer ``i~from~``].
   ... Return ``w~to~ +S+ i~cast~``.
@@ -3089,7 +3089,7 @@ xref:cast_int[``integerValue`` casted to type ``typeIR''``]
   ... Return xref:cast_op[``+D+ i`` casted to type ``typeIR``].
  .. Else if let ``w +W+ i`` be ``integerLiteral``:
   ... Return xref:cast_op[``w +W+ i`` casted to type ``typeIR``].
- .. Else if let ``w +S+ i`` be ``integerLiteral``:
+ .. Else:
   ... Return xref:cast_op[``w +S+ i`` casted to type ``typeIR``].
 . Else if let ``enumTypeIR`` be ``typeIR''``:
  .. Let!~type~ ``integerLiteral`` be ``integerValue``.
@@ -3105,7 +3105,7 @@ xref:cast_int[``integerValue`` casted to type ``typeIR''``]
   ... Return ``+SET+ +{+xref:cast_op[$cast_op(typeIR, +D+ i)]+}+``.
  .. Else if let ``w +W+ i`` be ``integerLiteral``:
   ... Return ``+SET+ +{+xref:cast_op[$cast_op(typeIR, w +W+ i)]+}+``.
- .. Else if let ``w +S+ i`` be ``integerLiteral``:
+ .. Else:
   ... Return ``+SET+ +{+xref:cast_op[$cast_op(typeIR, w +S+ i)]+}+``.
 
 xref:cast_error[``errorValue'`` casted to type ``typeIR''``]
@@ -3446,7 +3446,7 @@ xref:flatten_prefixedNameIR[The string form of  ``prefixedNameIR``]
 
 . If let ``nameIR`` be ``prefixedNameIR``:
  .. Return ``nameIR``.
-. Else if let ``+.+ nameIR`` be ``prefixedNameIR``:
+. Else:
  .. Return ``"."`` concatenated with ``nameIR``.
 
 xref:type_of_typedExpressionIR[The type of ``typedExpressionIR``]
@@ -3463,7 +3463,7 @@ xref:flatten_keysetExpressionIR[The flattened keyset expression list of  ``keyse
 
 . If let ``simpleKeysetExpressionIR`` be ``keysetExpressionIR``:
  .. Return ``simpleKeysetExpressionIR``.
-. Else if let ``+(+simpleKeysetExpressionListIR+)+`` be ``keysetExpressionIR``:
+. Else:
  .. Return ``simpleKeysetExpressionListIR``.
 
 xref:type_of_typedLvalueIR[The type of lvalue ``typedLvalueIR``]
@@ -3508,7 +3508,7 @@ xref:type_of_typedLvalueIR[The type of lvalue ``typedLvalueIR``]
  .. If let ``typedExpressionIR~base~ +[+typedExpressionIR~hi~ +:+ typedExpressionIR~lo~+]+`` be ``sliceAccessExpressionIR``:
   ... Let ``typedLvalueIR~base~`` be xref:option_get[*!*] xref:typedExpressionIR_as_typedLvalueIR[the l-value form of ``typedExpressionIR~base~``].
   ... Return <<typedLvalueIR,``typedLvalueIR~base~ +[+typedExpressionIR~hi~ +:+ typedExpressionIR~lo~+]+`` annotated with ``+(+typeIR+)+``>>.
- .. Else if let ``typedExpressionIR~base~ +[+typedExpressionIR~l~ +++ +:+ typedExpressionIR~w~+]+`` be ``sliceAccessExpressionIR``:
+ .. Else:
   ... Let ``typedLvalueIR~base~`` be xref:option_get[*!*] xref:typedExpressionIR_as_typedLvalueIR[the l-value form of ``typedExpressionIR~base~``].
   ... Return <<typedLvalueIR,``typedLvalueIR~base~ +[+typedExpressionIR~l~ +++ +:+ typedExpressionIR~w~+]+`` annotated with ``+(+typeIR+)+``>>.
 . Else if let ``+(+typedExpressionIR+)+`` be ``expressionIR``:
@@ -3537,14 +3537,14 @@ xref:partition_parameterListIR[$partition_parameterListIR(parameterIR^{asterisk}
 
 . If ``parameterIR^{asterisk}^`` matches pattern ``[]``:
  .. Return ( ``·``, ``·``, ``·`` ).
-. Else if let ``parameterIR~h~ {two-colons} parameterIR~t~^{asterisk}^`` be ``parameterIR^{asterisk}^``:
+. Else:
  .. Let ``( parameterIR~given~^{asterisk}^, parameterIR~default~^{asterisk}^, parameterIR~optional~^{asterisk}^ )`` be ``xref:partition_parameterListIR[$partition_parameterListIR(parameterIR~t~^{asterisk}^, ++_++^{asterisk}^, ++_++^{asterisk}^)]``.
  .. Let ``++_++ ++_++ ++_++ nameIR~h~ ++_++`` be ``parameterIR~h~``.
  .. Try:
   ... {empty}
    .... If ``nameIR~h~`` is in ``++_++^{asterisk}^``:
     ..... Return ( ``parameterIR~given~^{asterisk}^``, ``parameterIR~h~ {two-colons} parameterIR~default~^{asterisk}^``, ``parameterIR~optional~^{asterisk}^`` ).
-   .... Else if ``nameIR~h~`` is not in ``++_++^{asterisk}^``:
+   .... Else:
     ..... Check that ``nameIR~h~`` is not in ``++_++^{asterisk}^``.
 
     ..... Return ( ``parameterIR~h~ {two-colons} parameterIR~given~^{asterisk}^``, ``parameterIR~default~^{asterisk}^``, ``parameterIR~optional~^{asterisk}^`` ).
@@ -3566,7 +3566,7 @@ xref:align_parameterListIR_given[$align_parameterListIR_given(+{+( id +:+ parame
  .. Check that ``argumentIR^{asterisk}^`` is an empty list.
 
  .. Return ``·``.
-. Else if let ``parameterIR~h~ {two-colons} parameterIR~t~^{asterisk}^`` be ``parameterIR'^{asterisk}^``:
+. Else:
  .. Let!~type~ ``argumentIR~h~ {two-colons} argumentIR~t~^{asterisk}^`` be ``argumentIR^{asterisk}^``.
 
  .. Try:
@@ -3758,7 +3758,7 @@ xref:find_non_overloadeds[$find_non_overloadeds<V>(set<pair<callableId, V>>', na
 . If ``nameIR`` is equal to ``nameIR~f~``:
  .. Let ``( callableId~t_found~, V~t_found~ )^{asterisk}^`` be ``xref:find_non_overloadeds[$find_non_overloadeds<V>(+{+( callableId~t~ +:+ V~t~ )^{asterisk}^+}+, nameIR~f~)]``.
  .. Return ``( callableId~h~, V~h~ ) {two-colons} ( callableId~t_found~, V~t_found~ )^{asterisk}^``.
-. Else if ``nameIR`` is not equal to ``nameIR~f~``:
+. Else:
  .. Let ``( callableId~t_found~, V~t_found~ )^{asterisk}^`` be ``xref:find_non_overloadeds[$find_non_overloadeds<V>(+{+( callableId~t~ +:+ V~t~ )^{asterisk}^+}+, nameIR~f~)]``.
  .. Return ``( callableId~t_found~, V~t_found~ )^{asterisk}^``.
 
@@ -3777,7 +3777,7 @@ xref:name_annotationToken[$name_annotationToken(annotationToken)]
     ..... Return ``xref:int_to_text[$int_to_text(i)]``.
    .... Else if let ``n +W+ i`` be ``integerLiteral``:
     ..... Return ``xref:int_to_text[$int_to_text(n)]`` concatenated with ``"w"`` concatenated with ``xref:int_to_text[$int_to_text(i)]``.
-   .... Else if let ``n +S+ i`` be ``integerLiteral``:
+   .... Else:
     ..... Return ``xref:int_to_text[$int_to_text(n)]`` concatenated with ``"s"`` concatenated with ``xref:int_to_text[$int_to_text(i)]``.
  .. {empty}
   ... If ``annotationToken`` matches pattern ``+UNEXPECTED_TOKEN+``:
@@ -4002,7 +4002,7 @@ xref:find_name_annotation_opt[$find_name_annotation_opt(annotationList')]
 
   ... If ``"name"`` is equal to xref:name[the name of ``name``]:
    .... Return ``annotation``.
-  ... Else if ``"name"`` is not equal to xref:name[the name of ``name``]:
+  ... Else:
    .... Return ``·``.
  .. {empty}
   ... Let!~type~ ``annotationListNonEmpty'`` be ``annotationList'``.
@@ -4061,12 +4061,12 @@ xref:subexpressions_of_expressionIR[The sub-expressions of ``expressionIR'``]
 . Else if let ``sequenceExpressionIR`` be ``expressionIR'``:
  .. If let ``+SEQ+ +{+typedExpressionListIR+}+`` be ``sequenceExpressionIR``:
   ... Return xref:subexpressions_of_typedExpressionListIR[the sub-expressions of ``typedExpressionListIR``].
- .. Else if let ``+SEQ+ +{+typedExpressionListIR +,+ +...++}+`` be ``sequenceExpressionIR``:
+ .. Else:
   ... Return xref:subexpressions_of_typedExpressionListIR[the sub-expressions of ``typedExpressionListIR``].
 . Else if let ``recordExpressionIR`` be ``expressionIR'``:
  .. If let ``+RECORD+ +{+( nameIR +=+ typedExpressionIR )^{asterisk}^+}+`` be ``recordExpressionIR``:
   ... Return xref:subexpressions_of_typedExpressionListIR[the sub-expressions of ``typedExpressionIR^{asterisk}^``].
- .. Else if let ``+RECORD+ +{+( nameIR +=+ typedExpressionIR )^{asterisk}^ +,+ +...++}+`` be ``recordExpressionIR``:
+ .. Else:
   ... Return xref:subexpressions_of_typedExpressionListIR[the sub-expressions of ``typedExpressionIR^{asterisk}^``].
 . Else if let ``memberAccessBaseIR +.+ nameIR`` be ``expressionIR'``:
  .. Let!~type~ ``typedExpressionIR`` be ``memberAccessBaseIR``.
@@ -4081,9 +4081,9 @@ xref:subexpressions_of_expressionIR[The sub-expressions of ``expressionIR'``]
 . Else if let ``callExpressionIR`` be ``expressionIR'``:
  .. If let ``constructorTargetIR +(+argumentIR^{asterisk}^+)+`` be ``callExpressionIR``:
   ... Return xref:subexpressions_of_argumentListIR[the sub-expressions of ``argumentIR^{asterisk}^``].
- .. Else if let ``callableTargetIR +<+typeArgumentIR^{asterisk}^+>+ +(+argumentIR^{asterisk}^+)+`` be ``callExpressionIR``:
+ .. Else:
   ... Return xref:subexpressions_of_argumentListIR[the sub-expressions of ``argumentIR^{asterisk}^``].
-. Else if let ``+(+typedExpressionIR+)+`` be ``expressionIR'``:
+. Else:
  .. Return xref:subexpressions_of_typedExpressionIR[the sub-expressions of ``typedExpressionIR``].
 
 . Otherwise:
@@ -4152,7 +4152,7 @@ xref:bound[Bound type variables from the ``cursor`` layer of ``TC``]
  .. Return ``+{+·+}+``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
  .. Return xref:dom_map[the domain of the map ``TC.+BLOCK+.+TYPE+``].
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Let ``B~block~`` be xref:bound[bound type variables from the ``+BLOCK+`` layer of ``TC``].
  .. Let ``B~local~`` be xref:dom_map[the domain of the map ``TC.+LOCAL+.+TYPE+``].
  .. Return xref:union_set[the union of the sets ``B~block~`` and ``B~local~``].
@@ -4190,7 +4190,7 @@ xref:add_var_t[``TC`` where ``id`` to ``varTypeIR`` is added to the ``cursor`` l
  .. Let ``typeFrame~update~`` be xref:add_map[``TC.+BLOCK+.+FRAME+`` where ``id`` to ``varTypeIR`` is added].
  .. Let ``TC'`` be ``TC`` with ``+BLOCK+.+FRAME+`` set to ``typeFrame~update~``.
  .. Return ``TC'``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Let ``typeFrame'^{asterisk}^`` be ``TC.+LOCAL+.+FRAMES+``.
  .. Let!~type~ ``typeFrame~h~ {two-colons} typeFrame~t~^{asterisk}^`` be ``typeFrame'^{asterisk}^``.
 
@@ -4209,7 +4209,7 @@ xref:add_vars_t[``TC`` where each of ``id^{asterisk}^`` to each of ``varTypeIR^{
  .. Check that ``varTypeIR^{asterisk}^`` is an empty list.
 
  .. Return ``TC``.
-. Else if let ``id~h~ {two-colons} id~t~^{asterisk}^`` be ``id^{asterisk}^``:
+. Else:
  .. Let!~type~ ``varTypeIR~h~ {two-colons} varTypeIR~t~^{asterisk}^`` be ``varTypeIR^{asterisk}^``.
 
  .. Let ``TC'`` be xref:add_var_t[``TC`` where ``id~h~`` to ``varTypeIR~h~`` is added to the ``p`` layer].
@@ -4222,7 +4222,7 @@ xref:add_parameter_t[``++_++ direction typeIR id ++_++`` added to the ``cursor``
  .. Let ``varTypeIR`` be ``typeIR +CTK+ ·``.
  .. Let ``TC'`` be xref:add_var_t[``TC`` where ``id`` to ``varTypeIR`` is added to the ``cursor`` layer].
  .. Return ``TC'``.
-. Else if ``direction`` does not match pattern ````:
+. Else:
  .. Let ``varTypeIR`` be ``direction typeIR +DYN+ ·``.
  .. Let ``TC'`` be xref:add_var_t[``TC`` where ``id`` to ``varTypeIR`` is added to the ``cursor`` layer].
  .. Return ``TC'``.
@@ -4237,7 +4237,7 @@ xref:add_constructorParameters_t[``parameterIR^{asterisk}^`` added to ``TC``]
 
 . If ``parameterIR^{asterisk}^`` matches pattern ``[]``:
  .. Return ``TC``.
-. Else if let ``parameterIR~h~ {two-colons} parameterIR~t~^{asterisk}^`` be ``parameterIR^{asterisk}^``:
+. Else:
  .. Let ``TC'`` be ``xref:add_constructorParameter_t[$add_constructorParameter_t(TC, parameterIR~h~)]``.
  .. Let ``TC''`` be xref:add_constructorParameters_t[``parameterIR~t~^{asterisk}^`` added to ``TC'``].
  .. Return ``TC''``.
@@ -4258,7 +4258,7 @@ xref:add_typeDef_t[``TC`` where ``typeId`` to ``typeDefIR`` is added to the ``cu
  .. Let ``typeDefEnv~update~`` be xref:add_map[``typeDefEnv`` where ``typeId`` to ``typeDefIR`` is added].
  .. Let ``TC'`` be ``TC`` with ``+BLOCK+.+TYPE+`` set to ``typeDefEnv~update~``.
  .. Return ``TC'``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Let ``typeDefEnv`` be ``TC.+LOCAL+.+TYPE+``.
  .. Check that ``~xref:in_set[$in_set<typeId>(typeId, $dom_map<typeId, typeDefIR>(typeDefEnv))]``.
 
@@ -4272,7 +4272,7 @@ xref:add_typeDefs_t[``TC`` where each of ``typeId^{asterisk}^`` to each of ``typ
  .. Check that ``typeDefIR^{asterisk}^`` is an empty list.
 
  .. Return ``TC``.
-. Else if let ``typeId~h~ {two-colons} typeId~t~^{asterisk}^`` be ``typeId^{asterisk}^``:
+. Else:
  .. Let!~type~ ``typeDefIR~h~ {two-colons} typeDefIR~t~^{asterisk}^`` be ``typeDefIR^{asterisk}^``.
 
  .. Let ``TC'`` be xref:add_typeDef_t[``TC`` where ``typeId~h~`` to ``typeDefIR~h~`` is added to the ``p`` layer].
@@ -4347,7 +4347,7 @@ xref:add_constructorDefs_t[Where each of ``callableId^{asterisk}^`` to each of `
  .. Check that ``constructorTypeDefIR^{asterisk}^`` is an empty list.
 
  .. Return ``TC``.
-. Else if let ``callableId~h~ {two-colons} callableId~t~^{asterisk}^`` be ``callableId^{asterisk}^``:
+. Else:
  .. Let!~type~ ``constructorTypeDefIR~h~ {two-colons} constructorTypeDefIR~t~^{asterisk}^`` be ``constructorTypeDefIR^{asterisk}^``.
 
  .. Let ``TC'`` be xref:add_constructorDef_t[where ``callableId~h~`` to ``constructorTypeDefIR~h~`` is added to ``TC``].
@@ -4359,7 +4359,7 @@ xref:find_var_t[The type of variable ``prefixedNameIR`` from the ``p'`` layer of
 . If let ``+.+ id`` be ``prefixedNameIR``:
  .. Let ``typeFrame`` be ``TC.+GLOBAL+.+FRAME+``.
  .. Return xref:find_map[the value of ``id`` in map ``typeFrame``].
-. Else if let ``id`` be ``prefixedNameIR``:
+. Else:
  .. If ``p'`` matches pattern ``+GLOBAL+``:
   ... Let ``typeFrame`` be ``TC.+GLOBAL+.+FRAME+``.
   ... Return xref:find_map[the value of ``id`` in map ``typeFrame``].
@@ -4375,7 +4375,7 @@ xref:find_var_t[The type of variable ``prefixedNameIR`` from the ``p'`` layer of
     ..... Check that ``·`` is equal to xref:find_map[the value of ``id`` in map ``typeFrame``].
 
     ..... Return xref:find_var_t[the type of variable ``id`` from the ``+GLOBAL+`` layer of ``TC``].
- .. Else if ``p'`` matches pattern ``+LOCAL+``:
+ .. Else:
   ... Let ``typeFrame^{asterisk}^`` be ``TC.+LOCAL+.+FRAMES+``.
   ... Let ``varTypeIR'^?^`` be xref:find_maps[the value of ``id`` in maps ``typeFrame^{asterisk}^``].
   ... Try:
@@ -4423,7 +4423,7 @@ xref:find_typeDef_t[The type definition of ``prefixedNameIR`` from the ``p'`` la
      ...... Check that ``·`` is equal to xref:find_map[the value of ``typeId`` in map ``typeDefEnv``].
 
      ...... Return xref:find_typeDef_t[the type definition of ``typeId`` from the ``+GLOBAL+`` layer of ``TC``].
-  ... Else if ``p'`` matches pattern ``+LOCAL+``:
+  ... Else:
    .... Let!~type~ ``typeId`` be ``prefixedNameIR``.
 
    .... Let ``typeDefEnv^{asterisk}^`` be ``TC.+LOCAL+.+TYPE+``.
@@ -4445,7 +4445,7 @@ xref:find_callableDef_overloaded_t[The overloaded callable definition of ``prefi
   ... Let ``callableTypeDefEnv`` be ``TC.+GLOBAL+.+CALLABLE+``.
   ... Let ``callTargetKey`` be xref:callTargetKey[the call target key for ``nameIR`` ``+(+`` ``argumentIR^{asterisk}^`` ``+)+``].
   ... Return xref:find_overloaded[finding the item in ``callableTypeDefEnv`` matching ``callTargetKey`` using parameter getter ``$parameterListIR_of_callableTypeDefIR``].
- .. Else if let ``nameIR`` be ``prefixedNameIR``:
+ .. Else:
   ... Let ``callableTypeDefEnv`` be ``TC.+GLOBAL+.+CALLABLE+``.
   ... Let ``callTargetKey`` be xref:callTargetKey[the call target key for ``nameIR`` ``+(+`` ``argumentIR^{asterisk}^`` ``+)+``].
   ... Return xref:find_overloaded[finding the item in ``callableTypeDefEnv`` matching ``callTargetKey`` using parameter getter ``$parameterListIR_of_callableTypeDefIR``].
@@ -4464,7 +4464,7 @@ xref:find_callableDef_overloaded_t[The overloaded callable definition of ``prefi
    .... Check that ``·`` is equal to xref:find_overloaded[finding the item in ``callableTypeDefEnv`` matching ``callTargetKey`` using parameter getter ``$parameterListIR_of_callableTypeDefIR``].
 
    .... Return xref:find_callableDef_overloaded_t[the overloaded callable definition of ``nameIR``( ``argumentIR^{asterisk}^`` ) from the ``+GLOBAL+`` layer of ``TC``].
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Let!~type~ ``nameIR`` be ``prefixedNameIR``.
 
  .. Return xref:find_callableDef_overloaded_t[the overloaded callable definition of ``nameIR``( ``argumentIR^{asterisk}^`` ) from the ``+BLOCK+`` layer of ``TC``].
@@ -4494,7 +4494,7 @@ xref:find_callableDef_non_overloaded_t[The non-overloaded callable definition of
      ...... Check that ``·`` is equal to ``xref:find_non_overloaded[$find_non_overloaded<callableTypeDefIR>(TC.+BLOCK+.+CALLABLE+, nameIR)]``.
 
      ...... Return xref:find_callableDef_non_overloaded_t[the non-overloaded callable definition of ``nameIR`` from the ``+GLOBAL+`` layer of ``TC``].
-  ... Else if ``p'`` matches pattern ``+LOCAL+``:
+  ... Else:
    .... Let!~type~ ``nameIR`` be ``prefixedNameIR``.
 
    .... Return xref:find_callableDef_non_overloaded_t[the non-overloaded callable definition of ``nameIR`` from the ``+BLOCK+`` layer of ``TC``].
@@ -4504,7 +4504,7 @@ xref:find_constructorDef_overloaded_t[The overloaded constructor definition of `
 . If let ``+.+ nameIR`` be ``prefixedNameIR``:
  .. Let ``callTargetKey`` be xref:callTargetKey[the call target key for ``nameIR`` ``+(+`` ``argumentIR^{asterisk}^`` ``+)+``].
  .. Return xref:find_overloaded[finding the item in ``TC.+GLOBAL+.+CONSTRUCTOR+`` matching ``callTargetKey`` using parameter getter ``$parameterListIR_of_constructorTypeDefIR``].
-. Else if let ``nameIR`` be ``prefixedNameIR``:
+. Else:
  .. Let ``callTargetKey`` be xref:callTargetKey[the call target key for ``nameIR`` ``+(+`` ``argumentIR^{asterisk}^`` ``+)+``].
  .. Return xref:find_overloaded[finding the item in ``TC.+GLOBAL+.+CONSTRUCTOR+`` matching ``callTargetKey`` using parameter getter ``$parameterListIR_of_constructorTypeDefIR``].
 
@@ -4515,7 +4515,7 @@ xref:find_local_return_type_t[The expected return type in ``TC``]
  .. {empty}
   ... If let ``+FUNCTION+ +:+ typeIR~ret~`` be ``localKind``:
    .... Return ``typeIR~ret~``.
-  ... Else if let ``+EXTERN_FUNCTION+ +:+ typeIR~ret~`` be ``localKind``:
+  ... Else:
    .... Return ``typeIR~ret~``.
  .. {empty}
   ... Check that ``+ACTION+`` is equal to ``TC.+LOCAL+.+KIND+``.
@@ -4528,7 +4528,7 @@ xref:find_local_return_type_t[The expected return type in ``TC``]
 
   ... If let ``+EXTERN_METHOD+ +:+ typeIR~ret~`` be ``externMethodLocalKind``:
    .... Return ``typeIR~ret~``.
-  ... Else if let ``+EXTERN_METHOD+ +ABSTRACT+ +:+ typeIR~ret~`` be ``externMethodLocalKind``:
+  ... Else:
    .... Return ``typeIR~ret~``.
  .. {empty}
   ... Check that ``+CONTROL_APPLY_METHOD+`` is equal to ``TC.+LOCAL+.+KIND+``.
@@ -4576,7 +4576,7 @@ xref:requires_priority'[$requires_priority'(text')]
 
 . If ``text'`` is equal to ``"range"``: return ``true``.
 . Else if ``text'`` is equal to ``"ternary"``: return ``true``.
-. Else if ``text'`` is equal to ``"optional"``: return ``true``.
+. Else: return ``true``.
 
 . Otherwise:
  .. Otherwise:
@@ -4587,7 +4587,7 @@ xref:update_mode_tbl[``TBLC`` with match mode updated based on keys ``tableKeyIR
 . Let ``b~pri~`` be xref:requires_priority[match kind of table key ``tableKeyIR`` requires a priority], for all ``b~pri~`` in ``b~pri~^{asterisk}^`` and ``tableKeyIR`` in ``tableKeyIR^{asterisk}^``.
 . If xref:exists_[some of ``b~pri~^{asterisk}^`` is true]:
  .. Return ``TBLC`` with ``+MODE+`` set to ``+PRI+``.
-. Else if xref:exists_[none of ``b~pri~^{asterisk}^`` is true]:
+. Else:
  .. Let ``b~lpm~`` be xref:is_lpm_key[match kind of table key ``tableKeyIR`` is lpm], for all ``b~lpm~`` in ``b~lpm~^{asterisk}^`` and ``tableKeyIR`` in ``tableKeyIR^{asterisk}^``.
  .. Let ``tableKeyIR'^{asterisk}^`` be xref:filter_[``tableKeyIR^{asterisk}^`` filtered by ``b~lpm~^{asterisk}^``].
  .. Try:
@@ -4616,11 +4616,11 @@ xref:find_action'[$find_action'(matchAction^{asterisk}^, prefixedNameIR)]
 
 . If ``matchAction^{asterisk}^`` matches pattern ``[]``:
  .. Return ``·``.
-. Else if let ``matchAction~h~ {two-colons} matchAction~t~^{asterisk}^`` be ``matchAction^{asterisk}^``:
+. Else:
  .. Let ``prefixedNameIR' +(+parameterIR^{asterisk}^ +@+ argumentListIR+)+`` be ``matchAction~h~``.
  .. If ``prefixedNameIR'`` is equal to ``prefixedNameIR``:
   ... Return ( ``parameterIR^{asterisk}^``, ``argumentListIR`` ).
- .. Else if ``prefixedNameIR'`` is not equal to ``prefixedNameIR``:
+ .. Else:
   ... Return ``xref:find_action'[$find_action'(matchAction~t~^{asterisk}^, prefixedNameIR)]``.
 
 xref:set_priorities_of_tableEntryListIR[``tableEntryIR^{asterisk}^`` with priorities set based on table context ``TBLC`` and entry states ``TBLS^{asterisk}^``]
@@ -4647,7 +4647,7 @@ xref:set_priorities_of_tableEntryListIR[``tableEntryIR^{asterisk}^`` with priori
    .... Check that ``TBLC.+MODE+`` matches pattern ``+PRI+``.
 
    .... Return ``·``.
-  ... Else if let ``tableEntryIR~h~ {two-colons} tableEntryIR~t~^{asterisk}^`` be ``tableEntryIR^{asterisk}^``:
+  ... Else:
    .... Check that ``TBLC.+MODE+`` matches pattern ``+PRI+``.
 
    .... Try:
@@ -4680,7 +4680,7 @@ xref:set_priorities_of_tableEntryListIR'[$set_priorities_of_tableEntryListIR'(TB
 
 . If ``tableEntryIR^{asterisk}^`` matches pattern ``[]``:
  .. Return ``·``.
-. Else if let ``tableEntryIR~h~ {two-colons} tableEntryIR~t~^{asterisk}^`` be ``tableEntryIR^{asterisk}^``:
+. Else:
  .. Check that ``·`` is equal to xref:tableEntryPriorityOptIR_of_tableEntryIR[the priority of ``tableEntryIR~h~``].
 
  .. Let ``b~lw~`` be ``TBLC.+PRIORITIES+.+LARGEST_WINS+``.
@@ -4711,9 +4711,9 @@ xref:join_tableEntryState[$join_tableEntryState(tableEntryState, tableEntryState
 . If ``tableEntryState`` matches pattern ``+NON_LPM+``:
  .. If let ``+LPM+ n`` be ``tableEntryState'``:
   ... Return ``+LPM+ n``.
- .. Else if ``tableEntryState'`` matches pattern ``+NON_LPM+``:
+ .. Else:
   ... Return ``+NON_LPM+``.
-. Else if let ``+LPM+ n`` be ``tableEntryState``:
+. Else:
  .. Check that ``tableEntryState'`` matches pattern ``+NON_LPM+``.
 
  .. Return ``+LPM+ n``.
@@ -4851,7 +4851,7 @@ xref:Type_wf[Type_wf]:
  .. If let ``+SEQ+ +<+typeIR^{asterisk}^+>+`` be ``sequenceTypeIR``:
   ... If xref:Type_wf[``typeIR`` is a well-formed type, with bound type variables ``B``], for all ``typeIR`` in ``typeIR^{asterisk}^``:
    .... The relation holds.
- .. Else if let ``+SEQ+ +<+typeIR^{asterisk}^ +,+ +...++>+`` be ``sequenceTypeIR``:
+ .. Else:
   ... If xref:Type_wf[``typeIR`` is a well-formed type, with bound type variables ``B``], for all ``typeIR`` in ``typeIR^{asterisk}^``:
    .... The relation holds.
 . Else if let ``recordTypeIR`` be ``typeIR''``:
@@ -4860,7 +4860,7 @@ xref:Type_wf[Type_wf]:
 
   ... If xref:Type_wf[``typeIR~field~`` is a well-formed type, with bound type variables ``B``], for all ``typeIR~field~`` in ``typeIR~field~^{asterisk}^``:
    .... The relation holds.
- .. Else if let ``+RECORD+ +{+( ++_++ typeIR~field~ nameIR~field~ +;+ )^{asterisk}^ +,+ +...++}+`` be ``recordTypeIR``:
+ .. Else:
   ... Check that xref:distinct_[the elements of ``nameIR~field~^{asterisk}^`` are distinct].
 
   ... If xref:Type_wf[``typeIR~field~`` is a well-formed type, with bound type variables ``B``], for all ``typeIR~field~`` in ``typeIR~field~^{asterisk}^``:
@@ -4874,7 +4874,7 @@ xref:Type_wf[Type_wf]:
  .. Check that xref:distinct_[the elements of ``nameIR^{asterisk}^`` are distinct].
 
  .. The relation holds.
-. Else if let ``+TABLE_STRUCT+ ++_++ +{++HIT+ ++_++ +;+ +MISS+ ++_++ +;+ +ACTION_RUN+ tableMetadataEnumTypeIR +;++}+`` be ``typeIR''``:
+. Else:
  .. If xref:Type_wf[``tableMetadataEnumTypeIR`` is a well-formed type, with bound type variables ``B``]:
   ... The relation holds.
 
@@ -4976,7 +4976,7 @@ xref:CallableType_wf[CallableType_wf]:
 
    .... If xref:ReturnType_wf[``typeIR~ret~`` is a well-formed return type, with bound type variables ``B``]:
     ..... The relation holds.
- .. Else if let ``+EXTERN_METHOD+ +ABSTRACT+ ++_++ +(+parameterIR^{asterisk}^+)+ +:+ typeIR~ret~`` be ``externMethodTypeIR``:
+ .. Else:
   ... If xref:ParameterType_wf[``parameterIR`` is a well-formed parameter, with bound type variables ``B``], for all ``parameterIR`` in ``parameterIR^{asterisk}^``:
    .... Check that xref:is_optional_parameterIR[``parameterIR`` is not an optional parameter], for all ``parameterIR`` in ``parameterIR^{asterisk}^``.
 
@@ -5001,7 +5001,7 @@ xref:CallableType_wf[CallableType_wf]:
   ... Check that xref:nestable_controlApplyMethod[``typeIR`` can be used in a control apply method type], for all ``typeIR`` in ``typeIR^{asterisk}^``.
 
   ... The relation holds.
-. Else if let ``+TABLE_APPLY+ +:+ tableMetadataStructTypeIR`` be ``callableTypeIR``:
+. Else:
  .. The relation holds.
 
 xref:CallableTypeDef_wf[CallableTypeDef_wf]:
@@ -5317,7 +5317,7 @@ xref:directionless_trailing'[$directionless_trailing'(++_++, direction''^{asteri
 . Try:
  .. {empty}
   ... If ``direction''^{asterisk}^`` matches pattern ``[]``: return ``true``.
-  ... Else if let ``direction~h~ {two-colons} direction~t~^{asterisk}^`` be ``direction''^{asterisk}^``:
+  ... Else:
    .... Check that ``direction~h~`` does not match pattern ````.
 
    .... Return ``xref:directionless_trailing'[$directionless_trailing'(false, direction~t~^{asterisk}^)]``.
@@ -5522,14 +5522,14 @@ xref:Expr_eval_lctk[Expr_eval_lctk]:
  .. If let ``+SEQ+ +{+typedExpressionIR^{asterisk}^+}+`` be ``sequenceExpressionIR``:
   ... Let ``value`` be the result of xref:Expr_eval_lctk[local compile-time evaluation of ``typedExpressionIR``, under context ``TC`` at ``p``], for all ``typedExpressionIR`` in ``typedExpressionIR^{asterisk}^`` and ``value`` in ``value^{asterisk}^``.
   ... Result in ``+SEQ+ +(+value^{asterisk}^+)+``.
- .. Else if let ``+SEQ+ +{+typedExpressionIR^{asterisk}^ +,+ +...++}+`` be ``sequenceExpressionIR``:
+ .. Else:
   ... Let ``value`` be the result of xref:Expr_eval_lctk[local compile-time evaluation of ``typedExpressionIR``, under context ``TC`` at ``p``], for all ``typedExpressionIR`` in ``typedExpressionIR^{asterisk}^`` and ``value`` in ``value^{asterisk}^``.
   ... Result in ``+SEQ+ +(+value^{asterisk}^ +,+ +...++)+``.
 . Else if let ``recordExpressionIR`` be ``expressionIR``:
  .. If let ``+RECORD+ +{+( nameIR +=+ typedExpressionIR )^{asterisk}^+}+`` be ``recordExpressionIR``:
   ... Let ``value`` be the result of xref:Expr_eval_lctk[local compile-time evaluation of ``typedExpressionIR``, under context ``TC`` at ``p``], for all ``typedExpressionIR`` in ``typedExpressionIR^{asterisk}^`` and ``value`` in ``value^{asterisk}^``.
   ... Result in ``+RECORD+ +{+( value nameIR +;+ )^{asterisk}^+}+``.
- .. Else if let ``+RECORD+ +{+( nameIR +=+ typedExpressionIR )^{asterisk}^ +,+ +...++}+`` be ``recordExpressionIR``:
+ .. Else:
   ... Let ``value`` be the result of xref:Expr_eval_lctk[local compile-time evaluation of ``typedExpressionIR``, under context ``TC`` at ``p``], for all ``typedExpressionIR`` in ``typedExpressionIR^{asterisk}^`` and ``value`` in ``value^{asterisk}^``.
   ... Result in ``+RECORD+ +{+( value nameIR +;+ )^{asterisk}^ +,+ +...++}+``.
 . Let ``+(+++_++ ++_+++)+`` be ``++_++``.
@@ -5604,7 +5604,7 @@ xref:Expr_eval_lctk[Expr_eval_lctk]:
     ..... Let ``value~hi~`` be the result of xref:Expr_eval_lctk[local compile-time evaluation of ``typedExpressionIR~hi~``, under context ``TC`` at ``p``].
     ..... Let ``value~lo~`` be the result of xref:Expr_eval_lctk[local compile-time evaluation of ``typedExpressionIR~lo~``, under context ``TC`` at ``p``].
     ..... Result in <<bitacc_range_op,``value~base~`` ``+[+`` ``value~hi~`` ``+:+`` ``value~lo~`` ``+]+``>>.
-   .... Else if let ``typedExpressionIR~base~ +[+typedExpressionIR~l~ +++ +:+ typedExpressionIR~w~+]+`` be ``sliceAccessExpressionIR``:
+   .... Else:
     ..... Let ``value~base~`` be the result of xref:Expr_eval_lctk[local compile-time evaluation of ``typedExpressionIR~base~``, under context ``TC`` at ``p``].
     ..... Let ``value~l~`` be the result of xref:Expr_eval_lctk[local compile-time evaluation of ``typedExpressionIR~l~``, under context ``TC`` at ``p``].
     ..... Let ``value~w~`` be the result of xref:Expr_eval_lctk[local compile-time evaluation of ``typedExpressionIR~w~``, under context ``TC`` at ``p``].
@@ -5652,7 +5652,7 @@ xref:Expr_eval_lctk[Expr_eval_lctk]:
      ...... Check that ``nameIR`` is in ``+[+ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" +]+``.
 
      ...... Result in ``xref:sizeof[$sizeof(typeIR~base~, nameIR)]``.
-    ..... Else if xref:is_monomorphic_typeDefIR[``typeDefIR~base~`` is not monomorphic]:
+    ..... Else:
      ...... Check that ( ``·``, ``·`` ) is equal to xref:typeParameterListIR_of_typeDefIR[the type parameters of ``typeDefIR~base~``].
 
      ...... Let ``typeIR~base~`` be xref:typeIR_of_typeDefIR[the underlying type of ``typeDefIR~base~``].
@@ -5749,7 +5749,7 @@ xref:Type_ok[Type_ok]:
     ..... Let!~type~ ``n`` be ``int``.
 
     ..... Result in ``+VARBIT+ +<+n+>+`` and fresh type variables ``·``.
-   .... Else if let ``+VARBIT+ +<++(+expression+)++>+`` be ``baseType``:
+   .... Else:
     ..... Let ``typedExpressionIR`` be the result of xref:Expr_ok[typing ``expression``, under context ``TC`` at ``p``].
     ..... Check that ``+LCTK+`` is equal to xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR``].
 
@@ -5767,7 +5767,7 @@ xref:Type_ok[Type_ok]:
    .... If xref:is_monomorphic_typeDefIR[``typeDefIR`` is monomorphic]:
     ..... Let ``typeIR`` be xref:typeIR_of_typeDefIR[the underlying type of ``typeDefIR``].
     ..... Result in ``typeIR`` and fresh type variables ``·``.
-   .... Else if xref:is_monomorphic_typeDefIR[``typeDefIR`` is not monomorphic]:
+   .... Else:
     ..... Let ``typeIR`` be xref:specialize_typeDefIR[``typeDefIR`` specialized by ``·``].
     ..... Result in ``typeIR`` and fresh type variables ``·``.
   ... Else if let ``prefixedTypeName +<+typeArgumentList+>+`` be ``typeOrVoid``:
@@ -5833,7 +5833,7 @@ xref:TypeArguments_ok[TypeArguments_ok]:
 
 . If ``typeArgument^{asterisk}^`` matches pattern ``[]``:
  .. Result in ``·`` and fresh type variables ``·``.
-. Else if let ``typeArgument~h~ {two-colons} typeArgument~t~^{asterisk}^`` be ``typeArgument^{asterisk}^``:
+. Else:
  .. Let ``typeArgumentIR~h~`` and fresh type variables ``typeId~impl_h~^{asterisk}^`` be the result of xref:TypeArgument_ok[typing ``typeArgument~h~``, under context ``TC`` at ``p``].
  .. Let ``typeArgumentIR~t~^{asterisk}^`` and fresh type variables ``typeId~impl_t~^{asterisk}^`` be the result of xref:TypeArguments_ok[typing ``typeArgument~t~^{asterisk}^``, under context ``TC`` at ``p``].
  .. Let ``typeId~impl~^{asterisk}^`` be ``typeId~impl_h~^{asterisk}^`` concatenated with ``typeId~impl_t~^{asterisk}^``.
@@ -5945,7 +5945,7 @@ xref:Cast_expl_neq[Cast_expl_neq]:
     ..... Else if let ``+HEADER+ ++_++ +<+++_++^{asterisk}^+>+ +{+( ++_++ typeIR~field_b~ ++_++ +;+ )^{asterisk}^+}+`` be ``typeIR''''''``:
      ...... If xref:Cast_expl[``typeIR~a~`` can be explicitly cast to ``typeIR~field_b~``], for all ``typeIR~a~`` in ``typeIR~a~^{asterisk}^`` and ``typeIR~field_b~`` in ``typeIR~field_b~^{asterisk}^``:
       ....... The relation holds.
-   .... Else if let ``+SEQ+ +<+typeIR~a~^{asterisk}^ +,+ +...++>+`` be ``sequenceTypeIR``:
+   .... Else:
     ..... If let ``+TUPLE+ +<+typeIR~b~^{asterisk}^+>+`` be ``typeIR''''''``:
      ...... Check that the length of ``typeIR~a~^{asterisk}^`` is less than the length of ``typeIR~b~^{asterisk}^``.
 
@@ -6005,7 +6005,7 @@ xref:Cast_expl_neq[Cast_expl_neq]:
      ...... Let ``typeIR~field_b_aligned~`` be ``typeIR'''^?^``, for all ``typeIR'''^?^`` in ``typeIR'''^?^^{asterisk}^`` and ``typeIR~field_b_aligned~`` in ``typeIR~field_b_aligned~^{asterisk}^``.
      ...... If xref:Cast_expl[``typeIR~field_a_aligned~`` can be explicitly cast to ``typeIR~field_b_aligned~``], for all ``typeIR~field_a_aligned~`` in ``typeIR~field_a_aligned~^{asterisk}^`` and ``typeIR~field_b_aligned~`` in ``typeIR~field_b_aligned~^{asterisk}^``:
       ....... The relation holds.
-   .... Else if let ``+RECORD+ +{+( ++_++ typeIR~field_a~ id~field_a~ +;+ )^{asterisk}^ +,+ +...++}+`` be ``recordTypeIR``:
+   .... Else:
     ..... If let ``+STRUCT+ ++_++ +<+++_++^{asterisk}^+>+ +{+( ++_++ typeIR~field_b~ id~field_b~ +;+ )^{asterisk}^+}+`` be ``typeIR''''''``:
      ...... Check that xref:sub_set[``+{+id~field_a~^{asterisk}^+}+`` is a subset of ``+{+id~field_b~^{asterisk}^+}+``].
 
@@ -6128,7 +6128,7 @@ xref:Cast_impl_neq[Cast_impl_neq]:
 
    .... If xref:Cast_impl[``typeIR~a~`` can be implicitly cast to ``typeIR~b~``], for all ``typeIR~a~`` in ``typeIR~a~^{asterisk}^`` and ``typeIR~b~`` in ``typeIR~b~^{asterisk}^``:
     ..... The relation holds.
- .. Else if let ``+SEQ+ +<+typeIR~a~^{asterisk}^ +,+ +...++>+`` be ``sequenceTypeIR``:
+ .. Else:
   ... If let ``+TUPLE+ +<+typeIR~b~^{asterisk}^+>+`` be ``typeIR'''''``:
    .... Check that the length of ``typeIR~a~^{asterisk}^`` is less than the length of ``typeIR~b~^{asterisk}^``.
 
@@ -6188,7 +6188,7 @@ xref:Cast_impl_neq[Cast_impl_neq]:
    .... Let ``typeIR~field_b_aligned~`` be ``typeIR'''^?^``, for all ``typeIR'''^?^`` in ``typeIR'''^?^^{asterisk}^`` and ``typeIR~field_b_aligned~`` in ``typeIR~field_b_aligned~^{asterisk}^``.
    .... If xref:Cast_impl[``typeIR~field_a_aligned~`` can be implicitly cast to ``typeIR~field_b_aligned~``], for all ``typeIR~field_a_aligned~`` in ``typeIR~field_a_aligned~^{asterisk}^`` and ``typeIR~field_b_aligned~`` in ``typeIR~field_b_aligned~^{asterisk}^``:
     ..... The relation holds.
- .. Else if let ``+RECORD+ +{+( ++_++ typeIR~field_a~ id~field_a~ +;+ )^{asterisk}^ +,+ +...++}+`` be ``recordTypeIR``:
+ .. Else:
   ... If let ``+STRUCT+ ++_++ +<+++_++^{asterisk}^+>+ +{+( ++_++ typeIR~field_b~ id~field_b~ +;+ )^{asterisk}^+}+`` be ``typeIR'''''``:
    .... Check that xref:sub_set[``+{+id~field_a~^{asterisk}^+}+`` is a subset of ``+{+id~field_b~^{asterisk}^+}+``].
 
@@ -6246,7 +6246,7 @@ xref:Expr_ok[Expr_ok]:
    .... Else if let ``n +S+ i`` be ``integerLiteral``:
     ..... Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``+INT+ +<+n+>+`` and compile-time known-ness ``+LCTK+``].
     ..... Result in xref:typedExpressionIR[``n +S+ i`` annotated with ``expressionNoteIR``].
-   .... Else if let ``n +W+ i`` be ``integerLiteral``:
+   .... Else:
     ..... Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``+BIT+ +<+n+>+`` and compile-time known-ness ``+LCTK+``].
     ..... Result in xref:typedExpressionIR[``n +W+ i`` annotated with ``expressionNoteIR``].
   ... Else if let ``stringLiteral`` be ``expression'''``:
@@ -6337,7 +6337,7 @@ xref:Expr_ok[Expr_ok]:
        ........ Let ``ctk~reduced~`` be xref:join_ctk[the join of ``ctk~l_reduced~`` and ``ctk~r_reduced~``].
        ........ Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR~reduced~`` and compile-time known-ness ``ctk~reduced~``].
        ........ Result in xref:typedExpressionIR[``typedExpressionIR~l_reduced~ binop typedExpressionIR~r_reduced~`` annotated with ``expressionNoteIR``].
-      ....... Else if ``ctk~r_reduced~`` does not match pattern ``+LCTK+``:
+      ....... Else:
        ........ Let ``ctk~reduced~`` be xref:join_ctk[the join of ``ctk~l_reduced~`` and ``ctk~r_reduced~``].
        ........ Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR~reduced~`` and compile-time known-ness ``ctk~reduced~``].
        ........ Result in xref:typedExpressionIR[``typedExpressionIR~l_reduced~ binop typedExpressionIR~r_reduced~`` annotated with ``expressionNoteIR``].
@@ -6356,7 +6356,7 @@ xref:Expr_ok[Expr_ok]:
        ........ Let ``ctk~reduced~`` be xref:join_ctk[the join of ``ctk~l_reduced~`` and ``ctk~r_reduced~``].
        ........ Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR~l_reduced~`` and compile-time known-ness ``ctk~reduced~``].
        ........ Result in xref:typedExpressionIR[``typedExpressionIR~l_reduced~ binop typedExpressionIR~r_reduced~`` annotated with ``expressionNoteIR``].
-      ....... Else if ``typeIR~r_reduced~`` does not have type ``fixedBitTypeIR``:
+      ....... Else:
        ........ Check that ``ctk~r_reduced~`` matches pattern ``+LCTK+``.
 
        ........ Let ``value`` be the result of xref:Expr_eval_lctk[local compile-time evaluation of ``typedExpressionIR~r_reduced~``, under context ``TC`` at ``p``].
@@ -6479,7 +6479,7 @@ xref:Expr_ok[Expr_ok]:
      ...... Let ``ctk`` be xref:joins_ctk[the join of ``ctk~e~^{asterisk}^``].
      ...... Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR`` and compile-time known-ness ``ctk``].
      ...... Result in xref:typedExpressionIR[``+SEQ+ +{+typedExpressionIR~e~^{asterisk}^+}+`` annotated with ``expressionNoteIR``].
-    ..... Else if ``+...+`` is in ``expression~e~^{asterisk}^``:
+    ..... Else:
      ...... Let ``expression''^{asterisk}^`` be xref:rev_[the reversal of ``expression~e~^{asterisk}^``].
      ...... Let!~type~ ``expression' {two-colons} expression~e_h_rev~^{asterisk}^`` be ``expression''^{asterisk}^``.
 
@@ -6497,7 +6497,7 @@ xref:Expr_ok[Expr_ok]:
      ...... Let ``ctk`` be xref:joins_ctk[the join of ``ctk~e_h~^{asterisk}^``].
      ...... Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR`` and compile-time known-ness ``ctk``].
      ...... Result in xref:typedExpressionIR[``+SEQ+ +{+typedExpressionIR~e_h~^{asterisk}^ +,+ +...++}+`` annotated with ``expressionNoteIR``].
-   .... Else if let ``recordElementExpression`` be ``sequenceOrRecordElementExpression``:
+   .... Else:
     ..... If let ``name~f~ +=+ expression~f~`` be ``recordElementExpression``:
      ...... Let ``nameIR~f~`` be xref:name[the name of ``name~f~``].
      ...... Let ``typedExpressionIR~f~`` be the result of xref:Expr_ok[typing ``expression~f~``, under context ``TC`` at ``p``].
@@ -6526,7 +6526,7 @@ xref:Expr_ok[Expr_ok]:
      ...... Let ``ctk`` be xref:joins_ctk[the join of ``ctk~f~^{asterisk}^``].
      ...... Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR`` and compile-time known-ness ``ctk``].
      ...... Result in xref:typedExpressionIR[``+RECORD+ +{+( nameIR~f~ +=+ typedExpressionIR~f~ )^{asterisk}^+}+`` annotated with ``expressionNoteIR``].
-    ..... Else if let ``name~f_h~ +=+ expression~f_h~ +,+ namedExpressionList~t~ +,+ +...+`` be ``recordElementExpression``:
+    ..... Else:
      ...... Let ``( name~f_t~ +=+ expression~f_t~ )^{asterisk}^`` be xref:flatten_namedExpressionList[``namedExpressionList~t~`` flattened].
      ...... Let ``name~f~^{asterisk}^`` be ``name~f_h~ {two-colons} name~f_t~^{asterisk}^``.
      ...... Let ``nameIR~f~`` be xref:name[the name of ``name~f~``], for all ``nameIR~f~`` in ``nameIR~f~^{asterisk}^`` and ``name~f~`` in ``name~f~^{asterisk}^``.
@@ -6565,7 +6565,7 @@ xref:Expr_ok[Expr_ok]:
 
      ...... Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR~base~`` and compile-time known-ness ``+LCTK+``].
      ...... Result in xref:typedExpressionIR[``+TYPE+ prefixedNameIR~base~ +.+ nameIR`` annotated with ``expressionNoteIR``].
-   .... Else if let ``expression~base~`` be ``memberAccessBase``:
+   .... Else:
     ..... Let ``typedExpressionIR~base~`` be the result of xref:Expr_ok[typing ``expression~base~``, under context ``TC`` at ``p``].
     ..... Let ``typeIR~base~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~base~``].
     ..... Let ``typeIR'`` be xref:unroll_typeIR[``typeIR~base~`` with typedefs unrolled].
@@ -6658,7 +6658,7 @@ xref:Expr_ok[Expr_ok]:
 
      ...... Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR`` and compile-time known-ness ``ctk~base~``].
      ...... Result in <<typedExpressionIR,``typedExpressionIR~base~ +[+typedExpressionIR~index_reduced~+]+`` annotated with ``expressionNoteIR``>>.
-    ..... Else if ``ctk~index~`` does not match pattern ``+LCTK+``:
+    ..... Else:
      ...... Let ``ctk`` be xref:join_ctk[the join of ``ctk~base~`` and ``ctk~index~``].
      ...... Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR`` and compile-time known-ness ``ctk``].
      ...... Result in <<typedExpressionIR,``typedExpressionIR~base~ +[+typedExpressionIR~index_reduced~+]+`` annotated with ``expressionNoteIR``>>.
@@ -6696,7 +6696,7 @@ xref:Expr_ok[Expr_ok]:
     ..... Let ``typeIR`` be ``+BIT+ +<+n~slice~+>+``.
     ..... Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR`` and compile-time known-ness ``ctk~base_reduced~``].
     ..... Result in <<typedExpressionIR,``typedExpressionIR~base~ +[+typedExpressionIR~hi_reduced~ +:+ typedExpressionIR~lo_reduced~+]+`` annotated with ``expressionNoteIR``>>.
-   .... Else if let ``expression~base~ +[+expression~l~ +++ +:+ expression~w~+]+`` be ``sliceAccessExpression``:
+   .... Else:
     ..... Let ``typedExpressionIR~base~`` be the result of xref:Expr_ok[typing ``expression~base~``, under context ``TC`` at ``p``].
     ..... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``p``].
     ..... Let ``typedExpressionIR~w~`` be the result of xref:Expr_ok[typing ``expression~w~``, under context ``TC`` at ``p``].
@@ -6728,7 +6728,7 @@ xref:Expr_ok[Expr_ok]:
      ...... Let ``typeIR`` be ``+BIT+ +<+n~w~+>+``.
      ...... Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR`` and compile-time known-ness ``ctk~base_reduced~``].
      ...... Result in <<typedExpressionIR,``typedExpressionIR~base~ +[+typedExpressionIR~l_reduced~ +++ +:+ typedExpressionIR~w_reduced~+]+`` annotated with ``expressionNoteIR``>>.
-    ..... Else if ``ctk~l_reduced~`` does not match pattern ``+LCTK+``:
+    ..... Else:
      ...... Let!~type~ ``+BIT+ +<+++_+++>+`` be ``typeIR~l_reduced~``.
 
      ...... Check that ``ctk~w_reduced~`` matches pattern ``+LCTK+``.
@@ -6758,7 +6758,7 @@ xref:Expr_ok[Expr_ok]:
 
       ....... Let ``literalExpressionIR`` be ``+TRUE+``.
       ....... Result in xref:typedExpressionIR[``literalExpressionIR`` annotated with ``expressionNoteIR``].
-     ...... Else if xref:is_static_assert_callableTypeIR[``callableTypeIR`` is not a static_assert call]:
+     ...... Else:
       ....... Let ``callExpressionIR`` be ``callableTargetIR +<+typeArgumentIR~inferred~^{asterisk}^+>+ +(+argumentIR~cast~^{asterisk}^+)+``.
       ....... Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR~ret~`` and compile-time known-ness ``ctk``].
       ....... Result in xref:typedExpressionIR[``callExpressionIR`` annotated with ``expressionNoteIR``].
@@ -6773,7 +6773,7 @@ xref:Expr_ok[Expr_ok]:
      ...... Let ``callExpressionIR`` be ``prefixedNameIR +<+typeArgumentIR~inferred~^{asterisk}^+>+ +(+argumentIR~cast~^{asterisk}^+)+``.
      ...... Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR~object~`` and compile-time known-ness ``+CTK+``].
      ...... Result in xref:typedExpressionIR[``callExpressionIR`` annotated with ``expressionNoteIR``].
-    ..... Else if let ``prefixedTypeName +<+typeArgumentList+>+`` be ``callTarget``:
+    ..... Else:
      ...... Let ``typeArgumentIR^{asterisk}^`` and fresh type variables ``typeId~impl~^{asterisk}^`` be the result of xref:TypeArgumentList_ok[typing ``typeArgumentList``, under context ``TC`` at ``p``].
      ...... Let ``argumentIR^{asterisk}^`` be the result of xref:ArgumentList_ok[typing ``argumentList``, under context ``TC`` at ``p``].
      ...... Let ``prefixedNameIR`` be xref:prefixedTypeName[the prefixed name of  ``prefixedTypeName``].
@@ -6786,7 +6786,7 @@ xref:Expr_ok[Expr_ok]:
      ...... Let ``callExpressionIR`` be ``prefixedNameIR +<+typeArgumentIR~inferred~^{asterisk}^+>+ +(+argumentIR~cast~^{asterisk}^+)+``.
      ...... Let ``expressionNoteIR`` be xref:expressionNoteIR[a pair of type ``typeIR~object~`` and compile-time known-ness ``+CTK+``].
      ...... Result in xref:typedExpressionIR[``callExpressionIR`` annotated with ``expressionNoteIR``].
-   .... Else if let ``callableTarget +<+realTypeArgumentList+>+ +(+argumentList+)+`` be ``callExpression``:
+   .... Else:
     ..... Let typed callable target ``callableTargetIR`` be the result of xref:CallableTarget_ok[typing ``callableTarget`` as a callable target, under cursor ``p`` and context ``TC``].
     ..... Let ``realTypeArgument^{asterisk}^`` be xref:flatten_realTypeArgumentList[``realTypeArgumentList`` flattened].
     ..... Let ``typeArgumentIR^{asterisk}^`` and fresh type variables ``typeId~impl~^{asterisk}^`` be the result of xref:TypeArguments_ok[typing ``realTypeArgument^{asterisk}^``, under context ``TC`` at ``p``].
@@ -6908,7 +6908,7 @@ xref:Lvalue_ok[Lvalue_ok]:
 
     ..... Let ``typedLvalueIR`` be <<typedLvalueIR,``typedLvalueIR~base~ +[+typedExpressionIR~index_reduced~+]+`` annotated with ``+(+typeIR+)+``>>.
     ..... Result in ``typedLvalueIR``.
-   .... Else if ``ctk~index~`` does not match pattern ``+LCTK+``:
+   .... Else:
     ..... Let ``typedLvalueIR`` be <<typedLvalueIR,``typedLvalueIR~base~ +[+typedExpressionIR~index_reduced~+]+`` annotated with ``+(+typeIR+)+``>>.
     ..... Result in ``typedLvalueIR``.
   ... Else if let ``lvalue~base~ +[+expression~hi~ +:+ expression~lo~+]+`` be ``lvalue``:
@@ -6988,7 +6988,7 @@ xref:Stmt_ok[Stmt_ok]:
     ..... Let ``typeIR~r~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR``].
     ..... Let ``typedExpressionIR~cast~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR`` implicitly cast to ``typeIR~l~``].
     ..... Result in context ``TC'``, abstract control flow ``f'``, and ``typedLvalueIR +=+ typedExpressionIR~cast~ +;+``.
-   .... Else if ``assignop`` does not match pattern ``+=+``:
+   .... Else:
     ..... Let ``binop`` be xref:option_get[*!*] xref:assignop_as_binop[the binary operator corresponding to ``assignop``].
     ..... Let ``typedLvalueIR`` be the result of xref:Lvalue_ok[typing ``lvalue``, under context ``TC'`` at ``p'``].
     ..... Let ``expression~lvalue~`` be xref:lvalue_as_expression[the expression corresponding to ``lvalue``].
@@ -7017,10 +7017,10 @@ xref:Stmt_ok[Stmt_ok]:
 
      ...... Let ``emptyStatementIR`` be ``+;+``.
      ...... Result in context ``TC'``, abstract control flow ``f'``, and ``emptyStatementIR``.
-    ..... Else if xref:is_static_assert_callableTypeIR[``callableTypeIR`` is not a static_assert call]:
+    ..... Else:
      ...... Let ``callStatementIR`` be ``callableTargetIR +<+typeArgumentIR~inferred~^{asterisk}^+>+ +(+argumentIR~cast~^{asterisk}^+)+ +;+``.
      ...... Result in context ``TC'``, abstract control flow ``f'``, and ``callStatementIR``.
-   .... Else if let ``lvalue~callable~ +<+typeArgumentList+>+ +(+argumentList+)+ +;+`` be ``callStatement``:
+   .... Else:
     ..... Let typed callable target ``callableTargetIR`` be the result of xref:CallableTarget_lvalue_ok[typing ``lvalue~callable~`` as a callable target, under cursor ``p'`` and context ``TC'``].
     ..... Let ``typeArgumentIR^{asterisk}^`` and fresh type variables ``typeId~impl~^{asterisk}^`` be the result of xref:TypeArgumentList_ok[typing ``typeArgumentList``, under context ``TC'`` at ``p'``].
     ..... Let ``argumentIR^{asterisk}^`` be the result of xref:ArgumentList_ok[typing ``argumentList``, under context ``TC'`` at ``p'``].
@@ -7072,7 +7072,7 @@ xref:Stmt_ok[Stmt_ok]:
 
     ..... Let context ``TC~then~``, abstract control flow ``f~then~``, and ``statementIR~then~`` be the result of xref:Stmt_ok[typing ``statement~then~``, under context ``TC'``, abstract control flow ``f'``, and loop context ``l'`` at ``p'``].
     ..... Result in context ``TC'``, abstract control flow ``f'``, and ``+IF+ +(+typedExpressionIR~cond~+)+ statementIR~then~``.
-   .... Else if let ``+IF+ +(+expression~cond~+)+ statement~then~ +ELSE+ statement~else~`` be ``conditionalStatement``:
+   .... Else:
     ..... Let ``typedExpressionIR~cond~`` be the result of xref:Expr_ok[typing ``expression~cond~``, under context ``TC'`` at ``p'``].
     ..... Let ``typeIR~cond~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~cond~``].
     ..... Check that ``+BOOL+`` is equal to xref:unroll_typeIR[``typeIR~cond~`` with typedefs unrolled].
@@ -7091,7 +7091,7 @@ xref:Stmt_ok[Stmt_ok]:
       ....... Check that ``+VOID+`` is equal to xref:find_local_return_type_t[the expected return type in ``TC'``].
 
       ....... Result in context ``TC'``, abstract control flow ``+RET+``, and ``+RETURN+ +;+``.
-     ...... Else if let ``+RETURN+ expression +;+`` be ``returnStatement``:
+     ...... Else:
       ....... Let ``typedExpressionIR`` be the result of xref:Expr_ok[typing ``expression``, under context ``TC'`` at ``+LOCAL+``].
       ....... Let ``typeIR`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR``].
       ....... Let ``typeIR~ret~`` be xref:option_get[*!*] xref:find_local_return_type_t[the expected return type in ``TC'``].
@@ -7132,7 +7132,7 @@ xref:Stmt_ok[Stmt_ok]:
        ........ Let ``TC~4~`` be xref:exit_t[``TC~3~`` with the innermost frame removed].
        ........ Let ``forStatementIR`` be ``annotationList +FOR+ +(+typeIR nameIR +IN+ forCollectionExpressionIR+)+ statementIR``.
        ........ Result in context ``TC'``, abstract control flow ``f~post~``, and ``forStatementIR``.
-     ...... Else if let ``annotationList +FOR+ +(+annotationListNonEmpty type name +IN+ forCollectionExpression+)+ statement`` be ``forStatement``:
+     ...... Else:
       ....... Let context ``TC~1~``, abstract control flow ``f~post~``, and ``statementIR`` be the result of xref:Stmt_ok[typing ``annotationList +FOR+ +(+type name +IN+ forCollectionExpression+)+ statement``, under context ``TC'``, abstract control flow ``f'``, and loop context ``l'`` at ``+LOCAL+``].
       ....... Let!~type~ ``forStatementIR`` be ``statementIR``.
 
@@ -7183,7 +7183,7 @@ xref:BlockElementStmt_ok[BlockElementStmt_ok]:
 . Else if let ``variableDeclaration`` be ``blockElementStatement``:
  .. Let context ``TC~1~`` and ``variableDeclarationIR`` be the result of xref:VarDecl_ok[typing ``variableDeclaration``, under context ``TC~0~`` at ``+LOCAL+``].
  .. Result in context ``TC~1~``, abstract control flow ``f``, and ``variableDeclarationIR``.
-. Else if let ``statement`` be ``blockElementStatement``:
+. Else:
  .. Let context ``TC~1~``, abstract control flow ``f~post~``, and ``statementIR`` be the result of xref:Stmt_ok[typing ``statement``, under context ``TC~0~``, abstract control flow ``f``, and loop context ``l`` at ``+LOCAL+``].
  .. Result in context ``TC~1~``, abstract control flow ``f~post~``, and ``statementIR``.
 
@@ -7269,7 +7269,7 @@ xref:callableId_of_externMethodPrototype[Callable id of  ``externMethodPrototype
 
 . If let ``++_++ ++_++ name ++_++ +(+parameterList+)+ +;+`` be ``externMethodPrototype``:
  .. Return xref:callableId[the callable identifier for ``name`` ``+(+`` ``parameterList`` ``+)+``].
-. Else if let ``++_++ +ABSTRACT+ ++_++ name ++_++ +(+parameterList+)+ +;+`` be ``externMethodPrototype``:
+. Else:
  .. Return xref:callableId[the callable identifier for ``name`` ``+(+`` ``parameterList`` ``+)+``].
 
 xref:type_of_externMethodPrototypeIR[Callable type definition of  ``externMethodPrototypeIR``]
@@ -7277,7 +7277,7 @@ xref:type_of_externMethodPrototypeIR[Callable type definition of  ``externMethod
 . If let ``++_++ typeIR~ret~ nameIR +<+typeParameterListIR~expl~ +,+ typeParameterListIR~impl~+>+ +(+parameterIR^{asterisk}^+)+ +;+`` be ``externMethodPrototypeIR``:
  .. Let ``externMethodTypeDefIR`` be ``+EXTERN_METHOD+ nameIR +<+typeParameterListIR~expl~ +,+ typeParameterListIR~impl~+>+ +(+parameterIR^{asterisk}^+)+ +:+ typeIR~ret~``.
  .. Return ``externMethodTypeDefIR``.
-. Else if let ``++_++ +ABSTRACT+ typeIR~ret~ nameIR +<+typeParameterListIR~expl~ +,+ typeParameterListIR~impl~+>+ +(+parameterIR^{asterisk}^+)+ +;+`` be ``externMethodPrototypeIR``:
+. Else:
  .. Let ``externMethodTypeDefIR`` be ``+EXTERN_METHOD+ +ABSTRACT+ nameIR +<+typeParameterListIR~expl~ +,+ typeParameterListIR~impl~+>+ +(+parameterIR^{asterisk}^+)+ +:+ typeIR~ret~``.
  .. Return ``externMethodTypeDefIR``.
 
@@ -7304,7 +7304,7 @@ xref:ExternMethod_ok[ExternMethod_ok]:
  .. If xref:CallableTypeDef_wf[``externMethodTypeDefIR`` is a well-formed callable type definition, with bound type variables bound type variables from the ``+BLOCK+`` layer of ``TC~0~``]:
   ... Let ``externMethodPrototypeIR`` be ``annotationList typeIR~ret~ nameIR +<+typeId~expl~^{asterisk}^ +,+ typeId~impl~^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ +;+``.
   ... Result in ``externMethodPrototypeIR``.
-. Else if let ``annotationList +ABSTRACT+ functionPrototype +;+`` be ``externMethodPrototype``:
+. Else:
  .. Let ``typeOrVoid name typeParameterListOpt +(+parameterList+)+`` be ``functionPrototype``.
  .. Let ``nameIR`` be xref:name[the name of ``name``].
  .. Check that ``nameIR`` is not equal to ``typeId~extern~``.
@@ -7360,7 +7360,7 @@ xref:ParserTransition_ok[ParserTransition_ok]:
 
 . If ``transitionStatement`` matches pattern ````:
  .. Result in typed transition statement ``+TRANSITION+ "reject" +;+``.
-. Else if let ``+TRANSITION+ stateExpression`` be ``transitionStatement``:
+. Else:
  .. Try:
   ... {empty}
    .... Let!~type~ ``name +;+`` be ``stateExpression``.
@@ -7422,7 +7422,7 @@ xref:ParserStmt_ok[ParserStmt_ok]:
  .. Let ``TC~3~`` be xref:exit_t[``TC~2~`` with the innermost frame removed].
  .. Let ``parserBlockStatementIR`` be ``annotationList +{+parserStatementIR^{asterisk}^+}+``.
  .. Result in context ``TC~1~`` and typed parser statement ``parserBlockStatementIR``.
-. Else if let ``parserConditionalStatement`` be ``parserStatement``:
+. Else:
  .. If let ``+IF+ +(+expression~cond~+)+ parserStatement~then~`` be ``parserConditionalStatement``:
   ... Let ``typedExpressionIR~cond~`` be the result of xref:Expr_ok[typing ``expression~cond~``, under context ``TC~0'~`` at ``+LOCAL+``].
   ... Let ``typeIR~cond~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~cond~``].
@@ -7430,7 +7430,7 @@ xref:ParserStmt_ok[ParserStmt_ok]:
 
   ... Let context ``TC~then~`` and typed parser statement ``parserStatementIR~then~`` be the result of xref:ParserStmt_ok[typing ``parserStatement~then~``, under context ``TC~0'~``].
   ... Result in context ``TC~0'~`` and typed parser statement ``+IF+ +(+typedExpressionIR~cond~+)+ parserStatementIR~then~``.
- .. Else if let ``+IF+ +(+expression~cond~+)+ parserStatement~then~ +ELSE+ parserStatement~else~`` be ``parserConditionalStatement``:
+ .. Else:
   ... Let ``typedExpressionIR~cond~`` be the result of xref:Expr_ok[typing ``expression~cond~``, under context ``TC~0'~`` at ``+LOCAL+``].
   ... Let ``typeIR~cond~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~cond~``].
   ... Check that ``+BOOL+`` is equal to xref:unroll_typeIR[``typeIR~cond~`` with typedefs unrolled].
@@ -7491,7 +7491,7 @@ xref:ParserLocalDecl_ok[ParserLocalDecl_ok]:
 . Else if let ``variableDeclaration`` be ``parserLocalDeclaration``:
  .. Let context ``TC~1~`` and ``variableDeclarationIR`` be the result of xref:VarDecl_ok[typing ``variableDeclaration``, under context ``TC~0~`` at ``+BLOCK+``].
  .. Result in context ``TC~1~`` and ``variableDeclarationIR``.
-. Else if let ``annotationList +VALUE_SET+ +<+valueSetType+>+ +(+expression+)+ name +;+`` be ``parserLocalDeclaration``:
+. Else:
  .. Let ``typeIR`` and fresh type variables ``typeId^{asterisk}^`` be the result of xref:Type_ok[typing ``valueSetType``, under context ``TC~0~`` at ``+BLOCK+``].
  .. Check that ``typeId^{asterisk}^`` is an empty list.
 
@@ -7537,7 +7537,7 @@ xref:TableKeys_ok[TableKeys_ok]:
 
 . If ``tableKey^{asterisk}^`` matches pattern ``[]``:
  .. Result in table context ``TBLC'`` and ``·``.
-. Else if let ``tableKey~h~ {two-colons} tableKey~t~^{asterisk}^`` be ``tableKey^{asterisk}^``:
+. Else:
  .. Let table context ``TBLC~1~`` and ``tableKeyIR~h~`` be the result of xref:TableKey_ok[typing ``tableKey~h~``, under context ``TC`` and table context ``TBLC'``].
  .. Let table context ``TBLC~2~`` and ``tableKeyIR~t~^{asterisk}^`` be the result of xref:TableKeys_ok[typing ``tableKey~t~^{asterisk}^``, under context ``TC`` and table context ``TBLC~1~``].
  .. Result in table context ``TBLC~2~`` and ``tableKeyIR~h~ {two-colons} tableKeyIR~t~^{asterisk}^``.
@@ -7596,7 +7596,7 @@ xref:TableActions_ok[TableActions_ok]:
 
 . If ``tableAction^{asterisk}^`` matches pattern ``[]``:
  .. Result in table context ``TBLC'`` and ``·``.
-. Else if let ``tableAction~h~ {two-colons} tableAction~t~^{asterisk}^`` be ``tableAction^{asterisk}^``:
+. Else:
  .. Let table context ``TBLC~1~`` and ``tableActionIR~h~`` be the result of xref:TableAction_ok[typing ``tableAction~h~``, under context ``TC`` and table context ``TBLC'``].
  .. Let table context ``TBLC~2~`` and ``tableActionIR~t~^{asterisk}^`` be the result of xref:TableActions_ok[typing ``tableAction~t~^{asterisk}^``, under context ``TC`` and table context ``TBLC~1~``].
  .. Result in table context ``TBLC~2~`` and ``tableActionIR~h~ {two-colons} tableActionIR~t~^{asterisk}^``.
@@ -7690,7 +7690,7 @@ xref:TableEntry_keyset_ok[TableEntry_keyset_ok]:
 
       ....... Let ``TBLS`` be ``+NON_LPM+``.
       ....... Result in table entry state ``TBLS`` and ``+(++_++)+``.
-   .... Else if let ``+(+simpleKeysetExpression~h~ +,+ simpleKeysetExpressionList~t~+)+`` be ``tupleKeysetExpression``:
+   .... Else:
     ..... Let ``simpleKeysetExpression~t~^{asterisk}^`` be xref:flatten_simpleKeysetExpressionList[``simpleKeysetExpressionList~t~`` flattened].
     ..... Let ``simpleKeysetExpression^{asterisk}^`` be ``simpleKeysetExpression~h~ {two-colons} simpleKeysetExpression~t~^{asterisk}^``.
     ..... Check that the length of ``TBLC.+KEYS+`` is equal to the length of ``simpleKeysetExpression^{asterisk}^``.
@@ -7772,7 +7772,7 @@ xref:TableEntry_priority_ok[TableEntry_priority_ok]:
 
 . If let ``+PRIORITY+ +=+ integerLiteral +:+`` be ``tableEntryPriority``:
  .. Result in ``+PRIORITY+ +=+ integerLiteral +:+``.
-. Else if let ``+PRIORITY+ +=+ +(+expression+)+ +:+`` be ``tableEntryPriority``:
+. Else:
  .. Let ``typedExpressionIR`` be the result of xref:Expr_ok[typing ``expression``, under context ``TC`` at ``+LOCAL+``].
  .. Check that ``+LCTK+`` is equal to xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR``].
 
@@ -7793,7 +7793,7 @@ xref:TableEntry_ok[TableEntry_ok]:
  .. Let ``constOptIR`` be xref:flatten_constOpt[the optional const qualifier in ``constOpt``].
  .. Let ``tableEntryIR`` be ``constOptIR tableEntryPriorityIR keysetExpressionIR +:+ tableActionReferenceIR annotationList +;+``.
  .. Result in table entry state ``TBLS`` and ``tableEntryIR``.
-. Else if let ``constOpt keysetExpression +:+ tableActionReference annotationList +;+`` be ``tableEntry``:
+. Else:
  .. Let table entry state ``TBLS`` and ``keysetExpressionIR`` be the result of xref:TableEntry_keyset_ok[typing ``keysetExpression``, under context ``TC`` and table context ``TBLC``].
  .. Let ``tableActionReferenceIR`` be the result of xref:TableEntry_action_ok[typing ``tableActionReference``, under context ``TC`` and table context ``TBLC``].
  .. Let ``constOptIR`` be xref:flatten_constOpt[the optional const qualifier in ``constOpt``].
@@ -7824,7 +7824,7 @@ xref:TableProperty_ok[TableProperty_ok]:
  .. Let table entry state ``TBLS`` and ``tableEntryIR`` be the result of xref:TableEntry_ok[typing ``tableEntry``, under context ``TC`` and table context ``TBLC~2~``], for all ``TBLS`` in ``TBLS^{asterisk}^``, ``tableEntry`` in ``tableEntry^{asterisk}^``, and ``tableEntryIR`` in ``tableEntryIR^{asterisk}^``.
  .. Let ``tableEntryIR~pri~^{asterisk}^`` be xref:set_priorities_of_tableEntryListIR[``tableEntryIR^{asterisk}^`` with priorities set based on table context ``TBLC~2~`` and entry states ``TBLS^{asterisk}^``].
  .. Result in table context ``TBLC~2~`` and ``annotationList constOptIR +ENTRIES+ +=+ +{+tableEntryIR~pri~^{asterisk}^+}+``.
-. Else if let ``annotationList constOpt tableCustomName initializer +;+`` be ``tableProperty``:
+. Else:
  .. Check that ``"default_action"`` is equal to xref:tableCustomName[the name of ``tableCustomName``].
 
  .. Let ``tableActionReferenceIR`` be the result of xref:TableDefaultAction_ok[typing ``initializer``, under context ``TC`` and table context ``TBLC~0'~``].
@@ -7894,7 +7894,7 @@ xref:TableProperties_ok[TableProperties_ok]:
 
 . If ``tableProperty^{asterisk}^`` matches pattern ``[]``:
  .. Result in table context ``TBLC'`` and ``·``.
-. Else if let ``tableProperty~h~ {two-colons} tableProperty~t~^{asterisk}^`` be ``tableProperty^{asterisk}^``:
+. Else:
  .. Let table context ``TBLC~1~`` and ``tablePropertyIR~h~`` be the result of xref:TableProperty_ok[typing ``tableProperty~h~``, under context ``TC`` and table context ``TBLC'``].
  .. Let table context ``TBLC~2~`` and ``tablePropertyIR~t~^{asterisk}^`` be the result of xref:TableProperties_ok[typing ``tableProperty~t~^{asterisk}^``, under context ``TC`` and table context ``TBLC~1~``].
  .. Result in table context ``TBLC~2~`` and ``tablePropertyIR~h~ {two-colons} tablePropertyIR~t~^{asterisk}^``.
@@ -7951,7 +7951,7 @@ xref:ControlLocalDecl_ok[ControlLocalDecl_ok]:
 . Else if let ``actionDeclaration`` be ``controlLocalDeclaration``:
  .. Let context ``TC~1~`` and ``actionDeclarationIR`` be the result of xref:ActionDecl_ok[typing ``actionDeclaration``, under context ``TC~0~`` at ``+BLOCK+``].
  .. Result in context ``TC~1~`` and ``actionDeclarationIR``.
-. Else if let ``annotationList +TABLE+ name +{+tablePropertyList+}+`` be ``controlLocalDeclaration``:
+. Else:
  .. Let ``TC~1~`` be ``TC~0~`` with ``+LOCAL+.+KIND+`` set to ``+TABLE_APPLY_METHOD+``.
  .. Let ``tableProperty^{asterisk}^`` be xref:flatten_tablePropertyList[``tablePropertyList`` flattened].
  .. Let context ``TBLC`` and ``tablePropertyIR^{asterisk}^`` be the result of xref:Table_ok[typing ``tableProperty^{asterisk}^``, under context ``TC~1~``].
@@ -8033,7 +8033,7 @@ xref:InstDecl_ok[InstDecl_ok]:
  .. Else if let ``prefixedTypeName +<+typeArgumentList+>+`` be ``type``:
   ... Let context ``TC~1~`` and ``instantiationIR`` be the result of xref:InstDecl_non_objectInitializer_ok[typing ``annotationList`` ``prefixedTypeName`` ``+<+`` ``typeArgumentList`` ``+>+`` ``+(+`` ``argumentList`` ``+)+`` ``name`` ``+;+`` under context ``TC~0~`` at ``p``].
   ... Result in context ``TC~1~`` and ``instantiationIR``.
-. Else if let ``annotationList type +(+argumentList+)+ name +=+ +{+objectDeclarationList+}+ +;+`` be ``instantiation``:
+. Else:
  .. If let ``prefixedTypeName`` be ``type``:
   ... Let context ``TC~1~`` and ``instantiationIR`` be the result of xref:InstDecl_objectInitializer_ok[typing ``annotationList`` ``prefixedTypeName`` ``+<+`` ```` ``+>+`` ``+(+`` ``argumentList`` ``+)+`` ``name`` ``+=+`` ``+{+`` ``objectDeclarationList`` ``+}+`` ``+;+`` under context ``TC~0~`` at ``p``].
   ... Result in context ``TC~1~`` and ``instantiationIR``.
@@ -8212,7 +8212,7 @@ xref:Decl_ok[Decl_ok]:
    .... Let ``TC~2~`` be xref:add_vars_t[``TC~1~`` where each of ``id~field~^{asterisk}^`` to each of ``varTypeIR^{asterisk}^`` are added to the ``+GLOBAL+`` layer].
    .... Let ``enumTypeDeclarationIR`` be ``annotationList +ENUM+ nameIR +{+nameIR~field~^{asterisk}^+}+``.
    .... Result in context ``TC~2~`` and ``enumTypeDeclarationIR``.
- .. Else if let ``annotationList +ENUM+ type name +{+namedExpressionList~field~ ++_+++}+`` be ``enumTypeDeclaration``:
+ .. Else:
   ... Let ``B`` be xref:bound[bound type variables from the ``+GLOBAL+`` layer of ``TC~0~``].
   ... Let ``typeIR`` and fresh type variables ``typeId^{asterisk}^`` be the result of xref:Type_ok[typing ``type``, under context ``TC~0~`` at ``+GLOBAL+``].
   ... Check that ``typeId^{asterisk}^`` is an empty list.
@@ -8282,7 +8282,7 @@ xref:Decl_ok[Decl_ok]:
      ...... Let ``TC~1~`` be xref:add_typeDef_t[``TC~0~`` where ``nameIR`` to ``typeDefIR~typedef~`` is added to the ``+GLOBAL+`` layer].
      ...... Let ``typedefDeclarationIR`` be ``annotationList +TYPEDEF+ typeIR nameIR +;+``.
      ...... Result in context ``TC~1~`` and ``typedefDeclarationIR``.
-  ... Else if let ``derivedTypeDeclaration`` be ``typedef``:
+  ... Else:
    .... Let context ``TC~1~`` and ``declarationIR`` be the result of xref:Decl_ok[typing ``derivedTypeDeclaration`` under context ``TC~0~``].
    .... Let!~type~ ``derivedTypeDeclarationIR`` be ``declarationIR``.
 
@@ -8317,7 +8317,7 @@ xref:Decl_ok[Decl_ok]:
     ..... Let ``TC~2~`` be xref:add_typeDef_t[``TC~0~`` where ``nameIR`` to ``typedefTypeIR`` is added to the ``+GLOBAL+`` layer].
     ..... Let ``typedefDeclarationIR`` be ``annotationList +TYPEDEF+ derivedTypeDeclarationIR nameIR +;+``.
     ..... Result in context ``TC~1~`` and ``typedefDeclarationIR``.
- .. Else if let ``annotationList +TYPE+ type name +;+`` be ``typedefDeclaration``:
+ .. Else:
   ... Let ``B`` be xref:bound[bound type variables from the ``+GLOBAL+`` layer of ``TC~0~``].
   ... Let ``typeIR`` and fresh type variables ``typeId^{asterisk}^`` be the result of xref:Type_ok[typing ``type``, under context ``TC~0~`` at ``+GLOBAL+``].
   ... Check that ``typeId^{asterisk}^`` is an empty list.
@@ -8349,7 +8349,7 @@ xref:Decl_ok[Decl_ok]:
   ... Let ``TC~4~`` be xref:add_typeDef_t[``TC~0~`` where ``nameIR`` to ``controlObjectTypeDefIR`` is added to the ``+GLOBAL+`` layer].
   ... Let ``controlTypeDeclarationIR`` be ``annotationList +CONTROL+ nameIR +<+typeId~expl~^{asterisk}^ +,+ typeId~impl~^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ +;+``.
   ... Result in context ``TC~4~`` and ``controlTypeDeclarationIR``.
-. Else if let ``annotationList +PACKAGE+ name typeParameterListOpt +(+parameterList+)+ +;+`` be ``declaration``:
+. Else:
  .. Let ``B`` be xref:bound[bound type variables from the ``+GLOBAL+`` layer of ``TC~0~``].
  .. Let ``TC~1~`` be ``TC~0~`` with ``+BLOCK+.+KIND+`` set to ``+PACKAGE+``.
  .. Let context ``TC~2~`` and type parameters ``typeId~expl~^{asterisk}^`` be the result of xref:TypeParameterListOpt_ok[typing ``typeParameterListOpt``, under context ``TC~1~`` at ``+BLOCK+``].
@@ -8373,7 +8373,7 @@ xref:Decls_ok[Decls_ok]:
 
 . If ``declaration^{asterisk}^`` matches pattern ``[]``:
  .. Result in context ``TC'`` and ``·``.
-. Else if let ``declaration~h~ {two-colons} declaration~t~^{asterisk}^`` be ``declaration^{asterisk}^``:
+. Else:
  .. Let context ``TC~1~`` and ``declarationIR~h~`` be the result of xref:Decl_ok[typing ``declaration~h~`` under context ``TC'``].
  .. Let context ``TC~2~`` and ``declarationIR~t~^{asterisk}^`` be the result of xref:Decls_ok[typing ``declaration~t~^{asterisk}^`` under context ``TC~1~``].
  .. Result in context ``TC~2~`` and ``declarationIR~h~ {two-colons} declarationIR~t~^{asterisk}^``.
@@ -8412,7 +8412,7 @@ xref:Call_convention_expr_ok[Call_convention_expr_ok]:
 
    .... Let ``typedExpressionIR~arg_cast~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~arg~`` implicitly cast to ``typeIR~param~``].
    .... Result in ``typedExpressionIR~arg_cast~``.
-  ... Else if ``actctxt`` matches pattern ``+NOACTION+``:
+  ... Else:
    .... Check that ``direction`` matches pattern ````.
 
    .... Let ``typedExpressionIR~arg_cast~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~arg~`` implicitly cast to ``typeIR~param~``].
@@ -8453,7 +8453,7 @@ xref:Call_convention_ok[Call_convention_ok]:
  .. Check that ``argumentIR^{asterisk}^`` is an empty list.
 
  .. Result in casted ``·``.
-. Else if let ``parameterIR~h~ {two-colons} parameterIR~t~^{asterisk}^`` be ``parameterIR^{asterisk}^``:
+. Else:
  .. Let!~type~ ``argumentIR~h~ {two-colons} argumentIR~t~^{asterisk}^`` be ``argumentIR^{asterisk}^``.
 
  .. Let ``argumentIR~h_cast~`` be the result of xref:Call_convention_argument_ok[checking calling convention of ``argumentIR~h~`` applied to parameter type ``parameterIR~h~``, under context ``TC`` and action context ``actctxt`` at ``p``].
@@ -8466,7 +8466,7 @@ xref:is_static_callableTypeIR[Compile-time known-ness of ``callableTypeIR'``]
  .. Check that ``text`` is equal to ``"static_assert"``.
 
  .. Return ``+LCTK+``.
-. Else if let ``+BUILTIN_METHOD+ nameIR +(+++_++^{asterisk}^+)+ +:+ ++_++`` be ``callableTypeIR'``:
+. Else:
  .. Check that ``nameIR`` is in ``+[+ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" +]+``.
 
  .. Return ``+LCTK+``.
@@ -8500,7 +8500,7 @@ xref:CallableTarget_ok[CallableTarget_ok]:
     ..... Let ``prefixedNameIR`` be xref:prefixedTypeName[the prefixed name of  ``prefixedTypeName``].
     ..... Let ``nameIR`` be xref:name[the name of ``member``].
     ..... Result in typed callable target ``+TYPE+ prefixedNameIR +.+ nameIR``.
-   .... Else if let ``expression~base~`` be ``memberAccessBase``:
+   .... Else:
     ..... Let ``nameIR`` be xref:name[the name of ``member``].
     ..... Let ``typedExpressionIR~base~`` be the result of xref:Expr_ok[typing ``expression~base~``, under context ``TC`` at ``p``].
     ..... Result in typed callable target ``typedExpressionIR~base~ +.+ nameIR``.
@@ -8711,7 +8711,7 @@ xref:Call_ok[Call_ok]:
 
    .... Let casted ``argumentIR~cast~^{asterisk}^`` be the result of xref:Call_convention_ok[checking calling convention of ``argumentIR^{asterisk}^`` applied on ``parameterIR~aligned_inferred~^{asterisk}^``, under context ``TC`` and action context ``+NOACTION+`` at ``p``].
    .... Result in return type ``typeIR~ret_inferred~`` with inferred ``typeArgumentIR~inferred~^{asterisk}^`` and casted ``argumentIR~cast~^{asterisk}^``.
- .. Else if let ``+EXTERN_METHOD+ +ABSTRACT+ nameIR +(+parameterIR^{asterisk}^+)+ +:+ typeIR~ret~`` be ``externMethodTypeIR``:
+ .. Else:
   ... Let ``+GIVEN+ parameterIR~aligned~^{asterisk}^ +DEFAULT+ ++_++^{asterisk}^`` be xref:align_parameterListIR[aligning ``parameterIR^{asterisk}^`` with ``argumentIR^{asterisk}^`` where defaults are ``id~default'~^{asterisk}^`` and optionals are ``id~optional'~^{asterisk}^``].
   ... Let ``inference`` be ``xref:infer[$infer(typeId'^{asterisk}^, parameterIR~aligned~^{asterisk}^, argumentIR^{asterisk}^)]``.
   ... Let ``typeIR^?^`` be xref:find_map[the value of ``typeId'`` in map ``inference``], for all ``typeIR^?^`` in ``typeIR^?^^{asterisk}^`` and ``typeId'`` in ``typeId'^{asterisk}^``.
@@ -8749,7 +8749,7 @@ xref:Call_ok[Call_ok]:
 
  .. Let casted ``argumentIR~cast~^{asterisk}^`` be the result of xref:Call_convention_ok[checking calling convention of ``argumentIR^{asterisk}^`` applied on ``parameterIR~aligned~^{asterisk}^``, under context ``TC`` and action context ``+NOACTION+`` at ``p``].
  .. Result in return type ``+VOID+`` with inferred ``·`` and casted ``argumentIR~cast~^{asterisk}^``.
-. Else if let ``tableApplyMethodTypeIR`` be ``callableTypeIR``:
+. Else:
  .. Check that ``typeArgumentIR^{asterisk}^`` is an empty list.
 
  .. Check that ``typeId'^{asterisk}^`` is an empty list.
@@ -8865,7 +8865,7 @@ xref:reduce_serenum_unary[The result of reducing serializable enums in ``typedEx
 . Let ``++_++ +#+ +(+typeIR ++_+++)+`` be ``typedExpressionIR``.
 . If ``xref:check[$check(typeIR)]``:
  .. Return ``typedExpressionIR``.
-. Else if ``~xref:check[$check(typeIR)]``:
+. Else:
  .. Let ``typeIR'`` be xref:unroll_typeIR[``typeIR`` with typedefs unrolled].
  .. Let!~type~ ``+ENUM+ ++_++ +<+typeIR~underlying~+>+ +{+++_++^{asterisk}^+}+`` be ``typeIR'``.
 
@@ -8882,7 +8882,7 @@ xref:reduce_serenum_binary[The result of reducing serializable enums in ``typedE
 . Let ``++_++ +#+ +(+typeIR~r~ ++_+++)+`` be ``typedExpressionIR~r~``.
 . If ``xref:check[$check(typeIR~l~, typeIR~r~)]``:
  .. Return ( ``typedExpressionIR~l~``, ``typedExpressionIR~r~`` ).
-. Else if ``~xref:check[$check(typeIR~l~, typeIR~r~)]``:
+. Else:
  .. Let ``typeIR`` be xref:unroll_typeIR[``typeIR~l~`` with typedefs unrolled].
  .. Try:
   ... {empty}
@@ -9279,7 +9279,7 @@ xref:compat_bitslice_offset_width[``typeIR''`` can be used as an bitslice width]
 . Else if let ``+BIT+ +<+w+>+`` be ``typeIR''``:
  .. Let ``w~slice~`` be ``n~hi'~`` - ``n~lo'~`` + ``1``.
  .. Return ``n~lo'~`` is less than or equal to ``n~hi'~`` and ``n~hi'~`` is less than or equal to ``w`` and ``w~slice~`` is less than or equal to ``w``.
-. Else if let ``+TYPEDEF+ ++_++ typeIR`` be ``typeIR''``:
+. Else:
  .. Return <<is_valid_bitslice,``typeIR`` ``+[+`` ``n~lo'~`` ``+:+`` ``n~hi'~`` ``+]+`` is a valid bitslice>>.
 
 . Otherwise:
@@ -9293,7 +9293,7 @@ xref:is_concrete_extern_object[``typeIR`` is an extern object type without abstr
 xref:is_concrete_extern_object'[$is_concrete_extern_object'(typeIR)]
 
 . If ``typeIR`` does not have type ``externObjectTypeIR``: return ``true``.
-. Else if ``typeIR`` has type ``externObjectTypeIR``:
+. Else:
  .. Let ``+EXTERN+ ++_++ +<+++_++^{asterisk}^+>+ +{+( ++_++ +:+ externMethodTypeDefIR )^{asterisk}^+}+`` be ``typeIR``.
  .. Check that ``xref:is_concrete_extern_object''[$is_concrete_extern_object''(externMethodTypeDefIR)]``, for all ``externMethodTypeDefIR`` in ``externMethodTypeDefIR^{asterisk}^``.
  return ``true``.
@@ -9315,7 +9315,7 @@ xref:ParameterList_ok_inner[ParameterList_ok_inner: ``p TC' ⊢ parameter^{aster
 
 . If ``parameter^{asterisk}^`` matches pattern ``[]``:
  .. Result in ``TC'``, ``·``, and ``·``.
-. Else if let ``parameter~h~ {two-colons} parameter~t~^{asterisk}^`` be ``parameter^{asterisk}^``:
+. Else:
  .. Let context ``TC~1~``, ``parameterIR~h~``, and fresh type variables ``typeId~fresh_h~^{asterisk}^`` be the result of xref:Parameter_ok[typing ``parameter~h~``, under context ``TC'`` at ``p``].
  .. Let xref:ParameterList_ok_inner[``p TC~1~ ⊢ parameter~t~^{asterisk}^ +:+ TC~2~ parameterIR~t~^{asterisk}^ +#+ typeId~fresh_t~^{asterisk}^``].
  .. Let ``parameterIR^{asterisk}^`` be ``parameterIR~h~ {two-colons} parameterIR~t~^{asterisk}^``.
@@ -9336,7 +9336,7 @@ xref:ForUpdateStmt_ok[ForUpdateStmt_ok]:
  .. Let!~type~ ``callableTargetIR +<+typeArgumentIR^{asterisk}^+>+ +(+argumentIR^{asterisk}^+)+ +;+`` be ``statementIR``.
 
  .. Result in ``callableTargetIR +<+typeArgumentIR^{asterisk}^+>+ +(+argumentIR^{asterisk}^+)+``.
-. Else if let ``lvalue assignop expression`` be ``forUpdateStatement``:
+. Else:
  .. Let context ``++_++``, abstract control flow ``++_++``, and ``statementIR`` be the result of xref:Stmt_ok[typing ``lvalue assignop expression +;+``, under context ``TC``, abstract control flow ``+CONT+``, and loop context ``+NOLOOP+`` at ``+LOCAL+``].
  .. Let!~type~ ``typedLvalueIR assignop' typedExpressionIR +;+`` be ``statementIR``.
 
@@ -9397,7 +9397,7 @@ xref:ForInitStmts_ok[ForInitStmts_ok: ``TC' ⊢ forInitStatement^{asterisk}^ +:+
 
 . If ``forInitStatement^{asterisk}^`` matches pattern ``[]``:
  .. Result in ``TC'`` and ``·``.
-. Else if let ``forInitStatement~h~ {two-colons} forInitStatement~t~^{asterisk}^`` be ``forInitStatement^{asterisk}^``:
+. Else:
  .. Let context ``TC~1~`` and ``forInitStatementIR~h~`` be the result of xref:ForInitStmt_ok[typing ``forInitStatement~h~`` under context ``TC'``].
  .. Let xref:ForInitStmts_ok[``TC~1~ ⊢ forInitStatement~t~^{asterisk}^ +:+ TC~2~ forInitStatementIR~t~^{asterisk}^``].
  .. Result in ``TC~2~`` and ``forInitStatementIR~h~ {two-colons} forInitStatementIR~t~^{asterisk}^``.
@@ -9472,10 +9472,10 @@ xref:compat_range[``typeIR''`` and ``typeIR'''`` can be used as range bounds]
 xref:check_switchLabel_default[Default label is only in the last position of ``switchLabel^{asterisk}^``]
 
 . If ``switchLabel^{asterisk}^`` matches pattern ``[]``: return ``true``.
-. Else if let ``switchLabel~h~ {two-colons} switchLabel~t~^{asterisk}^`` be ``switchLabel^{asterisk}^``:
+. Else:
  .. If ``switchLabel~h~`` matches pattern ``+DEFAULT+``:
   ... Return ``switchLabel~t~^{asterisk}^`` is equal to ``·``.
- .. Else if ``switchLabel~h~`` does not match pattern ``+DEFAULT+``:
+ .. Else:
   ... Return xref:check_switchLabel_default[default label is only in the last position of ``switchLabel~t~^{asterisk}^``].
 
 xref:SwitchLabel_table_ok[SwitchLabel_table_ok]:
@@ -9512,7 +9512,7 @@ xref:SwitchCase_table_ok[SwitchCase_table_ok]:
  .. Let context ``TC~post~``, abstract control flow ``f~post~``, and ``blockStatementIR`` be the result of xref:Block_ok[typing ``blockStatement``, under context ``TC``, abstract control flow ``f``, and loop context ``l``].
  .. Let ``switchCaseIR`` be ``switchLabelIR +:+ blockStatementIR``.
  .. Result in abstract control flow ``f~post~`` and label ``switchCaseIR``.
-. Else if let ``switchLabel +:+`` be ``switchCase``:
+. Else:
  .. Let ``switchLabelIR`` be the result of xref:SwitchLabel_table_ok[typing ``switchLabel`` for table ``typeId~table~``, under context ``TC``].
  .. Let ``switchCaseIR`` be ``switchLabelIR +:+``.
  .. Result in abstract control flow ``f`` and label ``switchCaseIR``.
@@ -9521,7 +9521,7 @@ xref:SwitchCases_table_ok[SwitchCases_table_ok: ``TC f l typeId~table~ ⊢ switc
 
 . If ``switchCase^{asterisk}^`` matches pattern ``[]``:
  .. Result in ``f``, ``·``, and ``·``.
-. Else if let ``switchCase~h~ {two-colons} switchCase~t~^{asterisk}^`` be ``switchCase^{asterisk}^``:
+. Else:
  .. Let abstract control flow ``f~h~`` and label ``switchCaseIR~h~`` be the result of xref:SwitchCase_table_ok[typing ``switchCase~h~`` for table ``typeId~table~``, under context ``TC`` with abstract control flow ``f`` and loop context ``l``].
  .. Let xref:SwitchCases_table_ok[``TC f~h~ l typeId~table~ ⊢ switchCase~t~^{asterisk}^ +:+ f~t~ switchCaseIR~t~^{asterisk}^ +#+ switchLabel~t~^{asterisk}^``].
  .. Result in ``f~t~``, ``switchCaseIR~h~ {two-colons} switchCaseIR~t~^{asterisk}^``, and ``switchLabel~h~ {two-colons} switchLabel~t~^{asterisk}^``.
@@ -9563,7 +9563,7 @@ xref:SwitchCase_general_ok[SwitchCase_general_ok]:
  .. Let context ``TC~post~``, abstract control flow ``f~post~``, and ``blockStatementIR`` be the result of xref:Block_ok[typing ``blockStatement``, under context ``TC``, abstract control flow ``f``, and loop context ``l``].
  .. Let ``switchCaseIR`` be ``switchLabelIR +:+ blockStatementIR``.
  .. Result in abstract control flow ``f~post~`` and label ``switchCaseIR``.
-. Else if let ``switchLabel +:+`` be ``switchCase``:
+. Else:
  .. Let ``switchLabelIR`` be the result of xref:SwitchLabel_general_ok[typing ``switchLabel`` under context ``TC`` with switch key type ``typeIR~switch~``].
  .. Let ``switchCaseIR`` be ``switchLabelIR +:+``.
  .. Result in abstract control flow ``f`` and label ``switchCaseIR``.
@@ -9572,7 +9572,7 @@ xref:SwitchCases_general_ok[SwitchCases_general_ok: ``TC f l typeIR~switch~ ⊢ 
 
 . If ``switchCase^{asterisk}^`` matches pattern ``[]``:
  .. Result in ``f``, ``·``, and ``·``.
-. Else if let ``switchCase~h~ {two-colons} switchCase~t~^{asterisk}^`` be ``switchCase^{asterisk}^``:
+. Else:
  .. Let abstract control flow ``f~h~`` and label ``switchCaseIR~h~`` be the result of xref:SwitchCase_general_ok[typing ``switchCase~h~`` under context ``TC`` with abstract control flow ``f``, loop context ``l``, and switch key type ``typeIR~switch~``].
  .. Let xref:SwitchCases_general_ok[``TC f~h~ l typeIR~switch~ ⊢ switchCase~t~^{asterisk}^ +:+ f~t~ switchCaseIR~t~^{asterisk}^ +#+ switchLabel~t~^{asterisk}^``].
  .. Result in ``f~t~``, ``switchCaseIR~h~ {two-colons} switchCaseIR~t~^{asterisk}^``, and ``switchLabel~h~ {two-colons} switchLabel~t~^{asterisk}^``.
@@ -9603,7 +9603,7 @@ xref:BlockElementStmts_ok[BlockElementStmts_ok]:
 
 . If ``blockElementStatement^{asterisk}^`` matches pattern ``[]``:
  .. Result in context ``TC'``, abstract control flow ``f'``, and ``·``.
-. Else if let ``blockElementStatement~h~ {two-colons} blockElementStatement~t~^{asterisk}^`` be ``blockElementStatement^{asterisk}^``:
+. Else:
  .. Let context ``TC~1~``, abstract control flow ``f~1~``, and ``blockElementStatementIR~h~`` be the result of xref:BlockElementStmt_ok[typing ``blockElementStatement~h~``, under context ``TC'``, abstract control flow ``f'``, and loop context ``l``].
  .. Let context ``TC~2~``, abstract control flow ``f~2~``, and ``blockElementStatementIR~t~^{asterisk}^`` be the result of xref:BlockElementStmts_ok[typing ``blockElementStatement~t~^{asterisk}^`` under context ``TC~1~`` with abstract control flow ``f~1~`` and loop context ``l``].
  .. Result in context ``TC~2~``, abstract control flow ``f~2~``, and ``blockElementStatementIR~h~ {two-colons} blockElementStatementIR~t~^{asterisk}^``.
@@ -9635,7 +9635,7 @@ xref:ObjectDecl_ok[ObjectDecl_ok]:
  .. Let ``varTypeIR`` be xref:option_get[*!*] xref:find_var_t[the type of variable ``nameIR`` from the ``p`` layer of ``TC~1~``].
  .. Let ``typeFrame~init~`` be xref:update_map[the map ``typeFrame`` with the value for ``nameIR`` is updated to ``varTypeIR``].
  .. Result in ``typeFrame~init~`` and ``externMethodTypeDefEnv`` of the object declaration and ``instantiationIR``.
-. Else if let ``annotationList typeOrVoid name typeParameterListOpt +(+parameterList+)+ blockStatement`` be ``objectDeclaration``:
+. Else:
  .. Let ``TC~1~`` be ``TC~0~`` with ``+BLOCK+.+KIND+`` set to ``+EXTERN+``.
  .. Let ``TC~2~`` be ``TC~1~`` with ``+BLOCK+.+FRAME+`` set to ``typeFrame``.
  .. Let context ``TC~3~`` and type parameters ``typeId~expl~^{asterisk}^`` be the result of xref:TypeParameterListOpt_ok[typing ``typeParameterListOpt``, under context ``TC~2~`` at ``+LOCAL+``].
@@ -9661,7 +9661,7 @@ xref:ObjectDecls_ok[ObjectDecls_ok]:
 
 . If ``objectDeclaration^{asterisk}^`` matches pattern ``[]``:
  .. Result in ``typeFrame'`` and ``externMethodTypeDefEnv'`` of the object declaration block and ``·``.
-. Else if let ``objectDeclaration~h~ {two-colons} objectDeclaration~t~^{asterisk}^`` be ``objectDeclaration^{asterisk}^``:
+. Else:
  .. Let ``typeFrame~1~`` and ``externMethodTypeDefEnv~1~`` of the object declaration and ``objectDeclarationIR~h~`` be the result of xref:ObjectDecl_ok[typing ``objectDeclaration~h~`` under context ``TC`` with ``typeFrame'`` and ``externMethodTypeDefEnv'`` at ``p``].
  .. Let ``typeFrame~2~`` and ``externMethodTypeDefEnv~2~`` of the object declaration block and ``objectDeclarationIR~t~^{asterisk}^`` be the result of xref:ObjectDecls_ok[typing ``objectDeclaration~t~^{asterisk}^`` under context ``TC`` with ``typeFrame~1~`` and ``externMethodTypeDefEnv~1~`` at ``p``].
  .. Result in ``typeFrame~2~`` and ``externMethodTypeDefEnv~2~`` of the object declaration block and ``objectDeclarationIR~h~ {two-colons} objectDeclarationIR~t~^{asterisk}^``.
@@ -9752,7 +9752,7 @@ xref:Enum_serializable_fields_ok[Enum_serializable_fields_ok: ``TC' nameIR~enum~
 
 . If ``namedExpression^{asterisk}^`` matches pattern ``[]``:
  .. Result in ``TC'`` and ``·``.
-. Else if let ``namedExpression~h~ {two-colons} namedExpression~t~^{asterisk}^`` be ``namedExpression^{asterisk}^``:
+. Else:
  .. Let context ``TC~1~`` and field value ``namedValueIR~h~`` be the result of xref:Enum_serializable_field_ok[typing ``namedExpression~h~`` under typing context ``TC'`` with enum name ``nameIR~enum~`` and underlying ``typeIR``].
  .. Let xref:Enum_serializable_fields_ok[``TC~1~ nameIR~enum~ typeIR ⊢ namedExpression~t~^{asterisk}^ +:+ TC~2~ namedValueIR~t~^{asterisk}^``].
  .. Let ``namedValueIR^{asterisk}^`` be ``namedValueIR~h~ {two-colons} namedValueIR~t~^{asterisk}^``.
@@ -9789,7 +9789,7 @@ xref:SelectCase_keyset_simple_ok[SelectCase_keyset_simple_ok]:
        ........ Let ``typeIR~cast~`` be ``+SET+ +<+typeIR~key~+>+``.
        ........ Let ``typedExpressionIR~cast~`` be xref:typedExpressionIR[``+(+typeIR~cast~+)+ typedExpressionIR`` annotated with a pair of type ``typeIR~cast~`` and compile-time known-ness ``+DYN+``].
        ........ Result in ``typedExpressionIR~cast~``.
-  ... Else if ``typeIR'`` does not have type ``setTypeIR``:
+  ... Else:
    .... If xref:Cast_impl[``typeIR`` can be implicitly cast to ``typeIR~key~``]:
     ..... Let ``typeIR~cast~`` be ``+SET+ +<+typeIR~key~+>+``.
     ..... Let ``typedExpressionIR~cast~`` be xref:typedExpressionIR[``+(+typeIR~cast~+)+ typedExpressionIR`` annotated with a pair of type ``typeIR~cast~`` and compile-time known-ness ``+DYN+``].
@@ -9956,7 +9956,7 @@ xref:ParserStmts_ok[ParserStmts_ok]:
 
 . If ``parserStatement^{asterisk}^`` matches pattern ``[]``:
  .. Result in the updated context ``TC'`` and the typed parser statements ``·``.
-. Else if let ``parserStatement~h~ {two-colons} parserStatement~t~^{asterisk}^`` be ``parserStatement^{asterisk}^``:
+. Else:
  .. Let context ``TC~1~`` and typed parser statement ``parserStatementIR~h~`` be the result of xref:ParserStmt_ok[typing ``parserStatement~h~``, under context ``TC'``].
  .. Let the updated context ``TC~2~`` and the typed parser statements ``parserStatementIR~t~^{asterisk}^`` be the result of xref:ParserStmts_ok[typing ``parserStatement~t~^{asterisk}^``, under context ``TC~1~``].
  .. Result in the updated context ``TC~2~`` and the typed parser statements ``parserStatementIR~h~ {two-colons} parserStatementIR~t~^{asterisk}^``.
@@ -9967,7 +9967,7 @@ xref:ParserLocalDecls_ok[ParserLocalDecls_ok]:
 
 . If ``parserLocalDeclaration^{asterisk}^`` matches pattern ``[]``:
  .. Result in the updated context ``TC'`` and the typed parser local declarations ``·``.
-. Else if let ``parserLocalDeclaration~h~ {two-colons} parserLocalDeclaration~t~^{asterisk}^`` be ``parserLocalDeclaration^{asterisk}^``:
+. Else:
  .. Let context ``TC~1~`` and ``parserLocalDeclarationIR~h~`` be the result of xref:ParserLocalDecl_ok[typing ``parserLocalDeclaration~h~``, under context ``TC'``].
  .. Let the updated context ``TC~2~`` and the typed parser local declarations ``parserLocalDeclarationIR~t~^{asterisk}^`` be the result of xref:ParserLocalDecls_ok[typing ``parserLocalDeclaration~t~^{asterisk}^``, under context ``TC~1~``].
  .. Result in the updated context ``TC~2~`` and the typed parser local declarations ``parserLocalDeclarationIR~h~ {two-colons} parserLocalDeclarationIR~t~^{asterisk}^``.
@@ -10022,7 +10022,7 @@ xref:compat_table_key[``typeIR`` can be used with match kind ``nameIR``]
 . Else if ``nameIR`` is equal to ``"ternary"``:
  .. Check that ``xref:compat_table_lpm_ternary_range_key[$compat_table_lpm_ternary_range_key(typeIR)]``.
  return ``true``.
-. Else if ``nameIR`` is equal to ``"range"``:
+. Else:
  .. Check that ``xref:compat_table_lpm_ternary_range_key[$compat_table_lpm_ternary_range_key(typeIR)]``.
  return ``true``.
 
@@ -10037,14 +10037,14 @@ xref:name_expression[$name_expression(expression'')]
   ... If let ``booleanLiteral`` be ``expression''``:
    .... If ``booleanLiteral`` matches pattern ``+TRUE+``:
     ..... Return ``"true"``.
-   .... Else if ``booleanLiteral`` matches pattern ``+FALSE+``:
+   .... Else:
     ..... Return ``"false"``.
   ... Else if let ``integerLiteral`` be ``expression''``:
    .... If let ``+D+ i`` be ``integerLiteral``:
     ..... Return ``xref:int_to_text[$int_to_text(i)]``.
    .... Else if let ``n +W+ i`` be ``integerLiteral``:
     ..... Return ``xref:int_to_text[$int_to_text(n)]`` concatenated with ``"w"`` concatenated with ``xref:int_to_text[$int_to_text(i)]``.
-   .... Else if let ``n +S+ i`` be ``integerLiteral``:
+   .... Else:
     ..... Return ``xref:int_to_text[$int_to_text(n)]`` concatenated with ``"s"`` concatenated with ``xref:int_to_text[$int_to_text(i)]``.
   ... Else if let ``+"+ text +"+`` be ``expression''``:
    .... Return ``"\""`` concatenated with ``text`` concatenated with ``"\""``.
@@ -10057,16 +10057,16 @@ xref:name_expression[$name_expression(expression'')]
   ... Else if let ``memberAccessBase +.+ member`` be ``expression''``:
    .... If let ``prefixedTypeName`` be ``memberAccessBase``:
     ..... Return xref:flatten_prefixedNameIR[the string form of  the prefixed name of  ``prefixedTypeName``] concatenated with ``"."`` concatenated with xref:name[the name of ``member``].
-   .... Else if let ``expression`` be ``memberAccessBase``:
+   .... Else:
     ..... Return ``xref:name_expression[$name_expression(expression)]`` concatenated with ``"."`` concatenated with xref:name[the name of ``member``].
   ... Else if let ``expression~base~ +[+expression~index~+]+`` be ``expression''``:
    .... Return ``xref:name_expression[$name_expression(expression~base~)]`` concatenated with ``"["`` concatenated with ``xref:name_expression[$name_expression(expression~index~)]`` concatenated with ``"]"``.
   ... Else if let ``sliceAccessExpression`` be ``expression''``:
    .... If let ``expression~base~ +[+expression~hi~ +:+ expression~lo~+]+`` be ``sliceAccessExpression``:
     ..... Return ``xref:name_expression[$name_expression(expression~base~)]`` concatenated with ``"["`` concatenated with ``xref:name_expression[$name_expression(expression~hi~)]`` concatenated with ``":"`` concatenated with ``xref:name_expression[$name_expression(expression~lo~)]`` concatenated with ``"]"``.
-   .... Else if let ``expression~base~ +[+expression~l~ +++ +:+ expression~w~+]+`` be ``sliceAccessExpression``:
+   .... Else:
     ..... Return ``xref:name_expression[$name_expression(expression~base~)]`` concatenated with ``"["`` concatenated with ``xref:name_expression[$name_expression(expression~l~)]`` concatenated with ``"+:"`` concatenated with ``xref:name_expression[$name_expression(expression~w~)]`` concatenated with ``"]"``.
-  ... Else if let ``+(+expression+)+`` be ``expression''``:
+  ... Else:
    .... Return ``"("`` concatenated with ``xref:name_expression[$name_expression(expression)]`` concatenated with ``")"``.
  .. {empty}
   ... Let!~type~ ``nonTypeName`` be ``expression''``.
@@ -10087,12 +10087,12 @@ xref:split_dataplane_parameters[``parameterIR^{asterisk}^`` split into data-plan
 
 . If ``parameterIR^{asterisk}^`` matches pattern ``[]``:
  .. Return ( ``·``, ``·`` ).
-. Else if let ``parameterIR~h~ {two-colons} parameterIR~t~^{asterisk}^`` be ``parameterIR^{asterisk}^``:
+. Else:
  .. Let ``++_++ direction ++_++ ++_++ ++_++`` be ``parameterIR~h~``.
  .. If ``direction`` matches pattern ````:
   ... Let ``( parameterIR~data~^{asterisk}^, parameterIR~control~^{asterisk}^ )`` be xref:split_dataplane_parameters[``parameterIR~t~^{asterisk}^`` split into data-plane and control-plane parameters].
   ... Return ( ``parameterIR~data~^{asterisk}^``, ``parameterIR~h~ {two-colons} parameterIR~control~^{asterisk}^`` ).
- .. Else if ``direction`` does not match pattern ````:
+ .. Else:
   ... Let ``( parameterIR~data~^{asterisk}^, parameterIR~control~^{asterisk}^ )`` be xref:split_dataplane_parameters[``parameterIR~t~^{asterisk}^`` split into data-plane and control-plane parameters].
   ... Return ( ``parameterIR~h~ {two-colons} parameterIR~data~^{asterisk}^``, ``parameterIR~control~^{asterisk}^`` ).
 
@@ -10193,7 +10193,7 @@ xref:TableEntry_keyset_simple_ok[TableEntry_keyset_simple_ok: ``TC TBLC ⊢ type
     ..... Let ``typeIR~set~`` be ``+SET+ +<+typeIR~key~+>+``.
     ..... Let ``typedExpressionIR~set~`` be xref:typedExpressionIR[``+(+typeIR~set~+)+ typedExpressionIR`` annotated with a pair of type ``typeIR~set~`` and compile-time known-ness ``ctk``].
     ..... Result in ``+NON_LPM+`` and ``typedExpressionIR~set~``.
-  ... Else if xref:is_singleton_list_expression[``expression`` is not a singleton list expression]:
+  ... Else:
    .... Let ``typedExpressionIR`` be the result of xref:Expr_ok[typing ``expression``, under context ``TC`` at ``+LOCAL+``].
    .... Let ``typeIR`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR``].
    .... Let ``ctk`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR``].
@@ -10234,7 +10234,7 @@ xref:TableEntry_keysets_simple_ok[TableEntry_keysets_simple_ok: ``TC TBLC TBLS' 
  .. Check that ``simpleKeysetExpression^{asterisk}^`` is an empty list.
 
  .. Result in ``TBLS'`` and ``·``.
-. Else if let ``matchKey~h~ {two-colons} matchKey~t~^{asterisk}^`` be ``matchKey^{asterisk}^``:
+. Else:
  .. Let!~type~ ``simpleKeysetExpression~h~ {two-colons} simpleKeysetExpression~t~^{asterisk}^`` be ``simpleKeysetExpression^{asterisk}^``.
 
  .. Let xref:TableEntry_keyset_simple_ok[``TC TBLC ⊢ matchKey~h~ +@+ simpleKeysetExpression~h~ +:+ TBLS~1~ simpleKeysetExpressionIR~h~``].
@@ -10275,7 +10275,7 @@ xref:insert_NoAction_tablePropertyIR[$insert_NoAction_tablePropertyIR(TBLC', tab
 
 . If ``tablePropertyIR^{asterisk}^`` matches pattern ``[]``:
  .. Return ( ``TBLC'``, ``·`` ).
-. Else if let ``tablePropertyIR~h~ {two-colons} tablePropertyIR~t~^{asterisk}^`` be ``tablePropertyIR^{asterisk}^``:
+. Else:
  .. If ``tablePropertyIR~h~`` has type ``tableActionsPropertyIR``:
   ... Let ``+ACTIONS+ +=+ +{+tableActionIR^{asterisk}^+}+`` be ``tablePropertyIR~h~``.
   ... Let ``++_++ tableActionReferenceIR +#+ +(+++_++ +,+ ++_+++)+ +;+`` be ``tableActionIR``, for all ``++_++`` in ``++_++``, ``++_++`` in ``++_++``, ``++_++`` in ``++_++``, ``tableActionIR`` in ``tableActionIR^{asterisk}^``, and ``tableActionReferenceIR`` in ``tableActionReferenceIR^{asterisk}^``.
@@ -10285,9 +10285,9 @@ xref:insert_NoAction_tablePropertyIR[$insert_NoAction_tablePropertyIR(TBLC', tab
    .... Let ``tableActionIR~NoAction~`` be ``tableActionReferenceIR~NoAction~ +#+ +(+· +,+ ·+)+ +;+``.
    .... Let ``tablePropertyIR~h_updated~`` be ``+ACTIONS+ +=+ +{+tableActionIR^{asterisk}^ {pp} tableActionIR~NoAction~+}+``.
    .... Return ( ``TBLC~1~``, ``tablePropertyIR~h_updated~ {two-colons} tablePropertyIR~t~^{asterisk}^`` ).
-  ... Else if ``tableActionReferenceIR~NoAction~`` is in ``tableActionReferenceIR^{asterisk}^``:
+  ... Else:
    .... Return ( ``TBLC'``, ``tablePropertyIR~h~ {two-colons} tablePropertyIR~t~^{asterisk}^`` ).
- .. Else if ``tablePropertyIR~h~`` does not have type ``tableActionsPropertyIR``:
+ .. Else:
   ... Let ``( TBLC~1~, tablePropertyIR~t_updated~^{asterisk}^ )`` be ``xref:insert_NoAction_tablePropertyIR[$insert_NoAction_tablePropertyIR(TBLC', tablePropertyIR~t~^{asterisk}^)]``.
   ... Return ( ``TBLC~1~``, ``tablePropertyIR~h~ {two-colons} tablePropertyIR~t_updated~^{asterisk}^`` ).
 
@@ -10297,7 +10297,7 @@ xref:ControlLocalDecls_ok[ControlLocalDecls_ok]:
 
 . If ``controlLocalDeclaration^{asterisk}^`` matches pattern ``[]``:
  .. Result in the updated context ``TC'`` and the typed control local declarations ``·``.
-. Else if let ``controlLocalDeclaration~h~ {two-colons} controlLocalDeclaration~t~^{asterisk}^`` be ``controlLocalDeclaration^{asterisk}^``:
+. Else:
  .. Let context ``TC~1~`` and ``controlLocalDeclarationIR~h~`` be the result of xref:ControlLocalDecl_ok[typing ``controlLocalDeclaration~h~``, under context ``TC'``].
  .. Let the updated context ``TC~2~`` and the typed control local declarations ``controlLocalDeclarationIR~t~^{asterisk}^`` be the result of xref:ControlLocalDecls_ok[typing ``controlLocalDeclaration~t~^{asterisk}^``, under context ``TC~1~``].
  .. Result in the updated context ``TC~2~`` and the typed control local declarations ``controlLocalDeclarationIR~h~ {two-colons} controlLocalDeclarationIR~t~^{asterisk}^``.
@@ -10326,7 +10326,7 @@ xref:Expr_lvalue_ok[Expr_lvalue_ok]:
    .... Check that ``p`` is equal to ``+BLOCK+`` and ``TC.+BLOCK+.+KIND+`` is equal to ``+PARSER+`` or ``p`` is equal to ``+LOCAL+`` and ``TC.+LOCAL+.+KIND+`` is equal to ``+PARSER_STATE+``.
 
    .... The relation holds.
-  ... Else if ``typeIR'`` does not have type ``headerStackTypeIR``:
+  ... Else:
    .... The relation holds.
 . Else if let ``typedExpressionIR~base~ +[+typedExpressionIR~index~+]+`` be ``expressionIR``:
  .. If xref:Expr_lvalue_ok[``p TC ⊢ typedExpressionIR~base~``] holds:
@@ -10335,7 +10335,7 @@ xref:Expr_lvalue_ok[Expr_lvalue_ok]:
  .. If let ``typedExpressionIR~base~ +[+typedExpressionIR~hi~ +:+ typedExpressionIR~lo~+]+`` be ``sliceAccessExpressionIR``:
   ... If xref:Expr_lvalue_ok[``p TC ⊢ typedExpressionIR~base~``] holds:
    .... The relation holds.
- .. Else if let ``typedExpressionIR~base~ +[+typedExpressionIR~l~ +++ +:+ typedExpressionIR~w~+]+`` be ``sliceAccessExpressionIR``:
+ .. Else:
   ... If xref:Expr_lvalue_ok[``p TC ⊢ typedExpressionIR~base~``] holds:
    .... The relation holds.
 
@@ -10468,7 +10468,7 @@ xref:gen_constraint[$gen_constraint(constraint, typeIR'', typeIR~arg'~)]
    .... Check that ``direction'`` is equal to ``direction``, for all ``direction`` in ``direction^{asterisk}^`` and ``direction'`` in ``direction'^{asterisk}^``.
 
    .... Return ``xref:gen_constraints[$gen_constraints(constraint, typeIR~param~^{asterisk}^, typeIR~arg~^{asterisk}^)]``.
-  ... Else if let ``+PACKAGE+ ++_++ +<+++_++^{asterisk}^+>+ +{+typeIR~param~^{asterisk}^+}+`` be ``typeIR''``:
+  ... Else:
    .... Let!~type~ ``+PACKAGE+ ++_++ +<+++_++^{asterisk}^+>+ +{+typeIR~arg~^{asterisk}^+}+`` be ``typeIR~arg'~``.
 
    .... Return ``xref:gen_constraints[$gen_constraints(constraint, typeIR~param~^{asterisk}^, typeIR~arg~^{asterisk}^)]``.
@@ -10502,7 +10502,7 @@ xref:merge_constraint'[$merge_constraint'(constraint~pre~, constraint~post~, typ
 
 . If ``typeId^{asterisk}^`` matches pattern ``[]``:
  .. Return ``constraint``.
-. Else if let ``typeId~h~ {two-colons} typeId~t~^{asterisk}^`` be ``typeId^{asterisk}^``:
+. Else:
  .. Check that ``+UNKNOWN+`` is equal to xref:find_map[the value of ``typeId~h~`` in map ``constraint~pre~``].
 
  .. Check that ``+UNKNOWN+`` is equal to xref:find_map[the value of ``typeId~h~`` in map ``constraint~post~``].
@@ -10539,7 +10539,7 @@ xref:merge_constraints[$merge_constraints(constraint~pre'~, constraint^{asterisk
 
 . If ``constraint^{asterisk}^`` matches pattern ``[]``:
  .. Return ``constraint~pre'~``.
-. Else if let ``constraint~post_h~ {two-colons} constraint~post_t~^{asterisk}^`` be ``constraint^{asterisk}^``:
+. Else:
  .. Let ``constraint~pre_1~`` be ``xref:merge_constraint[$merge_constraint(constraint~pre'~, constraint~post_h~)]``.
  .. Let ``constraint~pre_2~`` be ``xref:merge_constraints[$merge_constraints(constraint~pre_1~, constraint~post_t~^{asterisk}^)]``.
  .. Return ``constraint~pre_2~``.
@@ -10564,7 +10564,7 @@ xref:instantiable_extern[$instantiable_extern(cursor, TC, instctxt)]
 
 . If ``cursor`` matches pattern ``+GLOBAL+``: return ``true``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``: return ``true``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``: return ``true``.
+. Else: return ``true``.
 
 xref:instantiable_parser[$instantiable_parser(cursor, TC, instctxt)]
 
@@ -10573,7 +10573,7 @@ xref:instantiable_parser[$instantiable_parser(cursor, TC, instctxt)]
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
  .. Let ``blockKind`` be ``TC.+BLOCK+.+KIND+``.
  .. Return ``blockKind`` is equal to ``+PARSER+`` or ``blockKind`` is equal to ``+PACKAGE+``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Let ``localKind`` be ``TC.+LOCAL+.+KIND+``.
  .. Return ``localKind`` is equal to ``+PARSER_STATE+``.
 
@@ -10584,7 +10584,7 @@ xref:instantiable_control[$instantiable_control(cursor, TC, instctxt)]
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
  .. Let ``blockKind`` be ``TC.+BLOCK+.+KIND+``.
  .. Return ``blockKind`` is equal to ``+CONTROL+`` or ``blockKind`` is equal to ``+PACKAGE+``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Let ``localKind`` be ``TC.+LOCAL+.+KIND+``.
  .. Return ``localKind`` is equal to ``+CONTROL_APPLY_METHOD+``.
 
@@ -10594,7 +10594,7 @@ xref:instantiable_package[$instantiable_package(cursor, TC, instctxt)]
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
  .. Let ``blockKind`` be ``TC.+BLOCK+.+KIND+``.
  .. Return ``blockKind`` is equal to ``+PACKAGE+``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``: return ``false``.
+. Else: return ``false``.
 
 xref:instantiable_table[$instantiable_table(cursor, TC, instctxt)]
 
@@ -10602,7 +10602,7 @@ xref:instantiable_table[$instantiable_table(cursor, TC, instctxt)]
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
  .. Let ``blockKind`` be ``TC.+BLOCK+.+KIND+``.
  .. Return ``blockKind`` is equal to ``+CONTROL+``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``: return ``false``.
+. Else: return ``false``.
 
 xref:instantiable[$instantiable(p, TC, instctxt, typeIR)]
 
@@ -10622,7 +10622,7 @@ xref:callable_action[$callable_action(cursor, TC)]
 
 . If ``cursor`` matches pattern ``+GLOBAL+``: return ``false``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``: return ``false``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Let ``localKind`` be ``TC.+LOCAL+.+KIND+``.
  .. Return ``localKind`` is equal to ``+ACTION+`` or ``localKind`` is equal to ``+CONTROL_APPLY_METHOD+``.
 
@@ -10632,7 +10632,7 @@ xref:callable_definedFunction[$callable_definedFunction(cursor, TC)]
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
  .. Let ``blockKind`` be ``TC.+BLOCK+.+KIND+``.
  .. Return ``blockKind`` is equal to ``+PARSER+`` or ``blockKind`` is equal to ``+CONTROL+``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Let ``localKind`` be ``TC.+LOCAL+.+KIND+``.
  .. Return ``localKind`` does not have type ``externMethodLocalKind``.
 
@@ -10640,25 +10640,25 @@ xref:callable_externFunction[$callable_externFunction(cursor, TC, nameIR)]
 
 . If ``cursor`` matches pattern ``+GLOBAL+``:
  .. If ``nameIR`` is equal to ``"verify"``: return ``false``.
- .. Else if ``nameIR`` is not equal to ``"verify"``: return ``true``.
+ .. Else: return ``true``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
  .. If ``nameIR`` is equal to ``"verify"``:
   ... Let ``blockKind`` be ``TC.+BLOCK+.+KIND+``.
   ... Return ``blockKind`` is equal to ``+PARSER+``.
- .. Else if ``nameIR`` is not equal to ``"verify"``:
+ .. Else:
   ... Let ``blockKind`` be ``TC.+BLOCK+.+KIND+``.
   ... Return ``blockKind`` is equal to ``+PARSER+`` or ``blockKind`` is equal to ``+CONTROL+``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. If ``nameIR`` is equal to ``"verify"``:
   ... Let ``localKind`` be ``TC.+LOCAL+.+KIND+``.
   ... Return ``localKind`` is equal to ``+PARSER_STATE+``.
- .. Else if ``nameIR`` is not equal to ``"verify"``: return ``true``.
+ .. Else: return ``true``.
 
 xref:callable_builtinMethod[$callable_builtinMethod(cursor, TC)]
 
 . If ``cursor`` matches pattern ``+GLOBAL+``: return ``true``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``: return ``true``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``: return ``true``.
+. Else: return ``true``.
 
 xref:callable_externMethod[$callable_externMethod(cursor, TC)]
 
@@ -10666,7 +10666,7 @@ xref:callable_externMethod[$callable_externMethod(cursor, TC)]
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
  .. Let ``blockKind`` be ``TC.+BLOCK+.+KIND+``.
  .. Return ``blockKind`` is equal to ``+PARSER+`` or ``blockKind`` is equal to ``+CONTROL+``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``: return ``true``.
+. Else: return ``true``.
 
 xref:callable_externAbstractMethod[$callable_externAbstractMethod(cursor, TC)]
 
@@ -10674,13 +10674,13 @@ xref:callable_externAbstractMethod[$callable_externAbstractMethod(cursor, TC)]
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
  .. Let ``blockKind`` be ``TC.+BLOCK+.+KIND+``.
  .. Return ``blockKind`` is equal to ``+PARSER+`` or ``blockKind`` is equal to ``+CONTROL+``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``: return ``true``.
+. Else: return ``true``.
 
 xref:callable_parserApplyMethod[$callable_parserApplyMethod(cursor, TC)]
 
 . If ``cursor`` matches pattern ``+GLOBAL+``: return ``false``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``: return ``false``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Let ``localKind`` be ``TC.+LOCAL+.+KIND+``.
  .. Return ``localKind`` is equal to ``+PARSER_STATE+``.
 
@@ -10688,7 +10688,7 @@ xref:callable_controlApplyMethod[$callable_controlApplyMethod(cursor, TC)]
 
 . If ``cursor`` matches pattern ``+GLOBAL+``: return ``false``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``: return ``false``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Let ``localKind`` be ``TC.+LOCAL+.+KIND+``.
  .. Return ``localKind`` is equal to ``+CONTROL_APPLY_METHOD+``.
 
@@ -10696,7 +10696,7 @@ xref:callable_tableApplyMethod[$callable_tableApplyMethod(cursor, TC)]
 
 . If ``cursor`` matches pattern ``+GLOBAL+``: return ``false``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``: return ``false``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Let ``localKind`` be ``TC.+LOCAL+.+KIND+``.
  .. Return ``localKind`` is equal to ``+CONTROL_APPLY_METHOD+`` or ``localKind`` is equal to ``+TABLE_APPLY_METHOD+``.
 
@@ -10711,7 +10711,7 @@ xref:parameterListIR_of_callableDef[$parameterListIR_of_callableDef(callableDef)
  .. Return ``xref:parameterListIR_of_actionDef[$parameterListIR_of_actionDef(actionDef)]``.
 . Else if let ``functionDef`` be ``callableDef``:
  .. Return ``xref:parameterListIR_of_functionDef[$parameterListIR_of_functionDef(functionDef)]``.
-. Else if let ``methodDef`` be ``callableDef``:
+. Else:
  .. Return ``xref:parameterListIR_of_methodDef[$parameterListIR_of_methodDef(methodDef)]``.
 
 xref:parameterListIR_of_actionDef[$parameterListIR_of_actionDef(annotationList +ACTION+ ++_++ +(+parameterListIR+)+ ++_++)]
@@ -10722,7 +10722,7 @@ xref:parameterListIR_of_functionDef[$parameterListIR_of_functionDef(functionDef)
 
 . If let ``definedFunctionDef`` be ``functionDef``:
  .. Return ``xref:parameterListIR_of_definedFunctionDef[$parameterListIR_of_definedFunctionDef(definedFunctionDef)]``.
-. Else if let ``externFunctionDef`` be ``functionDef``:
+. Else:
  .. Return ``xref:parameterListIR_of_externFunctionDef[$parameterListIR_of_externFunctionDef(externFunctionDef)]``.
 
 xref:parameterListIR_of_definedFunctionDef[$parameterListIR_of_definedFunctionDef(+FUNCTION+ ++_++ +<+++_+++>+ +(+parameterListIR+)+ ++_++)]
@@ -10741,7 +10741,7 @@ xref:parameterListIR_of_methodDef[$parameterListIR_of_methodDef(methodDef)]
  .. Return ``xref:parameterListIR_of_parserApplyMethodDef[$parameterListIR_of_parserApplyMethodDef(parserApplyMethodDef)]``.
 . Else if let ``controlApplyMethodDef`` be ``methodDef``:
  .. Return ``xref:parameterListIR_of_controlApplyMethodDef[$parameterListIR_of_controlApplyMethodDef(controlApplyMethodDef)]``.
-. Else if let ``tableApplyMethodDef`` be ``methodDef``:
+. Else:
  .. Return ``xref:parameterListIR_of_tableApplyMethodDef[$parameterListIR_of_tableApplyMethodDef(tableApplyMethodDef)]``.
 
 xref:parameterListIR_of_externMethodDef[$parameterListIR_of_externMethodDef(externMethodDef)]
@@ -10770,7 +10770,7 @@ xref:parameterListIR_of_constructorDef[$parameterListIR_of_constructorDef(constr
  .. Return ``constructorParameterListIR``.
 . Else if let ``+CONTROL+ +<+++_+++>+ +(+++_+++)+ +(+constructorParameterListIR+)+ +{+++_++ +APPLY+ ++_+++}+`` be ``constructorDef``:
  .. Return ``constructorParameterListIR``.
-. Else if let ``+PACKAGE+ +<+++_+++>+ +(+constructorParameterListIR+)+`` be ``constructorDef``:
+. Else:
  .. Return ``constructorParameterListIR``.
 
 xref:init_objectState[Initialization of ``nameIR````+<+`` ``typeIR^{asterisk}^`` ``+>+````+(+`` ``value^{asterisk}^`` ``+)+`` in the target]
@@ -10840,7 +10840,7 @@ xref:inherit_i[An instantiation context same as ``IC`` up to the ``cursor`` laye
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
  .. Let ``localInstLayer`` be +{++TYPE+ ``xref:empty_theta[$empty_theta]``, +FRAMES+ ``xref:empty_frame[$empty_frame]``+}+.
  .. Return ``IC`` with ``+LOCAL+`` set to ``localInstLayer``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Return ``IC``.
 
 xref:add_var_i[``IC`` where ``id`` to ``value`` is added to the ``cursor`` layer]
@@ -10855,7 +10855,7 @@ xref:add_var_i[``IC`` where ``id`` to ``value`` is added to the ``cursor`` layer
 
  .. Let ``frame`` be xref:add_map[``IC.+BLOCK+.+FRAME+`` where ``id`` to ``value`` is added].
  .. Return ``IC`` with ``+BLOCK+.+FRAME+`` set to ``frame``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Let ``frame^{asterisk}^`` be ``IC.+LOCAL+.+FRAMES+``.
  .. Let!~type~ ``frame~h~ {two-colons} frame~t~^{asterisk}^`` be ``frame^{asterisk}^``.
 
@@ -10870,7 +10870,7 @@ xref:add_vars_i[``IC`` where each of ``id^{asterisk}^`` to each of ``value^{aste
  .. Check that ``value^{asterisk}^`` is an empty list.
 
  .. Return ``IC``.
-. Else if let ``id~h~ {two-colons} id~t~^{asterisk}^`` be ``id^{asterisk}^``:
+. Else:
  .. Let!~type~ ``value~h~ {two-colons} value~t~^{asterisk}^`` be ``value^{asterisk}^``.
 
  .. Let ``IC'`` be xref:add_var_i[``IC`` where ``id~h~`` to ``value~h~`` is added to the ``p`` layer].
@@ -10906,7 +10906,7 @@ xref:add_types_i[$add_types_i(p, IC, typeId^{asterisk}^, typeIR^{asterisk}^)]
  .. Check that ``typeIR^{asterisk}^`` is an empty list.
 
  .. Return ``IC``.
-. Else if let ``typeId~h~ {two-colons} typeId~t~^{asterisk}^`` be ``typeId^{asterisk}^``:
+. Else:
  .. Let!~type~ ``typeIR~h~ {two-colons} typeIR~t~^{asterisk}^`` be ``typeIR^{asterisk}^``.
 
  .. Let ``IC'`` be ``xref:add_type_i[$add_type_i(p, IC, typeId~h~, typeIR~h~)]``.
@@ -10971,7 +10971,7 @@ xref:find_callableDef_non_overload_i[The non-overloaded callable definition of `
      ...... Check that ``·`` is equal to ``xref:find_non_overloaded[$find_non_overloaded<callableDef>(IC.+BLOCK+.+CALLABLE+, nameIR)]``.
 
      ...... Return xref:find_callableDef_non_overload_i[the non-overloaded callable definition of ``nameIR`` from the ``+GLOBAL+`` layer of ``IC``].
-  ... Else if ``p'`` matches pattern ``+LOCAL+``:
+  ... Else:
    .... Let!~type~ ``nameIR`` be ``prefixedNameIR``.
 
    .... Return xref:find_callableDef_non_overload_i[the non-overloaded callable definition of ``nameIR`` from the ``+BLOCK+`` layer of ``IC``].
@@ -10987,7 +10987,7 @@ xref:add_constructorDefs_i[Where each of ``callableId^{asterisk}^`` to each of `
  .. Check that ``constructorDef^{asterisk}^`` is an empty list.
 
  .. Return ``IC``.
-. Else if let ``callableId~h~ {two-colons} callableId~t~^{asterisk}^`` be ``callableId^{asterisk}^``:
+. Else:
  .. Let!~type~ ``constructorDef~h~ {two-colons} constructorDef~t~^{asterisk}^`` be ``constructorDef^{asterisk}^``.
 
  .. Let ``IC'`` be xref:add_constructorDef_i[where ``callableId~h~`` to ``constructorDef~h~`` is added to ``IC``].
@@ -10999,7 +10999,7 @@ xref:find_var_i[The value of ``prefixedNameIR`` from the ``p'`` layer of ``IC``]
 . If let ``+.+ id`` be ``prefixedNameIR``:
  .. Let ``value`` be xref:option_get[*!*] xref:find_map[the value of ``id`` in map ``IC.+GLOBAL+.+FRAME+``].
  .. Return ``value``.
-. Else if let ``id`` be ``prefixedNameIR``:
+. Else:
  .. If ``p'`` matches pattern ``+GLOBAL+``:
   ... Let ``value`` be xref:option_get[*!*] xref:find_map[the value of ``id`` in map ``IC.+GLOBAL+.+FRAME+``].
   ... Return ``value``.
@@ -11014,7 +11014,7 @@ xref:find_var_i[The value of ``prefixedNameIR`` from the ``p'`` layer of ``IC``]
     ..... Check that ``·`` is equal to xref:find_map[the value of ``id`` in map ``IC.+BLOCK+.+FRAME+``].
 
     ..... Return xref:find_var_i[the value of ``id`` from the ``+GLOBAL+`` layer of ``IC``].
- .. Else if ``p'`` matches pattern ``+LOCAL+``:
+ .. Else:
   ... Let ``value'^?^`` be xref:find_maps[the value of ``id`` in maps ``IC.+LOCAL+.+FRAMES+``].
   ... Try:
    .... {empty}
@@ -11030,7 +11030,7 @@ xref:find_typeDef_i[The type definition of ``prefixedNameIR`` from the ``++_++``
 
 . If let ``nameIR`` be ``prefixedNameIR``:
  .. Return xref:find_map[the value of ``nameIR`` in map ``IC.+GLOBAL+.+TYPE+``].
-. Else if let ``+.+ nameIR`` be ``prefixedNameIR``:
+. Else:
  .. Return xref:find_map[the value of ``nameIR`` in map ``IC.+GLOBAL+.+TYPE+``].
 
 xref:find_constructorDef_i[The overloaded constructor definition of ``prefixedNameIR`` ``+(+`` ``argumentIR^{asterisk}^`` ``+)+`` in ``IC``]
@@ -11038,7 +11038,7 @@ xref:find_constructorDef_i[The overloaded constructor definition of ``prefixedNa
 . If let ``nameIR`` be ``prefixedNameIR``:
  .. Let ``callTargetKey`` be xref:callTargetKey[the call target key for ``nameIR`` ``+(+`` ``argumentIR^{asterisk}^`` ``+)+``].
  .. Return xref:find_overloaded[finding the item in ``IC.+GLOBAL+.+CONSTRUCTOR+`` matching ``callTargetKey`` using parameter getter ``$parameterListIR_of_constructorDef``].
-. Else if let ``+.+ nameIR`` be ``prefixedNameIR``:
+. Else:
  .. Let ``callTargetKey`` be xref:callTargetKey[the call target key for ``nameIR`` ``+(+`` ``argumentIR^{asterisk}^`` ``+)+``].
  .. Return xref:find_overloaded[finding the item in ``IC.+GLOBAL+.+CONSTRUCTOR+`` matching ``callTargetKey`` using parameter getter ``$parameterListIR_of_constructorDef``].
 
@@ -11050,7 +11050,7 @@ xref:subst_type_i[``typeIR`` substituted by bound type variables in ``IC`` from 
  .. Let ``theta`` be ``IC.+BLOCK+.+TYPE+``.
  .. Let ``typeIR~subst~`` be xref:subst_typeIR[``typeIR`` substituted by ``theta``].
  .. Return ``typeIR~subst~``.
-. Else if ``cursor`` matches pattern ``+LOCAL+``:
+. Else:
  .. Let ``theta~block~`` be ``IC.+BLOCK+.+TYPE+``.
  .. Let ``theta~local~`` be ``IC.+LOCAL+.+TYPE+``.
  .. Let ``theta`` be ``xref:extend_map[$extend_map<typeId, typeIR>(theta~block~, theta~local~)]``.
@@ -11136,14 +11136,14 @@ xref:Expr_inst[Expr_inst]:
  .. If let ``+SEQ+ +{+typedExpressionListIR+}+`` be ``sequenceExpressionIR``:
   ... Let store ``STO~1~`` and ``value^{asterisk}^`` be the result of xref:Exprs_inst[compile-time evaluation of ``typedExpressionListIR``, under context ``IC`` and store ``STO'`` at ``p``].
   ... Result in store ``STO~1~`` and ``+SEQ+ +(+value^{asterisk}^+)+``.
- .. Else if let ``+SEQ+ +{+typedExpressionListIR +,+ +...++}+`` be ``sequenceExpressionIR``:
+ .. Else:
   ... Let store ``STO~1~`` and ``value^{asterisk}^`` be the result of xref:Exprs_inst[compile-time evaluation of ``typedExpressionListIR``, under context ``IC`` and store ``STO'`` at ``p``].
   ... Result in store ``STO~1~`` and ``+SEQ+ +(+value^{asterisk}^ +,+ +...++)+``.
 . Else if let ``recordExpressionIR`` be ``expressionIR``:
  .. If let ``+RECORD+ +{+( nameIR +=+ typedExpressionIR )^{asterisk}^+}+`` be ``recordExpressionIR``:
   ... Let store ``STO~1~`` and ``value^{asterisk}^`` be the result of xref:Exprs_inst[compile-time evaluation of ``typedExpressionIR^{asterisk}^``, under context ``IC`` and store ``STO'`` at ``p``].
   ... Result in store ``STO~1~`` and ``+RECORD+ +{+( value nameIR +;+ )^{asterisk}^+}+``.
- .. Else if let ``+RECORD+ +{+( nameIR +=+ typedExpressionIR )^{asterisk}^ +,+ +...++}+`` be ``recordExpressionIR``:
+ .. Else:
   ... Let store ``STO~1~`` and ``value^{asterisk}^`` be the result of xref:Exprs_inst[compile-time evaluation of ``typedExpressionIR^{asterisk}^``, under context ``IC`` and store ``STO'`` at ``p``].
   ... Result in store ``STO~1~`` and ``+RECORD+ +{+( value nameIR +;+ )^{asterisk}^ +,+ +...++}+``.
 . Else if let ``+ERROR+ +.+ nameIR`` be ``expressionIR``:
@@ -11218,7 +11218,7 @@ xref:Expr_inst[Expr_inst]:
   ... Let ``STO~2~`` be xref:add_store[``STO~1~`` where ``IC.+PATH+`` to ``object`` is added].
   ... Let ``value~ref~`` be ``+REF+ IC.+PATH+``.
   ... Result in store ``STO~2~`` and ``value~ref~``.
- .. Else if let ``callableTargetIR +<+++_+++>+ +(+++_+++)+`` be ``callExpressionIR``:
+ .. Else:
   ... If let ``typedExpressionIR~base~ +.+ nameIR`` be ``callableTargetIR``:
    .... Let ``++_++ +#+ +(+typeIR~base~ ++_+++)+`` be ``typedExpressionIR~base~``.
    .... Check that ``nameIR`` is in ``+[+ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" +]+``.
@@ -11231,7 +11231,7 @@ xref:Expr_inst[Expr_inst]:
     ..... Check that ``nameIR`` is in ``+[+ "minSizeInBits", "minSizeInBytes", "maxSizeInBits", "maxSizeInBytes" +]+``.
 
     ..... Result in store ``STO'`` and ``xref:sizeof[$sizeof(typeIR~base~, nameIR)]``.
-   .... Else if xref:is_monomorphic_typeDefIR[``typeDefIR~base~`` is not monomorphic]:
+   .... Else:
     ..... Check that ( ``·``, ``·`` ) is equal to xref:typeParameterListIR_of_typeDefIR[the type parameters of ``typeDefIR~base~``].
 
     ..... Let ``typeIR~base~`` be xref:typeIR_of_typeDefIR[the underlying type of ``typeDefIR~base~``].
@@ -11241,7 +11241,7 @@ xref:Expr_inst[Expr_inst]:
   ... Else if let ``+(+callableTargetIR+)+`` be ``callableTargetIR``:
    .... Let store ``STO~1~`` and ``value`` be the result of xref:Expr_inst[compile-time evaluation of ``callableTargetIR +<+++_+++>+ +(+++_+++)+`` annotated with ``++_++``, under context ``IC`` and store ``STO'`` at ``p``].
    .... Result in store ``STO~1~`` and ``value``.
-. Else if let ``+(+typedExpressionIR+)+`` be ``expressionIR``:
+. Else:
  .. Let store ``STO~1~`` and ``value`` be the result of xref:Expr_inst[compile-time evaluation of ``typedExpressionIR``, under context ``IC`` and store ``STO'`` at ``p``].
  .. Result in store ``STO~1~`` and ``value``.
 
@@ -11251,7 +11251,7 @@ xref:Exprs_inst[Exprs_inst]:
 
 . If ``typedExpressionIR^{asterisk}^`` matches pattern ``[]``:
  .. Result in store ``STO'`` and ``·``.
-. Else if let ``typedExpressionIR~h~ {two-colons} typedExpressionIR~t~^{asterisk}^`` be ``typedExpressionIR^{asterisk}^``:
+. Else:
  .. Let store ``STO~1~`` and ``value~h~`` be the result of xref:Expr_inst[compile-time evaluation of ``typedExpressionIR~h~``, under context ``IC`` and store ``STO'`` at ``p``].
  .. Let store ``STO~2~`` and ``value~t~^{asterisk}^`` be the result of xref:Exprs_inst[compile-time evaluation of ``typedExpressionIR~t~^{asterisk}^``, under context ``IC`` and store ``STO~1~`` at ``p``].
  .. Result in store ``STO~2~`` and ``value~h~ {two-colons} value~t~^{asterisk}^``.
@@ -11314,7 +11314,7 @@ xref:Stmt_inst[Stmt_inst]:
    .... If let ``+IF+ +(+typedExpressionIR~cond~+)+ statementIR~then~`` be ``conditionalStatementIR``:
     ..... Let context ``IC~then~``, store ``STO~1~``, and ``statementIR~then_inst~`` be the result of xref:Stmt_inst[compile-time evaluation of ``statementIR~then~``, under context ``IC'`` and store ``STO'`` at ``p'``].
     ..... Result in context ``IC'``, store ``STO~1~``, and ``+IF+ +(+typedExpressionIR~cond~+)+ statementIR~then_inst~``.
-   .... Else if let ``+IF+ +(+typedExpressionIR~cond~+)+ statementIR~then~ +ELSE+ statementIR~else~`` be ``conditionalStatementIR``:
+   .... Else:
     ..... Let context ``IC~then~``, store ``STO~1~``, and ``statementIR~then_inst~`` be the result of xref:Stmt_inst[compile-time evaluation of ``statementIR~then~``, under context ``IC'`` and store ``STO'`` at ``p'``].
     ..... Let context ``IC~else~``, store ``STO~2~``, and ``statementIR~else_inst~`` be the result of xref:Stmt_inst[compile-time evaluation of ``statementIR~else~``, under context ``IC'`` and store ``STO~1~`` at ``p'``].
     ..... Result in context ``IC'``, store ``STO~2~``, and ``+IF+ +(+typedExpressionIR~cond~+)+ statementIR~then_inst~ +ELSE+ statementIR~else_inst~``.
@@ -11327,7 +11327,7 @@ xref:Stmt_inst[Stmt_inst]:
     ..... Let context ``IC~body~``, store ``STO~1~``, and ``statementIR~body~`` be the result of xref:Stmt_inst[compile-time evaluation of ``statementIR``, under context ``IC'`` and store ``STO'`` at ``p'``].
     ..... Let ``forStatementIR`` be ``annotationList +FOR+ +(+typeIR nameIR +IN+ forCollectionExpressionIR+)+ statementIR~body~``.
     ..... Result in context ``IC'``, store ``STO~1~``, and ``forStatementIR``.
-   .... Else if let ``annotationList +FOR+ +(+annotationList' typeIR nameIR +IN+ forCollectionExpressionIR+)+ statementIR`` be ``forStatementIR'``:
+   .... Else:
     ..... Check that ``annotationList`` is equal to ``annotationList'``.
 
     ..... Let context ``IC~body~``, store ``STO~1~``, and ``statementIR~body~`` be the result of xref:Stmt_inst[compile-time evaluation of ``statementIR``, under context ``IC'`` and store ``STO'`` at ``p'``].
@@ -11360,7 +11360,7 @@ xref:BlockElementStmt_inst[BlockElementStmt_inst]:
  .. Result in context ``IC~1~``, store ``STO~0'~``, and ``constantDeclarationIR``.
 . Else if let ``variableDeclarationIR`` be ``blockElementStatementIR``:
  .. Result in context ``IC~0'~``, store ``STO~0'~``, and ``variableDeclarationIR``.
-. Else if let ``statementIR`` be ``blockElementStatementIR``:
+. Else:
  .. Let context ``IC~1~``, store ``STO~1~``, and ``statementIR~inst~`` be the result of xref:Stmt_inst[compile-time evaluation of ``statementIR``, under context ``IC~0'~`` and store ``STO~0'~`` at ``+LOCAL+``].
  .. Result in context ``IC~1~``, store ``STO~1~``, and ``statementIR~inst~``.
 
@@ -11370,7 +11370,7 @@ xref:BlockElementStmtList_inst[BlockElementStmtList_inst]:
 
 . If ``blockElementStatementIR^{asterisk}^`` matches pattern ``[]``:
  .. Result in context ``IC'``, store ``STO'``, and ``·``.
-. Else if let ``blockElementStatementIR~h~ {two-colons} blockElementStatementIR~t~^{asterisk}^`` be ``blockElementStatementIR^{asterisk}^``:
+. Else:
  .. Let context ``IC~1~``, store ``STO~1~``, and ``blockElementStatementIR~h_inst~`` be the result of xref:BlockElementStmt_inst[compile-time evaluation of ``blockElementStatementIR~h~``, under context ``IC'``, and store ``STO'``].
  .. Let context ``IC~2~``, store ``STO~2~``, and ``blockElementStatementIR~t_inst~^{asterisk}^`` be the result of xref:BlockElementStmtList_inst[compile-time evaluation of ``blockElementStatementIR~t~^{asterisk}^``, under context ``IC~1~``, and store ``STO~1~``].
  .. Result in context ``IC~2~``, store ``STO~2~``, and ``blockElementStatementIR~h_inst~ {two-colons} blockElementStatementIR~t_inst~^{asterisk}^``.
@@ -11389,7 +11389,7 @@ xref:ExternMethod_inst[ExternMethod_inst: ``IC~0~ ⊢ externMethodPrototypeIR +:
  .. Let ``externMethodDef`` be ``+EXTERN_METHOD+ nameIR +<+typeParameterListIR {pp} typeParameterListIR~inferred~+>+ +(+parameterListIR+)+ ·``.
  .. Let ``IC~1~`` be xref:add_callableDef_overload_i[``IC~0~`` where ``callableId`` to ``externMethodDef`` is added as an overloaded callable to the ``+BLOCK+`` layer].
  .. Result in ``IC~1~``.
-. Else if let ``annotationList +ABSTRACT+ typeIR nameIR +<+typeParameterListIR +,+ typeParameterListIR~inferred~+>+ +(+parameterListIR+)+ +;+`` be ``externMethodPrototypeIR``:
+. Else:
  .. Let ``callableId`` be xref:callableId_IR[the callable identifier for ``nameIR`` ``+(+`` ``parameterListIR`` ``+)+``].
  .. Let ``externMethodDef`` be ``+EXTERN_METHOD+ +ABSTRACT+ nameIR +<+typeParameterListIR {pp} typeParameterListIR~inferred~+>+ +(+parameterListIR+)+``.
  .. Let ``IC~1~`` be xref:add_callableDef_overload_i[``IC~0~`` where ``callableId`` to ``externMethodDef`` is added as an overloaded callable to the ``+BLOCK+`` layer].
@@ -11401,7 +11401,7 @@ xref:ExternMethods_inst[ExternMethods_inst]:
 
 . If ``externMethodPrototypeIR^{asterisk}^`` matches pattern ``[]``:
  .. Result in context ``IC'``.
-. Else if let ``externMethodPrototypeIR~h~ {two-colons} externMethodPrototypeIR~t~^{asterisk}^`` be ``externMethodPrototypeIR^{asterisk}^``:
+. Else:
  .. Let xref:ExternMethod_inst[``IC' ⊢ externMethodPrototypeIR~h~ +:+ IC~1~``].
  .. Let context ``IC~2~`` be the result of xref:ExternMethods_inst[compile-time evaluation of ``externMethodPrototypeIR~t~^{asterisk}^``, under context ``IC~1~``].
  .. Result in context ``IC~2~``.
@@ -11438,11 +11438,11 @@ xref:ParserStmt_inst[ParserStmt_inst]:
  .. Let context ``IC~1~`` and store ``STO~1~`` be the result of xref:ParserStmts_inst[compile-time evaluation of ``parserStatementListIR``, under context ``IC~0'~`` and store ``STO'``].
  .. Let ``parserBlockStatementIR~inst~`` be ``annotationList +{+parserStatementListIR~inst~+}+``.
  .. Result in context ``IC~1~`` and store ``STO~1~``.
-. Else if let ``parserConditionalStatementIR`` be ``parserStatementIR``:
+. Else:
  .. If let ``+IF+ +(+typedExpressionIR~cond~+)+ parserStatementIR~then~`` be ``parserConditionalStatementIR``:
   ... Let context ``IC~then~`` and store ``STO~1~`` be the result of xref:ParserStmt_inst[compile-time evaluation of ``parserStatementIR~then~``, under context ``IC~0'~`` and store ``STO'``].
   ... Result in context ``IC~0'~`` and store ``STO~1~``.
- .. Else if let ``+IF+ +(+typedExpressionIR~cond~+)+ parserStatementIR~then~ +ELSE+ parserStatementIR~else~`` be ``parserConditionalStatementIR``:
+ .. Else:
   ... Let context ``IC~then~`` and store ``STO~1~`` be the result of xref:ParserStmt_inst[compile-time evaluation of ``parserStatementIR~then~``, under context ``IC~0'~`` and store ``STO'``].
   ... Let context ``IC~else~`` and store ``STO~2~`` be the result of xref:ParserStmt_inst[compile-time evaluation of ``parserStatementIR~else~``, under context ``IC~0'~`` and store ``STO~1~``].
   ... Result in context ``IC~0'~`` and store ``STO~2~``.
@@ -11453,7 +11453,7 @@ xref:ParserStmts_inst[ParserStmts_inst]:
 
 . If ``parserStatementIR^{asterisk}^`` matches pattern ``[]``:
  .. Result in context ``IC'`` and store ``STO'``.
-. Else if let ``parserStatementIR~h~ {two-colons} parserStatementIR~t~^{asterisk}^`` be ``parserStatementIR^{asterisk}^``:
+. Else:
  .. Let context ``IC~1~`` and store ``STO~1~`` be the result of xref:ParserStmt_inst[compile-time evaluation of ``parserStatementIR~h~``, under context ``IC'`` and store ``STO'``].
  .. Let context ``IC~2~`` and store ``STO~2~`` be the result of xref:ParserStmts_inst[compile-time evaluation of ``parserStatementIR~t~^{asterisk}^``, under context ``IC~1~`` and store ``STO~1~``].
  .. Result in context ``IC~2~`` and store ``STO~2~``.
@@ -11474,7 +11474,7 @@ xref:ParserStates_inst[ParserStates_inst]:
 
 . If ``parserStateIR^{asterisk}^`` matches pattern ``[]``:
  .. Result in context ``IC'`` and store ``STO'``.
-. Else if let ``parserStateIR~h~ {two-colons} parserStateIR~t~^{asterisk}^`` be ``parserStateIR^{asterisk}^``:
+. Else:
  .. Let context ``IC~1~`` and store ``STO~1~`` be the result of xref:ParserState_inst[compile-time evaluation of ``parserStateIR~h~``, under context ``IC'`` and store ``STO'``].
  .. Let context ``IC~2~`` and store ``STO~2~`` be the result of xref:ParserStates_inst[compile-time evaluation of ``parserStateIR~t~^{asterisk}^``, under context ``IC~1~`` and store ``STO~1~``].
  .. Result in context ``IC~2~`` and store ``STO~2~``.
@@ -11491,7 +11491,7 @@ xref:ParserLocalDecl_inst[ParserLocalDecl_inst]:
  .. Result in context ``IC~1~``, store ``STO~1~``, and ``constantDeclarationIR~inst~``.
 . Else if let ``variableDeclarationIR`` be ``parserLocalDeclarationIR``:
  .. Result in context ``IC~0'~``, store ``STO'``, and ``variableDeclarationIR``.
-. Else if let ``annotationList +VALUE_SET+ +<+typeIR+>+ +(+typedExpressionIR~size~+)+ nameIR +;+`` be ``parserLocalDeclarationIR``:
+. Else:
  .. Let store ``STO~1~`` and ``value`` be the result of xref:Expr_inst[compile-time evaluation of ``typedExpressionIR~size~``, under context ``IC~0'~`` and store ``STO'`` at ``+BLOCK+``].
  .. Let!~type~ ``integerValue~size~`` be ``value``.
 
@@ -11510,7 +11510,7 @@ xref:ParserLocalDecls_inst[ParserLocalDecls_inst]:
 
 . If ``parserLocalDeclarationIR^{asterisk}^`` matches pattern ``[]``:
  .. Result in context ``IC'``, store ``STO'``, and ``·``.
-. Else if let ``parserLocalDeclarationIR~h~ {two-colons} parserLocalDeclarationIR~t~^{asterisk}^`` be ``parserLocalDeclarationIR^{asterisk}^``:
+. Else:
  .. Let context ``IC~1~``, store ``STO~1~``, and ``parserLocalDeclarationIR~h_inst~`` be the result of xref:ParserLocalDecl_inst[compile-time evaluation of ``parserLocalDeclarationIR~h~``, under context ``IC'`` and store ``STO'``].
  .. Let context ``IC~2~``, store ``STO~2~``, and ``parserLocalDeclarationIR~t_inst~^{asterisk}^`` be the result of xref:ParserLocalDecls_inst[compile-time evaluation of ``parserLocalDeclarationIR~t~^{asterisk}^``, under context ``IC~1~`` and store ``STO~1~``].
  .. Result in context ``IC~2~``, store ``STO~2~``, and ``parserLocalDeclarationIR~h_inst~ {two-colons} parserLocalDeclarationIR~t_inst~^{asterisk}^``.
@@ -11534,7 +11534,7 @@ xref:TableAction_inst[TableAction_inst]:
    .... Let ``tableActionReferenceIR'`` be ``prefixedNameIR controlPlaneNameIR +(+argumentListIR+)+``.
    .... Let ``tableActionIR`` be ``annotationList tableActionReferenceIR' +#+ +(+parameterListIR +,+ parameterListIR~control~+)+ +;+``.
    .... Result in store ``STO`` and ``tableActionIR``.
-  ... Else if ``~xref:starts_with[$starts_with(nameIR~anno~, ".")]``:
+  ... Else:
    .... Let ``controlPlaneNameIR`` be xref:ite[``nameIR~anno~`` if ``cursor`` is equal to ``+GLOBAL+`` otherwise the result of joining ``IC.+PATH+`` concatenated with ``nameIR~anno~`` with separator ``"."``].
    .... Let ``tableActionReferenceIR'`` be ``prefixedNameIR controlPlaneNameIR +(+argumentListIR+)+``.
    .... Let ``tableActionIR`` be ``annotationList tableActionReferenceIR' +#+ +(+parameterListIR +,+ parameterListIR~control~+)+ +;+``.
@@ -11553,7 +11553,7 @@ xref:TableActions_inst[TableActions_inst]:
 
 . If ``tableActionIR^{asterisk}^`` matches pattern ``[]``:
  .. Result in store ``STO'`` and ``·``.
-. Else if let ``tableActionIR~h~ {two-colons} tableActionIR~t~^{asterisk}^`` be ``tableActionIR^{asterisk}^``:
+. Else:
  .. Let store ``STO~1~`` and ``tableActionIR~h_inst~`` be the result of xref:TableAction_inst[compile-time evaluation of ``tableActionIR~h~``, under context ``IC``and store ``STO'``].
  .. Let store ``STO~2~`` and ``tableActionIR~t_inst~^{asterisk}^`` be the result of xref:TableActions_inst[compile-time evaluation of ``tableActionIR~t~^{asterisk}^``, under context ``IC``and store ``STO~1~``].
  .. Result in store ``STO~1~`` and ``tableActionIR~h_inst~ {two-colons} tableActionIR~t_inst~^{asterisk}^``.
@@ -11572,13 +11572,13 @@ xref:TableProperty_inst[TableProperty_inst]:
  .. Result in store ``STO'`` and ``tableDefaultActionPropertyIR``.
 . Else if let ``tableEntriesPropertyIR`` be ``tablePropertyIR``:
  .. Result in store ``STO'`` and ``tableEntriesPropertyIR``.
-. Else if let ``tableCustomPropertyIR`` be ``tablePropertyIR``:
+. Else:
  .. If let ``annotationList constOptIR +CUSTOM+ nameIR +=+ typedExpressionIR +;+`` be ``tableCustomPropertyIR``:
   ... Let ``IC~inner~`` be xref:enter_path_i[``IC`` with ``nameIR`` added to the path].
   ... Let store ``STO~1~`` and ``value`` be the result of xref:Expr_inst[compile-time evaluation of ``typedExpressionIR``, under context ``IC~inner~`` and store ``STO'`` at ``+LOCAL+``].
   ... Let ``tableCustomPropertyIR~inst~`` be ``annotationList constOptIR +CUSTOM_CONST+ nameIR +=+ value +;+``.
   ... Result in store ``STO~1~`` and ``tableCustomPropertyIR~inst~``.
- .. Else if let ``annotationList constOptIR +CUSTOM_CONST+ nameIR constantInitializerIR +;+`` be ``tableCustomPropertyIR``:
+ .. Else:
   ... Let ``tableCustomPropertyIR~inst~`` be ``annotationList constOptIR +CUSTOM_CONST+ nameIR constantInitializerIR +;+``.
   ... Result in store ``STO'`` and ``tableCustomPropertyIR~inst~``.
 
@@ -11588,7 +11588,7 @@ xref:TableProperties_inst[TableProperties_inst]:
 
 . If ``tablePropertyIR^{asterisk}^`` matches pattern ``[]``:
  .. Result in store ``STO'`` and ``·``.
-. Else if let ``tablePropertyIR~h~ {two-colons} tablePropertyIR~t~^{asterisk}^`` be ``tablePropertyIR^{asterisk}^``:
+. Else:
  .. Let store ``STO~1~`` and ``tablePropertyIR~h_inst~`` be the result of xref:TableProperty_inst[compile-time evaluation of ``tablePropertyIR~h~``, under context ``IC``and store ``STO'``].
  .. Let store ``STO~2~`` and ``tablePropertyIR~t_inst~^{asterisk}^`` be the result of xref:TableProperties_inst[compile-time evaluation of ``tablePropertyIR~t~^{asterisk}^``, under context ``IC``and store ``STO~1~``].
  .. Result in store ``STO~2~`` and ``tablePropertyIR~h_inst~ {two-colons} tablePropertyIR~t_inst~^{asterisk}^``.
@@ -11608,7 +11608,7 @@ xref:ControlLocalDecl_inst[ControlLocalDecl_inst]:
 . Else if let ``actionDeclarationIR`` be ``controlLocalDeclarationIR``:
  .. Let context ``IC~1~`` be the result of xref:ActionDecl_inst[loading ``actionDeclarationIR``, under context ``IC~0'~`` at ``+BLOCK+``].
  .. Result in context ``IC~1~``, store ``STO'``, and ``·``.
-. Else if let ``annotationList +TABLE+ typeIR nameIR +{+tablePropertyListIR+}+`` be ``controlLocalDeclarationIR``:
+. Else:
  .. Let ``IC~callee_0~`` be xref:inherit_i[an instantiation context same as ``IC~0'~`` up to the ``+BLOCK+`` layer].
  .. Let ``IC~frame~`` be xref:enter_i[``IC~callee_0~`` with a new local frame].
  .. Let store ``STO~1~`` and ``tablePropertyListIR~inst~`` be the result of xref:TableProperties_inst[compile-time evaluation of ``tablePropertyListIR``, under context ``IC~frame~``and store ``STO'``].
@@ -11640,12 +11640,12 @@ xref:ControlLocalDecls_inst[ControlLocalDecls_inst]:
 
 . If ``controlLocalDeclarationIR^{asterisk}^`` matches pattern ``[]``:
  .. Result in context ``IC'``, store ``STO'``, and ``·``.
-. Else if let ``controlLocalDeclarationIR~h~ {two-colons} controlLocalDeclarationIR~t~^{asterisk}^`` be ``controlLocalDeclarationIR^{asterisk}^``:
+. Else:
  .. Let context ``IC~1~``, store ``STO~1~``, and ``controlLocalDeclarationIR'^?^`` be the result of xref:ControlLocalDecl_inst[compile-time evaluation of ``controlLocalDeclarationIR~h~``, under context ``IC'``and store ``STO'``].
  .. If ``controlLocalDeclarationIR'^?^`` matches pattern ``()``:
   ... Let context ``IC~2~``, store ``STO~2~``, and ``controlLocalDeclarationIR~t_inst~^{asterisk}^`` be the result of xref:ControlLocalDecls_inst[compile-time evaluation of ``controlLocalDeclarationIR~t~^{asterisk}^``, under context ``IC~1~``and store ``STO~1~``].
   ... Result in context ``IC~2~``, store ``STO~2~``, and ``controlLocalDeclarationIR~t_inst~^{asterisk}^``.
- .. Else if let ``controlLocalDeclarationIR~h_inst~`` be ``controlLocalDeclarationIR'^?^``:
+ .. Else:
   ... Let context ``IC~2~``, store ``STO~2~``, and ``controlLocalDeclarationIR~t_inst~^{asterisk}^`` be the result of xref:ControlLocalDecls_inst[compile-time evaluation of ``controlLocalDeclarationIR~t~^{asterisk}^``, under context ``IC~1~``and store ``STO~1~``].
   ... Result in context ``IC~2~``, store ``STO~2~``, and ``controlLocalDeclarationIR~h_inst~ {two-colons} controlLocalDeclarationIR~t_inst~^{asterisk}^``.
 
@@ -11784,7 +11784,7 @@ xref:Decl_inst[Decl_inst]:
   ... Let ``enumTypeDefIR`` be ``+ENUM+ nameIR +{+nameIR~field~^{asterisk}^+}+``.
   ... Let ``IC~2~`` be xref:add_typeDef_i[``IC~1~`` where ``nameIR`` to ``enumTypeDefIR`` is added to the ``+GLOBAL+`` layer].
   ... Result in context ``IC~2~`` and store ``STO'``.
- .. Else if let ``annotationList +ENUM+ typeIR nameIR +{+( nameIR~field~ +=+ value~field~ )^{asterisk}^+}+`` be ``enumTypeDeclarationIR``:
+ .. Else:
   ... Let ``nameIR~serenum_field~`` be ``nameIR`` concatenated with ``"."`` concatenated with ``nameIR~field~``, for all ``nameIR~field~`` in ``nameIR~field~^{asterisk}^`` and ``nameIR~serenum_field~`` in ``nameIR~serenum_field~^{asterisk}^``.
   ... Let ``value~serenum_field~`` be ``nameIR +.+ nameIR~field~ +.+ value~field~``, for all ``nameIR~field~`` in ``nameIR~field~^{asterisk}^``, ``value~field~`` in ``value~field~^{asterisk}^``, and ``value~serenum_field~`` in ``value~serenum_field~^{asterisk}^``.
   ... Let ``IC~1~`` be xref:add_vars_i[``IC~0~`` where each of ``nameIR~serenum_field~^{asterisk}^`` to each of ``value~serenum_field~^{asterisk}^`` are added to the ``+GLOBAL+`` layer].
@@ -11812,7 +11812,7 @@ xref:Decl_inst[Decl_inst]:
    .... Let ``aliasTypeDefIR`` be ``+TYPEDEF+ nameIR typeIR``.
    .... Let ``IC~1~`` be xref:add_typeDef_i[``IC~0~`` where ``nameIR`` to ``aliasTypeDefIR`` is added to the ``+GLOBAL+`` layer].
    .... Result in context ``IC~1~`` and store ``STO'``.
-  ... Else if let ``derivedTypeDeclarationIR`` be ``typedefIR``:
+  ... Else:
    .... Let context ``IC~local~`` and store ``++_++`` be the result of xref:Decl_inst[loading ``derivedTypeDeclarationIR``, under context ``IC~0~``, and store an empty store].
    .... Let ``+{+typeId^{asterisk}^+}+`` be xref:diff_set[the difference of the sets the domain of the map ``IC~local~.+GLOBAL+.+TYPE+`` and the domain of the map ``IC~0~.+GLOBAL+.+TYPE+``].
    .... Let!~type~ ``typeId~newtype~`` be ``typeId^{asterisk}^``.
@@ -11837,7 +11837,7 @@ xref:Decl_inst[Decl_inst]:
    .... Let ``typedefTypeIR`` be ``+TYPEDEF+ nameIR typeIR``.
    .... Let ``IC~1~`` be xref:add_typeDef_i[``IC~0~`` where ``nameIR`` to ``typedefTypeIR`` is added to the ``+GLOBAL+`` layer].
    .... Result in context ``IC~1~`` and store ``STO'``.
- .. Else if let ``annotationList +TYPE+ typeIR nameIR +;+`` be ``typedefDeclarationIR``:
+ .. Else:
   ... Let ``aliasTypeDefIR`` be ``+TYPE+ nameIR typeIR``.
   ... Let ``IC~1~`` be xref:add_typeDef_i[``IC~0~`` where ``nameIR`` to ``aliasTypeDefIR`` is added to the ``+GLOBAL+`` layer].
   ... Result in context ``IC~1~`` and store ``STO'``.
@@ -11849,7 +11849,7 @@ xref:Decl_inst[Decl_inst]:
  .. Let ``controlObjectTypeDefIR`` be ``+CONTROL+ nameIR +<+typeParameterListIR +,+ typeParameterListIR~inferred~+>+ +(+parameterIR^{asterisk}^+)+``.
  .. Let ``IC~1~`` be xref:add_typeDef_i[``IC~0~`` where ``nameIR`` to ``controlObjectTypeDefIR`` is added to the ``+GLOBAL+`` layer].
  .. Result in context ``IC~1~`` and store ``STO'``.
-. Else if let ``annotationList +PACKAGE+ nameIR +<+typeParameterListIR +,+ typeParameterListIR~inferred~+>+ +(+parameterIR^{asterisk}^+)+ +;+`` be ``declarationIR``:
+. Else:
  .. Let ``++_++ ++_++ typeIR ++_++ ++_++`` be ``parameterIR``, for all ``++_++`` in ``++_++``, ``++_++`` in ``++_++``, ``++_++`` in ``++_++``, ``++_++`` in ``++_++``, ``parameterIR`` in ``parameterIR^{asterisk}^``, and ``typeIR`` in ``typeIR^{asterisk}^``.
  .. Let ``packageObjectTypeDefIR`` be ``+PACKAGE+ nameIR +<+typeParameterListIR +,+ typeParameterListIR~inferred~+>+ +{+typeIR^{asterisk}^+}+``.
  .. Let ``IC~1~`` be xref:add_typeDef_i[``IC~0~`` where ``nameIR`` to ``packageObjectTypeDefIR`` is added to the ``+GLOBAL+`` layer].
@@ -11864,7 +11864,7 @@ xref:Decls_inst[Decls_inst]:
 
 . If ``declarationIR^{asterisk}^`` matches pattern ``[]``:
  .. Result in context ``IC'`` and store ``STO'``.
-. Else if let ``declarationIR~h~ {two-colons} declarationIR~t~^{asterisk}^`` be ``declarationIR^{asterisk}^``:
+. Else:
  .. Let context ``IC~1~`` and store ``STO~1~`` be the result of xref:Decl_inst[loading ``declarationIR~h~``, under context ``IC'``, and store ``STO'``].
  .. Let context ``IC~2~`` and store ``STO~2~`` be the result of xref:Decls_inst[loading ``declarationIR~t~^{asterisk}^``, under context ``IC~1~``, and store ``STO~1~``].
  .. Result in context ``IC~2~`` and store ``STO~2~``.
@@ -11894,7 +11894,7 @@ xref:Copy_in_inst[Copy_in_inst]:
  .. Check that ``id^{asterisk}^`` is an empty list.
 
  .. Result in store ``STO'`` and context ``IC~callee'~``.
-. Else if let ``argumentIR~h~ {two-colons} argumentIR~t~^{asterisk}^`` be ``argumentIR^{asterisk}^``:
+. Else:
  .. Let!~type~ ``id~h~ {two-colons} id~t~^{asterisk}^`` be ``id^{asterisk}^``.
 
  .. Let xref:Copy_in_argument_inst[``STO' p~caller~ IC~caller~ argumentIR~h~ +@+ p~callee~ IC~callee'~ id~h~ ↝ STO~1~ IC~callee_1~``].
@@ -11911,7 +11911,7 @@ xref:Copy_in_argument_inst_default[Copy_in_argument_inst_default: ``STO~0'~ p~ca
  .. Let store ``STO~1~`` and ``value`` be the result of xref:Expr_inst[compile-time evaluation of ``typedExpressionIR``, under context ``IC~caller_inner~`` and store ``STO~0'~`` at ``p~caller~``].
  .. Let ``IC~callee_1~`` be xref:add_var_i[``IC~callee_0~`` where ``id`` to ``value`` is added to the ``p~callee~`` layer].
  .. Result in ``STO~1~`` and ``IC~callee_1~``.
-. Else if let ``+=+ value`` be ``parameterInitializerIR``:
+. Else:
  .. Let ``IC~callee_1~`` be xref:add_var_i[``IC~callee_0~`` where ``id`` to ``value`` is added to the ``p~callee~`` layer].
  .. Result in ``STO~0'~`` and ``IC~callee_1~``.
 
@@ -11921,7 +11921,7 @@ xref:Copy_in_inst_default[Copy_in_inst_default]:
 
 . If ``parameterIR^{asterisk}^`` matches pattern ``[]``:
  .. Result in store ``STO'`` and context ``IC~callee'~``.
-. Else if let ``parameterIR~h~ {two-colons} parameterIR~t~^{asterisk}^`` be ``parameterIR^{asterisk}^``:
+. Else:
  .. Let xref:Copy_in_argument_inst_default[``STO' p~caller~ IC~caller~ +@+ p~callee~ IC~callee'~ parameterIR~h~ ↝ STO~1~ IC~callee_1~``].
  .. Let store ``STO~2~`` and context ``IC~callee_2~`` be the result of xref:Copy_in_inst_default[copying defaults ``parameterIR~t~^{asterisk}^`` from ``p~caller~`` at ``IC~caller~`` to ``IC~callee_1~`` at ``p~callee~``, under store ``STO~1~``].
  .. Result in store ``STO~2~`` and context ``IC~callee_2~``.
@@ -12019,7 +12019,7 @@ xref:Constructor_call[Constructor_call]:
  .. Let ``actionDefEnv~control~`` be ``+{+( callableId +:+ actionDef )^{asterisk}^+}+``.
  .. Let ``object~control~`` be ``+CONTROL+ +<+theta~control~+>+ +(+parameterIR^{asterisk}^+)+ +{+frame~control~ controlLocalDeclarationIR~inst~^{asterisk}^ +{+( callableId +:+ actionDef )^{asterisk}^+}+ controlBodyIR~inst~+}+``.
  .. Result in store ``STO~4~`` and instantiated ``object~control~``.
-. Else if let ``packageObjectConstructorDef`` be ``constructorDef``:
+. Else:
  .. Let ``+PACKAGE+ +<+typeParameterIR^{asterisk}^+>+ +(+constructorParameterIR^{asterisk}^+)+`` be ``packageObjectConstructorDef``.
  .. Let ``p~callee~`` be ``+BLOCK+``.
  .. Let ``IC~callee_0~`` be xref:inherit_i[an instantiation context same as ``IC`` up to the ``+GLOBAL+`` layer].
@@ -12042,7 +12042,7 @@ xref:SwitchCase_inst[SwitchCase_inst]:
  .. Let!~type~ ``blockStatementIR~inst~`` be ``statementIR``.
 
  .. Result in store ``STO~1~`` and ``switchLabelIR +:+ blockStatementIR~inst~``.
-. Else if let ``switchLabelIR +:+`` be ``switchCaseIR``:
+. Else:
  .. Result in store ``STO~0'~`` and ``switchLabelIR +:+``.
 
 xref:SwitchCases_inst[SwitchCases_inst]:
@@ -12051,7 +12051,7 @@ xref:SwitchCases_inst[SwitchCases_inst]:
 
 . If ``switchCaseIR^{asterisk}^`` matches pattern ``[]``:
  .. Result in store ``STO'`` and ``·``.
-. Else if let ``switchCaseIR~h~ {two-colons} switchCaseIR~t~^{asterisk}^`` be ``switchCaseIR^{asterisk}^``:
+. Else:
  .. Let store ``STO~1~`` and ``switchCaseIR~h'~`` be the result of xref:SwitchCase_inst[compile-time evaluation of ``switchCaseIR~h~``, under context ``IC`` and store ``STO'`` at ``p``].
  .. Let store ``STO~2~`` and ``switchCaseIR~t'~^{asterisk}^`` be the result of xref:SwitchCases_inst[compile-time evaluation of ``switchCaseIR~t~^{asterisk}^``, under context ``IC`` and store ``STO~1~`` at ``p``].
  .. Result in store ``STO~2~`` and ``switchCaseIR~h'~ {two-colons} switchCaseIR~t'~^{asterisk}^``.
@@ -12081,7 +12081,7 @@ xref:ObjectDecl_inst[ObjectDecl_inst]:
 . If let ``functionDeclarationIR`` be ``objectDeclarationIR``:
  .. Let context ``IC~1~`` be the result of xref:FuncDecl_inst[loading ``functionDeclarationIR``, under context ``IC~0~`` at ``+BLOCK+``].
  .. Result in the updated instantiation context ``IC~1~`` and store ``STO'``.
-. Else if let ``instantiationIR`` be ``objectDeclarationIR``:
+. Else:
  .. Let context ``IC~1~``, store ``STO~1~``, and reference to object ``++_++`` be the result of xref:InstDecl_inst[loading ``instantiationIR``, under context ``IC~0~`` and store ``STO'`` at ``+GLOBAL+``].
  .. Result in the updated instantiation context ``IC~1~`` and store ``STO~1~``.
 
@@ -12091,7 +12091,7 @@ xref:ObjectDecls_inst[ObjectDecls_inst]:
 
 . If ``objectDeclarationIR^{asterisk}^`` matches pattern ``[]``:
  .. Result in the updated instantiation context ``IC'`` and store ``STO'``.
-. Else if let ``objectDeclarationIR~h~ {two-colons} objectDeclarationIR~t~^{asterisk}^`` be ``objectDeclarationIR^{asterisk}^``:
+. Else:
  .. Let the updated instantiation context ``IC~1~`` and store ``STO~1~`` be the result of xref:ObjectDecl_inst[loading ``objectDeclarationIR~h~`` under instantiation context ``IC'`` and store ``STO'``].
  .. Let the updated instantiation context ``IC~2~`` and store ``STO~2~`` be the result of xref:ObjectDecls_inst[loading ``objectDeclarationIR~t~^{asterisk}^`` under instantiation context ``IC~1~`` and store ``STO~1~``].
  .. Result in the updated instantiation context ``IC~2~`` and store ``STO~2~``.
@@ -12100,7 +12100,7 @@ xref:callableId_of_externMethodPrototypeIR[The callable id of  ``externMethodPro
 
 . If let ``++_++ ++_++ nameIR +<+++_++ +,+ ++_+++>+ +(+parameterListIR+)+ +;+`` be ``externMethodPrototypeIR``:
  .. Return xref:callableId_IR[the callable identifier for ``nameIR`` ``+(+`` ``parameterListIR`` ``+)+``].
-. Else if let ``++_++ +ABSTRACT+ ++_++ nameIR +<+++_++ +,+ ++_+++>+ +(+parameterListIR+)+ +;+`` be ``externMethodPrototypeIR``:
+. Else:
  .. Return xref:callableId_IR[the callable identifier for ``nameIR`` ``+(+`` ``parameterListIR`` ``+)+``].
 
 xref:callableId_of_externConstructorPrototypeIR[The constructor id of  ``++_++ nameIR +<++,+ ++_+++>+ +(+parameterIR^{asterisk}^+)+ +;+``]
