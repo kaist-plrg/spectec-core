@@ -74,13 +74,13 @@ let rec antiunify_exp (frees : IdSet.t) (uenv : UEnv.t) (exp_template : exp)
         let uenv = UEnv.add id_template id_template uenv in
         (frees, uenv, exp_template)
     | VarE id_template, _ ->
-        let id_fresh = Elaborate.Fresh.fresh_id frees id_template in
+        let id_fresh = Il.Fresh.fresh_id frees id_template in
         let frees = IdSet.add id_fresh frees in
         let uenv = UEnv.add id_template id_fresh uenv in
         let exp_template = VarE id_fresh $$ (at, note) in
         (frees, uenv, exp_template)
     | _, VarE id ->
-        let id_fresh = Elaborate.Fresh.fresh_id frees id in
+        let id_fresh = Il.Fresh.fresh_id frees id in
         let frees = IdSet.add id_fresh frees in
         let uenv = UEnv.add id id_fresh uenv in
         let exp_template = VarE id_fresh $$ (at, note) in

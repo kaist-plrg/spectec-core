@@ -111,9 +111,7 @@ let args_input_of_params (params : param list) : arg list =
       let arg_input, frees =
         match param.it with
         | ExpP typ ->
-            let exp_input, frees =
-              Elaborate.Fresh.fresh_exp_from_typ frees typ
-            in
+            let exp_input, frees = Il.Fresh.fresh_exp_from_typ frees typ in
             (ExpA exp_input $ param.at, frees)
         | DefP { defid = id_def; _ } -> (DefA id_def $ param.at, frees)
       in
@@ -157,7 +155,7 @@ and struct_rel_def (rtenv : RTEnv.t) (tdenv : TDEnv.t) (at : region)
         let _, exps =
           List.fold_left
             (fun (frees, exps) typ ->
-              let exp, frees = Elaborate.Fresh.fresh_exp_from_typ frees typ in
+              let exp, frees = Il.Fresh.fresh_exp_from_typ frees typ in
               (frees, exps @ [ exp ]))
             (IdSet.empty, []) in_typs
         in

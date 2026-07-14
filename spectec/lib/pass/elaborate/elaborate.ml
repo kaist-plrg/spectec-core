@@ -8,7 +8,6 @@ open Envs.Make
 open Attempt
 open Diagnostic
 open Ctx
-module Fresh = Dataflow.Fresh
 
 (* Checks *)
 
@@ -1061,7 +1060,7 @@ and elab_exp_normal (ctx : Ctx.t) (typ_il_expect : Il.typ) (exp : exp) :
 and elab_exp_wildcard (ctx : Ctx.t) (at : region) (typ_il_expect : Il.typ) :
     (Ctx.t * Il.exp) attempt =
   let { Il.varid = id_fresh; typ = typ_fresh; iters = iters_fresh } =
-    Fresh.fresh_var_from_exp ~wildcard:true ctx.frees
+    Il.Fresh.fresh_var_from_exp ~wildcard:true ctx.frees
       (Il.VarE ("_" $ at) $$ (at, typ_il_expect.it))
   in
   let ctx = Ctx.add_free ctx id_fresh in
