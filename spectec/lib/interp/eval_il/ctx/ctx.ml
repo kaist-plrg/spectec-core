@@ -3,6 +3,7 @@ open Common.Domain
 open Envs.Make
 open Envs.Il
 open Lang.Il
+open Envs.Interp
 module Value = Lang.Il.Value
 open Error
 open Attempt

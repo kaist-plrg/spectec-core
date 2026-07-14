@@ -1,0 +1,4 @@
+(library
+ (name envs_interp)
+ (public_name spectec.envs.interp)
+ (libraries spectec.lang.il))

@@ -1,4 +1,4 @@
 (library
  (name envs)
  (public_name spectec.envs)
- (libraries spectec.lang spectec.hints envs_il envs_make))
+ (libraries spectec.lang spectec.hints envs_il envs_make envs_interp))
