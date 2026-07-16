@@ -143,9 +143,9 @@ and instr' =
   (* CheckLetI: bind [exp_target] to [exp_source] after a subtype-or-match
      check, then run [block]. *)
   | CheckLetI of exp * exp * instr list
-  (* OptionGetI: bind [exp_target] to the inner value of [exp_source],
-     asserting it is [Some _]. *)
-  | OptionGetI of exp * exp
+  (* OptionGetI: bind [exp_target] to the inner value of [exp_source] when it is
+     [Some _] and then run [block]; otherwise skip [block]. *)
+  | OptionGetI of exp * exp * block
 
 and block = instr list
 and elseblock = instr list

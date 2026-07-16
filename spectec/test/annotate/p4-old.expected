@@ -5509,9 +5509,7 @@ xref:Expr_ok[Expr_ok: ``p TC ⊢ expression''' +:+ %``]
       ....... Let xref:Expr_ok[``p TC ⊢ expression~l~ +:+ typedExpressionIR~l~``].
       ....... Let xref:Expr_ok[``p TC ⊢ expression~r~ +:+ typedExpressionIR~r~``].
       ....... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] ``xref:coerce_binary[$coerce_binary(typedExpressionIR~l~, typedExpressionIR~r~)]``.
-      ....... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_plusminusmult)]``.
-      ....... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+      ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_plusminusmult)]``.
       ....... Let ``++_++ +#+ +(+typeIR~reduced~ ctk~l_reduced~+)+`` be ``typedExpressionIR~l_reduced~``.
       ....... Let ``++_++ +#+ +(+++_++ ctk~r_reduced~+)+`` be ``typedExpressionIR~r_reduced~``.
       ....... Let ``ctk~reduced~`` be ``xref:join_ctk[$join_ctk(ctk~l_reduced~, ctk~r_reduced~)]``.
@@ -5521,9 +5519,7 @@ xref:Expr_ok[Expr_ok: ``p TC ⊢ expression''' +:+ %``]
       ....... Let xref:Expr_ok[``p TC ⊢ expression~l~ +:+ typedExpressionIR~l~``].
       ....... Let xref:Expr_ok[``p TC ⊢ expression~r~ +:+ typedExpressionIR~r~``].
       ....... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] ``xref:coerce_binary[$coerce_binary(typedExpressionIR~l~, typedExpressionIR~r~)]``.
-      ....... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_satplusminus)]``.
-      ....... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+      ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_satplusminus)]``.
       ....... Let ``++_++ +#+ +(+typeIR~reduced~ ctk~l_reduced~+)+`` be ``typedExpressionIR~l_reduced~``.
       ....... Let ``++_++ +#+ +(+++_++ ctk~r_reduced~+)+`` be ``typedExpressionIR~r_reduced~``.
       ....... Let ``ctk~reduced~`` be ``xref:join_ctk[$join_ctk(ctk~l_reduced~, ctk~r_reduced~)]``.
@@ -5533,9 +5529,7 @@ xref:Expr_ok[Expr_ok: ``p TC ⊢ expression''' +:+ %``]
       ....... Let xref:Expr_ok[``p TC ⊢ expression~l~ +:+ typedExpressionIR~l~``].
       ....... Let xref:Expr_ok[``p TC ⊢ expression~r~ +:+ typedExpressionIR~r~``].
       ....... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] ``xref:coerce_binary[$coerce_binary(typedExpressionIR~l~, typedExpressionIR~r~)]``.
-      ....... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_divmod)]``.
-      ....... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+      ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_divmod)]``.
       ....... Let ``++_++ +#+ +(+typeIR~reduced~ ctk~l_reduced~+)+`` be ``typedExpressionIR~l_reduced~``.
       ....... Let ``++_++ +#+ +(+++_++ ctk~r_reduced~+)+`` be ``typedExpressionIR~r_reduced~``.
       ....... If ``ctk~r_reduced~`` matches pattern ``+LCTK+``:
@@ -5588,9 +5582,7 @@ xref:Expr_ok[Expr_ok: ``p TC ⊢ expression''' +:+ %``]
       ....... Let xref:Expr_ok[``p TC ⊢ expression~l~ +:+ typedExpressionIR~l~``].
       ....... Let xref:Expr_ok[``p TC ⊢ expression~r~ +:+ typedExpressionIR~r~``].
       ....... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] ``xref:coerce_binary[$coerce_binary(typedExpressionIR~l~, typedExpressionIR~r~)]``.
-      ....... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_compare)]``.
-      ....... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+      ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_compare)]``.
       ....... Let ``++_++ +#+ +(+typeIR~reduced~ ctk~l_reduced~+)+`` be ``typedExpressionIR~l_reduced~``.
       ....... Let ``++_++ +#+ +(+++_++ ctk~r_reduced~+)+`` be ``typedExpressionIR~r_reduced~``.
       ....... Let ``ctk~reduced~`` be ``xref:join_ctk[$join_ctk(ctk~l_reduced~, ctk~r_reduced~)]``.
@@ -5600,9 +5592,7 @@ xref:Expr_ok[Expr_ok: ``p TC ⊢ expression''' +:+ %``]
       ....... Let xref:Expr_ok[``p TC ⊢ expression~l~ +:+ typedExpressionIR~l~``].
       ....... Let xref:Expr_ok[``p TC ⊢ expression~r~ +:+ typedExpressionIR~r~``].
       ....... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] ``xref:coerce_binary[$coerce_binary(typedExpressionIR~l~, typedExpressionIR~r~)]``.
-      ....... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_bitwise)]``.
-      ....... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+      ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_bitwise)]``.
       ....... Let ``++_++ +#+ +(+typeIR~reduced~ ctk~l_reduced~+)+`` be ``typedExpressionIR~l_reduced~``.
       ....... Let ``++_++ +#+ +(+++_++ ctk~r_reduced~+)+`` be ``typedExpressionIR~r_reduced~``.
       ....... Let ``ctk~reduced~`` be ``xref:join_ctk[$join_ctk(ctk~l_reduced~, ctk~r_reduced~)]``.
@@ -5612,9 +5602,7 @@ xref:Expr_ok[Expr_ok: ``p TC ⊢ expression''' +:+ %``]
       ....... Let xref:Expr_ok[``p TC ⊢ expression~l~ +:+ typedExpressionIR~l~``].
       ....... Let xref:Expr_ok[``p TC ⊢ expression~r~ +:+ typedExpressionIR~r~``].
       ....... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] ``xref:coerce_binary[$coerce_binary(typedExpressionIR~l~, typedExpressionIR~r~)]``.
-      ....... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_logical)]``.
-      ....... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+      ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_logical)]``.
       ....... Let ``++_++ +#+ +(+typeIR~reduced~ ctk~l_reduced~+)+`` be ``typedExpressionIR~l_reduced~``.
       ....... Let ``++_++ +#+ +(+++_++ ctk~r_reduced~+)+`` be ``typedExpressionIR~r_reduced~``.
       ....... Let ``ctk~reduced~`` be ``xref:join_ctk[$join_ctk(ctk~l_reduced~, ctk~r_reduced~)]``.
@@ -5628,9 +5616,7 @@ xref:Expr_ok[Expr_ok: ``p TC ⊢ expression''' +:+ %``]
      ...... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l~, typedExpressionIR~r~, $compat_concat)]``.
      ...... Let ``++_++ +#+ +(+typeIR~l_reduced~ ctk~l_reduced~+)+`` be ``typedExpressionIR~l_reduced~``.
      ...... Let ``++_++ +#+ +(+typeIR~r_reduced~ ctk~r_reduced~+)+`` be ``typedExpressionIR~r_reduced~``.
-     ...... Let ``typeIR^?^`` be ``xref:result_concat[$result_concat(typeIR~l_reduced~, typeIR~r_reduced~)]``.
-     ...... Let!~type~ ``typeIR~reduced~`` be ``typeIR^?^``.
-
+     ...... Let ``typeIR~reduced~`` be xref:option_get[*!*] ``xref:result_concat[$result_concat(typeIR~l_reduced~, typeIR~r_reduced~)]``.
      ...... Let ``ctk~reduced~`` be ``xref:join_ctk[$join_ctk(ctk~l_reduced~, ctk~r_reduced~)]``.
      ...... Let ``expressionNoteIR`` be ``+(+typeIR~reduced~ ctk~reduced~+)+``.
      ...... Result in ``typedExpressionIR~l_reduced~ ++++ typedExpressionIR~r_reduced~ +#+ expressionNoteIR``.
@@ -5870,9 +5856,7 @@ xref:Expr_ok[Expr_ok: ``p TC ⊢ expression''' +:+ %``]
     ..... Let xref:Expr_ok[``p TC ⊢ expression~lo~ +:+ typedExpressionIR~lo~``].
     ..... Let ``typedExpressionIR~base_reduced~`` be xref:option_get[*!*] ``xref:reduce_serenum_unary[$reduce_serenum_unary(typedExpressionIR~base~, $compat_bitslice_base)]``.
     ..... Let ``++_++ +#+ +(+typeIR~base_reduced~ ctk~base_reduced~+)+`` be ``typedExpressionIR~base_reduced~``.
-    ..... Let ``typedExpressionIR'^?^`` be ``xref:reduce_serenum_unary[$reduce_serenum_unary(typedExpressionIR~hi~, $compat_bitslice_index)]``.
-    ..... Let!~type~ ``typedExpressionIR~hi_reduced~`` be ``typedExpressionIR'^?^``.
-
+    ..... Let ``typedExpressionIR~hi_reduced~`` be xref:option_get[*!*] ``xref:reduce_serenum_unary[$reduce_serenum_unary(typedExpressionIR~hi~, $compat_bitslice_index)]``.
     ..... Let ``typedExpressionIR~lo_reduced~`` be xref:option_get[*!*] ``xref:reduce_serenum_unary[$reduce_serenum_unary(typedExpressionIR~lo~, $compat_bitslice_index)]``.
     ..... Let ``++_++ +#+ +(+typeIR~hi_reduced~ ctk~hi_reduced~+)+`` be ``typedExpressionIR~hi_reduced~``.
     ..... Let ``++_++ +#+ +(+typeIR~lo_reduced~ ctk~lo_reduced~+)+`` be ``typedExpressionIR~lo_reduced~``.
@@ -6065,9 +6049,7 @@ xref:Lvalue_ok[Lvalue_ok: ``p TC ⊢ lvalue +:+ %``]
    .... Let xref:Expr_ok[``p TC ⊢ expression~hi~ +:+ typedExpressionIR~hi~``].
    .... Let xref:Expr_ok[``p TC ⊢ expression~lo~ +:+ typedExpressionIR~lo~``].
    .... Let ``typedExpressionIR~hi_reduced~`` be xref:option_get[*!*] ``xref:reduce_serenum_unary[$reduce_serenum_unary(typedExpressionIR~hi~, $compat_bitslice_index)]``.
-   .... Let ``typedExpressionIR'^?^`` be ``xref:reduce_serenum_unary[$reduce_serenum_unary(typedExpressionIR~lo~, $compat_bitslice_index)]``.
-   .... Let!~type~ ``typedExpressionIR~lo_reduced~`` be ``typedExpressionIR'^?^``.
-
+   .... Let ``typedExpressionIR~lo_reduced~`` be xref:option_get[*!*] ``xref:reduce_serenum_unary[$reduce_serenum_unary(typedExpressionIR~lo~, $compat_bitslice_index)]``.
    .... Let ``++_++ +#+ +(+typeIR~hi_reduced~ ctk~hi_reduced~+)+`` be ``typedExpressionIR~hi_reduced~``.
    .... Let ``++_++ +#+ +(+typeIR~lo_reduced~ ctk~lo_reduced~+)+`` be ``typedExpressionIR~lo_reduced~``.
    .... Check that ``ctk~hi_reduced~`` matches pattern ``+LCTK+``.
@@ -6192,9 +6174,7 @@ xref:Stmt_ok[Stmt_ok: ``p' TC' f' ⊢ statement +:+ % % %``]
     ..... Let xref:Expr_ok[``+LOCAL+ TC' ⊢ expression +:+ typedExpressionIR``].
     ..... Let ``++_++ +#+ +(+typeIR ++_+++)+`` be ``typedExpressionIR``.
     ..... Let ``typeIR~ret~`` be xref:option_get[*!*] ``xref:find_return_type[$find_return_type(TC')]``.
-    ..... Let ``typedExpressionIR'^?^`` be ``xref:coerce_unary[$coerce_unary(typedExpressionIR, typeIR~ret~)]``.
-    ..... Let!~type~ ``typedExpressionIR~cast~`` be ``typedExpressionIR'^?^``.
-
+    ..... Let ``typedExpressionIR~cast~`` be xref:option_get[*!*] ``xref:coerce_unary[$coerce_unary(typedExpressionIR, typeIR~ret~)]``.
     ..... Result in ``TC'``, ``+RET+``, and ``+RETURN+ typedExpressionIR~cast~ +;+``.
   ... Else if let ``blockStatement`` be ``statement``:
    .... Let xref:Block_ok[``TC' f' ⊢ blockStatement +:+ TC~1~ f~1~ blockStatementIR``].
@@ -8820,30 +8800,22 @@ xref:SelectCase_keyset_simple_ok[SelectCase_keyset_simple_ok: ``TC typeIR~key~ �
    .... Let xref:Expr_ok[``+LOCAL+ TC ⊢ expression~l~ +:+ typedExpressionIR~l~``].
    .... Let xref:Expr_ok[``+LOCAL+ TC ⊢ expression~r~ +:+ typedExpressionIR~r~``].
    .... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] ``xref:coerce_binary[$coerce_binary(typedExpressionIR~l~, typedExpressionIR~r~)]``.
-   .... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_mask)]``.
-   .... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+   .... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_mask)]``.
    .... Let ``++_++ +#+ +(+typeIR~reduced~ ++_+++)+`` be ``typedExpressionIR~l_reduced~``.
    .... Let ``typedExpressionIR~l_coerced~`` be xref:option_get[*!*] ``xref:coerce_unary[$coerce_unary(typedExpressionIR~l_reduced~, typeIR~key~)]``.
-   .... Let ``typedExpressionIR'^?^`` be ``xref:coerce_unary[$coerce_unary(typedExpressionIR~r_reduced~, typeIR~key~)]``.
-   .... Let!~type~ ``typedExpressionIR~r_coerced~`` be ``typedExpressionIR'^?^``.
-
+   .... Let ``typedExpressionIR~r_coerced~`` be xref:option_get[*!*] ``xref:coerce_unary[$coerce_unary(typedExpressionIR~r_reduced~, typeIR~key~)]``.
    .... Result in ``typedExpressionIR~l_coerced~ +&&&+ typedExpressionIR~r_coerced~``.
   ... Else if let ``expression~l~ +..+ expression~r~`` be ``simpleKeysetExpression``:
    .... Let xref:Expr_ok[``+LOCAL+ TC ⊢ expression~l~ +:+ typedExpressionIR~l~``].
    .... Let xref:Expr_ok[``+LOCAL+ TC ⊢ expression~r~ +:+ typedExpressionIR~r~``].
    .... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] ``xref:coerce_binary[$coerce_binary(typedExpressionIR~l~, typedExpressionIR~r~)]``.
-   .... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_range)]``.
-   .... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+   .... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_range)]``.
    .... Let ``++_++ +#+ +(+typeIR~reduced~ ++_+++)+`` be ``typedExpressionIR~l_reduced~``.
    .... Let ``++_++ +#+ +(+typeIR ++_+++)+`` be ``typedExpressionIR~r_reduced~``.
    .... Check that ``typeIR`` is equal to ``typeIR~reduced~``.
 
    .... Let ``typedExpressionIR~l_coerced~`` be xref:option_get[*!*] ``xref:coerce_unary[$coerce_unary(typedExpressionIR~l_reduced~, typeIR~key~)]``.
-   .... Let ``typedExpressionIR'^?^`` be ``xref:coerce_unary[$coerce_unary(typedExpressionIR~r_reduced~, typeIR~key~)]``.
-   .... Let!~type~ ``typedExpressionIR~r_coerced~`` be ``typedExpressionIR'^?^``.
-
+   .... Let ``typedExpressionIR~r_coerced~`` be xref:option_get[*!*] ``xref:coerce_unary[$coerce_unary(typedExpressionIR~r_reduced~, typeIR~key~)]``.
    .... Result in ``typedExpressionIR~l_coerced~ +..+ typedExpressionIR~r_coerced~``.
   ... Else if ``simpleKeysetExpression`` matches pattern ``+DEFAULT+``:
    .... Result in ``+DEFAULT+``.
@@ -9096,9 +9068,7 @@ xref:TableEntry_keyset_simple_ok[TableEntry_keyset_simple_ok: ``TC TBLC ⊢ ( ty
       ....... Let xref:Expr_ok[``+LOCAL+ TC ⊢ expression~l~ +:+ typedExpressionIR~l~``].
       ....... Let xref:Expr_ok[``+LOCAL+ TC ⊢ expression~r~ +:+ typedExpressionIR~r~``].
       ....... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] ``xref:coerce_binary[$coerce_binary(typedExpressionIR~l~, typedExpressionIR~r~)]``.
-      ....... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_mask)]``.
-      ....... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+      ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_mask)]``.
       ....... Let ``++_++ +#+ +(+typeIR~reduced~ ctk~r_reduced~+)+`` be ``typedExpressionIR~r_reduced~``.
       ....... If xref:Cast_impl[``typeIR~reduced~ → typeIR~key~``] holds:
        ........ Check that ``ctk~r_reduced~`` matches pattern ``+LCTK+``.
@@ -9123,9 +9093,7 @@ xref:TableEntry_keyset_simple_ok[TableEntry_keyset_simple_ok: ``TC TBLC ⊢ ( ty
    .... Let xref:Expr_ok[``+LOCAL+ TC ⊢ expression~l~ +:+ typedExpressionIR~l~``].
    .... Let xref:Expr_ok[``+LOCAL+ TC ⊢ expression~r~ +:+ typedExpressionIR~r~``].
    .... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] ``xref:coerce_binary[$coerce_binary(typedExpressionIR~l~, typedExpressionIR~r~)]``.
-   .... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_mask)]``.
-   .... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+   .... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_mask)]``.
    .... Let ``++_++ +#+ +(+typeIR~reduced~ ctk~r_reduced~+)+`` be ``typedExpressionIR~r_reduced~``.
    .... If xref:Cast_impl[``typeIR~reduced~ → typeIR~key~``] holds:
     ..... Result in ``+NOLPM+`` and ``typedExpressionIR~l_reduced~ +&&&+ typedExpressionIR~r_reduced~``.
@@ -9135,9 +9103,7 @@ xref:TableEntry_keyset_simple_ok[TableEntry_keyset_simple_ok: ``TC TBLC ⊢ ( ty
    .... Let xref:Expr_ok[``+LOCAL+ TC ⊢ expression~l~ +:+ typedExpressionIR~l~``].
    .... Let xref:Expr_ok[``+LOCAL+ TC ⊢ expression~r~ +:+ typedExpressionIR~r~``].
    .... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] ``xref:coerce_binary[$coerce_binary(typedExpressionIR~l~, typedExpressionIR~r~)]``.
-   .... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_range)]``.
-   .... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+   .... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] ``xref:reduce_serenum_binary[$reduce_serenum_binary(typedExpressionIR~l_cast~, typedExpressionIR~r_cast~, $compat_range)]``.
    .... Let ``++_++ +#+ +(+typeIR~reduced~ ctk~r_reduced~+)+`` be ``typedExpressionIR~r_reduced~``.
    .... If xref:Cast_impl[``typeIR~reduced~ → typeIR~key~``] holds:
     ..... Result in ``+NOLPM+`` and ``typedExpressionIR~l_reduced~ +..+ typedExpressionIR~r_reduced~``.

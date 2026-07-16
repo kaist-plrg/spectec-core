@@ -106,11 +106,16 @@ let shorten_option_get (instrs : Pl.instr list) :
             when eq_exp_var exp_tmp exp_scrut -> (
               match inner.node.it with
               | Pl.LetI (exp_target, exp_tmp', [])
-                when eq_exp_var exp_tmp exp_tmp' ->
-                  Some
-                    ( mk_instr i1 (Pl.OptionGetI (exp_target, exp_call))
-                      :: body_rest,
-                      rest )
+                when eq_exp_var exp_tmp exp_tmp' -> (
+                  match exp_target.node.it with
+                  | Pl.OptE (Some exp_inner) ->
+                      Some
+                        ( [
+                            mk_instr i1
+                              (Pl.OptionGetI (exp_inner, exp_call, body_rest));
+                          ],
+                          rest )
+                  | _ -> None)
               | _ -> None)
           | _ -> None)
       | _ -> None)
@@ -142,8 +147,10 @@ and recurse_into_nested (instr : Pl.instr) : Pl.instr =
     | Pl.TryI arms -> Pl.TryI (List.map shorten_block arms)
     | Pl.CheckLetI (e_l, e_r, block_inner) ->
         Pl.CheckLetI (e_l, e_r, shorten_block block_inner)
+    | Pl.OptionGetI (e_l, e_r, block_inner) ->
+        Pl.OptionGetI (e_l, e_r, shorten_block block_inner)
     | Pl.LetI _ | Pl.RelI _ | Pl.ResultI _ | Pl.ReturnI _ | Pl.DebugI _
-    | Pl.DestructI _ | Pl.OptionGetI _ ->
+    | Pl.DestructI _ ->
         instr.node.it
   in
   { instr with node = it' $$ (instr.node.at, instr.node.note) }

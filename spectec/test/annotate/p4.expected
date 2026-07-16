@@ -4669,9 +4669,7 @@ xref:set_priorities_of_tableEntryListIR[``tableEntryIR^{asterisk}^`` with priori
      ...... Check that not ``TBLC.+ENTRIES+.+CONST+``.
 
      ...... Let ``+PRIORITY+ +=+ integerLiteral +:+`` be xref:option_get[*!*] xref:tableEntryPriorityOptIR_of_tableEntryIR[the priority of ``tableEntryIR~h~``].
-     ...... Let ``nat^?^`` be xref:nat_of_integerValue[the natural number representation of  ``integerLiteral``].
-     ...... Let!~type~ ``n`` be ``nat^?^``.
-
+     ...... Let ``n`` be xref:option_get[*!*] xref:nat_of_integerValue[the natural number representation of  ``integerLiteral``].
      ...... Let ``tableEntryIR~h_updated~`` be ``xref:set_priority_of_tableEntryIR[$set_priority_of_tableEntryIR(tableEntryIR~h~, n)]``.
      ...... Let ``tableEntryIR~t_updated~^{asterisk}^`` be ``xref:set_priorities_of_tableEntryListIR'[$set_priorities_of_tableEntryListIR'(TBLC, n, tableEntryIR~t~^{asterisk}^)]``.
      ...... Return ``tableEntryIR~h_updated~ {two-colons} tableEntryIR~t_updated~^{asterisk}^``.
@@ -4692,9 +4690,7 @@ xref:set_priorities_of_tableEntryListIR'[$set_priorities_of_tableEntryListIR'(TB
  .. Let ``tableEntryIR~t_updated~^{asterisk}^`` be ``xref:set_priorities_of_tableEntryListIR'[$set_priorities_of_tableEntryListIR'(TBLC, n, tableEntryIR~t~^{asterisk}^)]``.
  .. Return ``tableEntryIR~h_updated~ {two-colons} tableEntryIR~t_updated~^{asterisk}^``.
  .. Let ``+PRIORITY+ +=+ integerLiteral +:+`` be xref:option_get[*!*] xref:tableEntryPriorityOptIR_of_tableEntryIR[the priority of ``tableEntryIR~h~``].
- .. Let ``nat^?^`` be xref:nat_of_integerValue[the natural number representation of  ``integerLiteral``].
- .. Let!~type~ ``n`` be ``nat^?^``.
-
+ .. Let ``n`` be xref:option_get[*!*] xref:nat_of_integerValue[the natural number representation of  ``integerLiteral``].
  .. Let ``tableEntryIR~h_updated~`` be ``xref:set_priority_of_tableEntryIR[$set_priority_of_tableEntryIR(tableEntryIR~h~, n)]``.
  .. Let ``tableEntryIR~t_updated~^{asterisk}^`` be ``xref:set_priorities_of_tableEntryListIR'[$set_priorities_of_tableEntryListIR'(TBLC, n, tableEntryIR~t~^{asterisk}^)]``.
  .. Return ``tableEntryIR~h_updated~ {two-colons} tableEntryIR~t_updated~^{asterisk}^``.
@@ -6295,9 +6291,7 @@ xref:Expr_ok[Expr_ok]:
       ....... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``p``].
       ....... Let ``typedExpressionIR~r~`` be the result of xref:Expr_ok[typing ``expression~r~``, under context ``TC`` at ``p``].
       ....... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] xref:cast_binary[``typedExpressionIR~l~`` and ``typedExpressionIR~r~`` implicitly cast to equal types].
-      ....... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_plusminusmult`` is satisfied].
-      ....... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+      ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_plusminusmult`` is satisfied].
       ....... Let ``typeIR~reduced~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~l_reduced~``].
       ....... Let ``ctk~l_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~l_reduced~``].
       ....... Let ``ctk~r_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~r_reduced~``].
@@ -6308,9 +6302,7 @@ xref:Expr_ok[Expr_ok]:
       ....... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``p``].
       ....... Let ``typedExpressionIR~r~`` be the result of xref:Expr_ok[typing ``expression~r~``, under context ``TC`` at ``p``].
       ....... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] xref:cast_binary[``typedExpressionIR~l~`` and ``typedExpressionIR~r~`` implicitly cast to equal types].
-      ....... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_satplusminus`` is satisfied].
-      ....... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+      ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_satplusminus`` is satisfied].
       ....... Let ``typeIR~reduced~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~l_reduced~``].
       ....... Let ``ctk~l_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~l_reduced~``].
       ....... Let ``ctk~r_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~r_reduced~``].
@@ -6321,9 +6313,7 @@ xref:Expr_ok[Expr_ok]:
       ....... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``p``].
       ....... Let ``typedExpressionIR~r~`` be the result of xref:Expr_ok[typing ``expression~r~``, under context ``TC`` at ``p``].
       ....... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] xref:cast_binary[``typedExpressionIR~l~`` and ``typedExpressionIR~r~`` implicitly cast to equal types].
-      ....... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_divmod`` is satisfied].
-      ....... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+      ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_divmod`` is satisfied].
       ....... Let ``typeIR~reduced~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~l_reduced~``].
       ....... Let ``ctk~l_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~l_reduced~``].
       ....... Let ``ctk~r_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~r_reduced~``].
@@ -6384,9 +6374,7 @@ xref:Expr_ok[Expr_ok]:
       ....... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``p``].
       ....... Let ``typedExpressionIR~r~`` be the result of xref:Expr_ok[typing ``expression~r~``, under context ``TC`` at ``p``].
       ....... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] xref:cast_binary[``typedExpressionIR~l~`` and ``typedExpressionIR~r~`` implicitly cast to equal types].
-      ....... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_compare`` is satisfied].
-      ....... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+      ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_compare`` is satisfied].
       ....... Let ``typeIR~reduced~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~l_reduced~``].
       ....... Let ``ctk~l_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~l_reduced~``].
       ....... Let ``ctk~r_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~r_reduced~``].
@@ -6397,9 +6385,7 @@ xref:Expr_ok[Expr_ok]:
       ....... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``p``].
       ....... Let ``typedExpressionIR~r~`` be the result of xref:Expr_ok[typing ``expression~r~``, under context ``TC`` at ``p``].
       ....... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] xref:cast_binary[``typedExpressionIR~l~`` and ``typedExpressionIR~r~`` implicitly cast to equal types].
-      ....... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_bitwise`` is satisfied].
-      ....... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+      ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_bitwise`` is satisfied].
       ....... Let ``typeIR~reduced~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~l_reduced~``].
       ....... Let ``ctk~l_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~l_reduced~``].
       ....... Let ``ctk~r_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~r_reduced~``].
@@ -6410,9 +6396,7 @@ xref:Expr_ok[Expr_ok]:
       ....... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``p``].
       ....... Let ``typedExpressionIR~r~`` be the result of xref:Expr_ok[typing ``expression~r~``, under context ``TC`` at ``p``].
       ....... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] xref:cast_binary[``typedExpressionIR~l~`` and ``typedExpressionIR~r~`` implicitly cast to equal types].
-      ....... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_logical`` is satisfied].
-      ....... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+      ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_logical`` is satisfied].
       ....... Let ``typeIR~reduced~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~l_reduced~``].
       ....... Let ``ctk~l_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~l_reduced~``].
       ....... Let ``ctk~r_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~r_reduced~``].
@@ -6670,9 +6654,7 @@ xref:Expr_ok[Expr_ok]:
     ..... Let ``typedExpressionIR~base_reduced~`` be xref:option_get[*!*] xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~base~`` until ``$compat_bitslice_base`` is satisfied].
     ..... Let ``typeIR~base_reduced~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~base_reduced~``].
     ..... Let ``ctk~base_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~base_reduced~``].
-    ..... Let ``typedExpressionIR'^?^`` be xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~hi~`` until ``$compat_bitslice_range_index`` is satisfied].
-    ..... Let!~type~ ``typedExpressionIR~hi_reduced~`` be ``typedExpressionIR'^?^``.
-
+    ..... Let ``typedExpressionIR~hi_reduced~`` be xref:option_get[*!*] xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~hi~`` until ``$compat_bitslice_range_index`` is satisfied].
     ..... Let ``typedExpressionIR~lo_reduced~`` be xref:option_get[*!*] xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~lo~`` until ``$compat_bitslice_range_index`` is satisfied].
     ..... Let ``typeIR~hi_reduced~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~hi_reduced~``].
     ..... Let ``ctk~hi_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~hi_reduced~``].
@@ -6703,9 +6685,7 @@ xref:Expr_ok[Expr_ok]:
     ..... Let ``typedExpressionIR~base_reduced~`` be xref:option_get[*!*] xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~base~`` until ``$compat_bitslice_base`` is satisfied].
     ..... Let ``typeIR~base_reduced~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~base_reduced~``].
     ..... Let ``ctk~base_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~base_reduced~``].
-    ..... Let ``typedExpressionIR'^?^`` be xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~l~`` until ``$compat_bitslice_offset_index`` is satisfied].
-    ..... Let!~type~ ``typedExpressionIR~l_reduced~`` be ``typedExpressionIR'^?^``.
-
+    ..... Let ``typedExpressionIR~l_reduced~`` be xref:option_get[*!*] xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~l~`` until ``$compat_bitslice_offset_index`` is satisfied].
     ..... Let ``typedExpressionIR~w_reduced~`` be xref:option_get[*!*] xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~w~`` until ``$compat_bitslice_offset_width`` is satisfied].
     ..... Let ``typeIR~l_reduced~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~l_reduced~``].
     ..... Let ``ctk~l_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~l_reduced~``].
@@ -6919,9 +6899,7 @@ xref:Lvalue_ok[Lvalue_ok]:
    .... Let ``typedExpressionIR~hi~`` be the result of xref:Expr_ok[typing ``expression~hi~``, under context ``TC`` at ``p``].
    .... Let ``typedExpressionIR~lo~`` be the result of xref:Expr_ok[typing ``expression~lo~``, under context ``TC`` at ``p``].
    .... Let ``typedExpressionIR~hi_reduced~`` be xref:option_get[*!*] xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~hi~`` until ``$compat_bitslice_range_index`` is satisfied].
-   .... Let ``typedExpressionIR'^?^`` be xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~lo~`` until ``$compat_bitslice_range_index`` is satisfied].
-   .... Let!~type~ ``typedExpressionIR~lo_reduced~`` be ``typedExpressionIR'^?^``.
-
+   .... Let ``typedExpressionIR~lo_reduced~`` be xref:option_get[*!*] xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~lo~`` until ``$compat_bitslice_range_index`` is satisfied].
    .... Let ``++_++ +#+ +(+typeIR~hi_reduced~ ctk~hi_reduced~+)+`` be ``typedExpressionIR~hi_reduced~``.
    .... Let ``++_++ +#+ +(+typeIR~lo_reduced~ ctk~lo_reduced~+)+`` be ``typedExpressionIR~lo_reduced~``.
    .... Check that ``ctk~hi_reduced~`` matches pattern ``+LCTK+``.
@@ -6950,9 +6928,7 @@ xref:Lvalue_ok[Lvalue_ok]:
    .... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``p``].
    .... Let ``typedExpressionIR~w~`` be the result of xref:Expr_ok[typing ``expression~w~``, under context ``TC`` at ``p``].
    .... Let ``typedExpressionIR~l_reduced~`` be xref:option_get[*!*] xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~l~`` until ``$compat_bitslice_offset_index`` is satisfied].
-   .... Let ``typedExpressionIR'^?^`` be xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~w~`` until ``$compat_bitslice_offset_width`` is satisfied].
-   .... Let!~type~ ``typedExpressionIR~w_reduced~`` be ``typedExpressionIR'^?^``.
-
+   .... Let ``typedExpressionIR~w_reduced~`` be xref:option_get[*!*] xref:reduce_serenum_unary[the result of reducing serializable enums in ``typedExpressionIR~w~`` until ``$compat_bitslice_offset_width`` is satisfied].
    .... Let ``++_++ +#+ +(+typeIR~l_reduced~ ctk~l_reduced~+)+`` be ``typedExpressionIR~l_reduced~``.
    .... Let ``++_++ +#+ +(+typeIR~w_reduced~ ctk~w_reduced~+)+`` be ``typedExpressionIR~w_reduced~``.
    .... Check that ``ctk~w_reduced~`` matches pattern ``+LCTK+``.
@@ -6995,9 +6971,7 @@ xref:Stmt_ok[Stmt_ok]:
     ..... Let ``expression~binary~`` be ``expression~lvalue~ binop expression``.
     ..... Let ``typedExpressionIR~binary~`` be the result of xref:Expr_ok[typing ``expression~binary~``, under context ``TC'`` at ``p'``].
     ..... Let ``++_++ +#+ +(+typeIR~lvalue~+)+`` be ``typedLvalueIR``.
-    ..... Let ``typedExpressionIR^?^`` be xref:cast_unary[``typedExpressionIR~binary~`` implicitly cast to ``typeIR~lvalue~``].
-    ..... Let!~type~ ``expressionIR +#+ ++_++`` be ``typedExpressionIR^?^``.
-
+    ..... Let ``expressionIR +#+ ++_++`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~binary~`` implicitly cast to ``typeIR~lvalue~``].
     ..... Let!~type~ ``++_++ binop'' typedExpressionIR~cast~`` be ``expressionIR``.
 
     ..... Check that ``binop''`` is equal to ``binop``.
@@ -7095,9 +7069,7 @@ xref:Stmt_ok[Stmt_ok]:
       ....... Let ``typedExpressionIR`` be the result of xref:Expr_ok[typing ``expression``, under context ``TC'`` at ``+LOCAL+``].
       ....... Let ``typeIR`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR``].
       ....... Let ``typeIR~ret~`` be xref:option_get[*!*] xref:find_local_return_type_t[the expected return type in ``TC'``].
-      ....... Let ``typedExpressionIR'^?^`` be xref:cast_unary[``typedExpressionIR`` implicitly cast to ``typeIR~ret~``].
-      ....... Let!~type~ ``typedExpressionIR~cast~`` be ``typedExpressionIR'^?^``.
-
+      ....... Let ``typedExpressionIR~cast~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR`` implicitly cast to ``typeIR~ret~``].
       ....... Result in context ``TC'``, abstract control flow ``+RET+``, and ``+RETURN+ typedExpressionIR~cast~ +;+``.
     ..... Else if let ``blockStatement`` be ``statement''``:
      ...... Let ``TC~1~`` be xref:enter_t[``TC'`` with a new local frame].
@@ -9433,9 +9405,7 @@ xref:ForCollectionExpr_ok[ForCollectionExpr_ok]:
   ... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``+LOCAL+``].
   ... Let ``typedExpressionIR~r~`` be the result of xref:Expr_ok[typing ``expression~r~``, under context ``TC`` at ``+LOCAL+``].
   ... Let ``typedExpressionIR~l_casted~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~l~`` implicitly cast to ``typeIR~var~``].
-  ... Let ``typedExpressionIR'^?^`` be xref:cast_unary[``typedExpressionIR~r~`` implicitly cast to ``typeIR~var~``].
-  ... Let!~type~ ``typedExpressionIR~r_casted~`` be ``typedExpressionIR'^?^``.
-
+  ... Let ``typedExpressionIR~r_casted~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~r~`` implicitly cast to ``typeIR~var~``].
   ... Let ``typeIR~l~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~l_casted~``].
   ... Let ``typeIR~r~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~r_casted~``].
   ... Check that xref:compat_range[``typeIR~l~`` and ``typeIR~r~`` can be used as range bounds].
@@ -9799,29 +9769,21 @@ xref:SelectCase_keyset_simple_ok[SelectCase_keyset_simple_ok]:
    .... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``+LOCAL+``].
    .... Let ``typedExpressionIR~r~`` be the result of xref:Expr_ok[typing ``expression~r~``, under context ``TC`` at ``+LOCAL+``].
    .... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] xref:cast_binary[``typedExpressionIR~l~`` and ``typedExpressionIR~r~`` implicitly cast to equal types].
-   .... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_mask`` is satisfied].
-   .... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+   .... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_mask`` is satisfied].
    .... Let ``typeIR~reduced~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~l_reduced~``].
    .... Let ``typedExpressionIR~l_casted~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~l_reduced~`` implicitly cast to ``typeIR~key~``].
-   .... Let ``typedExpressionIR'^?^`` be xref:cast_unary[``typedExpressionIR~r_reduced~`` implicitly cast to ``typeIR~key~``].
-   .... Let!~type~ ``typedExpressionIR~r_casted~`` be ``typedExpressionIR'^?^``.
-
+   .... Let ``typedExpressionIR~r_casted~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~r_reduced~`` implicitly cast to ``typeIR~key~``].
    .... Result in ``typedExpressionIR~l_casted~ +&&&+ typedExpressionIR~r_casted~``.
   ... Else if let ``expression~l~ +..+ expression~r~`` be ``simpleKeysetExpression``:
    .... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``+LOCAL+``].
    .... Let ``typedExpressionIR~r~`` be the result of xref:Expr_ok[typing ``expression~r~``, under context ``TC`` at ``+LOCAL+``].
    .... Let ``( typedExpressionIR~l_cast~, typedExpressionIR~r_cast~ )`` be xref:option_get[*!*] xref:cast_binary[``typedExpressionIR~l~`` and ``typedExpressionIR~r~`` implicitly cast to equal types].
-   .... Let ``(typedExpressionIR, typedExpressionIR)'^?^`` be xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_range`` is satisfied].
-   .... Let!~type~ ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be ``(typedExpressionIR, typedExpressionIR)'^?^``.
-
+   .... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_range`` is satisfied].
    .... Let ``typeIR~reduced~`` be xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~l_reduced~``].
    .... Check that ``typeIR~reduced~`` is equal to xref:type_of_typedExpressionIR[the type of ``typedExpressionIR~r_reduced~``].
 
    .... Let ``typedExpressionIR~l_casted~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~l_reduced~`` implicitly cast to ``typeIR~key~``].
-   .... Let ``typedExpressionIR'^?^`` be xref:cast_unary[``typedExpressionIR~r_reduced~`` implicitly cast to ``typeIR~key~``].
-   .... Let!~type~ ``typedExpressionIR~r_casted~`` be ``typedExpressionIR'^?^``.
-
+   .... Let ``typedExpressionIR~r_casted~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~r_reduced~`` implicitly cast to ``typeIR~key~``].
    .... Result in ``typedExpressionIR~l_casted~ +..+ typedExpressionIR~r_casted~``.
   ... Else if ``simpleKeysetExpression`` matches pattern ``+DEFAULT+``:
    .... Result in ``+DEFAULT+``.
@@ -10129,9 +10091,7 @@ xref:TableEntry_keyset_simple_ok[TableEntry_keyset_simple_ok: ``TC TBLC ⊢ type
       ....... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``+LOCAL+``].
       ....... Let ``typedExpressionIR~r~`` be the result of xref:Expr_ok[typing ``expression~r~``, under context ``TC`` at ``+LOCAL+``].
       ....... Let ``typedExpressionIR~l_cast~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~l~`` implicitly cast to ``typeIR~key~``].
-      ....... Let ``typedExpressionIR'^?^`` be xref:cast_unary[``typedExpressionIR~r~`` implicitly cast to ``typeIR~key~``].
-      ....... Let!~type~ ``typedExpressionIR~r_cast~`` be ``typedExpressionIR'^?^``.
-
+      ....... Let ``typedExpressionIR~r_cast~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~r~`` implicitly cast to ``typeIR~key~``].
       ....... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_mask`` is satisfied].
       ....... Let ``ctk~r_reduced~`` be xref:ctk_of_typedExpressionIR[the compile-time known-ness of ``typedExpressionIR~r_reduced~``].
       ....... Check that ``ctk~r_reduced~`` matches pattern ``+LCTK+``.
@@ -10158,9 +10118,7 @@ xref:TableEntry_keyset_simple_ok[TableEntry_keyset_simple_ok: ``TC TBLC ⊢ type
    .... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``+LOCAL+``].
    .... Let ``typedExpressionIR~r~`` be the result of xref:Expr_ok[typing ``expression~r~``, under context ``TC`` at ``+LOCAL+``].
    .... Let ``typedExpressionIR~l_cast~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~l~`` implicitly cast to ``typeIR~key~``].
-   .... Let ``typedExpressionIR'^?^`` be xref:cast_unary[``typedExpressionIR~r~`` implicitly cast to ``typeIR~key~``].
-   .... Let!~type~ ``typedExpressionIR~r_cast~`` be ``typedExpressionIR'^?^``.
-
+   .... Let ``typedExpressionIR~r_cast~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~r~`` implicitly cast to ``typeIR~key~``].
    .... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_mask`` is satisfied].
    .... Result in ``+NON_LPM+`` and ``typedExpressionIR~l_reduced~ +&&&+ typedExpressionIR~r_reduced~``.
   ... Else if ``text'`` is equal to ``"range"``:
@@ -10169,9 +10127,7 @@ xref:TableEntry_keyset_simple_ok[TableEntry_keyset_simple_ok: ``TC TBLC ⊢ type
    .... Let ``typedExpressionIR~l~`` be the result of xref:Expr_ok[typing ``expression~l~``, under context ``TC`` at ``+LOCAL+``].
    .... Let ``typedExpressionIR~r~`` be the result of xref:Expr_ok[typing ``expression~r~``, under context ``TC`` at ``+LOCAL+``].
    .... Let ``typedExpressionIR~l_cast~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~l~`` implicitly cast to ``typeIR~key~``].
-   .... Let ``typedExpressionIR'^?^`` be xref:cast_unary[``typedExpressionIR~r~`` implicitly cast to ``typeIR~key~``].
-   .... Let!~type~ ``typedExpressionIR~r_cast~`` be ``typedExpressionIR'^?^``.
-
+   .... Let ``typedExpressionIR~r_cast~`` be xref:option_get[*!*] xref:cast_unary[``typedExpressionIR~r~`` implicitly cast to ``typeIR~key~``].
    .... Let ``( typedExpressionIR~l_reduced~, typedExpressionIR~r_reduced~ )`` be xref:option_get[*!*] xref:reduce_serenum_binary[the result of reducing serializable enums in ``typedExpressionIR~l_cast~`` and ``typedExpressionIR~r_cast~`` until ``$compat_range`` is satisfied].
    .... Result in ``+NON_LPM+`` and ``typedExpressionIR~l_reduced~ +..+ typedExpressionIR~r_reduced~``.
  .. {empty}
