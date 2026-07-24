@@ -7,6 +7,7 @@
  (libraries
   spectec
   spectec.cli
+  spectec.grammar
   spectec.backend.splice
   spectec.targets.p4
   spectec.targets.impty

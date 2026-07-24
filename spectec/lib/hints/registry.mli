@@ -4,7 +4,7 @@
     subjects (relation, function, type case, ...) it may attach to. The
     elaborator validates every hint in the EL spec against this table. *)
 
-type kind = Alter | Input | Fields
+type kind = Alter | Input | Fields | Precedence
 type subject = Typcase | Typfield | Rel | Func | Var
 type entry = { tag : string; kind : kind; subjects : subject list }
 
