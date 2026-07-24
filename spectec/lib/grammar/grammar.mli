@@ -43,7 +43,8 @@ val operator_atom : production -> Xl.Atom.t option
 val rank : syntax -> Xl.Atom.t -> int
 
 (** What a lexer token denotes: a fixed atom, or a primitive carrying its IL
-    value. *)
+    value. The parser reads tokens into terminals. The printer writes terminals
+    back out as surface text. *)
 module Terminal : sig
   type t = Atom of Xl.Atom.t | Primitive of primitive * Il.value
 end

@@ -1,4 +1,4 @@
-=== expressions ===
+=== parse: expressions ===
 1                                OK
   generated: (_NUM +1)
   reference: (_NUM +1)
@@ -27,7 +27,7 @@ a <= b + c                       OK
   generated: ((_NUM +1) + ((_NUM +2) + (_NUM +3)))
   reference: ((_NUM +1) + ((_NUM +2) + (_NUM +3)))
 
-=== programs (base .imp corpus) ===
+=== parse: programs (base .imp corpus) ===
 _errors_add_bool.imp             OK
   generated: ((INT) (_ID "x") = ((_BOOL true) + (_NUM +1)))
   reference: ((INT) (_ID "x") = ((_BOOL true) + (_NUM +1)))
@@ -70,3 +70,53 @@ shadow.imp                       OK
 skip.imp                         OK
   generated: (SKIP)
   reference: (SKIP)
+
+=== round-trip: expressions ===
+1                                OK
+  printed: 1
+x                                OK
+  printed: x
+true                             OK
+  printed: true
+1 + 2 + 3                        OK
+  printed: 1 + 2 + 3
+1 + 2 <= 3                       OK
+  printed: 1 + 2 <= 3
+a <= b + c                       OK
+  printed: a <= b + c
+! a && b                         OK
+  printed: ! a && b
+! (a + b) <= c && d              OK
+  printed: ! (a + b) <= c && d
+1 + (2 + 3)                      OK
+  printed: 1 + (2 + 3)
+
+=== round-trip: programs (base .imp corpus) ===
+_errors_add_bool.imp             OK
+  printed: int x = true + 1
+_errors_assign_mismatch.imp      OK
+  printed: int x = 0 ; x = true
+_errors_bad_assign.imp           OK
+  printed: int x = true
+_errors_if_not_bool.imp          OK
+  printed: int n = 1 ; if n then skip else skip end
+_errors_not_int.imp              OK
+  printed: bool b = ! 5
+_errors_undeclared.imp           OK
+  printed: x = 5
+arith.imp                        OK
+  printed: int x = 1 + 2 + 3 ; int y = x + x
+assign.imp                       OK
+  printed: int x = 1 ; x = x + 5
+bool_ops.imp                     OK
+  printed: bool t = ! false && true ; bool f = ! t && false
+hello.imp                        OK
+  printed: int x = 5 ; bool y = x <= 10
+ite.imp                          OK
+  printed: int x = 0 ; int y = 0 ; if true then x = 1 else x = 2 end ; if false then y = 1 else y = 2 end
+loop.imp                         OK
+  printed: int i = 0 ; int sum = 0 ; while i <= 10 do sum = sum + i ; i = i + 1 end
+shadow.imp                       OK
+  printed: int x = 1 ; int x = x + 100
+skip.imp                         OK
+  printed: skip

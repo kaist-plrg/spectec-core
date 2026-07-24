@@ -1,9 +1,12 @@
-(* Differential test: the grammar-driven parser must build the same IL value as
-   impty's hand-written one, over hand-written expressions and the base .imp
-   program corpus. *)
+(* Differential test for the grammar-driven parser and printer, both built from
+   the extracted grammar alone. Parse: Parsegen.Parse must reproduce impty's
+   hand-written parser. Round-trip: Parsegen.Print must render each value so it
+   re-parses unchanged. Run over hand-written expressions and the base .imp
+   corpus. *)
 
 open Spectec
 module Parse = Parsegen.Parse
+module Print = Parsegen.Print
 module Lexer = Targets_impty.Lexer
 module Reference = Targets_impty.Parse
 
@@ -50,6 +53,16 @@ let classify : Lexer.token -> Grammar.Terminal.t option =
   | Lexer.Question | Lexer.Colon | Lexer.Eof ->
       None
 
+(* The inverse of [classify]: render each grammar terminal back to surface text. *)
+let print_terminal : Grammar.Terminal.t -> string = function
+  | Grammar.Terminal.Atom a ->
+      Lang.Xl.Atom.to_string a |> String.lowercase_ascii
+  | Grammar.Terminal.Primitive (Grammar.Num _, v) ->
+      Bigint.to_string (Lang.Xl.Num.to_int (Lang.Il.Value.get_num v))
+  | Grammar.Terminal.Primitive (Grammar.Bool, v) ->
+      if Lang.Il.Value.get_bool v then "true" else "false"
+  | Grammar.Terminal.Primitive (Grammar.Text, v) -> Lang.Il.Value.get_text v
+
 let lex (source : string) : Lexer.token list =
   Lexer.tokenize ~filename source
   |> List.filter_map (fun (token, _region) ->
@@ -68,8 +81,16 @@ let check (grammar : Grammar.t) (start : string)
   Printf.printf "%-32s %s\n  generated: %s\n  reference: %s\n" label verdict
     (show_value generated) (show_value reference)
 
-let check_expr grammar expr =
-  check grammar "expr" Reference.parse_expr_exn expr expr
+let roundtrip (grammar : Grammar.t) (start : string)
+    (parse_reference : filename:string -> string -> Lang.Il.value)
+    (label : string) (source : string) : unit =
+  let value = parse_reference ~filename source in
+  let printed = Print.run print_terminal grammar start value in
+  let reparsed = Parse.run classify grammar start (lex printed) in
+  let verdict =
+    if Lang.Il.Eq.eq_value value reparsed then "OK" else "MISMATCH"
+  in
+  Printf.printf "%-32s %s\n  printed: %s\n" label verdict printed
 
 let expressions =
   [
@@ -90,10 +111,6 @@ let read_file path =
     ~finally:(fun () -> close_in ic)
     (fun () -> really_input_string ic (in_channel_length ic))
 
-let check_prog grammar corpus_dir file =
-  check grammar "prog" Reference.parse_string_exn file
-    (read_file (Filename.concat corpus_dir file))
-
 let corpus corpus_dir : string list =
   Sys.readdir corpus_dir |> Array.to_list
   |> List.filter (fun f -> Filename.check_suffix f ".imp")
@@ -101,14 +118,35 @@ let corpus corpus_dir : string list =
 
 let run spec corpus_dir =
   let grammar = load_grammar spec in
-  print_endline "=== expressions ===";
-  List.iter (check_expr grammar) expressions;
-  print_endline "\n=== programs (base .imp corpus) ===";
-  List.iter (check_prog grammar corpus_dir) (corpus corpus_dir)
+  let expr_cases = List.map (fun e -> (e, e)) expressions in
+  let prog_cases =
+    corpus corpus_dir
+    |> List.map (fun file ->
+           (file, read_file (Filename.concat corpus_dir file)))
+  in
+  let section title run_case cases =
+    print_endline ("=== " ^ title ^ " ===");
+    List.iter (fun (label, source) -> run_case label source) cases
+  in
+  section "parse: expressions"
+    (check grammar "expr" Reference.parse_expr_exn)
+    expr_cases;
+  print_newline ();
+  section "parse: programs (base .imp corpus)"
+    (check grammar "prog" Reference.parse_string_exn)
+    prog_cases;
+  print_newline ();
+  section "round-trip: expressions"
+    (roundtrip grammar "expr" Reference.parse_expr_exn)
+    expr_cases;
+  print_newline ();
+  section "round-trip: programs (base .imp corpus)"
+    (roundtrip grammar "prog" Reference.parse_string_exn)
+    prog_cases
 
 let command =
   Core.Command.basic
-    ~summary:"differential test of the grammar-driven parser against impty"
+    ~summary:"differential test of the grammar-driven parser and printer"
   @@
   let open Core.Command.Let_syntax in
   let open Core.Command.Param in
