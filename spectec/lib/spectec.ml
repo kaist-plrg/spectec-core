@@ -109,3 +109,12 @@ let eval_task_with_instrumentation (type i)
           spec_il relation values (T.source input)
         |> Result.map snd
         |> Result.map_error (fun e -> Error.InterpError e))
+
+let eval_task_pl (type i) (module T : Task.S with type input = i) ~henv ~spec_il
+    (input : i) =
+  let* relation, values = T.parse_input ~spec:spec_il input in
+  T.Target.handler @@ fun () ->
+  let spec_pl = Pass.structure spec_il |> Pass.annotate ~henv |> Pass.shorten in
+  Interp.eval_pl (module T.Target) spec_pl relation values (T.source input)
+  |> Result.map snd
+  |> Result.map_error (fun e -> Error.InterpError e)

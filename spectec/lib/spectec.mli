@@ -96,3 +96,15 @@ val eval_task_with_instrumentation :
   spec_il:Lang.Il.spec ->
   'i ->
   Lang.Il.Value.t list result
+
+(** Evaluate through the PL interpreter:
+    [structure |> annotate |> shorten |> eval_pl]. The prose is evaluated in its
+    final, shortened form, so [henv] must be the real hint environment:
+    [shorten] consults hints to decide which shorthands to emit. Runs without
+    instrumentation. *)
+val eval_task_pl :
+  (module Task.S with type input = 'i) ->
+  henv:Hints.Henv.t ->
+  spec_il:Lang.Il.spec ->
+  'i ->
+  Lang.Il.Value.t list result

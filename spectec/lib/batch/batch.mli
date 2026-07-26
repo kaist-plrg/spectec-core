@@ -110,6 +110,15 @@ val run_and_print_single :
   'i ->
   (unit, Spectec.Error.t) result
 
+(** Single run through the PL interpreter. Instrumentation is not supported on
+    PL, so unlike {!run_and_print_single} this takes no config. *)
+val run_and_print_single_pl :
+  (module Spectec.Task.S with type input = 'i) ->
+  henv:Hints.Henv.t ->
+  spec_il:Lang.Il.spec ->
+  'i ->
+  (unit, Spectec.Error.t) result
+
 val run_and_print_batch :
   (module Spectec.Task.S with type input = 'i) ->
   ?config:Instrumentation.Config.t ->

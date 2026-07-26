@@ -6,7 +6,9 @@ let load_spec source =
   let* filenames = Spec_source.files source in
   let* spec = Spectec.parse_spec_files filenames in
   let* spec_il = Spectec.elaborate spec in
-  Ok (filenames, spec_il)
+  let henv = Spectec.henv_of_el_spec spec in
+  let henv = Spectec.henv_with_il_spec henv spec_il in
+  Ok (filenames, spec_il, henv)
 
 let resolve_source ~cli ~config ~default_dir =
   match cli with
@@ -22,6 +24,8 @@ let make_task (module Tgt : Spectec.Target.S) ~name ~summary
     let open Core.Command.Param in
     let%map cli_source = Cli_args.Spec.source_flag
     and sl_mode = Cli_args.Interpreter.sl_mode_flag
+    (* Inline until the interpreter-mode refactor generalizes --sl/--pl. *)
+    and pl_mode = flag "--pl" no_arg ~doc:" use PL interpreter (default: IL)"
     and verbose = flag "-v" no_arg ~doc:" verbose output"
     and batch_mode = Cli_args.Batch.mode_flag
     and batch_dir = Cli_args.Batch.dir_flag
@@ -29,6 +33,8 @@ let make_task (module Tgt : Spectec.Target.S) ~name ~summary
     and config = Cli_args.Interpreter.config_flags
     and color = Cli_args.Output.color_flag in
     fun () ->
+      if sl_mode && pl_mode then failwith "--sl and --pl are mutually exclusive";
+      if pl_mode && batch_mode then failwith "--pl does not support --batch yet";
       guard_unit ~color
         ~suppress_trace:(Instrumentation.Config.has_handler config ~name:"tree")
       @@ fun () ->
@@ -40,8 +46,10 @@ let make_task (module Tgt : Spectec.Target.S) ~name ~summary
         resolve_source ~cli:cli_source ~config:cfg.Config_file.spec_source
           ~default_dir:Tgt.spec_dir
       in
-      let* _files, spec_il = load_spec source in
+      let* _files, spec_il, henv = load_spec source in
       match (batch_mode, batch_dir) with
+      | false, None when pl_mode ->
+          Batch.run_and_print_single_pl (module TC.Task) ~henv ~spec_il input
       | false, None ->
           Batch.run_and_print_single
             (module TC.Task)
@@ -76,7 +84,7 @@ let make_parse (module Tgt : Spectec.Target.S) ~name ~summary
         resolve_source ~cli:cli_source ~config:cfg.Config_file.spec_source
           ~default_dir:Tgt.spec_dir
       in
-      let* _files, spec_il = load_spec source in
+      let* _files, spec_il, _henv = load_spec source in
       let* _, values = TC.Task.parse_input ~spec:spec_il input in
       let unparsed = TC.Task.unparse ~spec:spec_il values in
       if roundtrip then
@@ -123,7 +131,7 @@ let make_batch (module Tgt : Spectec.Target.S) ~name
         resolve_source ~cli:cli_source ~config:cfg.Config_file.spec_source
           ~default_dir:Tgt.spec_dir
       in
-      let* spec_files, spec_il = load_spec source in
+      let* spec_files, spec_il, _henv = load_spec source in
       let batch_dir =
         match batch_dir with None -> cfg.Config_file.batch_dir | some -> some
       in
@@ -182,7 +190,7 @@ let make_checkpoint (module Tgt : Spectec.Target.S) ~name =
         resolve_source ~cli:None ~config:cfg.Config_file.spec_source
           ~default_dir:Tgt.spec_dir
       in
-      let* spec_files, spec_il = load_spec source in
+      let* spec_files, spec_il, _henv = load_spec source in
       let* checkpoint =
         Batch.Checkpoint.verify_and_load ~file:checkpoint_file ~spec_files
           ~verbose:true

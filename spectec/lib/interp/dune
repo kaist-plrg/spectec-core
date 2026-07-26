@@ -1,4 +1,4 @@
 (library
  (name interp)
  (public_name spectec.interp)
- (libraries builtins cache eval_il eval_sl target))
+ (libraries builtins cache eval_il eval_sl eval_pl target))

@@ -382,6 +382,16 @@ let run_and_print_single (type i) (module T : Task.S with type input = i)
       Ok ()
   | Task.Fail err | Task.ExpectedFail err -> Error err
 
+let run_and_print_single_pl (type i) (module T : Task.S with type input = i)
+    ~henv ~spec_il (input : i) =
+  let result = Spectec.eval_task_pl (module T) ~henv ~spec_il input in
+  let outcome = Task.compute_outcome (T.expectation input) result in
+  match outcome with
+  | Task.Pass values | Task.UnexpectedPass values ->
+      Format.printf "%s\n" (T.format_output values);
+      Ok ()
+  | Task.Fail err | Task.ExpectedFail err -> Error err
+
 let empty_inputs_error ?dir () =
   Error.DirectoryError
     (Printf.sprintf

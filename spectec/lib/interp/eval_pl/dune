@@ -1,0 +1,13 @@
+(include_subdirs qualified)
+
+(library
+ (name eval_pl)
+ (public_name spectec.interp.eval_pl)
+ (libraries
+  spectec.common
+  spectec.diagnostic
+  spectec.lang
+  spectec.instrumentation
+  builtins
+  cache
+  target))
