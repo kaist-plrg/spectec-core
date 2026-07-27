@@ -15,7 +15,9 @@ type checkpoint_ops = {
 
 module type S = sig
   val name : string
-  val mode : [ `IL | `SL | `Both ]
+
+  (** The interpreter modes this handler can observe. *)
+  val modes : [ `IL | `SL | `PL ] list
 
   (** [(param_name, doc)] entries for CLI help. *)
   val params : (string * string) list

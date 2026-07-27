@@ -1,17 +1,22 @@
-(** Interpreter test - Generic test runner for IL/SL using TASK *)
+(** Interpreter test - Generic test runner for IL/SL/PL using TASK *)
 
 open Core
 open Test_lib
 
-(** Generic test runner - works with any TASK, supports IL or SL mode *)
-let run_with_task (type i) (module T : Spectec.Task.S with type input = i)
-    ~sl_mode ~spec_files ~inputs ~exclude_dirs =
+(** Generic test runner - works with any TASK, in any interpreter mode *)
+let run_with_task (type i) (module T : Spectec.Task.S with type input = i) ~mode
+    ~spec_files ~inputs ~exclude_dirs =
   let open Core.Result.Let_syntax in
   let suite_result =
     let%bind spec = Spectec.parse_spec_files spec_files in
     let%bind spec_il = Spectec.elaborate spec in
+    let henv =
+      Spectec.henv_with_il_spec (Spectec.henv_of_el_spec spec) spec_il
+    in
     let exclude_set = Exclude.load exclude_dirs in
-    let mode_suffix = if sl_mode then "(sl)" else "(il)" in
+    let mode_suffix =
+      "(" ^ String.lowercase (Spectec.Interp_mode.to_string mode) ^ ")"
+    in
     let config : Suite.config =
       {
         name = T.name ^ " " ^ mode_suffix |> String.capitalize;
@@ -36,7 +41,7 @@ let run_with_task (type i) (module T : Spectec.Task.S with type input = i)
           let%bind _ =
             Spectec.eval_task_with_instrumentation
               (module T)
-              ~sl_mode ~spec_il input
+              ~mode ~henv ~spec_il input
           in
           Ok ()
     in
@@ -51,15 +56,14 @@ let run_with_task (type i) (module T : Spectec.Task.S with type input = i)
   match suite_result with
   | Ok () -> ()
   | Error err ->
-      let mode = if sl_mode then "SL" else "IL" in
-      Format.printf "Failed to run %s interpreter:\n%s\n" mode
+      Format.printf "Failed to run %s interpreter:\n%s\n"
+        (Spectec.Interp_mode.to_string mode)
         (Spectec.Diagnostic.Render.render_bag
            ~ansi:Spectec.Diagnostic.Ansi.plain
            (Spectec.Error.to_diagnostics err))
 
 (** P4 Typecheck test - uses P4_Target.spec_dir *)
-let run_p4_typecheck ~p4_old ~negative ~sl_mode ~includes ~exclude_dirs
-    ~testdirs =
+let run_p4_typecheck ~p4_old ~negative ~mode ~includes ~exclude_dirs ~testdirs =
   let expectation =
     if negative then Spectec.Task.Negative else Spectec.Task.Positive
   in
@@ -80,7 +84,7 @@ let run_p4_typecheck ~p4_old ~negative ~sl_mode ~includes ~exclude_dirs
     in
     run_with_task
       (module Targets_p4.P4.Typecheck_old)
-      ~sl_mode ~spec_files ~inputs ~exclude_dirs
+      ~mode ~spec_files ~inputs ~exclude_dirs
   else
     let spec_dir = repo_root ^ Targets_p4.P4.Target.spec_dir in
     let spec_files = Files.collect ~suffix:".spectec" spec_dir in
@@ -96,10 +100,10 @@ let run_p4_typecheck ~p4_old ~negative ~sl_mode ~includes ~exclude_dirs
     in
     run_with_task
       (module Targets_p4.P4.Typecheck)
-      ~sl_mode ~spec_files ~inputs ~exclude_dirs
+      ~mode ~spec_files ~inputs ~exclude_dirs
 
 (** Impty Typecheck test - per-variant spec dispatch *)
-let run_impty_typecheck ~variant ~negative ~sl_mode ~testdirs =
+let run_impty_typecheck ~variant ~negative ~mode ~testdirs =
   let expectation =
     if negative then Spectec.Task.Negative else Spectec.Task.Positive
   in
@@ -119,7 +123,7 @@ let run_impty_typecheck ~variant ~negative ~sl_mode ~testdirs =
   in
   run_with_task
     (module Targets_impty.Impty.Typecheck)
-    ~sl_mode ~spec_files ~inputs ~exclude_dirs:[]
+    ~mode ~spec_files ~inputs ~exclude_dirs:[]
 
 let command =
   Command.basic ~summary:"run interpreter typing test (IL or SL)"
@@ -140,15 +144,17 @@ let command =
         "VARIANT impty variant (base|closure|recursion); required with --impty"
   in
   fun () ->
+    let mode =
+      if sl_mode then Spectec.Interp_mode.Sl else Spectec.Interp_mode.Il
+    in
     if impty then
       let v =
         match variant with
         | Some v -> v
         | None -> failwith "--variant is required when using --impty"
       in
-      run_impty_typecheck ~variant:v ~negative ~sl_mode ~testdirs
+      run_impty_typecheck ~variant:v ~negative ~mode ~testdirs
     else
-      run_p4_typecheck ~p4_old ~negative ~sl_mode ~includes ~exclude_dirs
-        ~testdirs
+      run_p4_typecheck ~p4_old ~negative ~mode ~includes ~exclude_dirs ~testdirs
 
 let () = Command_unix.run command

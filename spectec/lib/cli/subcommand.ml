@@ -23,9 +23,7 @@ let make_task (module Tgt : Spectec.Target.S) ~name ~summary
     let open Core.Command.Let_syntax in
     let open Core.Command.Param in
     let%map cli_source = Cli_args.Spec.source_flag
-    and sl_mode = Cli_args.Interpreter.sl_mode_flag
-    (* Inline until the interpreter-mode refactor generalizes --sl/--pl. *)
-    and pl_mode = flag "--pl" no_arg ~doc:" use PL interpreter (default: IL)"
+    and mode = Cli_args.Interpreter.mode_flag
     and verbose = flag "-v" no_arg ~doc:" verbose output"
     and batch_mode = Cli_args.Batch.mode_flag
     and batch_dir = Cli_args.Batch.dir_flag
@@ -33,14 +31,12 @@ let make_task (module Tgt : Spectec.Target.S) ~name ~summary
     and config = Cli_args.Interpreter.config_flags
     and color = Cli_args.Output.color_flag in
     fun () ->
-      if sl_mode && pl_mode then failwith "--sl and --pl are mutually exclusive";
-      if pl_mode && batch_mode then failwith "--pl does not support --batch yet";
       guard_unit ~color
         ~suppress_trace:(Instrumentation.Config.has_handler config ~name:"tree")
       @@ fun () ->
       let ansi = resolve_ansi color in
       let open Spectec in
-      let* () = validate_config config ~sl_mode in
+      let* () = validate_config config ~mode in
       let* cfg = Config_file.load ~target:Tgt.name () in
       let source =
         resolve_source ~cli:cli_source ~config:cfg.Config_file.spec_source
@@ -48,20 +44,19 @@ let make_task (module Tgt : Spectec.Target.S) ~name ~summary
       in
       let* _files, spec_il, henv = load_spec source in
       match (batch_mode, batch_dir) with
-      | false, None when pl_mode ->
-          Batch.run_and_print_single_pl (module TC.Task) ~henv ~spec_il input
       | false, None ->
           Batch.run_and_print_single
             (module TC.Task)
-            ~config ~sl_mode ~spec_il input
+            ~config ~mode ~henv ~spec_il input
       | true, None ->
           Batch.run_and_print_batch
             (module TC.Task)
-            ~config ~ansi ~sl_mode ~spec_il ~verbose (TC.Task.collect ())
+            ~config ~ansi ~mode ~henv ~spec_il ~verbose (TC.Task.collect ())
       | _, Some dir ->
           Batch.run_and_print_batch
             (module TC.Task)
-            ~config ~ansi ~sl_mode ~spec_il ~verbose (TC.Task.collect ~dir ())
+            ~config ~ansi ~mode ~henv ~spec_il ~verbose
+            (TC.Task.collect ~dir ())
   in
   (name, cmd)
 
@@ -114,7 +109,7 @@ let make_batch (module Tgt : Spectec.Target.S) ~name
     @@
     let open Core.Command.Let_syntax in
     let open Core.Command.Param in
-    let%map sl_mode = Cli_args.Interpreter.sl_mode_flag
+    let%map mode = Cli_args.Interpreter.mode_flag
     and verbose = flag "-v" no_arg ~doc:" verbose: print progress for each test"
     and batch_dir = Cli_args.Batch.dir_flag
     and cli_source = Cli_args.Spec.source_flag
@@ -125,13 +120,13 @@ let make_batch (module Tgt : Spectec.Target.S) ~name
       guard_errors_only ~color @@ fun () ->
       let open Spectec in
       let ansi = resolve_ansi color in
-      let* () = validate_config config ~sl_mode in
+      let* () = validate_config config ~mode in
       let* cfg = Config_file.load ~target:Tgt.name () in
       let source =
         resolve_source ~cli:cli_source ~config:cfg.Config_file.spec_source
           ~default_dir:Tgt.spec_dir
       in
-      let* spec_files, spec_il, _henv = load_spec source in
+      let* spec_files, spec_il, henv = load_spec source in
       let batch_dir =
         match batch_dir with None -> cfg.Config_file.batch_dir | some -> some
       in
@@ -144,7 +139,7 @@ let make_batch (module Tgt : Spectec.Target.S) ~name
       in
       let* results =
         Batch.run_target ~config ?test_dir:batch_dir ~ansi ~checkpoint_config
-          ~verbose ~sl_mode ~spec_files spec_il packed_tasks
+          ~verbose ~mode ~henv ~spec_files spec_il packed_tasks
       in
       List.iter
         (fun Batch.{ task_name; summary; failures } ->

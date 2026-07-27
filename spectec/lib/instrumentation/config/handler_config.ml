@@ -1,6 +1,6 @@
 type t = {
   name : string;
-  mode : [ `IL | `SL | `Both ];
+  modes : [ `IL | `SL | `PL ] list;
   handler : (module Instrumentation_api.Handler.S);
   output : Instrumentation_api.Output.t;
 }

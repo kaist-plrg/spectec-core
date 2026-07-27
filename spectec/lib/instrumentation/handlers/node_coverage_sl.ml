@@ -270,7 +270,7 @@ let make cfg =
 
 module Spec : Instrumentation_spec.Spec.S = struct
   let name = "instruction-coverage"
-  let mode = `SL
+  let modes = [ `SL ]
 
   let params =
     [
@@ -297,7 +297,7 @@ module Spec : Instrumentation_spec.Spec.S = struct
         Some
           {
             Instrumentation_config.Handler_config.name;
-            mode;
+            modes;
             handler = make cfg;
             output;
           }

@@ -99,6 +99,7 @@ batch drops -p and adds the checkpoint-persistence flags:
                                . verbosity level (e.g., summary|full)
     [--instruction-coverage.output FILE]
                                . output destination file
+    [--pl]                     . use PL interpreter (default: IL)
     [--premise-coverage.level LEVEL]
                                . verbosity level (e.g., summary|full)
     [--premise-coverage.output FILE]

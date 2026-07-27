@@ -6,6 +6,7 @@
 module Error = Error
 module Task = Task
 module Target = Target
+module Interp_mode = Interp_mode
 module Diagnostic = Diag
 
 type 'a result = ('a, Error.t) Stdlib.result
@@ -66,55 +67,57 @@ let henv_with_il_spec henv spec_il = Pass.henv_with_il_spec henv spec_il
 let annotate ~henv spec_sl = Pass.annotate ~henv spec_sl
 let shorten spec_pl = Pass.shorten spec_pl
 
-let validate_config config ~sl_mode =
-  Instrumentation.Config.validate_mode config ~sl_mode
+let validate_config config ~(mode : Interp_mode.t) =
+  Instrumentation.Config.validate_mode config
+    ~mode:(match mode with Il -> `IL | Sl -> `SL | Pl -> `PL)
   |> Result.map_error (fun msg ->
          Error.ConfigError (Common.Source.no_region, msg))
 
 (* --- Unified interpreter entry point --- *)
 
-let eval_task (type i) (module T : Task.S with type input = i) ~sl_mode ~spec_il
-    (input : i) =
+let eval_task (type i) (module T : Task.S with type input = i)
+    ~(mode : Interp_mode.t) ~henv ~spec_il (input : i) =
   let* relation, values = T.parse_input ~spec:spec_il input in
+  let source = T.source input in
   T.Target.handler @@ fun () ->
-  if sl_mode then
-    let spec_sl = structure spec_il in
-    Interp.eval_sl (module T.Target) spec_sl relation values (T.source input)
-    |> Result.map snd
-    |> Result.map_error (fun e -> Error.InterpError e)
-  else
-    Interp.eval_il (module T.Target) spec_il relation values (T.source input)
-    |> Result.map snd
-    |> Result.map_error (fun e -> Error.InterpError e)
+  (match mode with
+  | Il ->
+      Interp.eval_il (module T.Target) spec_il relation values source
+      |> Result.map snd
+  | Sl ->
+      let spec_sl = structure spec_il in
+      Interp.eval_sl (module T.Target) spec_sl relation values source
+      |> Result.map snd
+  | Pl ->
+      let spec_pl = structure spec_il |> Pass.annotate ~henv |> Pass.shorten in
+      Interp.eval_pl (module T.Target) spec_pl relation values source
+      |> Result.map snd)
+  |> Result.map_error (fun e -> Error.InterpError e)
 
 let eval_task_with_instrumentation (type i)
     (module T : Task.S with type input = i)
-    ?(config = Instrumentation.Config.default) ~sl_mode ~spec_il (input : i) =
+    ?(config = Instrumentation.Config.default) ~(mode : Interp_mode.t) ~henv
+    ~spec_il (input : i) =
   let* relation, values = T.parse_input ~spec:spec_il input in
+  let source = T.source input in
   T.Target.handler @@ fun () ->
-  if sl_mode then
-    let spec_sl = structure spec_il in
-    Instrumentation.with_instrumentation config
-      (Instrumentation.Static.SlSpec spec_sl) (fun () ->
-        Interp.eval_sl
-          (module T.Target)
-          spec_sl relation values (T.source input)
-        |> Result.map snd
-        |> Result.map_error (fun e -> Error.InterpError e))
-  else
-    Instrumentation.with_instrumentation config
-      (Instrumentation.Static.IlSpec spec_il) (fun () ->
-        Interp.eval_il
-          (module T.Target)
-          spec_il relation values (T.source input)
-        |> Result.map snd
-        |> Result.map_error (fun e -> Error.InterpError e))
-
-let eval_task_pl (type i) (module T : Task.S with type input = i) ~henv ~spec_il
-    (input : i) =
-  let* relation, values = T.parse_input ~spec:spec_il input in
-  T.Target.handler @@ fun () ->
-  let spec_pl = Pass.structure spec_il |> Pass.annotate ~henv |> Pass.shorten in
-  Interp.eval_pl (module T.Target) spec_pl relation values (T.source input)
-  |> Result.map snd
+  (match mode with
+  | Il ->
+      Instrumentation.with_instrumentation config
+        (Instrumentation.Static.IlSpec spec_il) (fun () ->
+          Interp.eval_il (module T.Target) spec_il relation values source
+          |> Result.map snd)
+  | Sl ->
+      let spec_sl = structure spec_il in
+      Instrumentation.with_instrumentation config
+        (Instrumentation.Static.SlSpec spec_sl) (fun () ->
+          Interp.eval_sl (module T.Target) spec_sl relation values source
+          |> Result.map snd)
+  | Pl ->
+      let spec_sl = structure spec_il in
+      let spec_pl = Pass.annotate ~henv spec_sl |> Pass.shorten in
+      Instrumentation.with_instrumentation config
+        (Instrumentation.Static.SlSpec spec_sl) (fun () ->
+          Interp.eval_pl (module T.Target) spec_pl relation values source
+          |> Result.map snd))
   |> Result.map_error (fun e -> Error.InterpError e)

@@ -58,7 +58,8 @@ type 'i test_result = {
 val run_with_outcome_with_instrumentation :
   (module Spectec.Task.S with type input = 'i) ->
   ?config:Instrumentation.Config.t ->
-  sl_mode:bool ->
+  mode:Spectec.Interp_mode.t ->
+  henv:Hints.Henv.t ->
   spec_il:Lang.Il.spec ->
   'i ->
   Spectec.Task.test_outcome
@@ -69,7 +70,8 @@ val run_batch_with_outcomes :
   (module Spectec.Task.S with type input = 'i) ->
   ?config:Instrumentation.Config.t ->
   ansi:Spectec.Diagnostic.Ansi.t ->
-  sl_mode:bool ->
+  mode:Spectec.Interp_mode.t ->
+  henv:Hints.Henv.t ->
   spec_il:Lang.Il.spec ->
   ?verbose:bool ->
   'i list ->
@@ -105,15 +107,7 @@ val print_summary : batch_summary -> unit
 val run_and_print_single :
   (module Spectec.Task.S with type input = 'i) ->
   ?config:Instrumentation.Config.t ->
-  sl_mode:bool ->
-  spec_il:Lang.Il.spec ->
-  'i ->
-  (unit, Spectec.Error.t) result
-
-(** Single run through the PL interpreter. Instrumentation is not supported on
-    PL, so unlike {!run_and_print_single} this takes no config. *)
-val run_and_print_single_pl :
-  (module Spectec.Task.S with type input = 'i) ->
+  mode:Spectec.Interp_mode.t ->
   henv:Hints.Henv.t ->
   spec_il:Lang.Il.spec ->
   'i ->
@@ -123,7 +117,8 @@ val run_and_print_batch :
   (module Spectec.Task.S with type input = 'i) ->
   ?config:Instrumentation.Config.t ->
   ansi:Spectec.Diagnostic.Ansi.t ->
-  sl_mode:bool ->
+  mode:Spectec.Interp_mode.t ->
+  henv:Hints.Henv.t ->
   spec_il:Lang.Il.spec ->
   verbose:bool ->
   'i list ->
@@ -150,7 +145,8 @@ val run_target :
   ansi:Spectec.Diagnostic.Ansi.t ->
   checkpoint_config:Checkpoint.config ->
   verbose:bool ->
-  sl_mode:bool ->
+  mode:Spectec.Interp_mode.t ->
+  henv:Hints.Henv.t ->
   spec_files:string list ->
   Lang.Il.spec ->
   Spectec.Task.packed_task list ->

@@ -234,20 +234,21 @@ type 'i test_result = {
 
 let run_with_outcome_with_instrumentation (type i)
     (module T : Task.S with type input = i)
-    ?(config = Instrumentation.Config.default) ~sl_mode ~spec_il (input : i) =
+    ?(config = Instrumentation.Config.default) ~mode ~henv ~spec_il (input : i)
+    =
   let result =
     Spectec.eval_task_with_instrumentation
       (module T)
-      ~config ~sl_mode ~spec_il input
+      ~config ~mode ~henv ~spec_il input
   in
   Task.compute_outcome (T.expectation input) result
 
-let run_with_outcome (type i) (module T : Task.S with type input = i) ~sl_mode
-    ~spec_il (input : i) =
+let run_with_outcome (type i) (module T : Task.S with type input = i) ~mode
+    ~henv ~spec_il (input : i) =
   let test_case_id = T.source input in
   Instrumentation.Dispatcher.emit (Events.Test_start { test_case_id });
   let result =
-    try Spectec.eval_task (module T) ~sl_mode ~spec_il input
+    try Spectec.eval_task (module T) ~mode ~henv ~spec_il input
     with e ->
       Instrumentation.Dispatcher.emit (Events.Test_end { test_case_id });
       raise e
@@ -272,11 +273,11 @@ let print_outcome_tag ansi outcome =
        [ outcome_color outcome ]
        (outcome_label outcome))
 
-let run_one_input (type i) (module T : Task.S with type input = i) ~ansi
-    ~sl_mode ~spec_il ~verbose (input : i) =
+let run_one_input (type i) (module T : Task.S with type input = i) ~ansi ~mode
+    ~henv ~spec_il ~verbose (input : i) =
   let source = T.source input in
   let outcome =
-    try run_with_outcome (module T) ~sl_mode ~spec_il input
+    try run_with_outcome (module T) ~mode ~henv ~spec_il input
     with exn ->
       let error = UnhandledException (Printexc.to_string exn) in
       Task.compute_outcome (T.expectation input) (Error error)
@@ -354,7 +355,7 @@ let print_summary summary =
 (* --- Batch runner --- *)
 
 let run_batch_with_outcomes (type i) (module T : Task.S with type input = i)
-    ?(config = Instrumentation.Config.default) ~ansi ~sl_mode ~spec_il
+    ?(config = Instrumentation.Config.default) ~ansi ~mode ~henv ~spec_il
     ?(verbose = false) (inputs : i list) =
   let total = List.length inputs in
   Instrumentation.with_instrumentation config
@@ -364,28 +365,18 @@ let run_batch_with_outcomes (type i) (module T : Task.S with type input = i)
     (fun idx input ->
       if verbose then
         Format.printf "[%d/%d] %s... %!" (idx + 1) total (T.source input);
-      run_one_input (module T) ~ansi ~sl_mode ~spec_il ~verbose input)
+      run_one_input (module T) ~ansi ~mode ~henv ~spec_il ~verbose input)
     inputs
 
 (* --- Composed run + print --- *)
 
 let run_and_print_single (type i) (module T : Task.S with type input = i)
-    ?config ~sl_mode ~spec_il (input : i) =
+    ?config ~mode ~henv ~spec_il (input : i) =
   let outcome =
     run_with_outcome_with_instrumentation
       (module T)
-      ?config ~sl_mode ~spec_il input
+      ?config ~mode ~henv ~spec_il input
   in
-  match outcome with
-  | Task.Pass values | Task.UnexpectedPass values ->
-      Format.printf "%s\n" (T.format_output values);
-      Ok ()
-  | Task.Fail err | Task.ExpectedFail err -> Error err
-
-let run_and_print_single_pl (type i) (module T : Task.S with type input = i)
-    ~henv ~spec_il (input : i) =
-  let result = Spectec.eval_task_pl (module T) ~henv ~spec_il input in
-  let outcome = Task.compute_outcome (T.expectation input) result in
   match outcome with
   | Task.Pass values | Task.UnexpectedPass values ->
       Format.printf "%s\n" (T.format_output values);
@@ -400,14 +391,14 @@ let empty_inputs_error ?dir () =
        (match dir with Some dir -> " under " ^ dir | None -> ""))
 
 let run_and_print_batch (type i) (module T : Task.S with type input = i) ?config
-    ~ansi ~sl_mode ~spec_il ~verbose (inputs : i list) =
+    ~ansi ~mode ~henv ~spec_il ~verbose (inputs : i list) =
   match inputs with
   | [] -> Error (empty_inputs_error ())
   | _ ->
       let results =
         run_batch_with_outcomes
           (module T)
-          ?config ~ansi ~sl_mode ~spec_il ~verbose inputs
+          ?config ~ansi ~mode ~henv ~spec_il ~verbose inputs
       in
       if not verbose then
         List.iter
@@ -427,7 +418,7 @@ type task_result = {
 }
 
 let run_target ?(config = Instrumentation.Config.default) ?test_dir ~ansi
-    ~(checkpoint_config : Checkpoint.config) ~verbose ~sl_mode ~spec_files
+    ~(checkpoint_config : Checkpoint.config) ~verbose ~mode ~henv ~spec_files
     spec_il tasks =
   Instrumentation.with_instrumentation config
     (Instrumentation.Static.IlSpec spec_il)
@@ -480,7 +471,9 @@ let run_target ?(config = Instrumentation.Config.default) ?test_dir ~ansi
                   (completed_count + index + 1)
                   total_all (T.source input);
               let result =
-                run_one_input (module T) ~ansi ~sl_mode ~spec_il ~verbose input
+                run_one_input
+                  (module T)
+                  ~ansi ~mode ~henv ~spec_il ~verbose input
               in
               all_completed_inputs := result.source :: !all_completed_inputs;
               if (index + 1) mod checkpoint_config.save_interval = 0 then
