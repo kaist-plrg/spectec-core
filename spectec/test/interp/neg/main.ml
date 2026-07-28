@@ -14,13 +14,12 @@ let run spec_dir file =
   let spec_files = Test_lib.Files.collect ~suffix:".spectec" spec_dir in
   let* spec = Spectec.parse_spec_files spec_files in
   let* spec_il = Spectec.elaborate spec in
-  let henv = Spectec.henv_with_il_spec (Spectec.henv_of_el_spec spec) spec_il in
   let input =
     { Targets_impty.Impty.filename = file; expect = Spectec.Task.Negative }
   in
   Spectec.eval_task_with_instrumentation
     (module Targets_impty.Impty.Typecheck)
-    ~mode:Spectec.Interp_mode.Il ~henv ~spec_il input
+    ~mode:Spectec.Interp_mode.Il ~spec_il input
   |> Result.map ignore
 
 let () =

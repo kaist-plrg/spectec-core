@@ -74,7 +74,7 @@ val shorten : Pl.spec -> Pl.spec
 
 (** Validate instrumentation config against the current mode. *)
 val validate_config :
-  Instrumentation.Config.t -> mode:Interp_mode.t -> unit result
+  Instrumentation.Config.t -> mode:Interp_mode.request -> unit result
 
 (** {1 Unified interpreter entry point}
 
@@ -86,7 +86,6 @@ val validate_config :
 val eval_task :
   (module Task.S with type input = 'i) ->
   mode:Interp_mode.t ->
-  henv:Hints.Henv.t ->
   spec_il:Lang.Il.spec ->
   'i ->
   Lang.Il.Value.t list result
@@ -96,7 +95,6 @@ val eval_task_with_instrumentation :
   (module Task.S with type input = 'i) ->
   ?config:Instrumentation.Config.t ->
   mode:Interp_mode.t ->
-  henv:Hints.Henv.t ->
   spec_il:Lang.Il.spec ->
   'i ->
   Lang.Il.Value.t list result

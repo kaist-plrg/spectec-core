@@ -43,20 +43,20 @@ let make_task (module Tgt : Spectec.Target.S) ~name ~summary
           ~default_dir:Tgt.spec_dir
       in
       let* _files, spec_il, henv = load_spec source in
+      let mode = Interp_mode.resolve ~henv mode in
       match (batch_mode, batch_dir) with
       | false, None ->
           Batch.run_and_print_single
             (module TC.Task)
-            ~config ~mode ~henv ~spec_il input
+            ~config ~mode ~spec_il input
       | true, None ->
           Batch.run_and_print_batch
             (module TC.Task)
-            ~config ~ansi ~mode ~henv ~spec_il ~verbose (TC.Task.collect ())
+            ~config ~ansi ~mode ~spec_il ~verbose (TC.Task.collect ())
       | _, Some dir ->
           Batch.run_and_print_batch
             (module TC.Task)
-            ~config ~ansi ~mode ~henv ~spec_il ~verbose
-            (TC.Task.collect ~dir ())
+            ~config ~ansi ~mode ~spec_il ~verbose (TC.Task.collect ~dir ())
   in
   (name, cmd)
 
@@ -127,6 +127,7 @@ let make_batch (module Tgt : Spectec.Target.S) ~name
           ~default_dir:Tgt.spec_dir
       in
       let* spec_files, spec_il, henv = load_spec source in
+      let mode = Interp_mode.resolve ~henv mode in
       let batch_dir =
         match batch_dir with None -> cfg.Config_file.batch_dir | some -> some
       in
@@ -139,7 +140,7 @@ let make_batch (module Tgt : Spectec.Target.S) ~name
       in
       let* results =
         Batch.run_target ~config ?test_dir:batch_dir ~ansi ~checkpoint_config
-          ~verbose ~mode ~henv ~spec_files spec_il packed_tasks
+          ~verbose ~mode ~spec_files spec_il packed_tasks
       in
       List.iter
         (fun Batch.{ task_name; summary; failures } ->

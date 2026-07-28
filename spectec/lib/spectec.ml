@@ -67,16 +67,15 @@ let henv_with_il_spec henv spec_il = Pass.henv_with_il_spec henv spec_il
 let annotate ~henv spec_sl = Pass.annotate ~henv spec_sl
 let shorten spec_pl = Pass.shorten spec_pl
 
-let validate_config config ~(mode : Interp_mode.t) =
-  Instrumentation.Config.validate_mode config
-    ~mode:(match mode with Il -> `IL | Sl -> `SL | Pl -> `PL)
+let validate_config config ~(mode : Interp_mode.request) =
+  Instrumentation.Config.validate_mode config ~mode
   |> Result.map_error (fun msg ->
          Error.ConfigError (Common.Source.no_region, msg))
 
 (* --- Unified interpreter entry point --- *)
 
 let eval_task (type i) (module T : Task.S with type input = i)
-    ~(mode : Interp_mode.t) ~henv ~spec_il (input : i) =
+    ~(mode : Interp_mode.t) ~spec_il (input : i) =
   let* relation, values = T.parse_input ~spec:spec_il input in
   let source = T.source input in
   T.Target.handler @@ fun () ->
@@ -88,7 +87,7 @@ let eval_task (type i) (module T : Task.S with type input = i)
       let spec_sl = structure spec_il in
       Interp.eval_sl (module T.Target) spec_sl relation values source
       |> Result.map snd
-  | Pl ->
+  | Pl henv ->
       let spec_pl = structure spec_il |> Pass.annotate ~henv |> Pass.shorten in
       Interp.eval_pl (module T.Target) spec_pl relation values source
       |> Result.map snd)
@@ -96,8 +95,8 @@ let eval_task (type i) (module T : Task.S with type input = i)
 
 let eval_task_with_instrumentation (type i)
     (module T : Task.S with type input = i)
-    ?(config = Instrumentation.Config.default) ~(mode : Interp_mode.t) ~henv
-    ~spec_il (input : i) =
+    ?(config = Instrumentation.Config.default) ~(mode : Interp_mode.t) ~spec_il
+    (input : i) =
   let* relation, values = T.parse_input ~spec:spec_il input in
   let source = T.source input in
   T.Target.handler @@ fun () ->
@@ -113,7 +112,7 @@ let eval_task_with_instrumentation (type i)
         (Instrumentation.Static.SlSpec spec_sl) (fun () ->
           Interp.eval_sl (module T.Target) spec_sl relation values source
           |> Result.map snd)
-  | Pl ->
+  | Pl henv ->
       let spec_sl = structure spec_il in
       let spec_pl = Pass.annotate ~henv spec_sl |> Pass.shorten in
       Instrumentation.with_instrumentation config

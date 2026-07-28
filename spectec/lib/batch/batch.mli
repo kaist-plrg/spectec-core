@@ -59,7 +59,6 @@ val run_with_outcome_with_instrumentation :
   (module Spectec.Task.S with type input = 'i) ->
   ?config:Instrumentation.Config.t ->
   mode:Spectec.Interp_mode.t ->
-  henv:Hints.Henv.t ->
   spec_il:Lang.Il.spec ->
   'i ->
   Spectec.Task.test_outcome
@@ -71,7 +70,6 @@ val run_batch_with_outcomes :
   ?config:Instrumentation.Config.t ->
   ansi:Spectec.Diagnostic.Ansi.t ->
   mode:Spectec.Interp_mode.t ->
-  henv:Hints.Henv.t ->
   spec_il:Lang.Il.spec ->
   ?verbose:bool ->
   'i list ->
@@ -108,7 +106,6 @@ val run_and_print_single :
   (module Spectec.Task.S with type input = 'i) ->
   ?config:Instrumentation.Config.t ->
   mode:Spectec.Interp_mode.t ->
-  henv:Hints.Henv.t ->
   spec_il:Lang.Il.spec ->
   'i ->
   (unit, Spectec.Error.t) result
@@ -118,7 +115,6 @@ val run_and_print_batch :
   ?config:Instrumentation.Config.t ->
   ansi:Spectec.Diagnostic.Ansi.t ->
   mode:Spectec.Interp_mode.t ->
-  henv:Hints.Henv.t ->
   spec_il:Lang.Il.spec ->
   verbose:bool ->
   'i list ->
@@ -146,7 +142,6 @@ val run_target :
   checkpoint_config:Checkpoint.config ->
   verbose:bool ->
   mode:Spectec.Interp_mode.t ->
-  henv:Hints.Henv.t ->
   spec_files:string list ->
   Lang.Il.spec ->
   Spectec.Task.packed_task list ->

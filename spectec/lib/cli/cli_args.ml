@@ -85,15 +85,15 @@ end
 
 (** Interpreter selection and instrumentation. *)
 module Interpreter = struct
-  let mode_flag : Spectec.Interp_mode.t Core.Command.Param.t =
+  let mode_flag : Spectec.Interp_mode.request Core.Command.Param.t =
     let open Core.Command.Let_syntax in
     let open Core.Command.Param in
     let%map sl = flag "--sl" no_arg ~doc:" use SL interpreter (default: IL)"
     and pl = flag "--pl" no_arg ~doc:" use PL interpreter (default: IL)" in
     match (sl, pl) with
-    | false, false -> Spectec.Interp_mode.Il
-    | true, false -> Spectec.Interp_mode.Sl
-    | false, true -> Spectec.Interp_mode.Pl
+    | false, false -> `IL
+    | true, false -> `SL
+    | false, true -> `PL
     | true, true -> failwith "--sl and --pl are mutually exclusive"
 
   (* One Param.t for one typed handler spec — maps each declared param to a
