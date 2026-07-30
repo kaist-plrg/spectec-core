@@ -11,4 +11,7 @@ let resolve ~henv : request -> t = function
   | `SL -> Sl
   | `PL -> Pl henv
 
-let to_string = function Il -> "IL" | Sl -> "SL" | Pl _ -> "PL"
+let to_string : request -> string = function
+  | `IL -> "IL"
+  | `SL -> "SL"
+  | `PL -> "PL"
