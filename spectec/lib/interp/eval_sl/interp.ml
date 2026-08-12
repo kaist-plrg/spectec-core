@@ -105,13 +105,13 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
            (Lang.Sl.Print.string_of_value ~short:true value))
 
 and assign_exps (ctx : Ctx.t) (exps : exp list) (values : value list) : Ctx.t =
-  check
+  let region = over_region (List.map at exps) in
+  checkf
     (List.length exps = List.length values)
-    (over_region (List.map at exps))
-    (F.asprintf
-       "mismatch in number of expressions and values while assigning, expected \
-        %d value(s) but got %d"
-       (List.length exps) (List.length values));
+    region
+    "mismatch in number of expressions and values while assigning, expected %d \
+     value(s) but got %d"
+    (List.length exps) (List.length values);
   List.fold_left2 assign_exp ctx exps values
 
 (* Assigning a value to an argument *)
@@ -136,13 +136,13 @@ and assign_arg (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (arg : arg)
 
 and assign_args (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (args : arg list)
     (values : value list) : Ctx.t =
-  check
+  let region = over_region (List.map at args) in
+  checkf
     (List.length args = List.length values)
-    (over_region (List.map at args))
-    (F.asprintf
-       "mismatch in number of arguments and values while assigning, expected \
-        %d value(s) but got %d"
-       (List.length args) (List.length values));
+    region
+    "mismatch in number of arguments and values while assigning, expected %d \
+     value(s) but got %d"
+    (List.length args) (List.length values);
   List.fold_left2 (assign_arg ctx_caller) ctx_callee args values
 
 (* Type coercion and subtyping *)
@@ -1345,7 +1345,7 @@ and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
     (Events.Rel_enter { id = id.it; at = id.at; inputs = values_input });
   let mode, block, elseblock_opt = Ctx.find_rel Local ctx id in
   let exps_input = Lang.Il.Mode.inputs mode in
-  check
+  checkf
     (block <> [] || Option.is_some elseblock_opt)
     id.at "relation has no instructions";
   let attempt_rules () =
@@ -1412,7 +1412,7 @@ and invoke_func (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
   (* User-defined function invocation *)
   let invoke_func_def tparams args_input block elseblock_opt =
     let ctx_local = Ctx.localize ctx in
-    check
+    checkf
       (List.length targs = List.length tparams)
       id.at "arity mismatch in type arguments";
     let targs =
@@ -1470,14 +1470,13 @@ and invoke_func (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
       let _, v =
         match Ctx.find_func_opt Local ctx id with
         | Some Ctx.Func.Builtin ->
-            check
+            checkf
               (ctx.builtins.is_builtin id)
-              id.at
-              (F.asprintf
-                 "builtin $%s is declared in the spec but not implemented" id.it);
+              id.at "builtin $%s is declared in the spec but not implemented"
+              id.it;
             invoke_func_builtin ()
         | Some (Ctx.Func.Defined (tparams, args_input, block, elseblock_opt)) ->
-            check
+            checkf
               (block <> [] || Option.is_some elseblock_opt)
               id.at "function has no instructions";
             invoke_func_def tparams args_input block elseblock_opt

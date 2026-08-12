@@ -31,8 +31,12 @@ let unwrap_builtin (result : 'a Builtins.result) : 'a =
 
 (* Check *)
 
-let check (b : bool) (at : region) (msg : string) : unit =
-  if not b then error at msg
+(* On the success path [ifprintf] walks the format without building the
+   message, so it is rendered only when a check fails. *)
+let null_ppf = Format.make_formatter (fun _ _ _ -> ()) ignore
 
-let check_warn (b : bool) (at : region) (msg : string) : unit =
-  if not b then warn at msg
+let checkf (b : bool) (at : region) fmt =
+  if b then Format.ifprintf null_ppf fmt else Format.kasprintf (error at) fmt
+
+let check_warnf (b : bool) (at : region) fmt =
+  if b then Format.ifprintf null_ppf fmt else Format.kasprintf (warn at) fmt
