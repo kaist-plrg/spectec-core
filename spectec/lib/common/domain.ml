@@ -61,7 +61,7 @@ module Id = struct
   type t = string phrase
 
   let to_string t = t.it
-  let compare t_a t_b = compare t_a.it t_b.it
+  let compare t_a t_b = String.compare t_a.it t_b.it
 end
 
 module IdSet = struct
