@@ -42,8 +42,11 @@ let eq_mixop (mf_a : 'a t) (mf_b : 'b t) : bool = compare_mixop mf_a mf_b = 0
 
 (* Projections *)
 
-let args (mf : 'a t) : 'a list =
-  List.filter_map (function Arg a -> Some a | Atom _ -> None) mf
+let rec args (mf : 'a t) : 'a list =
+  match mf with
+  | [] -> []
+  | Arg a :: rest -> a :: args rest
+  | Atom _ :: rest -> args rest
 
 let atoms (mf : 'a t) : atom list =
   List.filter_map (function Atom a -> Some a | Arg _ -> None) mf
