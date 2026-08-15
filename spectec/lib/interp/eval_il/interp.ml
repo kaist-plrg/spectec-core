@@ -95,13 +95,13 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
            (Print.string_of_value ~short:true value))
 
 and assign_exps (ctx : Ctx.t) (exps : exp list) (values : value list) : Ctx.t =
-  check
+  let region = over_region (List.map at exps) in
+  checkf
     (List.length exps = List.length values)
-    (over_region (List.map at exps))
-    (F.asprintf
-       "mismatch in number of expressions and values while assigning, expected \
-        %d value(s) but got %d"
-       (List.length exps) (List.length values));
+    region
+    "mismatch in number of expressions and values while assigning, expected %d \
+     value(s) but got %d"
+    (List.length exps) (List.length values);
   List.fold_left2 assign_exp ctx exps values
 
 (* Assigning a value to an argument *)
@@ -126,13 +126,13 @@ and assign_arg (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (arg : arg)
 
 and assign_args (ctx_caller : Ctx.t) (ctx_callee : Ctx.t) (args : arg list)
     (values : value list) : Ctx.t =
-  check
+  let region = over_region (List.map at args) in
+  checkf
     (List.length args = List.length values)
-    (over_region (List.map at args))
-    (F.asprintf
-       "mismatch in number of arguments and values while assigning, expected \
-        %d value(s) but got %d"
-       (List.length args) (List.length values));
+    region
+    "mismatch in number of arguments and values while assigning, expected %d \
+     value(s) but got %d"
+    (List.length args) (List.length values);
   List.fold_left2 (assign_arg ctx_caller) ctx_callee args values
 
 (* Type coercion and subtyping *)
@@ -1108,7 +1108,7 @@ and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
     let exps_input, exps_output =
       Mode.partition reltyp.it (Mixfix.args concl)
     in
-    check
+    checkf
       (List.length exps_input = List.length values_input)
       rule.at "arity mismatch in rule";
     let ctx = assign_exps ctx exps_input values_input in
@@ -1117,7 +1117,7 @@ and invoke_rel (ctx : Ctx.t) (id : id) (values_input : value list) :
   let reltyp, rules = Ctx.find_rel ctx id in
   (* Main invocation logic *)
   let invoke_rel' () =
-    check_warn (rules <> []) id.at "relation has no rules";
+    check_warnf (rules <> []) id.at "relation has no rules";
     (* Apply the first matching rule *)
     let attempt_rules () =
       let attempt_rules' =
@@ -1193,7 +1193,7 @@ and invoke_func (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
   (* Clause matching *)
   let match_clause ctx_caller ctx_callee clause values_input =
     let { args = args_input; body = exp_output; prems } = clause.it in
-    check
+    checkf
       (List.length args_input = List.length values_input)
       clause.at "arity mismatch while matching clause";
     let ctx = assign_args ctx_caller ctx_callee args_input values_input in
@@ -1251,7 +1251,7 @@ and invoke_func (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
               (* Create a subtrace for the clause *)
               let ctx_local = Ctx.localize ctx in
               (* Add type arguments to the context *)
-              check
+              checkf
                 (List.length targs = List.length tparams)
                 id.at "arity mismatch in type arguments";
               let typdef_bindings =
@@ -1295,14 +1295,13 @@ and invoke_func (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
       let* _, value_output =
         match Ctx.find_func_opt ctx id with
         | Some (_, Ctx.Func.Builtin) ->
-            check
+            checkf
               (ctx.builtins.is_builtin id)
-              id.at
-              (F.asprintf
-                 "builtin $%s is declared in the spec but not implemented" id.it);
+              id.at "builtin $%s is declared in the spec but not implemented"
+              id.it;
             invoke_func_builtin ()
         | Some (_, Ctx.Func.Defined (tparams, clauses)) ->
-            check_warn (clauses <> []) id.at "function has no clauses";
+            check_warnf (clauses <> []) id.at "function has no clauses";
             invoke_func_def tparams clauses
         | None ->
             if ctx.builtins.is_builtin id then (

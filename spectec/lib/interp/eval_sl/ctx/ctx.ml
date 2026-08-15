@@ -243,7 +243,7 @@ let transpose (value_matrix : value list list) : value list list =
   | [] -> []
   | row :: rows ->
       let width = List.length (List.hd value_matrix) in
-      check
+      checkf
         (List.for_all
            (fun value_row -> List.length value_row = width)
            value_matrix)

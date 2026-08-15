@@ -4,6 +4,9 @@ open Common.Source
 type t = value
 
 let rec compare (value_l : t) (value_r : t) =
+  if value_l == value_r then 0 else compare_struct value_l value_r
+
+and compare_struct (value_l : t) (value_r : t) =
   let tag (value : t) =
     match value.it with
     | BoolV _ -> 0

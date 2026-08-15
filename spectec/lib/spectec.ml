@@ -50,7 +50,17 @@ let parse_spec_sources sources =
 let elaborate spec_el =
   Pass.elaborate spec_el |> Result.map_error (fun e -> Error.PassError e)
 
-let structure spec_il = Pass.structure spec_il
+(* Structuring depends only on the spec, so caching on its identity is sound. *)
+let structure =
+  let cache = ref None in
+  fun spec_il ->
+    match !cache with
+    | Some (spec_il', spec_sl) when spec_il' == spec_il -> spec_sl
+    | _ ->
+        let spec_sl = Pass.structure spec_il in
+        cache := Some (spec_il, spec_sl);
+        spec_sl
+
 let henv_of_el_spec spec_el = Pass.henv_of_el_spec spec_el
 let henv_with_il_spec henv spec_il = Pass.henv_with_il_spec henv spec_il
 let annotate ~henv spec_sl = Pass.annotate ~henv spec_sl
@@ -68,7 +78,7 @@ let eval_task (type i) (module T : Task.S with type input = i) ~sl_mode ~spec_il
   let* relation, values = T.parse_input ~spec:spec_il input in
   T.Target.handler @@ fun () ->
   if sl_mode then
-    let spec_sl = Pass.structure spec_il in
+    let spec_sl = structure spec_il in
     Interp.eval_sl (module T.Target) spec_sl relation values (T.source input)
     |> Result.map snd
     |> Result.map_error (fun e -> Error.InterpError e)
@@ -83,7 +93,7 @@ let eval_task_with_instrumentation (type i)
   let* relation, values = T.parse_input ~spec:spec_il input in
   T.Target.handler @@ fun () ->
   if sl_mode then
-    let spec_sl = Pass.structure spec_il in
+    let spec_sl = structure spec_il in
     Instrumentation.with_instrumentation config
       (Instrumentation.Static.SlSpec spec_sl) (fun () ->
         Interp.eval_sl
