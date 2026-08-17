@@ -1,6 +1,7 @@
 open Common.Source
 module Sl = Lang.Sl
 module Il = Lang.Il
+module Expand = Expand
 module Linearize = Linearize
 module Shorthand = Shorthand
 

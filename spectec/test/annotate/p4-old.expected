@@ -11,7 +11,8 @@ xref:concat_text[$concat_text(text^{asterisk}^)]
 . If ``text^{asterisk}^`` matches pattern ``[]``:
  .. Return ``""``.
 . Else:
- .. Return ``t~h~`` concatenated with ``xref:concat_text[$concat_text(t~t~^{asterisk}^)]``.
+ .. Let ``text'`` be ``xref:concat_text[$concat_text(t~t~^{asterisk}^)]``.
+ .. Return ``t~h~`` concatenated with ``text'``.
 
 xref:strip_prefix[$strip_prefix(text, text')]
 
@@ -25,7 +26,10 @@ xref:init_[$init_(nat')]
 
 . Otherwise:
  .. Otherwise:
-  ... Return ``nat' - 1 {two-colons} xref:init_[$init_(nat' - 1)]``.
+  ... Try:
+   .... {empty}
+    ..... Let ``nat^{asterisk}^`` be ``xref:init_[$init_(nat' - 1)]``.
+    ..... Return ``nat' - 1 {two-colons} nat^{asterisk}^``.
 
 xref:repeat_[$repeat_<X>(X, nat')]
 
@@ -35,7 +39,10 @@ xref:repeat_[$repeat_<X>(X, nat')]
 
 . Otherwise:
  .. Otherwise:
-  ... Return ``X`` concatenated with ``xref:repeat_[$repeat_<X>(X, nat' - 1)]``.
+  ... Try:
+   .... {empty}
+    ..... Let ``X'^{asterisk}^`` be ``xref:repeat_[$repeat_<X>(X, nat' - 1)]``.
+    ..... Return ``X`` concatenated with ``X'^{asterisk}^``.
 
 xref:rev_[$rev_<X>(X^{asterisk}^)]
 
@@ -95,7 +102,8 @@ xref:flatten_nameList[$flatten_nameList(nameList'')]
  .. {empty}
   ... Let!~type~ ``nameList +,+ name`` be ``nameList''``.
 
-  ... Return ``xref:flatten_nameList[$flatten_nameList(nameList)]`` concatenated with ``name``.
+  ... Let ``name'^{asterisk}^`` be ``xref:flatten_nameList[$flatten_nameList(nameList)]``.
+  ... Return ``name'^{asterisk}^`` concatenated with ``name``.
 
 xref:flatten_typeParameterList[$flatten_typeParameterList(typeParameterList'')]
 
@@ -107,7 +115,8 @@ xref:flatten_typeParameterList[$flatten_typeParameterList(typeParameterList'')]
  .. {empty}
   ... Let!~type~ ``typeParameterList +,+ typeParameter`` be ``typeParameterList''``.
 
-  ... Return ``xref:flatten_typeParameterList[$flatten_typeParameterList(typeParameterList)]`` concatenated with ``typeParameter``.
+  ... Let ``typeParameter'^{asterisk}^`` be ``xref:flatten_typeParameterList[$flatten_typeParameterList(typeParameterList)]``.
+  ... Return ``typeParameter'^{asterisk}^`` concatenated with ``typeParameter``.
 
 xref:flatten_typeParameterListOpt[$flatten_typeParameterListOpt(typeParameterListOpt)]
 
@@ -132,7 +141,8 @@ xref:flatten_parameterList[$flatten_parameterList(parameterList)]
 
   ... Let!~type~ ``nonEmptyParameterList +,+ parameter`` be ``nonEmptyParameterList'``.
 
-  ... Return ``xref:flatten_parameterList[$flatten_parameterList(nonEmptyParameterList)]`` concatenated with ``parameter``.
+  ... Let ``parameter'^{asterisk}^`` be ``xref:flatten_parameterList[$flatten_parameterList(nonEmptyParameterList)]``.
+  ... Return ``parameter'^{asterisk}^`` concatenated with ``parameter``.
 
 xref:flatten_constructorParameterListOpt[$flatten_constructorParameterListOpt(constructorParameterListOpt)]
 
@@ -151,7 +161,8 @@ xref:flatten_namedExpressionList[$flatten_namedExpressionList(namedExpressionLis
  .. {empty}
   ... Let!~type~ ``namedExpressionList +,+ namedExpression`` be ``namedExpressionList''``.
 
-  ... Return ``xref:flatten_namedExpressionList[$flatten_namedExpressionList(namedExpressionList)]`` concatenated with ``namedExpression``.
+  ... Let ``namedExpression'^{asterisk}^`` be ``xref:flatten_namedExpressionList[$flatten_namedExpressionList(namedExpressionList)]``.
+  ... Return ``namedExpression'^{asterisk}^`` concatenated with ``namedExpression``.
 
 xref:flatten_expressionList[$flatten_expressionList(expressionList'')]
 
@@ -160,7 +171,8 @@ xref:flatten_expressionList[$flatten_expressionList(expressionList'')]
   ... If ``expressionList''`` matches pattern ````:
    .... Return ``·``.
   ... Else if let ``expressionList +,+ expression`` be ``expressionList''``:
-   .... Return ``xref:flatten_expressionList[$flatten_expressionList(expressionList)]`` concatenated with ``expression``.
+   .... Let ``expression'^{asterisk}^`` be ``xref:flatten_expressionList[$flatten_expressionList(expressionList)]``.
+   .... Return ``expression'^{asterisk}^`` concatenated with ``expression``.
  .. {empty}
   ... Let!~type~ ``expression`` be ``expressionList''``.
 
@@ -220,7 +232,8 @@ xref:flatten_simpleKeysetExpressionList[$flatten_simpleKeysetExpressionList(simp
  .. {empty}
   ... Let!~type~ ``simpleKeysetExpressionList +,+ simpleKeysetExpression`` be ``simpleKeysetExpressionList''``.
 
-  ... Return ``xref:flatten_simpleKeysetExpressionList[$flatten_simpleKeysetExpressionList(simpleKeysetExpressionList)]`` concatenated with ``simpleKeysetExpression``.
+  ... Let ``simpleKeysetExpression'^{asterisk}^`` be ``xref:flatten_simpleKeysetExpressionList[$flatten_simpleKeysetExpressionList(simpleKeysetExpressionList)]``.
+  ... Return ``simpleKeysetExpression'^{asterisk}^`` concatenated with ``simpleKeysetExpression``.
 
 xref:flatten_realTypeArgumentList[$flatten_realTypeArgumentList(realTypeArgumentList'')]
 
@@ -232,7 +245,8 @@ xref:flatten_realTypeArgumentList[$flatten_realTypeArgumentList(realTypeArgument
  .. {empty}
   ... Let!~type~ ``realTypeArgumentList +,+ realTypeArgument`` be ``realTypeArgumentList''``.
 
-  ... Return ``xref:flatten_realTypeArgumentList[$flatten_realTypeArgumentList(realTypeArgumentList)]`` concatenated with ``realTypeArgument``.
+  ... Let ``realTypeArgument'^{asterisk}^`` be ``xref:flatten_realTypeArgumentList[$flatten_realTypeArgumentList(realTypeArgumentList)]``.
+  ... Return ``realTypeArgument'^{asterisk}^`` concatenated with ``realTypeArgument``.
 
 xref:flatten_typeArgumentList[$flatten_typeArgumentList(typeArgumentList'')]
 
@@ -241,7 +255,8 @@ xref:flatten_typeArgumentList[$flatten_typeArgumentList(typeArgumentList'')]
   ... If ``typeArgumentList''`` matches pattern ````:
    .... Return ``·``.
   ... Else if let ``typeArgumentList +,+ typeArgument`` be ``typeArgumentList''``:
-   .... Return ``xref:flatten_typeArgumentList[$flatten_typeArgumentList(typeArgumentList)]`` concatenated with ``typeArgument``.
+   .... Let ``typeArgument'^{asterisk}^`` be ``xref:flatten_typeArgumentList[$flatten_typeArgumentList(typeArgumentList)]``.
+   .... Return ``typeArgument'^{asterisk}^`` concatenated with ``typeArgument``.
  .. {empty}
   ... Let!~type~ ``typeArgument`` be ``typeArgumentList''``.
 
@@ -263,56 +278,64 @@ xref:flatten_argumentList[$flatten_argumentList(argumentList)]
 
   ... Let!~type~ ``argumentListNonEmpty +,+ argument`` be ``argumentListNonEmpty'``.
 
-  ... Return ``xref:flatten_argumentList[$flatten_argumentList(argumentListNonEmpty)]`` concatenated with ``argument``.
+  ... Let ``argument'^{asterisk}^`` be ``xref:flatten_argumentList[$flatten_argumentList(argumentListNonEmpty)]``.
+  ... Return ``argument'^{asterisk}^`` concatenated with ``argument``.
 
 xref:flatten_switchCaseList[$flatten_switchCaseList(switchCaseList'')]
 
 . If ``switchCaseList''`` matches pattern ````:
  .. Return ``·``.
 . Else:
- .. Return ``xref:flatten_switchCaseList[$flatten_switchCaseList(switchCaseList)]`` concatenated with ``switchCase``.
+ .. Let ``switchCase'^{asterisk}^`` be ``xref:flatten_switchCaseList[$flatten_switchCaseList(switchCaseList)]``.
+ .. Return ``switchCase'^{asterisk}^`` concatenated with ``switchCase``.
 
 xref:flatten_blockElementStatementList[$flatten_blockElementStatementList(blockElementStatementList'')]
 
 . If ``blockElementStatementList''`` matches pattern ````:
  .. Return ``·``.
 . Else:
- .. Return ``xref:flatten_blockElementStatementList[$flatten_blockElementStatementList(blockElementStatementList)]`` concatenated with ``blockElementStatement``.
+ .. Let ``blockElementStatement'^{asterisk}^`` be ``xref:flatten_blockElementStatementList[$flatten_blockElementStatementList(blockElementStatementList)]``.
+ .. Return ``blockElementStatement'^{asterisk}^`` concatenated with ``blockElementStatement``.
 
 xref:flatten_objectDeclarationList[$flatten_objectDeclarationList(objectDeclarationList'')]
 
 . If ``objectDeclarationList''`` matches pattern ````:
  .. Return ``·``.
 . Else:
- .. Return ``xref:flatten_objectDeclarationList[$flatten_objectDeclarationList(objectDeclarationList)]`` concatenated with ``objectDeclaration``.
+ .. Let ``objectDeclaration'^{asterisk}^`` be ``xref:flatten_objectDeclarationList[$flatten_objectDeclarationList(objectDeclarationList)]``.
+ .. Return ``objectDeclaration'^{asterisk}^`` concatenated with ``objectDeclaration``.
 
 xref:flatten_typeFieldList[$flatten_typeFieldList(typeFieldList'')]
 
 . If ``typeFieldList''`` matches pattern ````:
  .. Return ``·``.
 . Else:
- .. Return ``xref:flatten_typeFieldList[$flatten_typeFieldList(typeFieldList)]`` concatenated with ``typeField``.
+ .. Let ``typeField'^{asterisk}^`` be ``xref:flatten_typeFieldList[$flatten_typeFieldList(typeFieldList)]``.
+ .. Return ``typeField'^{asterisk}^`` concatenated with ``typeField``.
 
 xref:flatten_methodPrototypeList[$flatten_methodPrototypeList(methodPrototypeList'')]
 
 . If ``methodPrototypeList''`` matches pattern ````:
  .. Return ``·``.
 . Else:
- .. Return ``xref:flatten_methodPrototypeList[$flatten_methodPrototypeList(methodPrototypeList)]`` concatenated with ``methodPrototype``.
+ .. Let ``methodPrototype'^{asterisk}^`` be ``xref:flatten_methodPrototypeList[$flatten_methodPrototypeList(methodPrototypeList)]``.
+ .. Return ``methodPrototype'^{asterisk}^`` concatenated with ``methodPrototype``.
 
 xref:flatten_selectCaseList[$flatten_selectCaseList(selectCaseList'')]
 
 . If ``selectCaseList''`` matches pattern ````:
  .. Return ``·``.
 . Else:
- .. Return ``xref:flatten_selectCaseList[$flatten_selectCaseList(selectCaseList)]`` concatenated with ``selectCase``.
+ .. Let ``selectCase'^{asterisk}^`` be ``xref:flatten_selectCaseList[$flatten_selectCaseList(selectCaseList)]``.
+ .. Return ``selectCase'^{asterisk}^`` concatenated with ``selectCase``.
 
 xref:flatten_parserStatementList[$flatten_parserStatementList(parserStatementList'')]
 
 . If ``parserStatementList''`` matches pattern ````:
  .. Return ``·``.
 . Else:
- .. Return ``xref:flatten_parserStatementList[$flatten_parserStatementList(parserStatementList)]`` concatenated with ``parserStatement``.
+ .. Let ``parserStatement'^{asterisk}^`` be ``xref:flatten_parserStatementList[$flatten_parserStatementList(parserStatementList)]``.
+ .. Return ``parserStatement'^{asterisk}^`` concatenated with ``parserStatement``.
 
 xref:flatten_parserStateList[$flatten_parserStateList(parserStateList'')]
 
@@ -324,14 +347,16 @@ xref:flatten_parserStateList[$flatten_parserStateList(parserStateList'')]
  .. {empty}
   ... Let!~type~ ``parserStateList parserState`` be ``parserStateList''``.
 
-  ... Return ``xref:flatten_parserStateList[$flatten_parserStateList(parserStateList)]`` concatenated with ``parserState``.
+  ... Let ``parserState'^{asterisk}^`` be ``xref:flatten_parserStateList[$flatten_parserStateList(parserStateList)]``.
+  ... Return ``parserState'^{asterisk}^`` concatenated with ``parserState``.
 
 xref:flatten_parserLocalDeclarationList[$flatten_parserLocalDeclarationList(parserLocalDeclarationList'')]
 
 . If ``parserLocalDeclarationList''`` matches pattern ````:
  .. Return ``·``.
 . Else:
- .. Return ``xref:flatten_parserLocalDeclarationList[$flatten_parserLocalDeclarationList(parserLocalDeclarationList)]`` concatenated with ``parserLocalDeclaration``.
+ .. Let ``parserLocalDeclaration'^{asterisk}^`` be ``xref:flatten_parserLocalDeclarationList[$flatten_parserLocalDeclarationList(parserLocalDeclarationList)]``.
+ .. Return ``parserLocalDeclaration'^{asterisk}^`` concatenated with ``parserLocalDeclaration``.
 
 xref:flatten_constOpt[$flatten_constOpt(constOpt)]
 
@@ -350,42 +375,48 @@ xref:flatten_tableKeyList[$flatten_tableKeyList(tableKeyList'')]
 . If ``tableKeyList''`` matches pattern ````:
  .. Return ``·``.
 . Else:
- .. Return ``xref:flatten_tableKeyList[$flatten_tableKeyList(tableKeyList)]`` concatenated with ``tableKey``.
+ .. Let ``tableKey'^{asterisk}^`` be ``xref:flatten_tableKeyList[$flatten_tableKeyList(tableKeyList)]``.
+ .. Return ``tableKey'^{asterisk}^`` concatenated with ``tableKey``.
 
 xref:flatten_tableActionList[$flatten_tableActionList(tableActionList'')]
 
 . If ``tableActionList''`` matches pattern ````:
  .. Return ``·``.
 . Else:
- .. Return ``xref:flatten_tableActionList[$flatten_tableActionList(tableActionList)]`` concatenated with ``tableAction``.
+ .. Let ``tableAction'^{asterisk}^`` be ``xref:flatten_tableActionList[$flatten_tableActionList(tableActionList)]``.
+ .. Return ``tableAction'^{asterisk}^`` concatenated with ``tableAction``.
 
 xref:flatten_tableEntryList[$flatten_tableEntryList(tableEntryList'')]
 
 . If ``tableEntryList''`` matches pattern ````:
  .. Return ``·``.
 . Else:
- .. Return ``xref:flatten_tableEntryList[$flatten_tableEntryList(tableEntryList)]`` concatenated with ``tableEntry``.
+ .. Let ``tableEntry'^{asterisk}^`` be ``xref:flatten_tableEntryList[$flatten_tableEntryList(tableEntryList)]``.
+ .. Return ``tableEntry'^{asterisk}^`` concatenated with ``tableEntry``.
 
 xref:flatten_tablePropertyList[$flatten_tablePropertyList(tablePropertyList'')]
 
 . If ``tablePropertyList''`` matches pattern ````:
  .. Return ``·``.
 . Else:
- .. Return ``xref:flatten_tablePropertyList[$flatten_tablePropertyList(tablePropertyList)]`` concatenated with ``tableProperty``.
+ .. Let ``tableProperty'^{asterisk}^`` be ``xref:flatten_tablePropertyList[$flatten_tablePropertyList(tablePropertyList)]``.
+ .. Return ``tableProperty'^{asterisk}^`` concatenated with ``tableProperty``.
 
 xref:flatten_controlLocalDeclarationList[$flatten_controlLocalDeclarationList(controlLocalDeclarationList'')]
 
 . If ``controlLocalDeclarationList''`` matches pattern ````:
  .. Return ``·``.
 . Else:
- .. Return ``xref:flatten_controlLocalDeclarationList[$flatten_controlLocalDeclarationList(controlLocalDeclarationList)]`` concatenated with ``controlLocalDeclaration``.
+ .. Let ``controlLocalDeclaration'^{asterisk}^`` be ``xref:flatten_controlLocalDeclarationList[$flatten_controlLocalDeclarationList(controlLocalDeclarationList)]``.
+ .. Return ``controlLocalDeclaration'^{asterisk}^`` concatenated with ``controlLocalDeclaration``.
 
 xref:flatten_p4program[$flatten_p4program(p4program'')]
 
 . If ``p4program''`` matches pattern ````:
  .. Return ``·``.
 . Else if let ``p4program declaration`` be ``p4program''``:
- .. Return ``xref:flatten_p4program[$flatten_p4program(p4program)]`` concatenated with ``declaration``.
+ .. Let ``declaration'^{asterisk}^`` be ``xref:flatten_p4program[$flatten_p4program(p4program)]``.
+ .. Return ``declaration'^{asterisk}^`` concatenated with ``declaration``.
 . Else:
  .. Return ``xref:flatten_p4program[$flatten_p4program(p4program)]``.
 
@@ -447,11 +478,16 @@ xref:fresh_tids[$fresh_tids(nat')]
 
 . Otherwise:
  .. Otherwise:
-  ... Return ``xref:fresh_tid[$fresh_tid] {two-colons} xref:fresh_tids[$fresh_tids(nat' - 1)]``.
+  ... Try:
+   .... {empty}
+    ..... Let ``tid^{asterisk}^`` be ``xref:fresh_tids[$fresh_tids(nat' - 1)]``.
+    ..... Return ``xref:fresh_tid[$fresh_tid] {two-colons} tid^{asterisk}^``.
 
 xref:rid[$rid(name, parameterList)]
 
-. Return ``xref:name[$name(name)] +(+xref:pids[$pids(parameterList)]+)+``.
+. Let ``nameIR`` be ``xref:name[$name(name)]``.
+. Let ``pid^{asterisk}^`` be ``xref:pids[$pids(parameterList)]``.
+. Return ``nameIR +(+pid^{asterisk}^+)+``.
 
 xref:pids[$pids(parameterList)]
 
@@ -463,13 +499,16 @@ xref:pids[$pids(parameterList)]
  .. {empty}
   ... Let!~type~ ``parameter`` be ``parameterList``.
 
-  ... Return ``xref:pid[$pid(parameter)]``.
+  ... Let ``pid`` be ``xref:pid[$pid(parameter)]``.
+  ... Return ``pid``.
  .. {empty}
   ... Let!~type~ ``nonEmptyParameterList'`` be ``parameterList``.
 
   ... Let!~type~ ``nonEmptyParameterList +,+ parameter`` be ``nonEmptyParameterList'``.
 
-  ... Return ``xref:pids[$pids(nonEmptyParameterList)]`` concatenated with ``xref:pid[$pid(parameter)]``.
+  ... Let ``pid'^{asterisk}^`` be ``xref:pids[$pids(nonEmptyParameterList)]``.
+  ... Let ``pid''`` be ``xref:pid[$pid(parameter)]``.
+  ... Return ``pid'^{asterisk}^`` concatenated with ``pid''``.
 
 xref:pid[$pid(++_++ ++_++ ++_++ name initializerOpt)]
 
@@ -477,18 +516,23 @@ xref:pid[$pid(++_++ ++_++ ++_++ name initializerOpt)]
  .. {empty}
   ... Check that ``initializerOpt`` matches pattern ````.
 
-  ... Return ``xref:name[$name(name)] +#+ false``.
+  ... Let ``nameIR`` be ``xref:name[$name(name)]``.
+  ... Return ``nameIR +#+ false``.
  .. {empty}
   ... Let!~type~ ``initializer`` be ``initializerOpt``.
 
-  ... Return ``xref:name[$name(name)] +#+ true``.
+  ... Let ``nameIR'`` be ``xref:name[$name(name)]``.
+  ... Return ``nameIR' +#+ true``.
 
 xref:cid[$cid(name, constructorParameterListOpt)]
 
 . If ``constructorParameterListOpt`` matches pattern ````:
- .. Return ``xref:name[$name(name)] +(+·+)+``.
+ .. Let ``nameIR`` be ``xref:name[$name(name)]``.
+ .. Return ``nameIR +(+·+)+``.
 . Else:
- .. Return ``xref:name[$name(name)] +(+xref:pids[$pids(parameterList)]+)+``.
+ .. Let ``nameIR'`` be ``xref:name[$name(name)]``.
+ .. Let ``pid^{asterisk}^`` be ``xref:pids[$pids(parameterList)]``.
+ .. Return ``nameIR' +(+pid^{asterisk}^+)+``.
 
 xref:expression_as_lvalue[$expression_as_lvalue(expression'')]
 
@@ -740,7 +784,8 @@ xref:free_type[$free_type(typeIR'')]
   ... Return ``+{+tid+}+``.
  .. Else:
   ... Let ``bound~base~`` be ``xref:free_typeDef[$free_typeDef(polyTypeDefIR)]``.
-  ... Let ``bound~args~`` be ``xref:unions_set[$unions_set<tid>($free_type(typeIR)^{asterisk}^)]``.
+  ... Let ``bound`` be ``xref:free_type[$free_type(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``bound`` in ``bound^{asterisk}^``.
+  ... Let ``bound~args~`` be ``xref:unions_set[$unions_set<tid>(bound^{asterisk}^)]``.
   ... Return ``xref:union_set[$union_set<tid>(bound~base~, bound~args~)]``.
 . Else if let ``aliasTypeIR`` be ``typeIR''``:
  .. If let ``+TYPEDEF+ ++_++ typeIR`` be ``aliasTypeIR``:
@@ -750,30 +795,38 @@ xref:free_type[$free_type(typeIR'')]
 . Else if let ``+LIST+ +<+typeIR+>+`` be ``typeIR''``:
  .. Return ``xref:free_type[$free_type(typeIR)]``.
 . Else if let ``+TUPLE+ +<+typeIR^{asterisk}^+>+`` be ``typeIR''``:
- .. Return ``xref:unions_set[$unions_set<tid>($free_type(typeIR)^{asterisk}^)]``.
+ .. Let ``bound'`` be ``xref:free_type[$free_type(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``bound'`` in ``bound'^{asterisk}^``.
+ .. Return ``xref:unions_set[$unions_set<tid>(bound'^{asterisk}^)]``.
 . Else if let ``typeIR +[+++_+++]+`` be ``typeIR''``:
  .. Return ``xref:free_type[$free_type(typeIR)]``.
 . Else if let ``+HEADER+ ++_++ +{+( typeIR ++_++ +;+ )^{asterisk}^+}+`` be ``typeIR''``:
- .. Return ``xref:unions_set[$unions_set<tid>($free_type(typeIR)^{asterisk}^)]``.
+ .. Let ``bound''`` be ``xref:free_type[$free_type(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``bound''`` in ``bound''^{asterisk}^``.
+ .. Return ``xref:unions_set[$unions_set<tid>(bound''^{asterisk}^)]``.
 . Else if let ``+HEADER_UNION+ ++_++ +{+( typeIR ++_++ +;+ )^{asterisk}^+}+`` be ``typeIR''``:
- .. Return ``xref:unions_set[$unions_set<tid>($free_type(typeIR)^{asterisk}^)]``.
+ .. Let ``bound'''`` be ``xref:free_type[$free_type(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``bound'''`` in ``bound'''^{asterisk}^``.
+ .. Return ``xref:unions_set[$unions_set<tid>(bound'''^{asterisk}^)]``.
 . Else if let ``+STRUCT+ ++_++ +{+( typeIR ++_++ +;+ )^{asterisk}^+}+`` be ``typeIR''``:
- .. Return ``xref:unions_set[$unions_set<tid>($free_type(typeIR)^{asterisk}^)]``.
+ .. Let ``bound''''`` be ``xref:free_type[$free_type(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``bound''''`` in ``bound''''^{asterisk}^``.
+ .. Return ``xref:unions_set[$unions_set<tid>(bound''''^{asterisk}^)]``.
 . Else if let ``enumTypeIR`` be ``typeIR''``:
  .. If let ``+ENUM+ ++_++ +{+++_++^{asterisk}^+}+`` be ``enumTypeIR``:
   ... Return ``+{+·+}+``.
  .. Else:
   ... Return ``xref:free_type[$free_type(typeIR)]``.
 . Else if let ``+EXTERN+ ++_++ +{+( ++_++ +:+ routineTypeDefIR )^{asterisk}^+}+`` be ``typeIR''``:
- .. Return ``xref:unions_set[$unions_set<tid>($free_routineTypeDef(routineTypeDefIR)^{asterisk}^)]``.
+ .. Let ``bound'''''`` be ``xref:free_routineTypeDef[$free_routineTypeDef(routineTypeDefIR)]``, for all ``routineTypeDefIR`` in ``routineTypeDefIR^{asterisk}^`` and ``bound'''''`` in ``bound'''''^{asterisk}^``.
+ .. Return ``xref:unions_set[$unions_set<tid>(bound'''''^{asterisk}^)]``.
 . Else if let ``+PARSER+ +(+parameterTypeIR^{asterisk}^+)+`` be ``typeIR''``:
- .. Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>($free_parameterType(parameterTypeIR)^{asterisk}^)]``.
+ .. Let ``bound''''''`` be ``xref:free_parameterType[$free_parameterType(parameterTypeIR)]``, for all ``parameterTypeIR`` in ``parameterTypeIR^{asterisk}^`` and ``bound''''''`` in ``bound''''''^{asterisk}^``.
+ .. Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>(bound''''''^{asterisk}^)]``.
  .. Return ``bound~params~``.
 . Else if let ``+CONTROL+ +(+parameterTypeIR^{asterisk}^+)+`` be ``typeIR''``:
- .. Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>($free_parameterType(parameterTypeIR)^{asterisk}^)]``.
+ .. Let ``bound'''''''`` be ``xref:free_parameterType[$free_parameterType(parameterTypeIR)]``, for all ``parameterTypeIR`` in ``parameterTypeIR^{asterisk}^`` and ``bound'''''''`` in ``bound'''''''^{asterisk}^``.
+ .. Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>(bound'''''''^{asterisk}^)]``.
  .. Return ``bound~params~``.
 . Else if let ``+PACKAGE+ +<+typeIR^{asterisk}^+>+`` be ``typeIR''``:
- .. Return ``xref:unions_set[$unions_set<tid>($free_type(typeIR)^{asterisk}^)]``.
+ .. Let ``bound''''''''`` be ``xref:free_type[$free_type(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``bound''''''''`` in ``bound''''''''^{asterisk}^``.
+ .. Return ``xref:unions_set[$unions_set<tid>(bound''''''''^{asterisk}^)]``.
 . Else if let ``+TABLE+ ++_++ +#+ typeIR`` be ``typeIR''``:
  .. Return ``xref:free_type[$free_type(typeIR)]``.
 . Else if let ``defaultTypeIR`` be ``typeIR''``:
@@ -786,16 +839,21 @@ xref:free_type[$free_type(typeIR'')]
  .. Return ``+{+·+}+``.
 . Else if let ``sequenceTypeIR`` be ``typeIR''``:
  .. If let ``+SEQ+ +<+typeIR^{asterisk}^+>+`` be ``sequenceTypeIR``:
-  ... Return ``xref:unions_set[$unions_set<tid>($free_type(typeIR)^{asterisk}^)]``.
+  ... Let ``bound'''''''''`` be ``xref:free_type[$free_type(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``bound'''''''''`` in ``bound'''''''''^{asterisk}^``.
+  ... Return ``xref:unions_set[$unions_set<tid>(bound'''''''''^{asterisk}^)]``.
  .. Else:
-  ... Return ``xref:unions_set[$unions_set<tid>($free_type(typeIR)^{asterisk}^)]``.
+  ... Let ``bound''''''''''`` be ``xref:free_type[$free_type(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``bound''''''''''`` in ``bound''''''''''^{asterisk}^``.
+  ... Return ``xref:unions_set[$unions_set<tid>(bound''''''''''^{asterisk}^)]``.
 . Else if let ``recordTypeIR`` be ``typeIR''``:
  .. If let ``+RECORD+ +{+( typeIR ++_++ +;+ )^{asterisk}^+}+`` be ``recordTypeIR``:
-  ... Return ``xref:unions_set[$unions_set<tid>($free_type(typeIR)^{asterisk}^)]``.
+  ... Let ``bound'''''''''''`` be ``xref:free_type[$free_type(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``bound'''''''''''`` in ``bound'''''''''''^{asterisk}^``.
+  ... Return ``xref:unions_set[$unions_set<tid>(bound'''''''''''^{asterisk}^)]``.
  .. Else:
-  ... Return ``xref:unions_set[$unions_set<tid>($free_type(typeIR)^{asterisk}^)]``.
+  ... Let ``bound''''''''''''`` be ``xref:free_type[$free_type(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``bound''''''''''''`` in ``bound''''''''''''^{asterisk}^``.
+  ... Return ``xref:unions_set[$unions_set<tid>(bound''''''''''''^{asterisk}^)]``.
 . Else if let ``+SET+ +<+typeIR^{asterisk}^+>+`` be ``typeIR''``:
- .. Return ``xref:unions_set[$unions_set<tid>($free_type(typeIR)^{asterisk}^)]``.
+ .. Let ``bound'''''''''''''`` be ``xref:free_type[$free_type(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``bound'''''''''''''`` in ``bound'''''''''''''^{asterisk}^``.
+ .. Return ``xref:unions_set[$unions_set<tid>(bound'''''''''''''^{asterisk}^)]``.
 . Else:
  .. If let ``+TABLE_ENUM+ ++_++ +{+++_++^{asterisk}^+}+`` be ``tableTypeIR``:
   ... Return ``+{+·+}+``.
@@ -819,38 +877,47 @@ xref:free_routineType[$free_routineType(routineTypeIR)]
 
 . If let ``functionTypeIR`` be ``routineTypeIR``:
  .. If let ``+BUILTIN_FUNCTION+ +(+parameterTypeIR^{asterisk}^+)+ +->+ typeIR~ret~`` be ``functionTypeIR``:
-  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>($free_parameterType(parameterTypeIR)^{asterisk}^)]``.
+  ... Let ``bound`` be ``xref:free_parameterType[$free_parameterType(parameterTypeIR)]``, for all ``parameterTypeIR`` in ``parameterTypeIR^{asterisk}^`` and ``bound`` in ``bound^{asterisk}^``.
+  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>(bound^{asterisk}^)]``.
   ... Let ``bound~ret~`` be ``xref:free_type[$free_type(typeIR~ret~)]``.
   ... Return ``xref:union_set[$union_set<tid>(bound~params~, bound~ret~)]``.
  .. Else if let ``+FUNCTION+ +(+parameterTypeIR^{asterisk}^+)+ +->+ typeIR~ret~`` be ``functionTypeIR``:
-  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>($free_parameterType(parameterTypeIR)^{asterisk}^)]``.
+  ... Let ``bound'`` be ``xref:free_parameterType[$free_parameterType(parameterTypeIR)]``, for all ``parameterTypeIR`` in ``parameterTypeIR^{asterisk}^`` and ``bound'`` in ``bound'^{asterisk}^``.
+  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>(bound'^{asterisk}^)]``.
   ... Let ``bound~ret~`` be ``xref:free_type[$free_type(typeIR~ret~)]``.
   ... Return ``xref:union_set[$union_set<tid>(bound~params~, bound~ret~)]``.
  .. Else if let ``+EXTERN_FUNCTION+ +(+parameterTypeIR^{asterisk}^+)+ +->+ typeIR~ret~`` be ``functionTypeIR``:
-  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>($free_parameterType(parameterTypeIR)^{asterisk}^)]``.
+  ... Let ``bound''`` be ``xref:free_parameterType[$free_parameterType(parameterTypeIR)]``, for all ``parameterTypeIR`` in ``parameterTypeIR^{asterisk}^`` and ``bound''`` in ``bound''^{asterisk}^``.
+  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>(bound''^{asterisk}^)]``.
   ... Let ``bound~ret~`` be ``xref:free_type[$free_type(typeIR~ret~)]``.
   ... Return ``xref:union_set[$union_set<tid>(bound~params~, bound~ret~)]``.
  .. Else:
-  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>($free_parameterType(parameterTypeIR)^{asterisk}^)]``.
+  ... Let ``bound'''`` be ``xref:free_parameterType[$free_parameterType(parameterTypeIR)]``, for all ``parameterTypeIR`` in ``parameterTypeIR^{asterisk}^`` and ``bound'''`` in ``bound'''^{asterisk}^``.
+  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>(bound'''^{asterisk}^)]``.
   ... Return ``bound~params~``.
 . Else:
  .. If let ``+BUILTIN_METHOD+ +(+parameterTypeIR^{asterisk}^+)+ +->+ typeIR~ret~`` be ``methodTypeIR``:
-  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>($free_parameterType(parameterTypeIR)^{asterisk}^)]``.
+  ... Let ``bound''''`` be ``xref:free_parameterType[$free_parameterType(parameterTypeIR)]``, for all ``parameterTypeIR`` in ``parameterTypeIR^{asterisk}^`` and ``bound''''`` in ``bound''''^{asterisk}^``.
+  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>(bound''''^{asterisk}^)]``.
   ... Let ``bound~ret~`` be ``xref:free_type[$free_type(typeIR~ret~)]``.
   ... Return ``xref:union_set[$union_set<tid>(bound~params~, bound~ret~)]``.
  .. Else if let ``+EXTERN_METHOD+ +(+parameterTypeIR^{asterisk}^+)+ +->+ typeIR~ret~`` be ``methodTypeIR``:
-  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>($free_parameterType(parameterTypeIR)^{asterisk}^)]``.
+  ... Let ``bound'''''`` be ``xref:free_parameterType[$free_parameterType(parameterTypeIR)]``, for all ``parameterTypeIR`` in ``parameterTypeIR^{asterisk}^`` and ``bound'''''`` in ``bound'''''^{asterisk}^``.
+  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>(bound'''''^{asterisk}^)]``.
   ... Let ``bound~ret~`` be ``xref:free_type[$free_type(typeIR~ret~)]``.
   ... Return ``xref:union_set[$union_set<tid>(bound~params~, bound~ret~)]``.
  .. Else if let ``+EXTERN_METHOD+ +ABSTRACT+ +(+parameterTypeIR^{asterisk}^+)+ +->+ typeIR~ret~`` be ``methodTypeIR``:
-  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>($free_parameterType(parameterTypeIR)^{asterisk}^)]``.
+  ... Let ``bound''''''`` be ``xref:free_parameterType[$free_parameterType(parameterTypeIR)]``, for all ``parameterTypeIR`` in ``parameterTypeIR^{asterisk}^`` and ``bound''''''`` in ``bound''''''^{asterisk}^``.
+  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>(bound''''''^{asterisk}^)]``.
   ... Let ``bound~ret~`` be ``xref:free_type[$free_type(typeIR~ret~)]``.
   ... Return ``xref:union_set[$union_set<tid>(bound~params~, bound~ret~)]``.
  .. Else if let ``+PARSER_APPLY+ +(+parameterTypeIR^{asterisk}^+)+`` be ``methodTypeIR``:
-  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>($free_parameterType(parameterTypeIR)^{asterisk}^)]``.
+  ... Let ``bound'''''''`` be ``xref:free_parameterType[$free_parameterType(parameterTypeIR)]``, for all ``parameterTypeIR`` in ``parameterTypeIR^{asterisk}^`` and ``bound'''''''`` in ``bound'''''''^{asterisk}^``.
+  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>(bound'''''''^{asterisk}^)]``.
   ... Return ``bound~params~``.
  .. Else if let ``+CONTROL_APPLY+ +(+parameterTypeIR^{asterisk}^+)+`` be ``methodTypeIR``:
-  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>($free_parameterType(parameterTypeIR)^{asterisk}^)]``.
+  ... Let ``bound''''''''`` be ``xref:free_parameterType[$free_parameterType(parameterTypeIR)]``, for all ``parameterTypeIR`` in ``parameterTypeIR^{asterisk}^`` and ``bound''''''''`` in ``bound''''''''^{asterisk}^``.
+  ... Let ``bound~params~`` be ``xref:unions_set[$unions_set<tid>(bound''''''''^{asterisk}^)]``.
   ... Return ``bound~params~``.
  .. Else:
   ... Let ``bound~ret~`` be ``xref:free_type[$free_type(typeIR~ret~)]``.
@@ -967,14 +1034,17 @@ xref:subst_typeDef[$subst_typeDef(set<pair<tid, typeIR>>', typeDefIR)]
 xref:subst_typeDef'[$subst_typeDef'(theta, typeDefIR)]
 
 . If let ``typeIR`` be ``typeDefIR``:
- .. Return ``xref:subst_type'[$subst_type'(theta, typeIR)]``.
+ .. Let ``typeIR'`` be ``xref:subst_type'[$subst_type'(theta, typeIR)]``.
+ .. Return ``typeIR'``.
 . Else:
- .. Let ``+{+tid~free~^{asterisk}^+}+`` be ``xref:diff_set[$diff_set<tid>($free_type(typeIR~base~), +{+tid^{asterisk}^ {pp} tid~hidden~^{asterisk}^+}+)]``.
+ .. Let ``bound'`` be ``xref:free_type[$free_type(typeIR~base~)]``.
+ .. Let ``+{+tid~free~^{asterisk}^+}+`` be ``xref:diff_set[$diff_set<tid>(bound', +{+tid^{asterisk}^ {pp} tid~hidden~^{asterisk}^+}+)]``.
  .. Let ``typeIR^?^`` be ``xref:find_map[$find_map<tid, typeIR>(theta, tid~free~)]``, for all ``tid~free~`` in ``tid~free~^{asterisk}^`` and ``typeIR^?^`` in ``typeIR^?^^{asterisk}^``.
  .. Check that ``typeIR^?^`` is defined, for all ``typeIR^?^`` in ``typeIR^?^^{asterisk}^``.
 
  .. Let ``typeIR~free~`` be ``typeIR^?^``, for all ``typeIR^?^`` in ``typeIR^?^^{asterisk}^`` and ``typeIR~free~`` in ``typeIR~free~^{asterisk}^``.
- .. Let ``bound~capture~`` be ``xref:unions_set[$unions_set<tid>($free_type(typeIR~free~)^{asterisk}^)]``.
+ .. Let ``bound`` be ``xref:free_type[$free_type(typeIR~free~)]``, for all ``typeIR~free~`` in ``typeIR~free~^{asterisk}^`` and ``bound`` in ``bound^{asterisk}^``.
+ .. Let ``bound~capture~`` be ``xref:unions_set[$unions_set<tid>(bound^{asterisk}^)]``.
  .. Let ``tid~fresh~^{asterisk}^`` be ``xref:fresh_tids[$fresh_tids(the length of tid^{asterisk}^ {pp} tid~hidden~^{asterisk}^)]``.
  .. Check that ``~xref:in_set[$in_set<tid>(tid~fresh~, bound~capture~)]``, for all ``tid~fresh~`` in ``tid~fresh~^{asterisk}^``.
 
@@ -1064,14 +1134,17 @@ xref:subst_routineTypeDef[$subst_routineTypeDef(set<pair<tid, typeIR>>', routine
 xref:subst_routineTypeDef'[$subst_routineTypeDef'(theta, routineTypeDefIR)]
 
 . If let ``routineTypeIR`` be ``routineTypeDefIR``:
- .. Return ``xref:subst_routineType'[$subst_routineType'(theta, routineTypeIR)]``.
+ .. Let ``routineTypeIR'`` be ``xref:subst_routineType'[$subst_routineType'(theta, routineTypeIR)]``.
+ .. Return ``routineTypeIR'``.
 . Else:
- .. Let ``+{+tid~free~^{asterisk}^+}+`` be ``xref:diff_set[$diff_set<tid>($free_routineType(routineTypeIR), +{+tid^{asterisk}^ {pp} tid~hidden~^{asterisk}^+}+)]``.
+ .. Let ``bound'`` be ``xref:free_routineType[$free_routineType(routineTypeIR)]``.
+ .. Let ``+{+tid~free~^{asterisk}^+}+`` be ``xref:diff_set[$diff_set<tid>(bound', +{+tid^{asterisk}^ {pp} tid~hidden~^{asterisk}^+}+)]``.
  .. Let ``typeIR^?^`` be ``xref:find_map[$find_map<tid, typeIR>(theta, tid~free~)]``, for all ``tid~free~`` in ``tid~free~^{asterisk}^`` and ``typeIR^?^`` in ``typeIR^?^^{asterisk}^``.
  .. Check that ``typeIR^?^`` is defined, for all ``typeIR^?^`` in ``typeIR^?^^{asterisk}^``.
 
  .. Let ``typeIR~free~`` be ``typeIR^?^``, for all ``typeIR^?^`` in ``typeIR^?^^{asterisk}^`` and ``typeIR~free~`` in ``typeIR~free~^{asterisk}^``.
- .. Let ``bound~capture~`` be ``xref:unions_set[$unions_set<tid>($free_type(typeIR~free~)^{asterisk}^)]``.
+ .. Let ``bound`` be ``xref:free_type[$free_type(typeIR~free~)]``, for all ``typeIR~free~`` in ``typeIR~free~^{asterisk}^`` and ``bound`` in ``bound^{asterisk}^``.
+ .. Let ``bound~capture~`` be ``xref:unions_set[$unions_set<tid>(bound^{asterisk}^)]``.
  .. Let ``tid~fresh~^{asterisk}^`` be ``xref:fresh_tids[$fresh_tids(the length of tid^{asterisk}^ {pp} tid~hidden~^{asterisk}^)]``.
  .. Check that ``~xref:in_set[$in_set<tid>(tid~fresh~, bound~capture~)]``, for all ``tid~fresh~`` in ``tid~fresh~^{asterisk}^``.
 
@@ -1122,20 +1195,23 @@ xref:specialize_routineTypeDef[$specialize_routineTypeDef(routineTypeDefIR, type
    .... Check that the length of ``tid~tparam~^{asterisk}^`` is equal to the length of ``typeIR'^{asterisk}^``.
 
    .... Let ``theta`` be ``+{+( tid~tparam~ +:+ typeIR' )^{asterisk}^+}+``.
-   .... Return ( ``xref:subst_routineType[$subst_routineType(theta, routineTypeIR)]``, ``·`` ).
+   .... Let ``routineTypeIR'`` be ``xref:subst_routineType[$subst_routineType(theta, routineTypeIR)]``.
+   .... Return ( ``routineTypeIR'``, ``·`` ).
   ... {empty}
    .... Check that the length of ``tid~tparam~^{asterisk}^`` is greater than ``0`` and the length of ``typeIR'^{asterisk}^`` is equal to ``0``.
 
    .... Let ``tid~fresh~^{asterisk}^`` be ``xref:fresh_tids[$fresh_tids(the length of tid~tparam~^{asterisk}^)]``.
    .... Let ``theta`` be ``+{+( tid~tparam~ +:+ +TID+ tid~fresh~ )^{asterisk}^+}+``.
-   .... Return ``( xref:subst_routineType[$subst_routineType(theta, routineTypeIR)], tid~fresh~^{asterisk}^ )``.
+   .... Let ``routineTypeIR''`` be ``xref:subst_routineType[$subst_routineType(theta, routineTypeIR)]``.
+   .... Return ``( routineTypeIR'', tid~fresh~^{asterisk}^ )``.
   ... {empty}
    .... Check that the length of ``tid~hidden~^{asterisk}^`` is greater than ``0`` and the length of ``tid^{asterisk}^`` is equal to the length of ``typeIR'^{asterisk}^`` and the length of ``typeIR'^{asterisk}^`` is greater than ``0``.
 
    .... Let ``tid~fresh~^{asterisk}^`` be ``xref:fresh_tids[$fresh_tids(the length of tid~hidden~^{asterisk}^)]``.
    .... Let ``typeIR~arg_new~^{asterisk}^`` be ``typeIR'^{asterisk}^`` concatenated with ``( +TID+ tid~fresh~ )^{asterisk}^``.
    .... Let ``theta`` be ``+{+( tid~tparam~ +:+ typeIR~arg_new~ )^{asterisk}^+}+``.
-   .... Return ``( xref:subst_routineType[$subst_routineType(theta, routineTypeIR)], tid~fresh~^{asterisk}^ )``.
+   .... Let ``routineTypeIR'''`` be ``xref:subst_routineType[$subst_routineType(theta, routineTypeIR)]``.
+   .... Return ``( routineTypeIR''', tid~fresh~^{asterisk}^ )``.
 
 xref:specialize_constructorTypeDef[$specialize_constructorTypeDef(constructorTypeIR +<+tid^{asterisk}^ +,+ tid~hidden~^{asterisk}^+>+, typeIR~arg~^{asterisk}^)]
 
@@ -1181,7 +1257,8 @@ xref:canon[$canon(typeIR'')]
 
 xref:is_nominal_typeIR[$is_nominal_typeIR(typeIR)]
 
-. Return ``xref:is_nominal_typeIR'[$is_nominal_typeIR'($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:is_nominal_typeIR'[$is_nominal_typeIR'(typeIR')]``.
 
 xref:is_nominal_typeIR'[$is_nominal_typeIR'(typeIR)]
 
@@ -1203,7 +1280,8 @@ xref:is_nominal_typeIR'[$is_nominal_typeIR'(typeIR)]
 
 xref:is_defaultable_typeIR[$is_defaultable_typeIR(typeIR)]
 
-. Return ``xref:is_defaultable_typeIR'[$is_defaultable_typeIR'($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:is_defaultable_typeIR'[$is_defaultable_typeIR'(typeIR')]``.
 
 xref:is_defaultable_typeIR'[$is_defaultable_typeIR'(typeIR'')]
 
@@ -1241,7 +1319,8 @@ xref:is_defaultable_typeIR'[$is_defaultable_typeIR'(typeIR'')]
 
 xref:is_equalable_typeIR[$is_equalable_typeIR(typeIR)]
 
-. Return ``xref:is_equalable_typeIR'[$is_equalable_typeIR'($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:is_equalable_typeIR'[$is_equalable_typeIR'(typeIR')]``.
 
 xref:is_equalable_typeIR'[$is_equalable_typeIR'(typeIR)]
 
@@ -1279,7 +1358,8 @@ xref:is_equalable_typeIR'[$is_equalable_typeIR'(typeIR)]
 
 xref:is_assignable_typeIR[$is_assignable_typeIR(typeIR)]
 
-. Return ``xref:is_assignable_typeIR'[$is_assignable_typeIR'($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:is_assignable_typeIR'[$is_assignable_typeIR'(typeIR')]``.
 
 xref:is_assignable_typeIR'[$is_assignable_typeIR'(typeIR)]
 
@@ -1735,10 +1815,12 @@ xref:un_minus[$un_minus(value)]
 . If let ``+D+ i`` be ``number``:
  .. Return ``+D+ -i``.
 . Else if let ``w +W+ i`` be ``number``:
- .. Let ``i'`` be ``xref:pow2[$pow2(w)]`` - ``i``.
+ .. Let ``int`` be ``xref:pow2[$pow2(w)]``.
+ .. Let ``i'`` be ``int`` - ``i``.
  .. Return ``w +W+ i'``.
 . Else:
- .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, $to_int(w, -i))]``.
+ .. Let ``int'`` be ``xref:to_int[$to_int(w, -i)]``.
+ .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, int')]``.
  .. Return ``w +S+ i'``.
 
 xref:bin_plus[$bin_plus(value, value')]
@@ -1850,37 +1932,46 @@ xref:bin_shl[$bin_shl(value, value')]
  .. Let!~type~ ``number'`` be ``value'``.
 
  .. If let ``+D+ i~r~`` be ``number'``:
-  ... Return ``+D+ xref:shl[$shl(i~l~, i~r~)]``.
+  ... Let ``int`` be ``xref:shl[$shl(i~l~, i~r~)]``.
+  ... Return ``+D+ int``.
  .. Else if let ``w~r~ +W+ i~r~`` be ``number'``:
-  ... Return ``+D+ xref:shl[$shl(i~l~, i~r~)]``.
+  ... Let ``int'`` be ``xref:shl[$shl(i~l~, i~r~)]``.
+  ... Return ``+D+ int'``.
  .. Else:
   ... Let ``i~r'~`` be ``xref:to_int[$to_int(w~r~, i~r~)]``.
-  ... Return ``+D+ xref:shl[$shl(i~l~, i~r'~)]``.
+  ... Let ``int''`` be ``xref:shl[$shl(i~l~, i~r'~)]``.
+  ... Return ``+D+ int''``.
 . Else if let ``w~l~ +W+ i~l~`` be ``number``:
  .. Let!~type~ ``number'`` be ``value'``.
 
  .. If let ``+D+ i~r~`` be ``number'``:
-  ... Return ``<<bin_shl,$bin_shl(w~l~ +W+ i~l~, w~l~ +W+ xref:to_int[$to_int(w~l~, i~r~)])>>``.
+  ... Let ``int'''`` be ``xref:to_int[$to_int(w~l~, i~r~)]``.
+  ... Return ``xref:bin_shl[$bin_shl(w~l~ +W+ i~l~, w~l~ +W+ int''')]``.
  .. Else if let ``w~r~ +W+ i~r~`` be ``number'``:
-  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~l~, $shl(i~l~, i~r~))]``.
+  ... Let ``int''''`` be ``xref:shl[$shl(i~l~, i~r~)]``.
+  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~l~, int'''')]``.
   ... Return ``w~l~ +W+ i'``.
  .. Else:
   ... Let ``i~r'~`` be ``xref:to_int[$to_int(w~r~, i~r~)]``.
-  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~l~, $shl(i~l~, i~r'~))]``.
+  ... Let ``int'''''`` be ``xref:shl[$shl(i~l~, i~r'~)]``.
+  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~l~, int''''')]``.
   ... Return ``w~l~ +W+ i'``.
 . Else:
  .. Let!~type~ ``number'`` be ``value'``.
 
  .. If let ``+D+ i~r~`` be ``number'``:
-  ... Return ``<<bin_shl,$bin_shl(w~l~ +S+ i~l~, w~l~ +S+ xref:to_int[$to_int(w~l~, i~r~)])>>``.
+  ... Let ``int''''''`` be ``xref:to_int[$to_int(w~l~, i~r~)]``.
+  ... Return ``xref:bin_shl[$bin_shl(w~l~ +S+ i~l~, w~l~ +S+ int'''''')]``.
  .. Else if let ``w~r~ +W+ i~r~`` be ``number'``:
   ... Let ``i~l'~`` be ``xref:to_int[$to_int(w~l~, i~l~)]``.
-  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~l~, $shl(i~l'~, i~r~))]``.
+  ... Let ``int'''''''`` be ``xref:shl[$shl(i~l'~, i~r~)]``.
+  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~l~, int''''''')]``.
   ... Return ``w~l~ +S+ i'``.
  .. Else:
   ... Let ``i~l'~`` be ``xref:to_int[$to_int(w~l~, i~l~)]``.
   ... Let ``i~r'~`` be ``xref:to_int[$to_int(w~r~, i~r~)]``.
-  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~l~, $shl(i~l'~, i~r'~))]``.
+  ... Let ``int''''''''`` be ``xref:shl[$shl(i~l'~, i~r'~)]``.
+  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~l~, int'''''''')]``.
   ... Return ``w~l~ +S+ i'``.
 
 xref:bin_shr[$bin_shr(value, value')]
@@ -1891,23 +1982,29 @@ xref:bin_shr[$bin_shr(value, value')]
  .. Let!~type~ ``number'`` be ``value'``.
 
  .. If let ``+D+ i~r~`` be ``number'``:
-  ... Return ``+D+ xref:shr[$shr(i~l~, i~r~)]``.
+  ... Let ``int`` be ``xref:shr[$shr(i~l~, i~r~)]``.
+  ... Return ``+D+ int``.
  .. Else if let ``w~r~ +W+ i~r~`` be ``number'``:
-  ... Return ``+D+ xref:shr[$shr(i~l~, i~r~)]``.
+  ... Let ``int'`` be ``xref:shr[$shr(i~l~, i~r~)]``.
+  ... Return ``+D+ int'``.
  .. Else:
   ... Let ``i~r'~`` be ``xref:to_int[$to_int(w~r~, i~r~)]``.
-  ... Return ``+D+ xref:shr[$shr(i~l~, i~r'~)]``.
+  ... Let ``int''`` be ``xref:shr[$shr(i~l~, i~r'~)]``.
+  ... Return ``+D+ int''``.
 . Else if let ``w~l~ +W+ i~l~`` be ``number``:
  .. Let!~type~ ``number'`` be ``value'``.
 
  .. If let ``+D+ i~r~`` be ``number'``:
-  ... Return ``<<bin_shr,$bin_shr(w~l~ +W+ i~l~, w~l~ +W+ xref:to_int[$to_int(w~l~, i~r~)])>>``.
+  ... Let ``int'''`` be ``xref:to_int[$to_int(w~l~, i~r~)]``.
+  ... Return ``xref:bin_shr[$bin_shr(w~l~ +W+ i~l~, w~l~ +W+ int''')]``.
  .. Else if let ``w~r~ +W+ i~r~`` be ``number'``:
-  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~l~, $shr(i~l~, i~r~))]``.
+  ... Let ``int''''`` be ``xref:shr[$shr(i~l~, i~r~)]``.
+  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~l~, int'''')]``.
   ... Return ``w~l~ +W+ i'``.
  .. Else:
   ... Let ``i~r'~`` be ``xref:to_int[$to_int(w~r~, i~r~)]``.
-  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~l~, $shr(i~l~, i~r'~))]``.
+  ... Let ``int'''''`` be ``xref:shr[$shr(i~l~, i~r'~)]``.
+  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~l~, int''''')]``.
   ... Return ``w~l~ +W+ i'``.
 . Else:
  .. Let!~type~ ``number'`` be ``value'``.
@@ -1918,7 +2015,8 @@ xref:bin_shr[$bin_shr(value, value')]
    .... {empty}
     ..... Check that ``i~l'~`` is less than ``0``.
 
-    ..... Let ``i'`` be ``xref:shr_arith[$shr_arith(i~l~, i~r~, $pow2(w~l~) - 1)]``.
+    ..... Let ``int''''''`` be ``xref:pow2[$pow2(w~l~)]``.
+    ..... Let ``i'`` be ``xref:shr_arith[$shr_arith(i~l~, i~r~, int'''''' - 1)]``.
     ..... Let ``i''`` be ``xref:to_bitstr[$to_bitstr(w~l~, i')]``.
     ..... Return ``w~l~ +S+ i''``.
    .... {empty}
@@ -1933,7 +2031,8 @@ xref:bin_shr[$bin_shr(value, value')]
    .... {empty}
     ..... Check that ``i~l'~`` is less than ``0``.
 
-    ..... Let ``i'`` be ``xref:shr_arith[$shr_arith(i~l~, i~r~, $pow2(w~l~) - 1)]``.
+    ..... Let ``int'''''''`` be ``xref:pow2[$pow2(w~l~)]``.
+    ..... Let ``i'`` be ``xref:shr_arith[$shr_arith(i~l~, i~r~, int''''''' - 1)]``.
     ..... Let ``i''`` be ``xref:to_bitstr[$to_bitstr(w~l~, i')]``.
     ..... Return ``w~l~ +S+ i''``.
    .... {empty}
@@ -1949,7 +2048,8 @@ xref:bin_shr[$bin_shr(value, value')]
    .... {empty}
     ..... Check that ``i~l'~`` is less than ``0``.
 
-    ..... Let ``i'`` be ``xref:shr_arith[$shr_arith(i~l~, i~r~, $pow2(w~l~) - 1)]``.
+    ..... Let ``int''''''''`` be ``xref:pow2[$pow2(w~l~)]``.
+    ..... Let ``i'`` be ``xref:shr_arith[$shr_arith(i~l~, i~r~, int'''''''' - 1)]``.
     ..... Let ``i''`` be ``xref:to_bitstr[$to_bitstr(w~l~, i')]``.
     ..... Return ``w~l~ +S+ i''``.
    .... {empty}
@@ -2113,19 +2213,23 @@ xref:bin_eq[$bin_eq(value, value')]
   ... Else if let ``+[+value~a~^{asterisk}^ +#+ +(+++_++ +;+ n~s_a~+)++]+`` be ``value``:
    .... Let!~type~ ``+[+value~b~^{asterisk}^ +#+ +(+++_++ +;+ n~s_b~+)++]+`` be ``value'``.
 
-   .... Return ``xref:bin_eqs[$bin_eqs(value~a~^{asterisk}^, value~b~^{asterisk}^)]`` and ``n~s_a~`` is equal to ``n~s_b~``.
+   .... Let ``bool`` be ``xref:bin_eqs[$bin_eqs(value~a~^{asterisk}^, value~b~^{asterisk}^)]``.
+   .... Return ``bool`` and ``n~s_a~`` is equal to ``n~s_b~``.
   ... Else if let ``+STRUCT+ tid~a~ +{+( value~f_a~ id~f_a~ +;+ )^{asterisk}^+}+`` be ``value``:
    .... Let!~type~ ``+STRUCT+ tid~b~ +{+( value~f_b~ id~f_b~ +;+ )^{asterisk}^+}+`` be ``value'``.
 
-   .... Return ``tid~a~`` is equal to ``tid~b~`` and ``xref:bin_eqs_fields[$bin_eqs_fields(( value~f_a~, id~f_a~ )^{asterisk}^, ( value~f_b~, id~f_b~ )^{asterisk}^)]``.
+   .... Let ``bool'`` be ``xref:bin_eqs_fields[$bin_eqs_fields(( value~f_a~, id~f_a~ )^{asterisk}^, ( value~f_b~, id~f_b~ )^{asterisk}^)]``.
+   .... Return ``tid~a~`` is equal to ``tid~b~`` and ``bool'``.
   ... Else if let ``+HEADER+ tid~a~ +{+( value~f_a~ id~f_a~ +;+ )^{asterisk}^+}+`` be ``value``:
    .... Let!~type~ ``+HEADER+ tid~b~ +{+( value~f_b~ id~f_b~ +;+ )^{asterisk}^+}+`` be ``value'``.
 
-   .... Return ``tid~a~`` is equal to ``tid~b~`` and ``xref:bin_eqs_fields[$bin_eqs_fields(( value~f_a~, id~f_a~ )^{asterisk}^, ( value~f_b~, id~f_b~ )^{asterisk}^)]``.
+   .... Let ``bool''`` be ``xref:bin_eqs_fields[$bin_eqs_fields(( value~f_a~, id~f_a~ )^{asterisk}^, ( value~f_b~, id~f_b~ )^{asterisk}^)]``.
+   .... Return ``tid~a~`` is equal to ``tid~b~`` and ``bool''``.
   ... Else if let ``+HEADER_UNION+ tid~a~ +{+( value~f_a~ id~f_a~ +;+ )^{asterisk}^+}+`` be ``value``:
    .... Let!~type~ ``+HEADER_UNION+ tid~b~ +{+( value~f_b~ id~f_b~ +;+ )^{asterisk}^+}+`` be ``value'``.
 
-   .... Return ``tid~a~`` is equal to ``tid~b~`` and ``xref:bin_eqs_fields[$bin_eqs_fields(( value~f_a~, id~f_a~ )^{asterisk}^, ( value~f_b~, id~f_b~ )^{asterisk}^)]``.
+   .... Let ``bool'''`` be ``xref:bin_eqs_fields[$bin_eqs_fields(( value~f_a~, id~f_a~ )^{asterisk}^, ( value~f_b~, id~f_b~ )^{asterisk}^)]``.
+   .... Return ``tid~a~`` is equal to ``tid~b~`` and ``bool'''``.
   ... Else if let ``enumValue`` be ``value``:
    .... If let ``tid~a~ +.+ id~f_a~`` be ``enumValue``:
     ..... Let!~type~ ``enumValue'`` be ``value'``.
@@ -2138,7 +2242,8 @@ xref:bin_eq[$bin_eq(value, value')]
 
     ..... Let!~type~ ``tid~b~ +.+ id~f_b~ +#+ value~f_b~`` be ``enumValue'``.
 
-    ..... Return ``tid~a~`` is equal to ``tid~b~`` and ``id~f_a~`` is equal to ``id~f_b~`` and ``xref:bin_eq[$bin_eq(value~f_a~, value~f_b~)]``.
+    ..... Let ``bool''''`` be ``xref:bin_eq[$bin_eq(value~f_a~, value~f_b~)]``.
+    ..... Return ``tid~a~`` is equal to ``tid~b~`` and ``id~f_a~`` is equal to ``id~f_b~`` and ``bool''''``.
   ... Else if let ``invalidHeaderValue`` be ``value``:
    .... Check that ``invalidHeaderValue`` matches pattern ``+{#}+``.
 
@@ -2165,7 +2270,9 @@ xref:bin_eqs[$bin_eqs(value^{asterisk}^, value'^{asterisk}^)]
 . Else:
  .. If ``value'^{asterisk}^`` matches pattern ``[]``: return ``false``.
  .. Else:
-  ... Return ``xref:bin_eq[$bin_eq(++_++, value~b_h~)]`` and ``xref:bin_eqs[$bin_eqs(++_++^{asterisk}^, value~b_t~^{asterisk}^)]``.
+  ... Let ``bool`` be ``xref:bin_eq[$bin_eq(++_++, value~b_h~)]``.
+  ... Let ``bool'`` be ``xref:bin_eqs[$bin_eqs(++_++^{asterisk}^, value~b_t~^{asterisk}^)]``.
+  ... Return ``bool`` and ``bool'``.
 
 xref:bin_eqs_fields[$bin_eqs_fields((value, id)^{asterisk}^, (value, id)'^{asterisk}^)]
 
@@ -2178,11 +2285,14 @@ xref:bin_eqs_fields[$bin_eqs_fields((value, id)^{asterisk}^, (value, id)'^{aster
  .. Let ``( value~a_h~, id~a_h~ ) {two-colons} ( value~a_t~, id~a_t~ )^{asterisk}^`` be ``(value, id)^{asterisk}^``.
  .. Let!~type~ ``( value~b_h~, id~b_h~ ) {two-colons} ( value~b_t~, id~b_t~ )^{asterisk}^`` be ``(value, id)'^{asterisk}^``.
 
- .. Return ``id~a_h~`` is equal to ``id~b_h~`` and ``xref:bin_eq[$bin_eq(value~a_h~, value~b_h~)]`` and ``xref:bin_eqs_fields[$bin_eqs_fields(( value~a_t~, id~a_t~ )^{asterisk}^, ( value~b_t~, id~b_t~ )^{asterisk}^)]``.
+ .. Let ``bool`` be ``xref:bin_eq[$bin_eq(value~a_h~, value~b_h~)]``.
+ .. Let ``bool'`` be ``xref:bin_eqs_fields[$bin_eqs_fields(( value~a_t~, id~a_t~ )^{asterisk}^, ( value~b_t~, id~b_t~ )^{asterisk}^)]``.
+ .. Return ``id~a_h~`` is equal to ``id~b_h~`` and ``bool`` and ``bool'``.
 
 xref:bin_ne[$bin_ne(value~l~, value~r~)]
 
-. Return ``~xref:bin_eq[$bin_eq(value~l~, value~r~)]``.
+. Let ``bool`` be ``xref:bin_eq[$bin_eq(value~l~, value~r~)]``.
+. Return not ``bool``.
 
 xref:bin_band[$bin_band(value, value')]
 
@@ -2195,7 +2305,8 @@ xref:bin_band[$bin_band(value, value')]
 
  .. Check that ``w`` is equal to ``w'``.
 
- .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, $band(i~l~, i~r~))]``.
+ .. Let ``int`` be ``xref:band[$band(i~l~, i~r~)]``.
+ .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, int)]``.
  .. Return ``w +W+ i'``.
 . Else if let ``w +S+ i~l~`` be ``number``:
  .. Let!~type~ ``number'`` be ``value'``.
@@ -2206,7 +2317,8 @@ xref:bin_band[$bin_band(value, value')]
 
  .. Let ``i~l'~`` be ``xref:to_int[$to_int(w, i~l~)]``.
  .. Let ``i~r'~`` be ``xref:to_int[$to_int(w, i~r~)]``.
- .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, $band(i~l'~, i~r'~))]``.
+ .. Let ``int'`` be ``xref:band[$band(i~l'~, i~r'~)]``.
+ .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, int')]``.
  .. Return ``w +S+ i'``.
 
 xref:bin_bxor[$bin_bxor(value, value')]
@@ -2220,7 +2332,8 @@ xref:bin_bxor[$bin_bxor(value, value')]
 
  .. Check that ``w`` is equal to ``w'``.
 
- .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, $bxor(i~l~, i~r~))]``.
+ .. Let ``int`` be ``xref:bxor[$bxor(i~l~, i~r~)]``.
+ .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, int)]``.
  .. Return ``w +W+ i'``.
 . Else if let ``w +S+ i~l~`` be ``number``:
  .. Let!~type~ ``number'`` be ``value'``.
@@ -2231,7 +2344,8 @@ xref:bin_bxor[$bin_bxor(value, value')]
 
  .. Let ``i~l'~`` be ``xref:to_int[$to_int(w, i~l~)]``.
  .. Let ``i~r'~`` be ``xref:to_int[$to_int(w, i~r~)]``.
- .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, $bxor(i~l'~, i~r'~))]``.
+ .. Let ``int'`` be ``xref:bxor[$bxor(i~l'~, i~r'~)]``.
+ .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, int')]``.
  .. Return ``w +S+ i'``.
 
 xref:bin_bor[$bin_bor(value, value')]
@@ -2245,7 +2359,8 @@ xref:bin_bor[$bin_bor(value, value')]
 
  .. Check that ``w`` is equal to ``w'``.
 
- .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, $bor(i~l~, i~r~))]``.
+ .. Let ``int`` be ``xref:bor[$bor(i~l~, i~r~)]``.
+ .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, int)]``.
  .. Return ``w +W+ i'``.
 . Else if let ``w +S+ i~l~`` be ``number``:
  .. Let!~type~ ``number'`` be ``value'``.
@@ -2256,7 +2371,8 @@ xref:bin_bor[$bin_bor(value, value')]
 
  .. Let ``i~l'~`` be ``xref:to_int[$to_int(w, i~l~)]``.
  .. Let ``i~r'~`` be ``xref:to_int[$to_int(w, i~r~)]``.
- .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, $bor(i~l'~, i~r'~))]``.
+ .. Let ``int'`` be ``xref:bor[$bor(i~l'~, i~r'~)]``.
+ .. Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w, int')]``.
  .. Return ``w +S+ i'``.
 
 xref:bin_concat[$bin_concat(value, value')]
@@ -2363,7 +2479,8 @@ xref:cast_op[$cast_op(typeIR, value'')]
 
 xref:default[$default(typeIR)]
 
-. Return ``xref:default'[$default'($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:default'[$default'(typeIR')]``.
 
 xref:default'[$default'(typeIR'')]
 
@@ -2385,16 +2502,21 @@ xref:default'[$default'(typeIR'')]
  .. Else:
   ... Return ``w +V+ 0 +#+ 0``.
 . Else if let ``+TUPLE+ +<+typeIR^{asterisk}^+>+`` be ``typeIR''``:
- .. Return ``+[+xref:default[$default(typeIR)]^{asterisk}^+]+``.
+ .. Let ``value'`` be ``xref:default[$default(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``value'`` in ``value'^{asterisk}^``.
+ .. Return ``+[+value'^{asterisk}^+]+``.
 . Else if let ``typeIR +[+n~s~+]+`` be ``typeIR''``:
- .. Let ``value^{asterisk}^`` be ``xref:repeat_[$repeat_<value>($default(typeIR), n~s~)]``.
+ .. Let ``value''`` be ``xref:default[$default(typeIR)]``.
+ .. Let ``value^{asterisk}^`` be ``xref:repeat_[$repeat_<value>(value'', n~s~)]``.
  .. Return ``+[+value^{asterisk}^ +#+ +(+0 +;+ n~s~+)++]+``.
 . Else if let ``+STRUCT+ tid +{+( typeIR~f~ id~f~ +;+ )^{asterisk}^+}+`` be ``typeIR''``:
- .. Return ``+STRUCT+ tid +{+( xref:default[$default(typeIR~f~)] id~f~ +;+ )^{asterisk}^+}+``.
+ .. Let ``value'''`` be ``xref:default[$default(typeIR~f~)]``, for all ``typeIR~f~`` in ``typeIR~f~^{asterisk}^`` and ``value'''`` in ``value'''^{asterisk}^``.
+ .. Return ``+STRUCT+ tid +{+( value''' id~f~ +;+ )^{asterisk}^+}+``.
 . Else if let ``+HEADER+ tid +{+( typeIR~f~ id~f~ +;+ )^{asterisk}^+}+`` be ``typeIR''``:
- .. Return ``+HEADER+ tid +{+( xref:default[$default(typeIR~f~)] id~f~ +;+ )^{asterisk}^+}+``.
+ .. Let ``value''''`` be ``xref:default[$default(typeIR~f~)]``, for all ``typeIR~f~`` in ``typeIR~f~^{asterisk}^`` and ``value''''`` in ``value''''^{asterisk}^``.
+ .. Return ``+HEADER+ tid +{+( value'''' id~f~ +;+ )^{asterisk}^+}+``.
 . Else if let ``+HEADER_UNION+ tid +{+( typeIR~f~ id~f~ +;+ )^{asterisk}^+}+`` be ``typeIR''``:
- .. Return ``+HEADER_UNION+ tid +{+( xref:default[$default(typeIR~f~)] id~f~ +;+ )^{asterisk}^+}+``.
+ .. Let ``value'''''`` be ``xref:default[$default(typeIR~f~)]``, for all ``typeIR~f~`` in ``typeIR~f~^{asterisk}^`` and ``value'''''`` in ``value'''''^{asterisk}^``.
+ .. Return ``+HEADER_UNION+ tid +{+( value''''' id~f~ +;+ )^{asterisk}^+}+``.
 . Else if let ``enumTypeIR`` be ``typeIR''``:
  .. If let ``+ENUM+ tid +{+id^{asterisk}^+}+`` be ``enumTypeIR``:
   ... Let!~type~ ``id~f_h~ {two-colons} ++_++^{asterisk}^`` be ``id^{asterisk}^``.
@@ -2416,7 +2538,8 @@ xref:default'[$default'(typeIR'')]
 
 xref:cast_bool[$cast_bool(typeIR, b)]
 
-. Return ``xref:cast_bool'[$cast_bool'($canon(typeIR), b)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:cast_bool'[$cast_bool'(typeIR', b)]``.
 
 xref:cast_bool'[$cast_bool'(typeIR'', b')]
 
@@ -2438,7 +2561,8 @@ xref:cast_bool'[$cast_bool'(typeIR'', b')]
 
 xref:cast_arbint[$cast_arbint(typeIR, i)]
 
-. Return ``xref:cast_arbint'[$cast_arbint'($canon(typeIR), i)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:cast_arbint'[$cast_arbint'(typeIR', i)]``.
 
 xref:cast_arbint'[$cast_arbint'(typeIR''', i)]
 
@@ -2450,9 +2574,11 @@ xref:cast_arbint'[$cast_arbint'(typeIR''', i)]
  .. If ``numberTypeIR`` matches pattern ``+INT+``:
   ... Return ``+D+ i``.
  .. Else if let ``+BIT+ +<+w+>+`` be ``numberTypeIR``:
-  ... Return ``w +W+ xref:to_bitstr[$to_bitstr(w, i)]``.
+  ... Let ``int`` be ``xref:to_bitstr[$to_bitstr(w, i)]``.
+  ... Return ``w +W+ int``.
  .. Else if let ``+INT+ +<+w+>+`` be ``numberTypeIR``:
-  ... Return ``w +S+ xref:to_bitstr[$to_bitstr(w, i)]``.
+  ... Let ``int'`` be ``xref:to_bitstr[$to_bitstr(w, i)]``.
+  ... Return ``w +S+ int'``.
 . Else if let ``aliasTypeIR`` be ``typeIR'''``:
  .. Let!~type~ ``+TYPE+ ++_++ typeIR`` be ``aliasTypeIR``.
 
@@ -2460,11 +2586,13 @@ xref:cast_arbint'[$cast_arbint'(typeIR''', i)]
 . Else if let ``+SET+ +<+typeIR'^{asterisk}^+>+`` be ``typeIR'''``:
  .. Let!~type~ ``typeIR`` be ``typeIR'^{asterisk}^``.
 
- .. Return ``+SET+ +{+xref:cast_arbint[$cast_arbint(typeIR, i)]+}+``.
+ .. Let ``value`` be ``xref:cast_arbint[$cast_arbint(typeIR, i)]``.
+ .. Return ``+SET+ +{+value+}+``.
 
 xref:cast_fixbit[$cast_fixbit(typeIR, w, i)]
 
-. Return ``xref:cast_fixbit'[$cast_fixbit'($canon(typeIR), w, i)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:cast_fixbit'[$cast_fixbit'(typeIR', w, i)]``.
 
 xref:cast_fixbit'[$cast_fixbit'(typeIR''', w', i)]
 
@@ -2488,22 +2616,27 @@ xref:cast_fixbit'[$cast_fixbit'(typeIR''', w', i)]
 . Else if let ``+SET+ +<+typeIR'^{asterisk}^+>+`` be ``typeIR'''``:
  .. Let!~type~ ``typeIR`` be ``typeIR'^{asterisk}^``.
 
- .. Return ``+SET+ +{+xref:cast_fixbit[$cast_fixbit(typeIR, w', i)]+}+``.
+ .. Let ``value`` be ``xref:cast_fixbit[$cast_fixbit(typeIR, w', i)]``.
+ .. Return ``+SET+ +{+value+}+``.
 
 xref:cast_fixint[$cast_fixint(typeIR, w, i)]
 
-. Return ``xref:cast_fixint'[$cast_fixint'($canon(typeIR), w, i)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:cast_fixint'[$cast_fixint'(typeIR', w, i)]``.
 
 xref:cast_fixint'[$cast_fixint'(typeIR''', w', i)]
 
 . If let ``numberTypeIR`` be ``typeIR'''``:
  .. If ``numberTypeIR`` matches pattern ``+INT+``:
-  ... Return ``+D+ xref:to_int[$to_int(w', i)]``.
+  ... Let ``int`` be ``xref:to_int[$to_int(w', i)]``.
+  ... Return ``+D+ int``.
  .. Else if let ``+BIT+ +<+w~to~+>+`` be ``numberTypeIR``:
-  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~to~, $to_int(w', i))]``.
+  ... Let ``int'`` be ``xref:to_int[$to_int(w', i)]``.
+  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~to~, int')]``.
   ... Return ``w~to~ +W+ i'``.
  .. Else if let ``+INT+ +<+w~to~+>+`` be ``numberTypeIR``:
-  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~to~, $to_int(w', i))]``.
+  ... Let ``int''`` be ``xref:to_int[$to_int(w', i)]``.
+  ... Let ``i'`` be ``xref:to_bitstr[$to_bitstr(w~to~, int'')]``.
   ... Return ``w~to~ +S+ i'``.
 . Else if let ``aliasTypeIR`` be ``typeIR'''``:
  .. Let!~type~ ``+TYPE+ ++_++ typeIR`` be ``aliasTypeIR``.
@@ -2512,11 +2645,13 @@ xref:cast_fixint'[$cast_fixint'(typeIR''', w', i)]
 . Else if let ``+SET+ +<+typeIR'^{asterisk}^+>+`` be ``typeIR'''``:
  .. Let!~type~ ``typeIR`` be ``typeIR'^{asterisk}^``.
 
- .. Return ``+SET+ +{+xref:cast_fixint[$cast_fixint(typeIR, w', i)]+}+``.
+ .. Let ``value`` be ``xref:cast_fixint[$cast_fixint(typeIR, w', i)]``.
+ .. Return ``+SET+ +{+value+}+``.
 
 xref:cast_struct[$cast_struct(typeIR, tid, ( value~f~, id~f~ )^{asterisk}^)]
 
-. Return ``xref:cast_struct'[$cast_struct'($canon(typeIR), tid, ( value~f~, id~f~ )^{asterisk}^)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:cast_struct'[$cast_struct'(typeIR', tid, ( value~f~, id~f~ )^{asterisk}^)]``.
 
 xref:cast_struct'[$cast_struct'(typeIR, tid', ( value~f~, id~f~ )^{asterisk}^)]
 
@@ -2528,7 +2663,8 @@ xref:cast_struct'[$cast_struct'(typeIR, tid', ( value~f~, id~f~ )^{asterisk}^)]
 
 xref:cast_header[$cast_header(typeIR, tid, ( value~f~, id~f~ )^{asterisk}^)]
 
-. Return ``xref:cast_header'[$cast_header'($canon(typeIR), tid, ( value~f~, id~f~ )^{asterisk}^)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:cast_header'[$cast_header'(typeIR', tid, ( value~f~, id~f~ )^{asterisk}^)]``.
 
 xref:cast_header'[$cast_header'(typeIR, tid', ( value~f~, id~f~ )^{asterisk}^)]
 
@@ -2540,14 +2676,17 @@ xref:cast_header'[$cast_header'(typeIR, tid', ( value~f~, id~f~ )^{asterisk}^)]
 
 xref:cast_sequence[$cast_sequence(typeIR, value^{asterisk}^)]
 
-. Return ``xref:cast_sequence'[$cast_sequence'($canon(typeIR), value^{asterisk}^)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:cast_sequence'[$cast_sequence'(typeIR', value^{asterisk}^)]``.
 
 xref:cast_sequence'[$cast_sequence'(typeIR'', value^{asterisk}^)]
 
 . If let ``+LIST+ +<+typeIR+>+`` be ``typeIR''``:
- .. Return ``+[+( xref:cast_op[$cast_op(typeIR, value)] )^{asterisk}^+]+``.
+ .. Let ``value'`` be ``xref:cast_op[$cast_op(typeIR, value)]``, for all ``value`` in ``value^{asterisk}^`` and ``value'`` in ``value'^{asterisk}^``.
+ .. Return ``+[+value'^{asterisk}^+]+``.
 . Else if let ``+TUPLE+ +<+typeIR^{asterisk}^+>+`` be ``typeIR''``:
- .. Return ``+(+( xref:cast_op[$cast_op(typeIR, value)] )^{asterisk}^+)+``.
+ .. Let ``value''`` be ``xref:cast_op[$cast_op(typeIR, value)]``, for all ``typeIR`` in ``typeIR^{asterisk}^``, ``value`` in ``value^{asterisk}^``, and ``value''`` in ``value''^{asterisk}^``.
+ .. Return ``+(+value''^{asterisk}^+)+``.
 . Else if let ``typeIR +[+n~s~+]+`` be ``typeIR''``:
  .. Let ``value~cast~`` be ``xref:cast_op[$cast_op(typeIR, value)]``, for all ``value`` in ``value^{asterisk}^`` and ``value~cast~`` in ``value~cast~^{asterisk}^``.
  .. Let ``n~idx~`` be the length of ``value^{asterisk}^``.
@@ -2561,7 +2700,8 @@ xref:cast_sequence'[$cast_sequence'(typeIR'', value^{asterisk}^)]
 
 xref:cast_record[$cast_record(typeIR, ( value, id )^{asterisk}^)]
 
-. Return ``xref:cast_record'[$cast_record'($canon(typeIR), ( value, id )^{asterisk}^)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:cast_record'[$cast_record'(typeIR', ( value, id )^{asterisk}^)]``.
 
 xref:cast_record'[$cast_record'(typeIR, ( value~f~, id~f~ )^{asterisk}^)]
 
@@ -2582,7 +2722,8 @@ xref:cast_record'[$cast_record'(typeIR, ( value~f~, id~f~ )^{asterisk}^)]
 
 xref:cast_set_singleton[$cast_set_singleton(typeIR, value)]
 
-. Return ``xref:cast_set_singleton'[$cast_set_singleton'($canon(typeIR), value)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:cast_set_singleton'[$cast_set_singleton'(typeIR', value)]``.
 
 xref:cast_set_singleton'[$cast_set_singleton'(typeIR'', value)]
 
@@ -2590,11 +2731,13 @@ xref:cast_set_singleton'[$cast_set_singleton'(typeIR'', value)]
 
 . Let!~type~ ``typeIR`` be ``typeIR'^{asterisk}^``.
 
-. Return ``+SET+ +{+xref:cast_op[$cast_op(typeIR, value)]+}+``.
+. Let ``value'`` be ``xref:cast_op[$cast_op(typeIR, value)]``.
+. Return ``+SET+ +{+value'+}+``.
 
 xref:cast_set_mask[$cast_set_mask(typeIR, value~b~, value~m~)]
 
-. Return ``xref:cast_set_mask'[$cast_set_mask'($canon(typeIR), value~b~, value~m~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:cast_set_mask'[$cast_set_mask'(typeIR', value~b~, value~m~)]``.
 
 xref:cast_set_mask'[$cast_set_mask'(typeIR'', value~b~, value~m~)]
 
@@ -2608,7 +2751,8 @@ xref:cast_set_mask'[$cast_set_mask'(typeIR'', value~b~, value~m~)]
 
 xref:cast_set_range[$cast_set_range(typeIR, value~l~, value~u~)]
 
-. Return ``xref:cast_set_range'[$cast_set_range'($canon(typeIR), value~l~, value~u~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:cast_set_range'[$cast_set_range'(typeIR', value~l~, value~u~)]``.
 
 xref:cast_set_range'[$cast_set_range'(typeIR'', value~l~, value~u~)]
 
@@ -2644,11 +2788,13 @@ xref:sizeof[$sizeof(typeIR, text)]
 
 xref:sizeof_minSizeInBits[$sizeof_minSizeInBits(typeIR)]
 
-. Return ``+D+ xref:sizeof_minSizeInBits'[$sizeof_minSizeInBits'(typeIR)]``.
+. Let ``nat`` be ``xref:sizeof_minSizeInBits'[$sizeof_minSizeInBits'(typeIR)]``.
+. Return ``+D+ nat``.
 
 xref:sizeof_minSizeInBits'[$sizeof_minSizeInBits'(typeIR)]
 
-. Return ``xref:sizeof_minSizeInBits''[$sizeof_minSizeInBits''($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:sizeof_minSizeInBits''[$sizeof_minSizeInBits''(typeIR')]``.
 
 xref:sizeof_minSizeInBits''[$sizeof_minSizeInBits''(typeIR'')]
 
@@ -2672,15 +2818,20 @@ xref:sizeof_minSizeInBits''[$sizeof_minSizeInBits''(typeIR'')]
 
  .. Return ``xref:sizeof_minSizeInBits'[$sizeof_minSizeInBits'(typeIR)]``.
 . Else if let ``+TUPLE+ +<+typeIR^{asterisk}^+>+`` be ``typeIR''``:
- .. Return ``xref:sum[$sum($sizeof_minSizeInBits'(typeIR)^{asterisk}^)]``.
+ .. Let ``nat`` be ``xref:sizeof_minSizeInBits'[$sizeof_minSizeInBits'(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``nat`` in ``nat^{asterisk}^``.
+ .. Return ``xref:sum[$sum(nat^{asterisk}^)]``.
 . Else if let ``typeIR +[+n~size~+]+`` be ``typeIR''``:
- .. Return ``xref:sizeof_minSizeInBits'[$sizeof_minSizeInBits'(typeIR)]`` * ``n~size~``.
+ .. Let ``nat'`` be ``xref:sizeof_minSizeInBits'[$sizeof_minSizeInBits'(typeIR)]``.
+ .. Return ``nat'`` * ``n~size~``.
 . Else if let ``+STRUCT+ ++_++ +{+( typeIR ++_++ +;+ )^{asterisk}^+}+`` be ``typeIR''``:
- .. Return ``xref:sum[$sum($sizeof_minSizeInBits'(typeIR)^{asterisk}^)]``.
+ .. Let ``nat''`` be ``xref:sizeof_minSizeInBits'[$sizeof_minSizeInBits'(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``nat''`` in ``nat''^{asterisk}^``.
+ .. Return ``xref:sum[$sum(nat''^{asterisk}^)]``.
 . Else if let ``+HEADER+ ++_++ +{+( typeIR ++_++ +;+ )^{asterisk}^+}+`` be ``typeIR''``:
- .. Return ``xref:sum[$sum($sizeof_minSizeInBits'(typeIR)^{asterisk}^)]``.
+ .. Let ``nat'''`` be ``xref:sizeof_minSizeInBits'[$sizeof_minSizeInBits'(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``nat'''`` in ``nat'''^{asterisk}^``.
+ .. Return ``xref:sum[$sum(nat'''^{asterisk}^)]``.
 . Else if let ``+HEADER_UNION+ ++_++ +{+( typeIR ++_++ +;+ )^{asterisk}^+}+`` be ``typeIR''``:
- .. Return ``xref:min[$min($sizeof_minSizeInBits'(typeIR)^{asterisk}^)]``.
+ .. Let ``nat''''`` be ``xref:sizeof_minSizeInBits'[$sizeof_minSizeInBits'(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``nat''''`` in ``nat''''^{asterisk}^``.
+ .. Return ``xref:min[$min(nat''''^{asterisk}^)]``.
 
 xref:sizeof_minSizeInBytes[$sizeof_minSizeInBytes(typeIR)]
 
@@ -2689,11 +2840,13 @@ xref:sizeof_minSizeInBytes[$sizeof_minSizeInBytes(typeIR)]
 
 xref:sizeof_maxSizeInBits[$sizeof_maxSizeInBits(typeIR)]
 
-. Return ``+D+ xref:sizeof_maxSizeInBits'[$sizeof_maxSizeInBits'(typeIR)]``.
+. Let ``nat`` be ``xref:sizeof_maxSizeInBits'[$sizeof_maxSizeInBits'(typeIR)]``.
+. Return ``+D+ nat``.
 
 xref:sizeof_maxSizeInBits'[$sizeof_maxSizeInBits'(typeIR)]
 
-. Return ``xref:sizeof_maxSizeInBits''[$sizeof_maxSizeInBits''($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:sizeof_maxSizeInBits''[$sizeof_maxSizeInBits''(typeIR')]``.
 
 xref:sizeof_maxSizeInBits''[$sizeof_maxSizeInBits''(typeIR'')]
 
@@ -2717,15 +2870,20 @@ xref:sizeof_maxSizeInBits''[$sizeof_maxSizeInBits''(typeIR'')]
 
  .. Return ``xref:sizeof_maxSizeInBits'[$sizeof_maxSizeInBits'(typeIR)]``.
 . Else if let ``+TUPLE+ +<+typeIR^{asterisk}^+>+`` be ``typeIR''``:
- .. Return ``xref:sum[$sum($sizeof_maxSizeInBits'(typeIR)^{asterisk}^)]``.
+ .. Let ``nat`` be ``xref:sizeof_maxSizeInBits'[$sizeof_maxSizeInBits'(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``nat`` in ``nat^{asterisk}^``.
+ .. Return ``xref:sum[$sum(nat^{asterisk}^)]``.
 . Else if let ``typeIR +[+n~size~+]+`` be ``typeIR''``:
- .. Return ``xref:sizeof_maxSizeInBits'[$sizeof_maxSizeInBits'(typeIR)]`` * ``n~size~``.
+ .. Let ``nat'`` be ``xref:sizeof_maxSizeInBits'[$sizeof_maxSizeInBits'(typeIR)]``.
+ .. Return ``nat'`` * ``n~size~``.
 . Else if let ``+STRUCT+ ++_++ +{+( typeIR ++_++ +;+ )^{asterisk}^+}+`` be ``typeIR''``:
- .. Return ``xref:sum[$sum($sizeof_maxSizeInBits'(typeIR)^{asterisk}^)]``.
+ .. Let ``nat''`` be ``xref:sizeof_maxSizeInBits'[$sizeof_maxSizeInBits'(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``nat''`` in ``nat''^{asterisk}^``.
+ .. Return ``xref:sum[$sum(nat''^{asterisk}^)]``.
 . Else if let ``+HEADER+ ++_++ +{+( typeIR ++_++ +;+ )^{asterisk}^+}+`` be ``typeIR''``:
- .. Return ``xref:sum[$sum($sizeof_maxSizeInBits'(typeIR)^{asterisk}^)]``.
+ .. Let ``nat'''`` be ``xref:sizeof_maxSizeInBits'[$sizeof_maxSizeInBits'(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``nat'''`` in ``nat'''^{asterisk}^``.
+ .. Return ``xref:sum[$sum(nat'''^{asterisk}^)]``.
 . Else if let ``+HEADER_UNION+ ++_++ +{+( typeIR ++_++ +;+ )^{asterisk}^+}+`` be ``typeIR''``:
- .. Return ``xref:max[$max($sizeof_maxSizeInBits'(typeIR)^{asterisk}^)]``.
+ .. Let ``nat''''`` be ``xref:sizeof_maxSizeInBits'[$sizeof_maxSizeInBits'(typeIR)]``, for all ``typeIR`` in ``typeIR^{asterisk}^`` and ``nat''''`` in ``nat''''^{asterisk}^``.
+ .. Return ``xref:max[$max(nat''''^{asterisk}^)]``.
 
 xref:sizeof_maxSizeInBytes[$sizeof_maxSizeInBytes(typeIR)]
 
@@ -2738,11 +2896,13 @@ xref:prefixedNonTypeName[$prefixedNonTypeName(prefixedNonTypeName)]
  .. {empty}
   ... Let!~type~ ``nonTypeName`` be ``prefixedNonTypeName``.
 
-  ... Return ``xref:name[$name(nonTypeName)]``.
+  ... Let ``nameIR`` be ``xref:name[$name(nonTypeName)]``.
+  ... Return ``nameIR``.
  .. {empty}
   ... Let!~type~ ``+.+ nonTypeName`` be ``prefixedNonTypeName``.
 
-  ... Return ``+.+ xref:name[$name(nonTypeName)]``.
+  ... Let ``nameIR'`` be ``xref:name[$name(nonTypeName)]``.
+  ... Return ``+.+ nameIR'``.
 
 xref:prefixedTypeName[$prefixedTypeName(prefixedTypeName)]
 
@@ -2750,11 +2910,13 @@ xref:prefixedTypeName[$prefixedTypeName(prefixedTypeName)]
  .. {empty}
   ... Let!~type~ ``typeName`` be ``prefixedTypeName``.
 
-  ... Return ``xref:name[$name(typeName)]``.
+  ... Let ``nameIR`` be ``xref:name[$name(typeName)]``.
+  ... Return ``nameIR``.
  .. {empty}
   ... Let!~type~ ``+.+ typeName`` be ``prefixedTypeName``.
 
-  ... Return ``+.+ xref:name[$name(typeName)]``.
+  ... Let ``nameIR'`` be ``xref:name[$name(typeName)]``.
+  ... Return ``+.+ nameIR'``.
 
 xref:flatten_prefixedNameIR[$flatten_prefixedNameIR(prefixedNameIR)]
 
@@ -2814,7 +2976,8 @@ xref:get_missing_parameters[$get_missing_parameters(id^{asterisk}^, id~arg~^{ast
 . Else:
  .. Check that ``~xref:in_set[$in_set<id>(id~param_h~, +{+id~arg~^{asterisk}^+}+)]``.
 
- .. Return ``id~param_h~ {two-colons} xref:get_missing_parameters[$get_missing_parameters(id~param_t~^{asterisk}^, id~arg~^{asterisk}^)]``.
+ .. Let ``id'^{asterisk}^`` be ``xref:get_missing_parameters[$get_missing_parameters(id~param_t~^{asterisk}^, id~arg~^{asterisk}^)]``.
+ .. Return ``id~param_h~ {two-colons} id'^{asterisk}^``.
 
 . Otherwise:
  .. Otherwise:
@@ -2912,7 +3075,8 @@ xref:find_matchings[$find_matchings<V>(id~r~, id~arg~^?^^{asterisk}^, id~arg'~^{
 
  .. Return ``xref:find_matchings[$find_matchings<V>(id~r~, id~arg~^?^^{asterisk}^, id~arg'~^{asterisk}^, rid~t~^{asterisk}^, V~t~^{asterisk}^)]``.
  .. Let ``( rid, V, id~default~^{asterisk}^ )`` be xref:option_get[*!*] ``xref:find_matching[$find_matching<V>(id~r~, id~arg~^?^^{asterisk}^, id~arg'~^{asterisk}^, rid~h~, V~h~)]``.
- .. Return ``( rid, V, id~default~^{asterisk}^ ) {two-colons} xref:find_matchings[$find_matchings<V>(id~r~, id~arg~^?^^{asterisk}^, id~arg'~^{asterisk}^, rid~t~^{asterisk}^, V~t~^{asterisk}^)]``.
+ .. Let ``(rid, V, id*)'^{asterisk}^`` be ``xref:find_matchings[$find_matchings<V>(id~r~, id~arg~^?^^{asterisk}^, id~arg'~^{asterisk}^, rid~t~^{asterisk}^, V~t~^{asterisk}^)]``.
+ .. Return ``( rid, V, id~default~^{asterisk}^ ) {two-colons} (rid, V, id*)'^{asterisk}^``.
 
 xref:find_overloaded[$find_overloaded<V>(+{+( rid +:+ V )^{asterisk}^+}+, id~r~, id~arg~^?^^{asterisk}^)]
 
@@ -3547,7 +3711,8 @@ xref:add_table_priority[$add_table_priority(TBLC, n)]
 
 xref:update_mode[$update_mode(TBLC, id, typeIR)]
 
-. Return ``xref:update_mode'[$update_mode'(TBLC, id, $canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:update_mode'[$update_mode'(TBLC, id, typeIR')]``.
 
 xref:update_mode'[$update_mode'(TBLC, text', typeIR'')]
 
@@ -3996,7 +4161,8 @@ xref:ConstructorTypeDef_wf[ConstructorTypeDef_wf: ``bound ⊢ constructorTypeIR 
 
 xref:nestable_typedef[$nestable_typedef(typeIR)]
 
-. Return ``xref:nestable'_typedef[$nestable'_typedef($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_typedef[$nestable'_typedef(typeIR')]``.
 
 xref:nestable'_typedef[$nestable'_typedef(typeIR')]
 
@@ -4019,7 +4185,8 @@ xref:nestable'_typedef[$nestable'_typedef(typeIR')]
 
 xref:nestable_new[$nestable_new(typeIR)]
 
-. Return ``xref:nestable'_new[$nestable'_new($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_new[$nestable'_new(typeIR')]``.
 
 xref:nestable'_new[$nestable'_new(typeIR')]
 
@@ -4042,7 +4209,8 @@ xref:nestable'_new[$nestable'_new(typeIR')]
 
 xref:nestable_list[$nestable_list(typeIR)]
 
-. Return ``xref:nestable'_list[$nestable'_list($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_list[$nestable'_list(typeIR')]``.
 
 xref:nestable'_list[$nestable'_list(typeIR')]
 
@@ -4066,7 +4234,8 @@ xref:nestable'_list[$nestable'_list(typeIR')]
 
 xref:nestable_tuple[$nestable_tuple(typeIR)]
 
-. Return ``xref:nestable'_tuple[$nestable'_tuple($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_tuple[$nestable'_tuple(typeIR')]``.
 
 xref:nestable'_tuple[$nestable'_tuple(typeIR'')]
 
@@ -4098,7 +4267,8 @@ xref:nestable'_tuple[$nestable'_tuple(typeIR'')]
 
 xref:nestable_stack[$nestable_stack(typeIR)]
 
-. Return ``xref:nestable'_stack[$nestable'_stack($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_stack[$nestable'_stack(typeIR')]``.
 
 xref:nestable'_stack[$nestable'_stack(typeIR')]
 
@@ -4114,7 +4284,8 @@ xref:nestable'_stack[$nestable'_stack(typeIR')]
 
 xref:nestable_struct[$nestable_struct(typeIR)]
 
-. Return ``xref:nestable'_struct[$nestable'_struct($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_struct[$nestable'_struct(typeIR')]``.
 
 xref:nestable'_struct[$nestable'_struct(typeIR'')]
 
@@ -4146,7 +4317,8 @@ xref:nestable'_struct[$nestable'_struct(typeIR'')]
 
 xref:nestable_header[$nestable_header(typeIR)]
 
-. Return ``xref:nestable'_header[$nestable'_header($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_header[$nestable'_header(typeIR')]``.
 
 xref:nestable'_header[$nestable'_header(typeIR'')]
 
@@ -4176,7 +4348,8 @@ xref:nestable'_header[$nestable'_header(typeIR'')]
 
 xref:nestable_struct_in_header[$nestable_struct_in_header(typeIR)]
 
-. Return ``xref:nestable'_struct_in_header[$nestable'_struct_in_header($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_struct_in_header[$nestable'_struct_in_header(typeIR')]``.
 
 xref:nestable'_struct_in_header[$nestable'_struct_in_header(typeIR'')]
 
@@ -4205,7 +4378,8 @@ xref:nestable'_struct_in_header[$nestable'_struct_in_header(typeIR'')]
 
 xref:nestable_headerunion[$nestable_headerunion(typeIR)]
 
-. Return ``xref:nestable'_headerunion[$nestable'_headerunion($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_headerunion[$nestable'_headerunion(typeIR')]``.
 
 xref:nestable'_headerunion[$nestable'_headerunion(typeIR')]
 
@@ -4223,7 +4397,8 @@ xref:nestable'_headerunion[$nestable'_headerunion(typeIR')]
 
 xref:nestable_serenum[$nestable_serenum(typeIR)]
 
-. Return ``xref:nestable'_serenum[$nestable'_serenum($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_serenum[$nestable'_serenum(typeIR')]``.
 
 xref:nestable'_serenum[$nestable'_serenum(typeIR'')]
 
@@ -4244,7 +4419,8 @@ xref:nestable'_serenum[$nestable'_serenum(typeIR'')]
 
 xref:nestable_new_in_serenum[$nestable_new_in_serenum(typeIR)]
 
-. Return ``xref:nestable_new_in_serenum'[$nestable_new_in_serenum'($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable_new_in_serenum'[$nestable_new_in_serenum'(typeIR')]``.
 
 xref:nestable_new_in_serenum'[$nestable_new_in_serenum'(typeIR')]
 
@@ -4264,7 +4440,8 @@ xref:nestable_new_in_serenum'[$nestable_new_in_serenum'(typeIR')]
 
 xref:nestable_set[$nestable_set(typeIR)]
 
-. Return ``xref:nestable'_set[$nestable'_set($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_set[$nestable'_set(typeIR')]``.
 
 xref:nestable'_set[$nestable'_set(typeIR'')]
 
@@ -4298,7 +4475,8 @@ xref:nestable'_set[$nestable'_set(typeIR'')]
 
 xref:nestable_tuple_in_set[$nestable_tuple_in_set(typeIR)]
 
-. Return ``xref:nestable'_tuple_in_set[$nestable'_tuple_in_set($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_tuple_in_set[$nestable'_tuple_in_set(typeIR')]``.
 
 xref:nestable'_tuple_in_set[$nestable'_tuple_in_set(typeIR'')]
 
@@ -4327,7 +4505,8 @@ xref:nestable'_tuple_in_set[$nestable'_tuple_in_set(typeIR'')]
 
 xref:nestable_sequence_in_set[$nestable_sequence_in_set(typeIR)]
 
-. Return ``xref:nestable'_sequence_in_set[$nestable'_sequence_in_set($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_sequence_in_set[$nestable'_sequence_in_set(typeIR')]``.
 
 xref:nestable'_sequence_in_set[$nestable'_sequence_in_set(typeIR'')]
 
@@ -4392,7 +4571,8 @@ xref:definable_type_poly[$definable_type_poly(typeIR')]
 
 xref:nestable_function[$nestable_function(direction, typeIR)]
 
-. Return ``xref:nestable_function'[$nestable_function'(direction, $canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable_function'[$nestable_function'(direction, typeIR')]``.
 
 xref:nestable_function'[$nestable_function'(direction', typeIR')]
 
@@ -4414,7 +4594,8 @@ xref:nestable_function'[$nestable_function'(direction', typeIR')]
 
 xref:directionless_trailing[$directionless_trailing(direction^{asterisk}^)]
 
-. Return ``xref:directionless_trailing'[$directionless_trailing'(true, $rev_<direction>(direction^{asterisk}^))]``.
+. Let ``direction'^{asterisk}^`` be ``xref:rev_[$rev_<direction>(direction^{asterisk}^)]``.
+. Return ``xref:directionless_trailing'[$directionless_trailing'(true, direction'^{asterisk}^)]``.
 
 xref:directionless_trailing'[$directionless_trailing'(++_++, direction''^{asterisk}^)]
 
@@ -4440,7 +4621,8 @@ xref:directionless_trailing'[$directionless_trailing'(++_++, direction''^{asteri
 
 xref:nestable_action[$nestable_action(direction, typeIR)]
 
-. Return ``xref:nestable_action'[$nestable_action'(direction, $canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable_action'[$nestable_action'(direction, typeIR')]``.
 
 xref:nestable_action'[$nestable_action'(direction', typeIR')]
 
@@ -4460,7 +4642,8 @@ xref:nestable_action'[$nestable_action'(direction', typeIR')]
 
 xref:nestable_externfunction[$nestable_externfunction(direction, typeIR)]
 
-. Return ``xref:nestable_externfunction'[$nestable_externfunction'(direction, $canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable_externfunction'[$nestable_externfunction'(direction, typeIR')]``.
 
 xref:nestable_externfunction'[$nestable_externfunction'(direction', typeIR')]
 
@@ -4485,7 +4668,8 @@ xref:nestable_externfunction'[$nestable_externfunction'(direction', typeIR')]
 
 xref:nestable_externmethod[$nestable_externmethod(direction, typeIR)]
 
-. Return ``xref:nestable_externmethod'[$nestable_externmethod'(direction, $canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable_externmethod'[$nestable_externmethod'(direction, typeIR')]``.
 
 xref:nestable_externmethod'[$nestable_externmethod'(direction', typeIR')]
 
@@ -4510,7 +4694,8 @@ xref:nestable_externmethod'[$nestable_externmethod'(direction', typeIR')]
 
 xref:nestable_externabstractmethod[$nestable_externabstractmethod(direction, typeIR)]
 
-. Return ``xref:nestable_externabstractmethod'[$nestable_externabstractmethod'(direction, $canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable_externabstractmethod'[$nestable_externabstractmethod'(direction, typeIR')]``.
 
 xref:nestable_externabstractmethod'[$nestable_externabstractmethod'(direction', typeIR')]
 
@@ -4535,7 +4720,8 @@ xref:nestable_externabstractmethod'[$nestable_externabstractmethod'(direction', 
 
 xref:nestable_parserapplymethod[$nestable_parserapplymethod(direction, typeIR)]
 
-. Return ``xref:nestable_parserapplymethod'[$nestable_parserapplymethod'(direction, $canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable_parserapplymethod'[$nestable_parserapplymethod'(direction, typeIR')]``.
 
 xref:nestable_parserapplymethod'[$nestable_parserapplymethod'(direction', typeIR')]
 
@@ -4560,7 +4746,8 @@ xref:nestable_parserapplymethod'[$nestable_parserapplymethod'(direction', typeIR
 
 xref:nestable_controlapplymethod[$nestable_controlapplymethod(direction, typeIR)]
 
-. Return ``xref:nestable_controlapplymethod'[$nestable_controlapplymethod'(direction, $canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable_controlapplymethod'[$nestable_controlapplymethod'(direction, typeIR')]``.
 
 xref:nestable_controlapplymethod'[$nestable_controlapplymethod'(direction', typeIR')]
 
@@ -4612,7 +4799,8 @@ xref:definable_routine_poly[$definable_routine_poly(routineTypeIR')]
 
 xref:nestable_constructor_extern[$nestable_constructor_extern(typeIR)]
 
-. Return ``xref:nestable'_constructor_extern[$nestable'_constructor_extern($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_constructor_extern[$nestable'_constructor_extern(typeIR')]``.
 . Let!~type~ ``+PARSER+ +(+++_++^{asterisk}^+)+`` be ``typeIR``.
  return ``false``.
 
@@ -4628,7 +4816,8 @@ xref:nestable'_constructor_extern[$nestable'_constructor_extern(typeIR')]
 
 xref:nestable_constructor_parser[$nestable_constructor_parser(typeIR)]
 
-. Return ``xref:nestable'_constructor_parser[$nestable'_constructor_parser($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_constructor_parser[$nestable'_constructor_parser(typeIR')]``.
 
 xref:nestable'_constructor_parser[$nestable'_constructor_parser(typeIR')]
 
@@ -4642,7 +4831,8 @@ xref:nestable'_constructor_parser[$nestable'_constructor_parser(typeIR')]
 
 xref:nestable_constructor_control[$nestable_constructor_control(typeIR)]
 
-. Return ``xref:nestable'_constructor_control[$nestable'_constructor_control($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_constructor_control[$nestable'_constructor_control(typeIR')]``.
 
 xref:nestable'_constructor_control[$nestable'_constructor_control(typeIR')]
 
@@ -4656,7 +4846,8 @@ xref:nestable'_constructor_control[$nestable'_constructor_control(typeIR')]
 
 xref:nestable_constructor_package[$nestable_constructor_package(typeIR)]
 
-. Return ``xref:nestable'_constructor_package[$nestable'_constructor_package($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:nestable'_constructor_package[$nestable'_constructor_package(typeIR')]``.
 
 xref:nestable'_constructor_package[$nestable'_constructor_package(typeIR')]
 
@@ -4669,7 +4860,8 @@ xref:nestable'_constructor_package[$nestable'_constructor_package(typeIR')]
 
 xref:definable_constructor[$definable_constructor(typeIR)]
 
-. Return ``xref:definable'_constructor[$definable'_constructor($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:definable'_constructor[$definable'_constructor(typeIR')]``.
 
 xref:definable'_constructor[$definable'_constructor(typeIR')]
 
@@ -4747,27 +4939,33 @@ xref:Eval_static[Eval_static: ``p TC ⊢ expressionIR +#+ +(+++_++ ++_+++)+ ↝ 
    .... Else if ``binop`` matches pattern ``+<=+``:
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~l~ ↝ value~l~``].
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~r~ ↝ value~r~``].
-    ..... Result in ``+B+ xref:bin_le[$bin_le(value~l~, value~r~)]``.
+    ..... Let ``bool`` be ``xref:bin_le[$bin_le(value~l~, value~r~)]``.
+    ..... Result in ``+B+ bool``.
    .... Else if ``binop`` matches pattern ``+>=+``:
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~l~ ↝ value~l~``].
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~r~ ↝ value~r~``].
-    ..... Result in ``+B+ xref:bin_ge[$bin_ge(value~l~, value~r~)]``.
+    ..... Let ``bool'`` be ``xref:bin_ge[$bin_ge(value~l~, value~r~)]``.
+    ..... Result in ``+B+ bool'``.
    .... Else if ``binop`` matches pattern ``+<+``:
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~l~ ↝ value~l~``].
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~r~ ↝ value~r~``].
-    ..... Result in ``+B+ xref:bin_lt[$bin_lt(value~l~, value~r~)]``.
+    ..... Let ``bool''`` be ``xref:bin_lt[$bin_lt(value~l~, value~r~)]``.
+    ..... Result in ``+B+ bool''``.
    .... Else if ``binop`` matches pattern ``+>+``:
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~l~ ↝ value~l~``].
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~r~ ↝ value~r~``].
-    ..... Result in ``+B+ xref:bin_gt[$bin_gt(value~l~, value~r~)]``.
+    ..... Let ``bool'''`` be ``xref:bin_gt[$bin_gt(value~l~, value~r~)]``.
+    ..... Result in ``+B+ bool'''``.
    .... Else if ``binop`` matches pattern ``+==+``:
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~l~ ↝ value~l~``].
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~r~ ↝ value~r~``].
-    ..... Result in ``+B+ xref:bin_eq[$bin_eq(value~l~, value~r~)]``.
+    ..... Let ``bool''''`` be ``xref:bin_eq[$bin_eq(value~l~, value~r~)]``.
+    ..... Result in ``+B+ bool''''``.
    .... Else if ``binop`` matches pattern ``+!=+``:
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~l~ ↝ value~l~``].
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~r~ ↝ value~r~``].
-    ..... Result in ``+B+ xref:bin_ne[$bin_ne(value~l~, value~r~)]``.
+    ..... Let ``bool'''''`` be ``xref:bin_ne[$bin_ne(value~l~, value~r~)]``.
+    ..... Result in ``+B+ bool'''''``.
    .... Else if ``binop`` matches pattern ``+&+``:
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~l~ ↝ value~l~``].
     ..... Let xref:Eval_static[``p TC ⊢ typedExpressionIR~r~ ↝ value~r~``].
@@ -5009,7 +5207,8 @@ xref:Type_ok[Type_ok: ``p TC ⊢ typeOrVoid +:+ % +#+ %``]
   ... Else if let ``+TUPLE+ +<+typeArgumentList+>+`` be ``typeOrVoid``:
    .... Let ``typeArgument^{asterisk}^`` be ``xref:flatten_typeArgumentList[$flatten_typeArgumentList(typeArgumentList)]``.
    .... Let xref:TypeArguments_ok[``p TC ⊢ typeArgument^{asterisk}^ +:+ typeIR~arg~^{asterisk}^ +#+ tid~fresh~^{asterisk}^``].
-   .... Let ``i~idx~^{asterisk}^`` be ``xref:init_[$init_(the length of typeIR~arg~^{asterisk}^)]``.
+   .... Let ``nat^{asterisk}^`` be ``xref:init_[$init_(the length of typeIR~arg~^{asterisk}^)]``.
+   .... Let ``i~idx~^{asterisk}^`` be ``nat^{asterisk}^``.
    .... Let ``tid~tparam~`` be ``"T"`` concatenated with ``xref:int_to_text[$int_to_text(i~idx~)]``, for all ``i~idx~`` in ``i~idx~^{asterisk}^`` and ``tid~tparam~`` in ``tid~tparam~^{asterisk}^``.
    .... Let ``typeIR~tuple~`` be ``+TUPLE+ +<+( +TID+ tid~tparam~ )^{asterisk}^+>+``.
    .... Let ``polyTypeDefIR~tuple~`` be ``typeIR~tuple~ +<+tid~tparam~^{asterisk}^ +,+ ·+>+``.
@@ -5641,7 +5840,8 @@ xref:Expr_ok[Expr_ok: ``p TC ⊢ expression''' +:+ %``]
    .... Let xref:Type_ok[``p TC ⊢ type~t~ +:+ typeIR~t~ +#+ tid^{asterisk}^``].
    .... Check that ``tid^{asterisk}^`` is an empty list.
 
-   .... If <<Type_wf,``xref:bound[$bound(p, TC)] ⊢ typeIR~t~``>> holds:
+   .... Let ``bound`` be ``xref:bound[$bound(p, TC)]``.
+   .... If xref:Type_wf[``bound ⊢ typeIR~t~``] holds:
     ..... Let xref:Expr_ok[``p TC ⊢ expression +:+ typedExpressionIR``].
     ..... Let ``++_++ +#+ +(+typeIR ctk+)+`` be ``typedExpressionIR``.
     ..... If xref:Cast_expl[``typeIR → typeIR~t~``] holds:
@@ -6189,7 +6389,8 @@ xref:Stmt_ok[Stmt_ok: ``p' TC' f' ⊢ statement +:+ % % %``]
 
      ...... Let!~type~ ``+TABLE_ENUM+ tid~table_enum~ +{+++_++^{asterisk}^+}+`` be ``tableTypeIR``.
 
-     ...... Let ``tid~table~`` be ``xref:strip_prefix[$strip_prefix($strip_suffix(tid~table_enum~, ")"), "action_list(")]``.
+     ...... Let ``text`` be ``xref:strip_suffix[$strip_suffix(tid~table_enum~, ")")]``.
+     ...... Let ``tid~table~`` be ``xref:strip_prefix[$strip_prefix(text, "action_list(")]``.
      ...... Let ``switchCase^{asterisk}^`` be ``xref:flatten_switchCaseList[$flatten_switchCaseList(switchCaseList)]``.
      ...... Let xref:SwitchCases_table_ok[``TC' f' tid~table~ ⊢ switchCase^{asterisk}^ +:+ f~post~ switchCaseIR^{asterisk}^ +#+ switchLabel^{asterisk}^``].
      ...... Check that ``xref:distinct_[$distinct_<switchLabel>(switchLabel^{asterisk}^)]``.
@@ -6225,7 +6426,8 @@ xref:BlockElementStmt_ok[BlockElementStmt_ok: ``TC~0~ f ⊢ blockElementStatemen
    .... Let xref:Type_ok[``+LOCAL+ TC~0~ ⊢ type +:+ typeIR +#+ tid^{asterisk}^``].
    .... Check that ``tid^{asterisk}^`` is an empty list.
 
-   .... If <<Type_wf,``xref:bound[$bound(+LOCAL+, TC~0~)] ⊢ typeIR``>> holds:
+   .... Let ``bound`` be ``xref:bound[$bound(+LOCAL+, TC~0~)]``.
+   .... If xref:Type_wf[``bound ⊢ typeIR``] holds:
     ..... Check that ``xref:is_assignable_typeIR[$is_assignable_typeIR(typeIR)]``.
 
     ..... Let ``nameIR`` be ``xref:name[$name(name)]``.
@@ -6238,7 +6440,8 @@ xref:BlockElementStmt_ok[BlockElementStmt_ok: ``TC~0~ f ⊢ blockElementStatemen
    .... Let xref:Type_ok[``+LOCAL+ TC~0~ ⊢ type +:+ typeIR +#+ tid^{asterisk}^``].
    .... Check that ``tid^{asterisk}^`` is an empty list.
 
-   .... If <<Type_wf,``xref:bound[$bound(+LOCAL+, TC~0~)] ⊢ typeIR``>> holds:
+   .... Let ``bound'`` be ``xref:bound[$bound(+LOCAL+, TC~0~)]``.
+   .... If xref:Type_wf[``bound' ⊢ typeIR``] holds:
     ..... Check that ``xref:is_assignable_typeIR[$is_assignable_typeIR(typeIR)]``.
 
     ..... Let xref:Expr_ok[``+LOCAL+ TC~0~ ⊢ expression~init~ +:+ typedExpressionIR~init~``].
@@ -6276,7 +6479,8 @@ xref:Parameter_ok[Parameter_ok: ``p TC ⊢ annotationList direction type name in
   ... Check that ``initializerOpt`` matches pattern ````.
 
   ... Let xref:Type_ok[``p TC ⊢ type +:+ typeIR +#+ tid~fresh~^{asterisk}^``].
-  ... Let ``bound`` be ``xref:union_set[$union_set<tid>($bound(p, TC), +{+tid~fresh~^{asterisk}^+}+)]``.
+  ... Let ``bound'`` be ``xref:bound[$bound(p, TC)]``.
+  ... Let ``bound`` be ``xref:union_set[$union_set<tid>(bound', +{+tid~fresh~^{asterisk}^+}+)]``.
   ... If xref:Type_wf[``bound ⊢ typeIR``] holds:
    .... Let ``nameIR`` be ``xref:name[$name(name)]``.
    .... Result in ``annotationList direction typeIR nameIR ·`` and ``tid~fresh~^{asterisk}^``.
@@ -6284,7 +6488,8 @@ xref:Parameter_ok[Parameter_ok: ``p TC ⊢ annotationList direction type name in
   ... Let!~type~ ``+=+ expression~init~`` be ``initializerOpt``.
 
   ... Let xref:Type_ok[``p TC ⊢ type +:+ typeIR +#+ tid~fresh~^{asterisk}^``].
-  ... Let ``bound`` be ``xref:union_set[$union_set<tid>($bound(p, TC), +{+tid~fresh~^{asterisk}^+}+)]``.
+  ... Let ``bound''`` be ``xref:bound[$bound(p, TC)]``.
+  ... Let ``bound`` be ``xref:union_set[$union_set<tid>(bound'', +{+tid~fresh~^{asterisk}^+}+)]``.
   ... If xref:Type_wf[``bound ⊢ typeIR``] holds:
    .... Let xref:Expr_ok[``p TC ⊢ expression~init~ +:+ typedExpressionIR~init~``].
    .... Let ``++_++ +#+ +(+typeIR~init~ ctk+)+`` be ``typedExpressionIR~init~``.
@@ -6351,7 +6556,8 @@ xref:ExternMethod_ok[ExternMethod_ok: ``TC~0~ tid~extern~ ⊢ methodPrototype +:
  .. Let ``rid`` be ``xref:rid[$rid(name, parameterList)]``.
  .. Let ``methodTypeIR`` be ``+EXTERN_METHOD+ +(+parameterTypeIR^{asterisk}^+)+ +->+ typeIR~ret~``.
  .. Let ``routineTypeDefIR`` be ``methodTypeIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+``.
- .. If <<RoutineTypeDef_wf,``xref:bound[$bound(+BLOCK+, TC~0~)] ⊢ routineTypeDefIR``>> holds:
+ .. Let ``bound`` be ``xref:bound[$bound(+BLOCK+, TC~0~)]``.
+ .. If xref:RoutineTypeDef_wf[``bound ⊢ routineTypeDefIR``] holds:
   ... Let ``TC~4~`` be ``xref:add_routine_overload[$add_routine_overload(+BLOCK+, TC~0~, rid, routineTypeDefIR)]``.
   ... Let ``methodPrototypeIR`` be ``annotationList typeIR~ret~ nameIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ +;+``.
   ... Result in ``TC~4~`` and ``methodPrototypeIR``.
@@ -6373,7 +6579,8 @@ xref:ExternMethod_ok[ExternMethod_ok: ``TC~0~ tid~extern~ ⊢ methodPrototype +:
  .. Let ``rid`` be ``xref:rid[$rid(name, parameterList)]``.
  .. Let ``methodTypeIR`` be ``+EXTERN_METHOD+ +ABSTRACT+ +(+parameterTypeIR^{asterisk}^+)+ +->+ typeIR~ret~``.
  .. Let ``routineTypeDefIR`` be ``methodTypeIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+``.
- .. If <<RoutineTypeDef_wf,``xref:bound[$bound(+BLOCK+, TC~0~)] ⊢ routineTypeDefIR``>> holds:
+ .. Let ``bound'`` be ``xref:bound[$bound(+BLOCK+, TC~0~)]``.
+ .. If xref:RoutineTypeDef_wf[``bound' ⊢ routineTypeDefIR``] holds:
   ... Let ``TC~4~`` be ``xref:add_routine_overload[$add_routine_overload(+BLOCK+, TC~0~, rid, routineTypeDefIR)]``.
   ... Let ``methodPrototypeIR`` be ``annotationList +ABSTRACT+ typeIR~ret~ nameIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ +;+``.
   ... Result in ``TC~4~`` and ``methodPrototypeIR``.
@@ -6406,7 +6613,8 @@ xref:ExternConstructor_ok[ExternConstructor_ok: ``TC~0~ tid~extern~ ⊢ methodPr
 . Let ``typeIR~extern_spec~`` be ``typeIR~extern~ +<+tid~expl~^{asterisk}^ +,+ ·+>+ +<+( +TID+ tid~expl~ )^{asterisk}^+>+``.
 . Let ``constructorTypeIR`` be ``+CONSTRUCTOR+ +(+constructorParameterTypeIR^{asterisk}^+)+ +->+ typeIR~extern_spec~``.
 . Let ``constructorTypeDefIR`` be ``constructorTypeIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+``.
-. If <<ConstructorTypeDef_wf,``xref:bound[$bound(+BLOCK+, TC~0~)] ⊢ constructorTypeDefIR``>> holds:
+. Let ``bound`` be ``xref:bound[$bound(+BLOCK+, TC~0~)]``.
+. If xref:ConstructorTypeDef_wf[``bound ⊢ constructorTypeDefIR``] holds:
  .. Let ``TC~1~`` be ``xref:add_constructor[$add_constructor(TC~0~, cid, constructorTypeDefIR)]``.
  .. Let ``methodPrototypeIR`` be ``annotationList nameIR +<++,+ tid~impl~^{asterisk}^+>+ +(+constructorParameterIR^{asterisk}^+)+ +;+``.
  .. Result in ``TC~1~`` and ``methodPrototypeIR``.
@@ -6440,7 +6648,8 @@ xref:ParserTransition_ok[ParserTransition_ok: ``TC~0~ nameIR~state~^{asterisk}^ 
    .... Let ``expression~key~^{asterisk}^`` be ``xref:flatten_expressionList[$flatten_expressionList(expressionList~key~)]``.
    .... Let xref:Expr_ok[``+LOCAL+ TC~0~ ⊢ expression~key~ +:+ typedExpressionIR~key~``], for all ``expression~key~`` in ``expression~key~^{asterisk}^`` and ``typedExpressionIR~key~`` in ``typedExpressionIR~key~^{asterisk}^``.
    .... Let ``++_++ +#+ +(+typeIR~key~ ++_+++)+`` be ``typedExpressionIR~key~``, for all ``++_++`` in ``++_++``, ``++_++`` in ``++_++``, ``typeIR~key~`` in ``typeIR~key~^{asterisk}^``, and ``typedExpressionIR~key~`` in ``typedExpressionIR~key~^{asterisk}^``.
-   .... If ``xref:bound[$bound(+LOCAL+, TC~0~)] ⊢ +SET+ +<+typeIR~key~+>+`` holds, for all ``typeIR~key~`` in ``typeIR~key~^{asterisk}^``:
+   .... Let ``bound`` be ``xref:bound[$bound(+LOCAL+, TC~0~)]``.
+   .... If xref:Type_wf[``bound ⊢ +SET+ +<+typeIR~key~+>+``] holds, for all ``typeIR~key~`` in ``typeIR~key~^{asterisk}^``:
     ..... Let ``selectCase^{asterisk}^`` be ``xref:flatten_selectCaseList[$flatten_selectCaseList(selectCaseList)]``.
     ..... Let xref:SelectCase_ok[``TC~0~ nameIR~state~^{asterisk}^ typeIR~key~^{asterisk}^ ⊢ selectCase +:+ selectCaseIR``], for all ``selectCase`` in ``selectCase^{asterisk}^`` and ``selectCaseIR`` in ``selectCaseIR^{asterisk}^``.
     ..... Let ``transitionStatementIR`` be ``+TRANSITION+ +SELECT+ +(+typedExpressionIR~key~^{asterisk}^+)+ +{+selectCaseIR^{asterisk}^+}+``.
@@ -6461,7 +6670,8 @@ xref:ParserStmt_ok[ParserStmt_ok: ``TC~0'~ ⊢ parserStatement'' +:+ % %``]
    .... Let xref:Type_ok[``+LOCAL+ TC~0'~ ⊢ type +:+ typeIR +#+ tid^{asterisk}^``].
    .... Check that ``tid^{asterisk}^`` is an empty list.
 
-   .... If <<Type_wf,``xref:bound[$bound(+LOCAL+, TC~0'~)] ⊢ typeIR``>> holds:
+   .... Let ``bound`` be ``xref:bound[$bound(+LOCAL+, TC~0'~)]``.
+   .... If xref:Type_wf[``bound ⊢ typeIR``] holds:
     ..... Check that ``xref:is_assignable_typeIR[$is_assignable_typeIR(typeIR)]``.
 
     ..... Let ``nameIR`` be ``xref:name[$name(name)]``.
@@ -6474,7 +6684,8 @@ xref:ParserStmt_ok[ParserStmt_ok: ``TC~0'~ ⊢ parserStatement'' +:+ % %``]
    .... Let xref:Type_ok[``+LOCAL+ TC~0'~ ⊢ type +:+ typeIR +#+ tid^{asterisk}^``].
    .... Check that ``tid^{asterisk}^`` is an empty list.
 
-   .... If <<Type_wf,``xref:bound[$bound(+LOCAL+, TC~0'~)] ⊢ typeIR``>> holds:
+   .... Let ``bound'`` be ``xref:bound[$bound(+LOCAL+, TC~0'~)]``.
+   .... If xref:Type_wf[``bound' ⊢ typeIR``] holds:
     ..... Check that ``xref:is_assignable_typeIR[$is_assignable_typeIR(typeIR)]``.
 
     ..... Let xref:Expr_ok[``+LOCAL+ TC~0'~ ⊢ expression~init~ +:+ typedExpressionIR~init~``].
@@ -6582,7 +6793,8 @@ xref:ParserLocalDecl_ok[ParserLocalDecl_ok: ``TC~0~ ⊢ parserLocalDeclaration +
    .... Let xref:Type_ok[``+BLOCK+ TC~0~ ⊢ type +:+ typeIR +#+ tid^{asterisk}^``].
    .... Check that ``tid^{asterisk}^`` is an empty list.
 
-   .... If <<Type_wf,``xref:bound[$bound(+BLOCK+, TC~0~)] ⊢ typeIR``>> holds:
+   .... Let ``bound`` be ``xref:bound[$bound(+BLOCK+, TC~0~)]``.
+   .... If xref:Type_wf[``bound ⊢ typeIR``] holds:
     ..... Check that ``xref:is_assignable_typeIR[$is_assignable_typeIR(typeIR)]``.
 
     ..... Let ``nameIR`` be ``xref:name[$name(name)]``.
@@ -6595,7 +6807,8 @@ xref:ParserLocalDecl_ok[ParserLocalDecl_ok: ``TC~0~ ⊢ parserLocalDeclaration +
    .... Let xref:Type_ok[``+BLOCK+ TC~0~ ⊢ type +:+ typeIR +#+ tid^{asterisk}^``].
    .... Check that ``tid^{asterisk}^`` is an empty list.
 
-   .... If <<Type_wf,``xref:bound[$bound(+BLOCK+, TC~0~)] ⊢ typeIR``>> holds:
+   .... Let ``bound'`` be ``xref:bound[$bound(+BLOCK+, TC~0~)]``.
+   .... If xref:Type_wf[``bound' ⊢ typeIR``] holds:
     ..... Check that ``xref:is_assignable_typeIR[$is_assignable_typeIR(typeIR)]``.
 
     ..... Let xref:Expr_ok[``+BLOCK+ TC~0~ ⊢ expression~init~ +:+ typedExpressionIR~init~``].
@@ -6608,7 +6821,8 @@ xref:ParserLocalDecl_ok[ParserLocalDecl_ok: ``TC~0~ ⊢ parserLocalDeclaration +
  .. Let xref:Type_ok[``+BLOCK+ TC~0~ ⊢ valueSetType +:+ typeIR +#+ tid^{asterisk}^``].
  .. Check that ``tid^{asterisk}^`` is an empty list.
 
- .. If ``xref:bound[$bound(+BLOCK+, TC~0~)] ⊢ +SET+ +<+typeIR+>+`` holds:
+ .. Let ``bound''`` be ``xref:bound[$bound(+BLOCK+, TC~0~)]``.
+ .. If xref:Type_wf[``bound'' ⊢ +SET+ +<+typeIR+>+``] holds:
   ... Let xref:Expr_ok[``+BLOCK+ TC~0~ ⊢ expression +:+ typedExpressionIR``].
   ... Let ``++_++ +#+ +(+++_++ ctk+)+`` be ``typedExpressionIR``.
   ... Check that ``ctk`` does not match pattern ``+DYN+``.
@@ -6631,7 +6845,8 @@ xref:TableKey_ok[TableKey_ok: ``TC TBLC~0~ ⊢ expression +:+ name~matchkind~ an
 
 . Let xref:Expr_ok[``+LOCAL+ TC ⊢ expression +:+ typedExpressionIR``].
 . Let ``++_++ +#+ +(+typeIR ++_+++)+`` be ``typedExpressionIR``.
-. If ``xref:bound[$bound(+LOCAL+, TC)] ⊢ +SET+ +<+typeIR+>+`` holds:
+. Let ``bound`` be ``xref:bound[$bound(+LOCAL+, TC)]``.
+. If xref:Type_wf[``bound ⊢ +SET+ +<+typeIR+>+``] holds:
  .. Let ``nameIR~matchkind~`` be ``xref:name[$name(name~matchkind~)]``.
  .. Check that ``+MATCH_KIND+ +.+ nameIR~matchkind~`` is equal to ``xref:find_value[$find_value(+LOCAL+, TC, nameIR~matchkind~)]``.
 
@@ -7111,7 +7326,8 @@ xref:ControlLocalDecl_ok[ControlLocalDecl_ok: ``TC~0~ ⊢ controlLocalDeclaratio
    .... Let xref:Type_ok[``+BLOCK+ TC~0~ ⊢ type +:+ typeIR +#+ tid^{asterisk}^``].
    .... Check that ``tid^{asterisk}^`` is an empty list.
 
-   .... If <<Type_wf,``xref:bound[$bound(+BLOCK+, TC~0~)] ⊢ typeIR``>> holds:
+   .... Let ``bound`` be ``xref:bound[$bound(+BLOCK+, TC~0~)]``.
+   .... If xref:Type_wf[``bound ⊢ typeIR``] holds:
     ..... Check that ``xref:is_assignable_typeIR[$is_assignable_typeIR(typeIR)]``.
 
     ..... Let ``nameIR`` be ``xref:name[$name(name)]``.
@@ -7124,7 +7340,8 @@ xref:ControlLocalDecl_ok[ControlLocalDecl_ok: ``TC~0~ ⊢ controlLocalDeclaratio
    .... Let xref:Type_ok[``+BLOCK+ TC~0~ ⊢ type +:+ typeIR +#+ tid^{asterisk}^``].
    .... Check that ``tid^{asterisk}^`` is an empty list.
 
-   .... If <<Type_wf,``xref:bound[$bound(+BLOCK+, TC~0~)] ⊢ typeIR``>> holds:
+   .... Let ``bound'`` be ``xref:bound[$bound(+BLOCK+, TC~0~)]``.
+   .... If xref:Type_wf[``bound' ⊢ typeIR``] holds:
     ..... Check that ``xref:is_assignable_typeIR[$is_assignable_typeIR(typeIR)]``.
 
     ..... Let xref:Expr_ok[``+BLOCK+ TC~0~ ⊢ expression~init~ +:+ typedExpressionIR~init~``].
@@ -7165,7 +7382,8 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
    .... Let xref:Type_ok[``p' TC~0~ ⊢ type +:+ typeIR +#+ tid^{asterisk}^``].
    .... Check that ``tid^{asterisk}^`` is an empty list.
 
-   .... If <<Type_wf,``xref:bound[$bound(p', TC~0~)] ⊢ typeIR``>> holds:
+   .... Let ``bound`` be ``xref:bound[$bound(p', TC~0~)]``.
+   .... If xref:Type_wf[``bound ⊢ typeIR``] holds:
     ..... Let xref:Expr_ok[``p' TC~0~ ⊢ expression~value~ +:+ typedExpressionIR~value~``].
     ..... Let ``++_++ +#+ +(+++_++ ctk+)+`` be ``typedExpressionIR~value~``.
     ..... Check that ``ctk`` matches pattern ``+LCTK+``.
@@ -7281,7 +7499,8 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
    .... Let ``rid`` be ``xref:rid[$rid(name, parameterList)]``.
    .... Let ``functionTypeIR`` be ``+FUNCTION+ +(+parameterTypeIR^{asterisk}^+)+ +->+ typeIR~ret~``.
    .... Let ``routineTypeDefIR`` be ``functionTypeIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+``.
-   .... If <<RoutineTypeDef_wf,``xref:bound[$bound(p', TC~0~)] ⊢ routineTypeDefIR``>> holds:
+   .... Let ``bound'`` be ``xref:bound[$bound(p', TC~0~)]``.
+   .... If xref:RoutineTypeDef_wf[``bound' ⊢ routineTypeDefIR``] holds:
     ..... Let ``TC~4~`` be ``xref:add_routine_overload[$add_routine_overload(p', TC~0~, rid, routineTypeDefIR)]``.
     ..... Let ``nameIR`` be ``xref:name[$name(name)]``.
     ..... Let ``functionDeclarationIR`` be ``annotationList typeIR~ret~ nameIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ blockStatementIR``.
@@ -7297,7 +7516,8 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
    .... Let xref:Block_ok[``TC~2~ +CONT+ ⊢ blockStatement +:+ ++_++ ++_++ blockStatementIR``].
    .... Let ``rid`` be ``xref:rid[$rid(name, parameterList)]``.
    .... Let ``functionTypeIR`` be ``+ACTION+ +(+parameterTypeIR^{asterisk}^+)+``.
-   .... If <<RoutineTypeDef_wf,``xref:bound[$bound(p', TC~0~)] ⊢ functionTypeIR``>> holds:
+   .... Let ``bound''`` be ``xref:bound[$bound(p', TC~0~)]``.
+   .... If xref:RoutineTypeDef_wf[``bound'' ⊢ functionTypeIR``] holds:
     ..... Let ``TC~3~`` be ``xref:add_routine_non_overload[$add_routine_non_overload(p', TC~0~, rid, functionTypeIR)]``.
     ..... Let ``nameIR`` be ``xref:name[$name(name)]``.
     ..... Let ``actionDeclarationIR`` be ``annotationList +ACTION+ nameIR +(+parameterIR^{asterisk}^+)+ blockStatementIR``.
@@ -7337,7 +7557,8 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
    .... Let ``rid`` be ``xref:rid[$rid(name, parameterList)]``.
    .... Let ``functionTypeIR`` be ``+EXTERN_FUNCTION+ +(+parameterTypeIR^{asterisk}^+)+ +->+ typeIR~ret~``.
    .... Let ``routineTypeDefIR`` be ``functionTypeIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+``.
-   .... If <<RoutineTypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ routineTypeDefIR``>> holds:
+   .... Let ``bound'''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+   .... If xref:RoutineTypeDef_wf[``bound''' ⊢ routineTypeDefIR``] holds:
     ..... Let ``TC~4~`` be ``xref:add_routine_overload[$add_routine_overload(+GLOBAL+, TC~0~, rid, routineTypeDefIR)]``.
     ..... Let ``nameIR`` be ``xref:name[$name(name)]``.
     ..... Let ``externFunctionDeclarationIR`` be ``annotationList +EXTERN+ typeIR~ret~ nameIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ +;+``.
@@ -7382,13 +7603,15 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
    .... Let ``parserState^{asterisk}^`` be ``xref:flatten_parserStateList[$flatten_parserStateList(parserStateList)]``.
    .... Let xref:ParserStates_ok[``TC~5~ ⊢ parserState^{asterisk}^ +:+ parserStateIR^{asterisk}^``].
    .... Let ``methodTypeIR`` be ``+PARSER_APPLY+ +(+parameterTypeIR^{asterisk}^+)+``.
-   .... If <<RoutineTypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ methodTypeIR``>> holds:
+   .... Let ``bound'''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+   .... If xref:RoutineTypeDef_wf[``bound''''' ⊢ methodTypeIR``] holds:
     ..... Let ``cid`` be ``xref:cid[$cid(name, constructorParameterListOpt)]``.
     ..... Let ``typeIR~parser~`` be ``+PARSER+ +(+parameterTypeIR^{asterisk}^+)+``.
     ..... Let ``typeIR~parser_spec~`` be ``typeIR~parser~ +<+· +,+ ·+>+ +<+·+>+``.
     ..... Let ``constructorTypeIR`` be ``+CONSTRUCTOR+ +(+constructorParameterTypeIR^{asterisk}^+)+ +->+ typeIR~parser_spec~``.
     ..... Let ``constructorTypeDefIR`` be ``constructorTypeIR +<+· +,+ ·+>+``.
-    ..... If <<ConstructorTypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ constructorTypeDefIR``>> holds:
+    ..... Let ``bound''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+    ..... If xref:ConstructorTypeDef_wf[``bound'''' ⊢ constructorTypeDefIR``] holds:
      ...... Let ``TC~6~`` be ``xref:add_constructor[$add_constructor(TC~0~, cid, constructorTypeDefIR)]``.
      ...... Let ``nameIR`` be ``xref:name[$name(name)]``.
      ...... Let ``parserDeclarationIR`` be ``annotationList +PARSER+ nameIR +<+·+>+ +(+parameterIR^{asterisk}^+)+ +(+constructorParameterIR^{asterisk}^+)+ +{+parserLocalDeclarationIR^{asterisk}^ parserStateIR^{asterisk}^+}+``.
@@ -7414,13 +7637,15 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
    .... Let ``TC~5~`` be ``TC~4~`` with ``+LOCAL+.+KIND+`` set to ``+CONTROL_APPLY_METHOD+``.
    .... Let xref:Block_ok[``TC~5~ +CONT+ ⊢ controlBody +:+ ++_++ ++_++ controlBodyIR``].
    .... Let ``methodTypeIR`` be ``+CONTROL_APPLY+ +(+parameterTypeIR^{asterisk}^+)+``.
-   .... If <<RoutineTypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ methodTypeIR``>> holds:
+   .... Let ``bound'''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+   .... If xref:RoutineTypeDef_wf[``bound''''''' ⊢ methodTypeIR``] holds:
     ..... Let ``cid`` be ``xref:cid[$cid(name, constructorParameterListOpt)]``.
     ..... Let ``typeIR~control~`` be ``+CONTROL+ +(+parameterTypeIR^{asterisk}^+)+``.
     ..... Let ``typeIR~control_spec~`` be ``typeIR~control~ +<+· +,+ ·+>+ +<+·+>+``.
     ..... Let ``constructorTypeIR`` be ``+CONSTRUCTOR+ +(+constructorParameterTypeIR^{asterisk}^+)+ +->+ typeIR~control_spec~``.
     ..... Let ``constructorTypeDefIR`` be ``constructorTypeIR +<+· +,+ ·+>+``.
-    ..... If <<ConstructorTypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ constructorTypeDefIR``>> holds:
+    ..... Let ``bound''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+    ..... If xref:ConstructorTypeDef_wf[``bound'''''' ⊢ constructorTypeDefIR``] holds:
      ...... Let ``TC~6~`` be ``xref:add_constructor[$add_constructor(TC~0~, cid, constructorTypeDefIR)]``.
      ...... Let ``nameIR`` be ``xref:name[$name(name)]``.
      ...... Let ``controlDeclarationIR`` be ``annotationList +CONTROL+ nameIR +<+·+>+ +(+parameterIR^{asterisk}^+)+ +(+constructorParameterIR^{asterisk}^+)+ +{+controlLocalDeclarationIR^{asterisk}^ +APPLY+ controlBodyIR+}+``.
@@ -7431,7 +7656,8 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
     ..... Let ``name~field~^{asterisk}^`` be ``xref:flatten_nameList[$flatten_nameList(nameList~field~)]``.
     ..... Let ``nameIR~field~`` be ``xref:name[$name(name~field~)]``, for all ``nameIR~field~`` in ``nameIR~field~^{asterisk}^`` and ``name~field~`` in ``name~field~^{asterisk}^``.
     ..... Let ``typeIR~enum~`` be ``+ENUM+ nameIR +{+nameIR~field~^{asterisk}^+}+``.
-    ..... If <<TypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeIR~enum~``>> holds:
+    ..... Let ``bound''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+    ..... If xref:TypeDef_wf[``bound'''''''' ⊢ typeIR~enum~``] holds:
      ...... Let ``TC~1~`` be ``xref:add_type[$add_type(+GLOBAL+, TC~0~, nameIR, typeIR~enum~)]``.
      ...... Let ``id~field~`` be ``nameIR`` concatenated with ``"."`` concatenated with ``nameIR~field~``, for all ``id~field~`` in ``id~field~^{asterisk}^`` and ``nameIR~field~`` in ``nameIR~field~^{asterisk}^``.
      ...... Let ``value~field~`` be ``nameIR +.+ nameIR~field~``, for all ``nameIR~field~`` in ``nameIR~field~^{asterisk}^`` and ``value~field~`` in ``value~field~^{asterisk}^``.
@@ -7442,7 +7668,8 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
     ..... Let xref:Type_ok[``+GLOBAL+ TC~0~ ⊢ type +:+ typeIR +#+ tid^{asterisk}^``].
     ..... Check that ``tid^{asterisk}^`` is an empty list.
 
-    ..... If <<Type_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeIR``>> holds:
+    ..... Let ``bound''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+    ..... If xref:Type_wf[``bound'''''''''' ⊢ typeIR``] holds:
      ...... Let ``nameIR`` be ``xref:name[$name(name)]``.
      ...... Let ``namedExpression~field~^{asterisk}^`` be ``xref:flatten_namedExpressionList[$flatten_namedExpressionList(namedExpressionList~field~)]``.
      ...... Let xref:Enum_serializable_fields_ok[``TC~0~ nameIR typeIR ⊢ namedExpression~field~^{asterisk}^ +:+ TC~1~ namedExpressionIR~field~^{asterisk}^ +#+ value~field~^{asterisk}^``].
@@ -7450,7 +7677,8 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
      ...... Let ``id~field~`` be ``nameIR`` concatenated with ``"."`` concatenated with ``nameIR~field~``, for all ``id~field~`` in ``id~field~^{asterisk}^`` and ``nameIR~field~`` in ``nameIR~field~^{asterisk}^``.
      ...... Let ``typeIR~enum~`` be ``+ENUM+ nameIR +#+ typeIR +{+( nameIR~field~ +=+ value~field~ +;+ )^{asterisk}^+}+``.
      ...... Let ``TC~2~`` be ``xref:add_vars[$add_vars(+GLOBAL+, TC~0~, id~field~^{asterisk}^, ( typeIR~enum~ +LCTK+ value~field~ )^{asterisk}^)]``.
-     ...... If <<TypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeIR~enum~``>> holds:
+     ...... Let ``bound'''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+     ...... If xref:TypeDef_wf[``bound''''''''' ⊢ typeIR~enum~``] holds:
       ....... Let ``TC~3~`` be ``xref:add_type[$add_type(+GLOBAL+, TC~2~, nameIR, typeIR~enum~)]``.
       ....... Let ``enumTypeDeclarationIR`` be ``annotationList +ENUM+ typeIR nameIR +{+namedExpressionIR~field~^{asterisk}^+}+``.
       ....... Result in ``TC~3~`` and ``enumTypeDeclarationIR``.
@@ -7465,7 +7693,8 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
    .... Let ``nameIR~field~`` be ``xref:name[$name(name~field~)]``, for all ``nameIR~field~`` in ``nameIR~field~^{asterisk}^`` and ``name~field~`` in ``name~field~^{asterisk}^``.
    .... Let ``typeIR~struct~`` be ``+STRUCT+ nameIR +{+( typeIR~field~ nameIR~field~ +;+ )^{asterisk}^+}+``.
    .... Let ``typeDefIR~struct~`` be ``typeIR~struct~ +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+``.
-   .... If <<TypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeDefIR~struct~``>> holds:
+   .... Let ``bound'''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+   .... If xref:TypeDef_wf[``bound''''''''''' ⊢ typeDefIR~struct~``] holds:
     ..... Let ``TC~2~`` be ``xref:add_type[$add_type(+GLOBAL+, TC~0~, nameIR, typeDefIR~struct~)]``.
     ..... Let ``structTypeDeclarationIR`` be ``annotationList +STRUCT+ nameIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+ +{+( annotationList~field~ typeIR~field~ nameIR~field~ +;+ )^{asterisk}^+}+``.
     ..... Result in ``TC~2~`` and ``structTypeDeclarationIR``.
@@ -7480,7 +7709,8 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
    .... Let ``nameIR~f~`` be ``xref:name[$name(name~f~)]``, for all ``nameIR~f~`` in ``nameIR~f~^{asterisk}^`` and ``name~f~`` in ``name~f~^{asterisk}^``.
    .... Let ``typeIR~header~`` be ``+HEADER+ nameIR +{+( typeIR~f~ nameIR~f~ +;+ )^{asterisk}^+}+``.
    .... Let ``typeDefIR~header~`` be ``typeIR~header~ +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+``.
-   .... If <<TypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeDefIR~header~``>> holds:
+   .... Let ``bound''''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+   .... If xref:TypeDef_wf[``bound'''''''''''' ⊢ typeDefIR~header~``] holds:
     ..... Let ``TC~2~`` be ``xref:add_type[$add_type(+GLOBAL+, TC~0~, nameIR, typeDefIR~header~)]``.
     ..... Let ``headerTypeDeclarationIR`` be ``annotationList +HEADER+ nameIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+ +{+( annotationList~f~ typeIR~f~ nameIR~f~ +;+ )^{asterisk}^+}+``.
     ..... Result in ``TC~2~`` and ``headerTypeDeclarationIR``.
@@ -7495,7 +7725,8 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
    .... Let ``nameIR~f~`` be ``xref:name[$name(name~f~)]``, for all ``nameIR~f~`` in ``nameIR~f~^{asterisk}^`` and ``name~f~`` in ``name~f~^{asterisk}^``.
    .... Let ``typeIR~union~`` be ``+HEADER_UNION+ nameIR +{+( typeIR~f~ nameIR~f~ +;+ )^{asterisk}^+}+``.
    .... Let ``typeDefIR~union~`` be ``typeIR~union~ +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+``.
-   .... If <<TypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeDefIR~union~``>> holds:
+   .... Let ``bound'''''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+   .... If xref:TypeDef_wf[``bound''''''''''''' ⊢ typeDefIR~union~``] holds:
     ..... Let ``TC~2~`` be ``xref:add_type[$add_type(+GLOBAL+, TC~0~, nameIR, typeDefIR~union~)]``.
     ..... Let ``headerUnionTypeDeclarationIR`` be ``annotationList +HEADER_UNION+ nameIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+ +{+( annotationList~f~ typeIR~f~ nameIR~f~ +;+ )^{asterisk}^+}+``.
     ..... Result in ``TC~2~`` and ``headerUnionTypeDeclarationIR``.
@@ -7505,10 +7736,12 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
      ...... Let xref:Type_ok[``+GLOBAL+ TC~0~ ⊢ type +:+ typeIR +#+ tid^{asterisk}^``].
      ...... Check that ``tid^{asterisk}^`` is an empty list.
 
-     ...... If <<Type_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeIR``>> holds:
+     ...... Let ``bound'''''''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+     ...... If xref:Type_wf[``bound''''''''''''''' ⊢ typeIR``] holds:
       ....... Let ``nameIR`` be ``xref:name[$name(name)]``.
       ....... Let ``typeIR~typedef~`` be ``+TYPEDEF+ nameIR typeIR``.
-      ....... If <<TypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeIR~typedef~``>> holds:
+      ....... Let ``bound''''''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+      ....... If xref:TypeDef_wf[``bound'''''''''''''' ⊢ typeIR~typedef~``] holds:
        ........ Let ``TC~1~`` be ``xref:add_type[$add_type(+GLOBAL+, TC~0~, nameIR, typeIR~typedef~)]``.
        ........ Let ``typedefDeclarationIR`` be ``annotationList +TYPEDEF+ typeIR nameIR +;+``.
        ........ Result in ``TC~1~`` and ``typedefDeclarationIR``.
@@ -7516,7 +7749,9 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
      ...... Let xref:Decl_ok[``+GLOBAL+ TC~0~ ⊢ derivedTypeDeclaration +:+ TC~1~ declarationIR``].
      ...... Let!~type~ ``derivedTypeDeclarationIR`` be ``declarationIR``.
 
-     ...... Let ``+{+tid'^{asterisk}^+}+`` be ``xref:diff_set[$diff_set<tid>($dom_map<tid, typeDefIR>(TC~1~.+GLOBAL+.+TDENV+), $dom_map<tid, typeDefIR>(TC~0~.+GLOBAL+.+TDENV+))]``.
+     ...... Let ``set<tid>`` be ``xref:dom_map[$dom_map<tid, typeDefIR>(TC~1~.+GLOBAL+.+TDENV+)]``.
+     ...... Let ``set<tid>'`` be ``xref:dom_map[$dom_map<tid, typeDefIR>(TC~0~.+GLOBAL+.+TDENV+)]``.
+     ...... Let ``+{+tid'^{asterisk}^+}+`` be ``xref:diff_set[$diff_set<tid>(set<tid>, set<tid>')]``.
      ...... Let!~type~ ``tid`` be ``tid'^{asterisk}^``.
 
      ...... Let ``typeDefIR`` be xref:option_get[*!*] ``xref:find_type[$find_type(+GLOBAL+, TC~1~, tid)]``.
@@ -7524,14 +7759,17 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
 
      ...... Let ``nameIR`` be ``xref:name[$name(name)]``.
      ...... Let ``typeIR~typedef~`` be ``+TYPEDEF+ nameIR typeIR``.
-     ...... If <<TypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeIR~typedef~``>> holds:
+     ...... Let ``bound''''''''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+     ...... If xref:TypeDef_wf[``bound'''''''''''''''' ⊢ typeIR~typedef~``] holds:
       ....... Let ``TC~2~`` be ``xref:add_type[$add_type(+GLOBAL+, TC~0~, nameIR, typeIR~typedef~)]``.
       ....... Let ``typedefDeclarationIR`` be ``annotationList +TYPEDEF+ derivedTypeDeclarationIR nameIR +;+``.
       ....... Result in ``TC~1~`` and ``typedefDeclarationIR``.
      ...... Let xref:Decl_ok[``+GLOBAL+ TC~0~ ⊢ derivedTypeDeclaration +:+ TC~1~ declarationIR``].
      ...... Let!~type~ ``derivedTypeDeclarationIR`` be ``declarationIR``.
 
-     ...... Let ``+{+tid'^{asterisk}^+}+`` be ``xref:diff_set[$diff_set<tid>($dom_map<tid, typeDefIR>(TC~1~.+GLOBAL+.+TDENV+), $dom_map<tid, typeDefIR>(TC~0~.+GLOBAL+.+TDENV+))]``.
+     ...... Let ``set<tid>''`` be ``xref:dom_map[$dom_map<tid, typeDefIR>(TC~1~.+GLOBAL+.+TDENV+)]``.
+     ...... Let ``set<tid>'''`` be ``xref:dom_map[$dom_map<tid, typeDefIR>(TC~0~.+GLOBAL+.+TDENV+)]``.
+     ...... Let ``+{+tid'^{asterisk}^+}+`` be ``xref:diff_set[$diff_set<tid>(set<tid>'', set<tid>''')]``.
      ...... Let!~type~ ``tid`` be ``tid'^{asterisk}^``.
 
      ...... Let ``typeDefIR`` be xref:option_get[*!*] ``xref:find_type[$find_type(+GLOBAL+, TC~1~, tid)]``.
@@ -7543,7 +7781,8 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
 
      ...... Let ``nameIR`` be ``xref:name[$name(name)]``.
      ...... Let ``typeIR~typedef~`` be ``+TYPEDEF+ nameIR typeIR +<+· +,+ ·+>+ +<+·+>+``.
-     ...... If <<TypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeIR~typedef~``>> holds:
+     ...... Let ``bound'''''''''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+     ...... If xref:TypeDef_wf[``bound''''''''''''''''' ⊢ typeIR~typedef~``] holds:
       ....... Let ``TC~2~`` be ``xref:add_type[$add_type(+GLOBAL+, TC~0~, nameIR, typeIR~typedef~)]``.
       ....... Let ``typedefDeclarationIR`` be ``annotationList +TYPEDEF+ derivedTypeDeclarationIR nameIR +;+``.
       ....... Result in ``TC~1~`` and ``typedefDeclarationIR``.
@@ -7551,10 +7790,12 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
     ..... Let xref:Type_ok[``+GLOBAL+ TC~0~ ⊢ type +:+ typeIR +#+ tid^{asterisk}^``].
     ..... Check that ``tid^{asterisk}^`` is an empty list.
 
-    ..... If <<Type_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeIR``>> holds:
+    ..... Let ``bound'''''''''''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+    ..... If xref:Type_wf[``bound''''''''''''''''''' ⊢ typeIR``] holds:
      ...... Let ``nameIR`` be ``xref:name[$name(name)]``.
      ...... Let ``typeIR~newtype~`` be ``+TYPE+ nameIR typeIR``.
-     ...... If <<TypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeIR~newtype~``>> holds:
+     ...... Let ``bound''''''''''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+     ...... If xref:TypeDef_wf[``bound'''''''''''''''''' ⊢ typeIR~newtype~``] holds:
       ....... Let ``TC~1~`` be ``xref:add_type[$add_type(+GLOBAL+, TC~0~, nameIR, typeIR~newtype~)]``.
       ....... Let ``typedefDeclarationIR`` be ``annotationList +TYPE+ typeIR nameIR +;+``.
       ....... Result in ``TC~1~`` and ``typedefDeclarationIR``.
@@ -7569,7 +7810,8 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
    .... Let ``nameIR`` be ``xref:name[$name(name)]``.
    .... Let ``typeIR~parser~`` be ``+PARSER+ +(+parameterTypeIR^{asterisk}^+)+``.
    .... Let ``typeDefIR~parser~`` be ``typeIR~parser~ +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+``.
-   .... If <<TypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeDefIR~parser~``>> holds:
+   .... Let ``bound''''''''''''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+   .... If xref:TypeDef_wf[``bound'''''''''''''''''''' ⊢ typeDefIR~parser~``] holds:
     ..... Let ``TC~3~`` be ``xref:add_type[$add_type(+GLOBAL+, TC~0~, nameIR, typeDefIR~parser~)]``.
     ..... Let ``parserTypeDeclarationIR`` be ``annotationList +PARSER+ nameIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ +;+``.
     ..... Result in ``TC~3~`` and ``parserTypeDeclarationIR``.
@@ -7584,7 +7826,8 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
    .... Let ``nameIR`` be ``xref:name[$name(name)]``.
    .... Let ``typeIR~control~`` be ``+CONTROL+ +(+parameterTypeIR^{asterisk}^+)+``.
    .... Let ``typeDefIR~control~`` be ``typeIR~control~ +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+``.
-   .... If <<TypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ typeDefIR~control~``>> holds:
+   .... Let ``bound'''''''''''''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+   .... If xref:TypeDef_wf[``bound''''''''''''''''''''' ⊢ typeDefIR~control~``] holds:
     ..... Let ``TC~3~`` be ``xref:add_type[$add_type(+GLOBAL+, TC~0~, nameIR, typeDefIR~control~)]``.
     ..... Let ``controlTypeDeclarationIR`` be ``annotationList +CONTROL+ nameIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ +;+``.
     ..... Result in ``TC~3~`` and ``controlTypeDeclarationIR``.
@@ -7600,13 +7843,15 @@ xref:Decl_ok[Decl_ok: ``p' TC~0~ ⊢ declaration +:+ % %``]
    .... Let ``++_++ typeIR~package_inner~ ++_++ ++_++^?^`` be ``constructorParameterTypeIR``, for all ``++_++`` in ``++_++``, ``++_++`` in ``++_++``, ``++_++`` in ``++_++``, ``constructorParameterTypeIR`` in ``constructorParameterTypeIR^{asterisk}^``, and ``typeIR~package_inner~`` in ``typeIR~package_inner~^{asterisk}^``.
    .... Let ``typeIR~package~`` be ``+PACKAGE+ +<+typeIR~package_inner~^{asterisk}^+>+``.
    .... Let ``polyTypeDefIR~package~`` be ``typeIR~package~ +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+``.
-   .... If <<TypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ polyTypeDefIR~package~``>> holds:
+   .... Let ``bound'''''''''''''''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+   .... If xref:TypeDef_wf[``bound''''''''''''''''''''''' ⊢ polyTypeDefIR~package~``] holds:
     ..... Let ``TC~3~`` be ``xref:add_type[$add_type(+GLOBAL+, TC~0~, nameIR, polyTypeDefIR~package~)]``.
     ..... Let ``cid`` be ``xref:cid[$cid(name, +(+parameterList+)+)]``.
     ..... Let ``typeIR~package_spec~`` be ``polyTypeDefIR~package~ +<+( +TID+ tid~expl~ )^{asterisk}^ {pp} ( +TID+ tid~impl~ )^{asterisk}^+>+``.
     ..... Let ``constructorTypeIR`` be ``+CONSTRUCTOR+ +(+constructorParameterTypeIR^{asterisk}^+)+ +->+ typeIR~package_spec~``.
     ..... Let ``constructorTypeDefIR`` be ``constructorTypeIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+``.
-    ..... If <<ConstructorTypeDef_wf,``xref:bound[$bound(+GLOBAL+, TC~0~)] ⊢ constructorTypeDefIR``>> holds:
+    ..... Let ``bound''''''''''''''''''''''`` be ``xref:bound[$bound(+GLOBAL+, TC~0~)]``.
+    ..... If xref:ConstructorTypeDef_wf[``bound'''''''''''''''''''''' ⊢ constructorTypeDefIR``] holds:
      ...... Let ``TC~4~`` be ``xref:add_constructor[$add_constructor(TC~3~, cid, constructorTypeDefIR)]``.
      ...... Let ``packageTypeDeclarationIR`` be ``annotationList +PACKAGE+ nameIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+ +(+constructorParameterIR^{asterisk}^+)+ +;+``.
      ...... Result in ``TC~4~`` and ``packageTypeDeclarationIR``.
@@ -7754,7 +7999,8 @@ xref:RoutineType_ok[RoutineType_ok: ``p TC ⊢ routineTargetIR'' +<+typeArgument
   ... Let ``(routineTypeDefIR, tid*)`` be ``xref:specialize_routineTypeDef[$specialize_routineTypeDef(routineTypeDefIR, typeArgumentIR^{asterisk}^)]``.
   ... Let!~type~ ``( functionTypeIR, tid~impl~^{asterisk}^ )`` be ``(routineTypeDefIR, tid*)``.
 
-  ... Let ``bound`` be ``xref:union_set[$union_set<tid>($bound(p, TC), +{+tid~impl~^{asterisk}^+}+)]``.
+  ... Let ``bound'`` be ``xref:bound[$bound(p, TC)]``.
+  ... Let ``bound`` be ``xref:union_set[$union_set<tid>(bound', +{+tid~impl~^{asterisk}^+}+)]``.
   ... If xref:RoutineType_wf[``bound ⊢ functionTypeIR``] holds:
    .... Result in ``functionTypeIR``, ``tid~impl~^{asterisk}^``, and ``id~default~^{asterisk}^``.
  .. {empty}
@@ -7802,7 +8048,8 @@ xref:RoutineType_ok[RoutineType_ok: ``p TC ⊢ routineTargetIR'' +<+typeArgument
      ...... Let ``(routineTypeDefIR, tid*)`` be ``xref:specialize_routineTypeDef[$specialize_routineTypeDef(routineTypeDefIR, typeArgumentIR^{asterisk}^)]``.
      ...... Let!~type~ ``( routineTypeIR, tid~impl~^{asterisk}^ )`` be ``(routineTypeDefIR, tid*)``.
 
-     ...... Let ``bound`` be ``xref:union_set[$union_set<tid>($bound(p, TC), +{+tid~impl~^{asterisk}^+}+)]``.
+     ...... Let ``bound''`` be ``xref:bound[$bound(p, TC)]``.
+     ...... Let ``bound`` be ``xref:union_set[$union_set<tid>(bound'', +{+tid~impl~^{asterisk}^+}+)]``.
      ...... If xref:RoutineType_wf[``bound ⊢ routineTypeIR``] holds:
       ....... Result in ``routineTypeIR``, ``tid~impl~^{asterisk}^``, and ``id~default~^{asterisk}^``.
     ..... {empty}
@@ -7883,7 +8130,8 @@ xref:Call_ok[Call_ok: ``p TC ⊢ routineTypeIR +<+typeArgumentIR^{asterisk}^ +#+
   ... Let ``parameterTypeIR~aligned_inferred~`` be ``xref:subst_parameterType[$subst_parameterType(inference, parameterTypeIR~aligned~)]``, for all ``parameterTypeIR~aligned~`` in ``parameterTypeIR~aligned~^{asterisk}^`` and ``parameterTypeIR~aligned_inferred~`` in ``parameterTypeIR~aligned_inferred~^{asterisk}^``.
   ... Let ``typeIR~ret_inferred~`` be ``xref:subst_type[$subst_type(inference, typeIR~ret~)]``.
   ... Let ``functionTypeIR~inferred~`` be ``+FUNCTION+ +(+parameterTypeIR~aligned_inferred~^{asterisk}^+)+ +->+ typeIR~ret_inferred~``.
-  ... If <<RoutineType_wf,``xref:bound[$bound(p, TC)] ⊢ functionTypeIR~inferred~``>> holds:
+  ... Let ``bound`` be ``xref:bound[$bound(p, TC)]``.
+  ... If xref:RoutineType_wf[``bound ⊢ functionTypeIR~inferred~``] holds:
    .... Check that ``xref:callable_function[$callable_function(p, TC)]``.
 
    .... Let xref:Call_convention_ok[``p TC +NOACTION+ ⊢ parameterTypeIR~aligned_inferred~^{asterisk}^ +@+ argumentIR^{asterisk}^ +:+ argumentIR~cast~^{asterisk}^``].
@@ -7902,7 +8150,8 @@ xref:Call_ok[Call_ok: ``p TC ⊢ routineTypeIR +<+typeArgumentIR^{asterisk}^ +#+
   ... Let ``parameterTypeIR~aligned_inferred~`` be ``xref:subst_parameterType[$subst_parameterType(inference, parameterTypeIR~aligned~)]``, for all ``parameterTypeIR~aligned~`` in ``parameterTypeIR~aligned~^{asterisk}^`` and ``parameterTypeIR~aligned_inferred~`` in ``parameterTypeIR~aligned_inferred~^{asterisk}^``.
   ... Let ``typeIR~ret_inferred~`` be ``xref:subst_type[$subst_type(inference, typeIR~ret~)]``.
   ... Let ``functionTypeIR~inferred~`` be ``+EXTERN_FUNCTION+ +(+parameterTypeIR~aligned_inferred~^{asterisk}^+)+ +->+ typeIR~ret_inferred~``.
-  ... If <<RoutineType_wf,``xref:bound[$bound(p, TC)] ⊢ functionTypeIR~inferred~``>> holds:
+  ... Let ``bound'`` be ``xref:bound[$bound(p, TC)]``.
+  ... If xref:RoutineType_wf[``bound' ⊢ functionTypeIR~inferred~``] holds:
    .... Check that ``xref:callable_extern_function[$callable_extern_function(p, TC)]``.
 
    .... Let xref:Call_convention_ok[``p TC +NOACTION+ ⊢ parameterTypeIR~aligned_inferred~^{asterisk}^ +@+ argumentIR^{asterisk}^ +:+ argumentIR~cast~^{asterisk}^``].
@@ -7946,7 +8195,8 @@ xref:Call_ok[Call_ok: ``p TC ⊢ routineTypeIR +<+typeArgumentIR^{asterisk}^ +#+
   ... Let ``parameterTypeIR~aligned_inferred~`` be ``xref:subst_parameterType[$subst_parameterType(inference, parameterTypeIR~aligned~)]``, for all ``parameterTypeIR~aligned~`` in ``parameterTypeIR~aligned~^{asterisk}^`` and ``parameterTypeIR~aligned_inferred~`` in ``parameterTypeIR~aligned_inferred~^{asterisk}^``.
   ... Let ``typeIR~ret_inferred~`` be ``xref:subst_type[$subst_type(inference, typeIR~ret~)]``.
   ... Let ``methodTypeIR~inferred~`` be ``+EXTERN_METHOD+ +(+parameterTypeIR~aligned_inferred~^{asterisk}^+)+ +->+ typeIR~ret_inferred~``.
-  ... If <<RoutineType_wf,``xref:bound[$bound(p, TC)] ⊢ methodTypeIR~inferred~``>> holds:
+  ... Let ``bound''`` be ``xref:bound[$bound(p, TC)]``.
+  ... If xref:RoutineType_wf[``bound'' ⊢ methodTypeIR~inferred~``] holds:
    .... Check that ``xref:callable_extern_method[$callable_extern_method(p, TC)]``.
 
    .... Let xref:Call_convention_ok[``p TC +NOACTION+ ⊢ parameterTypeIR~aligned_inferred~^{asterisk}^ +@+ argumentIR^{asterisk}^ +:+ argumentIR~cast~^{asterisk}^``].
@@ -7965,7 +8215,8 @@ xref:Call_ok[Call_ok: ``p TC ⊢ routineTypeIR +<+typeArgumentIR^{asterisk}^ +#+
   ... Let ``parameterTypeIR~aligned_inferred~`` be ``xref:subst_parameterType[$subst_parameterType(inference, parameterTypeIR~aligned~)]``, for all ``parameterTypeIR~aligned~`` in ``parameterTypeIR~aligned~^{asterisk}^`` and ``parameterTypeIR~aligned_inferred~`` in ``parameterTypeIR~aligned_inferred~^{asterisk}^``.
   ... Let ``typeIR~ret_inferred~`` be ``xref:subst_type[$subst_type(inference, typeIR~ret~)]``.
   ... Let ``methodTypeIR~inferred~`` be ``+EXTERN_METHOD+ +ABSTRACT+ +(+parameterTypeIR~aligned_inferred~^{asterisk}^+)+ +->+ typeIR~ret_inferred~``.
-  ... If <<RoutineType_wf,``xref:bound[$bound(p, TC)] ⊢ methodTypeIR~inferred~``>> holds:
+  ... Let ``bound'''`` be ``xref:bound[$bound(p, TC)]``.
+  ... If xref:RoutineType_wf[``bound''' ⊢ methodTypeIR~inferred~``] holds:
    .... Check that ``xref:callable_extern_abstract_method[$callable_extern_abstract_method(p, TC)]``.
 
    .... Let xref:Call_convention_ok[``p TC +NOACTION+ ⊢ parameterTypeIR~aligned_inferred~^{asterisk}^ +@+ argumentIR^{asterisk}^ +:+ argumentIR~cast~^{asterisk}^``].
@@ -8013,7 +8264,8 @@ xref:ConstructorType_ok[ConstructorType_ok: ``p TC ⊢ prefixedNameIR +<+typeArg
 
 . Let ``( cid, constructorTypeDefIR, id~default~^{asterisk}^ )`` be xref:option_get[*!*] ``xref:find_constructor_overloaded[$find_constructor_overloaded(TC, prefixedNameIR, argumentIR^{asterisk}^)]``.
 . Let ``( constructorTypeIR, tid~impl~^{asterisk}^ )`` be ``xref:specialize_constructorTypeDef[$specialize_constructorTypeDef(constructorTypeDefIR, typeArgumentIR^{asterisk}^)]``.
-. Let ``bound`` be ``xref:union_set[$union_set<tid>($bound(p, TC), +{+tid~impl~^{asterisk}^+}+)]``.
+. Let ``bound'`` be ``xref:bound[$bound(p, TC)]``.
+. Let ``bound`` be ``xref:union_set[$union_set<tid>(bound', +{+tid~impl~^{asterisk}^+}+)]``.
 . If xref:ConstructorType_wf[``bound ⊢ constructorTypeIR``] holds:
  .. Result in ``constructorTypeIR``, ``tid~impl~^{asterisk}^``, and ``id~default~^{asterisk}^``.
 
@@ -8038,7 +8290,8 @@ xref:Inst_ok[Inst_ok: ``cursor' TC instctxt ⊢ constructorTypeIR +<+typeArgumen
 . Let ``parameterTypeIR~aligned_inferred~`` be ``xref:subst_parameterType[$subst_parameterType(inference, parameterTypeIR~aligned~)]``, for all ``parameterTypeIR~aligned~`` in ``parameterTypeIR~aligned~^{asterisk}^`` and ``parameterTypeIR~aligned_inferred~`` in ``parameterTypeIR~aligned_inferred~^{asterisk}^``.
 . Let ``typeIR~object_inferred~`` be ``xref:subst_type[$subst_type(inference, typeIR~object~)]``.
 . Let ``constructorTypeIR~inferred~`` be ``+CONSTRUCTOR+ +(+parameterTypeIR~aligned_inferred~^{asterisk}^+)+ +->+ typeIR~object_inferred~``.
-. If <<ConstructorType_wf,``xref:bound[$bound(+GLOBAL+, TC)] ⊢ constructorTypeIR~inferred~``>> holds:
+. Let ``bound`` be ``xref:bound[$bound(+GLOBAL+, TC)]``.
+. If xref:ConstructorType_wf[``bound ⊢ constructorTypeIR~inferred~``] holds:
  .. Check that ``xref:instantiable[$instantiable(+GLOBAL+, TC, instctxt, typeIR~object_inferred~)]``.
 
  .. Let xref:Call_convention_ok[``+BLOCK+ TC +NOACTION+ ⊢ parameterTypeIR~aligned_inferred~^{asterisk}^ +@+ argumentIR^{asterisk}^ +:+ argumentIR~cast~^{asterisk}^``].
@@ -8059,7 +8312,8 @@ xref:Inst_ok[Inst_ok: ``cursor' TC instctxt ⊢ constructorTypeIR +<+typeArgumen
 . Let ``parameterTypeIR~aligned_inferred~`` be ``xref:subst_parameterType[$subst_parameterType(inference, parameterTypeIR~aligned~)]``, for all ``parameterTypeIR~aligned~`` in ``parameterTypeIR~aligned~^{asterisk}^`` and ``parameterTypeIR~aligned_inferred~`` in ``parameterTypeIR~aligned_inferred~^{asterisk}^``.
 . Let ``typeIR~object_inferred~`` be ``xref:subst_type[$subst_type(inference, typeIR~object~)]``.
 . Let ``constructorTypeIR~inferred~`` be ``+CONSTRUCTOR+ +(+parameterTypeIR~aligned_inferred~^{asterisk}^+)+ +->+ typeIR~object_inferred~``.
-. If <<ConstructorType_wf,``xref:bound[$bound(cursor', TC)] ⊢ constructorTypeIR~inferred~``>> holds:
+. Let ``bound'`` be ``xref:bound[$bound(cursor', TC)]``.
+. If xref:ConstructorType_wf[``bound' ⊢ constructorTypeIR~inferred~``] holds:
  .. Check that ``xref:instantiable[$instantiable(cursor', TC, instctxt, typeIR~object_inferred~)]``.
 
  .. Let xref:Call_convention_ok[``cursor' TC +NOACTION+ ⊢ parameterTypeIR~aligned_inferred~^{asterisk}^ +@+ argumentIR^{asterisk}^ +:+ argumentIR~cast~^{asterisk}^``].
@@ -8148,7 +8402,8 @@ xref:coerce_binary[$coerce_binary(typedExpressionIR~l~, typedExpressionIR~r~)]
 
 xref:compat_lnot[$compat_lnot(typeIR)]
 
-. Return ``xref:compat'_lnot[$compat'_lnot($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:compat'_lnot[$compat'_lnot(typeIR')]``.
 
 xref:compat'_lnot[$compat'_lnot(typeIR)]
 
@@ -8163,7 +8418,8 @@ xref:compat'_lnot[$compat'_lnot(typeIR)]
 
 xref:compat_bnot[$compat_bnot(typeIR)]
 
-. Return ``xref:compat'_bnot[$compat'_bnot($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:compat'_bnot[$compat'_bnot(typeIR')]``.
 
 xref:compat'_bnot[$compat'_bnot(typeIR)]
 
@@ -8178,7 +8434,8 @@ xref:compat'_bnot[$compat'_bnot(typeIR)]
 
 xref:compat_uplusminus[$compat_uplusminus(typeIR)]
 
-. Return ``xref:compat'_uplusminus[$compat'_uplusminus($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:compat'_uplusminus[$compat'_uplusminus(typeIR')]``.
 
 xref:compat'_uplusminus[$compat'_uplusminus(typeIR)]
 
@@ -8194,7 +8451,9 @@ xref:compat'_uplusminus[$compat'_uplusminus(typeIR)]
 
 xref:compat_plusminusmult[$compat_plusminusmult(typeIR~l~, typeIR~r~)]
 
-. Return ``xref:compat'_plusminusmult[$compat'_plusminusmult($canon(typeIR~l~), $canon(typeIR~r~))]``.
+. Let ``typeIR`` be ``xref:canon[$canon(typeIR~l~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR~r~)]``.
+. Return ``xref:compat'_plusminusmult[$compat'_plusminusmult(typeIR, typeIR')]``.
 
 xref:compat'_plusminusmult[$compat'_plusminusmult(typeIR'', typeIR''')]
 
@@ -8226,7 +8485,9 @@ xref:compat'_plusminusmult[$compat'_plusminusmult(typeIR'', typeIR''')]
 
 xref:compat_satplusminus[$compat_satplusminus(typeIR~l~, typeIR~r~)]
 
-. Return ``xref:compat'_satplusminus[$compat'_satplusminus($canon(typeIR~l~), $canon(typeIR~r~))]``.
+. Let ``typeIR`` be ``xref:canon[$canon(typeIR~l~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR~r~)]``.
+. Return ``xref:compat'_satplusminus[$compat'_satplusminus(typeIR, typeIR')]``.
 
 xref:compat'_satplusminus[$compat'_satplusminus(typeIR'', typeIR''')]
 
@@ -8253,7 +8514,9 @@ xref:compat'_satplusminus[$compat'_satplusminus(typeIR'', typeIR''')]
 
 xref:compat_divmod[$compat_divmod(typeIR~l~, typeIR~r~)]
 
-. Return ``xref:compat'_divmod[$compat'_divmod($canon(typeIR~l~), $canon(typeIR~r~))]``.
+. Let ``typeIR`` be ``xref:canon[$canon(typeIR~l~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR~r~)]``.
+. Return ``xref:compat'_divmod[$compat'_divmod(typeIR, typeIR')]``.
 
 xref:compat'_divmod[$compat'_divmod(typeIR'', typeIR''')]
 
@@ -8272,7 +8535,9 @@ xref:compat'_divmod[$compat'_divmod(typeIR'', typeIR''')]
 
 xref:compat_shift[$compat_shift(typeIR~l~, typeIR~r~)]
 
-. Return ``xref:compat'_shift[$compat'_shift($canon(typeIR~l~), $canon(typeIR~r~))]``.
+. Let ``typeIR`` be ``xref:canon[$canon(typeIR~l~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR~r~)]``.
+. Return ``xref:compat'_shift[$compat'_shift(typeIR, typeIR')]``.
 
 xref:compat'_shift[$compat'_shift(typeIR'', typeIR''')]
 
@@ -8303,7 +8568,9 @@ xref:compat'_shift[$compat'_shift(typeIR'', typeIR''')]
 
 xref:compat_compare[$compat_compare(typeIR~l~, typeIR~r~)]
 
-. Return ``xref:compat'_compare[$compat'_compare($canon(typeIR~l~), $canon(typeIR~r~))]``.
+. Let ``typeIR`` be ``xref:canon[$canon(typeIR~l~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR~r~)]``.
+. Return ``xref:compat'_compare[$compat'_compare(typeIR, typeIR')]``.
 
 xref:compat'_compare[$compat'_compare(typeIR'', typeIR''')]
 
@@ -8335,7 +8602,9 @@ xref:compat'_compare[$compat'_compare(typeIR'', typeIR''')]
 
 xref:compat_bitwise[$compat_bitwise(typeIR~l~, typeIR~r~)]
 
-. Return ``xref:compat'_bitwise[$compat'_bitwise($canon(typeIR~l~), $canon(typeIR~r~))]``.
+. Let ``typeIR`` be ``xref:canon[$canon(typeIR~l~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR~r~)]``.
+. Return ``xref:compat'_bitwise[$compat'_bitwise(typeIR, typeIR')]``.
 
 xref:compat'_bitwise[$compat'_bitwise(typeIR'', typeIR''')]
 
@@ -8362,7 +8631,9 @@ xref:compat'_bitwise[$compat'_bitwise(typeIR'', typeIR''')]
 
 xref:compat_concat[$compat_concat(typeIR~l~, typeIR~r~)]
 
-. Return ``xref:compat'_concat[$compat'_concat($canon(typeIR~l~), $canon(typeIR~r~))]``.
+. Let ``typeIR`` be ``xref:canon[$canon(typeIR~l~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR~r~)]``.
+. Return ``xref:compat'_concat[$compat'_concat(typeIR, typeIR')]``.
 
 xref:compat'_concat[$compat'_concat(typeIR'', typeIR''')]
 
@@ -8385,7 +8656,9 @@ xref:compat'_concat[$compat'_concat(typeIR'', typeIR''')]
 
 xref:result_concat[$result_concat(typeIR~l~, typeIR~r~)]
 
-. Return ``xref:result'_concat[$result'_concat($canon(typeIR~l~), $canon(typeIR~r~))]``.
+. Let ``typeIR`` be ``xref:canon[$canon(typeIR~l~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR~r~)]``.
+. Return ``xref:result'_concat[$result'_concat(typeIR, typeIR')]``.
 
 xref:result'_concat[$result'_concat(typeIR'', typeIR''')]
 
@@ -8412,7 +8685,9 @@ xref:result'_concat[$result'_concat(typeIR'', typeIR''')]
 
 xref:compat_logical[$compat_logical(typeIR~l~, typeIR~r~)]
 
-. Return ``xref:compat'_logical[$compat'_logical($canon(typeIR~l~), $canon(typeIR~r~))]``.
+. Let ``typeIR`` be ``xref:canon[$canon(typeIR~l~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR~r~)]``.
+. Return ``xref:compat'_logical[$compat'_logical(typeIR, typeIR')]``.
 
 xref:compat'_logical[$compat'_logical(typeIR'', typeIR''')]
 
@@ -8431,7 +8706,8 @@ xref:compat'_logical[$compat'_logical(typeIR'', typeIR''')]
 
 xref:compat_array_index[$compat_array_index(typeIR)]
 
-. Return ``xref:compat'_arrayindex[$compat'_arrayindex($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:compat'_arrayindex[$compat'_arrayindex(typeIR')]``.
 
 xref:compat'_arrayindex[$compat'_arrayindex(typeIR)]
 
@@ -8447,7 +8723,8 @@ xref:compat'_arrayindex[$compat'_arrayindex(typeIR)]
 
 xref:compat_bitslice_base[$compat_bitslice_base(typeIR)]
 
-. Return ``xref:compat'_bitslice_base[$compat'_bitslice_base($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:compat'_bitslice_base[$compat'_bitslice_base(typeIR')]``.
 
 xref:compat'_bitslice_base[$compat'_bitslice_base(typeIR)]
 
@@ -8464,7 +8741,8 @@ xref:compat'_bitslice_base[$compat'_bitslice_base(typeIR)]
 
 xref:compat_bitslice_index[$compat_bitslice_index(typeIR)]
 
-. Return ``xref:compat'_bitslice_index[$compat'_bitslice_index($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:compat'_bitslice_index[$compat'_bitslice_index(typeIR')]``.
 
 xref:compat'_bitslice_index[$compat'_bitslice_index(typeIR)]
 
@@ -8480,7 +8758,9 @@ xref:compat'_bitslice_index[$compat'_bitslice_index(typeIR)]
 
 xref:is_valid_bitslice[$is_valid_bitslice(typeIR, n~lo~, n~hi~)]
 
-. Return ``n~lo~`` is less than or equal to ``n~hi~`` and ``xref:is_valid_bitslice'[$is_valid_bitslice'($canon(typeIR), n~lo~, n~hi~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Let ``bool`` be ``xref:is_valid_bitslice'[$is_valid_bitslice'(typeIR', n~lo~, n~hi~)]``.
+. Return ``n~lo~`` is less than or equal to ``n~hi~`` and ``bool``.
 
 xref:is_valid_bitslice'[$is_valid_bitslice'(typeIR', ++_++, ++_++)]
 
@@ -8500,7 +8780,8 @@ xref:is_valid_bitslice'[$is_valid_bitslice'(typeIR', ++_++, ++_++)]
 
 xref:is_concrete_extern_object[$is_concrete_extern_object(typeIR)]
 
-. Return ``xref:is_concrete_extern_object'[$is_concrete_extern_object'($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:is_concrete_extern_object'[$is_concrete_extern_object'(typeIR')]``.
 
 xref:is_concrete_extern_object'[$is_concrete_extern_object'(typeIR)]
 
@@ -8523,7 +8804,8 @@ xref:is_concrete_extern_object''[$is_concrete_extern_object''(routineTypeDefIR)]
 . If let ``routineTypeIR`` be ``routineTypeDefIR``:
  .. Return ``xref:is_concrete_extern_object'''[$is_concrete_extern_object'''(routineTypeIR)]``.
 . Else:
- .. Return ``true`` is equal to ``xref:is_concrete_extern_object'''[$is_concrete_extern_object'''(routineTypeIR)]``.
+ .. Let ``bool`` be ``xref:is_concrete_extern_object'''[$is_concrete_extern_object'''(routineTypeIR)]``.
+ .. Return ``true`` is equal to ``bool``.
 
 xref:is_concrete_extern_object'''[$is_concrete_extern_object'''(routineTypeIR')]
 
@@ -8538,7 +8820,8 @@ xref:is_concrete_extern_object'''[$is_concrete_extern_object'''(routineTypeIR')]
 
 xref:compat_direct_application[$compat_direct_application(typeIR)]
 
-. Return ``xref:compat'_direct_application[$compat'_direct_application($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:compat'_direct_application[$compat'_direct_application(typeIR')]``.
 
 xref:compat'_direct_application[$compat'_direct_application(typeIR)]
 
@@ -8640,7 +8923,8 @@ xref:SwitchCases_general_ok[SwitchCases_general_ok: ``TC f typeIR~switch~ ⊢ sw
 
 xref:compat_switch[$compat_switch(typeIR)]
 
-. Return ``xref:compat'_switch[$compat'_switch($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:compat'_switch[$compat'_switch(typeIR')]``.
 
 xref:compat'_switch[$compat'_switch(typeIR)]
 
@@ -8680,7 +8964,8 @@ xref:Decl_object_ok[Decl_object_ok: ``p TC~0~ frame rdenv ⊢ objectDeclaration 
  .. Let ``rid`` be ``xref:rid[$rid(name, parameterList)]``.
  .. Let ``methodTypeIR`` be ``+EXTERN_METHOD+ +(+parameterTypeIR^{asterisk}^+)+ +->+ typeIR~ret~``.
  .. Let ``routineTypeDefIR`` be ``methodTypeIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+``.
- .. If <<RoutineTypeDef_wf,``xref:bound[$bound(p, TC~0~)] ⊢ routineTypeDefIR``>> holds:
+ .. Let ``bound`` be ``xref:bound[$bound(p, TC~0~)]``.
+ .. If xref:RoutineTypeDef_wf[``bound ⊢ routineTypeDefIR``] holds:
   ... Let ``rdenv~init~`` be ``xref:update_map[$update_map<rid, routineTypeDefIR>(rdenv, rid, routineTypeDefIR)]``.
   ... Let ``nameIR`` be ``xref:name[$name(name)]``.
   ... Let ``functionDeclarationIR`` be ``annotationList typeIR~ret~ nameIR +<+tid~expl~^{asterisk}^ +,+ tid~impl~^{asterisk}^+>+ +(+parameterIR^{asterisk}^+)+ blockStatementIR``.
@@ -8824,7 +9109,9 @@ xref:SelectCase_keyset_simple_ok[SelectCase_keyset_simple_ok: ``TC typeIR~key~ �
 
 xref:compat_mask[$compat_mask(typeIR~l~, typeIR~r~)]
 
-. Return ``xref:compat'_mask[$compat'_mask($canon(typeIR~l~), $canon(typeIR~r~))]``.
+. Let ``typeIR`` be ``xref:canon[$canon(typeIR~l~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR~r~)]``.
+. Return ``xref:compat'_mask[$compat'_mask(typeIR, typeIR')]``.
 
 xref:compat'_mask[$compat'_mask(typeIR'', typeIR''')]
 
@@ -8856,7 +9143,9 @@ xref:compat'_mask[$compat'_mask(typeIR'', typeIR''')]
 
 xref:compat_range[$compat_range(typeIR~l~, typeIR~r~)]
 
-. Return ``xref:compat'_range[$compat'_range($canon(typeIR~l~), $canon(typeIR~r~))]``.
+. Let ``typeIR`` be ``xref:canon[$canon(typeIR~l~)]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR~r~)]``.
+. Return ``xref:compat'_range[$compat'_range(typeIR, typeIR')]``.
 
 xref:compat'_range[$compat'_range(typeIR'', typeIR''')]
 
@@ -8971,7 +9260,8 @@ xref:SelectCase_ok[SelectCase_ok: ``TC nameIR~state~^{asterisk}^ typeIR~key~^{as
 
 xref:compat_table_exact_optional_key[$compat_table_exact_optional_key(typeIR)]
 
-. Return ``xref:compat'_table_exact_optional_key[$compat'_table_exact_optional_key($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:compat'_table_exact_optional_key[$compat'_table_exact_optional_key(typeIR')]``.
 
 xref:compat'_table_exact_optional_key[$compat'_table_exact_optional_key(typeIR'')]
 
@@ -8990,7 +9280,8 @@ xref:compat'_table_exact_optional_key[$compat'_table_exact_optional_key(typeIR''
 
 xref:compat_table_lpm_ternary_range_key[$compat_table_lpm_ternary_range_key(typeIR)]
 
-. Return ``xref:compat'_table_lpm_ternary_range_key[$compat'_table_lpm_ternary_range_key($canon(typeIR))]``.
+. Let ``typeIR'`` be ``xref:canon[$canon(typeIR)]``.
+. Return ``xref:compat'_table_lpm_ternary_range_key[$compat'_table_lpm_ternary_range_key(typeIR')]``.
 
 xref:compat'_table_lpm_ternary_range_key[$compat'_table_lpm_ternary_range_key(typeIR'')]
 
@@ -9075,7 +9366,8 @@ xref:TableEntry_keyset_simple_ok[TableEntry_keyset_simple_ok: ``TC TBLC ⊢ ( ty
 
        ........ Let xref:Eval_static[``+LOCAL+ TC ⊢ typedExpressionIR~r_reduced~ ↝ value~r~``].
        ........ Let ``i~r~`` be ``xref:to_number[$to_number(value~r~)]``.
-       ........ Let ``n~prefix~`` be ``<<tableEntry_lpm_prefix,$tableEntry_lpm_prefix(n +W+ xref:to_bitstr[$to_bitstr(n, i~r~)])>>``.
+       ........ Let ``int`` be ``xref:to_bitstr[$to_bitstr(n, i~r~)]``.
+       ........ Let ``n~prefix~`` be ``xref:tableEntry_lpm_prefix[$tableEntry_lpm_prefix(n +W+ int)]``.
        ........ Result in ``+LPM+ n~prefix~`` and ``typedExpressionIR~l_reduced~ +&&&+ typedExpressionIR~r_reduced~``.
      ...... Else if ``simpleKeysetExpression`` matches pattern ``+DEFAULT+``:
       ....... Let ``matchMode`` be ``TBLC.+MODE+``.
@@ -9149,7 +9441,8 @@ xref:count_table_keys[$count_table_keys(tableProperty''^{asterisk}^)]
 . Else:
  .. Let!~type~ ``+KEY+ +=+ +{+++_+++}+`` be ``tableProperty``.
 
- .. Return ``1`` + ``xref:count_table_keys[$count_table_keys(tableProperty~t~^{asterisk}^)]``.
+ .. Let ``nat`` be ``xref:count_table_keys[$count_table_keys(tableProperty~t~^{asterisk}^)]``.
+ .. Return ``1`` + ``nat``.
 
 . Otherwise:
  .. Otherwise:
@@ -9165,7 +9458,8 @@ xref:count_table_actions[$count_table_actions(tableProperty''^{asterisk}^)]
 . Else:
  .. Let!~type~ ``+ACTIONS+ +=+ +{+++_+++}+`` be ``tableProperty``.
 
- .. Return ``1`` + ``xref:count_table_actions[$count_table_actions(tableProperty~t~^{asterisk}^)]``.
+ .. Let ``nat`` be ``xref:count_table_actions[$count_table_actions(tableProperty~t~^{asterisk}^)]``.
+ .. Return ``1`` + ``nat``.
 
 . Otherwise:
  .. Otherwise:
@@ -9189,7 +9483,8 @@ xref:filter_default_parameters[$filter_default_parameters(parameterTypeIR^{aster
   ... Check that ``parameterTypeIR^{asterisk}^`` is a non-empty list.
 
   ... Let ``parameterTypeIR~h~ {two-colons} parameterTypeIR~t~^{asterisk}^`` be ``parameterTypeIR^{asterisk}^``.
-  ... Return ``parameterTypeIR~h~ {two-colons} xref:filter_default_parameters[$filter_default_parameters(parameterTypeIR~t~^{asterisk}^, id~default~^{asterisk}^)]``.
+  ... Let ``parameterTypeIR'^{asterisk}^`` be ``xref:filter_default_parameters[$filter_default_parameters(parameterTypeIR~t~^{asterisk}^, id~default~^{asterisk}^)]``.
+  ... Return ``parameterTypeIR~h~ {two-colons} parameterTypeIR'^{asterisk}^``.
 
 xref:align_parameters[$align_parameters(parameterTypeIR^{asterisk}^, argumentIR^{asterisk}^)]
 
@@ -9599,15 +9894,21 @@ xref:callable_function[$callable_function(cursor, TC)]
 
 . If ``cursor`` matches pattern ``+GLOBAL+``: return ``false``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
- .. Return ``xref:is_parser_blockKind[$is_parser_blockKind(TC.+BLOCK+.+KIND+)]`` or ``xref:is_control_blockKind[$is_control_blockKind(TC.+BLOCK+.+KIND+)]``.
+ .. Let ``bool`` be ``xref:is_parser_blockKind[$is_parser_blockKind(TC.+BLOCK+.+KIND+)]``.
+ .. Let ``bool'`` be ``xref:is_control_blockKind[$is_control_blockKind(TC.+BLOCK+.+KIND+)]``.
+ .. Return ``bool`` or ``bool'``.
 . Else:
- .. Return ``~xref:is_extern_method_localKind[$is_extern_method_localKind(TC.+LOCAL+.+KIND+)]`` and ``~xref:is_extern_abstract_method_localKind[$is_extern_abstract_method_localKind(TC.+LOCAL+.+KIND+)]``.
+ .. Let ``bool''`` be ``xref:is_extern_method_localKind[$is_extern_method_localKind(TC.+LOCAL+.+KIND+)]``.
+ .. Let ``bool'''`` be ``xref:is_extern_abstract_method_localKind[$is_extern_abstract_method_localKind(TC.+LOCAL+.+KIND+)]``.
+ .. Return not ``bool''`` and not ``bool'''``.
 
 xref:callable_extern_function[$callable_extern_function(cursor, TC)]
 
 . If ``cursor`` matches pattern ``+GLOBAL+``: return ``false``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
- .. Return ``xref:is_parser_blockKind[$is_parser_blockKind(TC.+BLOCK+.+KIND+)]`` or ``xref:is_control_blockKind[$is_control_blockKind(TC.+BLOCK+.+KIND+)]``.
+ .. Let ``bool`` be ``xref:is_parser_blockKind[$is_parser_blockKind(TC.+BLOCK+.+KIND+)]``.
+ .. Let ``bool'`` be ``xref:is_control_blockKind[$is_control_blockKind(TC.+BLOCK+.+KIND+)]``.
+ .. Return ``bool`` or ``bool'``.
 . Else: return ``true``.
 
 xref:callable_action[$callable_action(cursor, TC)]
@@ -9615,7 +9916,9 @@ xref:callable_action[$callable_action(cursor, TC)]
 . If ``cursor`` matches pattern ``+GLOBAL+``: return ``false``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``: return ``false``.
 . Else:
- .. Return ``xref:is_action_localKind[$is_action_localKind(TC.+LOCAL+.+KIND+)]`` or ``xref:is_control_apply_method_localKind[$is_control_apply_method_localKind(TC.+LOCAL+.+KIND+)]``.
+ .. Let ``bool`` be ``xref:is_action_localKind[$is_action_localKind(TC.+LOCAL+.+KIND+)]``.
+ .. Let ``bool'`` be ``xref:is_control_apply_method_localKind[$is_control_apply_method_localKind(TC.+LOCAL+.+KIND+)]``.
+ .. Return ``bool`` or ``bool'``.
 
 xref:callable_builtin_method[$callable_builtin_method(cursor, TC)]
 
@@ -9627,14 +9930,18 @@ xref:callable_extern_method[$callable_extern_method(cursor, TC)]
 
 . If ``cursor`` matches pattern ``+GLOBAL+``: return ``false``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
- .. Return ``xref:is_parser_blockKind[$is_parser_blockKind(TC.+BLOCK+.+KIND+)]`` or ``xref:is_control_blockKind[$is_control_blockKind(TC.+BLOCK+.+KIND+)]``.
+ .. Let ``bool`` be ``xref:is_parser_blockKind[$is_parser_blockKind(TC.+BLOCK+.+KIND+)]``.
+ .. Let ``bool'`` be ``xref:is_control_blockKind[$is_control_blockKind(TC.+BLOCK+.+KIND+)]``.
+ .. Return ``bool`` or ``bool'``.
 . Else: return ``true``.
 
 xref:callable_extern_abstract_method[$callable_extern_abstract_method(cursor, TC)]
 
 . If ``cursor`` matches pattern ``+GLOBAL+``: return ``false``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``:
- .. Return ``xref:is_parser_blockKind[$is_parser_blockKind(TC.+BLOCK+.+KIND+)]`` or ``xref:is_control_blockKind[$is_control_blockKind(TC.+BLOCK+.+KIND+)]``.
+ .. Let ``bool`` be ``xref:is_parser_blockKind[$is_parser_blockKind(TC.+BLOCK+.+KIND+)]``.
+ .. Let ``bool'`` be ``xref:is_control_blockKind[$is_control_blockKind(TC.+BLOCK+.+KIND+)]``.
+ .. Return ``bool`` or ``bool'``.
 . Else: return ``true``.
 
 xref:callable_parser_apply_method[$callable_parser_apply_method(cursor, TC)]
@@ -9656,7 +9963,9 @@ xref:callable_table_apply_method[$callable_table_apply_method(cursor, TC)]
 . If ``cursor`` matches pattern ``+GLOBAL+``: return ``false``.
 . Else if ``cursor`` matches pattern ``+BLOCK+``: return ``false``.
 . Else:
- .. Return ``xref:is_control_apply_method_localKind[$is_control_apply_method_localKind(TC.+LOCAL+.+KIND+)]`` or ``xref:is_table_apply_method_localKind[$is_table_apply_method_localKind(TC.+LOCAL+.+KIND+)]``.
+ .. Let ``bool`` be ``xref:is_control_apply_method_localKind[$is_control_apply_method_localKind(TC.+LOCAL+.+KIND+)]``.
+ .. Let ``bool'`` be ``xref:is_table_apply_method_localKind[$is_table_apply_method_localKind(TC.+LOCAL+.+KIND+)]``.
+ .. Return ``bool`` or ``bool'``.
 
 xref:empty_theta[$empty_theta]
 
@@ -10072,27 +10381,33 @@ xref:Expr_inst[Expr_inst: ``p Ci sto' ⊢ expressionIR +#+ ++_++ ⟹ % %``]
    .... Else if ``binop`` matches pattern ``+<=+``:
     ..... Let xref:Expr_inst[``p Ci sto' ⊢ typedExpressionIR~l~ ⟹ sto~1~ value~l~``].
     ..... Let xref:Expr_inst[``p Ci sto~1~ ⊢ typedExpressionIR~r~ ⟹ sto~2~ value~r~``].
-    ..... Result in ``sto~2~`` and ``+B+ xref:bin_le[$bin_le(value~l~, value~r~)]``.
+    ..... Let ``bool`` be ``xref:bin_le[$bin_le(value~l~, value~r~)]``.
+    ..... Result in ``sto~2~`` and ``+B+ bool``.
    .... Else if ``binop`` matches pattern ``+>=+``:
     ..... Let xref:Expr_inst[``p Ci sto' ⊢ typedExpressionIR~l~ ⟹ sto~1~ value~l~``].
     ..... Let xref:Expr_inst[``p Ci sto~1~ ⊢ typedExpressionIR~r~ ⟹ sto~2~ value~r~``].
-    ..... Result in ``sto~2~`` and ``+B+ xref:bin_ge[$bin_ge(value~l~, value~r~)]``.
+    ..... Let ``bool'`` be ``xref:bin_ge[$bin_ge(value~l~, value~r~)]``.
+    ..... Result in ``sto~2~`` and ``+B+ bool'``.
    .... Else if ``binop`` matches pattern ``+<+``:
     ..... Let xref:Expr_inst[``p Ci sto' ⊢ typedExpressionIR~l~ ⟹ sto~1~ value~l~``].
     ..... Let xref:Expr_inst[``p Ci sto~1~ ⊢ typedExpressionIR~r~ ⟹ sto~2~ value~r~``].
-    ..... Result in ``sto~2~`` and ``+B+ xref:bin_lt[$bin_lt(value~l~, value~r~)]``.
+    ..... Let ``bool''`` be ``xref:bin_lt[$bin_lt(value~l~, value~r~)]``.
+    ..... Result in ``sto~2~`` and ``+B+ bool''``.
    .... Else if ``binop`` matches pattern ``+>+``:
     ..... Let xref:Expr_inst[``p Ci sto' ⊢ typedExpressionIR~l~ ⟹ sto~1~ value~l~``].
     ..... Let xref:Expr_inst[``p Ci sto~1~ ⊢ typedExpressionIR~r~ ⟹ sto~2~ value~r~``].
-    ..... Result in ``sto~2~`` and ``+B+ xref:bin_gt[$bin_gt(value~l~, value~r~)]``.
+    ..... Let ``bool'''`` be ``xref:bin_gt[$bin_gt(value~l~, value~r~)]``.
+    ..... Result in ``sto~2~`` and ``+B+ bool'''``.
    .... Else if ``binop`` matches pattern ``+!=+``:
     ..... Let xref:Expr_inst[``p Ci sto' ⊢ typedExpressionIR~l~ ⟹ sto~1~ value~l~``].
     ..... Let xref:Expr_inst[``p Ci sto~1~ ⊢ typedExpressionIR~r~ ⟹ sto~2~ value~r~``].
-    ..... Result in ``sto~2~`` and ``+B+ xref:bin_ne[$bin_ne(value~l~, value~r~)]``.
+    ..... Let ``bool''''`` be ``xref:bin_ne[$bin_ne(value~l~, value~r~)]``.
+    ..... Result in ``sto~2~`` and ``+B+ bool''''``.
    .... Else if ``binop`` matches pattern ``+==+``:
     ..... Let xref:Expr_inst[``p Ci sto' ⊢ typedExpressionIR~l~ ⟹ sto~1~ value~l~``].
     ..... Let xref:Expr_inst[``p Ci sto~1~ ⊢ typedExpressionIR~r~ ⟹ sto~2~ value~r~``].
-    ..... Result in ``sto~2~`` and ``+B+ xref:bin_eq[$bin_eq(value~l~, value~r~)]``.
+    ..... Let ``bool'''''`` be ``xref:bin_eq[$bin_eq(value~l~, value~r~)]``.
+    ..... Result in ``sto~2~`` and ``+B+ bool'''''``.
    .... Else if ``binop`` matches pattern ``+&+``:
     ..... Let xref:Expr_inst[``p Ci sto' ⊢ typedExpressionIR~l~ ⟹ sto~1~ value~l~``].
     ..... Let xref:Expr_inst[``p Ci sto~1~ ⊢ typedExpressionIR~r~ ⟹ sto~2~ value~r~``].
@@ -10754,7 +11069,9 @@ xref:Decl_inst[Decl_inst: ``p' Ci~0~ sto' ⊢ declarationIR ⟹ % % %``]
      ...... Result in ``Ci~1~``, ``sto'``, and ``·``.
     ..... Else:
      ...... Let <<Decl_inst,``+GLOBAL+ Ci~0~ xref:empty_sto[$empty_sto] ⊢ derivedTypeDeclarationIR ⟹ Ci~local~ ++_++ ++_++^?^``>>.
-     ...... Let ``+{+tid^{asterisk}^+}+`` be ``xref:diff_set[$diff_set<tid>($dom_map<tid, typeDefIR>(Ci~local~.+GLOBAL+.+TDENV+), $dom_map<tid, typeDefIR>(Ci~0~.+GLOBAL+.+TDENV+))]``.
+     ...... Let ``set<tid>`` be ``xref:dom_map[$dom_map<tid, typeDefIR>(Ci~local~.+GLOBAL+.+TDENV+)]``.
+     ...... Let ``set<tid>'`` be ``xref:dom_map[$dom_map<tid, typeDefIR>(Ci~0~.+GLOBAL+.+TDENV+)]``.
+     ...... Let ``+{+tid^{asterisk}^+}+`` be ``xref:diff_set[$diff_set<tid>(set<tid>, set<tid>')]``.
      ...... Let!~type~ ``tid~newtype~`` be ``tid^{asterisk}^``.
 
      ...... Let ``typeDefIR`` be xref:option_get[*!*] ``xref:find_typedef_inst[$find_typedef_inst(+GLOBAL+, Ci~local~, +.+ tid~newtype~)]``.
@@ -10764,7 +11081,9 @@ xref:Decl_inst[Decl_inst: ``p' Ci~0~ sto' ⊢ declarationIR ⟹ % % %``]
      ...... Let ``Ci~1~`` be ``xref:add_typedef_inst[$add_typedef_inst(+GLOBAL+, Ci~0~, nameIR, typeIR~typedef~)]``.
      ...... Result in ``Ci~1~``, ``sto'``, and ``·``.
      ...... Let <<Decl_inst,``+GLOBAL+ Ci~0~ xref:empty_sto[$empty_sto] ⊢ derivedTypeDeclarationIR ⟹ Ci~local~ ++_++ ++_++^?^``>>.
-     ...... Let ``+{+tid^{asterisk}^+}+`` be ``xref:diff_set[$diff_set<tid>($dom_map<tid, typeDefIR>(Ci~local~.+GLOBAL+.+TDENV+), $dom_map<tid, typeDefIR>(Ci~0~.+GLOBAL+.+TDENV+))]``.
+     ...... Let ``set<tid>''`` be ``xref:dom_map[$dom_map<tid, typeDefIR>(Ci~local~.+GLOBAL+.+TDENV+)]``.
+     ...... Let ``set<tid>'''`` be ``xref:dom_map[$dom_map<tid, typeDefIR>(Ci~0~.+GLOBAL+.+TDENV+)]``.
+     ...... Let ``+{+tid^{asterisk}^+}+`` be ``xref:diff_set[$diff_set<tid>(set<tid>'', set<tid>''')]``.
      ...... Let!~type~ ``tid~newtype~`` be ``tid^{asterisk}^``.
 
      ...... Let ``typeDefIR`` be xref:option_get[*!*] ``xref:find_typedef_inst[$find_typedef_inst(+GLOBAL+, Ci~local~, +.+ tid~newtype~)]``.
@@ -10898,7 +11217,8 @@ xref:is_extern_object[$is_extern_object(objDyn')]
 
 xref:rid_IR[$rid_IR(nameIR, parameterIR^{asterisk}^)]
 
-. Return ``nameIR +(+xref:pid_IR[$pid_IR(parameterIR)]^{asterisk}^+)+``.
+. Let ``pid`` be ``xref:pid_IR[$pid_IR(parameterIR)]``, for all ``parameterIR`` in ``parameterIR^{asterisk}^`` and ``pid`` in ``pid^{asterisk}^``.
+. Return ``nameIR +(+pid^{asterisk}^+)+``.
 
 xref:pid_IR[$pid_IR(++_++ ++_++ ++_++ nameIR constantInitializerOptIR')]
 

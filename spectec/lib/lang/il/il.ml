@@ -6,6 +6,7 @@ module Eq = Eq
 module Print_debug = Print_debug
 module Free = Free
 module Fresh = Fresh
+module Var = Var
 
 module Value = struct
   include Value
