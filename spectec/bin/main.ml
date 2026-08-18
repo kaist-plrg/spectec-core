@@ -113,18 +113,20 @@ let annotate_command =
 (* Walks [root] recursively and returns every file path under it whose
    basename ends in one of [exts]. Paths are returned relative to [root]. *)
 let collect_files ~exts root =
-  let rec walk acc dir =
-    let entries = Sys.readdir dir in
+  let rec walk acc rel_dir =
+    let entries = Sys.readdir (Filename.concat root rel_dir) in
     Array.sort String.compare entries;
     Array.fold_left
       (fun acc entry ->
-        let path = Filename.concat dir entry in
-        if Sys.is_directory path then walk acc path
-        else if List.exists (Filename.check_suffix entry) exts then path :: acc
+        let rel_path = Filename.concat rel_dir entry in
+        if Sys.is_directory (Filename.concat root rel_path) then
+          walk acc rel_path
+        else if List.exists (Filename.check_suffix entry) exts then
+          rel_path :: acc
         else acc)
       acc entries
   in
-  walk [] root |> List.rev
+  walk [] "" |> List.rev
 
 let splice_command =
   Core.Command.basic
@@ -148,18 +150,9 @@ let splice_command =
         let inputs = collect_files ~exts:[ ".adoc" ] input_dir in
         let pairs =
           List.map
-            (fun in_path ->
-              let rel =
-                let prefix_len = String.length input_dir + 1 in
-                if
-                  String.length in_path > prefix_len
-                  && String.sub in_path 0 (String.length input_dir) = input_dir
-                then
-                  String.sub in_path prefix_len
-                    (String.length in_path - prefix_len)
-                else in_path
-              in
-              (in_path, Filename.concat output_dir rel))
+            (fun rel_path ->
+              ( Filename.concat input_dir rel_path,
+                Filename.concat output_dir rel_path ))
             inputs
         in
         let report =
