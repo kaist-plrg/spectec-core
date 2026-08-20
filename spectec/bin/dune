@@ -11,6 +11,7 @@
   spectec.backend.splice
   spectec.targets.p4
   spectec.targets.impty
+  spectec.targets.miniml
   core
   core_unix
   core_unix.command_unix))

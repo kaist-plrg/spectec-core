@@ -1,0 +1,112 @@
+;;--------------------
+;; Syntax
+
+syntax id =
+  text
+
+syntax op =
+  | ADD
+
+syntax expr =
+  | Ecst  int
+  | Eop   op
+  | Evar  id
+  | Eapp  expr expr
+  | Efun  id expr
+  | Elet  id expr expr
+  | Epair expr expr
+
+;;--------------------
+;; Substitution
+
+var n: int
+var x: id
+var y: id
+var e1: expr
+var e2: expr
+var e: expr
+var v: expr
+
+dec $subst(expr, id, expr) : expr
+  hint(prose_in "%0[%1 <- %2]")
+
+dec $subst_var(id, id, expr) : expr
+  hint(prose_in "%0[%1 <- %2]")
+
+dec $subst_fun(id, expr, id, expr) : expr
+  hint(prose_in "(Efun %0 %1)[%2 <- %3]")
+
+def $subst_var(y, x, v) = v
+  -- if x = y
+def $subst_var(y, x, v) = Evar y
+ -- otherwise
+
+def $subst_fun(y, e1, x, v) = Efun y e1
+  -- if x = y
+def $subst_fun(y, e1, x, v) = Efun y $subst(e1, x, v)
+  -- otherwise
+
+
+def $subst(Ecst n, x, v) = Ecst n
+def $subst(Eop op, x, v) = Eop op
+def $subst(Evar y, x, v) = $subst_var(y, x, v)
+def $subst(Eapp e1 e2, x, v) = Eapp $subst(e1, x, v) $subst(e2, x, v)
+def $subst(Efun y e1, x, v) = $subst_fun(y, e1,x, v)
+def $subst(Elet y e1 e2, x, v) = Elet y $subst(e1, x, v) e2
+  -- if x = y
+def $subst(Elet y e1 e2, x, v) = Elet y $subst(e1, x, v) $subst(e2, x, v)
+  -- otherwise
+def $subst(Epair e1 e2, x, v) = Epair $subst(e1, x, v) $subst(e2, x, v)
+
+;;--------------------
+;; Evaluation
+
+syntax value = expr
+
+relation Eval_expr:
+  expr ==> value
+  hint(input %0)
+  hint(prose_in "evaluating" %0)
+
+var o: op
+
+rule Eval_expr/cst:
+  Ecst n ==> Ecst n
+rule Eval_expr/op:
+  Eop o ==> Eop o
+rule Eval_expr/fun:
+  Efun x e ==> Efun x e
+
+var i: int
+var i1: int
+var i2: int
+var v1: expr
+var v2: expr
+
+rule Eval_expr/add:
+  Eapp e1 e2 ==> Ecst i
+  -- Eval_expr: e1 ==> Eop ADD
+  -- Eval_expr: e2 ==> Epair v1 v2
+  -- if v1 = Ecst i1
+  -- if v2 = Ecst i2
+  -- if i = $(i1 + i2)
+
+rule Eval_expr/pair:
+  Epair e1 e2 ==> Epair v1 v2
+  -- Eval_expr: e1 ==> v1
+  -- Eval_expr: e2 ==> v2
+
+rule Eval_expr/let:
+  Elet x e1 e2 ==> v2
+  -- Eval_expr: e1 ==> v1
+  -- if $subst(e2, x, v1) = e
+  -- Eval_expr: e ==> v2
+
+var body: expr
+
+rule Eval_expr/beta:
+  Eapp e1 e2 ==> v
+  -- Eval_expr: e1 ==> Efun x body
+  -- Eval_expr: e2 ==> v2
+  -- if $subst(body, x, v2) = e
+  -- Eval_expr: e ==> v

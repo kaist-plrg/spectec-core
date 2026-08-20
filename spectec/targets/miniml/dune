@@ -1,0 +1,22 @@
+(ocamllex
+ (modules lexer))
+
+(menhir
+ (flags -v --fixed-exception)
+ (modules parse))
+
+(library
+ (name targets_miniml)
+ (public_name spectec.targets.miniml)
+ (libraries
+  spectec
+  spectec.cli
+  spectec.common
+  spectec.grammar
+  spectec.lang
+  spectec.lang.il
+  spectec.interp.builtins
+  core
+  str)
+ (preprocess
+  (pps ppx_let)))
