@@ -1,5 +1,6 @@
 module Make = Envs_make
 module Il = Envs_il
+module Interp = Envs_interp
 
 module RTEnv = Make.MakeIdMap (struct
   type t = Lang.Il.reltyp

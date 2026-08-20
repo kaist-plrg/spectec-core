@@ -172,7 +172,7 @@ let make cfg =
 
 module Spec : Instrumentation_spec.Spec.S = struct
   let name = "profile"
-  let mode = `Both
+  let modes = [ `IL; `SL ]
   let params = [ Instrumentation_spec.Param_utils.output_param ]
 
   let parse alist =
@@ -183,7 +183,7 @@ module Spec : Instrumentation_spec.Spec.S = struct
         Some
           {
             Instrumentation_config.Handler_config.name;
-            mode;
+            modes;
             handler = make { output };
             output;
           }

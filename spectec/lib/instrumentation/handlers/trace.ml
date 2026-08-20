@@ -103,7 +103,7 @@ let make cfg =
 
 module Spec : Instrumentation_spec.Spec.S = struct
   let name = "trace"
-  let mode = `Both
+  let modes = [ `IL; `SL ]
 
   let params =
     [
@@ -132,7 +132,7 @@ module Spec : Instrumentation_spec.Spec.S = struct
         Some
           {
             Instrumentation_config.Handler_config.name;
-            mode;
+            modes;
             handler = make { level = parse_level s; output };
             output;
           }

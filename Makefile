@@ -81,6 +81,7 @@ vsix:
 # Individual tests (run against the new p4 spec by default):
 #   make test-elab       - Elaboration test (both p4 and p4-old)
 #   make test-struct     - Structuring test (both p4 and p4-old)
+#   make test-annotate   - Annotate/prose render test (impty x3 + p4-old)
 #   make test-roundtrip-il - EL<->IL premise roundtrip test (impty base + closure, p4)
 #   make test-roundtrip-el - EL pretty-printer roundtrip test (mini-spec, p4-old, p4, impty)
 #   make test-parsegen   - Grammar-driven parser differential test (impty expressions + programs)
@@ -88,9 +89,12 @@ vsix:
 #   make test-il-neg     - IL interpreter negative tests
 #   make test-sl-pos     - SL interpreter positive tests (slow)
 #   make test-sl-neg     - SL interpreter negative tests
+#   make test-pl-pos     - PL interpreter positive tests (slow)
+#   make test-pl-neg     - PL interpreter negative tests
 #
 # p4-old interpreter tests:
 #   make test-il-pos-old / test-il-neg-old / test-sl-pos-old / test-sl-neg-old
+#   make test-pl-pos-old / test-pl-neg-old
 #
 # Per-case interpreter negative corpus (impty IL, one cram test per case):
 #   make test-interp-neg - Per-case impty IL negative tests
@@ -100,11 +104,13 @@ vsix:
 #   make test-lsp        - LSP diagnostics snapshot (Check.run -> LSP JSON)
 #
 # Grouped tests:
-#   make test-quick      - Fast tests (elab + elab-neg + interp-neg + cli + struct + roundtrip-il + roundtrip-el + impty + parsegen)
+#   make test-quick      - Fast tests (elab + elab-neg + interp-neg + cli + struct + annotate + roundtrip-il + roundtrip-el + impty + parsegen)
 #   make test-il         - IL tests for new p4 (pos + neg)
 #   make test-sl         - SL tests for new p4 (pos + neg)
+#   make test-pl         - PL tests for new p4 (pos + neg)
 #   make test-il-old     - IL tests for p4-old (pos + neg)
 #   make test-sl-old     - SL tests for p4-old (pos + neg)
+#   make test-pl-old     - PL tests for p4-old (pos + neg)
 #   make test-old        - All p4-old interpreter tests
 #
 # impty interpreter tests (per-variant: base, closure):
@@ -113,18 +119,21 @@ vsix:
 #   make test-impty-<v>                              - per-variant il+sl
 #   make test-impty                                  - all impty tests
 #
-#   make test            - quick + new p4 il/sl
+#   make test            - quick + new p4 il/sl/pl
 
-.PHONY: test test-quick test-elab test-elab-neg test-interp-neg test-cli test-lsp test-struct test-roundtrip-il test-roundtrip-el test-parsegen
+.PHONY: test test-quick test-elab test-elab-neg test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-parsegen
 .PHONY: test-il test-il-pos test-il-neg
 .PHONY: test-sl test-sl-pos test-sl-neg
+.PHONY: test-pl test-pl-pos test-pl-neg
 .PHONY: test-old test-il-old test-il-pos-old test-il-neg-old
 .PHONY: test-sl-old test-sl-pos-old test-sl-neg-old
+.PHONY: test-pl-old test-pl-pos-old test-pl-neg-old
 .PHONY: test-impty test-impty-base test-impty-closure
-.PHONY: test-impty-base-il test-impty-base-sl
-.PHONY: test-impty-closure-il test-impty-closure-sl
+.PHONY: test-impty-base-il test-impty-base-sl test-impty-base-pl
+.PHONY: test-impty-closure-il test-impty-closure-sl test-impty-closure-pl
 .PHONY: test-impty-base-il-pos test-impty-base-il-neg
 .PHONY: test-impty-base-sl-pos test-impty-base-sl-neg
+.PHONY: test-impty-base-pl-pos test-impty-base-pl-neg
 .PHONY: test-impty-closure-il-pos test-impty-closure-il-neg
 .PHONY: test-impty-closure-sl-pos test-impty-closure-sl-neg
 .PHONY: promote
@@ -157,6 +166,10 @@ test-struct:
 	@echo "#### Running structuring test"
 	@$(DUNE) build @test/struct/runtest --profile=release && echo OK
 
+test-annotate:
+	@echo "#### Running annotate test"
+	@$(DUNE) build @test/annotate/runtest --profile=release && echo OK
+
 test-roundtrip-il:
 	@echo "#### Running EL<->IL premise roundtrip test"
 	@$(DUNE) build @test/roundtrip/il/runtest --profile=release && echo OK
@@ -187,6 +200,12 @@ test-sl-pos:
 test-sl-neg:
 	$(call run_interp_test,p4,sl,neg)
 
+test-pl-pos:
+	$(call run_interp_test,p4,pl,pos)
+
+test-pl-neg:
+	$(call run_interp_test,p4,pl,neg)
+
 test-il-pos-old:
 	$(call run_interp_test,p4-old,il,pos)
 
@@ -199,7 +218,13 @@ test-sl-pos-old:
 test-sl-neg-old:
 	$(call run_interp_test,p4-old,sl,neg)
 
-test-quick: test-elab test-elab-neg test-interp-neg test-cli test-lsp test-struct test-roundtrip-il test-roundtrip-el test-impty test-parsegen
+test-pl-pos-old:
+	$(call run_interp_test,p4-old,pl,pos)
+
+test-pl-neg-old:
+	$(call run_interp_test,p4-old,pl,neg)
+
+test-quick: test-elab test-elab-neg test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-impty test-parsegen
 	@echo "#### Quick tests passed"
 
 test-il: test-il-pos test-il-neg
@@ -208,13 +233,19 @@ test-il: test-il-pos test-il-neg
 test-sl: test-sl-pos test-sl-neg
 	@echo "#### SL tests passed"
 
+test-pl: test-pl-pos test-pl-neg
+	@echo "#### PL tests passed"
+
 test-il-old: test-il-pos-old test-il-neg-old
 	@echo "#### IL (p4-old) tests passed"
 
 test-sl-old: test-sl-pos-old test-sl-neg-old
 	@echo "#### SL (p4-old) tests passed"
 
-test-old: test-il-old test-sl-old
+test-pl-old: test-pl-pos-old test-pl-neg-old
+	@echo "#### PL (p4-old) tests passed"
+
+test-old: test-il-old test-sl-old test-pl-old
 	@echo "#### p4-old interpreter tests passed"
 
 test-impty-base-il-pos:
@@ -229,6 +260,12 @@ test-impty-base-sl-pos:
 test-impty-base-sl-neg:
 	$(call run_interp_test,impty-base,sl,neg)
 
+test-impty-base-pl-pos:
+	$(call run_interp_test,impty-base,pl,pos)
+
+test-impty-base-pl-neg:
+	$(call run_interp_test,impty-base,pl,neg)
+
 test-impty-closure-il-pos:
 	$(call run_interp_test,impty-closure,il,pos)
 
@@ -241,11 +278,20 @@ test-impty-closure-sl-pos:
 test-impty-closure-sl-neg:
 	$(call run_interp_test,impty-closure,sl,neg)
 
+test-impty-closure-pl-pos:
+	$(call run_interp_test,impty-closure,pl,pos)
+
+test-impty-closure-pl-neg:
+	$(call run_interp_test,impty-closure,pl,neg)
+
 test-impty-base-il: test-impty-base-il-pos test-impty-base-il-neg
 	@echo "#### IL (impty-base) tests passed"
 
 test-impty-base-sl: test-impty-base-sl-pos test-impty-base-sl-neg
 	@echo "#### SL (impty-base) tests passed"
+
+test-impty-base-pl: test-impty-base-pl-pos test-impty-base-pl-neg
+	@echo "#### PL (impty-base) tests passed"
 
 test-impty-closure-il: test-impty-closure-il-pos test-impty-closure-il-neg
 	@echo "#### IL (impty-closure) tests passed"
@@ -253,14 +299,17 @@ test-impty-closure-il: test-impty-closure-il-pos test-impty-closure-il-neg
 test-impty-closure-sl: test-impty-closure-sl-pos test-impty-closure-sl-neg
 	@echo "#### SL (impty-closure) tests passed"
 
-test-impty-base: test-impty-base-il test-impty-base-sl
+test-impty-closure-pl: test-impty-closure-pl-pos test-impty-closure-pl-neg
+	@echo "#### PL (impty-closure) tests passed"
+
+test-impty-base: test-impty-base-il test-impty-base-sl test-impty-base-pl
 	@echo "#### impty-base interpreter tests passed"
 
-test-impty-closure: test-impty-closure-il test-impty-closure-sl
+test-impty-closure: test-impty-closure-il test-impty-closure-sl test-impty-closure-pl
 	@echo "#### impty-closure interpreter tests passed"
 
 test-impty: test-impty-base test-impty-closure
 	@echo "#### impty interpreter tests passed"
 
-test: test-quick test-il test-sl
+test: test-quick test-il test-sl test-pl
 	@echo "#### All quick tests + p4 + impty interpreter tests passed"

@@ -18,7 +18,8 @@ let henv_of_el_spec spec = Hints.Henv.of_el_spec spec
 let henv_with_il_spec henv spec_il = Hints.Henv.load_il_spec henv spec_il
 
 let annotate ~henv spec_sl =
-  spec_sl |> Annotate.Linearize.linearize_spec |> Annotate.annotate_spec henv
+  spec_sl |> Annotate.Expand.expand_spec |> Annotate.Linearize.linearize_spec
+  |> Annotate.annotate_spec henv
 
 let shorten spec = Annotate.Shorthand.shorten_spec spec
 

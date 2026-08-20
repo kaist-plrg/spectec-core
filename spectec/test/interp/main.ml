@@ -1,17 +1,25 @@
-(** Interpreter test - Generic test runner for IL/SL using TASK *)
+(** Interpreter test - Generic test runner for IL/SL/PL using TASK *)
 
 open Core
 open Test_lib
 
-(** Generic test runner - works with any TASK, supports IL or SL mode *)
+(** Generic test runner - works with any TASK, in any interpreter mode *)
 let run_with_task (type i) (module T : Spectec.Task.S with type input = i)
-    ~sl_mode ~spec_files ~inputs ~exclude_dirs =
+    ~(request : Spectec.Interp_mode.request) ~spec_files ~inputs ~exclude_dirs =
+  let mode_name = Spectec.Interp_mode.to_string request in
   let open Core.Result.Let_syntax in
   let suite_result =
     let%bind spec = Spectec.parse_spec_files spec_files in
     let%bind spec_il = Spectec.elaborate spec in
+    let mode : Spectec.Interp_mode.t =
+      match request with
+      | `IL -> Il
+      | `SL -> Sl
+      | `PL ->
+          Pl (Spectec.henv_with_il_spec (Spectec.henv_of_el_spec spec) spec_il)
+    in
     let exclude_set = Exclude.load exclude_dirs in
-    let mode_suffix = if sl_mode then "(sl)" else "(il)" in
+    let mode_suffix = "(" ^ String.lowercase mode_name ^ ")" in
     let config : Suite.config =
       {
         name = T.name ^ " " ^ mode_suffix |> String.capitalize;
@@ -36,7 +44,7 @@ let run_with_task (type i) (module T : Spectec.Task.S with type input = i)
           let%bind _ =
             Spectec.eval_task_with_instrumentation
               (module T)
-              ~sl_mode ~spec_il input
+              ~mode ~spec_il input
           in
           Ok ()
     in
@@ -51,14 +59,13 @@ let run_with_task (type i) (module T : Spectec.Task.S with type input = i)
   match suite_result with
   | Ok () -> ()
   | Error err ->
-      let mode = if sl_mode then "SL" else "IL" in
-      Format.printf "Failed to run %s interpreter:\n%s\n" mode
+      Format.printf "Failed to run %s interpreter:\n%s\n" mode_name
         (Spectec.Diagnostic.Render.render_bag
            ~ansi:Spectec.Diagnostic.Ansi.plain
            (Spectec.Error.to_diagnostics err))
 
 (** P4 Typecheck test - uses P4_Target.spec_dir *)
-let run_p4_typecheck ~p4_old ~negative ~sl_mode ~includes ~exclude_dirs
+let run_p4_typecheck ~p4_old ~negative ~request ~includes ~exclude_dirs
     ~testdirs =
   let expectation =
     if negative then Spectec.Task.Negative else Spectec.Task.Positive
@@ -80,7 +87,7 @@ let run_p4_typecheck ~p4_old ~negative ~sl_mode ~includes ~exclude_dirs
     in
     run_with_task
       (module Targets_p4.P4.Typecheck_old)
-      ~sl_mode ~spec_files ~inputs ~exclude_dirs
+      ~request ~spec_files ~inputs ~exclude_dirs
   else
     let spec_dir = repo_root ^ Targets_p4.P4.Target.spec_dir in
     let spec_files = Files.collect ~suffix:".spectec" spec_dir in
@@ -96,10 +103,10 @@ let run_p4_typecheck ~p4_old ~negative ~sl_mode ~includes ~exclude_dirs
     in
     run_with_task
       (module Targets_p4.P4.Typecheck)
-      ~sl_mode ~spec_files ~inputs ~exclude_dirs
+      ~request ~spec_files ~inputs ~exclude_dirs
 
 (** Impty Typecheck test - per-variant spec dispatch *)
-let run_impty_typecheck ~variant ~negative ~sl_mode ~testdirs =
+let run_impty_typecheck ~variant ~negative ~request ~testdirs =
   let expectation =
     if negative then Spectec.Task.Negative else Spectec.Task.Positive
   in
@@ -119,10 +126,10 @@ let run_impty_typecheck ~variant ~negative ~sl_mode ~testdirs =
   in
   run_with_task
     (module Targets_impty.Impty.Typecheck)
-    ~sl_mode ~spec_files ~inputs ~exclude_dirs:[]
+    ~request ~spec_files ~inputs ~exclude_dirs:[]
 
 let command =
-  Command.basic ~summary:"run interpreter typing test (IL or SL)"
+  Command.basic ~summary:"run interpreter typing test (IL, SL, or PL)"
   @@
   let open Command.Let_syntax in
   let open Command.Param in
@@ -132,6 +139,7 @@ let command =
     flag "-d" (listed string) ~doc:"DIR test directory (repeatable)"
   and negative = flag "-neg" no_arg ~doc:" expect failures (negative mode)"
   and sl_mode = flag "--sl" no_arg ~doc:" use SL interpreter (default: IL)"
+  and pl_mode = flag "--pl" no_arg ~doc:" use PL interpreter (default: IL)"
   and p4_old = flag "--p4-old" no_arg ~doc:" use p4-old target (default: p4)"
   and impty = flag "--impty" no_arg ~doc:" use impty target (default: p4)"
   and variant =
@@ -140,15 +148,22 @@ let command =
         "VARIANT impty variant (base|closure|recursion); required with --impty"
   in
   fun () ->
+    let request : Spectec.Interp_mode.request =
+      match (sl_mode, pl_mode) with
+      | false, false -> `IL
+      | true, false -> `SL
+      | false, true -> `PL
+      | true, true -> failwith "--sl and --pl are mutually exclusive"
+    in
     if impty then
       let v =
         match variant with
         | Some v -> v
         | None -> failwith "--variant is required when using --impty"
       in
-      run_impty_typecheck ~variant:v ~negative ~sl_mode ~testdirs
+      run_impty_typecheck ~variant:v ~negative ~request ~testdirs
     else
-      run_p4_typecheck ~p4_old ~negative ~sl_mode ~includes ~exclude_dirs
+      run_p4_typecheck ~p4_old ~negative ~request ~includes ~exclude_dirs
         ~testdirs
 
 let () = Command_unix.run command

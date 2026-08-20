@@ -1,0 +1,45 @@
+Running typechecker test on 9 files
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_add_bool.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_add_bool.imp
+error: relation was not matched
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_assign_mismatch.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_assign_mismatch.imp
+error: relation was not matched
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_bad_assign.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_bad_assign.imp
+error: relation was not matched
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_if_not_bool.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_if_not_bool.imp
+error: relation was not matched
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_not_int.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_not_int.imp
+error: relation was not matched
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_undeclared.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_undeclared.imp
+error: relation was not matched
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/closure/_errors_arg_type.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/closure/_errors_arg_type.imp
+error: relation was not matched
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/closure/_errors_call_non_function.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/closure/_errors_call_non_function.imp
+error: relation was not matched
+
+>>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/recursion/_errors_rec_ret.imp
+Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/recursion/_errors_rec_ret.imp
+error: relation was not matched
+
+Typechecker (pl) summary
+  Ran:          9 / 9      (100.00%)
+  Passed:       9 (100.00% of ran)
+  Failed:       0 (0.00% of ran)
+  Skipped:      0 (0.00% of total)
+
+

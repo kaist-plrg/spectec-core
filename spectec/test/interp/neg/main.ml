@@ -19,7 +19,7 @@ let run spec_dir file =
   in
   Spectec.eval_task_with_instrumentation
     (module Targets_impty.Impty.Typecheck)
-    ~sl_mode:false ~spec_il input
+    ~mode:Spectec.Interp_mode.Il ~spec_il input
   |> Result.map ignore
 
 let () =

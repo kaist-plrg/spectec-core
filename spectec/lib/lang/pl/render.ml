@@ -524,7 +524,9 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
       in
       if block = [] then check_line
       else check_line ^ "\n" ^ render_instrs ~level block
-  | CaseI (exp_scrut, cases, _phantom) -> (
+  | CaseI (exp_scrut, cases, phantom) -> (
+      let total = Option.is_none phantom in
+      let last = List.length cases - 1 in
       match cases with
       | [ (guard, arm_body) ] ->
           F.asprintf "%sCheck that %s:%s" bullet
@@ -532,10 +534,14 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
             (render_instrs ~level:(level + 1) arm_body)
       | _ ->
           let render_arm idx ((guard, arm_body) : case) =
-            let kw = if idx = 0 then "If" else "Else if" in
-            F.asprintf "%s%s %s:%s" bullet kw
-              (render_guard in_prose exp_scrut guard)
-              (render_instrs ~level:(level + 1) arm_body)
+            if idx = last && total then
+              F.asprintf "%sElse:%s" bullet
+                (render_instrs ~level:(level + 1) arm_body)
+            else
+              let kw = if idx = 0 then "If" else "Else if" in
+              F.asprintf "%s%s %s:%s" bullet kw
+                (render_guard in_prose exp_scrut guard)
+                (render_instrs ~level:(level + 1) arm_body)
           in
           String.concat "\n" (List.mapi render_arm cases))
   | OtherwiseI inner ->
@@ -594,11 +600,14 @@ let rec render_instr ?(level = 0) ?(unordered = false) (instr : instr) : string
           (render_exp in_prose exp_r)
       in
       if block = [] then head else head ^ "\n" ^ render_instrs ~level block
-  | OptionGetI (exp_l, exp_r) ->
-      F.asprintf "%sLet %s be %s %s." bullet
-        (render_exp_as_code in_prose exp_l)
-        (adoc_link ~link:"option_get" "*!*")
-        (render_exp in_prose exp_r)
+  | OptionGetI (exp_l, exp_r, block) ->
+      let head =
+        F.asprintf "%sLet %s be %s %s." bullet
+          (render_exp_as_code in_prose exp_l)
+          (adoc_link ~link:"option_get" "*!*")
+          (render_exp in_prose exp_r)
+      in
+      if block = [] then head else head ^ render_instrs ~level block
 
 and render_instrs ?(level = 0) (instrs : instr list) : string =
   match instrs with

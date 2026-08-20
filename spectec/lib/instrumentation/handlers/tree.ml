@@ -348,7 +348,7 @@ let make cfg =
 
 module Spec : Instrumentation_spec.Spec.S = struct
   let name = "tree"
-  let mode = `Both
+  let modes = [ `IL; `SL ]
 
   let params =
     [
@@ -365,7 +365,9 @@ module Spec : Instrumentation_spec.Spec.S = struct
           ("Invalid tree level: " ^ s ^ " (expected: rule|conclusion|premise)")
 
   (* Premises are IL-only. *)
-  let mode_of_level = function Premise -> `IL | Rule | Conclusion -> `Both
+  let modes_of_level = function
+    | Premise -> [ `IL ]
+    | Rule | Conclusion -> [ `IL; `SL ]
 
   let parse alist =
     match Instrumentation_spec.Param_utils.get alist "level" with
@@ -379,7 +381,7 @@ module Spec : Instrumentation_spec.Spec.S = struct
         Some
           {
             Instrumentation_config.Handler_config.name;
-            mode = mode_of_level level;
+            modes = modes_of_level level;
             handler = make { level; output };
             output;
           }

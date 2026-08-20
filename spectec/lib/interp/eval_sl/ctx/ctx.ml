@@ -5,6 +5,7 @@ module Value = Lang.Il.Value
 open Lang.Sl
 open Error
 open Envs.Il
+open Envs.Interp
 open Envs.Make
 
 (* Error *)

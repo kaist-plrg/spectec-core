@@ -6,6 +6,7 @@
 module Error = Error
 module Task = Task
 module Target = Target
+module Interp_mode = Interp_mode
 module Diagnostic = Diag
 
 type 'a result = ('a, Error.t) Stdlib.result
@@ -72,18 +73,19 @@ val annotate : henv:Hints.Henv.t -> Lang.Sl.spec -> Pl.spec
 val shorten : Pl.spec -> Pl.spec
 
 (** Validate instrumentation config against the current mode. *)
-val validate_config : Instrumentation.Config.t -> sl_mode:bool -> unit result
+val validate_config :
+  Instrumentation.Config.t -> mode:Interp_mode.request -> unit result
 
 (** {1 Unified interpreter entry point}
 
-    De-duplicates IL/SL dispatch: parses input via task, sets up the target
-    handler, and runs the appropriate interpreter. *)
+    De-duplicates IL/SL/PL dispatch: parses input via task, sets up the target
+    handler, and runs the interpreter the mode selects. *)
 
 (** Evaluate without instrumentation session. Use when a session is managed
     externally (e.g., suite-level wrapping). *)
 val eval_task :
   (module Task.S with type input = 'i) ->
-  sl_mode:bool ->
+  mode:Interp_mode.t ->
   spec_il:Lang.Il.spec ->
   'i ->
   Lang.Il.Value.t list result
@@ -92,7 +94,7 @@ val eval_task :
 val eval_task_with_instrumentation :
   (module Task.S with type input = 'i) ->
   ?config:Instrumentation.Config.t ->
-  sl_mode:bool ->
+  mode:Interp_mode.t ->
   spec_il:Lang.Il.spec ->
   'i ->
   Lang.Il.Value.t list result

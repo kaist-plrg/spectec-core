@@ -1,0 +1,85 @@
+(executable
+ (name main)
+ (preprocess
+  (pps ppx_let))
+ (libraries test_lib core core_unix core_unix.command_unix))
+
+(rule
+ (target impty-base.actual)
+ (deps
+  (source_tree ../../specs/impty/base))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    impty-base.err
+    (run ./main.exe -s ../../../../../spectec/specs/impty/base)))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff impty-base.expected impty-base.actual)))
+
+(rule
+ (target impty-closure.actual)
+ (deps
+  (source_tree ../../specs/impty/closure))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    impty-closure.err
+    (run ./main.exe -s ../../../../../spectec/specs/impty/closure)))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff impty-closure.expected impty-closure.actual)))
+
+(rule
+ (target impty-recursion.actual)
+ (deps
+  (source_tree ../../specs/impty/recursion))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    impty-recursion.err
+    (run ./main.exe -s ../../../../../spectec/specs/impty/recursion)))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff impty-recursion.expected impty-recursion.actual)))
+
+(rule
+ (target p4-old.actual)
+ (deps
+  (source_tree ../../specs/p4-old))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    p4-old.err
+    (run ./main.exe -s ../../../../../spectec/specs/p4-old)))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff p4-old.expected p4-old.actual)))
+
+(rule
+ (target p4.actual)
+ (deps
+  (source_tree ../../specs/p4))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    p4.err
+    (run ./main.exe -s ../../../../../spectec/specs/p4)))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff p4.expected p4.actual)))

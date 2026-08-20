@@ -260,12 +260,15 @@ and string_of_instr ?(short = false) ?(level = 0) ?(index = 0) instr =
       else
         Format.asprintf "%s%s\n\n%s" order s_short
           (string_of_block ~level:(level + 1) block)
-  | OptionGetI (exp_target, exp_source) ->
+  | OptionGetI (exp_target, exp_source, block) ->
       let s_short =
         Format.asprintf "Let %s = !%s" (string_of_exp exp_target)
           (string_of_exp exp_source)
       in
-      if short then s_short else Format.asprintf "%s%s" order s_short
+      if short then s_short
+      else
+        Format.asprintf "%s%s\n\n%s" order s_short
+          (string_of_block ~level:(level + 1) block)
 
 and string_of_block ?(level = 0) ?(index = 0) block =
   block
