@@ -22,6 +22,8 @@ and print_atom fmt e =
   | _, [ "Eop" ], [ o ] -> (
       match flatten o with
       | _, [ "ADD" ], _ -> fprintf fmt "+"
+      | _, [ "SUB" ], _ -> fprintf fmt "-"
+      | _, [ "IFZ" ], _ -> fprintf fmt "ifz"
       | _ -> failwith "unexpected operator")
   | _, [ "Evar" ], [ x ] -> fprintf fmt "%s" (Value.get_text x)
   | _, [ "Epair" ], [ e1; e2 ] ->

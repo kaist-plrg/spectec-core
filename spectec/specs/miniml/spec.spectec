@@ -6,6 +6,8 @@ syntax id =
 
 syntax op =
   | ADD
+  | SUB
+  | IFZ
 
 syntax expr =
   | Ecst  int
@@ -82,6 +84,8 @@ var i1: int
 var i2: int
 var v1: expr
 var v2: expr
+var vt: expr
+var vf: expr
 
 rule Eval_expr/add:
   Eapp e1 e2 ==> Ecst i
@@ -90,6 +94,32 @@ rule Eval_expr/add:
   -- if v1 = Ecst i1
   -- if v2 = Ecst i2
   -- if i = $(i1 + i2)
+
+rule Eval_expr/sub:
+  Eapp e1 e2 ==> Ecst i
+  -- Eval_expr: e1 ==> Eop SUB
+  -- Eval_expr: e2 ==> Epair v1 v2
+  -- if v1 = Ecst i1
+  -- if v2 = Ecst i2
+  -- if i = $(i1 - i2)
+
+rule Eval_expr/ifzz:
+  Eapp e1 e2 ==> v
+  -- Eval_expr: e1 ==> Eop IFZ
+  -- Eval_expr: e2 ==> Epair v1 v2
+  -- if v1 = Ecst i1
+  -- if i1 = 0
+  -- if v2 = Epair vt vf
+  -- Eval_expr: Eapp vt (Ecst 0) ==> v
+
+rule Eval_expr/ifznz:
+  Eapp e1 e2 ==> v
+  -- Eval_expr: e1 ==> Eop IFZ
+  -- Eval_expr: e2 ==> Epair v1 v2
+  -- if v1 = Ecst i1
+  -- if i1 =/= 0
+  -- if v2 = Epair vt vf
+  -- Eval_expr: Eapp vf (Ecst i1) ==> v
 
 rule Eval_expr/pair:
   Epair e1 e2 ==> Epair v1 v2

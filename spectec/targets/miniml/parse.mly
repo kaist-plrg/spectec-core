@@ -23,7 +23,7 @@ let mk_pair e1 e2 = mk "Epair" [e1; e2]
 %token EOF
 %token <Bigint.t> CST
 %token <string> ID
-%token ADD
+%token ADD SUB IFZ
 %token LPAR RPAR LET IN FUN
 %token ARROW COMMA EQUAL
 
@@ -47,9 +47,15 @@ expr:
 atom:
 | n=CST { mk_cst n }
 | x=id  { mk_var x }
-| ADD   { mk_op "ADD" }
+| o=op  { mk_op o }
 | LPAR e=expr RPAR { e }
 | LPAR e1=expr COMMA e2=expr RPAR { mk_pair e1 e2 }
+;
+
+op:
+| ADD { "ADD" }
+| SUB { "SUB" }
+| IFZ { "IFZ" }
 ;
 
 id:
