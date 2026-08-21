@@ -21,9 +21,9 @@ let unwrap_builtin (result : 'a Builtins.result) : 'a =
               Printf.sprintf "Builtin type error: expected %s, got %s" expected
                 (Lang.Il.Value.to_string v) )
         | Builtins.Error.RuntimeError (at, msg) ->
-            (at, Printf.sprintf "Builtin arity error: %s" msg)
-        | Builtins.Error.ArityError (at, msg) ->
             (at, Printf.sprintf "Builtin runtime error: %s" msg)
+        | Builtins.Error.ArityError (at, msg) ->
+            (at, Printf.sprintf "Builtin arity error: %s" msg)
         | Builtins.Error.MissingImplError (at, msg) ->
             (at, Printf.sprintf "Builtin missing implementation: %s" msg)
       in
