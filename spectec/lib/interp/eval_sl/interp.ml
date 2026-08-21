@@ -1548,7 +1548,7 @@ and invoke_func (ctx : Ctx.t) (id : id) (targs : targ list) (args : arg list) :
   in
   (* Main dispatch *)
   Instrumentation.Dispatcher.emit
-    (Events.Func_enter { id = id.it; at = id.at; inputs = [] });
+    (Events.Func_enter { id = id.it; at = id.at; inputs = values_input });
   let invoke_func' () =
     let invoke () =
       let _, v =
