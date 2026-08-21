@@ -24,6 +24,8 @@ and print_atom fmt e =
       | _, [ "ADD" ], _ -> fprintf fmt "+"
       | _, [ "SUB" ], _ -> fprintf fmt "-"
       | _, [ "IFZ" ], _ -> fprintf fmt "ifz"
+      | _, [ "FST" ], _ -> fprintf fmt "fst"
+      | _, [ "SND" ], _ -> fprintf fmt "snd"
       | _ -> failwith "unexpected operator")
   | _, [ "Evar" ], [ x ] -> fprintf fmt "%s" (Value.get_text x)
   | _, [ "Epair" ], [ e1; e2 ] ->

@@ -23,7 +23,7 @@ let mk_pair e1 e2 = mk "Epair" [e1; e2]
 %token EOF
 %token <Bigint.t> CST
 %token <string> ID
-%token ADD SUB IFZ
+%token ADD SUB IFZ FST SND
 %token LPAR RPAR LET IN FUN
 %token ARROW COMMA EQUAL
 
@@ -56,6 +56,8 @@ op:
 | ADD { "ADD" }
 | SUB { "SUB" }
 | IFZ { "IFZ" }
+| FST { "FST" }
+| SND { "SND" }
 ;
 
 id:

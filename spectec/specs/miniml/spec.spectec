@@ -8,6 +8,8 @@ syntax op =
   | ADD
   | SUB
   | IFZ
+  | FST
+  | SND
 
 syntax expr =
   | Ecst  int
@@ -120,6 +122,16 @@ rule Eval_expr/ifznz:
   -- if i1 =/= 0
   -- if v2 = Epair vt vf
   -- Eval_expr: Eapp vf (Ecst i1) ==> v
+
+rule Eval_expr/fst:
+  Eapp e1 e2 ==> v1
+  -- Eval_expr: e1 ==> Eop FST
+  -- Eval_expr: e2 ==> Epair v1 v2
+
+rule Eval_expr/snd:
+  Eapp e1 e2 ==> v2
+  -- Eval_expr: e1 ==> Eop SND
+  -- Eval_expr: e2 ==> Epair v1 v2
 
 rule Eval_expr/pair:
   Epair e1 e2 ==> Epair v1 v2
