@@ -146,20 +146,7 @@ let splice_command =
       ~doc:"FILE write the unused-keys report to this path"
   and color = Cli.Cli_args.Output.color_flag in
   fun () ->
-    Cli.Error_handling.guard ~color ~on_ok:(fun (spec_el, spec_pl) ->
-        let inputs = collect_files ~exts:[ ".adoc" ] input_dir in
-        let pairs =
-          List.map
-            (fun rel_path ->
-              ( Filename.concat input_dir rel_path,
-                Filename.concat output_dir rel_path ))
-            inputs
-        in
-        let report =
-          Splice.Driver.run ~spec_el ~spec_pl
-            ~source_entries:Splice.Registry.source
-            ~prose_entries:Splice.Registry.prose ~filenames:pairs
-        in
+    Cli.Error_handling.guard ~color ~on_ok:(fun report ->
         match missing_path with
         | Some path ->
             let oc = open_out path in
@@ -175,7 +162,20 @@ let splice_command =
     let henv = henv_of_el_spec spec in
     let henv = henv_with_il_spec henv spec_il in
     let spec_pl = annotate ~henv spec_sl |> shorten in
-    Ok (spec, spec_pl)
+    let inputs = collect_files ~exts:[ ".adoc" ] input_dir in
+    let pairs =
+      List.map
+        (fun rel_path ->
+          ( Filename.concat input_dir rel_path,
+            Filename.concat output_dir rel_path ))
+        inputs
+    in
+    let report =
+      Splice.Driver.run ~spec_el:spec ~spec_pl
+        ~source_entries:Splice.Registry.source
+        ~prose_entries:Splice.Registry.prose ~filenames:pairs
+    in
+    Ok report
 
 let command =
   Core.Command.group ~summary:"SpecTec command line tools"
