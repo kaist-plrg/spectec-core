@@ -29,10 +29,6 @@ jobs:
       - name: Discover opam switch name
         run: echo "SWITCH=$(opam switch show -s)" >> $GITHUB_ENV
 
-      - name: Install dependencies
-        working-directory: spectec
-        run: opam install . --deps-only --locked
-
       - name: Install dev tools
         run: opam install -y ocamlformat.0.27.0
 
