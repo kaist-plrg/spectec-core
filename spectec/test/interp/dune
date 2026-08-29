@@ -750,7 +750,6 @@
  (target impty-recordopt-il-pos.actual)
  (deps
   (source_tree ../../specs/impty/recordopt)
-  (source_tree ../../testdata/interp/impty/base)
   (source_tree ../../testdata/interp/impty/base))
  (action
   (with-stdout-to
@@ -777,7 +776,6 @@
  (target impty-recordopt-il-neg.actual)
  (deps
   (source_tree ../../specs/impty/recordopt)
-  (source_tree ../../testdata/interp/impty/base)
   (source_tree ../../testdata/interp/impty/base))
  (action
   (with-stdout-to
