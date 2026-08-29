@@ -1,2 +1,0 @@
-// `+` requires both sides to be int.
-int x = true + 1

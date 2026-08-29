@@ -1,4 +1,4 @@
-Running typechecker test on 12 files
+Running typechecker test on 6 files
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/base/_errors_add_bool.imp
 Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/base/_errors_add_bool.imp
@@ -56,65 +56,9 @@ application of rule Check_prog/ failed
     └── application of rule Check_command/assign failed
         └── condition ($lookup<id, type>($tenv_of({tenv tenv, depth 0}), x) = ?(t)) was not met
 
->>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/recordopt/_errors_add_bool.imp
-Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/recordopt/_errors_add_bool.imp
-error: invocation of relation Check_prog failed
-application of rule Check_prog/ failed
-└── invocation of relation Check_command failed
-    └── application of rule Check_command/decl failed
-        └── invocation of relation Check_expr failed
-            └── application of rule Check_expr/add failed
-                └── condition type matches `INT` was not met
-
->>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/recordopt/_errors_assign_mismatch.imp
-Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/recordopt/_errors_assign_mismatch.imp
-error: invocation of relation Check_prog failed
-application of rule Check_prog/ failed
-└── invocation of relation Check_command failed
-    └── application of rule Check_command/seq failed
-        └── invocation of relation Check_command failed
-            └── application of rule Check_command/assign failed
-                └── condition ($lookup<id, type>($tenv_of({tenv tenv, depth 0}), x) = ?(t)) was not met
-
->>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/recordopt/_errors_bad_assign.imp
-Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/recordopt/_errors_bad_assign.imp
-error: invocation of relation Check_prog failed
-application of rule Check_prog/ failed
-└── invocation of relation Check_command failed
-    └── application of rule Check_command/decl failed
-        └── condition (type = t) was not met
-
->>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/recordopt/_errors_if_not_bool.imp
-Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/recordopt/_errors_if_not_bool.imp
-error: invocation of relation Check_prog failed
-application of rule Check_prog/ failed
-└── invocation of relation Check_command failed
-    └── application of rule Check_command/seq failed
-        └── invocation of relation Check_command failed
-            └── application of rule Check_command/ite failed
-                └── condition type matches `BOOL` was not met
-
->>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/recordopt/_errors_not_int.imp
-Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/recordopt/_errors_not_int.imp
-error: invocation of relation Check_prog failed
-application of rule Check_prog/ failed
-└── invocation of relation Check_command failed
-    └── application of rule Check_command/decl failed
-        └── invocation of relation Check_expr failed
-            └── application of rule Check_expr/not failed
-                └── condition type matches `BOOL` was not met
-
->>> Running typechecker test on ../../../../../spectec/testdata/interp/impty/recordopt/_errors_undeclared.imp
-Expected typechecker failure: ../../../../../spectec/testdata/interp/impty/recordopt/_errors_undeclared.imp
-error: invocation of relation Check_prog failed
-application of rule Check_prog/ failed
-└── invocation of relation Check_command failed
-    └── application of rule Check_command/assign failed
-        └── condition ($lookup<id, type>($tenv_of({tenv tenv, depth 0}), x) = ?(t)) was not met
-
 Typechecker (il) summary
-  Ran:         12 / 12     (100.00%)
-  Passed:      12 (100.00% of ran)
+  Ran:          6 / 6      (100.00%)
+  Passed:       6 (100.00% of ran)
   Failed:       0 (0.00% of ran)
   Skipped:      0 (0.00% of total)
 

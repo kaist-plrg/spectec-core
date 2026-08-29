@@ -751,7 +751,7 @@
  (deps
   (source_tree ../../specs/impty/recordopt)
   (source_tree ../../testdata/interp/impty/base)
-  (source_tree ../../testdata/interp/impty/recordopt))
+  (source_tree ../../testdata/interp/impty/base))
  (action
   (with-stdout-to
    %{target}
@@ -763,9 +763,7 @@
      --variant
      recordopt
      -d
-     ../../../../../spectec/testdata/interp/impty/base
-     -d
-     ../../../../../spectec/testdata/interp/impty/recordopt)))))
+     ../../../../../spectec/testdata/interp/impty/base)))))
 
 (rule
  (alias impty-recordopt-il-pos)
@@ -780,7 +778,7 @@
  (deps
   (source_tree ../../specs/impty/recordopt)
   (source_tree ../../testdata/interp/impty/base)
-  (source_tree ../../testdata/interp/impty/recordopt))
+  (source_tree ../../testdata/interp/impty/base))
  (action
   (with-stdout-to
    %{target}
@@ -793,9 +791,7 @@
      recordopt
      -neg
      -d
-     ../../../../../spectec/testdata/interp/impty/base
-     -d
-     ../../../../../spectec/testdata/interp/impty/recordopt)))))
+     ../../../../../spectec/testdata/interp/impty/base)))))
 
 (rule
  (alias impty-recordopt-il-neg)

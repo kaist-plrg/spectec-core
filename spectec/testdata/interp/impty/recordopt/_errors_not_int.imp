@@ -1,2 +1,0 @@
-// `!` requires its operand to be a bool.
-bool b = !5

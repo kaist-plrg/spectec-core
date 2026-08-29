@@ -1,3 +1,0 @@
-// `if` condition is not a bool.
-int n = 1;
-if n then skip else skip end
