@@ -65,9 +65,16 @@ var n : nat
 dec $tenv_of(ctx) : tenv
 def $tenv_of({ TENV tenv, DEPTH n }) = tenv
 
-;; Wrap a command into an option (exercises the optional iterated premise `(...)?`).
+;; A second record-pattern destructuring, used from another rule (`Check_command/decl`).
+dec $depth_of(ctx) : nat
+def $depth_of({ TENV tenv, DEPTH n }) = n
+
+;; Wrap a command into an option / produce an empty option (exercise both branches of the
+;; optional iterated premise `(...)?`: premise evaluated once, premise skipped).
 dec $some(command) : command?
 def $some(command) = command
+dec $nothing() : command?
+def $nothing() = eps
 
 ;;--- Expressions ---
 
@@ -119,6 +126,7 @@ rule Check_command/skip:
 rule Check_command/decl:
   tenv |- (t x '=' e) -| (x -> t)::tenv
   -- Check_expr: tenv |- e : t
+  -- if $depth_of({ TENV tenv, DEPTH 1 }) = 1
 
 rule Check_command/assign:
   tenv |- (x '=' e) -| tenv
@@ -152,6 +160,9 @@ rule Check_prog:
   |- command
   -- if command_o? = $some(command)
   -- (Check_command: eps |- command_o -| tenv_o)?
+  -- if command_n? = $nothing()
+  -- (Check_command: eps |- command_n -| tenv_n)?
+  -- if tenv_n? = eps
 
 ;;--------------------
 ;; Evaluation
