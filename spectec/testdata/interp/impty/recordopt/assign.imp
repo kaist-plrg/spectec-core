@@ -1,0 +1,3 @@
+// Reassignment to an existing binding.
+int x = 1;
+x = x + 5

@@ -1,0 +1,3 @@
+// Assignment whose RHS does not have the variable's declared type.
+int x = 0;
+x = true

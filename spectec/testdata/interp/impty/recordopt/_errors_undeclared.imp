@@ -1,0 +1,2 @@
+// Assignment to a variable that was never declared.
+x = 5

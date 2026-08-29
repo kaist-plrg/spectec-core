@@ -1,0 +1,1 @@
+impty specification, base variant.

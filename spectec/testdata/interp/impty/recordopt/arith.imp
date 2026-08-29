@@ -1,0 +1,3 @@
+// Chained additions; left-associative.
+int x = 1 + 2 + 3;
+int y = x + x

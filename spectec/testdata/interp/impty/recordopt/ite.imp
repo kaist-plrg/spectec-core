@@ -1,0 +1,5 @@
+// Both branches of if/then/else.
+int x = 0;
+int y = 0;
+if true then x = 1 else x = 2 end;
+if false then y = 1 else y = 2 end

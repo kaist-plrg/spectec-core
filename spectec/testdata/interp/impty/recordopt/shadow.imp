@@ -1,0 +1,3 @@
+// Shadowing the previous binding with a fresh decl of the same type.
+int x = 1;
+int x = x + 100

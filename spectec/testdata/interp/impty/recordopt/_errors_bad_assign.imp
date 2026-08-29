@@ -1,0 +1,2 @@
+// Type error: initializer's type does not match the declared type.
+int x = true

@@ -89,6 +89,21 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
           in
           Ctx.add_value ctx (id, iters @ [ List ]) value_sub)
         ctx vars
+  | StrE expfields, StructV valuefields ->
+      (* Record pattern: assign each field expression the value of the field
+         with the same atom (order-insensitive; a missing field is an error) *)
+      List.fold_left
+        (fun ctx (atom, exp_field) ->
+          match
+            List.find_opt (fun (atom_v, _) -> Atom.eq atom.it atom_v.it) valuefields
+          with
+          | Some (_, value_field) -> assign_exp ctx exp_field value_field
+          | None ->
+              error exp.at
+                (F.asprintf "record pattern field %s not found in %s"
+                   (Atom.to_string atom.it)
+                   (Print.string_of_value ~short:true value)))
+        ctx expfields
   | _ ->
       error exp.at
         (F.asprintf "(TODO) match failed %s <- %s" (Print.string_of_exp exp)
@@ -1091,9 +1106,46 @@ and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
     in
     Ok ctx
   in
+  (* Option iteration: the premise runs at most once.  Bound variables
+     (already carrying a `?` value) must agree on optionality; binding
+     variables receive `None` when the premise is skipped, `Some v` otherwise. *)
+  let eval_iter_prem_opt ctx prem vars =
+    let vars_bound, vars_binding =
+      List.partition
+        (fun { varid; iters; _ } -> Ctx.bound_value ctx (varid, iters @ [ Opt ]))
+        vars
+    in
+    let* ctx_sub_opt = Ctx.sub_opt ctx vars_bound in
+    let* values_binding =
+      match ctx_sub_opt with
+      | None -> Ok (List.map (fun _ -> None) vars_binding)
+      | Some ctx_sub ->
+          Instrumentation.Dispatcher.emit
+            (Events.Iter_prem_enter { prem; at = prem.at });
+          let* ctx_sub = eval_prem ctx_sub prem in
+          Instrumentation.Dispatcher.emit (Events.Iter_prem_exit { at = prem.at });
+          Ok
+            (List.map
+               (fun { varid = id_binding; iters = iters_binding; _ } ->
+                 Some (Ctx.find_value ctx_sub (id_binding, iters_binding)))
+               vars_binding)
+    in
+    let ctx =
+      List.fold_left2
+        (fun ctx { varid = id_binding; typ = typ_binding; iters = iters_binding }
+             value_binding ->
+          let value_binding =
+            let typ = Lang.Il.Typ.iterate typ_binding (iters_binding @ [ Opt ]) in
+            value_binding |> Value.Make.opt typ.it
+          in
+          Ctx.add_value ctx (id_binding, iters_binding @ [ Opt ]) value_binding)
+        ctx vars_binding values_binding
+    in
+    Ok ctx
+  in
   let iter, vars = iterexp in
   match iter with
-  | Opt -> error prem.at "(TODO) eval_iter_prem"
+  | Opt -> eval_iter_prem_opt ctx prem vars
   | List -> eval_iter_prem_list ctx prem vars
 
 (* Invoke a relation *)

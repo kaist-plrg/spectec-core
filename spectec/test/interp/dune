@@ -741,6 +741,77 @@
   (diff impty-closure-pl-neg.expected impty-closure-pl-neg.actual)))
 
 ;; ============================================================
+;; impty target tests (recordopt variant)
+;; ============================================================
+
+;; IL Positive
+
+(rule
+ (target impty-recordopt-il-pos.actual)
+ (deps
+  (source_tree ../../specs/impty/recordopt)
+  (source_tree ../../testdata/interp/impty/base)
+  (source_tree ../../testdata/interp/impty/recordopt))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    impty-recordopt-il-pos.err
+    (run
+     ./main.exe
+     --impty
+     --variant
+     recordopt
+     -d
+     ../../../../../spectec/testdata/interp/impty/base
+     -d
+     ../../../../../spectec/testdata/interp/impty/recordopt)))))
+
+(rule
+ (alias impty-recordopt-il-pos)
+ (deps impty-recordopt-il-pos.err impty-recordopt-il-pos.actual)
+ (action
+  (diff impty-recordopt-il-pos.expected impty-recordopt-il-pos.actual)))
+
+;; IL Negative
+
+(rule
+ (target impty-recordopt-il-neg.actual)
+ (deps
+  (source_tree ../../specs/impty/recordopt)
+  (source_tree ../../testdata/interp/impty/base)
+  (source_tree ../../testdata/interp/impty/recordopt))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    impty-recordopt-il-neg.err
+    (run
+     ./main.exe
+     --impty
+     --variant
+     recordopt
+     -neg
+     -d
+     ../../../../../spectec/testdata/interp/impty/base
+     -d
+     ../../../../../spectec/testdata/interp/impty/recordopt)))))
+
+(rule
+ (alias impty-recordopt-il-neg)
+ (deps impty-recordopt-il-neg.err impty-recordopt-il-neg.actual)
+ (action
+  (diff impty-recordopt-il-neg.expected impty-recordopt-il-neg.actual)))
+
+;; SL Positive
+
+;; PL Positive
+
+;; SL Negative
+
+;; PL Negative
+
+;; ============================================================
 ;; impty target tests (recursion variant)
 ;; ============================================================
 
@@ -1075,3 +1146,14 @@
   (alias p4-sl)
   (alias p4-pl)
   (alias impty)))
+
+(alias
+ (name impty-recordopt-il)
+ (deps
+  (alias impty-recordopt-il-pos)
+  (alias impty-recordopt-il-neg)))
+
+(alias
+ (name impty-recordopt)
+ (deps
+  (alias impty-recordopt-il)))
