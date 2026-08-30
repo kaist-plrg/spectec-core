@@ -33,6 +33,11 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
       let values_inner = Mixop.args valuecase in
       let ctx = assign_exps ctx exps_inner values_inner in
       ctx
+  | StrE expfields, StructV valuefields ->
+      let exps_inner = List.map snd expfields in
+      let values_inner = List.map snd valuefields in
+      let ctx = assign_exps ctx exps_inner values_inner in
+      ctx
   | OptE exp_opt, OptV value_opt -> (
       match (exp_opt, value_opt) with
       | Some exp_inner, Some value_inner ->

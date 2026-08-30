@@ -32,6 +32,10 @@ let rec populate_exp_template (uenv : UEnv.t) (exp_template : exp) (exp : exp) :
         populate_exps_templates uenv
           (Il.Mixfix.args notexp_template)
           (Il.Mixfix.args notexp)
+    | StrE expfields_template, StrE expfields ->
+        let exps_template = List.map snd expfields_template in
+        let exps = List.map snd expfields in
+        populate_exps_templates uenv exps_template exps
     | ( IterE (exp_template, (iter_template, vars_template)),
         IterE (exp, (iter, vars)) )
       when Il.Eq.eq_iter iter_template iter ->
@@ -102,6 +106,20 @@ let rec antiunify_exp (frees : IdSet.t) (uenv : UEnv.t) (exp_template : exp)
         let exp_template =
           CaseE (Il.Mixfix.fill mixop exps_template) $$ (at, note)
         in
+        (frees, uenv, exp_template)
+    | StrE expfields_template, StrE expfields ->
+        let atoms_template, exps_template = List.split expfields_template in
+        let atoms, exps = List.split expfields in
+        if not (Il.Eq.eq_atoms atoms_template atoms) then
+          Format.asprintf "cannot anti-unify expressions %s and %s"
+            (Il.Print.string_of_exp exp_template)
+            (Il.Print.string_of_exp exp)
+          |> failwith;
+        let frees, uenv, exps_template =
+          antiunify_exps frees uenv exps_template exps
+        in
+        let expfields_template = List.combine atoms_template exps_template in
+        let exp_template = StrE expfields_template $$ (at, note) in
         (frees, uenv, exp_template)
     | ( IterE (exp_template, (iter_template, vars_template)),
         IterE (exp, (iter, vars)) )

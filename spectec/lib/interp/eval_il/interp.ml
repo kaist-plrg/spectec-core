@@ -23,6 +23,10 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
       let exps = Mixfix.args notexp in
       let values = Mixfix.args valuecase in
       assign_exps ctx exps values
+  | StrE expfields, StructV valuefields ->
+      let exps = List.map snd expfields in
+      let values = List.map snd valuefields in
+      assign_exps ctx exps values
   | OptE exp_opt, OptV value_opt -> (
       match (exp_opt, value_opt) with
       | Some exp, Some value -> assign_exp ctx exp value
