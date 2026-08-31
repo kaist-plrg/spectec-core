@@ -33,6 +33,11 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
       let values_inner = Mixop.args valuecase in
       let ctx = assign_exps ctx exps_inner values_inner in
       ctx
+  | StrE expfields, StructV valuefields ->
+      let exps_inner = List.map snd expfields in
+      let values_inner = List.map snd valuefields in
+      let ctx = assign_exps ctx exps_inner values_inner in
+      ctx
   | OptE exp_opt, OptV value_opt -> (
       match (exp_opt, value_opt) with
       | Some exp_inner, Some value_inner ->
@@ -1018,6 +1023,16 @@ and eval_if_instr (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list)
         let cond = Value.get_bool value_cond in
         (ctx, cond, value_cond)
       in
+      let eval_if_cond_opt ctx exp_cond vars iterexps =
+        match Ctx.sub_opt ctx vars with
+        | Some ctx_sub ->
+            let ctx_sub, cond, value_cond =
+              eval_if_cond_iter' ctx_sub exp_cond iterexps
+            in
+            let ctx = Ctx.commit ctx ctx_sub in
+            (ctx, cond, Some value_cond)
+        | None -> (ctx, true, None)
+      in
       let eval_if_cond_list ctx exp_cond vars iterexps =
         let ctxs_sub = Ctx.sub_list ctx vars in
         let ctx, cond, values_cond_rev =
@@ -1040,7 +1055,13 @@ and eval_if_instr (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list)
       | iterexp_h :: iterexps_t -> (
           let iter_h, vars_h = iterexp_h in
           match iter_h with
-          | Il.Opt -> error no_region "(TODO)"
+          | Il.Opt ->
+              let ctx, cond, value_cond_opt =
+                eval_if_cond_opt ctx exp_cond vars_h iterexps_t
+              in
+              let typ_inner = Il.BoolT $ no_region in
+              let value_cond = Value.opt typ_inner value_cond_opt in
+              (ctx, cond, value_cond)
           | Il.List ->
               let ctx, cond, values_cond =
                 eval_if_cond_list ctx exp_cond vars_h iterexps_t
@@ -1074,6 +1095,16 @@ and eval_rel_assert_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
         let value_res = Value.Make.bool Il.BoolT cond in
         (ctx, cond, value_res)
       in
+      let eval_rel_assert_cond_opt ctx id notexp vars iterexps =
+        match Ctx.sub_opt ctx vars with
+        | Some ctx_sub ->
+            let ctx_sub, cond, value_cond =
+              eval_rel_assert_cond_iter' ctx_sub id notexp iterexps
+            in
+            let ctx = Ctx.commit ctx ctx_sub in
+            (ctx, cond, Some value_cond)
+        | None -> (ctx, true, None)
+      in
       let eval_rel_assert_cond_list ctx id notexp vars iterexps =
         let ctxs_sub = Ctx.sub_list ctx vars in
         let ctx, cond, values_cond_rev =
@@ -1096,7 +1127,13 @@ and eval_rel_assert_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
       | iterexp_h :: iterexps_t -> (
           let iter_h, vars_h = iterexp_h in
           match iter_h with
-          | Il.Opt -> error no_region "(TODO)"
+          | Il.Opt ->
+              let ctx, cond, value_cond_opt =
+                eval_rel_assert_cond_opt ctx id notexp vars_h iterexps_t
+              in
+              let typ_inner = Il.BoolT $ no_region in
+              let value_cond = Value.opt typ_inner value_cond_opt in
+              (ctx, cond, value_cond)
           | Il.List ->
               let ctx, cond, values_cond =
                 eval_rel_assert_cond_list ctx id notexp vars_h iterexps_t
@@ -1408,8 +1445,55 @@ and eval_rel_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
           ctx vars_binding values_binding
       in
       (* Optional relation evaluation *)
-      let eval_rel_opt _ctx _id _notexp _vars _iterexps =
-        failwith "TODO: eval_rel_opt"
+      let eval_rel_opt ctx id notexp vars iterexps =
+        let vars_bound, vars_binding =
+          List.partition
+            (fun { Il.varid = id; iters; _ } ->
+              Ctx.bound_value Local ctx (id, iters @ [ Il.Opt ]))
+            vars
+        in
+        let ctx_sub_opt = Ctx.sub_opt ctx vars_bound in
+        let ctx, values_binding =
+          match ctx_sub_opt with
+          | None ->
+              let values_binding =
+                List.map
+                  (fun { Il.typ = typ_binding; iters = iters_binding; _ } ->
+                    let typ =
+                      Il.Typ.iterate typ_binding (iters_binding @ [ Il.Opt ])
+                    in
+                    None |> Value.Make.opt typ.it)
+                  vars_binding
+              in
+              (ctx, values_binding)
+          | Some ctx_sub ->
+              let ctx_sub = eval_rel_iter' ctx_sub id notexp iterexps in
+              let ctx = Ctx.commit ctx ctx_sub in
+              let values_binding =
+                List.map
+                  (fun {
+                         Il.varid = id_binding;
+                         typ = typ_binding;
+                         iters = iters_binding;
+                       } ->
+                    let value_binding =
+                      Ctx.find_value Local ctx_sub (id_binding, iters_binding)
+                    in
+                    let typ =
+                      Il.Typ.iterate typ_binding (iters_binding @ [ Il.Opt ])
+                    in
+                    Some value_binding |> Value.Make.opt typ.it)
+                  vars_binding
+              in
+              (ctx, values_binding)
+        in
+        List.fold_left2
+          (fun ctx { Il.varid = id_binding; iters = iters_binding; _ }
+               value_binding ->
+            Ctx.add_value Local ctx
+              (id_binding, iters_binding @ [ Il.Opt ])
+              value_binding)
+          ctx vars_binding values_binding
       in
       match iterexps with
       | [] -> eval_rel ctx id notexp

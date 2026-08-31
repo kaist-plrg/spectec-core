@@ -23,6 +23,10 @@ let rec assign_exp (ctx : Ctx.t) (exp : exp) (value : value) : Ctx.t =
       let exps = Mixfix.args notexp in
       let values = Mixfix.args valuecase in
       assign_exps ctx exps values
+  | StrE expfields, StructV valuefields ->
+      let exps = List.map snd expfields in
+      let values = List.map snd valuefields in
+      assign_exps ctx exps values
   | OptE exp_opt, OptV value_opt -> (
       match (exp_opt, value_opt) with
       | Some exp, Some value -> assign_exp ctx exp value
@@ -955,6 +959,49 @@ and eval_prems (ctx : Ctx.t) (prems : prem list) : Ctx.t attempt =
 
 (* Iterated premise evaluation *)
 
+and eval_iter_prem_opt (ctx : Ctx.t) (prem : prem) (vars : var list) :
+    Ctx.t attempt =
+  let vars_bound, vars_binding =
+    List.partition
+      (fun { varid; iters; _ } -> Ctx.bound_value ctx (varid, iters @ [ Opt ]))
+      vars
+  in
+  let* ctx_sub_opt = Ctx.sub_opt ctx vars_bound in
+  match ctx_sub_opt with
+  | None ->
+      let bindings =
+        List.map
+          (fun { varid = id_binding; typ = typ_binding; iters = iters_binding }
+             ->
+            let typ =
+              Lang.Il.Typ.iterate typ_binding (iters_binding @ [ Opt ])
+            in
+            let value_binding = None |> Value.Make.opt typ.it in
+            ((id_binding, iters_binding @ [ Opt ]), value_binding))
+          vars_binding
+      in
+      Ok (Ctx.add_values ctx bindings)
+  | Some ctx_sub ->
+      Instrumentation.Dispatcher.emit
+        (Events.Iter_prem_enter { prem; at = prem.at });
+      let* ctx_sub = eval_prem ctx_sub prem in
+      Instrumentation.Dispatcher.emit (Events.Iter_prem_exit { at = prem.at });
+      let bindings =
+        List.map
+          (fun { varid = id_binding; typ = typ_binding; iters = iters_binding }
+             ->
+            let typ =
+              Lang.Il.Typ.iterate typ_binding (iters_binding @ [ Opt ])
+            in
+            let value_binding =
+              Ctx.find_value ctx_sub (id_binding, iters_binding)
+            in
+            let value_binding = Some value_binding |> Value.Make.opt typ.it in
+            ((id_binding, iters_binding @ [ Opt ]), value_binding))
+          vars_binding
+      in
+      Ok (Ctx.add_values ctx bindings)
+
 and eval_iter_prem_list (ctx : Ctx.t) (prem : prem) (vars : var list) :
     Ctx.t attempt =
   (* Discriminate between bound and binding variables *)
@@ -1093,7 +1140,7 @@ and eval_iter_prem (ctx : Ctx.t) (prem : prem) (iterexp : iterexp) :
   in
   let iter, vars = iterexp in
   match iter with
-  | Opt -> error prem.at "(TODO) eval_iter_prem"
+  | Opt -> eval_iter_prem_opt ctx prem vars
   | List -> eval_iter_prem_list ctx prem vars
 
 (* Invoke a relation *)

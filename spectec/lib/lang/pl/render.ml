@@ -416,10 +416,14 @@ let render_iterexp_suffix (ctx : context) (iterexps : iterexp list) : string =
   match iterexps with
   | [] -> ""
   | _ ->
-      let vars = List.concat_map (fun (_, vars) -> vars) iterexps in
-      if vars = [] then ""
+      let iter_vars =
+        List.concat_map
+          (fun (iter, vars) -> List.map (fun var -> (iter, var)) vars)
+          iterexps
+      in
+      if iter_vars = [] then ""
       else
-        let render_in_var ({ varid; iters; _ } : var) =
+        let render_in_var (iter, ({ varid; iters; _ } : var)) =
           let it_ctx = in_code in
           let var_text =
             if is_underscored varid then "++_++" |> adoc_as_code ctx
@@ -433,12 +437,12 @@ let render_iterexp_suffix (ctx : context) (iterexps : iterexp list) : string =
              else
                render_varid it_ctx varid
                ^ String.concat "" (List.map code_of_iter iters)
-               ^ code_of_iter List)
+               ^ code_of_iter iter)
             |> adoc_as_code ctx
           in
           F.asprintf "%s in %s" var_text list_text
         in
-        ", for all " ^ (vars |> List.map render_in_var |> render_list)
+        ", for all " ^ (iter_vars |> List.map render_in_var |> render_list)
 
 (* Relations *)
 
