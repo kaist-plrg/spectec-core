@@ -949,6 +949,16 @@ and eval_if_instr (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list)
         let cond = Value.get_bool value_cond in
         (ctx, cond, value_cond)
       in
+      let eval_if_cond_opt ctx exp_cond vars iterexps =
+        match Ctx.sub_opt ctx vars with
+        | Some ctx_sub ->
+            let ctx_sub, cond, value_cond =
+              eval_if_cond_iter' ctx_sub exp_cond iterexps
+            in
+            let ctx = Ctx.commit ctx ctx_sub in
+            (ctx, cond, Some value_cond)
+        | None -> (ctx, true, None)
+      in
       let eval_if_cond_list ctx exp_cond vars iterexps =
         let ctxs_sub = Ctx.sub_list ctx vars in
         let ctx, cond, values_cond_rev =
@@ -971,7 +981,13 @@ and eval_if_instr (ctx : Ctx.t) (exp_cond : exp) (iterexps : iterexp list)
       | iterexp_h :: iterexps_t -> (
           let iter_h, vars_h = iterexp_h in
           match iter_h with
-          | Il.Opt -> error no_region "(TODO)"
+          | Il.Opt ->
+              let ctx, cond, value_cond_opt =
+                eval_if_cond_opt ctx exp_cond vars_h iterexps_t
+              in
+              let typ_inner = Il.BoolT $ no_region in
+              let value_cond = Value.opt typ_inner value_cond_opt in
+              (ctx, cond, value_cond)
           | Il.List ->
               let ctx, cond, values_cond =
                 eval_if_cond_list ctx exp_cond vars_h iterexps_t
@@ -1005,6 +1021,16 @@ and eval_rel_assert_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
         let value_res = Value.Make.bool Il.BoolT cond in
         (ctx, cond, value_res)
       in
+      let eval_rel_assert_cond_opt ctx id notexp vars iterexps =
+        match Ctx.sub_opt ctx vars with
+        | Some ctx_sub ->
+            let ctx_sub, cond, value_cond =
+              eval_rel_assert_cond_iter' ctx_sub id notexp iterexps
+            in
+            let ctx = Ctx.commit ctx ctx_sub in
+            (ctx, cond, Some value_cond)
+        | None -> (ctx, true, None)
+      in
       let eval_rel_assert_cond_list ctx id notexp vars iterexps =
         let ctxs_sub = Ctx.sub_list ctx vars in
         let ctx, cond, values_cond_rev =
@@ -1027,7 +1053,13 @@ and eval_rel_assert_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
       | iterexp_h :: iterexps_t -> (
           let iter_h, vars_h = iterexp_h in
           match iter_h with
-          | Il.Opt -> error no_region "(TODO)"
+          | Il.Opt ->
+              let ctx, cond, value_cond_opt =
+                eval_rel_assert_cond_opt ctx id notexp vars_h iterexps_t
+              in
+              let typ_inner = Il.BoolT $ no_region in
+              let value_cond = Value.opt typ_inner value_cond_opt in
+              (ctx, cond, value_cond)
           | Il.List ->
               let ctx, cond, values_cond =
                 eval_rel_assert_cond_list ctx id notexp vars_h iterexps_t
