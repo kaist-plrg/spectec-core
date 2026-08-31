@@ -1324,8 +1324,55 @@ and eval_rel_instr (ctx : Ctx.t) (id : id) (notexp : notexp)
           ctx vars_binding values_binding
       in
       (* Optional relation evaluation *)
-      let eval_rel_opt _ctx _id _notexp _vars _iterexps =
-        failwith "TODO: eval_rel_opt"
+      let eval_rel_opt ctx id notexp vars iterexps =
+        let vars_bound, vars_binding =
+          List.partition
+            (fun { Il.varid = id; iters; _ } ->
+              Ctx.bound_value Local ctx (id, iters @ [ Il.Opt ]))
+            vars
+        in
+        let ctx_sub_opt = Ctx.sub_opt ctx vars_bound in
+        let ctx, values_binding =
+          match ctx_sub_opt with
+          | None ->
+              let values_binding =
+                List.map
+                  (fun { Il.typ = typ_binding; iters = iters_binding; _ } ->
+                    let typ =
+                      Il.Typ.iterate typ_binding (iters_binding @ [ Il.Opt ])
+                    in
+                    None |> Value.Make.opt typ.it)
+                  vars_binding
+              in
+              (ctx, values_binding)
+          | Some ctx_sub ->
+              let ctx_sub = eval_rel_iter' ctx_sub id notexp iterexps in
+              let ctx = Ctx.commit ctx ctx_sub in
+              let values_binding =
+                List.map
+                  (fun {
+                         Il.varid = id_binding;
+                         typ = typ_binding;
+                         iters = iters_binding;
+                       } ->
+                    let value_binding =
+                      Ctx.find_value Local ctx_sub (id_binding, iters_binding)
+                    in
+                    let typ =
+                      Il.Typ.iterate typ_binding (iters_binding @ [ Il.Opt ])
+                    in
+                    Some value_binding |> Value.Make.opt typ.it)
+                  vars_binding
+              in
+              (ctx, values_binding)
+        in
+        List.fold_left2
+          (fun ctx { Il.varid = id_binding; iters = iters_binding; _ }
+               value_binding ->
+            Ctx.add_value Local ctx
+              (id_binding, iters_binding @ [ Il.Opt ])
+              value_binding)
+          ctx vars_binding values_binding
       in
       match iterexps with
       | [] -> eval_rel ctx id notexp
