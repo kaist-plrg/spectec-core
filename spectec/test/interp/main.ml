@@ -128,8 +128,38 @@ let run_impty_typecheck ~variant ~negative ~request ~testdirs =
     (module Targets_impty.Impty.Typecheck)
     ~request ~spec_files ~inputs ~exclude_dirs:[]
 
+let run_miniml_eval ~negative ~request ~testdirs =
+  let expectation =
+    if negative then Spectec.Task.Negative else Spectec.Task.Positive
+  in
+  let repo_root = "../../../../../" in
+  let spec_dir = repo_root ^ Targets_miniml.Miniml.Target.spec_dir in
+  let spec_files = Files.collect ~suffix:".spectec" spec_dir in
+  let inputs =
+    List.concat_map testdirs ~f:(fun dir ->
+        Targets_miniml.Miniml.Eval.collect ~dir ())
+    |> List.filter ~f:(fun input ->
+           let source = Targets_miniml.Miniml.Eval.source input in
+           let matches_expectation =
+             match
+               (Targets_miniml.Miniml.Eval.expectation input, expectation)
+             with
+             | Spectec.Task.Positive, Spectec.Task.Positive
+             | Spectec.Task.Negative, Spectec.Task.Negative ->
+                 true
+             | _ -> false
+           in
+           let terminates =
+             not (String.equal (Filename.basename source) "omega.ml")
+           in
+           terminates && matches_expectation)
+  in
+  run_with_task
+    (module Targets_miniml.Miniml.Eval)
+    ~request ~spec_files ~inputs ~exclude_dirs:[]
+
 let command =
-  Command.basic ~summary:"run interpreter typing test (IL, SL, or PL)"
+  Command.basic ~summary:"run interpreter test (IL, SL, or PL)"
   @@
   let open Command.Let_syntax in
   let open Command.Param in
@@ -142,6 +172,7 @@ let command =
   and pl_mode = flag "--pl" no_arg ~doc:" use PL interpreter (default: IL)"
   and p4_old = flag "--p4-old" no_arg ~doc:" use p4-old target (default: p4)"
   and impty = flag "--impty" no_arg ~doc:" use impty target (default: p4)"
+  and miniml = flag "--miniml" no_arg ~doc:" use Mini-ML target (default: p4)"
   and variant =
     flag "--variant" (optional string)
       ~doc:
@@ -155,15 +186,18 @@ let command =
       | false, true -> `PL
       | true, true -> failwith "--sl and --pl are mutually exclusive"
     in
-    if impty then
-      let v =
-        match variant with
-        | Some v -> v
-        | None -> failwith "--variant is required when using --impty"
-      in
-      run_impty_typecheck ~variant:v ~negative ~request ~testdirs
-    else
-      run_p4_typecheck ~p4_old ~negative ~request ~includes ~exclude_dirs
-        ~testdirs
+    match (impty, miniml) with
+    | true, true -> failwith "--impty and --miniml are mutually exclusive"
+    | true, false ->
+        let v =
+          match variant with
+          | Some v -> v
+          | None -> failwith "--variant is required when using --impty"
+        in
+        run_impty_typecheck ~variant:v ~negative ~request ~testdirs
+    | false, true -> run_miniml_eval ~negative ~request ~testdirs
+    | false, false ->
+        run_p4_typecheck ~p4_old ~negative ~request ~includes ~exclude_dirs
+          ~testdirs
 
 let () = Command_unix.run command

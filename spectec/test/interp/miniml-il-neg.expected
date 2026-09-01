@@ -1,0 +1,147 @@
+Running evaluator test on 3 files
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/_error_add.ml
+Expected evaluator failure: ../../../../../spectec/testdata/interp/miniml/_error_add.ml
+error: invocation of relation Eval_expr failed
+application of rule Eval_expr/add failed
+└── invocation of relation Eval_expr failed
+    ├── application of rule Eval_expr/add failed
+    │   └── condition expr'' matches `Epair % %` was not met
+    ├── application of rule Eval_expr/sub failed
+    │   └── condition (expr' = eop sub) was not met
+    ├── application of rule Eval_expr/ifzz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/ifznz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/fst failed
+    │   └── condition (expr' = eop fst) was not met
+    ├── application of rule Eval_expr/snd failed
+    │   └── condition (expr' = eop snd) was not met
+    └── application of rule Eval_expr/beta failed
+        └── condition expr' matches `Efun % %` was not met
+application of rule Eval_expr/sub failed
+└── invocation of relation Eval_expr failed
+    ├── application of rule Eval_expr/add failed
+    │   └── condition expr'' matches `Epair % %` was not met
+    ├── application of rule Eval_expr/sub failed
+    │   └── condition (expr' = eop sub) was not met
+    ├── application of rule Eval_expr/ifzz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/ifznz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/fst failed
+    │   └── condition (expr' = eop fst) was not met
+    ├── application of rule Eval_expr/snd failed
+    │   └── condition (expr' = eop snd) was not met
+    └── application of rule Eval_expr/beta failed
+        └── condition expr' matches `Efun % %` was not met
+application of rule Eval_expr/ifzz failed
+└── invocation of relation Eval_expr failed
+    ├── application of rule Eval_expr/add failed
+    │   └── condition expr'' matches `Epair % %` was not met
+    ├── application of rule Eval_expr/sub failed
+    │   └── condition (expr' = eop sub) was not met
+    ├── application of rule Eval_expr/ifzz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/ifznz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/fst failed
+    │   └── condition (expr' = eop fst) was not met
+    ├── application of rule Eval_expr/snd failed
+    │   └── condition (expr' = eop snd) was not met
+    └── application of rule Eval_expr/beta failed
+        └── condition expr' matches `Efun % %` was not met
+application of rule Eval_expr/ifznz failed
+└── invocation of relation Eval_expr failed
+    ├── application of rule Eval_expr/add failed
+    │   └── condition expr'' matches `Epair % %` was not met
+    ├── application of rule Eval_expr/sub failed
+    │   └── condition (expr' = eop sub) was not met
+    ├── application of rule Eval_expr/ifzz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/ifznz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/fst failed
+    │   └── condition (expr' = eop fst) was not met
+    ├── application of rule Eval_expr/snd failed
+    │   └── condition (expr' = eop snd) was not met
+    └── application of rule Eval_expr/beta failed
+        └── condition expr' matches `Efun % %` was not met
+application of rule Eval_expr/fst failed
+└── invocation of relation Eval_expr failed
+    ├── application of rule Eval_expr/add failed
+    │   └── condition expr'' matches `Epair % %` was not met
+    ├── application of rule Eval_expr/sub failed
+    │   └── condition (expr' = eop sub) was not met
+    ├── application of rule Eval_expr/ifzz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/ifznz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/fst failed
+    │   └── condition (expr' = eop fst) was not met
+    ├── application of rule Eval_expr/snd failed
+    │   └── condition (expr' = eop snd) was not met
+    └── application of rule Eval_expr/beta failed
+        └── condition expr' matches `Efun % %` was not met
+application of rule Eval_expr/snd failed
+└── invocation of relation Eval_expr failed
+    ├── application of rule Eval_expr/add failed
+    │   └── condition expr'' matches `Epair % %` was not met
+    ├── application of rule Eval_expr/sub failed
+    │   └── condition (expr' = eop sub) was not met
+    ├── application of rule Eval_expr/ifzz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/ifznz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/fst failed
+    │   └── condition (expr' = eop fst) was not met
+    ├── application of rule Eval_expr/snd failed
+    │   └── condition (expr' = eop snd) was not met
+    └── application of rule Eval_expr/beta failed
+        └── condition expr' matches `Efun % %` was not met
+application of rule Eval_expr/beta failed
+└── invocation of relation Eval_expr failed
+    ├── application of rule Eval_expr/add failed
+    │   └── condition expr'' matches `Epair % %` was not met
+    ├── application of rule Eval_expr/sub failed
+    │   └── condition (expr' = eop sub) was not met
+    ├── application of rule Eval_expr/ifzz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/ifznz failed
+    │   └── condition (expr' = eop ifz) was not met
+    ├── application of rule Eval_expr/fst failed
+    │   └── condition (expr' = eop fst) was not met
+    ├── application of rule Eval_expr/snd failed
+    │   └── condition (expr' = eop snd) was not met
+    └── application of rule Eval_expr/beta failed
+        └── condition expr' matches `Efun % %` was not met
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/_error_app.ml
+Expected evaluator failure: ../../../../../spectec/testdata/interp/miniml/_error_app.ml
+error: invocation of relation Eval_expr failed
+application of rule Eval_expr/add failed
+└── condition (expr' = eop add) was not met
+application of rule Eval_expr/sub failed
+└── condition (expr' = eop sub) was not met
+application of rule Eval_expr/ifzz failed
+└── condition (expr' = eop ifz) was not met
+application of rule Eval_expr/ifznz failed
+└── condition (expr' = eop ifz) was not met
+application of rule Eval_expr/fst failed
+└── condition (expr' = eop fst) was not met
+application of rule Eval_expr/snd failed
+└── condition (expr' = eop snd) was not met
+application of rule Eval_expr/beta failed
+└── condition expr' matches `Efun % %` was not met
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/_error_var.ml
+Expected evaluator failure: ../../../../../spectec/testdata/interp/miniml/_error_var.ml
+error: invocation of relation Eval_expr failed
+
+Evaluator (il) summary
+  Ran:          3 / 3      (100.00%)
+  Passed:       3 (100.00% of ran)
+  Failed:       0 (0.00% of ran)
+  Skipped:      0 (0.00% of total)
+
+

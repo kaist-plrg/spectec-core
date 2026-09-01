@@ -99,12 +99,12 @@ vsix:
 # Per-case interpreter negative corpus (impty IL, one cram test per case):
 #   make test-interp-neg - Per-case impty IL negative tests
 #
-# CLI snapshot tests (impty CLI + instrumentation, cram against hello.imp):
-#   make test-cli        - impty CLI command and instrumentation snapshots
+# CLI snapshot tests (target commands and instrumentation):
+#   make test-cli        - target CLI and instrumentation snapshots
 #   make test-lsp        - LSP diagnostics snapshot (Check.run -> LSP JSON)
 #
 # Grouped tests:
-#   make test-quick      - Fast tests (elab + elab-neg + interp-neg + cli + struct + annotate + roundtrip-il + roundtrip-el + impty + parsegen)
+#   make test-quick      - Fast tests (elab + elab-neg + interp-neg + cli + struct + annotate + roundtrip-il + roundtrip-el + impty + Mini-ML + parsegen)
 #   make test-il         - IL tests for new p4 (pos + neg)
 #   make test-sl         - SL tests for new p4 (pos + neg)
 #   make test-pl         - PL tests for new p4 (pos + neg)
@@ -118,6 +118,11 @@ vsix:
 #   make test-impty-<v>-il / -sl                     - per-variant pos+neg
 #   make test-impty-<v>                              - per-variant il+sl
 #   make test-impty                                  - all impty tests
+#
+# Mini-ML interpreter tests:
+#   make test-miniml-il-pos / -il-neg / -sl-pos / -sl-neg / -pl-pos / -pl-neg
+#   make test-miniml-il / -sl / -pl                  - per-mode pos+neg
+#   make test-miniml                                  - all Mini-ML tests
 #
 #   make test            - quick + new p4 il/sl/pl
 
@@ -136,6 +141,10 @@ vsix:
 .PHONY: test-impty-base-pl-pos test-impty-base-pl-neg
 .PHONY: test-impty-closure-il-pos test-impty-closure-il-neg
 .PHONY: test-impty-closure-sl-pos test-impty-closure-sl-neg
+.PHONY: test-miniml test-miniml-il test-miniml-sl test-miniml-pl
+.PHONY: test-miniml-il-pos test-miniml-il-neg
+.PHONY: test-miniml-sl-pos test-miniml-sl-neg
+.PHONY: test-miniml-pl-pos test-miniml-pl-neg
 .PHONY: promote
 
 test-elab:
@@ -155,7 +164,7 @@ test-interp-neg:
 	@$(DUNE) build @test/interp/neg/runtest --profile=release && echo OK
 
 test-cli:
-	@echo "#### Running CLI snapshot tests (impty CLI + instrumentation)"
+	@echo "#### Running CLI snapshot tests"
 	@$(DUNE) build @test/cli/runtest --profile=release && echo OK
 
 test-lsp:
@@ -224,7 +233,7 @@ test-pl-pos-old:
 test-pl-neg-old:
 	$(call run_interp_test,p4-old,pl,neg)
 
-test-quick: test-elab test-elab-neg test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-impty test-parsegen
+test-quick: test-elab test-elab-neg test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-impty test-miniml test-parsegen
 	@echo "#### Quick tests passed"
 
 test-il: test-il-pos test-il-neg
@@ -311,5 +320,35 @@ test-impty-closure: test-impty-closure-il test-impty-closure-sl test-impty-closu
 test-impty: test-impty-base test-impty-closure
 	@echo "#### impty interpreter tests passed"
 
+test-miniml-il-pos:
+	$(call run_interp_test,miniml,il,pos)
+
+test-miniml-il-neg:
+	$(call run_interp_test,miniml,il,neg)
+
+test-miniml-sl-pos:
+	$(call run_interp_test,miniml,sl,pos)
+
+test-miniml-sl-neg:
+	$(call run_interp_test,miniml,sl,neg)
+
+test-miniml-pl-pos:
+	$(call run_interp_test,miniml,pl,pos)
+
+test-miniml-pl-neg:
+	$(call run_interp_test,miniml,pl,neg)
+
+test-miniml-il: test-miniml-il-pos test-miniml-il-neg
+	@echo "#### IL (Mini-ML) tests passed"
+
+test-miniml-sl: test-miniml-sl-pos test-miniml-sl-neg
+	@echo "#### SL (Mini-ML) tests passed"
+
+test-miniml-pl: test-miniml-pl-pos test-miniml-pl-neg
+	@echo "#### PL (Mini-ML) tests passed"
+
+test-miniml: test-miniml-il test-miniml-sl test-miniml-pl
+	@echo "#### Mini-ML interpreter tests passed"
+
 test: test-quick test-il test-sl test-pl
-	@echo "#### All quick tests + p4 + impty interpreter tests passed"
+	@echo "#### All quick tests + p4 + impty + Mini-ML interpreter tests passed"
