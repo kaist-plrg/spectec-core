@@ -6,7 +6,7 @@ let flatten = Value.flatten_case_v
 let rec print_expr fmt e =
   match flatten e with
   | _, [ "Eapp" ], [ e1; e2 ] ->
-      fprintf fmt "@[%a@ %a@]" print_expr e1 print_atom e2
+      fprintf fmt "@[%a@ %a@]" print_atom e1 print_atom e2
   | _, [ "Efun" ], [ x; e ] ->
       fprintf fmt "@[fun %s ->@ %a@]" (Value.get_text x) print_expr e
   | _, [ "Elet" ], [ x; e1; e2 ] ->

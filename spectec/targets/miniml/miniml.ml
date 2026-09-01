@@ -73,15 +73,15 @@ module Eval = struct
     |> Result.map (fun v -> ("Eval_expr", [ v ]))
 
   let format_output = function
+    | [ v ] -> Unparse.print_expr v
     | [] -> "Eval succeeded (no output)"
     | vs -> vs |> List.map Lang.Il.Print.string_of_value |> String.concat ", "
-  (* FIXME: rather use Unparse.unparse here? *)
 end
 
 let cli_flags =
   let open Core.Command.Let_syntax in
   let open Core.Command.Param in
-  let%map filename = flag "-p" (required string) ~doc:"FILE miniml file" in
+  let%map filename = flag "-p" (required string) ~doc:"FILE Mini-ML file" in
   { filename; expect = Spectec.Task.Positive }
 
 module Eval_cli : Cli.Task_cli.S = struct
@@ -98,12 +98,13 @@ module Cli : Cli.Target_cli.S = struct
   let command =
     let target = (module Target : Spectec.Target.S) in
     let module Subcommand = Cli.Subcommand in
-    Core.Command.group ~summary:"miniml commands"
+    Core.Command.group ~summary:"Mini-ML commands"
       [
-        Subcommand.make_task target ~name:"eval" ~summary:"Run miniml evaluator"
+        Subcommand.make_task target ~name:"eval"
+          ~summary:"Run Mini-ML evaluator"
           (module Eval_cli);
         Subcommand.make_parse target ~name:"parse"
-          ~summary:"parse a minml program to an IL value"
+          ~summary:"Parse a Mini-ML program to an IL value"
           (module Eval_cli);
         Subcommand.make_checkpoint target ~name:"checkpoint";
       ]
