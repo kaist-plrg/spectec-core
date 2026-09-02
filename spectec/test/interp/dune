@@ -8,6 +8,7 @@
   test_lib
   targets_p4
   targets_impty
+  targets_miniml
   core
   core_unix
   core_unix.command_unix))
@@ -944,6 +945,161 @@
   (diff impty-recursion-pl-neg.expected impty-recursion-pl-neg.actual)))
 
 ;; ============================================================
+;; Mini-ML target tests
+;; ============================================================
+
+;; IL Positive
+
+(rule
+ (target miniml-il-pos.actual)
+ (deps
+  (source_tree ../../specs/miniml)
+  (source_tree ../../testdata/interp/miniml))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    miniml-il-pos.err
+    (run
+     ./main.exe
+     --miniml
+     -d
+     ../../../../../spectec/testdata/interp/miniml)))))
+
+(rule
+ (alias miniml-il-pos)
+ (deps miniml-il-pos.err miniml-il-pos.actual)
+ (action
+  (diff miniml-il-pos.expected miniml-il-pos.actual)))
+
+;; IL Negative
+
+(rule
+ (target miniml-il-neg.actual)
+ (deps
+  (source_tree ../../specs/miniml)
+  (source_tree ../../testdata/interp/miniml))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    miniml-il-neg.err
+    (run
+     ./main.exe
+     --miniml
+     -neg
+     -d
+     ../../../../../spectec/testdata/interp/miniml)))))
+
+(rule
+ (alias miniml-il-neg)
+ (deps miniml-il-neg.err miniml-il-neg.actual)
+ (action
+  (diff miniml-il-neg.expected miniml-il-neg.actual)))
+
+;; SL Positive
+
+(rule
+ (target miniml-sl-pos.actual)
+ (deps
+  (source_tree ../../specs/miniml)
+  (source_tree ../../testdata/interp/miniml))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    miniml-sl-pos.err
+    (run
+     ./main.exe
+     --miniml
+     --sl
+     -d
+     ../../../../../spectec/testdata/interp/miniml)))))
+
+(rule
+ (alias miniml-sl-pos)
+ (deps miniml-sl-pos.err miniml-sl-pos.actual)
+ (action
+  (diff miniml-sl-pos.expected miniml-sl-pos.actual)))
+
+;; PL Positive
+
+(rule
+ (target miniml-pl-pos.actual)
+ (deps
+  (source_tree ../../specs/miniml)
+  (source_tree ../../testdata/interp/miniml))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    miniml-pl-pos.err
+    (run
+     ./main.exe
+     --miniml
+     --pl
+     -d
+     ../../../../../spectec/testdata/interp/miniml)))))
+
+(rule
+ (alias miniml-pl-pos)
+ (deps miniml-pl-pos.err miniml-pl-pos.actual)
+ (action
+  (diff miniml-pl-pos.expected miniml-pl-pos.actual)))
+
+;; SL Negative
+
+(rule
+ (target miniml-sl-neg.actual)
+ (deps
+  (source_tree ../../specs/miniml)
+  (source_tree ../../testdata/interp/miniml))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    miniml-sl-neg.err
+    (run
+     ./main.exe
+     --miniml
+     --sl
+     -neg
+     -d
+     ../../../../../spectec/testdata/interp/miniml)))))
+
+(rule
+ (alias miniml-sl-neg)
+ (deps miniml-sl-neg.err miniml-sl-neg.actual)
+ (action
+  (diff miniml-sl-neg.expected miniml-sl-neg.actual)))
+
+;; PL Negative
+
+(rule
+ (target miniml-pl-neg.actual)
+ (deps
+  (source_tree ../../specs/miniml)
+  (source_tree ../../testdata/interp/miniml))
+ (action
+  (with-stdout-to
+   %{target}
+   (with-stderr-to
+    miniml-pl-neg.err
+    (run
+     ./main.exe
+     --miniml
+     --pl
+     -neg
+     -d
+     ../../../../../spectec/testdata/interp/miniml)))))
+
+(rule
+ (alias miniml-pl-neg)
+ (deps miniml-pl-neg.err miniml-pl-neg.actual)
+ (action
+  (diff miniml-pl-neg.expected miniml-pl-neg.actual)))
+
+;; ============================================================
 ;; Combined aliases for running all tests
 ;; ============================================================
 
@@ -1038,6 +1194,24 @@
   (alias impty-recursion-pl-neg)))
 
 (alias
+ (name miniml-il)
+ (deps
+  (alias miniml-il-pos)
+  (alias miniml-il-neg)))
+
+(alias
+ (name miniml-sl)
+ (deps
+  (alias miniml-sl-pos)
+  (alias miniml-sl-neg)))
+
+(alias
+ (name miniml-pl)
+ (deps
+  (alias miniml-pl-pos)
+  (alias miniml-pl-neg)))
+
+(alias
  (name impty-base)
  (deps
   (alias impty-base-il)
@@ -1066,6 +1240,13 @@
   (alias impty-recursion)))
 
 (alias
+ (name miniml)
+ (deps
+  (alias miniml-il)
+  (alias miniml-sl)
+  (alias miniml-pl)))
+
+(alias
  (name runtest)
  (deps
   (alias p4-old-il)
@@ -1074,4 +1255,5 @@
   (alias p4-il)
   (alias p4-sl)
   (alias p4-pl)
-  (alias impty)))
+  (alias impty)
+  (alias miniml)))

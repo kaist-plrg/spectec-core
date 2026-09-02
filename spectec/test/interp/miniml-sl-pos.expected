@@ -1,0 +1,45 @@
+Running evaluator test on 12 files
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/add.ml
+Evaluator success: ../../../../../spectec/testdata/interp/miniml/add.ml
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/arith.ml
+Evaluator success: ../../../../../spectec/testdata/interp/miniml/arith.ml
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/beta1.ml
+Evaluator success: ../../../../../spectec/testdata/interp/miniml/beta1.ml
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/beta2.ml
+Evaluator success: ../../../../../spectec/testdata/interp/miniml/beta2.ml
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/compose.ml
+Evaluator success: ../../../../../spectec/testdata/interp/miniml/compose.ml
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/const.ml
+Evaluator success: ../../../../../spectec/testdata/interp/miniml/const.ml
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/distr_pair.ml
+Evaluator success: ../../../../../spectec/testdata/interp/miniml/distr_pair.ml
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/fix1.ml
+Evaluator success: ../../../../../spectec/testdata/interp/miniml/fix1.ml
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/if1.ml
+Evaluator success: ../../../../../spectec/testdata/interp/miniml/if1.ml
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/if2.ml
+Evaluator success: ../../../../../spectec/testdata/interp/miniml/if2.ml
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/let1.ml
+Evaluator success: ../../../../../spectec/testdata/interp/miniml/let1.ml
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/proj.ml
+Evaluator success: ../../../../../spectec/testdata/interp/miniml/proj.ml
+
+Evaluator (sl) summary
+  Ran:         12 / 12     (100.00%)
+  Passed:      12 (100.00% of ran)
+  Failed:       0 (0.00% of ran)
+  Skipped:      0 (0.00% of total)
+
+

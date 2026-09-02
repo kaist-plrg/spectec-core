@@ -1,0 +1,21 @@
+Running evaluator test on 3 files
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/_error_add.ml
+Expected evaluator failure: ../../../../../spectec/testdata/interp/miniml/_error_add.ml
+error: relation was not matched
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/_error_app.ml
+Expected evaluator failure: ../../../../../spectec/testdata/interp/miniml/_error_app.ml
+error: relation was not matched
+
+>>> Running evaluator test on ../../../../../spectec/testdata/interp/miniml/_error_var.ml
+Expected evaluator failure: ../../../../../spectec/testdata/interp/miniml/_error_var.ml
+error: relation was not matched
+
+Evaluator (sl) summary
+  Ran:          3 / 3      (100.00%)
+  Passed:       3 (100.00% of ran)
+  Failed:       0 (0.00% of ran)
+  Skipped:      0 (0.00% of total)
+
+
