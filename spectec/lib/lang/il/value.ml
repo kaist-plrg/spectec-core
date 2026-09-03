@@ -58,10 +58,17 @@ module type VidProvider = sig
 end
 
 (* Global mutable vid provider for shared use across parsing and interpretation *)
-module GlobalVidProvider = struct
+module GlobalVidProvider : sig
+  val with_provider : (unit -> vid) -> (unit -> 'a) -> 'a
+  val fresh : unit -> vid
+end = struct
   let provider : (unit -> vid) ref = ref (fun () -> 0)
-  let set (p : unit -> vid) = provider := p
-  let reset () = provider := fun () -> 0
+
+  let with_provider p f =
+    let previous = !provider in
+    provider := p;
+    Fun.protect f ~finally:(fun () -> provider := previous)
+
   let fresh () = !provider ()
 end
 

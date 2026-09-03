@@ -5,10 +5,17 @@ open Builtins
 open Error
 
 (* Global tid provider for P4 *)
-module GlobalTidProvider = struct
+module GlobalTidProvider : sig
+  val with_provider : (unit -> string) -> (unit -> 'a) -> 'a
+  val fresh : unit -> string
+end = struct
   let provider : (unit -> string) ref = ref (fun () -> "FRESH__0")
-  let set (p : unit -> string) = provider := p
-  let reset () = provider := fun () -> "FRESH__0"
+
+  let with_provider p f =
+    let previous = !provider in
+    provider := p;
+    Fun.protect f ~finally:(fun () -> provider := previous)
+
   let fresh () = !provider ()
 end
 

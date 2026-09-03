@@ -28,10 +28,8 @@ let run (module T : Target.S) (spec : spec) (rid : string) (values : value list)
     Cache.make ~is_impure_func:T.is_impure_func ~is_impure_rel:T.is_impure_rel
       ~state_version:T.state_version
   in
-  let inner () =
-    run_relation_fresh filename builtins cache spec rid values |> Result.ok
-  in
-  try T.handler inner with InterpError (at, msg) -> Error (at, msg)
+  try run_relation_fresh filename builtins cache spec rid values |> Result.ok
+  with InterpError (at, msg) -> Error (at, msg)
 
 let error_to_diagnostic ((at, msg) : error) : Diag.t =
   Diag.error ~source:"pl-interp" at msg

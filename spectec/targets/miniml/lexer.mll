@@ -64,8 +64,7 @@ rule token = parse
     | Error.MinimlParseError (at, msg) ->
       Error (Spectec.Error.TaskParseError (at, msg))
 
-  let parse_file ~handler filename =
-    handler @@ fun () ->
+  let parse_file filename =
     let c = open_in filename in
     let lb = from_channel c in
     let r = parse ~filename lb in close_in c; r
