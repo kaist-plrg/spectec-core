@@ -99,15 +99,16 @@ vsix:
 #   make test-il-pos-old / test-il-neg-old / test-sl-pos-old / test-sl-neg-old
 #   make test-pl-pos-old / test-pl-neg-old
 #
-# Per-case interpreter negative corpus (impty IL, one cram test per case):
-#   make test-interp-neg - Per-case impty IL negative tests
+# Relation and per-case interpreter tests:
+#   make test-interp-relation - Relation tests across IL/SL/PL
+#   make test-interp-neg      - Per-case impty IL negative tests
 #
 # CLI snapshot tests (target commands and instrumentation):
 #   make test-cli        - target CLI and instrumentation snapshots
 #   make test-lsp        - LSP diagnostics snapshot (Check.run -> LSP JSON)
 #
 # Grouped tests:
-#   make test-quick      - Fast tests (elab + elab-neg + interp-neg + cli + struct + annotate + roundtrip-il + roundtrip-el + impty + Mini-ML + parsegen)
+#   make test-quick      - Fast tests, including relation and Mini-ML tests
 #   make test-il         - IL tests for new p4 (pos + neg)
 #   make test-sl         - SL tests for new p4 (pos + neg)
 #   make test-pl         - PL tests for new p4 (pos + neg)
@@ -129,7 +130,7 @@ vsix:
 #
 #   make test            - quick + new p4 il/sl/pl
 
-.PHONY: test test-quick test-elab test-elab-neg test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-parsegen
+.PHONY: test test-quick test-elab test-elab-neg test-interp-relation test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-parsegen
 .PHONY: test-il test-il-pos test-il-neg
 .PHONY: test-sl test-sl-pos test-sl-neg
 .PHONY: test-pl test-pl-pos test-pl-neg
@@ -161,6 +162,10 @@ test-roundtrip-el:
 test-elab-neg:
 	@echo "#### Running elaboration negative tests"
 	@$(DUNE) build @test/elab/neg/runtest --profile=release && echo OK
+
+test-interp-relation:
+	@echo "#### Running interpreter relation tests"
+	@$(DUNE) build @test/interp/relation/runtest --profile=release && echo OK
 
 test-interp-neg:
 	@echo "#### Running interpreter negative tests (per-case impty IL corpus)"
@@ -236,7 +241,7 @@ test-pl-pos-old:
 test-pl-neg-old:
 	$(call run_interp_test,p4-old,pl,neg)
 
-test-quick: test-elab test-elab-neg test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-impty test-miniml test-parsegen
+test-quick: test-elab test-elab-neg test-interp-relation test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-impty test-miniml test-parsegen
 	@echo "#### Quick tests passed"
 
 test-il: test-il-pos test-il-neg
