@@ -1,6 +1,20 @@
 (library
  (name targets_p4)
  (public_name spectec.targets.p4)
+ (modules
+  (:standard \ register))
  (libraries spectec spectec.cli core str builtins_p4 frontend_p4)
  (preprocess
   (pps ppx_let)))
+
+(library
+ (name register_p4)
+ (public_name spectec.targets.p4.plugin)
+ (modules register)
+ (libraries spectec.cli spectec.targets.p4))
+
+(plugin
+ (name p4)
+ (libraries spectec.targets.p4.plugin)
+ (site
+  (spectec target_plugins)))

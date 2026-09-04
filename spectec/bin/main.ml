@@ -178,20 +178,15 @@ let splice_command =
     Ok (spec, spec_pl)
 
 let command =
-  let module P4 = Targets_p4.P4.Cli in
-  let module Impty = Targets_impty.Impty.Cli in
-  let module Miniml = Targets_miniml.Miniml.Cli in
   Core.Command.group ~summary:"SpecTec command line tools"
-    [
-      ("unparse", unparse_command);
-      ("elab", elab_command);
-      ("grammar", grammar_command);
-      ("struct", structure_command);
-      ("annotate", annotate_command);
-      ("splice", splice_command);
-      (P4.name, P4.command);
-      (Impty.name, Impty.command);
-      (Miniml.name, Miniml.command);
-    ]
+    ([
+       ("unparse", unparse_command);
+       ("elab", elab_command);
+       ("grammar", grammar_command);
+       ("struct", structure_command);
+       ("annotate", annotate_command);
+       ("splice", splice_command);
+     ]
+    @ Cli.Plugin_loader.commands ())
 
 let () = Command_unix.run ~version command

@@ -31,6 +31,9 @@ depends: [
   "domain-local-await" {= "1.0.1"}
   "dune" {= "3.21.0"}
   "dune-configurator" {= "3.21.0"}
+  "dune-private-libs" {= "3.21.0"}
+  "dune-site" {= "3.21.0"}
+  "dyn" {= "3.21.0"}
   "eio" {= "1.2"}
   "eio_main" {= "1.2"}
   "eio_posix" {= "1.2"}
@@ -38,6 +41,7 @@ depends: [
   "fieldslib" {= "v0.17.0"}
   "fmt" {= "0.11.0"}
   "fpath" {= "0.7.3" & with-doc}
+  "fs-io" {= "3.21.0"}
   "gel" {= "v0.17.0"}
   "hmap" {= "0.8.1"}
   "int_repr" {= "v0.17.0"}
@@ -66,7 +70,9 @@ depends: [
   "odoc" {= "3.1.0" & with-doc}
   "odoc-parser" {= "3.1.0" & with-doc}
   "optint" {= "0.3.0"}
+  "ordering" {= "3.21.0"}
   "parsexp" {= "v0.17.0"}
+  "pp" {= "2.0.0"}
   "pprint" {= "20230830"}
   "ppx_assert" {= "v0.17.0"}
   "ppx_base" {= "v0.17.0"}
@@ -118,9 +124,11 @@ depends: [
   "splittable_random" {= "v0.17.0"}
   "stdio" {= "v0.17.0"}
   "stdlib-shims" {= "0.3.0"}
+  "stdune" {= "3.21.0"}
   "thread-table" {= "1.0.0"}
   "time_now" {= "v0.17.0"}
   "timezone" {= "v0.17.0"}
+  "top-closure" {= "3.21.0"}
   "topkg" {= "1.1.1"}
   "trace" {= "0.10.1"}
   "typerep" {= "v0.17.1"}
@@ -135,14 +143,16 @@ depends: [
 build: [
   ["dune" "subst"] {dev}
   [
-    "dune"
-    "build"
-    "-p"
-    name
-    "-j"
-    jobs
-    "@install"
-    "@runtest" {with-test}
-    "@doc" {with-doc}
-  ]
+  "dune"
+  "build"
+  "-p"
+  name
+  "-j"
+  jobs
+  "--promote-install-files=false"
+  "@install"
+  "@runtest" {with-test}
+  "@doc" {with-doc}
+]
+  ["dune" "install" "-p" name "--create-install-files" name]
 ]

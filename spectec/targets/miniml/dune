@@ -8,6 +8,8 @@
 (library
  (name targets_miniml)
  (public_name spectec.targets.miniml)
+ (modules
+  (:standard \ register))
  (libraries
   spectec
   spectec.cli
@@ -20,3 +22,15 @@
   str)
  (preprocess
   (pps ppx_let)))
+
+(library
+ (name register_miniml)
+ (public_name spectec.targets.miniml.plugin)
+ (modules register)
+ (libraries spectec.cli spectec.targets.miniml))
+
+(plugin
+ (name miniml)
+ (libraries spectec.targets.miniml.plugin)
+ (site
+  (spectec target_plugins)))

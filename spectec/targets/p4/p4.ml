@@ -235,8 +235,6 @@ let target = (module Target : Spectec.Target.S)
 module Cli : Cli.Target_cli.S = struct
   module Target = Target
 
-  let name = "p4"
-
   let command =
     let module Subcommand = Cli.Subcommand in
     Core.Command.group ~summary:"P4 commands"

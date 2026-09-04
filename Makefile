@@ -9,14 +9,17 @@ DUNE = cd spectec && $(OPAM_EXEC) dune
 
 .PHONY: exe lsp check fmt fmt-check promote clean
 
-EXESPEC = spectec/_build/default/bin/main.exe
 EXELSP = spectec/_build/default/bin/lsp_main.exe
 
 exe:
 	rm -f ./$(NAME)
-	$(DUNE) build bin/main.exe
+	$(DUNE) build @install
 	@echo
-	ln -f $(EXESPEC) ./$(NAME)
+	@printf '%s\n' \
+	  '#!/bin/sh' \
+	  'exec opam exec --switch=$(SWITCH) -- dune exec --no-print-directory --root "$(abspath spectec)" --no-build spectec -- "$$@"' \
+	  > ./$(NAME)
+	chmod +x ./$(NAME)
 
 lsp:
 	rm -f ./$(NAME)-lsp
