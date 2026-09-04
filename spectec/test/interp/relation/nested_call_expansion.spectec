@@ -1,0 +1,23 @@
+var x : nat
+var y : nat
+
+dec $increment(nat) : nat
+def $increment(x) = $(x + 1)
+
+dec $double(nat) : nat
+def $double(x) = $(x + x)
+
+relation Map_nested:
+  (nat?)* |- (nat?)*
+  hint(input %0)
+
+rule Map_nested:
+  (x?)* |- ($double($increment(x))?)*
+
+relation Bind_nested:
+  (nat?)* |- (nat?)*
+  hint(input %0)
+
+rule Bind_nested:
+  (x?)* |- (y?)*
+  -- (if y = $double($increment(x)))?*
