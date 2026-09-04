@@ -28,6 +28,19 @@
     eio_main))
 
 (package
+  (name spectec-target-miniml)
+  (synopsis "Mini-ML target for SpecTecX")
+  (sites
+    (share specs))
+  (depends
+    (ocaml (>= 5.1.0))
+    (menhir (and :build (>= 20240715)))
+    (spectec (= :version))
+    (core (>= 0.17.1))
+    dune-site
+    ppx_let))
+
+(package
   (name spectec-target-p4)
   (synopsis "P4 target for SpecTecX")
   (sites

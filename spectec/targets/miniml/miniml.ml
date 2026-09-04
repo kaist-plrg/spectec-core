@@ -19,7 +19,12 @@ let contains_substring s sub =
 
 module Target : Spectec.Target.S = struct
   let name = "miniml"
-  let spec_dir = "spectec/specs/miniml"
+
+  let spec_dir =
+    match Miniml_sites.Sites.specs with
+    | dir :: _ -> dir
+    | [] -> "spectec/specs/miniml"
+
   let builtins : (string * Builtins.Define.t) list = []
 
   let with_state f =

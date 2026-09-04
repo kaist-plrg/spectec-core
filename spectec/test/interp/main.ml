@@ -134,8 +134,7 @@ let run_miniml_eval ~negative ~request ~testdirs =
   let expectation =
     if negative then Spectec.Task.Negative else Spectec.Task.Positive
   in
-  let repo_root = "../../../../../" in
-  let spec_dir = repo_root ^ Targets_miniml.Miniml.Target.spec_dir in
+  let spec_dir = resolve_spec_dir Targets_miniml.Miniml.Target.spec_dir in
   let spec_files = Files.collect ~suffix:".spectec" spec_dir in
   let inputs =
     List.concat_map testdirs ~f:(fun dir ->
