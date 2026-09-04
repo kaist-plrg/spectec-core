@@ -1,6 +1,8 @@
 (library
  (name targets_impty)
  (public_name spectec.targets.impty)
+ (modules
+  (:standard \ register))
  (libraries
   spectec
   spectec.cli
@@ -11,3 +13,15 @@
   str)
  (preprocess
   (pps ppx_let)))
+
+(library
+ (name register_impty)
+ (public_name spectec.targets.impty.plugin)
+ (modules register)
+ (libraries spectec.cli spectec.targets.impty))
+
+(plugin
+ (name impty)
+ (libraries spectec.targets.impty.plugin)
+ (site
+  (spectec target_plugins)))

@@ -1,6 +1,19 @@
 (library
  (name cli)
  (public_name spectec.cli)
- (libraries core unix spectec spectec.batch spectec.instrumentation)
+ (libraries
+  core
+  unix
+  spectec
+  spectec.batch
+  spectec.instrumentation
+  dune-site
+  dune-site.plugins
+  dynlink)
  (preprocess
   (pps ppx_let)))
+
+(generate_sites_module
+ (module target_sites)
+ (plugins
+  (spectec target_plugins)))

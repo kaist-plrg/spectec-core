@@ -11,6 +11,7 @@ depends: [
   "bignum" {>= "0.17.0"}
   "core" {>= "0.17.1"}
   "core_unix" {>= "0.17.0"}
+  "dune-site"
   "ppx_let"
   "pprint"
   "linol-eio"
@@ -26,8 +27,10 @@ build: [
     name
     "-j"
     jobs
+    "--promote-install-files=false"
     "@install"
     "@runtest" {with-test}
     "@doc" {with-doc}
   ]
+  ["dune" "install" "-p" name "--create-install-files" name]
 ]
