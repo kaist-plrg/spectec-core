@@ -1,2 +1,3 @@
 let () =
-  Iteration.run ()
+  Iteration.run ();
+  Optional_iteration.run ()

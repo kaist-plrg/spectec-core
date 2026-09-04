@@ -10,7 +10,11 @@ type compiled_spec = {
 }
 
 type mode = Il | Sl | Pl
-type expectation = Returns of (unit -> Value.t list) | Fails_with of string
+
+type expectation =
+  | Returns of (unit -> Value.t list)
+  | Fails
+  | Fails_with of string
 
 module Pure_target : Interp.Target.S = struct
   let builtins = []
@@ -58,6 +62,7 @@ let compile_file filename =
   compile_source ~filename (In_channel.read_all filename)
 
 let returns expected = Returns expected
+let fails = Fails
 let fails_with message = Fails_with message
 let string_of_mode = function Il -> "IL" | Sl -> "SL" | Pl -> "PL"
 
@@ -96,12 +101,16 @@ let check_result ~name ~mode expectation result =
              (string_of_values actual))
   | Returns _, Error error ->
       fail_check ~name ~mode ("evaluation failed:\n" ^ render_error error)
+  | Fails, Error _ -> ()
   | Fails_with expected, Error error ->
       let actual = render_error error in
       if not (String.is_substring actual ~substring:expected) then
         fail_check ~name ~mode
           (sprintf "expected an error containing %S but got:\n%s" expected
              actual)
+  | Fails, Ok actual ->
+      fail_check ~name ~mode
+        (sprintf "expected an error but returned %s" (string_of_values actual))
   | Fails_with expected, Ok actual ->
       fail_check ~name ~mode
         (sprintf "expected an error containing %S but returned %s" expected

@@ -11,6 +11,9 @@ val compile_file : string -> compiled_spec
     constructed by [expected]. *)
 val returns : (unit -> Lang.Il.Value.t list) -> expectation
 
+(** [fails] accepts any evaluation error. *)
+val fails : expectation
+
 (** [fails_with substring] accepts an evaluation error when its rendered
     diagnostic contains [substring]. *)
 val fails_with : string -> expectation
