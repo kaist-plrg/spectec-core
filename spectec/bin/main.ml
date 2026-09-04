@@ -189,9 +189,9 @@ let command =
       ("struct", structure_command);
       ("annotate", annotate_command);
       ("splice", splice_command);
-      (P4.name, P4.command);
-      (Impty.name, Impty.command);
-      (Miniml.name, Miniml.command);
+      (P4.Target.name, P4.command);
+      (Impty.Target.name, Impty.command);
+      (Miniml.Target.name, Miniml.command);
     ]
 
 let () = Command_unix.run ~version command

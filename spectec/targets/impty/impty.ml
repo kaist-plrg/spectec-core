@@ -130,8 +130,6 @@ end
 module Cli : Cli.Target_cli.S = struct
   module Target = Target
 
-  let name = Target.name
-
   let command =
     let target = (module Target : Spectec.Target.S) in
     let module Subcommand = Cli.Subcommand in
