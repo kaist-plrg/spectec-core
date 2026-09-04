@@ -9,7 +9,7 @@ DUNE = cd spectec && $(OPAM_EXEC) dune
 
 .PHONY: exe lsp check fmt fmt-check promote clean
 
-EXELSP = spectec/_build/default/bin/lsp_main.exe
+EXELSP = _build/default/spectec/bin/lsp_main.exe
 
 exe:
 	rm -f ./$(NAME)
@@ -17,7 +17,7 @@ exe:
 	@echo
 	@printf '%s\n' \
 	  '#!/bin/sh' \
-	  'exec opam exec --switch=$(SWITCH) -- dune exec --no-print-directory --root "$(abspath spectec)" --no-build spectec -- "$$@"' \
+	  'exec opam exec --switch=$(SWITCH) -- dune exec --no-print-directory --root "$(abspath .)" --no-build spectec -- "$$@"' \
 	  > ./$(NAME)
 	chmod +x ./$(NAME)
 
@@ -201,7 +201,7 @@ test-parsegen:
 define run_interp_test
 	@echo "#### Running $(2) interpreter $(3) tests ($(1))"
 	@$(DUNE) build @test/interp/$(1)-$(2)-$(3) --profile=release
-	@cat spectec/_build/default/test/interp/$(1)-$(2)-$(3).err >&2
+	@cat _build/default/spectec/test/interp/$(1)-$(2)-$(3).err >&2
 	@echo OK
 endef
 

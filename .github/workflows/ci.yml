@@ -24,13 +24,12 @@ jobs:
         with:
           ocaml-compiler: "5.1.1"
           opam-pin: false
-          opam-local-packages: spectec/*.opam
+          opam-local-packages: "*.opam"
 
       - name: Discover opam switch name
         run: echo "SWITCH=$(opam switch show -s)" >> $GITHUB_ENV
 
       - name: Install dependencies
-        working-directory: spectec
         run: opam install . --deps-only --locked
 
       - name: Install dev tools

@@ -14,10 +14,9 @@ SpecTec is a spec programming framework, originally developed for WebAssembly (W
   ```bash
   opam switch create spectecx 5.1.1
   eval $(opam env)
-  cd spectec
   opam install . --deps-only --locked
   ```
-  The lockfile (`spectec/spectec.opam.locked`) records the exact transitive dep set CI uses; `--locked` recreates that set. The unlocked constraints live in `spectec/dune-project` and surface in `spectec/spectec.opam`.
+  The lockfile (`spectec.opam.locked`) records the exact transitive dep set CI uses. `--locked` recreates that set. The unlocked constraints live in `dune-project` and surface in `spectec.opam`.
 
 ### Building the Project
 
