@@ -25,7 +25,11 @@ let contains_substring s sub =
 
 module Target : Spectec.Target.S = struct
   let name = "impty"
-  let spec_dir = "spectec/specs/impty/base"
+
+  let spec_dir =
+    match Impty_sites.Sites.specs with
+    | dir :: _ -> dir
+    | [] -> "spectec/specs/impty/base"
 
   (* The impty spec is fully self-contained: arithmetic, comparison, boolean,
      and list/map operations are SpecTec primitives or defined in the spec. *)
