@@ -47,6 +47,10 @@ jobs:
       - name: Quick tests
         run: make test-quick
 
+      - name: Test package installation
+        if: matrix.os == 'ubuntu-latest'
+        run: bash spectec/test/package/install.sh
+
       - name: Full tests
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: make test
