@@ -77,23 +77,25 @@ let old_builtins =
          | "text_to_int" | "strip_all_whitespace" -> None
          | _ -> Some (name, def))
 
-(* Shared handler logic — sets up fresh VID and TID providers *)
-let handler f =
+let with_state f =
   let vid_counter = ref 0 in
+  let previous_tid_counter = !tid_counter in
   tid_counter := 0;
   let fresh_vid () =
     let vid = !vid_counter in
     incr vid_counter;
     vid
   in
-  Lang.Il.Value.GlobalVidProvider.set fresh_vid;
   let fresh_tid () =
     let tid = "FRESH__" ^ string_of_int !tid_counter in
     incr tid_counter;
     tid
   in
-  Builtins.Fresh.GlobalTidProvider.set fresh_tid;
-  f ()
+  Fun.protect
+    (fun () ->
+      Lang.Il.Value.GlobalVidProvider.with_provider fresh_vid @@ fun () ->
+      Builtins.Fresh.GlobalTidProvider.with_provider fresh_tid f)
+    ~finally:(fun () -> tid_counter := previous_tid_counter)
 
 (* Functions/relations known to transitively call fresh_tid but safe to cache.
    These are cached unconditionally; everything else uses the purity guard. *)
@@ -116,7 +118,7 @@ module Target : Spectec.Target.S = struct
   let name = "p4"
   let spec_dir = "spectec/specs/p4"
   let builtins = Builtins.builtins
-  let handler = handler
+  let with_state = with_state
   let is_impure_func = is_impure_func
   let is_impure_rel = is_impure_rel
   let state_version = tid_counter
@@ -127,7 +129,7 @@ module Target_old : Spectec.Target.S = struct
   let name = "p4-old"
   let spec_dir = "spectec/specs/p4-old"
   let builtins = old_builtins
-  let handler = handler
+  let with_state = with_state
   let is_impure_func = is_impure_func
   let is_impure_rel = is_impure_rel
   let state_version = tid_counter
@@ -167,7 +169,7 @@ module Typecheck = struct
   let parse_string = Frontend.parse_string
 
   let parse_input ~spec:_ { includes; filename; _ } =
-    Frontend.parse_file ~handler:Target.handler includes filename
+    Frontend.parse_file includes filename
     |> Result.map (fun v -> ("Program_ok", [ v ]))
 
   let source { filename; _ } = filename
@@ -210,7 +212,7 @@ module Typecheck_old = struct
   let parse_string = Frontend.parse_string
 
   let parse_input ~spec:_ { includes; filename; _ } =
-    Frontend.parse_file ~handler:Target.handler includes filename
+    Frontend.parse_file includes filename
     |> Result.map (fun v -> ("Program_ok", [ v ]))
 
   let source { filename; _ } = filename

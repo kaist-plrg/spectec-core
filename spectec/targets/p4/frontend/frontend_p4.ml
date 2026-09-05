@@ -1,8 +1,7 @@
-let parse_file ~handler includes filename =
-  handler (fun () ->
-      try Parse.parse_file includes filename |> Result.ok
-      with Error.P4ParseError (at, msg) ->
-        Spectec.Error.TaskParseError (at, msg) |> Result.error)
+let parse_file includes filename =
+  try Parse.parse_file includes filename |> Result.ok
+  with Error.P4ParseError (at, msg) ->
+    Spectec.Error.TaskParseError (at, msg) |> Result.error
 
 let unparse ~spec:spec_il value_program =
   match value_program with

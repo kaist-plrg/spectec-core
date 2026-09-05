@@ -1,0 +1,5 @@
+(test
+ (name main)
+ (libraries spectec spectec.interp spectec.lang core)
+ (deps
+  (glob_files *.spectec)))

@@ -80,6 +80,7 @@ let make_parse (module Tgt : Spectec.Target.S) ~name ~summary
           ~default_dir:Tgt.spec_dir
       in
       let* _files, spec_il, _henv = load_spec source in
+      TC.Task.Target.with_state @@ fun () ->
       let* _, values = TC.Task.parse_input ~spec:spec_il input in
       let unparsed = TC.Task.unparse ~spec:spec_il values in
       if roundtrip then

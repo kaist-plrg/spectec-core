@@ -330,8 +330,7 @@ let read_file filename =
 (* Public facade — exception → result mapping for Spectec.Task.S      *)
 (* ----------------------------------------------------------------- *)
 
-let parse_file ~handler filename =
-  handler @@ fun () ->
+let parse_file filename =
   try Ok (parse_string_exn ~filename (read_file filename))
   with Error.ImptyParseError (at, msg) ->
     Error (Spectec.Error.TaskParseError (at, msg))

@@ -76,10 +76,10 @@ val shorten : Pl.spec -> Pl.spec
 val validate_config :
   Instrumentation.Config.t -> mode:Interp_mode.request -> unit result
 
-(** {1 Unified interpreter entry point}
+(** {1 Unified interpreter entry points}
 
-    De-duplicates IL/SL/PL dispatch: parses input via task, sets up the target
-    handler, and runs the interpreter the mode selects. *)
+    [eval_task] and [eval_task_with_instrumentation] parse task input and run
+    the selected interpreter with fresh target state. *)
 
 (** Evaluate without instrumentation session. Use when a session is managed
     externally (e.g., suite-level wrapping). *)

@@ -24,10 +24,9 @@ let run (module T : Target.S) (spec : spec) (rid : string) (values : value list)
     Cache.make ~is_impure_func:T.is_impure_func ~is_impure_rel:T.is_impure_rel
       ~state_version:T.state_version
   in
-  let inner () =
+  try
     run_relation_fresh filename builtins cache spec rid values |> Result.ok
-  in
-  try T.handler inner with
+  with
   | Error.InterpError (at, msg) -> Error (Plain (at, msg))
   | Error.BacktrackError failtraces -> Error (Backtrack failtraces)
 

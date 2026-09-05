@@ -1,0 +1,66 @@
+var x : nat
+var y : nat
+var z : nat
+
+relation Add:
+  nat; nat |- nat
+  hint(input %0 %1)
+
+rule Add:
+  x; y |- $(x + y)
+
+relation Add_opt:
+  nat?; nat? |- nat?
+  hint(input %0 %1)
+
+rule Add_opt:
+  x?; y? |- z?
+  -- (Add: x; y |- z)?
+
+relation Positive:
+  nat |- nat
+  hint(input %0)
+
+rule Positive:
+  x |- x
+  -- if $(x > 0)
+
+relation Positive_opt:
+  nat? |- nat?
+  hint(input %0)
+
+rule Positive_opt:
+  x? |- y?
+  -- (Positive: x |- y)?
+
+relation Require_positive_opt:
+  nat? |- nat?
+  hint(input %0)
+
+rule Require_positive_opt:
+  x? |- x?
+  -- (if $(x > 0))?
+
+relation Is_positive:
+  |- nat
+  hint(input %0)
+
+rule Is_positive:
+  |- x
+  -- if $(x > 0)
+
+relation Assert_positive_opt:
+  nat? |- nat?
+  hint(input %0)
+
+rule Assert_positive_opt:
+  x? |- x?
+  -- (Is_positive: |- x)?
+
+relation Assert_not_positive_opt:
+  nat? |- nat?
+  hint(input %0)
+
+rule Assert_not_positive_opt:
+  x? |- x?
+  -- (Is_positive:/ |- x)?
