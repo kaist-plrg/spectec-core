@@ -4,14 +4,14 @@
 (using mdx 0.2)
 (using dune_site 0.1)
 (name spectec)
+(version 0.0.1)
+(maintainers "kunjeong99@naver.com")
 
 (generate_opam_files true)
 
 (package
   (name spectec)
-  (version 0.0.1)
   (synopsis "SpecTecX: an executable subset of SpecTec")
-  (maintainers "kunjeong99@naver.com")
   (sites
     (lib target_plugins))
   (depends
@@ -26,3 +26,19 @@
     pprint
     linol-eio
     eio_main))
+
+(package
+  (name spectec-target-p4)
+  (synopsis "P4 target for SpecTecX")
+  (sites
+    (share specs)
+    (share old_specs))
+  (depends
+    (ocaml (>= 5.1.0))
+    (menhir (and :build (>= 20240715)))
+    menhirLib
+    (spectec (= :version))
+    (core (>= 0.17.1))
+    (core_unix (>= 0.17.0))
+    dune-site
+    ppx_let))

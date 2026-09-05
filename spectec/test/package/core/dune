@@ -1,0 +1,3 @@
+(cram
+ (package spectec)
+ (deps ../../../../spectec.install))

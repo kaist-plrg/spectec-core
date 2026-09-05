@@ -64,16 +64,18 @@ let run_with_task (type i) (module T : Spectec.Task.S with type input = i)
            ~ansi:Spectec.Diagnostic.Ansi.plain
            (Spectec.Error.to_diagnostics err))
 
+let resolve_spec_dir dir =
+  if Filename.is_relative dir then Filename.concat "../../../../../" dir
+  else dir
+
 (** P4 Typecheck test - uses P4_Target.spec_dir *)
 let run_p4_typecheck ~p4_old ~negative ~request ~includes ~exclude_dirs
     ~testdirs =
   let expectation =
     if negative then Spectec.Task.Negative else Spectec.Task.Positive
   in
-  (* Prefix for dune test which runs from spectec/_build/default/test/interp *)
-  let repo_root = "../../../../../" in
   if p4_old then
-    let spec_dir = repo_root ^ Targets_p4.P4.Target_old.spec_dir in
+    let spec_dir = resolve_spec_dir Targets_p4.P4.Target_old.spec_dir in
     let spec_files = Files.collect ~suffix:".spectec" spec_dir in
     let inputs =
       List.concat_map testdirs ~f:(fun dir ->
@@ -89,7 +91,7 @@ let run_p4_typecheck ~p4_old ~negative ~request ~includes ~exclude_dirs
       (module Targets_p4.P4.Typecheck_old)
       ~request ~spec_files ~inputs ~exclude_dirs
   else
-    let spec_dir = repo_root ^ Targets_p4.P4.Target.spec_dir in
+    let spec_dir = resolve_spec_dir Targets_p4.P4.Target.spec_dir in
     let spec_files = Files.collect ~suffix:".spectec" spec_dir in
     let inputs =
       List.concat_map testdirs ~f:(fun dir ->

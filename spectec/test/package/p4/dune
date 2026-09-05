@@ -1,0 +1,7 @@
+(cram
+ (package spectec-target-p4)
+ (deps
+  %{bin:spectec}
+  (package spectec-target-p4)
+  ../../../../spectec-target-p4.install
+  (source_tree ../../../testdata/interp/p4/p4c/p4_16_samples)))

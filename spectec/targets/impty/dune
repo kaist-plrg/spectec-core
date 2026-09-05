@@ -22,6 +22,7 @@
 
 (plugin
  (name impty)
+ (package spectec)
  (libraries spectec.targets.impty.plugin)
  (site
   (spectec target_plugins)))

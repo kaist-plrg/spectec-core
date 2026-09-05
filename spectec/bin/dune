@@ -1,5 +1,6 @@
 (executable
  (public_name spectec)
+ (package spectec)
  (name main)
  (preprocess
   (pps ppx_let))
@@ -15,6 +16,7 @@
 
 (executable
  (public_name spectecx-lsp)
+ (package spectec)
  (name lsp_main)
  (modules lsp_main)
  (libraries spectec.lsp))

@@ -1,0 +1,7 @@
+(install
+ (package spectec-target-p4)
+ (section
+  (site
+   (spectec-target-p4 specs)))
+ (files
+  (glob_files_rec *.spectec)))

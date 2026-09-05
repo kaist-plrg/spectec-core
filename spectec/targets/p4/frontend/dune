@@ -2,8 +2,14 @@
 
 (library
  (name frontend_p4)
- (public_name spectec.targets.p4.frontend)
- (libraries spectec.common spectec.lang spectec concrete core_unix menhirLib))
+ (public_name spectec-target-p4.frontend)
+ (libraries
+  spectec.common
+  spectec.lang
+  spectec
+  spectec.interface.concrete
+  core_unix
+  menhirLib))
 
 (ocamllex
  (modules lexer))

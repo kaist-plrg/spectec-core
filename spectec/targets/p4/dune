@@ -1,20 +1,25 @@
 (library
  (name targets_p4)
- (public_name spectec.targets.p4)
+ (public_name spectec-target-p4.target)
  (modules
   (:standard \ register))
- (libraries spectec spectec.cli core str builtins_p4 frontend_p4)
+ (libraries spectec spectec.cli core dune-site str builtins_p4 frontend_p4)
  (preprocess
   (pps ppx_let)))
 
+(generate_sites_module
+ (module p4_sites)
+ (sites spectec-target-p4))
+
 (library
  (name register_p4)
- (public_name spectec.targets.p4.plugin)
+ (public_name spectec-target-p4.plugin)
  (modules register)
- (libraries spectec.cli spectec.targets.p4))
+ (libraries spectec.cli spectec-target-p4.target))
 
 (plugin
  (name p4)
- (libraries spectec.targets.p4.plugin)
+ (package spectec-target-p4)
+ (libraries spectec-target-p4.plugin)
  (site
   (spectec target_plugins)))
