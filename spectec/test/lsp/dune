@@ -1,7 +1,27 @@
+(test
+ (name preview_map)
+ (modules preview_map)
+ (libraries spectec.lsp spectec.lang spectec.common))
+
 (executable
  (name main)
  (modules main)
  (libraries spectec.lsp linol-eio yojson))
+
+(executable
+ (name complete)
+ (modules complete)
+ (libraries spectec.lsp linol-eio))
+
+(executable
+ (name signature)
+ (modules signature)
+ (libraries spectec.lsp linol-eio))
+
+(executable
+ (name preview)
+ (modules preview)
+ (libraries spectec.lsp spectec.common linol-eio))
 
 (executable
  (name e2e)
@@ -11,7 +31,9 @@
 (rule
  (target main.actual)
  (deps
-  (source_tree multifile))
+  (source_tree multifile)
+  (source_tree siblings)
+  (source_tree nested))
  (action
   (with-stdout-to
    %{target}
@@ -21,6 +43,45 @@
  (alias runtest)
  (action
   (diff main.expected main.actual)))
+
+(rule
+ (target complete.actual)
+ (action
+  (with-stdout-to
+   %{target}
+   (run ./complete.exe))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff complete.expected complete.actual)))
+
+(rule
+ (target signature.actual)
+ (action
+  (with-stdout-to
+   %{target}
+   (run ./signature.exe))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff signature.expected signature.actual)))
+
+(rule
+ (target preview.actual)
+ (deps
+  (source_tree multifile)
+  (source_tree relation))
+ (action
+  (with-stdout-to
+   %{target}
+   (run ./preview.exe))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff preview.expected preview.actual)))
 
 (rule
  (target e2e.actual)

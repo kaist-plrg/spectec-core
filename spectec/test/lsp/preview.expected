@@ -1,0 +1,189 @@
+## whole spec, from one of its files
+stale: false
+--- IL ---
+;; <test>/multifile/1-def.spectec:2:1-2:8:
+syntax foo = 
+   | foo (from foo)
+
+;; <test>/multifile/2-use.spectec:1:12-1:15:
+syntax t = foo
+--- definitions ---
+  IL line 0   def  <- 1-def.spectec:2:0
+  IL line 4   def  <- 2-use.spectec:1:11
+
+## buffer no longer elaborates
+stale: true
+reason: type `undeclared` is undefined (2-use.spectec:1)
+--- IL ---
+;; <test>/multifile/1-def.spectec:2:1-2:8:
+syntax foo = 
+   | foo (from foo)
+
+;; <test>/multifile/2-use.spectec:1:12-1:15:
+syntax t = foo
+--- definitions ---
+  IL line 0   def  <- 1-def.spectec:2:0
+  IL line 4   def  <- 2-use.spectec:1:11
+
+## back to a spec that elaborates
+stale: false
+--- IL ---
+;; <test>/multifile/1-def.spectec:2:1-2:8:
+syntax foo = 
+   | foo (from foo)
+
+;; <test>/multifile/2-use.spectec:1:12-1:15:
+syntax t = foo
+--- definitions ---
+  IL line 0   def  <- 1-def.spectec:2:0
+  IL line 4   def  <- 2-use.spectec:1:11
+
+## never elaborated
+stale: true
+reason: type `undeclared` is undefined (2-use.spectec:1)
+(nothing rendered yet)
+--- definitions ---
+  (none)
+
+## a relation of three rules, as IL
+stale: false
+--- IL ---
+;; <test>/relation/eval.spectec:2:1-4:17:
+syntax expr = 
+   | enum nat (from expr)
+   | eadd expr expr (from expr)
+   | emul expr expr (from expr)
+
+;; <test>/relation/eval.spectec:9:1-11:17:
+relation Eval: expr ==> nat
+
+   ;; <test>/relation/eval.spectec:13:1-14:15:
+   rule ENum: expr ==> n
+      -- if expr matches `ENum %`
+      -- let enum n = expr
+
+   ;; <test>/relation/eval.spectec:16:1-19:23:
+   rule EAdd: expr ==> (n_1 + n_2)
+      -- if expr matches `EAdd % %`
+      -- let eadd e_1 e_2 = expr
+      -- rel Eval: e_1 ==> n_1
+      -- rel Eval: e_2 ==> n_2
+
+   ;; <test>/relation/eval.spectec:21:1-24:23:
+   rule EMul: expr ==> (n_1 * n_2)
+      -- if expr matches `EMul % %`
+      -- let emul e_1 e_2 = expr
+      -- rel Eval: e_1 ==> n_1
+      -- rel Eval: e_2 ==> n_2
+--- definitions ---
+  IL line 0   def  <- eval.spectec:2:0
+  IL line 6   def  <- eval.spectec:9:0
+  IL line 9   rule <- eval.spectec:13:0
+  IL line 14  rule <- eval.spectec:16:0
+  IL line 21  rule <- eval.spectec:21:0
+
+## a relation of three rules, as SL
+stale: false
+--- SL ---
+;; <test>/relation/eval.spectec:2:1-4:17:
+syntax expr = 
+   | enum nat (from expr)
+   | eadd expr expr (from expr)
+   | emul expr expr (from expr)
+
+;; <test>/relation/eval.spectec:9:1-11:17:
+relation Eval: expr
+
+1. Case analysis on expr
+
+  1. Case (% matches pattern `ENum %`)
+
+    1. (Let (enum n) be expr)
+
+    2. Result in n
+
+  2. Case (% matches pattern `EAdd % %`)
+
+    1. (Let (eadd e_1 e_2) be expr)
+
+    2. (Eval: e_1 ==> n_1)
+
+    3. (Eval: e_2 ==> n_2)
+
+    4. Result in (n_1 + n_2)
+
+  3. Case (% matches pattern `EMul % %`)
+
+    1. (Let (emul e_1 e_2) be expr)
+
+    2. (Eval: e_1 ==> n_1)
+
+    3. (Eval: e_2 ==> n_2)
+
+    4. Result in (n_1 * n_2)
+--- definitions ---
+  SL line 0   def  <- eval.spectec:2:0
+  SL line 6   def  <- eval.spectec:9:0
+  SL line 9   step <- eval.spectec:14:2
+  SL line 11  step <- eval.spectec:14:2
+  SL line 13  step <- eval.spectec:14:2
+  SL line 15  step <- eval.spectec:14:13
+  SL line 17  step <- eval.spectec:17:2
+  SL line 19  step <- eval.spectec:17:2
+  SL line 21  step <- eval.spectec:18:5
+  SL line 23  step <- eval.spectec:19:5
+  SL line 25  step <- eval.spectec:17:19
+  SL line 27  step <- eval.spectec:22:2
+  SL line 29  step <- eval.spectec:22:2
+  SL line 31  step <- eval.spectec:23:5
+  SL line 33  step <- eval.spectec:24:5
+  SL line 35  step <- eval.spectec:22:19
+
+## a relation of three rules, as PL
+stale: false
+--- PL ---
+;; <test>/relation/eval.spectec:2:1-4:17:
+syntax expr = 
+   | enum nat (from expr)
+   | eadd expr expr (from expr)
+   | emul expr expr (from expr)
+
+;; <test>/relation/eval.spectec:9:1-11:17:
+relation Eval: expr==>%
+
+1. Case analysis on expr
+
+  1. Case (let enum n = % matches pattern `ENum %`)
+
+    1. Result in n
+
+  2. Case (let eadd e_1 e_2 = % matches pattern `EAdd % %`)
+
+    1. (Eval: e_1 ==> n_1)
+
+    2. (Eval: e_2 ==> n_2)
+
+    3. Result in (n_1 + n_2)
+
+  3. Case (let emul e_1 e_2 = % matches pattern `EMul % %`)
+
+    1. (Eval: e_1 ==> n_1)
+
+    2. (Eval: e_2 ==> n_2)
+
+    3. Result in (n_1 * n_2)
+--- definitions ---
+  PL line 0   def  <- eval.spectec:2:0
+  PL line 6   def  <- eval.spectec:9:0
+  PL line 9   step <- eval.spectec:14:2
+  PL line 11  step <- eval.spectec:14:13
+  PL line 13  step <- eval.spectec:14:13
+  PL line 15  step <- eval.spectec:18:5
+  PL line 17  step <- eval.spectec:18:5
+  PL line 19  step <- eval.spectec:19:5
+  PL line 21  step <- eval.spectec:17:19
+  PL line 23  step <- eval.spectec:23:5
+  PL line 25  step <- eval.spectec:23:5
+  PL line 27  step <- eval.spectec:24:5
+  PL line 29  step <- eval.spectec:22:19
+

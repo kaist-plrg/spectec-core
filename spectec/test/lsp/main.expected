@@ -2,14 +2,34 @@
 (no diagnostics)
 
 ## parse error
+-- parse error
 {"code":"parse/unexpected-token","message":"syntax error: unexpected token","range":{"end":{"character":0,"line":3},"start":{"character":0,"line":3}},"severity":1,"source":"parse"}
 
 ## malformed atom
+-- malformed atom
 {"code":"parse/malformed-atom","message":"malformed atom","range":{"end":{"character":18,"line":0},"start":{"character":13,"line":0}},"severity":1,"source":"parse"}
 
 ## elab error
+-- elab error
 {"code":"elab/ctx-type-undefined","message":"type `foo` is undefined","range":{"end":{"character":14,"line":0},"start":{"character":11,"line":0}},"severity":1,"source":"elab"}
 
 ## cross-file type resolves
 (no diagnostics)
+
+## undeclared metavariable
+-- undeclared metavariable
+{"message":"elaboration of expression EBin e1 e2 as type expr failed\n\ntrace:\ncannot elaborate variant case because expression does not match any case\n\nnote: `e1`, `e2` are not declared metavariables, so this expression cannot be typed. Declare `var e : <type>`. A subscript is written with `_`, so `e1` should be `e_1`, `e2` should be `e_2`.","range":{"end":{"character":15,"line":5},"start":{"character":5,"line":5}},"relatedInformation":[{"location":{"range":{"end":{"character":15,"line":5},"start":{"character":5,"line":5}},"uri":"file:///undeclared%20metavariable"},"message":"cannot elaborate variant case because expression does not match any case"}],"severity":1,"source":"elab"}
+{"code":"elab/relation-no-input-hint","message":"no input hint provided","range":{"end":{"character":22,"line":3},"start":{"character":0,"line":3}},"severity":2,"source":"elab"}
+{"code":"elab/relation-missing-rules","message":"relation Eval has no rules defined","range":{"end":{"character":22,"line":3},"start":{"character":0,"line":3}},"severity":2,"source":"elab"}
+
+## subscripted metavariable is fine
+-- subscripted metavariable is fine
+{"code":"elab/relation-no-input-hint","message":"no input hint provided","range":{"end":{"character":22,"line":4},"start":{"character":0,"line":4}},"severity":2,"source":"elab"}
+
+## sibling type resolves without a marker
+(no diagnostics)
+
+## nested directory stays out
+-- 2-use.spectec
+{"code":"elab/ctx-type-undefined","message":"type `bar` is undefined","range":{"end":{"character":14,"line":1},"start":{"character":11,"line":1}},"severity":1,"source":"elab"}
 

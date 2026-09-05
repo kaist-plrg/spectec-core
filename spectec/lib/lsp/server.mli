@@ -1,4 +1,3 @@
-(** Run the SpecTecX language server: speak LSP over stdin and stdout, and
-    publish diagnostics for each opened or edited document. *)
+(** Serve LSP over stdin/stdout and publish document diagnostics. *)
 
 val serve : unit -> unit

@@ -1,0 +1,24 @@
+syntax expr =
+| ENum nat
+| EAdd expr expr
+| EMul expr expr
+
+var n : nat
+var e : expr
+
+relation Eval:
+  expr ==> nat
+  hint(input %0)
+
+rule Eval/ENum:
+  ENum n ==> n
+
+rule Eval/EAdd:
+  EAdd e_1 e_2 ==> $(n_1 + n_2)
+  -- Eval: e_1 ==> n_1
+  -- Eval: e_2 ==> n_2
+
+rule Eval/EMul:
+  EMul e_1 e_2 ==> $(n_1 * n_2)
+  -- Eval: e_1 ==> n_1
+  -- Eval: e_2 ==> n_2

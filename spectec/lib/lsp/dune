@@ -1,4 +1,11 @@
 (library
  (name spectec_lsp)
  (public_name spectec.lsp)
- (libraries spectec spectec.common linol-eio eio_main unix))
+ (libraries
+  spectec
+  spectec.common
+  spectec.lang
+  linol-eio
+  eio_main
+  unix
+  yojson))
