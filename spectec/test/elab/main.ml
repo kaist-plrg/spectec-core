@@ -17,7 +17,8 @@ let run specdir =
       Format.printf "Elaboration failed:\n%s\n"
         (Spectec.Diagnostic.Render.render_bag
            ~ansi:Spectec.Diagnostic.Ansi.plain
-           (Spectec.Error.to_diagnostics err))
+           (Spectec.Error.to_diagnostics err));
+      exit 1
 
 let command =
   Command.basic ~summary:"run elaboration test"

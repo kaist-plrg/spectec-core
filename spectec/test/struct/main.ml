@@ -17,7 +17,8 @@ let run specdir =
       Format.printf "Structuring failed:\n%s\n"
         (Spectec.Diagnostic.Render.render_bag
            ~ansi:Spectec.Diagnostic.Ansi.plain
-           (Spectec.Error.to_diagnostics err))
+           (Spectec.Error.to_diagnostics err));
+      exit 1
   | Ok spec_sl -> Format.printf "%s\n" (Lang.Sl.Print.string_of_spec spec_sl)
 
 let command =

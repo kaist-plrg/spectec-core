@@ -422,17 +422,13 @@ let run_target ?(config = Instrumentation.Config.default) ?test_dir ~ansi
   Instrumentation.with_instrumentation config
     (Instrumentation.Static.IlSpec spec_il)
   @@ fun () ->
-  let loaded_checkpoint =
+  let ( let* ) = Result.bind in
+  let* loaded_checkpoint =
     match checkpoint_config.resume_from with
-    | Some file -> (
-        match Checkpoint.verify_and_load ~file ~spec_files ~verbose with
-        | Ok checkpoint -> Some checkpoint
-        | Error e ->
-            Format.printf "%s\n"
-              (Diagnostic.Render.render_bag ~ansi:Diagnostic.Ansi.plain
-                 (Error.to_diagnostics e));
-            None)
-    | None -> None
+    | Some file ->
+        Checkpoint.verify_and_load ~file ~spec_files ~verbose
+        |> Result.map Option.some
+    | None -> Ok None
   in
   let all_completed_inputs = ref [] in
   (match loaded_checkpoint with
@@ -485,7 +481,6 @@ let run_target ?(config = Instrumentation.Config.default) ?test_dir ~ansi
             failures = collect_failures task_results;
           }
   in
-  let ( let* ) = Result.bind in
   let rec run_tasks = function
     | [] -> Ok []
     | task :: rest ->
