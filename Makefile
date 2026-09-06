@@ -9,15 +9,15 @@ DUNE = cd spectec && $(OPAM_EXEC) dune
 
 .PHONY: exe lsp check fmt fmt-check promote clean
 
-EXELSP = spectec/_build/default/bin/lsp_main.exe
+EXELSP = _build/default/spectec/bin/lsp_main.exe
 
 exe:
 	rm -f ./$(NAME)
-	$(DUNE) build @install
+	$(DUNE) build --promote-install-files=false @install
 	@echo
 	@printf '%s\n' \
 	  '#!/bin/sh' \
-	  'exec opam exec --switch=$(SWITCH) -- dune exec --no-print-directory --root "$(abspath spectec)" --no-build spectec -- "$$@"' \
+	  'exec opam exec --switch=$(SWITCH) -- dune exec --no-print-directory --root "$(abspath .)" --no-build spectec -- "$$@"' \
 	  > ./$(NAME)
 	chmod +x ./$(NAME)
 
@@ -88,6 +88,7 @@ vsix:
 #   make test-roundtrip-il - EL<->IL premise roundtrip test (impty base + closure, p4)
 #   make test-roundtrip-el - EL pretty-printer roundtrip test (mini-spec, p4-old, p4, impty)
 #   make test-parsegen   - Grammar-driven parser differential test (impty expressions + programs)
+#   make test-package    - Package ownership and plugin discovery tests
 #   make test-il-pos     - IL interpreter positive tests (slow)
 #   make test-il-neg     - IL interpreter negative tests
 #   make test-sl-pos     - SL interpreter positive tests (slow)
@@ -108,7 +109,7 @@ vsix:
 #   make test-lsp        - LSP diagnostics snapshot (Check.run -> LSP JSON)
 #
 # Grouped tests:
-#   make test-quick      - Fast tests, including relation and Mini-ML tests
+#   make test-quick      - Fast tests, including relation, Mini-ML, and package tests
 #   make test-il         - IL tests for new p4 (pos + neg)
 #   make test-sl         - SL tests for new p4 (pos + neg)
 #   make test-pl         - PL tests for new p4 (pos + neg)
@@ -130,7 +131,7 @@ vsix:
 #
 #   make test            - quick + new p4 il/sl/pl
 
-.PHONY: test test-quick test-elab test-elab-neg test-interp-relation test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-parsegen
+.PHONY: test test-quick test-elab test-elab-neg test-interp-relation test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-parsegen test-package
 .PHONY: test-il test-il-pos test-il-neg
 .PHONY: test-sl test-sl-pos test-sl-neg
 .PHONY: test-pl test-pl-pos test-pl-neg
@@ -195,13 +196,17 @@ test-parsegen:
 	@echo "#### Running grammar-driven parser differential test"
 	@$(DUNE) build @test/parsegen/runtest --profile=release && echo OK
 
+test-package:
+	@echo "#### Running package ownership and plugin discovery tests"
+	@$(DUNE) build --promote-install-files=false @test/package/runtest --profile=release && echo OK
+
 # $(1): target prefix (p4 / p4-old)
 # $(2): il / sl
 # $(3): pos / neg
 define run_interp_test
 	@echo "#### Running $(2) interpreter $(3) tests ($(1))"
 	@$(DUNE) build @test/interp/$(1)-$(2)-$(3) --profile=release
-	@cat spectec/_build/default/test/interp/$(1)-$(2)-$(3).err >&2
+	@cat _build/default/spectec/test/interp/$(1)-$(2)-$(3).err >&2
 	@echo OK
 endef
 
@@ -241,7 +246,7 @@ test-pl-pos-old:
 test-pl-neg-old:
 	$(call run_interp_test,p4-old,pl,neg)
 
-test-quick: test-elab test-elab-neg test-interp-relation test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-impty test-miniml test-parsegen
+test-quick: test-elab test-elab-neg test-interp-relation test-interp-neg test-cli test-lsp test-struct test-annotate test-roundtrip-il test-roundtrip-el test-impty test-miniml test-parsegen test-package
 	@echo "#### Quick tests passed"
 
 test-il: test-il-pos test-il-neg

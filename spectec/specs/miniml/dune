@@ -1,0 +1,7 @@
+(install
+ (package spectec-target-miniml)
+ (section
+  (site
+   (spectec-target-miniml specs)))
+ (files
+  (glob_files *.spectec)))

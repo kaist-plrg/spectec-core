@@ -6,7 +6,7 @@
   spectec
   spectec.grammar
   spectec.parsegen
-  spectec.targets.impty
+  targets_impty
   spectec.lang
   bignum.bigint
   core

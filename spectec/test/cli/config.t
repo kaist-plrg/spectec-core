@@ -9,17 +9,13 @@ without --spec:
   $ spectec impty typecheck -p ../../testdata/interp/impty/base/hello.imp --color never
   Typecheck succeeded
 
-A key for another target is ignored; with only a p4 key, impty falls back to its
-built-in spec dir (absent in this sandbox):
+A key for another target is ignored. With only a p4 key, Impty uses its packaged default specification:
 
   $ cat > spectecx.config <<EOF
   > p4.spec_dir = ../../specs/impty/base
   > EOF
   $ spectec impty typecheck -p ../../testdata/interp/impty/base/hello.imp --color never
-  error: spec directory spectec/specs/impty/base does not exist; pass --spec or --spec-dir
-  
-    source: config
-  [1]
+  Typecheck succeeded
 
 
 An explicit --spec overrides the config:

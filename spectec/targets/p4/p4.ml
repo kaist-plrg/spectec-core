@@ -116,7 +116,10 @@ let is_impure_rel = function
 (* P4 target specification — new spec *)
 module Target : Spectec.Target.S = struct
   let name = "p4"
-  let spec_dir = "spectec/specs/p4"
+
+  let spec_dir =
+    match P4_sites.Sites.specs with dir :: _ -> dir | [] -> "spectec/specs/p4"
+
   let builtins = Builtins.builtins
   let with_state = with_state
   let is_impure_func = is_impure_func
@@ -127,7 +130,12 @@ end
 (* P4 target specification — old spec *)
 module Target_old : Spectec.Target.S = struct
   let name = "p4-old"
-  let spec_dir = "spectec/specs/p4-old"
+
+  let spec_dir =
+    match P4_sites.Sites.old_specs with
+    | dir :: _ -> dir
+    | [] -> "spectec/specs/p4-old"
+
   let builtins = old_builtins
   let with_state = with_state
   let is_impure_func = is_impure_func

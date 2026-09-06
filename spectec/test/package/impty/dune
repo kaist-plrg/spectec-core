@@ -1,0 +1,7 @@
+(cram
+ (package spectec-target-impty)
+ (deps
+  %{bin:spectec}
+  (package spectec-target-impty)
+  ../../../../spectec-target-impty.install
+  (source_tree ../../../testdata/interp/impty/base)))

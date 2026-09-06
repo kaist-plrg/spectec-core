@@ -1,0 +1,7 @@
+(cram
+ (package spectec-target-miniml)
+ (deps
+  %{bin:spectec}
+  (package spectec-target-miniml)
+  ../../../../spectec-target-miniml.install
+  (source_tree ../../../testdata/interp/miniml)))

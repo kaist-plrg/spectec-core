@@ -1,0 +1,7 @@
+(install
+ (package spectec-target-impty)
+ (section
+  (site
+   (spectec-target-impty specs)))
+ (files
+  (glob_files *.spectec)))

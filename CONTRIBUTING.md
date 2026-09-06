@@ -9,7 +9,7 @@ A few `make` targets matter mostly to contributors:
 - `make fmt` — runs `dune fmt`. Run before committing. Requires `opam install ocamlformat 0.27.0` in your switch.
 - `make fmt-check` — runs `dune build @fmt`; fails if anything is unformatted. CI runs the same check.
 - `make check` — runs `dune build @check`: type-checks every library and executable without producing the final binary. Faster than `make exe` for catching type errors during iteration.
-- `make test-quick` — elaboration and structuring only; a fast inner loop while iterating.
+- `make test-quick` runs the fast test groups, including package ownership and plugin discovery.
 - `make promote` — regenerates `.expected` files. The test suite is diff-based, so a spec or interpreter change that shifts output requires this before the commit lands, otherwise `make test` is red.
 
 ## Code Conventions
@@ -26,7 +26,7 @@ OCaml conventions: `snake_case` for values and types, `PascalCase` for modules a
 
 **Public APIs reflect the final semantic model.** Internal module paths can differ when dependency direction forces it, but the user-facing surface should preserve the clearest ownership story.
 
-**Boundary between `lib/` and `bin/`.** Reusable code — domain presentation, CLI infrastructure, error rendering — lives in `lib/`. CLI machinery specifically lives in `lib/cli/` so targets can instantiate it. `bin/` holds only the top-level entrypoint that registers each target's `Cli` module into the command group and dispatches to `Command_unix.run`. New logic should land in `lib/`, not `bin/`.
+**Boundary between `lib/` and `bin/`.** Reusable code such as domain presentation, CLI infrastructure, and error rendering lives in `lib/`. CLI machinery specifically lives in `lib/cli/` so targets can instantiate it. Target plugins register their `Cli` modules through the registry in `lib/cli/`. The `bin/` directory holds only the top-level entrypoints that load available plugins and dispatch commands. New logic should land in `lib/`, not `bin/`.
 
 **Prefer explicit organization over umbrella buckets** like `core` once distinct concerns have separated.
 

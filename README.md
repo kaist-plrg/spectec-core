@@ -10,14 +10,32 @@ SpecTec is a spec programming framework, originally developed for WebAssembly (W
   opam init
   ```
 
-* Create an OCaml switch and install the project's pinned dependency versions:
+* Create an OCaml switch:
   ```bash
   opam switch create spectecx 5.1.1
   eval $(opam env)
-  cd spectec
-  opam install . --deps-only --locked
   ```
-  The lockfile (`spectec/spectec.opam.locked`) records the exact transitive dep set CI uses; `--locked` recreates that set. The unlocked constraints live in `spectec/dune-project` and surface in `spectec/spectec.opam`.
+
+* Install the core libraries and target-independent `spectec` executable from the checkout:
+  ```bash
+  opam install ./spectec.opam
+  ```
+
+* Install the target packages you need:
+  ```bash
+  opam install ./spectec-target-p4.opam
+  opam install ./spectec-target-miniml.opam
+  opam install ./spectec-target-impty.opam
+  ```
+  Each target package installs its command plugin and default specification. The `spectec` executable discovers installed target plugins at startup.
+
+For development, install every package's pinned dependency versions without installing the packages themselves:
+
+```bash
+opam install . --deps-only --locked
+```
+
+The lockfile (`spectec.opam.locked`) records the exact transitive dependency set CI uses. The unlocked constraints live in `dune-project` and surface in the generated opam files.
 
 ### Building the Project
 
@@ -29,7 +47,8 @@ This creates an executable `spectecx` in the project root.
 
 ### Structure
 
-SpecTecX currently consists of three main components.
+SpecTecX currently consists of four main components.
+
 * SpecTec EL is the surface language in which the spec is authored.
 * SpecTec IL (internal language). EL -> IL conversion is called "elaboration". Elaboration makes the spec more algorithmic and unambiguous.
 * SpecTec SL (structured language). IL -> SL conversion is called "structuring". Structuring groups related execution paths into explicit branching with over-approximation. This minimizes backtracking, making the SL interpreter much faster than the IL interpreter.
@@ -42,15 +61,18 @@ Repository layout:
 spectec/lib/lang/        ASTs for el / il / sl / xl
 spectec/lib/pass/        parse, elaborate (EL→IL), structure (IL→SL)
 spectec/lib/interp/      IL and SL interpreters, builtins, target interface
-spectec/lib/cli/         reusable CLI machinery (Target_cli, Task_cli, Subcommand)
+spectec/lib/cli/         reusable CLI machinery and target plugin loading
 spectec/lib/spectec.ml   public facade (pipeline + eval + Error/Task/Target)
-spectec/targets/<t>/     per-target code, including each target's CLI module
-spectec/bin/             top-level entrypoint that registers each target's CLI
+spectec/targets/<t>/     per-target code, CLI modules, and plugin registration
+spectec/bin/             target-independent command-line entrypoint
 spectec/test/            diff-based test drivers
 spectec/testdata/        test inputs
 ```
 
 ### Commands
+
+The target-specific examples require the corresponding target package.
+
 ```bash
 # print out the IL representation of a SpecTec spec
 ./spectecx elab spec/*.spectec
@@ -92,9 +114,11 @@ Targets live in `spectec/targets/<name>/`, separate from `spectec/lib/`. The reu
 2. Add target-specific built-ins under `spectec/targets/<name>/builtins/`.
 3. For each task, implement a `Cli.Task_cli.S` module that parses command-line flags into the task's input.
 4. Compose those task-CLIs into a `Cli : Cli.Target_cli.S` module using `Cli.Subcommand` constructors (`make_task`, `make_parse`, `make_batch`, `make_checkpoint`).
-5. Register the target in `spectec/bin/main.ml` by adding `(Your_target.Cli.name, Your_target.Cli.command)` to the top-level command group.
+5. Add a plugin entry module that calls `Cli.Target_registry.register (module Your_target.Cli)` when loaded.
+6. Declare a target package in `dune-project`, including any named installation directories for packaged specifications.
+7. Add a Dune `plugin` stanza that installs the entry module in the core package's `target_plugins` directory. Use `generate_sites_module` when target code needs to locate packaged specifications.
 
-The P4 target (`spectec/targets/p4/p4.ml`) is the working example.
+The P4, Mini-ML, and Impty targets under `spectec/targets/` are working examples. Each is packaged independently, so adding a target does not require changing `spectec/bin/main.ml`.
 
 ### Contributing
 

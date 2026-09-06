@@ -1,6 +1,6 @@
 (library
  (name targets_impty)
- (public_name spectec.targets.impty)
+ (public_name spectec-target-impty.target)
  (modules
   (:standard \ register))
  (libraries
@@ -10,18 +10,24 @@
   spectec.lang
   spectec.interp.builtins
   core
+  dune-site
   str)
  (preprocess
   (pps ppx_let)))
 
+(generate_sites_module
+ (module impty_sites)
+ (sites spectec-target-impty))
+
 (library
  (name register_impty)
- (public_name spectec.targets.impty.plugin)
+ (public_name spectec-target-impty.plugin)
  (modules register)
- (libraries spectec.cli spectec.targets.impty))
+ (libraries spectec.cli spectec-target-impty.target))
 
 (plugin
  (name impty)
- (libraries spectec.targets.impty.plugin)
+ (package spectec-target-impty)
+ (libraries spectec-target-impty.plugin)
  (site
   (spectec target_plugins)))

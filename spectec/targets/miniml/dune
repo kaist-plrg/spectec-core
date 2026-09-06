@@ -7,7 +7,7 @@
 
 (library
  (name targets_miniml)
- (public_name spectec.targets.miniml)
+ (public_name spectec-target-miniml.target)
  (modules
   (:standard \ register))
  (libraries
@@ -19,18 +19,24 @@
   spectec.lang.il
   spectec.interp.builtins
   core
+  dune-site
   str)
  (preprocess
   (pps ppx_let)))
 
+(generate_sites_module
+ (module miniml_sites)
+ (sites spectec-target-miniml))
+
 (library
  (name register_miniml)
- (public_name spectec.targets.miniml.plugin)
+ (public_name spectec-target-miniml.plugin)
  (modules register)
- (libraries spectec.cli spectec.targets.miniml))
+ (libraries spectec.cli spectec-target-miniml.target))
 
 (plugin
  (name miniml)
- (libraries spectec.targets.miniml.plugin)
+ (package spectec-target-miniml)
+ (libraries spectec-target-miniml.plugin)
  (site
   (spectec target_plugins)))
