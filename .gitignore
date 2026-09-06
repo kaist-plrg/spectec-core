@@ -9,5 +9,8 @@ spectecx-lsp
 # packaged VS Code extension (make vsix)
 editors/vscode/*.vsix
 
+# VS Code extension dependencies (make vsix installs them)
+editors/vscode/node_modules
+
 # MacOS
 *.DS_Store

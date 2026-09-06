@@ -76,6 +76,7 @@ splice-clean:
 .PHONY: vsix
 
 vsix:
+	cd editors/vscode && npm install --omit=dev --no-audit --no-fund
 	cd editors/vscode && npx -y @vscode/vsce package -o $(NAME).vsix
 	@echo "#### extension written to editors/vscode/$(NAME).vsix"
 

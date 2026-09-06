@@ -1,9 +1,9 @@
 {
-  "name": "spectecx-syntax",
-  "displayName": "SpecTecX Syntax Highlighting",
-  "description": "Syntax highlighting for SpecTecX specification files (.spectec).",
-  "categories": ["Programming Languages"],
-  "version": "0.1.0",
+  "name": "spectecx",
+  "displayName": "SpecTecX",
+  "description": "Syntax highlighting and diagnostics for SpecTecX (.spectec) specification files.",
+  "categories": ["Programming Languages", "Linters"],
+  "version": "0.3.0",
   "publisher": "kaist-plrg",
   "license": "Apache-2.0",
   "repository": {
@@ -12,18 +12,28 @@
     "directory": "editors/vscode"
   },
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.82.0"
   },
+  "main": "./extension.js",
   "contributes": {
     "languages": [
       {
-        "id": "spectec",
+        "id": "watsup",
         "aliases": [
           "SpecTecX"
         ],
         "extensions": [
+          ".watsup",
           ".spectec"
         ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "spectec",
+        "aliases": [
+          "SpecTecX (Contextual)"
+        ],
+        "extensions": [],
         "configuration": "./language-configuration.json"
       }
     ],
@@ -32,7 +42,132 @@
         "language": "spectec",
         "scopeName": "source.spectec",
         "path": "./syntaxes/spectec.tmLanguage.json"
+      },
+      {
+        "language": "watsup",
+        "scopeName": "source.watsup",
+        "path": "./syntaxes/watsup.tmLanguage.json"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "SpecTecX",
+      "properties": {
+        "spectec.languageServer.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run spectecx-lsp to report parse and elaboration errors. Turn off to keep syntax highlighting only."
+        },
+        "spectec.languageServer.path": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Path to the `spectecx-lsp` binary. Leave empty to look for it at the root of an open workspace folder (where `make lsp` puts it), then on `PATH`. Supports `~` and `${workspaceFolder}`."
+        },
+        "spectec.languageServer.arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Extra command-line arguments passed to spectecx-lsp."
+        },
+        "spectec.trace.server": {
+          "type": "string",
+          "enum": ["off", "messages", "verbose"],
+          "default": "off",
+          "description": "Log the traffic between VS Code and spectecx-lsp in the SpecTecX output channel."
+        },
+        "spectec.preview.refresh": {
+          "type": "string",
+          "enum": ["live", "save"],
+          "default": "live",
+          "markdownEnumDescriptions": [
+            "Re-render once typing pauses, after `#spectec.preview.debounce#` milliseconds.",
+            "Re-render only when a spec file is saved."
+          ],
+          "description": "When to re-render an open IL, SL or PL preview. Rendering elaborates the whole spec, so 'save' is the cheaper choice on a large one."
+        },
+        "spectec.preview.debounce": {
+          "type": "number",
+          "default": 400,
+          "minimum": 0,
+          "markdownDescription": "Milliseconds of quiet before an open preview re-renders. Only used when `#spectec.preview.refresh#` is `live`."
+        },
+        "spectec.preview.highlight": {
+          "type": "boolean",
+          "default": true,
+          "description": "Colour keywords, prose, names and operators in an open IL, SL or PL preview. Turn off for plain text, exactly as the CLI prints it."
+        },
+        "spectec.preview.sourceLabels": {
+          "type": "string",
+          "enum": ["short", "full", "hidden"],
+          "default": "short",
+          "markdownEnumDescriptions": [
+            "Show the file name only, e.g. `;; 1-syntax.spectec:8:1-15:17`.",
+            "Show the whole path the elaborator recorded.",
+            "Leave the line blank."
+          ],
+          "markdownDescription": "How much of the `;; file:line:column` comment heading each definition an IL, SL or PL preview shows. The whole comment is in its tooltip whichever is chosen, and clicking it still jumps to the source."
+        },
+        "spectec.ilPreview.refresh": {
+          "type": "string",
+          "enum": ["live", "save"],
+          "default": "live",
+          "markdownDeprecationMessage": "Renamed to `#spectec.preview.refresh#`, which covers the SL and PL previews too. A value set here is still honoured.",
+          "description": "When to re-render the IL preview."
+        },
+        "spectec.ilPreview.debounce": {
+          "type": "number",
+          "default": 400,
+          "minimum": 0,
+          "markdownDeprecationMessage": "Renamed to `#spectec.preview.debounce#`, which covers the SL and PL previews too. A value set here is still honoured.",
+          "description": "Milliseconds of quiet before the IL preview re-renders."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "spectec.restartLanguageServer",
+        "title": "Restart Language Server",
+        "category": "SpecTecX"
+      },
+      {
+        "command": "spectec.showIlPreview",
+        "title": "Show IL Preview",
+        "category": "SpecTecX",
+        "icon": "$(preview)"
+      },
+      {
+        "command": "spectec.showSlPreview",
+        "title": "Show SL Preview",
+        "category": "SpecTecX"
+      },
+      {
+        "command": "spectec.showPlPreview",
+        "title": "Show PL Preview",
+        "category": "SpecTecX"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "spectec.showIlPreview",
+          "when": "resourceLangId == spectec || resourceLangId == watsup",
+          "group": "navigation"
+        },
+        {
+          "command": "spectec.showSlPreview",
+          "when": "resourceLangId == spectec || resourceLangId == watsup",
+          "group": "spectec@1"
+        },
+        {
+          "command": "spectec.showPlPreview",
+          "when": "resourceLangId == spectec || resourceLangId == watsup",
+          "group": "spectec@2"
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
   }
 }
