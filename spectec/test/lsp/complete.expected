@@ -1,0 +1,17 @@
+## case in a conclusion
+  expr             text     expr
+  ENum             text     ENum
+  EContains        text     EContains
+  ENop             text     ENop
+
+## case with no arguments
+  ENop             text     ENop
+
+## function after a dollar
+  $lookup          text     $lookup
+
+## relation after a dash
+  if               text      if
+  otherwise        text      otherwise
+  Eval             text      Eval
+

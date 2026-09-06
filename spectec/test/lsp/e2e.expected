@@ -1,3 +1,31 @@
 ## end-to-end (spectecx-lsp over stdio)
 initialize: ok
-publishDiagnostics file:///e2e.spectec: 1 diagnostic(s) [elab/ctx-type-undefined]
+capability hoverProvider: true
+capability definitionProvider: true
+capability documentSymbolProvider: true
+capability referencesProvider: true
+capability signatureHelpProvider: {"retriggerCharacters":[" ",",",")"],"triggerCharacters":[" ","(",","]}
+capability experimental: {"preview":["il","sl","pl"],"ilPreview":true}
+hover var: "```spectec\nvar n : addr\n```\n\nwhere a value lives"
+hover case: "```spectec\nEBin expr expr\n```\n\nleft, right\n\n---\n\nCase of `syntax expr`."
+hover rule: "```spectec\nrule Eval/bin-add\n```"
+hover syntax: "```spectec\nsyntax addr = nat\n```\n\nA location in the store.  \nAddresses are opaque."
+symbols: addr, n, t, expr, ENum, EBin, Eval, Eval/bin-add
+completion: expr, ENum, EBin
+completion after `--`: if inserts " if", otherwise inserts " otherwise", Eval inserts " Eval"
+signature help: "ENum int", argument 0
+il preview elaborates: stale false, 1 definition(s), ";; /e2e-preview.spectec:2:1-2:8:\nsyntax foo = \n   | foo (from foo)"
+il preview after a bad edit: stale true, 1 definition(s), ";; /e2e-preview.spectec:2:1-2:8:\nsyntax foo = \n   | foo (from foo)"
+references: line 7, line 10
+prepareRename: line 10 chars 5-9
+rename e2e.spectec: line 7 -> "EPair", line 10 -> "EPair"
+rename subscript: line 1 chars 4-5 -> "x"
+rename subscript: line 4 chars 5-6 -> "x"
+publishDiagnostics file:///e2e.spectec: 2 diagnostic(s) [elab/ctx-type-undefined, elab/relation-no-input-hint]
+publishDiagnostics file:///e2e.spectec: 1 diagnostic(s) [parse/unexpected-token]
+publishDiagnostics file:///e2e.spectec: 2 diagnostic(s) [elab/ctx-type-undefined, elab/relation-no-input-hint]
+publishDiagnostics file:///e2e-rename.spectec: 1 diagnostic(s) [elab/relation-no-input-hint]
+publishDiagnostics file:///e2e-preview.spectec: 0 diagnostic(s) []
+publishDiagnostics file:///e2e-preview.spectec: 1 diagnostic(s) [elab/ctx-type-undefined]
+publishDiagnostics file:///e2e.spectec: 3 diagnostic(s) [elab/ctx-type-undefined, elab/ctx-type-undefined, elab/relation-no-input-hint]
+publishDiagnostics file:///e2e.spectec: 3 diagnostic(s) [elab/ctx-type-undefined, elab/ctx-type-undefined, elab/relation-no-input-hint]

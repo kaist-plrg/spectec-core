@@ -1,0 +1,50 @@
+## on the name itself
+  EContains expr expr
+            ~~~~     
+
+## first argument
+  EContains expr expr
+            ~~~~     
+
+## second argument
+  EContains expr expr
+                 ~~~~
+
+## inside the second
+  EContains expr expr
+                 ~~~~
+
+## nested call
+  ENum int
+       ~~~
+
+## after a nested call
+  EContains expr expr
+                 ~~~~
+
+## function argument
+  $lookup(state, expr)
+          ~~~~~       
+
+## second function argument
+  $lookup(state, expr)
+                 ~~~~ 
+
+## comma inside a nested call
+  $lookup(state, expr)
+                 ~~~~ 
+
+## relation, first
+  Eval: state |- expr ==> value
+        ~~~~~                  
+
+## relation, past the turnstile
+  Eval: state |- expr ==> value
+                 ~~~~          
+
+## not in an application
+  (no hint)
+
+## a name that takes nothing
+  (no hint)
+

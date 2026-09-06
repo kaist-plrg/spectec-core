@@ -1,0 +1,213 @@
+{
+  "name": "SpecTecX",
+  "scopeName": "source.watsup",
+  "comment": "Derived from p4spec/lib/frontend/lexer.mll",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#directives" },
+    { "include": "#declarations" },
+    { "include": "#keywords" },
+    { "include": "#strings" },
+    { "include": "#operator-literal" },
+    { "include": "#numbers" },
+    { "include": "#tags" },
+    { "include": "#atoms" },
+    { "include": "#holes" },
+    { "include": "#functions" },
+    { "include": "#fields" },
+    { "include": "#type-arguments" },
+    { "include": "#tick-brackets" },
+    { "include": "#operators" },
+    { "include": "#punctuation" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-semicolon.watsup",
+          "begin": ";;",
+          "end": "$",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.comment.watsup" }
+          }
+        },
+        { "include": "#block-comment" }
+      ]
+    },
+    "block-comment": {
+      "name": "comment.block.watsup",
+      "begin": "\\(;",
+      "end": ";\\)",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.comment.begin.watsup" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.comment.end.watsup" }
+      },
+      "patterns": [{ "include": "#block-comment" }]
+    },
+    "directives": {
+      "patterns": [
+        {
+          "name": "keyword.control.directive.latex.watsup",
+          "match": "%latex\\b"
+        },
+        {
+          "name": "keyword.control.directive.hint.watsup",
+          "match": "\\bhint(?=\\()"
+        }
+      ]
+    },
+    "declarations": {
+      "comment": "Keywords that introduce a name, so the name itself is highlighted",
+      "patterns": [
+        {
+          "match": "\\b(rule|rulegroup)\\s+([A-Za-z_$][A-Za-z0-9_$']*)(/[A-Za-z0-9_$']*)?",
+          "captures": {
+            "1": { "name": "keyword.control.watsup" },
+            "2": { "name": "entity.name.function.rule.watsup" },
+            "3": { "name": "entity.name.tag.rule-variant.watsup" }
+          }
+        },
+        {
+          "match": "\\b(dec|def)\\s+(\\$?[A-Za-z_][A-Za-z0-9_']*)",
+          "captures": {
+            "1": { "name": "keyword.control.watsup" },
+            "2": { "name": "entity.name.function.watsup" }
+          }
+        },
+        {
+          "match": "\\b(syntax|relation|var)\\s+([A-Za-z_$][A-Za-z0-9_$']*)",
+          "captures": {
+            "1": { "name": "keyword.control.watsup" },
+            "2": { "name": "entity.name.type.watsup" }
+          }
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.watsup",
+          "match": "\\b(syntax|extern|tbl|relation|rulegroup|rule|var|builtin|dec|def|if|otherwise|debug)\\b"
+        },
+        {
+          "name": "support.type.primitive.watsup",
+          "match": "\\b(bool|nat|int|text)\\b"
+        },
+        {
+          "name": "constant.language.watsup",
+          "match": "\\b(eps|true|false)\\b"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.watsup",
+      "begin": "\"",
+      "end": "\"",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.watsup" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.watsup" }
+      },
+      "patterns": [
+        {
+          "name": "constant.character.escape.watsup",
+          "match": "\\\\(u\\{[0-9A-Fa-f]+\\}|[0-9A-Fa-f]{2}|[nrt\\\\'\"])"
+        },
+        {
+          "name": "invalid.illegal.unknown-escape.watsup",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "operator-literal": {
+      "comment": "Concrete operator literal '...'. The lookbehind keeps primed identifiers such as i' from opening a literal.",
+      "name": "string.quoted.single.operator.watsup",
+      "match": "(?<![A-Za-z0-9_'])'[^'\\n]*'"
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.watsup",
+          "match": "\\b0x[0-9A-F]+(_[0-9A-F]+)*\\b"
+        },
+        {
+          "name": "constant.numeric.integer.watsup",
+          "match": "(?<![A-Za-z0-9_'])[+-]?[0-9]+(_[0-9]+)*\\b"
+        }
+      ]
+    },
+    "tags": {
+      "comment": "Silent tag: _UPID",
+      "name": "constant.other.tag.watsup",
+      "match": "\\b_[A-Z][A-Za-z0-9_']*"
+    },
+    "atoms": {
+      "comment": "An uppercase-initial identifier (UPID) is an atom. The real lexer demotes it to a variable when a matching `var` declaration is in scope, which a TextMate grammar cannot see, so uppercase metavariables are highlighted as atoms too.",
+      "name": "entity.name.tag.atom.watsup",
+      "match": "\\b[A-Z][A-Za-z0-9_']*"
+    },
+    "holes": {
+      "comment": "Holes: %, %N, %%, !%",
+      "name": "variable.language.hole.watsup",
+      "match": "!?%(%|[0-9]+)?"
+    },
+    "functions": {
+      "comment": "Function call with $ prefix",
+      "name": "entity.name.function.call.watsup",
+      "match": "\\$[A-Za-z_][A-Za-z0-9_']*"
+    },
+    "fields": {
+      "comment": "Dot-prefixed field id: .id",
+      "name": "variable.other.member.watsup",
+      "match": "\\.[A-Za-z_][A-Za-z0-9_']*"
+    },
+    "type-arguments": {
+      "match": "(<)([a-z_][A-Za-z0-9_]*)(>)",
+      "captures": {
+        "1": { "name": "punctuation.definition.typeparameters.begin.watsup" },
+        "2": { "name": "entity.name.type.watsup" },
+        "3": { "name": "punctuation.definition.typeparameters.end.watsup" }
+      }
+    },
+    "tick-brackets": {
+      "comment": "Backtick target brackets: `( `) `[ `] `{ `} `< `>",
+      "name": "punctuation.section.tick.watsup",
+      "match": "`[()\\[\\]{}<>]"
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.notation.watsup",
+          "match": "==>|<=>|~>\\*|~>|=>_|->_|=>|->|\\|-|-\\|"
+        },
+        {
+          "name": "keyword.operator.logical.watsup",
+          "match": "/\\\\|\\\\/"
+        },
+        {
+          "name": "keyword.operator.comparison.watsup",
+          "match": "=/=|<=|>=|<:|<-|~~|="
+        },
+        {
+          "name": "keyword.operator.watsup",
+          "match": "\\.\\.\\.|\\.\\.|::|:/|:=|##|\\+\\+|--|[:;.|<>~?^$#*/\\\\+-]"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.separator.comma.watsup",
+          "match": ","
+        },
+        {
+          "name": "punctuation.section.brackets.watsup",
+          "match": "[(){}\\[\\]]"
+        }
+      ]
+    }
+  }
+}
