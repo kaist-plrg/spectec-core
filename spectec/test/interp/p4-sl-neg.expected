@@ -248,7 +248,7 @@ error: function was not matched
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/init-entries-error3-bmv2.p4
 CRASHED (counted as failure): ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/init-entries-error3-bmv2.p4
-uncaught exception: "Assert_failure lib/lang/xl/num.ml:88:15"
+uncaught exception: "Assert_failure spectec/lib/lang/xl/num.ml:88:15"
 
 >>> Running typechecker test on ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/inro.p4
 Expected typechecker failure: ../../../../../spectec/testdata/interp/p4/p4c/p4_16_errors/inro.p4
